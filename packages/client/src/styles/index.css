@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@import "./colors.css";
+@import "./crt.css";
+@import "./fonts.css";
+@import "./notifications.css";
+
+html,
+body,
+#root {
+  @apply relative w-screen h-screen;
+  text-rendering: optimizeLegibility;
+  @apply font-sans antialiased;
+}
+
+#client-root {
+  @apply bg-gray-950;
+}
+
+#terminal {
+  @apply bg-black/90;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
