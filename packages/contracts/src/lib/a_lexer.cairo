@@ -54,13 +54,15 @@ pub struct Command {
 pub mod lexer {
     use dojo::world::IWorldDispatcherTrait;
     use core::array::{ArrayTrait, ArrayImpl, Array};
-    use super::super::utils::ByteArrayTraitExt;
     use super::{TokenType, Command, Token};
 
     use dojo::{world::WorldStorage};
-    use lore::constants::errors::Error;
-    use lore::components::{player::Player};
-    use lore::lib::dictionary::{get_dict_entry, initialize_dictionary};
+
+    use lore::{
+        components::{player::Player}, //
+        constants::errors::Error, //
+        lib::{utils::ByteArrayTraitExt, dictionary::{get_dict_entry, initialize_dictionary}},
+    };
 
 
     pub fn parse(

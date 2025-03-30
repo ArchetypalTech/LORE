@@ -1,11 +1,15 @@
 use super::super::components::player::PlayerTrait;
 use dojo::{world::WorldStorage};
 
-use lore::lib::a_lexer::{Command, TokenType};
-use lore::lib::utils::ByteArrayTraitExt;
-use lore::constants::errors::Error;
-use lore::components::{player::{Player, PlayerImpl}};
-use lore::lib::dictionary::{init_dictionary};
+use lore::{ //
+    lib::{ //
+        entity::EntityImpl, //
+        a_lexer::{Command, TokenType}, utils::ByteArrayTraitExt,
+        dictionary::{init_dictionary, add_to_dictionary}, level_test::{create_test_level} //
+    }, //
+    constants::errors::Error, //
+    components::{player::{Player, PlayerImpl}},
+};
 
 pub fn handle_command(
     mut command: Command, world: WorldStorage, player: Player,
@@ -16,6 +20,15 @@ pub fn handle_command(
     Result::Ok(command)
 }
 
+pub fn init_system_dictionary(world: WorldStorage) {
+    add_to_dictionary(world, "system_initialized", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_move", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_init_dict", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
+}
 
 fn system_command(
     mut command: Command, world: WorldStorage, player: Player,
@@ -38,17 +51,28 @@ fn system_command(
             return Result::Ok(command);
         }
         if (system_command == "g_move") {
-            player.say(world, format!("{}", '+sys+forced move command'));
             player.move_to_room(world, 2826);
+            player.say(world, "+sys+forced move command");
             return Result::Ok(command);
         }
         if (system_command == "g_init_dict") {
             init_dictionary(world);
+            init_system_dictionary(world);
             player.say(world, "+sys+dictionary re-initialized");
             return Result::Ok(command);
-        } else {
-            return Result::Err(Error::ActionFailed);
         }
+        if (system_command == "g_level") {
+            create_test_level(world);
+            player.say(world, "+sys+created test level");
+            return Result::Ok(command);
+        }
+        if (system_command == "g_whereami") {
+            player.say(world, "+sys+you are here:");
+            let room = EntityImpl::get_entity(world, 2826);
+            player.say(world, format!("+sys+{:?}", room));
+            return Result::Ok(command);
+        }
+        return Result::Err(Error::ActionFailed);
     }
     Result::Ok(command)
 }
@@ -98,7 +122,7 @@ mod tests {
         let result = handle_command(command.clone(), world, player.clone());
 
         // Verify the command was handled successfully
-        assert(result.is_ok(), 'Command sb handled successfully');
+        assert(result.is_ok(), 'Command not handled');
     }
 }
 

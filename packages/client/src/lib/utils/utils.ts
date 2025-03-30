@@ -50,3 +50,6 @@ export const decodeDojoText = (text: string) => {
 export const tick = async () => {
 	await new Promise((resolve) => setTimeout(resolve, 1));
 };
+
+export const delay = (ms: number) =>
+	new Promise((resolve) => setTimeout(resolve, ms));

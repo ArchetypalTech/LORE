@@ -1,7 +1,7 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 
 use starknet::ContractAddress;
-use lore::lib::entity::{EntityImpl};
+use lore::{lib::{entity::{EntityImpl, Entity}, a_lexer::Command}, components::Component};
 
 #[derive(Copy, Drop, Serde, Debug, Introspect)]
 #[dojo::model]
@@ -26,6 +26,8 @@ pub struct PlayerStory {
 pub impl PlayerImpl of PlayerTrait {
     fn move_to_room(mut self: Player, mut world: WorldStorage, room_id: felt252) {
         self.location = room_id;
+        let ent: Entity = EntityImpl::get_entity(world, self.inst).unwrap();
+        ent.set_parent(world, EntityImpl::get_entity(world, room_id).unwrap());
         world.write_model(@self);
     }
 
@@ -44,12 +46,50 @@ pub impl PlayerImpl of PlayerTrait {
     }
 }
 
+pub impl PlayerComponent of Component<Player> {
+    fn entity(self: Player, world: WorldStorage) -> Entity {
+        EntityImpl::get_entity(world, self.inst).unwrap()
+    }
+
+    fn has_component(self: Player, world: WorldStorage, inst: felt252) -> bool {
+        let player: Player = world.read_model(inst);
+        player.is_player
+    }
+
+    fn add_component(mut world: WorldStorage, inst: felt252) -> Player {
+        let mut player: Player = world.read_model(inst);
+        player.is_player = true;
+        // player.action_map = array![("look", InspectableActions::read_description)];
+        world.write_model(@player);
+        player
+    }
+
+    fn get_component(world: WorldStorage, inst: felt252) -> Option<Player> {
+        let player: Player = world.read_model(inst);
+        if (!player.has_component(world, inst)) {
+            return Option::None;
+        }
+        let player: Player = world.read_model(inst);
+        Option::Some(player)
+    }
+
+    fn can_use_command(
+        self: Player, world: WorldStorage, player: Player, command: Command,
+    ) -> bool {
+        true
+    }
+
+    fn execute_command(self: Player, world: WorldStorage, player: Player, command: Command) {
+        println!("Player execute_command");
+    }
+    // fn store(self: Player, world: WorldStorage) {
+//     world.write_model(@self);
+// }
+}
+
 
 pub fn create_player(mut world: WorldStorage, address: ContractAddress) -> Player {
-    let player = Player { inst: address.into(), is_player: true, address, location: 0 };
-    world.write_model(@player);
-    player.say(world, "You feel light, and shiny, in the head");
-    player
+    EntityImpl::create_player_entity(world, address)
 }
 
 pub fn get_player(world: WorldStorage, address: ContractAddress) -> Option<Player> {

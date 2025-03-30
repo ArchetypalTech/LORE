@@ -48,7 +48,7 @@ export function addTerminalContent(item: TerminalContentItem) {
  * If a typewriter effect has finished, adds it to the permanent content.
  * @param {TerminalContentItem|null} newContent - The content that has finished its typewriter effect, if any
  */
-export function nextItem(newContent: TerminalContentItem | null) {
+export const nextItem = async (newContent: TerminalContentItem | null) => {
 	const state = get();
 
 	// Check if newContent is in the currentItem
@@ -68,7 +68,7 @@ export function nextItem(newContent: TerminalContentItem | null) {
 			});
 		}
 	}
-}
+};
 
 /**
  * Clears all content from the terminal.

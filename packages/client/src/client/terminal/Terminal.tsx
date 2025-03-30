@@ -1,17 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
-import {
-	useTerminalStore,
-	addTerminalContent,
-	nextItem,
-} from "@lib/stores/terminal.store";
+import { useTerminalStore, nextItem } from "@lib/stores/terminal.store";
 import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
 import Typewriter from "./Typewriter";
 import TerminalLine from "./TerminalLine";
 import "./Terminal.css";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
-import { LORE_CONFIG } from "@/lib/config";
-import WalletStore from "@/lib/stores/wallet.store";
 
 export default function Terminal() {
 	const [inputValue, setInputValue] = useState("");
@@ -23,7 +17,7 @@ export default function Terminal() {
 	const terminalInputRef = useRef<HTMLInputElement>(null);
 
 	const {
-		status: { status, error },
+		status: { status },
 	} = useDojoStore();
 	const { terminalContent, activeTypewriterLine } = useTerminalStore();
 
@@ -47,6 +41,7 @@ export default function Terminal() {
 
 	// Split handleKeyDown to reduce complexity
 	const handleUpArrow = (e: KeyboardEvent<HTMLInputElement>) => {
+		console.log(e, inputHistoryIndex, inputHistory);
 		e.preventDefault();
 		if (inputHistoryIndex === 0) {
 			setOriginalInputValue(inputValue);
@@ -58,6 +53,7 @@ export default function Terminal() {
 	};
 
 	const handleDownArrow = (e: KeyboardEvent<HTMLInputElement>) => {
+		console.log(e, inputHistoryIndex);
 		e.preventDefault();
 		if (inputHistoryIndex > 0) {
 			setInputHistoryIndex(inputHistoryIndex - 1);
@@ -70,6 +66,7 @@ export default function Terminal() {
 	};
 
 	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+		focusInput();
 		switch (e.key) {
 			case "ArrowUp":
 				handleUpArrow(e);
@@ -92,7 +89,6 @@ export default function Terminal() {
 		if (terminalInputRef.current) {
 			terminalInputRef.current.disabled = true;
 		}
-		e.preventDefault();
 		const command = inputValue;
 		setInputHistoryIndex(0);
 
@@ -121,7 +117,6 @@ export default function Terminal() {
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}
 				onClick={focusInput}
-				onKeyDown={focusInput}
 				aria-label="Terminal"
 				role=""
 				id="terminal"

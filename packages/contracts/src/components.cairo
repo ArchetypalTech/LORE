@@ -18,6 +18,7 @@ pub trait Component<T> {
         self: T, world: WorldStorage, player: player::Player, command: Command,
     ) -> bool;
     fn execute_command(self: T, world: WorldStorage, player: player::Player, command: Command);
+    // fn store(self: T, world: WorldStorage);
 }
 
 pub enum Components {

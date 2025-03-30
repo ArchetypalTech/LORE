@@ -1,7 +1,10 @@
-use dojo::world::IWorldDispatcherTrait;
-use dojo::{world::WorldStorage, model::ModelStorage};
+use starknet::ContractAddress;
+use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
-use lore::lib::relations::{ChildToParent, ParentToChildren};
+use lore::{
+    lib::relations::{ChildToParent, ParentToChildren},
+    components::player::{Player, PlayerImpl, PlayerComponent},
+};
 
 #[derive(Clone, PartialEq, Drop, Serde, Introspect, Debug)]
 #[dojo::model]
@@ -22,6 +25,18 @@ pub impl EntityImpl of EntityTrait {
         entity.is_entity = true;
         world.write_model(@entity);
         entity
+    }
+
+    fn create_player_entity(mut world: WorldStorage, address: ContractAddress) -> Player {
+        let mut entity: Entity = world.read_model(0);
+        entity.inst = address.try_into().unwrap();
+        entity.is_entity = true;
+        world.write_model(@entity);
+        let mut player = PlayerComponent::add_component(world, address.into());
+        player.address = address;
+        world.write_model(@player);
+        player.say(world, "You feel light, and shiny, in the head");
+        player
     }
 
     fn get_names(self: Entity) -> Array<ByteArray> {

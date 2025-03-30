@@ -53,7 +53,7 @@ const setStatus = (status: DojoStatus) => set({ status });
  * Decodes and formats text before adding it to the terminal
  * @param {Outputter | undefined} playerStory - Output data from a player
  */
-const setOutputter = (playerStory: PlayerStory | undefined) => {
+const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	const oldLines = get().playerStory?.story || [];
 	const isNewText = oldLines.length > 0;
 
@@ -80,17 +80,16 @@ const setOutputter = (playerStory: PlayerStory | undefined) => {
 	const lines: string[] = processWhitespaceTags(trimmedNewText);
 	set({ lastProcessedText: trimmedNewText });
 	set({ playerStory });
+
 	console.log(isNewText);
 	for (const line of lines) {
 		const sys = line.startsWith("+sys+");
-		// if (sys && !isNewText) continue;
-
 		const formatted = line.replaceAll("+sys+", "");
 
 		addTerminalContent({
 			text: formatted,
 			format: sys ? "hash" : line.startsWith("> ") ? "input" : "out",
-			useTypewriter: isNewText,
+			useTypewriter: true,
 		});
 	}
 };

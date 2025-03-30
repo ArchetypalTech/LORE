@@ -1,7 +1,11 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
-use lore::lib::a_lexer::{TokenType, TokenTypeFelt252};
-use lore::lib::utils::ByteArrayTraitExt;
-use lore::constants::errors::Error;
+use lore::{
+    constants::errors::Error,
+    lib::{
+        c_handler::{init_system_dictionary}, a_lexer::{TokenType, TokenTypeFelt252},
+        utils::ByteArrayTraitExt,
+    },
+};
 use core::result::{Result, ResultTrait};
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
@@ -38,6 +42,7 @@ pub fn get_dict_entry(world: WorldStorage, word: ByteArray) -> Option<Dict> {
 pub fn initialize_dictionary(world: WorldStorage) {
     if get_dict_entry(world, "intialized").is_none() {
         init_dictionary(world);
+        init_system_dictionary(world);
     }
 }
 
@@ -154,12 +159,8 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "why", TokenType::Interrogative, 4).unwrap();
     add_to_dictionary(world, "how", TokenType::Interrogative, 5).unwrap();
 
-    // cheat to check if dictionary is initialized
+    // dictionary is initialized
     add_to_dictionary(world, "intialized", TokenType::System, 1).unwrap();
-    add_to_dictionary(world, "g+move", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_init_dict", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
 }
 
 

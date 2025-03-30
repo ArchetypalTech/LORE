@@ -39,7 +39,7 @@ pub mod prompt {
                     if res.is_ok() {
                         player.say(world, random_text(world, random_intro()));
                     } else {
-                        player.say(world, "I don't know what that means");
+                        player.say(world, random_text(world, random_error()));
                     }
                 },
                 Result::Err(_r) => { player.say(world, random_text(world, random_error())); },
@@ -58,6 +58,13 @@ pub mod prompt {
     }
 
     pub fn random_error() -> Array<ByteArray> {
-        array!["I don't know what that means", "Nope", "Can you repeat that?", "I'm at a loss"]
+        array![
+            "I don't know what that means",
+            "Nope",
+            "Can you repeat that?",
+            "I'm at a loss",
+            "You're not helping",
+            "I can't imagine",
+        ]
     }
 }
