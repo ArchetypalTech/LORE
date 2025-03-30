@@ -77,16 +77,16 @@ mod tests {
     fn ByteArrayExt_to_felt252_word() {
         let a: ByteArray = "extravaganza";
         let a_converted = a.clone().to_felt252_word().unwrap();
-        let a_original: felt252 = 'extravaganza';
-        println!("{}, a_converted: {}, a_original: {}", a, a_converted.clone(), a_original);
+        // let a_original: felt252 = 'extravaganza';
+        // println!("{}, a_converted: {}, a_original: {}", a, a_converted.clone(), a_original);
         let b: ByteArray = "hello";
         let b_converted = b.clone().to_felt252_word().unwrap();
-        let b_original: felt252 = 'hello';
-        println!("{}, b_converted: {}, b_original: {}", b, b_converted.clone(), b_original);
+        // let b_original: felt252 = 'hello';
+        // println!("{}, b_converted: {}, b_original: {}", b, b_converted.clone(), b_original);
         let c: ByteArray = "cairo";
         let c_converted = c.clone().to_felt252_word().unwrap();
-        let c_original: felt252 = 'cairo';
-        println!("{}, c_converted: {}, b_original: {}", c, c_converted.clone(), c_original);
+        // let c_original: felt252 = 'cairo';
+        // println!("{}, c_converted: {}, b_original: {}", c, c_converted.clone(), c_original);
         assert(a_converted == 'extravaganza'.into(), 'a_converted == "extravaganza"');
         assert(b_converted == 'hello'.into(), 'b_converted == "hello"');
         assert(c_converted == 'cairo'.into(), 'c_converted == "cairo"');
@@ -119,7 +119,7 @@ mod tests {
         let word2: ByteArray = "good";
         let w1: ByteArray = words.at(0).clone();
         let w2: ByteArray = words.at(words.len() - 1).clone();
-        println!("words: {:?}, length: {}", words, words.len());
+        // println!("words: {:?}, length: {}", words, words.len());
         assert(words.len() == 10, 'words.len() == 10');
         assert(!word1.clone().equals(word2.clone()), 'word1 and word2 not similar');
         assert(!w1.clone().equals(w2.clone()), 'w1 and w2 not similar');

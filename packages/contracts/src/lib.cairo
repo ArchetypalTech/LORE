@@ -10,6 +10,7 @@ pub mod constants;
 pub mod lib {
     pub mod a_lexer;
     pub mod dictionary;
+    pub mod c_handler;
     pub mod entity;
     pub mod random;
     pub mod relations;
@@ -19,5 +20,6 @@ pub mod lib {
 
 #[cfg(test)]
 pub mod tests {
+    pub mod entity_test;
     pub mod helpers;
 }

@@ -7,8 +7,10 @@ pub mod player;
 
 use dojo::{world::WorldStorage};
 use lore::lib::a_lexer::{Command};
+use lore::lib::entity::{Entity};
 
 pub trait Component<T> {
+    fn entity(self: T, world: WorldStorage) -> Entity;
     fn has_component(self: T, world: WorldStorage, inst: felt252) -> bool;
     fn add_component(world: WorldStorage, inst: felt252) -> T;
     fn get_component(world: WorldStorage, inst: felt252) -> Option<T>;

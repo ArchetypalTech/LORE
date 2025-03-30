@@ -1,0 +1,5 @@
+- [ ] write additional extensions in Utils.ts (used in lexer postprocessing)
+  - [ ] ends_with(string)
+  - [ ] starts_with(string)
+  - [ ] contains(string)
+  - [ ] to_lowercase()

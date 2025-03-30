@@ -19,8 +19,9 @@ use lore::{
     lib::{
         entity::{m_Entity}, //
         a_lexer::{TokenTypeFelt252}, //
-        dictionary::{m_Dict, init_dictionary}, //
-        utils::{ByteArrayTraitExt},
+        dictionary::{m_Dict, initialize_dictionary}, //
+        utils::{ByteArrayTraitExt}, //
+        relations::{m_ParentToChildren, m_ChildToParent} //
     },
 };
 
@@ -54,6 +55,8 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_Entity::TEST_CLASS_HASH),
             TestResource::Model(m_Inspectable::TEST_CLASS_HASH),
             TestResource::Model(m_Area::TEST_CLASS_HASH),
+            TestResource::Model(m_ParentToChildren::TEST_CLASS_HASH),
+            TestResource::Model(m_ChildToParent::TEST_CLASS_HASH),
             // TestResource::Event(),
             TestResource::Contract(prompt::TEST_CLASS_HASH),
             TestResource::Contract(designer::TEST_CLASS_HASH),
@@ -69,7 +72,7 @@ fn core_contract_defs() -> Span<ContractDef> {
         ContractDefTrait::new(@"lore", @"designer")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span()),
         ContractDefTrait::new(@"lore", @"prompt")
-            .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span()),
+            .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span()),
     ]
         .span()
 }
@@ -88,7 +91,8 @@ pub fn setup_core() -> (
     let prompt = IPromptDispatcher { contract_address: prompt_address };
 
     // FIXME: Setup permissions
-    // world.dispatcher.grant_writer(selector_from_tag!("pixelaw-App"), core_actions_address);
+    world.dispatcher.grant_writer(selector_from_tag!("lore-Dict"), prompt_address);
+
     // world.grant_writer(selector_from_tag!("pixelaw-AppName"), core_actions_address);
     // world.grant_writer(selector_from_tag!("pixelaw-CoreActionsAddress"), core_actions_address);
     // world.grant_writer(selector_from_tag!("pixelaw-Pixel"), core_actions_address);
@@ -99,7 +103,7 @@ pub fn setup_core() -> (
     let player_1 = contract_address_const::<0x69>();
     let player_2 = contract_address_const::<0x42>();
 
-    init_dictionary(world);
+    initialize_dictionary(world);
 
     (world, designer, prompt, player_1, player_2)
 }

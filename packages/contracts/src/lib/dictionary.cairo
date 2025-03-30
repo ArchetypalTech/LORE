@@ -36,7 +36,7 @@ pub fn get_dict_entry(world: WorldStorage, word: ByteArray) -> Option<Dict> {
 }
 
 pub fn initialize_dictionary(world: WorldStorage) {
-    if !get_dict_entry(world, "intialized").is_none() {
+    if get_dict_entry(world, "intialized").is_none() {
         init_dictionary(world);
     }
 }
@@ -140,6 +140,10 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "9", TokenType::Quantifier, 9).unwrap();
     add_to_dictionary(world, "ten", TokenType::Quantifier, 10).unwrap();
     add_to_dictionary(world, "10", TokenType::Quantifier, 10).unwrap();
+    add_to_dictionary(world, "more", TokenType::Quantifier, 255).unwrap();
+    add_to_dictionary(world, "less", TokenType::Quantifier, 255).unwrap();
+    add_to_dictionary(world, "most", TokenType::Quantifier, 255).unwrap();
+    add_to_dictionary(world, "least", TokenType::Quantifier, 255).unwrap();
     // nouns
     add_to_dictionary(world, "noun", TokenType::Noun, 1).unwrap();
     add_to_dictionary(world, "object", TokenType::Noun, 1).unwrap();
@@ -151,7 +155,11 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "how", TokenType::Interrogative, 5).unwrap();
 
     // cheat to check if dictionary is initialized
-    add_to_dictionary(world, "intialized", TokenType::Unknown, 1).unwrap();
+    add_to_dictionary(world, "intialized", TokenType::System, 1).unwrap();
+    add_to_dictionary(world, "g+move", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_init_dict", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
 }
 
 

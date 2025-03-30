@@ -2,6 +2,7 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::constants::constants::Direction;
 use lore::components::{Component, player::Player};
 use lore::lib::a_lexer::{Command};
+use lore::lib::entity::{Entity, EntityImpl};
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
 #[dojo::model]
@@ -13,8 +14,11 @@ pub struct Area {
     pub direction: Direction,
 }
 
-
 pub impl InspectableComponent of Component<Area> {
+    fn entity(self: Area, world: WorldStorage) -> Entity {
+        EntityImpl::get_entity(world, self.inst).unwrap()
+    }
+
     fn has_component(self: Area, world: WorldStorage, inst: felt252) -> bool {
         let area: Area = world.read_model(inst);
         area.is_area

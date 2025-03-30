@@ -1,6 +1,7 @@
 use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
 use lore::lib::{random, a_lexer::Command};
+use lore::lib::entity::{Entity, EntityImpl};
 
 use super::{Component, player::Player};
 
@@ -56,6 +57,10 @@ pub impl InspectableImpl of InspectableTrait {
 }
 
 pub impl InspectableComponent of Component<Inspectable> {
+    fn entity(self: Inspectable, world: WorldStorage) -> Entity {
+        EntityImpl::get_entity(world, self.inst).unwrap()
+    }
+
     fn has_component(self: Inspectable, world: WorldStorage, inst: felt252) -> bool {
         let inspectable: Inspectable = world.read_model(inst);
         inspectable.is_inspectable
@@ -128,9 +133,11 @@ mod tests {
         let read_inspectable: Inspectable = Component::get_component(world, prefab.inst).unwrap();
         println!("read_inspectable: {:?}", read_inspectable);
         assert(read_inspectable.is_inspectable, 'inspectable is inspectable');
+        let mut res = array![];
         for _ in 0..10_u8 {
-            println!("inspectable: {:?}", read_inspectable.clone().get_random_description(world));
-        }
+            res.append(read_inspectable.clone().get_random_description(world));
+        };
+        println!("inspectable: {:?}", res);
     }
 
     #[test]

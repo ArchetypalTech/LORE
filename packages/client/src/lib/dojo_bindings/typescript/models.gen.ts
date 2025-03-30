@@ -194,6 +194,7 @@ export const tokenType = [
 	'Noun',
 	'Quantifier',
 	'Interrogative',
+	'System',
 ] as const;
 export type TokenType = { [key in typeof tokenType[number]]: string };
 export type TokenTypeEnum = CairoCustomEnum;
@@ -350,7 +351,8 @@ export const schema: SchemaType = {
 				Adjective: undefined,
 				Noun: undefined,
 				Quantifier: undefined,
-				Interrogative: undefined, }),
+				Interrogative: undefined,
+				System: undefined, }),
 			n_value: 0,
 		},
 		DictValue: {
@@ -365,7 +367,8 @@ export const schema: SchemaType = {
 				Adjective: undefined,
 				Noun: undefined,
 				Quantifier: undefined,
-				Interrogative: undefined, }),
+				Interrogative: undefined,
+				System: undefined, }),
 			n_value: 0,
 		},
 		Entity: {

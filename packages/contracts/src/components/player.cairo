@@ -1,6 +1,7 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 
 use starknet::ContractAddress;
+use lore::lib::entity::{EntityImpl};
 
 #[derive(Copy, Drop, Serde, Debug, Introspect)]
 #[dojo::model]
@@ -43,9 +44,9 @@ pub impl PlayerImpl of PlayerTrait {
     }
 }
 
+
 pub fn create_player(mut world: WorldStorage, address: ContractAddress) -> Player {
-    let start_room = 2826;
-    let player = Player { inst: address.into(), is_player: true, address, location: start_room };
+    let player = Player { inst: address.into(), is_player: true, address, location: 0 };
     world.write_model(@player);
     player.say(world, "You feel light, and shiny, in the head");
     player

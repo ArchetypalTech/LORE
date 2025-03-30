@@ -9,7 +9,8 @@ pub enum TokenType {
     Adjective, // good, bad, happy, sad
     Noun, // noun, object
     Quantifier, // number, quantity
-    Interrogative // who, what, where, why, how
+    Interrogative, // who, what, where, why, how
+    System //
 }
 
 pub impl TokenTypeFelt252 of Into<TokenType, felt252> {
@@ -25,6 +26,7 @@ pub impl TokenTypeFelt252 of Into<TokenType, felt252> {
             TokenType::Noun => 7,
             TokenType::Quantifier => 8,
             TokenType::Interrogative => 9,
+            TokenType::System => 252,
         }
     }
 }
@@ -64,9 +66,9 @@ pub mod lexer {
     pub fn parse(
         message: ByteArray, world: WorldStorage, player: Player,
     ) -> Result<Command, Error> {
-        initialize_dictionary(world.clone());
+        initialize_dictionary(world);
         let words = message.clone().split_into_words();
-        let tokens = match_tokens(world.clone(), words.clone());
+        let tokens = match_tokens(world, words.clone());
         let mut command = Command {
             command_id: world.dispatcher.uuid().try_into().unwrap(),
             text: message,
@@ -75,12 +77,14 @@ pub mod lexer {
             action_type: 0,
             tokens,
         };
+        command = match_player_context(world, player, command);
         Result::Ok(command)
     }
 
     fn match_tokens(world: WorldStorage, words: Array<ByteArray>) -> Array<Token> {
         let mut tokens: Array<Token> = array![];
         for i in 0..words.len() {
+            // iterate over the words in the string and find a dictionary match
             let mut token = Token {
                 position: i,
                 text: words[i].clone(),
@@ -99,19 +103,28 @@ pub mod lexer {
                         token_value: dict_entry.n_value,
                         target: 0,
                     };
-
-                println!("Found dictionary match for {:?}", dict_entry);
             } else {
-                println!("No dictionary match for {:?}", words[i]);
+                println!("[Lexer]: {:?} : NO match ", words[i]);
             }
-            println!("token: {:?}", token);
             tokens.append(token);
+        };
+        for t in 0..tokens.len() {
+            println!("[Lexer]: {:?}", tokens[t]);
         };
         tokens
     }
 
+    fn post_process_tokens(
+        world: WorldStorage, player: Player, mut tokens: Array<Token>,
+    ) -> Array<Token> {
+        // here we do fancy stuff
+        // when there is a preposition, we can
+
+        tokens
+    }
+
     fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
-        // ask the player for their context
+        // get player for their context (room objects, etc.)
 
         command
     }
@@ -130,9 +143,9 @@ mod tests {
         let promptText: ByteArray = "how illegal is it to call the door a lexer";
         println!("promptText: {:?}", promptText);
         let player = caller_as_player(world, player_1);
-        let command = lexer::parse(promptText, world, player);
-        println!("command: {:?}", command);
-        // TODO: finish writing test
+        let _command = lexer::parse(promptText, world, player);
+        // println!("command: {:?}", command);
+    // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
     // assert(command.tokens[1].token_value == prepositionToken, 'token value is 4');
     }

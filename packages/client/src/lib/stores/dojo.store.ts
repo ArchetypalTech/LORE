@@ -16,7 +16,6 @@ import { StoreBuilder } from "../utils/storebuilder";
 import EditorData from "@/editor/editor.data";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
-import Terminal from "@/client/terminal/Terminal";
 
 /**
  * Represents the current status of the Dojo system.
@@ -63,6 +62,8 @@ const setOutputter = (playerStory: PlayerStory | undefined) => {
 	}
 	// remove lines we already have
 	const storyLines = playerStory.story.slice(oldLines.length);
+
+	// @dev: this is a hack for now - we only have array indices for the story, this might not be the best approach- we still want an immediate (frontend) prompt, but we also store the prompt in the story
 	if (isNewText && storyLines[0].startsWith("> ")) {
 		storyLines.shift();
 	}
@@ -81,9 +82,14 @@ const setOutputter = (playerStory: PlayerStory | undefined) => {
 	set({ playerStory });
 	console.log(isNewText);
 	for (const line of lines) {
+		const sys = line.startsWith("+sys+");
+		// if (sys && !isNewText) continue;
+
+		const formatted = line.replaceAll("+sys+", "");
+
 		addTerminalContent({
-			text: line,
-			format: line.startsWith("> ") ? "input" : "out",
+			text: formatted,
+			format: sys ? "hash" : line.startsWith("> ") ? "input" : "out",
 			useTypewriter: isNewText,
 		});
 	}
