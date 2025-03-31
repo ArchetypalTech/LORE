@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x6d8840a5497111bddf728cb9a6c52511bdc6ad8b7af43c85502310b39c65974",
-      "class_hash": "0x776f85dd584f53d698ce0d8b08d6de54a7e169a2cc5ec424e0be4b5c305fd1f",
+      "address": "0x1cca543728647734fcf1ac72afe5882d0160ea0513f4ebe6c0e69216361aec6",
+      "class_hash": "0x34040dd258c475add6d58bf99bc88c912752a3d21839550532b28dd341e8645",
       "abi": [
         {
           "type": "impl",
@@ -1407,6 +1407,38 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::components::inspectable::InspectableActions",
+          "variants": [
+            {
+              "name": "set_visible",
+              "type": "()"
+            },
+            {
+              "name": "read_description",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::inspectable::ActionMapInspectable",
+          "members": [
+            {
+              "name": "action",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action_fn",
+              "type": "lore::components::inspectable::InspectableActions"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "lore::components::inspectable::Inspectable",
           "members": [
@@ -1425,6 +1457,10 @@
             {
               "name": "description",
               "type": "core::array::Array::<core::byte_array::ByteArray>"
+            },
+            {
+              "name": "action_map",
+              "type": "core::array::Array::<lore::components::inspectable::ActionMapInspectable>"
             }
           ]
         },
@@ -1609,8 +1645,8 @@
       ]
     },
     {
-      "address": "0xea89e599122f41841b64aab145de1728f87e802662fc0bdae8db17030756b8",
-      "class_hash": "0x3cbf8abb5652b99a9d17f7bfeff64a8c0d0f350311176988f86433edabfe29",
+      "address": "0x5b89b4acfde1f2edd6b2b466dce90c6657ab5f3400bc32a060cc4fe5868864b",
+      "class_hash": "0x5a9a8355bf7eba292e8989753f99bd395d4db5677adf9c15128c5982b668e2",
       "abi": [
         {
           "type": "impl",
@@ -1849,7 +1885,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6b84ff3dfbbeb6ac5699bd64382cf91e6d1b1548b57f9feb789e82b3ddea59a",
+      "class_hash": "0x5b38678e6f5b4429ad1ccb1804ae6798bafa8bee26e379c6f87491789044cc1",
       "tag": "lore-Inspectable",
       "selector": "0x761c792e623173857f21316868bd06f19050cfc26238d33476231e335cf59c9"
     },

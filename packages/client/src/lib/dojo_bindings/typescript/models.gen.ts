@@ -55,12 +55,20 @@ export interface ExitValue {
 	action_map: Array<string>;
 }
 
+// Type definition for `lore::components::inspectable::ActionMapInspectable` struct
+export interface ActionMapInspectable {
+	action: string;
+	inst: BigNumberish;
+	action_fn: InspectableActionsEnum;
+}
+
 // Type definition for `lore::components::inspectable::Inspectable` struct
 export interface Inspectable {
 	inst: BigNumberish;
 	is_inspectable: boolean;
 	is_visible: boolean;
 	description: Array<string>;
+	action_map: Array<ActionMapInspectable>;
 }
 
 // Type definition for `lore::components::inspectable::InspectableValue` struct
@@ -68,6 +76,7 @@ export interface InspectableValue {
 	is_inspectable: boolean;
 	is_visible: boolean;
 	description: Array<string>;
+	action_map: Array<ActionMapInspectable>;
 }
 
 // Type definition for `lore::components::inventoryItem::InventoryItem` struct
@@ -169,6 +178,14 @@ export interface ParentToChildrenValue {
 	children: Array<BigNumberish>;
 }
 
+// Type definition for `lore::components::inspectable::InspectableActions` enum
+export const inspectableActions = [
+	'set_visible',
+	'read_description',
+] as const;
+export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
+export type InspectableActionsEnum = CairoCustomEnum;
+
 // Type definition for `lore::constants::constants::Direction` enum
 export const direction = [
 	'None',
@@ -207,6 +224,7 @@ export interface SchemaType extends ISchemaType {
 		ContainerValue: ContainerValue,
 		Exit: Exit,
 		ExitValue: ExitValue,
+		ActionMapInspectable: ActionMapInspectable,
 		Inspectable: Inspectable,
 		InspectableValue: InspectableValue,
 		InventoryItem: InventoryItem,
@@ -296,16 +314,29 @@ export const schema: SchemaType = {
 				Down: undefined, }),
 			action_map: [""],
 		},
+		ActionMapInspectable: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					set_visible: "",
+				read_description: undefined, }),
+		},
 		Inspectable: {
 			inst: 0,
 			is_inspectable: false,
 			is_visible: false,
 			description: [""],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					set_visible: "",
+				read_description: undefined, }), }],
 		},
 		InspectableValue: {
 			is_inspectable: false,
 			is_visible: false,
 			description: [""],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					set_visible: "",
+				read_description: undefined, }), }],
 		},
 		InventoryItem: {
 			inst: 0,
@@ -409,7 +440,9 @@ export enum ModelsMapping {
 	ContainerValue = 'lore-ContainerValue',
 	Exit = 'lore-Exit',
 	ExitValue = 'lore-ExitValue',
+	ActionMapInspectable = 'lore-ActionMapInspectable',
 	Inspectable = 'lore-Inspectable',
+	InspectableActions = 'lore-InspectableActions',
 	InspectableValue = 'lore-InspectableValue',
 	InventoryItem = 'lore-InventoryItem',
 	InventoryItemValue = 'lore-InventoryItemValue',

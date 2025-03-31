@@ -95,7 +95,23 @@ fn system_command(
         }
         return Result::Err(Error::ActionFailed);
     }
-    Result::Ok(command)
+    let context = player.get_context(world);
+    let mut executed: bool = false;
+    for item in context {
+        let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
+        if inspectable.is_some() {
+            let s = inspectable.unwrap();
+            if s.clone().can_use_command(world, player, command.clone()) {
+                s.clone().execute_command(world, player, command.clone());
+                executed = true;
+                break;
+            }
+        }
+    };
+    if executed {
+        return Result::Ok(command);
+    }
+    Result::Err(Error::ActionFailed)
 }
 
 #[cfg(test)]
