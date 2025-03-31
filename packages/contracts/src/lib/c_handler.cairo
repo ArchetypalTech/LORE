@@ -3,12 +3,14 @@ use dojo::{world::WorldStorage};
 
 use lore::{ //
     lib::{ //
-        entity::EntityImpl, //
+        entity::{EntityImpl}, //
         a_lexer::{Command, TokenType}, utils::ByteArrayTraitExt,
         dictionary::{init_dictionary, add_to_dictionary}, level_test::{create_test_level} //
     }, //
     constants::errors::Error, //
-    components::{player::{Player, PlayerImpl}},
+    components::{
+        player::{Player, PlayerImpl}, Component, inspectable::{Inspectable, InspectableImpl},
+    } //
 };
 
 pub fn handle_command(
@@ -28,6 +30,7 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
 }
 
 fn system_command(
@@ -53,6 +56,9 @@ fn system_command(
         if (system_command == "g_move") {
             player.move_to_room(world, 2826);
             player.say(world, "+sys+forced move command");
+            let room = player.get_room(world);
+            let inspectable: Inspectable = Component::get_component(world, room.inst).unwrap();
+            player.say(world, format!("+sys+{:?}", inspectable));
             return Result::Ok(command);
         }
         if (system_command == "g_init_dict") {
@@ -68,8 +74,23 @@ fn system_command(
         }
         if (system_command == "g_whereami") {
             player.say(world, "+sys+you are here:");
-            let room = EntityImpl::get_entity(world, 2826);
+            let room = player.get_room(world);
             player.say(world, format!("+sys+{:?}", room));
+            player.say(world, format!("+sys+{:?}", player.entity(world).get_parent(world)));
+            return Result::Ok(command);
+        }
+        if (system_command == "g_look") {
+            player.say(world, "+sys+you see this:");
+            let context = player.get_context(world);
+            let room = player.get_room(world);
+            player.say(world, format!("{}", room.name));
+            for item in context {
+                let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
+                if inspectable.is_some() {
+                    let description = inspectable.unwrap().get_random_description(world);
+                    player.say(world, format!("{}", description));
+                }
+            };
             return Result::Ok(command);
         }
         return Result::Err(Error::ActionFailed);

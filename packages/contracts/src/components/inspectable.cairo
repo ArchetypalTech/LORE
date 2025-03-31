@@ -68,6 +68,7 @@ pub impl InspectableComponent of Component<Inspectable> {
 
     fn add_component(mut world: WorldStorage, inst: felt252) -> Inspectable {
         let mut inspectable: Inspectable = world.read_model(inst);
+        inspectable.inst = inst;
         inspectable.is_inspectable = true;
         // inspectable.action_map = array![("look", InspectableActions::read_description)];
         world.write_model(@inspectable);

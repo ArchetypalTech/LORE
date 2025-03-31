@@ -3,9 +3,38 @@ use lore::components::{Component, inspectable::{Inspectable, InspectableComponen
 use lore::lib::{entity::Entity};
 
 pub fn create_test_level(mut world: WorldStorage) {
-    let alt_names: Array<ByteArray> = array!["test", "level"];
-    let obj = Entity { inst: 2826, is_entity: true, name: "test_level", alt_names };
+    room_one(world);
+    room_two(world);
+}
+
+fn room_one(mut world: WorldStorage) {
+    let obj = Entity {
+        inst: 2826, is_entity: true, name: "The Bang", alt_names: array!["pontoon", "boat"],
+    };
     world.write_model(@obj);
-    let _: Inspectable = Component::add_component(world, obj.inst);
+    let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
+    inspectable
+        .description =
+            array![
+                "The first thing you've ever seen, it's pretty wild, flaring colors like flower petals but kaleidoscopically distorted",
+                "Pretty colors",
+            ];
+    world.write_model(@inspectable);
+    let _: Area = Component::add_component(world, obj.inst);
+}
+
+fn room_two(mut world: WorldStorage) {
+    let obj = Entity {
+        inst: 1212, is_entity: true, name: "Idyllic Garden", alt_names: array!["garden"],
+    };
+    world.write_model(@obj);
+    let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
+    inspectable
+        .description =
+            array![
+                "Just suddenly it's all flowers and trees and grass",
+                "Still pretty colors, but now it all has definition",
+            ];
+    world.write_model(@inspectable);
     let _: Area = Component::add_component(world, obj.inst);
 }

@@ -26,6 +26,7 @@ pub impl InspectableComponent of Component<Area> {
 
     fn add_component(mut world: WorldStorage, inst: felt252) -> Area {
         let mut area: Area = world.read_model(inst);
+        area.inst = inst;
         area.is_area = true;
         // area.action_map = array![("look", InspectableActions::read_description)];
         world.write_model(@area);

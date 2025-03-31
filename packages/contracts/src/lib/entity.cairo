@@ -3,7 +3,7 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
 use lore::{
     lib::relations::{ChildToParent, ParentToChildren},
-    components::player::{Player, PlayerImpl, PlayerComponent},
+    components::{player::{Player, PlayerImpl}, inspectable::Inspectable, Component},
 };
 
 #[derive(Clone, PartialEq, Drop, Serde, Introspect, Debug)]
@@ -29,12 +29,15 @@ pub impl EntityImpl of EntityTrait {
 
     fn create_player_entity(mut world: WorldStorage, address: ContractAddress) -> Player {
         let mut entity: Entity = world.read_model(0);
-        entity.inst = address.try_into().unwrap();
+        entity.inst = address.into();
         entity.is_entity = true;
         world.write_model(@entity);
-        let mut player = PlayerComponent::add_component(world, address.into());
+        let mut player: Player = Component::add_component(world, address.into());
         player.address = address;
         world.write_model(@player);
+        let mut inspectable: Inspectable = Component::add_component(world, address.into());
+        inspectable.description = array!["Looks like a visitor"];
+        world.write_model(@inspectable);
         player.say(world, "You feel light, and shiny, in the head");
         player
     }
@@ -45,7 +48,7 @@ pub impl EntityImpl of EntityTrait {
         names
     }
 
-    fn has_name(self: Entity, name: ByteArray) -> bool {
+    fn name_is(self: Entity, name: ByteArray) -> bool {
         if (self.name == name) {
             return true;
         }
@@ -99,19 +102,7 @@ pub impl EntityImpl of EntityTrait {
         children
     }
 
-    // @DEV: the cloning and writing in between is very dangerous, this might need a revision and at
-    // least good tests
-    fn set_parent(mut self: Entity, mut world: WorldStorage, parent: Entity) {
-        // If we have a current parent, remove from it first
-        if (self.clone().has_parent(world)) {
-            let current_parent = self.clone().get_parent(world).unwrap();
-            self.clone().remove_from_parent(world, current_parent);
-        }
-        // Add to new parent
-        self.clone().add_to_parent(world, parent);
-    }
-
-    fn remove_from_parent(mut self: Entity, mut world: WorldStorage, parent: Entity) {
+    fn remove_from_parent(mut self: Entity, mut world: WorldStorage, parent: Entity) -> Entity {
         let mut parent_relation: ParentToChildren = world.read_model(parent.inst);
         assert(parent_relation.is_parent, 'Parent is not a parent');
 
@@ -124,9 +115,15 @@ pub impl EntityImpl of EntityTrait {
         parent_relation.children = new_children;
         world.write_model(@parent_relation);
         world.write_model(@ChildToParent { inst: self.inst, is_child: false, parent: 0 });
+        self
     }
 
-    fn add_to_parent(mut self: Entity, mut world: WorldStorage, parent: Entity) {
+    // @DEV: the cloning and writing in between is very dangerous, this might need a revision and at
+    // least good tests
+    fn set_parent(mut self: Entity, mut world: WorldStorage, parent: Entity) -> Entity {
+        if (self.clone().has_parent(world)) {
+            self.clone().remove_from_parent(world, self.clone().get_parent(world).unwrap());
+        }
         let mut parent_relation: ParentToChildren = world.read_model(parent.inst);
         let mut is_child = false;
         for child_inst in parent_relation.children.clone() {
@@ -145,6 +142,11 @@ pub impl EntityImpl of EntityTrait {
                     @ChildToParent { inst: self.inst, is_child: true, parent: parent.inst },
                 );
         }
+        self
     }
+    // fn get_component<T>(self: Entity, world: WorldStorage) -> Option<T> {
+//     let component: T = Component::get_component(world, self.inst).unwrap();
+//     Option::Some(component)
+// }
 }
 

@@ -7,7 +7,7 @@ pub mod player;
 
 use dojo::{world::WorldStorage};
 use lore::lib::a_lexer::{Command};
-use lore::lib::entity::{Entity};
+use lore::lib::entity::{Entity, EntityImpl};
 
 pub trait Component<T> {
     fn entity(self: T, world: WorldStorage) -> Entity;
@@ -20,6 +20,30 @@ pub trait Component<T> {
     fn execute_command(self: T, world: WorldStorage, player: player::Player, command: Command);
     // fn store(self: T, world: WorldStorage);
 }
+
+
+// pub impl ComponentImpl<T, impl Entity> of ComponentTrait<T>{
+//     fn entity(self: T, world: WorldStorage) -> Entity {
+//         EntityImpl::get_entity(world, self.inst).unwrap()
+//     }
+
+//     fn has_component(self: T, world: WorldStorage, inst: felt252) -> bool {
+//         let component: T = world.read_model(inst);
+//         component.has_component(world, inst)
+//     }
+
+//     fn add_component(world: WorldStorage, inst: felt252) -> T {
+//         let mut component: T = world.read_model(inst);
+//         component.add_component(world, inst);
+//         world.write_model(@component);
+//         component
+//     }
+
+//     fn get_component(world: WorldStorage, inst: felt252) -> Option<T> {
+//         let component: T = world.read_model(inst);
+//         component.get_component(world, inst)
+//     }
+// }
 
 pub enum Components {
     Area,

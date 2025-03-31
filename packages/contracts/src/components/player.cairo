@@ -1,3 +1,4 @@
+use super::super::lib::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
 
 use starknet::ContractAddress;
@@ -44,6 +45,22 @@ pub impl PlayerImpl of PlayerTrait {
         storyLine.append(format!("> {}", text));
         world.write_model(@PlayerStory { inst: self.inst, story: storyLine });
     }
+
+    fn get_room(self: Player, world: WorldStorage) -> Entity {
+        let player_entity: Entity = EntityImpl::get_entity(world, self.inst).unwrap();
+        player_entity.get_parent(world).unwrap()
+    }
+
+    fn get_context(self: Player, world: WorldStorage) -> Array<Entity> {
+        let room = self.get_room(world);
+        let mut context: Array<Entity> = array![];
+        context.append(room.clone());
+        let children = room.clone().get_children(world);
+        for child in children {
+            context.append(child);
+        };
+        context
+    }
 }
 
 pub impl PlayerComponent of Component<Player> {
@@ -58,6 +75,7 @@ pub impl PlayerComponent of Component<Player> {
 
     fn add_component(mut world: WorldStorage, inst: felt252) -> Player {
         let mut player: Player = world.read_model(inst);
+        player.inst = inst;
         player.is_player = true;
         // player.action_map = array![("look", InspectableActions::read_description)];
         world.write_model(@player);
