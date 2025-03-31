@@ -144,7 +144,7 @@ pub impl EntityImpl of EntityTrait {
         }
         self
     }
-    // fn get_component<T>(self: Entity, world: WorldStorage) -> Option<T> {
+    // fn get_component<+Component<T>>(self: Entity, world: WorldStorage) -> Option<T> {
 //     let component: T = Component::get_component(world, self.inst).unwrap();
 //     Option::Some(component)
 // }

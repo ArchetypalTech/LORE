@@ -97,7 +97,7 @@ const setupController = async () => {
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
 						{
-							entrypoint: "listen",
+							entrypoint: "prompt",
 							description: `The terminal endpoint for ${worldName}`,
 						},
 					],
