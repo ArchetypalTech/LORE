@@ -52,6 +52,7 @@ pub struct Command {
 }
 
 pub mod lexer {
+    use super::super::entity::EntityTrait;
     use dojo::world::IWorldDispatcherTrait;
     use core::array::{ArrayTrait, ArrayImpl, Array};
     use super::{TokenType, Command, Token};
@@ -59,7 +60,7 @@ pub mod lexer {
     use dojo::{world::WorldStorage};
 
     use lore::{
-        components::{player::Player}, //
+        components::{player::{Player, PlayerImpl}}, //
         constants::errors::Error, //
         lib::{utils::ByteArrayTraitExt, dictionary::{get_dict_entry, initialize_dictionary}},
     };
@@ -126,8 +127,26 @@ pub mod lexer {
     }
 
     fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
-        // get player for their context (room objects, etc.)
-
+        // get player for their context (room + room objects + inventory)
+        let context = player.get_context(world);
+        let mut tokens = command.tokens.clone();
+        for i in 0..command.tokens.len() {
+            let mut token = command.tokens.at(i).clone();
+            for item in context.clone() {
+                let names = item.clone().get_names();
+                for name in names {
+                    if token.text == name {
+                        token.target = item.inst;
+                        token.token_type = TokenType::Noun;
+                        token.token_value = i.into();
+                        println!("MATCH: {} : {:?}", name, token);
+                        break;
+                    }
+                }
+            };
+            tokens.append(token);
+        };
+        // println!("tokens: {:?}", tokens);
         command
     }
 }
@@ -135,19 +154,22 @@ pub mod lexer {
 #[cfg(test)]
 mod tests {
     use super::lexer;
-    use lore::tests::helpers;
-    use lore::components::{player::{caller_as_player}};
-    use lore::lib::a_lexer::{TokenTypeFelt252};
+    use lore::{
+        tests::helpers, lib::{level_test::create_test_level, a_lexer::{TokenTypeFelt252}},
+        components::{player::{PlayerImpl, caller_as_player}},
+    };
 
     #[test]
     fn Lexer_test_prompt() {
         let (world, _, _, player_1, _) = helpers::setup_core();
-        let promptText: ByteArray = "how illegal is it to call the door a lexer";
+        let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
         println!("promptText: {:?}", promptText);
+        create_test_level(world);
         let player = caller_as_player(world, player_1);
-        let _command = lexer::parse(promptText, world, player);
-        // println!("command: {:?}", command);
-    // TODO: finish writing test
+        player.move_to_room(world, 2826);
+        let command = lexer::parse(promptText, world, player);
+        println!("command: {:?}", command);
+        // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
     // assert(command.tokens[1].token_value == prepositionToken, 'token value is 4');
     }

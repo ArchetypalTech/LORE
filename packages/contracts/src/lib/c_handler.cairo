@@ -116,7 +116,6 @@ fn system_command(
 
 #[cfg(test)]
 mod tests {
-    use lore::systems::prompt::{IPromptDispatcherTrait};
     use super::*;
     use lore::tests::helpers;
     use lore::components::player::{caller_as_player};
@@ -126,9 +125,10 @@ mod tests {
     #[test]
     fn CHandler_test_g_command_handling() {
         // Setup test environment
-        let (world, _, prompt, player_1, _) = helpers::setup_core();
-        prompt.prompt("g_command test");
+        let (world, _, _, player_1, _) = helpers::setup_core();
+        create_test_level(world);
         let player = caller_as_player(world, player_1);
+        player.move_to_room(world, 2826);
 
         // Create a test command with g_command system token
         let mut command = Command {
@@ -154,7 +154,6 @@ mod tests {
                 },
             ],
         };
-
         // Handle the command
         let result = handle_command(command.clone(), world, player.clone());
 
