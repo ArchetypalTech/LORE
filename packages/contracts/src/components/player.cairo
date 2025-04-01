@@ -4,6 +4,10 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{lib::{entity::{EntityImpl, Entity}, a_lexer::Command}, components::Component};
 
+pub struct EntityKey {
+    pub inst: felt252,
+}
+
 #[derive(Copy, Drop, Serde, Debug, Introspect)]
 #[dojo::model]
 pub struct Player {
@@ -27,35 +31,35 @@ pub struct PlayerStory {
 pub impl PlayerImpl of PlayerTrait {
     fn move_to_room(mut self: Player, mut world: WorldStorage, room_id: felt252) {
         self.location = room_id;
-        let ent: Entity = EntityImpl::get_entity(world, self.inst).unwrap();
-        ent.set_parent(world, EntityImpl::get_entity(world, room_id).unwrap());
+        let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
+        ent.set_parent(world, @EntityImpl::get_entity(@world, @room_id).unwrap());
         world.write_model(@self);
     }
 
-    fn say(mut self: Player, mut world: WorldStorage, text: ByteArray) {
-        let mut playerStory: PlayerStory = world.read_model(self.inst);
+    fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
+        let mut playerStory: PlayerStory = world.read_model(*self.inst);
         let mut storyLine = playerStory.story.clone();
         storyLine.append(text);
-        world.write_model(@PlayerStory { inst: self.inst, story: storyLine });
+        world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
     }
 
-    fn add_command_text(mut self: Player, mut world: WorldStorage, text: ByteArray) {
-        let mut playerStory: PlayerStory = world.read_model(self.inst);
+    fn add_command_text(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
+        let mut playerStory: PlayerStory = world.read_model(*self.inst);
         let mut storyLine = playerStory.story.clone();
         storyLine.append(format!("> {}", text));
-        world.write_model(@PlayerStory { inst: self.inst, story: storyLine });
+        world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
     }
 
-    fn get_room(self: Player, world: WorldStorage) -> Entity {
+    fn get_room(self: @Player, world: @WorldStorage) -> Entity {
         let player_entity: Entity = EntityImpl::get_entity(world, self.inst).unwrap();
         player_entity.get_parent(world).unwrap()
     }
 
-    fn get_context(self: Player, world: WorldStorage) -> Array<Entity> {
+    fn get_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
         let room = self.get_room(world);
         let mut context: Array<Entity> = array![];
         context.append(room.clone());
-        let children = room.clone().get_children(world);
+        let children = room.get_children(world);
         for child in children {
             context.append(child);
         };
@@ -64,11 +68,13 @@ pub impl PlayerImpl of PlayerTrait {
 }
 
 pub impl PlayerComponent of Component<Player> {
-    fn entity(self: Player, world: WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, self.inst).unwrap()
+    type ComponentType = Player;
+
+    fn inst(self: @Player) -> @felt252 {
+        self.inst
     }
 
-    fn has_component(self: Player, world: WorldStorage, inst: felt252) -> bool {
+    fn has_component(self: @Player, world: WorldStorage, inst: felt252) -> bool {
         let player: Player = world.read_model(inst);
         player.is_player
     }

@@ -33,7 +33,7 @@ fn object_room_one(mut world: WorldStorage, parent: Entity) {
     let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
     inspectable.description = array!["A swirling circle of colors, it doesn't seem solid"];
     world.write_model(@inspectable);
-    obj.set_parent(world, parent);
+    obj.set_parent(world, @parent);
 }
 
 fn room_two(mut world: WorldStorage) {

@@ -56,7 +56,7 @@ fn system_command(
         if (system_command == "g_move") {
             player.move_to_room(world, 2826);
             player.say(world, "+sys+forced move command");
-            let room = player.get_room(world);
+            let room = player.get_room(@world);
             let inspectable: Inspectable = Component::get_component(world, room.inst).unwrap();
             player.say(world, format!("+sys+{:?}", inspectable));
             return Result::Ok(command);
@@ -74,15 +74,15 @@ fn system_command(
         }
         if (system_command == "g_whereami") {
             player.say(world, "+sys+you are here:");
-            let room = player.get_room(world);
+            let room = player.get_room(@world);
             player.say(world, format!("+sys+{:?}", room));
-            player.say(world, format!("+sys+{:?}", player.entity(world).get_parent(world)));
+            player.say(world, format!("+sys+{:?}", player.entity(@world).get_parent(@world)));
             return Result::Ok(command);
         }
         if (system_command == "g_look") {
             player.say(world, "+sys+you see this:");
-            let context = player.get_context(world);
-            let room = player.get_room(world);
+            let context = player.get_context(@world);
+            let room = player.get_room(@world);
             player.say(world, format!("{}", room.name));
             for item in context {
                 let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
@@ -95,7 +95,7 @@ fn system_command(
         }
         return Result::Err(Error::ActionFailed);
     }
-    let context = player.get_context(world);
+    let context = player.get_context(@world);
     let mut executed: bool = false;
     for item in context {
         let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);

@@ -47,11 +47,17 @@ pub impl InspectableImpl of InspectableTrait {
 }
 
 pub impl InspectableComponent of Component<Inspectable> {
-    fn entity(self: Inspectable, world: WorldStorage) -> Entity {
+    type ComponentType = Inspectable;
+
+    fn inst(self: @Inspectable) -> @felt252 {
+        self.inst
+    }
+
+    fn entity(self: @Inspectable, world: @WorldStorage) -> Entity {
         EntityImpl::get_entity(world, self.inst).unwrap()
     }
 
-    fn has_component(self: Inspectable, world: WorldStorage, inst: felt252) -> bool {
+    fn has_component(self: @Inspectable, world: WorldStorage, inst: felt252) -> bool {
         let inspectable: Inspectable = world.read_model(inst);
         inspectable.is_inspectable
     }

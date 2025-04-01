@@ -62,27 +62,27 @@ pub impl EntityImpl of EntityTrait {
         has_name
     }
 
-    fn get_entity(world: WorldStorage, inst: felt252) -> Option<Entity> {
-        let entity: Entity = world.read_model(inst);
+    fn get_entity(world: @WorldStorage, inst: @felt252) -> Option<Entity> {
+        let entity: Entity = world.read_model(*inst);
         if (!entity.is_entity) {
             return Option::None;
         }
         Option::Some(entity)
     }
 
-    fn is_entity(world: WorldStorage, inst: felt252) -> bool {
-        let mut entity: Entity = world.read_model(inst);
+    fn is_entity(world: @WorldStorage, inst: @felt252) -> bool {
+        let mut entity: Entity = world.read_model(*inst);
         entity.is_entity
     }
 
 
-    fn has_parent(self: Entity, world: WorldStorage) -> bool {
-        let child_to_parent: ChildToParent = world.read_model(self.inst);
+    fn has_parent(self: @Entity, world: @WorldStorage) -> bool {
+        let child_to_parent: ChildToParent = world.read_model(*self.inst);
         return child_to_parent.is_child;
     }
 
-    fn get_parent(self: Entity, world: WorldStorage) -> Option<Entity> {
-        let child_to_parent: ChildToParent = world.read_model(self.inst);
+    fn get_parent(self: @Entity, world: @WorldStorage) -> Option<Entity> {
+        let child_to_parent: ChildToParent = world.read_model(*self.inst);
         if (child_to_parent.is_child) {
             let parent_entity: Entity = world.read_model(child_to_parent.parent);
             return Option::Some(parent_entity);
@@ -90,9 +90,9 @@ pub impl EntityImpl of EntityTrait {
         return Option::None;
     }
 
-    fn get_children(self: Entity, world: WorldStorage) -> Array<Entity> {
+    fn get_children(self: @Entity, world: @WorldStorage) -> Array<Entity> {
         let mut children: Array<Entity> = ArrayTrait::<Entity>::new();
-        let parent_to_children: ParentToChildren = world.read_model(self.inst);
+        let parent_to_children: ParentToChildren = world.read_model(*self.inst);
         if (parent_to_children.is_parent) {
             for childKey in parent_to_children.children {
                 let child: Entity = world.read_model(childKey);
@@ -102,47 +102,45 @@ pub impl EntityImpl of EntityTrait {
         children
     }
 
-    fn remove_from_parent(mut self: Entity, mut world: WorldStorage, parent: Entity) -> Entity {
-        let mut parent_relation: ParentToChildren = world.read_model(parent.inst);
+    fn remove_from_parent(self: @Entity, mut world: WorldStorage, parent: @Entity) {
+        let mut parent_relation: ParentToChildren = world.read_model(*parent.inst);
         assert(parent_relation.is_parent, 'Parent is not a parent');
 
         let mut new_children: Array<felt252> = ArrayTrait::<felt252>::new();
         for child_inst in parent_relation.children {
-            if (child_inst != self.inst) {
+            if (child_inst != *self.inst) {
                 new_children.append(child_inst);
             }
         };
         parent_relation.children = new_children;
         world.write_model(@parent_relation);
-        world.write_model(@ChildToParent { inst: self.inst, is_child: false, parent: 0 });
-        self
+        world.write_model(@ChildToParent { inst: *self.inst, is_child: false, parent: 0 });
     }
 
     // @DEV: the cloning and writing in between is very dangerous, this might need a revision and at
     // least good tests
-    fn set_parent(mut self: Entity, mut world: WorldStorage, parent: Entity) -> Entity {
-        if (self.clone().has_parent(world)) {
-            self.clone().remove_from_parent(world, self.clone().get_parent(world).unwrap());
+    fn set_parent(self: @Entity, mut world: WorldStorage, parent: @Entity) {
+        if (self.has_parent(@world)) {
+            self.remove_from_parent(world, @self.get_parent(@world).unwrap());
         }
-        let mut parent_relation: ParentToChildren = world.read_model(parent.inst);
+        let mut parent_relation: ParentToChildren = world.read_model(*parent.inst);
         let mut is_child = false;
         for child_inst in parent_relation.children.clone() {
-            if (child_inst == self.inst) {
+            if (child_inst == *self.inst) {
                 is_child = true;
                 break;
             }
         };
 
         if (!is_child) {
-            parent_relation.children.append(self.inst);
+            parent_relation.children.append(*self.inst);
             parent_relation.is_parent = true;
             world.write_model(@parent_relation);
             world
                 .write_model(
-                    @ChildToParent { inst: self.inst, is_child: true, parent: parent.inst },
+                    @ChildToParent { inst: *self.inst, is_child: true, parent: *parent.inst },
                 );
         }
-        self
     }
     // fn get_component<+Component<T>>(self: Entity, world: WorldStorage) -> Option<T> {
 //     let component: T = Component::get_component(world, self.inst).unwrap();

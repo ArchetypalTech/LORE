@@ -21,19 +21,18 @@ mod tests {
         world.write_model(@child.clone());
 
         // Set parent-child relationship
-        child.clone().set_parent(world, parent.clone());
+        child.set_parent(world, @parent);
 
         // Verify relationship
-        assert(child.clone().has_parent(world), 'Child should have parent');
+        assert(child.has_parent(@world), 'Child should have parent');
         assert(
-            child.clone().get_parent(world).unwrap().inst == parent.inst,
-            'C parent should match parent',
+            child.get_parent(@world).unwrap().inst == parent.inst, 'C parent should match parent',
         );
 
-        let children = parent.clone().get_children(world);
+        let children = parent.get_children(@world);
         assert(children.len() == 1, 'Parent should have one child');
-        assert(child.clone().has_parent(world), 'Child should have parent');
-        assert(child.clone().get_parent(world).unwrap().inst == parent.inst, 'Parent mismatch');
+        assert(child.has_parent(@world), 'Child should have parent');
+        assert(child.get_parent(@world).unwrap().inst == parent.inst, 'Parent mismatch');
     }
 
     #[test]
@@ -50,15 +49,15 @@ mod tests {
         world.write_model(@child);
 
         // Set and verify initial relationship
-        child.clone().set_parent(world, parent.clone());
-        assert(child.clone().has_parent(world), 'Child should have parent');
+        child.clone().set_parent(world, @parent);
+        assert(child.has_parent(@world), 'Child should have parent');
 
         // Remove relationship
-        child.clone().remove_from_parent(world, parent.clone());
+        child.clone().remove_from_parent(world, @parent);
 
         // Verify removal
-        assert(!child.has_parent(world), 'Child should not have parent');
-        let children = parent.get_children(world);
+        assert(!child.has_parent(@world), 'Child should not have parent');
+        let children = parent.get_children(@world);
         assert(children.len() == 0, 'Parent should have no children');
     }
 
@@ -80,28 +79,28 @@ mod tests {
         world.write_model(@child.clone());
 
         // Set initial parent
-        child.clone().set_parent(world, parent1.clone());
+        child.set_parent(world, @parent1);
         assert(
-            child.clone().get_parent(world).unwrap().inst == parent1.inst,
+            child.get_parent(@world).unwrap().inst == parent1.inst,
             'Child should have first parent',
         );
 
         // Reassign to second parent
-        child.clone().set_parent(world, parent2.clone());
+        child.set_parent(world, @parent2);
         assert(
-            child.clone().get_parent(world).unwrap().inst == parent2.inst,
+            child.get_parent(@world).unwrap().inst == parent2.inst,
             'Child should have second parent',
         );
 
         // Verify old parent has no children
-        let parent1_children = parent1.get_children(world);
+        let parent1_children = parent1.get_children(@world);
         assert(parent1_children.len() == 0, 'First parent sh no children');
 
         // Verify new parent has the child
-        let parent2_children = parent2.clone().get_children(world);
+        let parent2_children = parent2.get_children(@world);
         assert(parent2_children.len() == 1, 'Second parent sh one child');
-        assert(child.clone().has_parent(world), 'Child should have parent');
-        assert(child.clone().get_parent(world).unwrap().inst == parent2.inst, 'Parent mismatch');
+        assert(child.has_parent(@world), 'Child should have parent');
+        assert(child.get_parent(@world).unwrap().inst == parent2.inst, 'Parent mismatch');
     }
 
     #[test]
@@ -111,30 +110,31 @@ mod tests {
         // Create parent and multiple children
         let mut parent: Entity = EntityImpl::create_entity(world);
         parent.name = "parent";
-        world.write_model(@parent.clone());
+        world.write_model(@parent);
 
         let mut child1 = EntityImpl::create_entity(world);
         child1.name = "child1";
-        world.write_model(@child1.clone());
+        world.write_model(@child1);
 
         let mut child2 = EntityImpl::create_entity(world);
         child2.name = "child2";
-        world.write_model(@child2.clone());
+        world.write_model(@child2);
 
         // Set relationships
-        child1.clone().set_parent(world, parent.clone());
-        child2.clone().set_parent(world, parent.clone());
+        child1.set_parent(world, @parent);
+        child2.set_parent(world, @parent);
 
         // Verify parent has both children
-        let children = parent.clone().get_children(world);
+        let children = parent.get_children(@world);
         assert(children.len() == 2, 'Parent should have two children');
 
         // Verify each child has correct parent
         assert(
-            child1.get_parent(world).unwrap().inst == parent.inst, 'First child sh correct parent',
+            child1.get_parent(@world).unwrap().inst == parent.inst, 'First child sh correct parent',
         );
         assert(
-            child2.get_parent(world).unwrap().inst == parent.inst, 'Second child sh correct parent',
+            child2.get_parent(@world).unwrap().inst == parent.inst,
+            'Second child sh correct parent',
         );
     }
 }

@@ -81,6 +81,7 @@ pub mod lexer {
             tokens,
         };
         command = match_player_context(world, player, command);
+        command = post_process_command(world, player, command);
         Result::Ok(command)
     }
 
@@ -117,18 +118,9 @@ pub mod lexer {
         tokens
     }
 
-    fn post_process_tokens(
-        world: WorldStorage, player: Player, mut tokens: Array<Token>,
-    ) -> Array<Token> {
-        // here we do fancy stuff
-        // when there is a preposition, we can
-
-        tokens
-    }
-
     fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
         // get player for their context (room + room objects + inventory)
-        let context = player.get_context(world);
+        let context = player.get_context(@world);
         let mut tokens = command.tokens.clone();
         for i in 0..command.tokens.len() {
             let mut token = command.tokens.at(i).clone();
@@ -147,6 +139,14 @@ pub mod lexer {
             tokens.append(token);
         };
         // println!("tokens: {:?}", tokens);
+        command
+    }
+
+    fn post_process_command(world: WorldStorage, player: Player, mut command: Command) -> Command {
+        // here we do fancy stuff
+        // when there is a preposition, can we assume the next token is a noun? we know more about
+        // the context now and what objects we recognize. Do we need to figure out adjectives.
+
         command
     }
 }
