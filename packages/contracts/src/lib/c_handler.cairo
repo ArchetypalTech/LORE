@@ -1,23 +1,56 @@
+use super::a_lexer::CommandTrait;
 use super::super::components::player::PlayerTrait;
 use dojo::{world::WorldStorage};
 
 use lore::{ //
     lib::{ //
         entity::{EntityImpl}, //
-        a_lexer::{Command, TokenType}, utils::ByteArrayTraitExt,
-        dictionary::{init_dictionary, add_to_dictionary}, level_test::{create_test_level} //
+        a_lexer::{Command, CommandImpl, TokenType},
+        utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
+        level_test::{create_test_level} //
     }, //
     constants::errors::Error, //
     components::{
-        player::{Player, PlayerImpl}, Component, inspectable::{Inspectable, InspectableImpl},
+        player::{Player, PlayerImpl}, area::{Area, AreaComponent}, Component,
+        inspectable::{Inspectable, InspectableImpl, InspectableComponent},
     } //
 };
 
 pub fn handle_command(
     mut command: Command, world: WorldStorage, player: Player,
 ) -> Result<Command, Error> {
-    if system_command(command.clone(), world, player).is_err() {
-        return Result::Err(Error::ActionFailed);
+    let sys_command = command.is_system_command();
+    if sys_command {
+        return system_command(command.clone(), world, player);
+    }
+    let context = player.get_context(@world);
+    let mut executed: bool = false;
+    for item in context {
+        match InspectableComponent::get_component(world, item.inst) {
+            Option::Some(inspectable) => {
+                if inspectable.clone().can_use_command(world, @player, @command) {
+                    if inspectable.clone().execute_command(world, @player, @command).is_ok() {
+                        executed = true;
+                        break;
+                    }
+                }
+            },
+            Option::None => {},
+        };
+        match AreaComponent::get_component(world, item.inst) {
+            Option::Some(area) => {
+                if area.can_use_command(world, @player, @command) {
+                    if area.execute_command(world, @player, @command).is_ok() {
+                        executed = true;
+                        break;
+                    }
+                }
+            },
+            Option::None => {},
+        }
+    };
+    if executed {
+        return Result::Ok(command);
     }
     Result::Ok(command)
 }
@@ -30,6 +63,7 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
 }
 
@@ -46,7 +80,7 @@ fn system_command(
     if system_command != "" {
         println!("not zero: {:?}", system_command);
         if (system_command == "g_error") {
-            return Result::Err(Error::ActionFailed);
+            return Result::Err(Error::TestError);
         }
         if (system_command == "g_command") {
             println!("g_command: {:?}", system_command);
@@ -56,8 +90,12 @@ fn system_command(
         if (system_command == "g_move") {
             player.move_to_room(world, 2826);
             player.say(world, "+sys+forced move command");
-            let room = player.get_room(world);
-            let inspectable: Inspectable = Component::get_component(world, room.inst).unwrap();
+            let room = player.get_room(@world);
+            if room.is_none() {
+                return Result::Err(Error::ActionFailed);
+            }
+            let inspectable: Inspectable = Component::get_component(world, room.unwrap().inst)
+                .unwrap();
             player.say(world, format!("+sys+{:?}", inspectable));
             return Result::Ok(command);
         }
@@ -74,16 +112,19 @@ fn system_command(
         }
         if (system_command == "g_whereami") {
             player.say(world, "+sys+you are here:");
-            let room = player.get_room(world);
+            let room = player.get_room(@world);
             player.say(world, format!("+sys+{:?}", room));
-            player.say(world, format!("+sys+{:?}", player.entity(world).get_parent(world)));
+            player.say(world, format!("+sys+{:?}", player.entity(@world).get_parent(@world)));
             return Result::Ok(command);
         }
         if (system_command == "g_look") {
             player.say(world, "+sys+you see this:");
-            let context = player.get_context(world);
-            let room = player.get_room(world);
-            player.say(world, format!("{}", room.name));
+            let context = player.get_context(@world);
+            let room = player.get_room(@world);
+            if room.is_none() {
+                return Result::Err(Error::ActionFailed);
+            }
+            player.say(world, format!("{}", room.unwrap().name));
             for item in context {
                 let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
                 if inspectable.is_some() {
@@ -93,14 +134,13 @@ fn system_command(
             };
             return Result::Ok(command);
         }
-        return Result::Err(Error::ActionFailed);
+        return Result::Err(Error::NotSystemAction);
     }
-    Result::Ok(command)
+    Result::Err(Error::NotSystemAction)
 }
 
 #[cfg(test)]
 mod tests {
-    use lore::systems::prompt::{IPromptDispatcherTrait};
     use super::*;
     use lore::tests::helpers;
     use lore::components::player::{caller_as_player};
@@ -110,9 +150,10 @@ mod tests {
     #[test]
     fn CHandler_test_g_command_handling() {
         // Setup test environment
-        let (world, _, prompt, player_1, _) = helpers::setup_core();
-        prompt.prompt("g_command test");
+        let (world, _, _, player_1, _) = helpers::setup_core();
+        create_test_level(world);
         let player = caller_as_player(world, player_1);
+        player.move_to_room(world, 2826);
 
         // Create a test command with g_command system token
         let mut command = Command {
@@ -138,7 +179,6 @@ mod tests {
                 },
             ],
         };
-
         // Handle the command
         let result = handle_command(command.clone(), world, player.clone());
 

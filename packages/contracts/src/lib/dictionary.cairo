@@ -79,6 +79,9 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "u", TokenType::Direction, 5).unwrap();
     add_to_dictionary(world, "down", TokenType::Direction, 6).unwrap();
     add_to_dictionary(world, "d", TokenType::Direction, 6).unwrap();
+    add_to_dictionary(world, "around", TokenType::Direction, 7).unwrap();
+    add_to_dictionary(world, "ahead", TokenType::Direction, 8).unwrap();
+    add_to_dictionary(world, "behind", TokenType::Direction, 8).unwrap();
     // adjectives
     add_to_dictionary(world, "good", TokenType::Adjective, 1).unwrap();
     add_to_dictionary(world, "bad", TokenType::Adjective, 2).unwrap();

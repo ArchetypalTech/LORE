@@ -36,9 +36,7 @@ pub mod prompt {
                 Result::Ok(result) => {
                     println!("result: {:?}", result);
                     let res = handle_command(result, world, player);
-                    if res.is_ok() {
-                        player.say(world, random_text(world, random_intro()));
-                    } else {
+                    if !res.is_ok() {
                         player.say(world, random_text(world, random_error()));
                     }
                 },
