@@ -28,7 +28,7 @@ export default function Terminal() {
 		}
 		// Set timeout for connection status
 		const timeout = setTimeout(() => {
-			if (status !== "inputEnabled") {
+			if (status !== "inputEnabled" && status !== "initialized") {
 				DojoStore().setStatus({
 					status: "error",
 					error: "TIMEOUT",
@@ -112,7 +112,7 @@ export default function Terminal() {
 	};
 
 	return (
-		<div className="flex items-center justify-center w-full h-full crt buzzing font-berkeley">
+		<div className="flex items-center justify-center w-full h-full font-berkeley">
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}

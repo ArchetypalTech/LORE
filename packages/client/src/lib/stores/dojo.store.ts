@@ -81,7 +81,6 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	set({ lastProcessedText: trimmedNewText });
 	set({ playerStory });
 
-	console.log(isNewText);
 	for (const line of lines) {
 		const sys = line.startsWith("+sys+");
 		const formatted = line.replaceAll("+sys+", "");
@@ -111,7 +110,7 @@ const onPlayerStory = (playerStory: Partial<PlayerStory>) => {
 const onReponseData = (
 	responseData: ParsedEntity<SchemaType>["models"]["lore"],
 ) => {
-	console.log("[DOJO] onReponseData", responseData);
+	// console.log("[DOJO] onReponseData", responseData);
 	if (responseData.PlayerStory) {
 		onPlayerStory(responseData.PlayerStory);
 	}
