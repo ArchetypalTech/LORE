@@ -1,18 +1,20 @@
 use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
-use lore::lib::{random, a_lexer::Command};
-use lore::lib::entity::{Entity, EntityImpl};
+use lore::{
+    constants::errors::Error,
+    lib::{entity::{Entity, EntityImpl}, random, a_lexer::{Command, Token}},
+};
 
-use super::{Component, player::Player};
+use super::{Component, player::{Player, PlayerImpl}};
 
-#[derive(Clone, Drop, Serde, Introspect, Debug)]
+#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
 pub enum InspectableActions {
-    set_visible,
-    read_description,
+    SetVisible,
+    ReadDescription,
 }
 
 // Inspectable component
-#[derive(Clone, Drop, Serde, Introspect, Debug)]
+#[derive(Clone, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct Inspectable {
     #[key]
@@ -21,30 +23,20 @@ pub struct Inspectable {
     // properties
     pub is_visible: bool,
     pub description: Array<ByteArray>,
-    // pub action_map: Array<(ByteArray, InspectableActions)>,
-// pub temp: InspectableActions,
+    pub action_map: Array<ActionMapInspectable>,
 }
 
-// #[derive(Clone, Drop, Serde, Introspect, Debug)]
-// #[dojo::model]
-// pub struct ActionMap {
-//     #[key]
-//     pub action: ByteArray,
-//     #[key]
-//     pub inst: felt252,
-//     pub action_fn: felt252,
-// }
+#[derive(Clone, Drop, Serde, Introspect, Debug)]
+pub struct ActionMapInspectable {
+    pub action: ByteArray,
+    pub inst: felt252,
+    pub action_fn: InspectableActions,
+}
 
 #[generate_trait]
 pub impl InspectableImpl of InspectableTrait {
     fn look_at(self: Inspectable, world: WorldStorage) -> ByteArray {
         self.get_random_description(world)
-    }
-
-    fn set_visible(self: Inspectable, mut world: WorldStorage, visible: bool) {
-        let mut model: Inspectable = world.read_model(self);
-        model.is_visible = visible;
-        world.write_model(@model);
     }
 
     fn get_random_description(self: Inspectable, world: WorldStorage) -> ByteArray {
@@ -57,11 +49,17 @@ pub impl InspectableImpl of InspectableTrait {
 }
 
 pub impl InspectableComponent of Component<Inspectable> {
-    fn entity(self: Inspectable, world: WorldStorage) -> Entity {
+    type ComponentType = Inspectable;
+
+    fn inst(self: @Inspectable) -> @felt252 {
+        self.inst
+    }
+
+    fn entity(self: @Inspectable, world: @WorldStorage) -> Entity {
         EntityImpl::get_entity(world, self.inst).unwrap()
     }
 
-    fn has_component(self: Inspectable, world: WorldStorage, inst: felt252) -> bool {
+    fn has_component(self: @Inspectable, world: WorldStorage, inst: felt252) -> bool {
         let inspectable: Inspectable = world.read_model(inst);
         inspectable.is_inspectable
     }
@@ -70,8 +68,17 @@ pub impl InspectableComponent of Component<Inspectable> {
         let mut inspectable: Inspectable = world.read_model(inst);
         inspectable.inst = inst;
         inspectable.is_inspectable = true;
-        // inspectable.action_map = array![("look", InspectableActions::read_description)];
-        world.write_model(@inspectable);
+        inspectable
+            .action_map =
+                array![
+                    ActionMapInspectable {
+                        action: "look", inst: 0, action_fn: InspectableActions::ReadDescription,
+                    },
+                    ActionMapInspectable {
+                        action: "stare", inst: 0, action_fn: InspectableActions::ReadDescription,
+                    },
+                ];
+        inspectable.store(world);
         inspectable
     }
 
@@ -85,15 +92,51 @@ pub impl InspectableComponent of Component<Inspectable> {
     }
 
     fn can_use_command(
-        self: Inspectable, world: WorldStorage, player: Player, command: Command,
+        self: @Inspectable, world: WorldStorage, player: @Player, command: @Command,
     ) -> bool {
-        true
+        get_action_token(self.clone(), world, command.clone()).is_some()
     }
 
-    fn execute_command(self: Inspectable, world: WorldStorage, player: Player, command: Command) {
+    fn execute_command(
+        mut self: Inspectable, mut world: WorldStorage, player: @Player, command: @Command,
+    ) -> Result<(), Error> {
         println!("Inspectable execute_command");
+        let (action, _token) = get_action_token(self.clone(), world, command.clone()).unwrap();
+        match action.action_fn {
+            InspectableActions::SetVisible => {
+                self.is_visible = !self.is_visible;
+                world.write_model(@self);
+                return Result::Ok(());
+            },
+            InspectableActions::ReadDescription => {
+                player.say(world, self.get_random_description(world));
+                return Result::Ok(());
+            },
+        }
+        Result::Err(Error::ActionFailed)
+    }
+
+    fn store(self: @Inspectable, mut world: WorldStorage) {
+        world.write_model(self);
     }
 }
+
+// @dev: wip how to access tokens
+fn get_action_token(
+    self: Inspectable, world: WorldStorage, command: Command,
+) -> Option<(ActionMapInspectable, Token)> {
+    let mut action_token: Option<(ActionMapInspectable, Token)> = Option::None;
+    for token in command.tokens {
+        for action in self.clone().action_map {
+            if (token.text == action.action) {
+                action_token = Option::Some((action, token));
+                break;
+            }
+        }
+    };
+    action_token
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -117,12 +160,14 @@ mod tests {
                 "what's up with the rock",
                 "let's talk about the rock",
             ],
-            // action_key: array![],
-        // action_value: array![],
-        // action_map: array![ // ("show", InspectableActions::set_visible),
-        // ("look", InspectableActions::read_description),
-        // ],
-        // temp: InspectableActions::set_visible,
+            action_map: array![
+                ActionMapInspectable {
+                    action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
+                },
+                ActionMapInspectable {
+                    action: "look", inst: 0, action_fn: InspectableActions::ReadDescription,
+                },
+            ],
         };
         world.write_model(@prefab);
         (prefab, world, player_1, player_2)

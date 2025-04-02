@@ -1,8 +1,7 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
-use lore::constants::constants::Direction;
+use lore::{constants::{errors::Error, constants::Direction}};
 use lore::components::{Component, player::Player};
-use lore::lib::a_lexer::{Command};
-use lore::lib::entity::{Entity, EntityImpl};
+use lore::lib::{entity::{Entity, EntityImpl}, a_lexer::{Command}};
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
 #[dojo::model]
@@ -14,12 +13,14 @@ pub struct Area {
     pub direction: Direction,
 }
 
-pub impl InspectableComponent of Component<Area> {
-    fn entity(self: Area, world: WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, self.inst).unwrap()
+pub impl AreaComponent of Component<Area> {
+    type ComponentType = Area;
+
+    fn inst(self: @Area) -> @felt252 {
+        self.inst
     }
 
-    fn has_component(self: Area, world: WorldStorage, inst: felt252) -> bool {
+    fn has_component(self: @Area, world: WorldStorage, inst: felt252) -> bool {
         let area: Area = world.read_model(inst);
         area.is_area
     }
@@ -42,11 +43,20 @@ pub impl InspectableComponent of Component<Area> {
         Option::Some(area)
     }
 
-    fn can_use_command(self: Area, world: WorldStorage, player: Player, command: Command) -> bool {
+    fn can_use_command(
+        self: @Area, world: WorldStorage, player: @Player, command: @Command,
+    ) -> bool {
         true
     }
 
-    fn execute_command(self: Area, world: WorldStorage, player: Player, command: Command) {
+    fn execute_command(
+        self: Area, world: WorldStorage, player: @Player, command: @Command,
+    ) -> Result<(), Error> {
         println!("Area execute_command");
+        Result::Err(Error::Unimplemented)
+    }
+
+    fn store(self: @Area, mut world: WorldStorage) {
+        world.write_model(self);
     }
 }

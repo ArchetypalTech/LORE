@@ -1,13 +1,14 @@
+use super::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::components::{Component, inspectable::{Inspectable, InspectableComponent}, area::{Area}};
 use lore::lib::{entity::Entity};
 
 pub fn create_test_level(mut world: WorldStorage) {
-    room_one(world);
+    room_start(world);
     room_two(world);
 }
 
-fn room_one(mut world: WorldStorage) {
+fn room_start(mut world: WorldStorage) {
     let obj = Entity {
         inst: 2826, is_entity: true, name: "The Bang", alt_names: array!["pontoon", "boat"],
     };
@@ -21,6 +22,18 @@ fn room_one(mut world: WorldStorage) {
             ];
     world.write_model(@inspectable);
     let _: Area = Component::add_component(world, obj.inst);
+    object_room_one(world, obj);
+}
+
+fn object_room_one(mut world: WorldStorage, parent: Entity) {
+    let obj = Entity {
+        inst: 9999, is_entity: true, name: "a portal", alt_names: array!["portal", "door"],
+    };
+    world.write_model(@obj);
+    let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
+    inspectable.description = array!["A swirling circle of colors, it doesn't seem solid"];
+    world.write_model(@inspectable);
+    obj.set_parent(world, @parent);
 }
 
 fn room_two(mut world: WorldStorage) {
