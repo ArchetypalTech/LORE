@@ -63,6 +63,10 @@ pub impl CommandImpl of CommandTrait {
         };
         is_system_command
     }
+    //get_targets() -> Array<Entity>
+// let list = command.get_targets();
+// let amount = list.len();
+
 }
 
 pub mod lexer {
@@ -139,7 +143,7 @@ pub mod lexer {
         for i in 0..command.tokens.len() {
             let mut token = command.tokens.at(i).clone();
             for item in context.clone() {
-                let names = item.clone().get_names();
+                let names = item.get_names();
                 for name in names {
                     if token.text == name {
                         token.target = item.inst;

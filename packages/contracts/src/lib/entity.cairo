@@ -42,9 +42,9 @@ pub impl EntityImpl of EntityTrait {
         player
     }
 
-    fn get_names(self: Entity) -> Array<ByteArray> {
+    fn get_names(self: @Entity) -> Array<ByteArray> {
         let mut names = self.alt_names.clone();
-        names.append(self.name);
+        names.append(self.clone().name);
         names
     }
 

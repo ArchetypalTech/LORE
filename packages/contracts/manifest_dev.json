@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x1cca543728647734fcf1ac72afe5882d0160ea0513f4ebe6c0e69216361aec6",
-      "class_hash": "0x34040dd258c475add6d58bf99bc88c912752a3d21839550532b28dd341e8645",
+      "address": "0x6a04ba20cdae0ebcbb776848d90286e9b2ad1f46c9e517d2b46c04ff65077f7",
+      "class_hash": "0x3bdb7fd1b4e7d18afe04fb35fd8aaca0e9e9d914c603b54cb816328a6a12362",
       "abi": [
         {
           "type": "impl",
@@ -1411,11 +1411,11 @@
           "name": "lore::components::inspectable::InspectableActions",
           "variants": [
             {
-              "name": "set_visible",
+              "name": "SetVisible",
               "type": "()"
             },
             {
-              "name": "read_description",
+              "name": "ReadDescription",
               "type": "()"
             }
           ]
@@ -1645,8 +1645,8 @@
       ]
     },
     {
-      "address": "0x4f9ab0ef5a889aec26fcd0cc44e57a07f4c6969c7f6b9cb852d94e1c2b1b90a",
-      "class_hash": "0x2154bc276bc71006eece32370d13a778fd0d8b2213b1c634c754278e96ae290",
+      "address": "0x21106286ce374f3bf192825a9095b0331720134e76852b7c2de9d04576e452a",
+      "class_hash": "0x3dea6cc3118c122830dc343880a7b1510c4ad5dd6651d3f1bac6f60c2cee8e7",
       "abi": [
         {
           "type": "impl",
@@ -1885,7 +1885,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x5b38678e6f5b4429ad1ccb1804ae6798bafa8bee26e379c6f87491789044cc1",
+      "class_hash": "0xaaf50e34291a96593ef54cf8851dd67714c316ca8a07864acd0cf81851ea1d",
       "tag": "lore-Inspectable",
       "selector": "0x761c792e623173857f21316868bd06f19050cfc26238d33476231e335cf59c9"
     },

@@ -28,15 +28,15 @@ pub fn handle_command(
     for item in context {
         match InspectableComponent::get_component(world, item.inst) {
             Option::Some(inspectable) => {
-                if inspectable.can_use_command(world, @player, @command) {
-                    if inspectable.execute_command(world, @player, @command).is_ok() {
+                if inspectable.clone().can_use_command(world, @player, @command) {
+                    if inspectable.clone().execute_command(world, @player, @command).is_ok() {
                         executed = true;
                         break;
                     }
                 }
             },
             Option::None => {},
-        }
+        };
         match AreaComponent::get_component(world, item.inst) {
             Option::Some(area) => {
                 if area.can_use_command(world, @player, @command) {
@@ -64,20 +64,7 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
-}
-
-fn get_sys_command(mut command: @Command) -> Option<ByteArray> {
-    let mut system_command: ByteArray = "";
-    for token in command.clone().tokens {
-        if token.token_type == TokenType::System {
-            system_command = token.text;
-            break;
-        }
-    };
-    if system_command == "" {
-        return Option::None;
-    }
-    Option::Some(system_command)
+    add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
 }
 
 fn system_command(

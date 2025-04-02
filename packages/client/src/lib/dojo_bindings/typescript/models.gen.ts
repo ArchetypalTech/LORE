@@ -180,8 +180,8 @@ export interface ParentToChildrenValue {
 
 // Type definition for `lore::components::inspectable::InspectableActions` enum
 export const inspectableActions = [
-	'set_visible',
-	'read_description',
+	'SetVisible',
+	'ReadDescription',
 ] as const;
 export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
 export type InspectableActionsEnum = CairoCustomEnum;
@@ -318,8 +318,8 @@ export const schema: SchemaType = {
 		action: "",
 			inst: 0,
 		action_fn: new CairoCustomEnum({ 
-					set_visible: "",
-				read_description: undefined, }),
+					SetVisible: "",
+				ReadDescription: undefined, }),
 		},
 		Inspectable: {
 			inst: 0,
@@ -327,16 +327,16 @@ export const schema: SchemaType = {
 			is_visible: false,
 			description: [""],
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					set_visible: "",
-				read_description: undefined, }), }],
+					SetVisible: "",
+				ReadDescription: undefined, }), }],
 		},
 		InspectableValue: {
 			is_inspectable: false,
 			is_visible: false,
 			description: [""],
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					set_visible: "",
-				read_description: undefined, }), }],
+					SetVisible: "",
+				ReadDescription: undefined, }), }],
 		},
 		InventoryItem: {
 			inst: 0,

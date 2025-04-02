@@ -9,8 +9,8 @@ use super::{Component, player::{Player, PlayerImpl}};
 
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
 pub enum InspectableActions {
-    set_visible,
-    read_description,
+    SetVisible,
+    ReadDescription,
 }
 
 // Inspectable component
@@ -72,7 +72,10 @@ pub impl InspectableComponent of Component<Inspectable> {
             .action_map =
                 array![
                     ActionMapInspectable {
-                        action: "look", inst: 0, action_fn: InspectableActions::read_description,
+                        action: "look", inst: 0, action_fn: InspectableActions::ReadDescription,
+                    },
+                    ActionMapInspectable {
+                        action: "stare", inst: 0, action_fn: InspectableActions::ReadDescription,
                     },
                 ];
         inspectable.store(world);
@@ -100,12 +103,12 @@ pub impl InspectableComponent of Component<Inspectable> {
         println!("Inspectable execute_command");
         let (action, _token) = get_action_token(self.clone(), world, command.clone()).unwrap();
         match action.action_fn {
-            InspectableActions::set_visible => {
+            InspectableActions::SetVisible => {
                 self.is_visible = !self.is_visible;
                 world.write_model(@self);
                 return Result::Ok(());
             },
-            InspectableActions::read_description => {
+            InspectableActions::ReadDescription => {
                 player.say(world, self.get_random_description(world));
                 return Result::Ok(());
             },
@@ -159,10 +162,10 @@ mod tests {
             ],
             action_map: array![
                 ActionMapInspectable {
-                    action: "show", inst: 0, action_fn: InspectableActions::set_visible,
+                    action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
                 },
                 ActionMapInspectable {
-                    action: "look", inst: 0, action_fn: InspectableActions::read_description,
+                    action: "look", inst: 0, action_fn: InspectableActions::ReadDescription,
                 },
             ],
         };
