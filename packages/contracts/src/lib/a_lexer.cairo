@@ -37,7 +37,7 @@ pub struct Token {
     pub text: ByteArray, // The token text as ByteArray
     pub token_type: TokenType, // Type of token (using TokenType enum as u8)
     pub token_value: felt252, // Value of token (ie directionId, obj inst)
-    pub target: felt252 // Target object for token
+    pub target: felt252 // Target object INST for token
 }
 
 #[derive(Clone, Drop, Serde, Debug)]
@@ -49,6 +49,20 @@ pub struct Command {
     pub token_count: u8, // Number of tokens in the command
     pub action_type: u8, // Type of action (using ActionType enum as u8)
     pub tokens: Array<Token> // Array of tokens in the command
+}
+
+#[generate_trait]
+pub impl CommandImpl of CommandTrait {
+    fn is_system_command(self: @Command) -> bool {
+        let mut is_system_command = false;
+        for token in self.clone().tokens {
+            if token.token_type == TokenType::System {
+                is_system_command = true;
+                break;
+            }
+        };
+        is_system_command
+    }
 }
 
 pub mod lexer {

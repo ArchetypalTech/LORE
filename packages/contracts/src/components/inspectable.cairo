@@ -1,7 +1,9 @@
 use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
-use lore::lib::{random, a_lexer::{Command, Token}};
-use lore::lib::entity::{Entity, EntityImpl};
+use lore::{
+    constants::errors::Error,
+    lib::{entity::{Entity, EntityImpl}, random, a_lexer::{Command, Token}},
+};
 
 use super::{Component, player::{Player, PlayerImpl}};
 
@@ -12,7 +14,7 @@ pub enum InspectableActions {
 }
 
 // Inspectable component
-#[derive(Clone, Drop, Serde, Introspect, Debug)]
+#[derive(Clone, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct Inspectable {
     #[key]
@@ -73,7 +75,7 @@ pub impl InspectableComponent of Component<Inspectable> {
                         action: "look", inst: 0, action_fn: InspectableActions::read_description,
                     },
                 ];
-        world.write_model(@inspectable);
+        inspectable.store(world);
         inspectable
     }
 
@@ -87,29 +89,36 @@ pub impl InspectableComponent of Component<Inspectable> {
     }
 
     fn can_use_command(
-        self: Inspectable, world: WorldStorage, player: Player, command: Command,
+        self: @Inspectable, world: WorldStorage, player: @Player, command: @Command,
     ) -> bool {
-        get_action_token(self, world, command).is_some()
+        get_action_token(self.clone(), world, command.clone()).is_some()
     }
 
     fn execute_command(
-        mut self: Inspectable, mut world: WorldStorage, player: Player, command: Command,
-    ) {
+        mut self: Inspectable, mut world: WorldStorage, player: @Player, command: @Command,
+    ) -> Result<(), Error> {
         println!("Inspectable execute_command");
-        let (action, _token) = get_action_token(self.clone(), world, command).unwrap();
+        let (action, _token) = get_action_token(self.clone(), world, command.clone()).unwrap();
         match action.action_fn {
             InspectableActions::set_visible => {
                 self.is_visible = !self.is_visible;
                 world.write_model(@self);
+                return Result::Ok(());
             },
             InspectableActions::read_description => {
                 player.say(world, self.get_random_description(world));
+                return Result::Ok(());
             },
         }
+        Result::Err(Error::ActionFailed)
+    }
+
+    fn store(self: @Inspectable, mut world: WorldStorage) {
+        world.write_model(self);
     }
 }
 
-
+// @dev: wip how to access tokens
 fn get_action_token(
     self: Inspectable, world: WorldStorage, command: Command,
 ) -> Option<(ActionMapInspectable, Token)> {

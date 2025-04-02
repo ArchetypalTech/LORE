@@ -1,11 +1,14 @@
 #[derive(Copy, Drop, Debug)]
 pub enum Error {
     // Utils
-    WordTooLong,
+    Unimplemented,
     // Lexer
+    WordTooLong,
     LexerFailed,
-    // Actions
+    // Commands
+    TestError,
     ActionFailed,
+    NotSystemAction,
     // World
     EntityNotFound,
     // Dictionary

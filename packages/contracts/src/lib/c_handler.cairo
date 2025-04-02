@@ -1,23 +1,56 @@
+use super::a_lexer::CommandTrait;
 use super::super::components::player::PlayerTrait;
 use dojo::{world::WorldStorage};
 
 use lore::{ //
     lib::{ //
         entity::{EntityImpl}, //
-        a_lexer::{Command, TokenType}, utils::ByteArrayTraitExt,
-        dictionary::{init_dictionary, add_to_dictionary}, level_test::{create_test_level} //
+        a_lexer::{Command, CommandImpl, TokenType},
+        utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
+        level_test::{create_test_level} //
     }, //
     constants::errors::Error, //
     components::{
-        player::{Player, PlayerImpl}, Component, inspectable::{Inspectable, InspectableImpl},
+        player::{Player, PlayerImpl}, area::{Area, AreaComponent}, Component,
+        inspectable::{Inspectable, InspectableImpl, InspectableComponent},
     } //
 };
 
 pub fn handle_command(
     mut command: Command, world: WorldStorage, player: Player,
 ) -> Result<Command, Error> {
-    if system_command(command.clone(), world, player).is_err() {
-        return Result::Err(Error::ActionFailed);
+    let sys_command = command.is_system_command();
+    if sys_command {
+        return system_command(command.clone(), world, player);
+    }
+    let context = player.get_context(@world);
+    let mut executed: bool = false;
+    for item in context {
+        match InspectableComponent::get_component(world, item.inst) {
+            Option::Some(inspectable) => {
+                if inspectable.can_use_command(world, @player, @command) {
+                    if inspectable.execute_command(world, @player, @command).is_ok() {
+                        executed = true;
+                        break;
+                    }
+                }
+            },
+            Option::None => {},
+        }
+        match AreaComponent::get_component(world, item.inst) {
+            Option::Some(area) => {
+                if area.can_use_command(world, @player, @command) {
+                    if area.execute_command(world, @player, @command).is_ok() {
+                        executed = true;
+                        break;
+                    }
+                }
+            },
+            Option::None => {},
+        }
+    };
+    if executed {
+        return Result::Ok(command);
     }
     Result::Ok(command)
 }
@@ -33,6 +66,20 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
 }
 
+fn get_sys_command(mut command: @Command) -> Option<ByteArray> {
+    let mut system_command: ByteArray = "";
+    for token in command.clone().tokens {
+        if token.token_type == TokenType::System {
+            system_command = token.text;
+            break;
+        }
+    };
+    if system_command == "" {
+        return Option::None;
+    }
+    Option::Some(system_command)
+}
+
 fn system_command(
     mut command: Command, world: WorldStorage, player: Player,
 ) -> Result<Command, Error> {
@@ -46,7 +93,7 @@ fn system_command(
     if system_command != "" {
         println!("not zero: {:?}", system_command);
         if (system_command == "g_error") {
-            return Result::Err(Error::ActionFailed);
+            return Result::Err(Error::TestError);
         }
         if (system_command == "g_command") {
             println!("g_command: {:?}", system_command);
@@ -57,7 +104,11 @@ fn system_command(
             player.move_to_room(world, 2826);
             player.say(world, "+sys+forced move command");
             let room = player.get_room(@world);
-            let inspectable: Inspectable = Component::get_component(world, room.inst).unwrap();
+            if room.is_none() {
+                return Result::Err(Error::ActionFailed);
+            }
+            let inspectable: Inspectable = Component::get_component(world, room.unwrap().inst)
+                .unwrap();
             player.say(world, format!("+sys+{:?}", inspectable));
             return Result::Ok(command);
         }
@@ -83,7 +134,10 @@ fn system_command(
             player.say(world, "+sys+you see this:");
             let context = player.get_context(@world);
             let room = player.get_room(@world);
-            player.say(world, format!("{}", room.name));
+            if room.is_none() {
+                return Result::Err(Error::ActionFailed);
+            }
+            player.say(world, format!("{}", room.unwrap().name));
             for item in context {
                 let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
                 if inspectable.is_some() {
@@ -93,25 +147,9 @@ fn system_command(
             };
             return Result::Ok(command);
         }
-        return Result::Err(Error::ActionFailed);
+        return Result::Err(Error::NotSystemAction);
     }
-    let context = player.get_context(@world);
-    let mut executed: bool = false;
-    for item in context {
-        let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
-        if inspectable.is_some() {
-            let s = inspectable.unwrap();
-            if s.clone().can_use_command(world, player, command.clone()) {
-                s.clone().execute_command(world, player, command.clone());
-                executed = true;
-                break;
-            }
-        }
-    };
-    if executed {
-        return Result::Ok(command);
-    }
-    Result::Err(Error::ActionFailed)
+    Result::Err(Error::NotSystemAction)
 }
 
 #[cfg(test)]

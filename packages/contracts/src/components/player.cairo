@@ -2,7 +2,10 @@ use super::super::lib::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
 
 use starknet::ContractAddress;
-use lore::{lib::{entity::{EntityImpl, Entity}, a_lexer::Command}, components::Component};
+use lore::{
+    constants::errors::Error, lib::{entity::{EntityImpl, Entity}, a_lexer::Command},
+    components::Component,
+};
 
 pub struct EntityKey {
     pub inst: felt252,
@@ -50,20 +53,28 @@ pub impl PlayerImpl of PlayerTrait {
         world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
     }
 
-    fn get_room(self: @Player, world: @WorldStorage) -> Entity {
+    fn get_room(self: @Player, world: @WorldStorage) -> Option<Entity> {
         let player_entity: Entity = EntityImpl::get_entity(world, self.inst).unwrap();
-        player_entity.get_parent(world).unwrap()
+        let parent = player_entity.get_parent(world);
+        if parent.is_none() {
+            return Option::None;
+        }
+        parent
     }
 
     fn get_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
-        let room = self.get_room(world);
-        let mut context: Array<Entity> = array![];
-        context.append(room.clone());
-        let children = room.get_children(world);
-        for child in children {
-            context.append(child);
-        };
-        context
+        match self.get_room(world) {
+            Option::Some(room) => {
+                let mut context: Array<Entity> = array![];
+                context.append(room.clone());
+                let children = room.get_children(world);
+                for child in children.clone() {
+                    context.append(child);
+                };
+                context
+            },
+            Option::None => array![],
+        }
     }
 }
 
@@ -84,7 +95,7 @@ pub impl PlayerComponent of Component<Player> {
         player.inst = inst;
         player.is_player = true;
         // player.action_map = array![("look", InspectableActions::read_description)];
-        world.write_model(@player);
+        player.store(world);
         player
     }
 
@@ -98,17 +109,21 @@ pub impl PlayerComponent of Component<Player> {
     }
 
     fn can_use_command(
-        self: Player, world: WorldStorage, player: Player, command: Command,
+        self: @Player, world: WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         true
     }
 
-    fn execute_command(self: Player, world: WorldStorage, player: Player, command: Command) {
+    fn execute_command(
+        self: Player, world: WorldStorage, player: @Player, command: @Command,
+    ) -> Result<(), Error> {
         println!("Player execute_command");
+        Result::Err(Error::Unimplemented)
     }
-    // fn store(self: Player, world: WorldStorage) {
-//     world.write_model(@self);
-// }
+
+    fn store(self: @Player, mut world: WorldStorage) {
+        world.write_model(self);
+    }
 }
 
 

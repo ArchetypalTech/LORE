@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/* 
+.atkinson-hyperlegible-mono {
+  font-family: "Atkinson Hyperlegible Mono", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+} */
 
 /* Berkeley Mono Regular Fonts */
 @font-face {
@@ -63,6 +70,7 @@
 }
 
 :root {
+  /* --font-berkeley: "Atkinson Hyperlegible Mono", "Berkeley Mono Variable", */
   --font-berkeley: "Berkeley Mono Variable", "Berkeley Mono", ui-monospace;
 }
 
