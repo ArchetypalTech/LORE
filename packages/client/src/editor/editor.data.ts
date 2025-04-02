@@ -16,7 +16,7 @@ import type {
 	SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 
-export type AnyObject = Partial<SchemaType>["lore"];
+export type AnyObject = { Entity: Entity } & Partial<SchemaType["lore"]>;
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -34,7 +34,9 @@ const {
 });
 
 const getEntities = () =>
-	get().entities.map((x) => get().dataPool.get(x.inst.toString()));
+	get()
+		.entities.map((x) => get().dataPool.get(x.inst.toString())!)
+		.sort((x) => parseInt(x.Entity.inst.toString()));
 
 const getEntity = (id: string) => get().dataPool.get(id);
 
@@ -48,7 +50,7 @@ const setItem = (obj: AnyObject, id: string) => {
 const addEntity = (entity: Entity) => {
 	set((prev) => ({
 		...prev,
-		entities: [...prev.entities, entity],
+		entities: [...prev.entities.filter((e) => e.inst !== entity.inst), entity],
 	}));
 };
 
@@ -70,25 +72,9 @@ const clearItem = (id: string) => {
 
 const getItem = (id: string) => get().dataPool.get(id);
 
-const tagItem = (obj: AnyObject) => {
-	if ("roomId" in obj) {
-		return { Room: obj };
-	}
-	if ("is_object" in obj) {
-		return { Object: obj };
-	}
-	if ("actionId" in obj) {
-		return { Action: obj };
-	}
-	if ("id" in obj) {
-		return { Txtdef: obj };
-	}
-	return null;
-};
-
 const syncItem = (obj: AnyObject) => {
 	if (obj === undefined) return;
-	if ("Dict" in (obj as { Dict: Dict })) {
+	if ("Dict" in obj || "PlayerStory" in obj) {
 		return;
 	}
 	if ("Entity" in (obj as { Entity: Entity })) {
@@ -178,7 +164,6 @@ const EditorData = createFactory({
 	newEntity,
 	selectEntity,
 	deleteItem,
-	tagItem,
 	logPool,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });

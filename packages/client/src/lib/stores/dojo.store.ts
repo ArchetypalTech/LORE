@@ -183,9 +183,9 @@ const initializeConfig = async (
 			status: "initialized",
 			error: null,
 		});
-		if (!LORE_CONFIG.EDITOR_MODE) {
-			sendCommand("_bootLoader");
-		}
+		// if (!LORE_CONFIG.EDITOR_MODE) {
+		sendCommand("_bootLoader");
+		// }
 
 		console.log("[DOJO]: initialized");
 		set({ existingSubscription: subscription });

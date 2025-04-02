@@ -93,22 +93,21 @@ export const actions = {
 
 		finalizePublishing: () => {
 			const state = getNotification();
-			actions.notifications.clear();			
+			actions.notifications.clear();
 			if (state.logs === undefined) {
 				actions.notifications.showError("No logs to show");
 				console.error("No logs to show");
 				return;
-			} 
+			}
 			console.log("Logs:", state.logs);
 			if (state.logs.filter((log) => log.type === "error").length > 0) {
 				actions.notifications.showError(
 					"Published to the world successfully but with errors",
 				);
 			} else {
-				actions.notifications.showSuccess(
-					"Published to the world successfully",
-				);
-			}},
+				actions.notifications.showSuccess("Published to the world successfully");
+			}
+		},
 	},
 
 	// Editor initialization and config operations
@@ -141,10 +140,10 @@ export const actions = {
 				errors,
 			});
 
-			for (const obj of config.dataPool) {
-				const _t = EditorData().tagItem(obj);
-				EditorData().syncItem(_t);
-			}
+			// for (const obj of config.dataPool) {
+			// 	const _t = EditorData().tagItem(obj);
+			// 	EditorData().syncItem(_t);
+			// }
 
 			// Force UI refresh
 			setTimeout(() => {

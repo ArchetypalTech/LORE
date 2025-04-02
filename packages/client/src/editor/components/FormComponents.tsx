@@ -2,6 +2,7 @@ import { cn, normalizeAddress } from "@/lib/utils/utils";
 import { TagInput as Tags } from "./TagInput";
 import EditorStore from "../editor.store";
 import { Editor } from "../editor";
+import type { ChangeEvent } from "react";
 
 export const Header = ({
 	title,
@@ -23,11 +24,14 @@ export const Header = ({
 
 export const DeleteButton = ({ onClick }: { onClick: () => void }) => {
 	return (
-		<button className="btn btn-danger btn-sm" onClick={ async () => {
-			EditorStore().notifications.startPublishing();
-			await onClick();			
-			EditorStore().notifications.finalizePublishing();			
-		}}>
+		<button
+			className="btn btn-danger btn-sm"
+			onClick={async () => {
+				EditorStore().notifications.startPublishing();
+				await onClick();
+				EditorStore().notifications.finalizePublishing();
+			}}
+		>
 			❌
 		</button>
 	);
@@ -35,13 +39,15 @@ export const DeleteButton = ({ onClick }: { onClick: () => void }) => {
 
 export const PublishButton = ({ onClick }: { onClick: () => void }) => {
 	return (
-		<button className="btn btn-sm" onClick={ async () => {
-			EditorStore().notifications.startPublishing();
-			await onClick();
-			EditorStore().notifications.finalizePublishing();
-		}}>
+		<button
+			className="btn btn-sm"
+			onClick={async () => {
+				EditorStore().notifications.startPublishing();
+				await onClick();
+				EditorStore().notifications.finalizePublishing();
+			}}
+		>
 			🕊️
-			
 		</button>
 	);
 };
@@ -90,7 +96,7 @@ export const TagInput = ({
 }: {
 	id: string;
 	value: string;
-	onChange: (tags: string[]) => void;
+	onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 	className?: string;
 	description?: string;
 }) => {
@@ -100,7 +106,12 @@ export const TagInput = ({
 				{id}
 			</label>
 			<p className="mt-1 text-xs text-gray-500">{description}</p>
-			<Tags value={value.split(",")} onChange={onChange} className={className} />
+			<Tags
+				id={id}
+				value={value.split(",")}
+				onChange={onChange}
+				className={className}
+			/>
 		</div>
 	);
 };

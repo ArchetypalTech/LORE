@@ -1,20 +1,18 @@
 import "@styles/editor.css";
 import { useEffect, useMemo, useState } from "react";
-import { RoomEditor } from "./components/RoomEditor";
-import ObjectEditor from "./components/ObjectEditor";
 import Notifications from "./components/Notifications";
 import { EditorHeader } from "./components/EditorHeader";
 import { useHead } from "@unhead/react";
 import EditorStore from "./editor.store";
 import { APP_EDITOR_SEO } from "@/data/app.data";
 import EditorData, { useEditorData } from "./editor.data";
-import type { T_Room } from "./lib/types";
-import { tick } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils/utils";
 import { EditorFooter } from "./components/EditorFooter";
 import { useDojoStore } from "@/lib/stores/dojo.store";
 import { HierarchyTree } from "./components/HierarchyTree";
 import { EntityEditor } from "./components/EntityEditor";
 import Terminal from "@/client/terminal/Terminal";
+import { useUserStore } from "@/lib/stores/user.store";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -22,16 +20,9 @@ export const Editor = () => {
 	const {
 		status: { status },
 	} = useDojoStore();
+	const { dark_mode } = useUserStore();
 	const { entities, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
-
-	const selectEntity = async (index: number) => {
-		EditorData().set({
-			selectedEntity: EditorData().getItem(index),
-		});
-		await tick();
-		await selectObject(0);
-	};
 
 	useHead({
 		title: APP_EDITOR_SEO.title,
@@ -62,6 +53,10 @@ export const Editor = () => {
 			return;
 		}
 		if (hasObjects) {
+			if (selectedEntity === undefined) {
+				EditorData().selectEntity(entities[0].inst.toString());
+				return;
+			}
 			setEditorState("loaded");
 			return;
 		}
@@ -70,7 +65,7 @@ export const Editor = () => {
 			return;
 		}
 		setEditorState("empty");
-	}, [status, entities]);
+	}, [status, entities, selectedEntity]);
 
 	const editorContents = useMemo(() => {
 		switch (editorState) {
@@ -83,13 +78,15 @@ export const Editor = () => {
 				);
 			case "loaded":
 				return (
-					<div className="flex">
-						<div className="grid grid-cols-3 gap-4">
-							<HierarchyTree />
+					<div className="relative grid grid-cols-5 gap-4">
+						<HierarchyTree />
+						<div className="col-span-2">
 							<EntityEditor />
-							<div className="invert">
-								<Terminal />
-							</div>
+						</div>
+						<div
+							className={cn(!dark_mode && "invert", "relative col-span-2 max-h-[50%]")}
+						>
+							<Terminal />
 						</div>
 					</div>
 				);
@@ -120,10 +117,13 @@ export const Editor = () => {
 					</div>
 				);
 		}
-	}, [editorState]);
+	}, [editorState, dark_mode]);
 
 	return (
-		<div id="editor-root" className="relative h-full w-full flex flex-col">
+		<div
+			id="editor-root"
+			className="relative max-h-screen h-screen w-full flex flex-col"
+		>
 			<Notifications onDismiss={handleDismissNotification} />
 			<div className="h-full w-full lg:container flex flex-col gap-2 mx-auto">
 				<EditorHeader />

@@ -15,11 +15,14 @@ export const HierarchyTreeItem = ({
 }: { node: TreeNode; depth: number }) => {
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity?.Entity.inst === node.id;
-	const icon = isSelected ? "🏠 " : " ";
+	const icon = isSelected ? "> " : " ";
 	return (
-		<div className={cn("pl-8 font-normal", depth === 0 && "pl-4 font-medium")}>
+		<div className={cn("pl-4 font-normal", depth === 0 && "font-medium")}>
 			<div
-				className={cn(isSelected && "bg-amber-600/70 text-white")}
+				className={cn(
+					"opacity-80",
+					isSelected && "bg-amber-600/70 text-white opacity-100",
+				)}
 				onClick={() => EditorData().selectEntity(node.id.toString())}
 			>
 				{icon}

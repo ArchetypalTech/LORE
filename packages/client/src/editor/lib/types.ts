@@ -1,4 +1,3 @@
-import type { Room } from "@lib/dojo_bindings/typescript/models.gen";
 import { z } from "zod";
 import {
 	ActionTypeEnum,
@@ -8,10 +7,11 @@ import {
 	ObjectTypeEnum,
 	RoomTypeEnum,
 } from "./schemas";
+import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 
 export interface Level {
 	levelName: string;
-	rooms: Room[];
+	rooms: Entity[];
 }
 
 // Editor state types
