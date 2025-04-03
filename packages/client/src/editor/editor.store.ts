@@ -66,7 +66,7 @@ export const actions = {
 		},
 		startPublishing: async (message = "Publishing to contract...") => {
 			if (getNotification().type === "publishing") return;
-			console.log("STARTING PUBLISHING");
+			console.log("[Notification]: Starting Publishing");
 			setNotification({
 				type: "publishing",
 				message,
@@ -81,7 +81,6 @@ export const actions = {
 		 * Add a log entry to a publishing notification
 		 */
 		addPublishingLog: (log: CustomEvent) => {
-			console.log(log);
 			const state = getNotification();
 			if (state.type !== "publishing" || state.logs === undefined) {
 				console.warn("Cannot add log to non-publishing notification");

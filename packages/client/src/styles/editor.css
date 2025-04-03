@@ -47,7 +47,7 @@ html.modal {
   }
 
   .btn {
-    @apply py-2 px-4 rounded bg-gray-100 border border-black/4 border-t-black/1 border-b-black/20 hover:scale-102 active:scale-98 active:bg-white active:text-black select-none disabled:opacity-50 hover:bg-blue-300 hover:text-white;
+    @apply py-2 px-4 rounded bg-gray-100 border border-black/4 border-t-black/1 border-b-black/20 not-disabled:hover:scale-102 active:scale-98 active:bg-white active:text-black select-none disabled:opacity-50 not-disabled:hover:bg-blue-300 not-disabled:hover:text-white;
   }
 
   .btn-active {
@@ -55,11 +55,11 @@ html.modal {
   }
 
   .btn-primary {
-    @apply hover:bg-[var(--terminal-out)] hover:text-white;
+    @apply not-disabled:hover:bg-[var(--terminal-out)] hover:text-white;
   }
 
   .btn-danger {
-    @apply hover:bg-[var(--terminal-error)]/30 hover:text-white;
+    @apply not-disabled:hover:bg-[var(--terminal-error)]/30 hover:text-white;
   }
 
   input {
@@ -67,7 +67,7 @@ html.modal {
   }
 
   .btn-primary {
-    @apply py-2 px-4 rounded bg-gray-700 text-white hover:bg-gray-500;
+    @apply py-2 px-4 rounded bg-gray-700 text-white not-disabled:hover:bg-gray-500;
   }
 
   .btn-sm {

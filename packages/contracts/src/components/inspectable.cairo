@@ -40,6 +40,9 @@ pub impl InspectableImpl of InspectableTrait {
     }
 
     fn get_random_description(self: Inspectable, world: WorldStorage) -> ByteArray {
+        if self.description.len() == 0 {
+            return "";
+        }
         let rng: u32 = random::random_u16(world.dispatcher.uuid().try_into().unwrap())
             .try_into()
             .unwrap();

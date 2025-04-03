@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import EditorData, {
 	useEditorData,
 	type AnyObject,
 	type EntityCollection,
 } from "../editor.data";
-import { DeleteButton, Header, PublishButton } from "./FormComponents";
+import { DeleteButton, Header, PublishButton, Select } from "./FormComponents";
 import { EntityInspector } from "./inspectors/EntityInspector";
 import { AreaInspector } from "./inspectors/AreaInspector";
 import { InspectableInspector } from "./inspectors/InspectableInspector";
 import { publishEntityCollection } from "../publisher";
 import EditorStore from "../editor.store";
-import { colorizeHash, formatColorHash } from "../utils";
+import { formatColorHash } from "../utils";
 
 const inspectorMap = {
 	Entity: {
@@ -25,6 +25,45 @@ const inspectorMap = {
 		order: 2,
 		component: InspectableInspector,
 	},
+};
+
+const AddComponents = ({ editedEntity }: { editedEntity: AnyObject }) => {
+	const selectRef = useRef<HTMLSelectElement>(null);
+
+	const options = useMemo(() => {
+		const o = Object.entries(inspectorMap)
+			.filter(([key]) => {
+				return editedEntity[key as keyof typeof editedEntity] === undefined;
+			})
+			.map(([key]) => ({ value: key, label: key }));
+		return o;
+	}, [editedEntity]);
+
+	const handleAddComponent = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		console.log(selectRef.current?.value);
+	};
+
+	return (
+		<div className="w-full flex flex-row gap-2 items-end">
+			<div className="flex grow items-center">
+				<Select
+					ref={selectRef}
+					id=""
+					value="Entity"
+					onChange={() => {}}
+					options={options}
+					disabled={options.length === 0}
+				/>
+			</div>
+			<button
+				className="btn btn-success btn-sm shrink"
+				onClick={handleAddComponent}
+				disabled={options.length === 0}
+			>
+				Add Component
+			</button>
+		</div>
+	);
 };
 
 export const EntityEditor = () => {
@@ -105,6 +144,7 @@ export const EntityEditor = () => {
 					</div>
 				);
 			})}
+			<AddComponents editedEntity={editedEntity} />
 		</div>
 	);
 };

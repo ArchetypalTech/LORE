@@ -89,12 +89,10 @@ const publishInspectable = async (inspectable: Inspectable) => {
 				])
 			: 0,
 	];
-	console.log(toCairoArray(inspectableData));
 	await dispatchDesignerCall("create_inspectable", [inspectableData]);
 };
 
 const publishArea = async (area: Area) => {
-	console.log(area);
 	const areaData = [
 		num.toBigInt(area.inst.toString()),
 		area.is_area,

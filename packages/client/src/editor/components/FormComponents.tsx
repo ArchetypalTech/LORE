@@ -2,7 +2,7 @@ import { cn, normalizeAddress } from "@/lib/utils/utils";
 import { TagInput as Tags } from "./TagInput";
 import type { ChangeEvent } from "react";
 import { MultiTextArea } from "./MultiTextArea";
-import type React from "react";
+import React from "react";
 
 export const Header = ({
 	title,
@@ -174,31 +174,30 @@ export const TextAreaArray = ({
 	);
 };
 
-export const Select = ({
-	id,
-	value,
-	onChange,
-	options,
-	className,
-}: {
-	id: string;
-	value: string;
-	onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-	options: Array<{ value: string; label: string }>;
-	className?: string;
-}) => {
+export const Select = React.forwardRef<
+	HTMLSelectElement,
+	{
+		id: string;
+		value: string;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+		options: Array<{ value: string; label: string }>;
+		className?: string;
+		disabled?: boolean;
+	}
+>(({ id, value, onChange, options, className, disabled }, ref) => {
 	return (
-		<div className="form-group">
+		<div className={cn("form-group w-full", className)}>
 			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
 				{id}
 			</label>
 			<select
+				ref={ref}
 				id={id}
 				value={value}
 				onChange={onChange}
+				disabled={disabled}
 				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-					className,
+					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50",
 				)}
 			>
 				{options.map((option) => (
@@ -209,7 +208,7 @@ export const Select = ({
 			</select>
 		</div>
 	);
-};
+});
 
 export const Toggle = ({
 	id,

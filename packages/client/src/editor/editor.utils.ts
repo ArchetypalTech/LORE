@@ -5,6 +5,7 @@ import {
 	type Config,
 	type ValidationError,
 } from "./lib/schemas";
+import { hash } from "starknet";
 
 /**
  * Load a game config from a JSON file
@@ -88,6 +89,10 @@ export const generateNumericUniqueId = (
 	} while (existingIds.has(id));
 
 	return id;
+};
+
+export const randomKey = () => {
+	return hash.keccakBn(generateNumericUniqueId());
 };
 
 export const createRandomName = () => {

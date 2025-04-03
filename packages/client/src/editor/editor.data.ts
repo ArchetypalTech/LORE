@@ -1,5 +1,5 @@
 import { StoreBuilder } from "@/lib/utils/storebuilder";
-import { createRandomName, generateNumericUniqueId } from "./editor.utils";
+import { createRandomName, randomKey } from "./editor.utils";
 import type {
 	Entity,
 	ParentToChildren,
@@ -174,7 +174,7 @@ const selectEntity = (id: BigNumberish) => {
 };
 
 const newEntity = (entity: Entity) => {
-	const inst = generateNumericUniqueId();
+	const inst = randomKey();
 	const newEntity: Entity = {
 		inst,
 		is_entity: true,

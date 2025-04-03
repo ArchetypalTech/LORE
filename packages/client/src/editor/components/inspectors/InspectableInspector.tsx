@@ -46,7 +46,6 @@ export const InspectableInspector = ({
 			throw new Error("Editor object not found");
 		}
 		Object.assign(editorObject, { Inspectable: updatedObject });
-		console.log(editorObject);
 		EditorData().syncItem(editorObject);
 		await tick();
 		EditorData().selectEntity(updatedObject.inst!.toString());
