@@ -43,7 +43,7 @@ html.modal {
   }
 
   textarea {
-    @apply bg-white min-h-[200px] p-2;
+    @apply bg-white min-h-[100px] p-2;
   }
 
   .btn {

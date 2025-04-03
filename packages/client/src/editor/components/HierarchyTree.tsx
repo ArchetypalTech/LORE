@@ -14,7 +14,7 @@ export const HierarchyTreeItem = ({
 	depth,
 }: { node: TreeNode; depth: number }) => {
 	const { selectedEntity } = useEditorData();
-	const isSelected = selectedEntity?.Entity.inst === node.id;
+	const isSelected = selectedEntity?.Entity!.inst === node.id;
 	const icon = isSelected ? "> " : " ";
 	return (
 		<div className={cn("pl-4 font-normal", depth === 0 && "font-medium")}>
@@ -45,7 +45,7 @@ export const HierarchyTree = () => {
 		//recursively build tree
 		const getNode = (inst: string): TreeNode[] => {
 			const entity = EditorData().getEntity(inst);
-			if (entity === undefined) return [];
+			if (entity === undefined || entity.Entity === undefined) return [];
 			if ("ParentToChildren" in entity) {
 				const children = entity.ParentToChildren?.children.flatMap((child) => {
 					return getNode(child.toString());

@@ -3,6 +3,7 @@ import { TagInput as Tags } from "./TagInput";
 import EditorStore from "../editor.store";
 import { Editor } from "../editor";
 import type { ChangeEvent } from "react";
+import { MultiTextArea } from "./MultiTextArea";
 
 export const Header = ({
 	title,
@@ -151,6 +152,38 @@ export const Textarea = ({
 	);
 };
 
+export const TextAreaArray = ({
+	id,
+	value,
+	rows,
+	className,
+	children,
+	onChange,
+}: {
+	id: string;
+	value: string[];
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	rows: number;
+	className?: string;
+	children?: React.ReactNode;
+}) => {
+	return (
+		<div className="form-group">
+			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
+				{id}
+			</label>
+			<MultiTextArea
+				id={id}
+				value={value}
+				rows={rows}
+				className={className}
+				onChange={onChange}
+			/>
+			{children}
+		</div>
+	);
+};
+
 export const Select = ({
 	id,
 	value,
@@ -214,21 +247,6 @@ export const Toggle = ({
 			<label htmlFor={id} className="ml-2 block text-sm text-gray-700">
 				{id.replaceAll("_", " ")}
 			</label>
-		</div>
-	);
-};
-
-export const TextDef = ({
-	id,
-	owner,
-}: {
-	id: string;
-	owner: string;
-}) => {
-	return (
-		<div className="text-xs flex flex-col hover:text-black/40 text-black/0">
-			<div className="text-nowrap">id: {id}</div>
-			<div className="text-nowrap">owner: {owner}</div>
 		</div>
 	);
 };

@@ -1,6 +1,6 @@
 import EditorData, { type AnyObject } from "@/editor/editor.data";
 import type { ChangeEvent } from "react";
-import { Toggle } from "../FormComponents";
+import { TextAreaArray, Toggle } from "../FormComponents";
 import type { Inspectable } from "@/lib/dojo_bindings/typescript/models.gen";
 
 export const InspectableInspector = ({
@@ -62,6 +62,12 @@ export const InspectableInspector = ({
 
 	return (
 		<div className="flex flex-col gap-2">
+			<TextAreaArray
+				id="description"
+				value={inspectable.description}
+				onChange={handleInputChange}
+				rows={1}
+			/>
 			<Toggle
 				id="is_visible"
 				value={inspectable.is_visible}
