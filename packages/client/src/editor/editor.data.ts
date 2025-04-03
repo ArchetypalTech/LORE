@@ -16,7 +16,11 @@ import type {
 	SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 
-export type AnyObject = { Entity: Entity } & Partial<SchemaType["lore"]>;
+export type AnyObject = Partial<SchemaType["lore"]>;
+export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
+export type ModelCollection = {
+	[K in keyof AnyObject]?: Partial<AnyObject>;
+};
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -34,9 +38,11 @@ const {
 });
 
 const getEntities = () =>
-	get()
-		.entities.map((x) => get().dataPool.get(x.inst.toString())!)
-		.sort((x) => parseInt(x.Entity.inst.toString()));
+	(
+		get().entities.map(
+			(x) => get().dataPool.get(x.inst.toString())!,
+		) as EntityCollection[]
+	).sort((x) => parseInt(x.Entity.inst.toString()));
 
 const getEntity = (id: string) => get().dataPool.get(id);
 
@@ -73,30 +79,50 @@ const clearItem = (id: string) => {
 const getItem = (id: string) => get().dataPool.get(id);
 
 const syncItem = (obj: AnyObject) => {
-	if (obj === undefined) return;
-	if ("Dict" in obj || "PlayerStory" in obj) {
-		return;
+	try {
+		if (obj === undefined) return;
+		if ("Dict" in obj) {
+			return;
+		}
+		let name = "";
+		const findInstValue = (obj: AnyObject): string | undefined => {
+			for (const key of Object.keys(obj)) {
+				if (key.startsWith("inst")) {
+					return obj["inst" as keyof typeof obj] as string;
+				}
+				if (typeof obj[key as keyof typeof obj] === "object") {
+					const res = findInstValue(obj[key as keyof typeof obj]);
+					if (res !== undefined) return res;
+				}
+			}
+			return undefined;
+		};
+		const inst = findInstValue(obj);
+		if (inst !== undefined) {
+			const existing = get().dataPool.get(inst.toString()) || {};
+			Object.assign(existing, obj);
+			setItem({ ...existing } as AnyObject, inst.toString());
+		}
+		if ("Entity" in (obj as { Entity: Entity })) {
+			addEntity(obj.Entity as Entity);
+			name = obj.Entity.name;
+		}
+		setTimeout(() => {
+			set({
+				isDirty: Date.now(),
+			});
+		}, 1);
+		console.log(
+			`[Editor] Sync${name ? `: ${name}` : ""}: ${
+				// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
+				Object.keys(obj as any)
+			}`,
+			obj,
+			get(),
+		);
+	} catch (e) {
+		console.error("data-sync error:", e, "object: ", obj);
 	}
-	if ("Entity" in (obj as { Entity: Entity })) {
-		addEntity(obj.Entity);
-	}
-	if ("Player" in (obj as { Player: Player })) {
-		// const player = { ...(obj as { Player: Player }) };
-	}
-	setItem(obj, obj.Entity.inst.toString());
-	setTimeout(() => {
-		set({
-			isDirty: Date.now(),
-		});
-	}, 1);
-	console.log(
-		`[Editor] Sync: ${
-			// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
-			Object.keys(obj as any)
-		}`,
-		obj,
-		get(),
-	);
 };
 
 const deleteItem = async (id: string) => {

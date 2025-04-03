@@ -42,17 +42,15 @@ export const HierarchyTree = () => {
 		dataPool;
 		const entities = EditorData().getEntities();
 		const parents = entities.filter((e) => !e!.ChildToParent);
-		console.log(entities, parents);
-
 		//recursively build tree
 		const getNode = (inst: string): TreeNode[] => {
 			const entity = EditorData().getEntity(inst);
 			if (entity === undefined) return [];
 			if ("ParentToChildren" in entity) {
-				const children = entity.ParentToChildren.children.flatMap((child) => {
+				const children = entity.ParentToChildren?.children.flatMap((child) => {
 					return getNode(child.toString());
 				});
-				return [{ id: inst, name: entity.Entity.name, children }];
+				return [{ id: inst, name: entity.Entity.name, children: children || [] }];
 			}
 			return [
 				{
@@ -67,8 +65,6 @@ export const HierarchyTree = () => {
 		const tree: TreeNode[] = parents.flatMap((parent) =>
 			getNode(parent!.Entity.inst.toString()),
 		);
-
-		console.log(tree);
 
 		return { tree };
 	}, [dataPool]);

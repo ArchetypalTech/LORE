@@ -47,7 +47,6 @@ export const Editor = () => {
 
 	useEffect(() => {
 		const hasObjects = entities.length > 0;
-		console.log(hasObjects, status);
 		if (status === "loading") {
 			setEditorState("not connected");
 			return;

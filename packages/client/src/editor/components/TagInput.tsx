@@ -31,6 +31,7 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 		const values = value.map((v) =>
 			v.replaceAll(",", "").replaceAll(" ", "").trim(),
 		);
+		console.log(cleanedInput, value);
 		// Don't add if empty or already exists
 		if (
 			cleanedInput === "" ||

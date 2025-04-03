@@ -70,7 +70,7 @@ export const Input = ({
 	return (
 		<div className="form-group">
 			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
+				{id.replaceAll("_", " ")}
 			</label>
 			<input
 				id={id}
@@ -103,7 +103,7 @@ export const TagInput = ({
 	return (
 		<div className="form-group">
 			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
+				{id.replaceAll("_", " ")}
 			</label>
 			<p className="mt-1 text-xs text-gray-500">{description}</p>
 			<Tags
@@ -134,7 +134,7 @@ export const Textarea = ({
 	return (
 		<div className="form-group">
 			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
+				{id.replaceAll("_", " ")}
 			</label>
 			<textarea
 				id={id}
@@ -212,7 +212,7 @@ export const Toggle = ({
 				)}
 			/>
 			<label htmlFor={id} className="ml-2 block text-sm text-gray-700">
-				{id}
+				{id.replaceAll("_", " ")}
 			</label>
 		</div>
 	);

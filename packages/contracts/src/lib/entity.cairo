@@ -29,6 +29,7 @@ pub impl EntityImpl of EntityTrait {
 
     fn create_player_entity(mut world: WorldStorage, address: ContractAddress) -> Player {
         let mut entity: Entity = world.read_model(0);
+        entity.name = "Player";
         entity.inst = address.into();
         entity.is_entity = true;
         world.write_model(@entity);
