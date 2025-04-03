@@ -190,12 +190,12 @@ export const Select = ({
 
 export const Toggle = ({
 	id,
-	checked,
+	value,
 	onChange,
 	className,
 }: {
 	id: string;
-	checked: boolean;
+	value: boolean;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	className?: string;
 }) => {
@@ -204,7 +204,7 @@ export const Toggle = ({
 			<input
 				type="checkbox"
 				id={id}
-				checked={checked}
+				checked={value}
 				onChange={onChange}
 				className={cn(
 					"h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500",

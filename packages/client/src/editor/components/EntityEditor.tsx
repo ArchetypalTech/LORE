@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useEditorData, type AnyObject } from "../editor.data";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";
 import { EntityInspector } from "./inspectors/EntityInspector";
-import { InspectorForm } from "./inspectors/InspectorForm";
 import { AreaInspector } from "./inspectors/AreaInspector";
+import { InspectableInspector } from "./inspectors/InspectableInspector";
 
 const inspectorMap = {
 	Entity: {
@@ -16,7 +16,7 @@ const inspectorMap = {
 	},
 	Inspectable: {
 		order: 2,
-		component: InspectorForm,
+		component: InspectableInspector,
 	},
 };
 
