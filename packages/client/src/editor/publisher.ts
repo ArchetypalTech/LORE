@@ -1,6 +1,12 @@
 import { SystemCalls, type DesignerCall } from "../lib/systemCalls";
 import { actions } from "./editor.store";
 import EditorData, { type EntityCollection } from "./editor.data";
+import type {
+	Area,
+	Entity,
+	Inspectable,
+} from "@/lib/dojo_bindings/typescript/models.gen";
+import { string } from "zod";
 
 /**
  * Publishes a game configuration to the contract
@@ -9,11 +15,11 @@ import EditorData, { type EntityCollection } from "./editor.data";
  */
 export const publishConfigToContract = async (): Promise<void> => {
 	// Then process each room in the config
-	for (const entity of EditorData().getEntities()) {
+	for (const collection of EditorData().getEntities()) {
 		// Create entity
-		console.log("Creating entity:", entity);
+		console.log("Creating entityCollection:", collection);
 		try {
-			await publishEntity(entity);
+			await publishEntityCollection(collection);
 		} catch (error) {
 			console.error("Error creating room:", error);
 			throw new Error(
@@ -37,21 +43,35 @@ export const publishConfigToContract = async (): Promise<void> => {
 // 	await dispatchDesignerCall("create_txts", [txtData]);
 // };
 
-export const publishEntity = async (_entity: EntityCollection) => {
-	// const txtDef = EditorData().getItem(room.txtDefId) as T_TextDefinition;
-	// await processTxtDef(txtDef);
-	// const roomData = [
-	// 	parseInt(room.roomId),
-	// 	roomTypeToIndex(room.roomType), // Map to index
-	// 	biomeTypeToIndex(room.biomeType), // Map to index
-	// 	// Use text definition ID from the roomDescription object if available
-	// 	parseInt(room.txtDefId),
-	// 	room.shortTxt,
-	// 	room.object_ids.map((id: string) => parseInt(id)) || 0,
-	// 	0,
-	// ];
-	// await dispatchDesignerCall("create_rooms", [roomData]);
-	// await processRoomObjects(room);
+export const publishEntityCollection = async (collection: EntityCollection) => {
+	if ("Entity" in collection) {
+		await publishEntity(collection.Entity);
+	}
+	if ("Inspectable" in collection) {
+		await publishInspectable(collection.Inspectable);
+	}
+	if ("Area" in collection) {
+		await publishArea(collection.Area);
+	}
+};
+
+const publishEntity = async (entity: Entity) => {
+	const entityData: Array<Entity> = [Object.values(entity)];
+	await dispatchDesignerCall("create_entity", entityData);
+};
+
+const publishInspectable = async (inspectable: Inspectable) => {
+	const inspectableData: Array<Inspectable> = [Object.values(inspectable)];
+	await dispatchDesignerCall("create_inspectable", inspectableData);
+};
+
+const publishArea = async (area: Area) => {
+	const areaData: Area = [
+		area.inst,
+		area.direction === typeof string ? area.direction : 0,
+		area.is_area,
+	];
+	await dispatchDesignerCall("create_area", [areaData]);
 };
 
 /**

@@ -64,7 +64,7 @@ export const EditorHeader = () => {
 					</button>
 				) : (
 					<>
-						<input
+						{/* <input
 							type="file"
 							ref={fileInputRef}
 							accept=".json"
@@ -85,12 +85,12 @@ export const EditorHeader = () => {
 							onClick={handleExportConfig}
 						>
 							Export Config
-						</button>
+						</button> */}
 						<button
 							className="btn btn-sm btn-warning hover:textFreak"
 							onClick={handlePublish}
 						>
-							📤 Publish
+							🕊️ Publish
 						</button>
 					</>
 				)}

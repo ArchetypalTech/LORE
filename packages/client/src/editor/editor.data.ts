@@ -104,11 +104,6 @@ const syncItem = (obj: AnyObject) => {
 			name = obj.Entity!.name;
 		}
 
-		if ("ParentToChildren" in obj || "ChildToParent" in obj) {
-			// we might have a re-parenting so we force update the hierarchy
-			set({ entities: [...get().entities] });
-		}
-
 		setTimeout(() => {
 			set({
 				isDirty: Date.now(),
@@ -123,6 +118,11 @@ const syncItem = (obj: AnyObject) => {
 			obj,
 			get(),
 		);
+
+		if ("ParentToChildren" in obj || "ChildToParent" in obj) {
+			// we might have a re-parenting so we force update the hierarchy
+			set({ entities: [...get().entities] });
+		}
 	} catch (e) {
 		console.error("data-sync error:", e, "object: ", obj);
 	}

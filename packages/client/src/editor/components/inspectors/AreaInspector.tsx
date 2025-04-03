@@ -41,7 +41,6 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 			throw new Error("Editor object not found");
 		}
 		Object.assign(editorObject, { Area: updatedObject });
-		console.log(editorObject);
 		EditorData().syncItem(editorObject);
 		EditorData().selectEntity(updatedObject.inst!.toString());
 	};
@@ -50,7 +49,6 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		const enum_options = direction.map((e) => {
 			return { value: e.toString(), label: e.toString() };
 		});
-		console.log(direction);
 		if (area.direction.None)
 			return { direction_value: "None", direction_options: enum_options };
 		const converted = direction.find((e) => e === area?.direction.Some);

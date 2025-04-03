@@ -4,6 +4,27 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
+	const build_designer_createArea_calldata = (t: Array<Area>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_area",
+			calldata: [t],
+		};
+	};
+
+	const designer_createArea = async (snAccount: Account | AccountInterface, t: Array<Area>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createArea_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createEntity_calldata = (t: Array<Entity>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -17,6 +38,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_createEntity_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_createExit_calldata = (t: Array<Exit>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_exit",
+			calldata: [t],
+		};
+	};
+
+	const designer_createExit = async (snAccount: Account | AccountInterface, t: Array<Exit>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createExit_calldata(t),
 				"lore",
 			);
 		} catch (error) {
@@ -46,19 +88,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteEntities_calldata = (ids: Array<BigNumberish>): DojoCall => {
+	const build_designer_deleteArea_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
-			entrypoint: "delete_entities",
+			entrypoint: "delete_area",
 			calldata: [ids],
 		};
 	};
 
-	const designer_deleteEntities = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+	const designer_deleteArea = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_designer_deleteEntities_calldata(ids),
+				build_designer_deleteArea_calldata(ids),
 				"lore",
 			);
 		} catch (error) {
@@ -67,19 +109,61 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteInspectables_calldata = (ids: Array<BigNumberish>): DojoCall => {
+	const build_designer_deleteEntity_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
-			entrypoint: "delete_inspectables",
+			entrypoint: "delete_entity",
 			calldata: [ids],
 		};
 	};
 
-	const designer_deleteInspectables = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+	const designer_deleteEntity = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_designer_deleteInspectables_calldata(ids),
+				build_designer_deleteEntity_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_deleteExit_calldata = (ids: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_exit",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteExit = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteExit_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_deleteInspectable_calldata = (ids: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_inspectable",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteInspectable = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteInspectable_calldata(ids),
 				"lore",
 			);
 		} catch (error) {
@@ -113,14 +197,22 @@ export function setupWorld(provider: DojoProvider) {
 
 	return {
 		designer: {
+			createArea: designer_createArea,
+			buildCreateAreaCalldata: build_designer_createArea_calldata,
 			createEntity: designer_createEntity,
 			buildCreateEntityCalldata: build_designer_createEntity_calldata,
+			createExit: designer_createExit,
+			buildCreateExitCalldata: build_designer_createExit_calldata,
 			createInspectable: designer_createInspectable,
 			buildCreateInspectableCalldata: build_designer_createInspectable_calldata,
-			deleteEntities: designer_deleteEntities,
-			buildDeleteEntitiesCalldata: build_designer_deleteEntities_calldata,
-			deleteInspectables: designer_deleteInspectables,
-			buildDeleteInspectablesCalldata: build_designer_deleteInspectables_calldata,
+			deleteArea: designer_deleteArea,
+			buildDeleteAreaCalldata: build_designer_deleteArea_calldata,
+			deleteEntity: designer_deleteEntity,
+			buildDeleteEntityCalldata: build_designer_deleteEntity_calldata,
+			deleteExit: designer_deleteExit,
+			buildDeleteExitCalldata: build_designer_deleteExit_calldata,
+			deleteInspectable: designer_deleteInspectable,
+			buildDeleteInspectableCalldata: build_designer_deleteInspectable_calldata,
 		},
 		prompt: {
 			prompt: prompt_prompt,

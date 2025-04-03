@@ -28,6 +28,11 @@ const {
 export const actions = {
 	// Notification related actions
 	notifications: {
+		doLoggedAction: async (action: () => Promise<void>) => {
+			actions.notifications.startPublishing();
+			await action();
+			actions.notifications.finalizePublishing();
+		},
 		clear: () => {
 			setNotification(initialNotificationState);
 		},
@@ -76,6 +81,7 @@ export const actions = {
 		 * Add a log entry to a publishing notification
 		 */
 		addPublishingLog: (log: CustomEvent) => {
+			console.log(log);
 			const state = getNotification();
 			if (state.type !== "publishing" || state.logs === undefined) {
 				console.warn("Cannot add log to non-publishing notification");
@@ -95,11 +101,8 @@ export const actions = {
 				console.error("No logs to show");
 				return;
 			}
-			console.log("Logs:", state.logs);
-			if (state.logs.filter((log) => log.type === "error").length > 0) {
-				actions.notifications.showError(
-					"Published to the world successfully but with errors",
-				);
+			if (state.logs.some((log) => log.type === "error")) {
+				actions.notifications.showError("Errors while publishing");
 			} else {
 				actions.notifications.showSuccess("Published to the world successfully");
 			}
@@ -237,12 +240,6 @@ export const actions = {
 				);
 				return false;
 			}
-		},
-
-		doLoggedAction: async (action: () => Promise<void>) => {
-			EditorStore().notifications.startPublishing();
-			await action();
-			EditorStore().notifications.finalizePublishing();
 		},
 	},
 };

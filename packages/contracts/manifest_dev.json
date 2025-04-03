@@ -1313,7 +1313,7 @@
   "contracts": [
     {
       "address": "0x6a04ba20cdae0ebcbb776848d90286e9b2ad1f46c9e517d2b46c04ff65077f7",
-      "class_hash": "0x3bdb7fd1b4e7d18afe04fb35fd8aaca0e9e9d914c603b54cb816328a6a12362",
+      "class_hash": "0x3924d42869db3db991d6088d57beac150e2ceafdee81d2605e0f44da14b73a7",
       "abi": [
         {
           "type": "impl",
@@ -1465,6 +1465,88 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::constants::constants::Direction",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "North",
+              "type": "()"
+            },
+            {
+              "name": "South",
+              "type": "()"
+            },
+            {
+              "name": "East",
+              "type": "()"
+            },
+            {
+              "name": "West",
+              "type": "()"
+            },
+            {
+              "name": "Up",
+              "type": "()"
+            },
+            {
+              "name": "Down",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::area::Area",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_area",
+              "type": "core::bool"
+            },
+            {
+              "name": "direction",
+              "type": "lore::constants::constants::Direction"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::exit::Exit",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_exit",
+              "type": "core::bool"
+            },
+            {
+              "name": "is_enterable",
+              "type": "core::bool"
+            },
+            {
+              "name": "leads_to",
+              "type": "core::felt252"
+            },
+            {
+              "name": "direction_type",
+              "type": "lore::constants::constants::Direction"
+            },
+            {
+              "name": "action_map",
+              "type": "core::array::Array::<core::byte_array::ByteArray>"
+            }
+          ]
+        },
+        {
           "type": "interface",
           "name": "lore::systems::designer::IDesigner",
           "items": [
@@ -1494,7 +1576,31 @@
             },
             {
               "type": "function",
-              "name": "delete_entities",
+              "name": "create_area",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::area::Area>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_exit",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::exit::Exit>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_entity",
               "inputs": [
                 {
                   "name": "ids",
@@ -1506,7 +1612,31 @@
             },
             {
               "type": "function",
-              "name": "delete_inspectables",
+              "name": "delete_inspectable",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_area",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_exit",
               "inputs": [
                 {
                   "name": "ids",
@@ -1639,8 +1769,12 @@
       "systems": [
         "create_entity",
         "create_inspectable",
-        "delete_entities",
-        "delete_inspectables",
+        "create_area",
+        "create_exit",
+        "delete_entity",
+        "delete_inspectable",
+        "delete_area",
+        "delete_exit",
         "upgrade"
       ]
     },

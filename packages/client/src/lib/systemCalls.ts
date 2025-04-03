@@ -64,15 +64,14 @@ async function formatCallData(message: string) {
 }
 
 export type DesignerCall =
-	| "create_objects"
-	| "create_actions"
-	| "create_rooms"
-	| "create_txt"
-	| "delete_objects"
-	| "create_txts"
-	| "delete_actions"
-	| "delete_rooms"
-	| "delete_txts";
+	| "create_entity"
+	| "create_inspectable"
+	| "create_area"
+	| "create_exit"
+	| "delete_entity"
+	| "delete_inspectable"
+	| "delete_area"
+	| "delete_exit";
 
 type DesignerCallProps = {
 	call: DesignerCall;

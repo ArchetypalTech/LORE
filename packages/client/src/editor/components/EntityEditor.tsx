@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { useEditorData, type AnyObject } from "../editor.data";
+import EditorData, { useEditorData, type AnyObject } from "../editor.data";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";
 import { EntityInspector } from "./inspectors/EntityInspector";
 import { AreaInspector } from "./inspectors/AreaInspector";
 import { InspectableInspector } from "./inspectors/InspectableInspector";
+import { publishEntityCollection } from "../publisher";
+import EditorStore from "../editor.store";
 
 const inspectorMap = {
 	Entity: {
@@ -54,14 +56,14 @@ export const EntityEditor = () => {
 			<Header title={editedEntity?.Entity.name || "Entity"}>
 				<DeleteButton
 					onClick={async () => {
-						// await useEditorData().deleteItem(editedEntity.Entity.inst);
-						// setEditedEntity(undefined);
+						await EditorData().removeEntity(editedEntity.Entity);
 					}}
 				/>
 				<PublishButton
 					onClick={async () => {
-						// await useEditorData().publishItem(editedEntity);
-						// setEditedEntity(undefined);
+						await EditorStore().notifications.doLoggedAction(() =>
+							publishEntityCollection(editedEntity),
+						);
 					}}
 				/>
 			</Header>
