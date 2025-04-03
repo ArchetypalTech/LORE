@@ -145,6 +145,8 @@ export default function Terminal() {
 								ref={terminalInputRef}
 								onKeyDown={handleKeyDown}
 								style={{ outline: "none" }}
+								autoComplete="off"
+								autoCorrect="off"
 							/>
 							<div
 								id="input-anchor"
