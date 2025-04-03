@@ -8,7 +8,7 @@ import type {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { toCairoArray } from "./utils";
 import { directionToIndex, inspectableActionsToIndex } from "./lib/schemas";
-import { byteArray } from "starknet";
+import { byteArray, num } from "starknet";
 
 /**
  * Publishes a game configuration to the contract
@@ -59,7 +59,7 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 
 const publishEntity = async (entity: Entity) => {
 	const entityData = [
-		parseInt(entity.inst.toString()),
+		num.toBigInt(entity.inst.toString()),
 		entity.is_entity,
 		byteArray.byteArrayFromString(entity.name),
 		entity.alt_names.length > 0
@@ -73,7 +73,7 @@ const publishEntity = async (entity: Entity) => {
 
 const publishInspectable = async (inspectable: Inspectable) => {
 	const inspectableData = [
-		parseInt(inspectable.inst.toString()),
+		num.toBigInt(inspectable.inst.toString()),
 		inspectable.is_inspectable,
 		inspectable.is_visible,
 		inspectable.description.length > 0
@@ -96,7 +96,7 @@ const publishInspectable = async (inspectable: Inspectable) => {
 const publishArea = async (area: Area) => {
 	console.log(area);
 	const areaData = [
-		parseInt(area.inst.toString()),
+		num.toBigInt(area.inst.toString()),
 		area.is_area,
 		directionToIndex(area.direction),
 	];

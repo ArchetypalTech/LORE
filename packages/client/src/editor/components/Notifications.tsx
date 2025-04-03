@@ -2,6 +2,7 @@ import { useEffect, useCallback } from "react";
 import type { FC } from "react";
 import "@styles/notifications.css";
 import { useNotificationStore } from "../editor.store";
+import JSONBig from "json-bigint";
 
 interface NotificationsProps {
 	onDismiss?: () => void;
@@ -93,7 +94,7 @@ const Notifications: FC<NotificationsProps> = ({ onDismiss }) => {
 								className={`logger-item p-3 rounded mb-2 flex-col flex not-first-of-type:opacity-50 ${log.detail.error ? "log-error" : ""}`}
 							>
 								<div className="font-berkeley text-xs">
-									{JSON.stringify(log.detail, null, 2)}
+									{JSONBig.stringify(log.detail, null, 2)}
 								</div>
 							</div>
 						))}
