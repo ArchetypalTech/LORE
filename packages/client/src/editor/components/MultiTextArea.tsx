@@ -83,7 +83,7 @@ export const MultiTextArea = ({
 						</div>
 					);
 				})}
-				<button className="btn btn-danger btn-sm" onClick={handleAddArray}>
+				<button className="btn btn-success btn-sm" onClick={handleAddArray}>
 					Add {id}
 				</button>
 			</div>
