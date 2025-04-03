@@ -32,7 +32,9 @@ const getEntities = () =>
 		get().entities.map(
 			(x) => get().dataPool.get(x.inst.toString())!,
 		) as EntityCollection[]
-	).sort((x) => parseInt(x.Entity.inst.toString()));
+	)
+		.filter((x) => x !== undefined)
+		.sort((x) => parseInt(x.Entity.inst.toString()));
 
 const getEntity = (id: string) => get().dataPool.get(id);
 

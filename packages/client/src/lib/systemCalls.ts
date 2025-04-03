@@ -92,8 +92,9 @@ async function execDesignerCall(props: DesignerCallProps) {
 	try {
 		// other calls follow the same format Array<Object> see Cairo Models
 
-		const data = toCairoArray(args) as RawArgsArray;
+		const data = toCairoArray(args).flat() as RawArgsArray;
 		const calldata = CallData.compile(data);
+		console.log(data, calldata);
 
 		let response: unknown;
 		if (LORE_CONFIG.useController) {

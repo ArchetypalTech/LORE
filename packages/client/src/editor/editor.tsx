@@ -110,7 +110,7 @@ export const Editor = () => {
 				return (
 					<div className="w-full h-full flex place-items-center place-content-center grow">
 						<div className="flex w-30 ">
-							<div className="flex flex-col grow">
+							<div className="flex flex-col grow text-center">
 								<h2 className="text-center mb-10 text-2xl">Error</h2>
 								Please check developer console log
 							</div>

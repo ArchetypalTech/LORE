@@ -53,7 +53,7 @@ const convertIfString = (item: unknown) => {
  */
 
 export const toCairoArray = (args: unknown[]): unknown[] => {
-	// console.dir(args, 8);
+	// Handle empty array case
 	if (args.length === 0) {
 		return [0]; // Empty array is represented as [0] in Cairo
 	}
@@ -61,20 +61,39 @@ export const toCairoArray = (args: unknown[]): unknown[] => {
 	const result: unknown[] = [args.length];
 
 	for (const arg of args) {
-		const arr = [
-			...(arg as unknown[]).map((item: unknown) => {
-				if (Array.isArray(item)) {
-					if (item.length === 0) {
-						return 0;
+		// If the argument is an array, process it recursively
+		if (Array.isArray(arg)) {
+			// For nested arrays within Cairo objects
+			if (arg.length === 0) {
+				result.push(0);
+			} else {
+				// Process each element in the array
+				const processedItems: unknown[] = [];
+
+				for (const item of arg) {
+					if (Array.isArray(item)) {
+						// Recursive case: nested array
+						if (item.length === 0) {
+							processedItems.push(0);
+						} else {
+							// Convert the nested array to Cairo format
+							processedItems.push(toCairoArray(item));
+						}
+					} else {
+						// Base case: convert primitive value
+						processedItems.push(convertIfString(item));
 					}
-					return [...item.flatMap(convertIfString)];
 				}
-				return convertIfString(item);
-			}),
-		];
-		result.push(...arr);
+
+				// Add processed items to result
+				result.push(...processedItems);
+			}
+		} else {
+			// For primitive values, apply conversion
+			result.push(convertIfString(arg));
+		}
 	}
-	// console.dir(result, 8);
+
 	return result;
 };
 

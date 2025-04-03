@@ -76,8 +76,11 @@ export const EntityEditor = () => {
 						key={key}
 						className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs"
 					>
-						<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold">
-							{key}
+						<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
+							<div className="text-[7pt] text-black/20">
+								{parseInt(editedEntity[key].inst)}
+							</div>
+							<div>{key}</div>
 						</h3>
 						<Inspector key={key} entityObject={editedEntity[key]} />
 					</div>

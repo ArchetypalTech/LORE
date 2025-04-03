@@ -7,6 +7,9 @@ import type {
 	Inspectable,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { string } from "zod";
+import { toCairoArray } from "./utils";
+import { directionToIndex, inspectableActionsToIndex } from "./lib/schemas";
+import { byteArray } from "starknet";
 
 /**
  * Publishes a game configuration to the contract
@@ -56,20 +59,47 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 };
 
 const publishEntity = async (entity: Entity) => {
-	const entityData: Array<Entity> = [Object.values(entity)];
-	await dispatchDesignerCall("create_entity", entityData);
+	const entityData = [
+		parseInt(entity.inst.toString()),
+		entity.is_entity,
+		byteArray.byteArrayFromString(entity.name),
+		entity.alt_names.length > 0
+			? entity.alt_names
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
+			: 0,
+	];
+	await dispatchDesignerCall("create_entity", [entityData]);
 };
 
 const publishInspectable = async (inspectable: Inspectable) => {
-	const inspectableData: Array<Inspectable> = [Object.values(inspectable)];
-	await dispatchDesignerCall("create_inspectable", inspectableData);
+	const inspectableData = [
+		parseInt(inspectable.inst.toString()),
+		inspectable.is_inspectable,
+		inspectable.is_visible,
+		inspectable.description.length > 0
+			? inspectable.description
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
+			: 0,
+		inspectable.action_map.length > 0
+			? inspectable.action_map.map((x) => [
+					byteArray.byteArrayFromString(x.action),
+					0,
+					inspectableActionsToIndex(x.action_fn),
+				])
+			: 0,
+	];
+	console.log(toCairoArray(inspectableData));
+	await dispatchDesignerCall("create_inspectable", [inspectableData]);
 };
 
 const publishArea = async (area: Area) => {
-	const areaData: Area = [
-		area.inst,
-		area.direction === typeof string ? area.direction : 0,
+	console.log(area);
+	const areaData = [
+		parseInt(area.inst.toString()),
 		area.is_area,
+		directionToIndex(area.direction),
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };
