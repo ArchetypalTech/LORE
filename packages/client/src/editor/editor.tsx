@@ -13,6 +13,7 @@ import { HierarchyTree } from "./components/HierarchyTree";
 import { EntityEditor } from "./components/EntityEditor";
 import Terminal from "@/client/terminal/Terminal";
 import { useUserStore } from "@/lib/stores/user.store";
+import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -21,7 +22,7 @@ export const Editor = () => {
 		status: { status },
 	} = useDojoStore();
 	const { dark_mode } = useUserStore();
-	const { entities, selectedEntity, isDirty } = useEditorData();
+	const { entities, selectedEntity } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 
 	useHead({
@@ -76,11 +77,24 @@ export const Editor = () => {
 					</div>
 				);
 			case "loaded":
+			case "empty":
 				return (
 					<div className="relative grid grid-cols-5 gap-4">
 						<HierarchyTree />
 						<div className="col-span-2">
-							<EntityEditor />
+							{editorState !== "empty" ? (
+								<EntityEditor />
+							) : (
+								<div className="flex flex-col grow">
+									<h2 className="text-center mb-10 text-2xl">Empty World</h2>
+									<button
+										className="btn"
+										onClick={() => EditorData().newEntity({} as Entity)}
+									>
+										Create Entity
+									</button>
+								</div>
+							)}
 						</div>
 						<div
 							className={cn(
@@ -92,28 +106,13 @@ export const Editor = () => {
 						</div>
 					</div>
 				);
-			case "empty":
-				return (
-					<div className="w-full h-full flex place-items-center place-content-center grow">
-						<div className="flex w-30 ">
-							<div className="flex flex-col grow">
-								<h2 className="text-center mb-10 text-2xl">Empty World</h2>
-								<button className="btn" onClick={EditorData().newRoom}>
-									Create Room
-								</button>
-							</div>
-						</div>
-					</div>
-				);
 			case "error":
 				return (
 					<div className="w-full h-full flex place-items-center place-content-center grow">
 						<div className="flex w-30 ">
 							<div className="flex flex-col grow">
 								<h2 className="text-center mb-10 text-2xl">Error</h2>
-								<button className="btn" onClick={EditorData().newRoom}>
-									Try again
-								</button>
+								Please check developer console log
 							</div>
 						</div>
 					</div>

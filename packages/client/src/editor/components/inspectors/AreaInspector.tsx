@@ -30,7 +30,7 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		const { id, value } = e.target;
 		switch (id) {
 			case "direction":
-				updatedObject.direction = value as string as Direction;
+				updatedObject.direction = value as Direction;
 				break;
 		}
 

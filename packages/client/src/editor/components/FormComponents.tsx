@@ -1,6 +1,5 @@
 import { cn, normalizeAddress } from "@/lib/utils/utils";
 import { TagInput as Tags } from "./TagInput";
-import EditorStore from "../editor.store";
 import type { ChangeEvent } from "react";
 import { MultiTextArea } from "./MultiTextArea";
 

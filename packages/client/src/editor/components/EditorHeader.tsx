@@ -69,12 +69,21 @@ export const EditorHeader = () => {
 							ref={fileInputRef}
 							accept=".json"
 							className="hidden"
+							disabled={true}
 							onChange={handleFileChange}
 						/>
-						<button className="btn btn-sm btn-success" onClick={handleImportConfig}>
+						<button
+							disabled={true}
+							className="btn btn-sm btn-success"
+							onClick={handleImportConfig}
+						>
 							Import Config
 						</button>
-						<button className="btn btn-sm btn-success" onClick={handleExportConfig}>
+						<button
+							disabled={true}
+							className="btn btn-sm btn-success"
+							onClick={handleExportConfig}
+						>
 							Export Config
 						</button>
 						<button

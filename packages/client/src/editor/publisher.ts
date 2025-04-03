@@ -1,38 +1,6 @@
-import {
-	roomTypeToIndex,
-	biomeTypeToIndex,
-	objectTypeToIndex,
-	directionToIndex,
-	materialTypeToIndex,
-	actionTypeToIndex,
-} from "./editor.utils";
 import { SystemCalls, type DesignerCall } from "../lib/systemCalls";
 import { actions } from "./editor.store";
-import type { T_Action, T_Object, T_Room, T_TextDefinition } from "./lib/types";
-import EditorData from "./editor.data";
-import { decodeDojoText } from "@/lib/utils/utils";
-
-const publishQueue = {
-	txts: [] as T_TextDefinition[],
-	objects: [],
-	actions: [],
-	rooms: [],
-};
-
-const clearQueue = () => {
-	publishQueue.txts = [];
-	publishQueue.objects = [];
-	publishQueue.actions = [];
-	publishQueue.rooms = [];
-};
-
-const publishQueued = async () => {
-	// await dispatchDesignerCall("create_txts", [publishQueue.txts]);
-	// await dispatchDesignerCall("create_objects", [publishQueue.objects]);
-	// await dispatchDesignerCall("create_actions", [publishQueue.actions]);
-	// await dispatchDesignerCall("create_rooms", [publishQueue.rooms]);
-	clearQueue();
-};
+import EditorData, { type EntityCollection } from "./editor.data";
 
 /**
  * Publishes a game configuration to the contract
@@ -41,11 +9,11 @@ const publishQueued = async () => {
  */
 export const publishConfigToContract = async (): Promise<void> => {
 	// Then process each room in the config
-	for (const room of EditorData().getRooms()) {
-		// Create room
-		console.log("Creating room:", room);
+	for (const entity of EditorData().getEntities()) {
+		// Create entity
+		console.log("Creating entity:", entity);
 		try {
-			await publishRoom(room);
+			await publishEntity(entity);
 		} catch (error) {
 			console.error("Error creating room:", error);
 			throw new Error(
@@ -53,110 +21,37 @@ export const publishConfigToContract = async (): Promise<void> => {
 			);
 		}
 	}
-	await publishQueued();
 };
 
-export const processTxtDef = async (txtDef: T_TextDefinition) => {
-	if (txtDef.id === "0") {
-		return;
-	}
-	const t = txtDef.text;
-	actions.notifications.startPublishing();
-	const txtData = [
-		parseInt(txtDef.id), // ID for the text
-		parseInt(txtDef.owner), // Owner ID
-		t.length > 0 ? encodeURI(decodeDojoText(t)) : " ", // The actual text content
-	];
-	await dispatchDesignerCall("create_txts", [txtData]);
-};
+// export const processTxtDef = async (txtDef: T_TextDefinition) => {
+// 	if (txtDef.id === "0") {
+// 		return;
+// 	}
+// 	const t = txtDef.text;
+// 	actions.notifications.startPublishing();
+// 	const txtData = [
+// 		parseInt(txtDef.id), // ID for the text
+// 		parseInt(txtDef.owner), // Owner ID
+// 		t.length > 0 ? encodeURI(decodeDojoText(t)) : " ", // The actual text content
+// 	];
+// 	await dispatchDesignerCall("create_txts", [txtData]);
+// };
 
-export const publishRoom = async (room: T_Room) => {
-	const txtDef = EditorData().getItem(room.txtDefId) as T_TextDefinition;
-	await processTxtDef(txtDef);
-	const roomData = [
-		parseInt(room.roomId),
-		roomTypeToIndex(room.roomType), // Map to index
-		biomeTypeToIndex(room.biomeType), // Map to index
-		// Use text definition ID from the roomDescription object if available
-		parseInt(room.txtDefId),
-		room.shortTxt,
-		room.object_ids.map((id: string) => parseInt(id)) || 0,
-		0,
-	];
-	await dispatchDesignerCall("create_rooms", [roomData]);
-	await processRoomObjects(room);
-};
-
-/**
- * Processes all objects in a room
- * @param room The room containing objects to process
- */
-export const processRoomObjects = async (room: T_Room): Promise<void> => {
-	for (const obj of room.object_ids) {
-		console.log("Processing object", obj);
-		const _obj = EditorData().getItem(obj) as T_Object;
-		if (_obj) {
-			await processObjects(_obj);
-		}
-	}
-};
-
-export const processObjects = async (obj: T_Object) => {
-	await publishObject(obj);
-	await processObjectActions(obj);
-};
-
-export const publishObject = async (obj: T_Object) => {
-	console.log("Publishing object", obj);
-	const destId = parseInt(obj.destId || "0");
-	const objData = [
-		parseInt(obj.inst),
-		true, // is_object
-		objectTypeToIndex(obj.objType || "None"), // Map to index with fallback
-		directionToIndex(obj.dirType), // Map to index (already handles null)
-		Number.isNaN(destId) ? 0 : destId,
-		materialTypeToIndex(obj.matType || "None"), // Map to index with fallback
-		obj.objectActionIds.length > 0
-			? obj.objectActionIds.map((x) => parseInt(x))
-			: 0,
-		// Use text definition ID from the objDescription object if available
-		parseInt(obj.txtDefId),
-		obj.name.length > 0 ? obj.name : 0,
-		obj.altNames.length > 0
-			? obj.altNames.filter((x) => x.length > 0).map((name) => name)
-			: 0,
-	];
-	const txtDef = EditorData().getItem(obj.txtDefId) as T_TextDefinition;
-	await processTxtDef(txtDef);
-	console.log("Creating object:", objData);
-	await dispatchDesignerCall("create_objects", [objData]);
-};
-
-/**
- * Processes all actions for an object
- * @param obj The object containing actions to process
- */
-export const processObjectActions = async (obj: T_Object): Promise<void> => {
-	for (const action of obj.objectActionIds) {
-		const _action = EditorData().getItem(action) as T_Action;
-		await publishAction(_action);
-	}
-};
-
-export const publishAction = async (action: T_Action) => {
-	const t = encodeURI(decodeDojoText(action.dBitTxt));
-	const actionData = [
-		parseInt(action.actionId),
-		actionTypeToIndex(action.actionType || "None"), // Map to index with fallback
-		t || "", // Get the text content from either string or object
-		action.enabled, // Convert boolean to 0/1
-		action.revertable ? 1 : 0, // Convert boolean to 0/1
-		action.dBit ? 1 : 0, // Convert boolean to 0/1
-		0,
-		0, //affectedByActionId
-	];
-	console.log("Creating action:", actionData);
-	await dispatchDesignerCall("create_actions", [actionData]);
+export const publishEntity = async (_entity: EntityCollection) => {
+	// const txtDef = EditorData().getItem(room.txtDefId) as T_TextDefinition;
+	// await processTxtDef(txtDef);
+	// const roomData = [
+	// 	parseInt(room.roomId),
+	// 	roomTypeToIndex(room.roomType), // Map to index
+	// 	biomeTypeToIndex(room.biomeType), // Map to index
+	// 	// Use text definition ID from the roomDescription object if available
+	// 	parseInt(room.txtDefId),
+	// 	room.shortTxt,
+	// 	room.object_ids.map((id: string) => parseInt(id)) || 0,
+	// 	0,
+	// ];
+	// await dispatchDesignerCall("create_rooms", [roomData]);
+	// await processRoomObjects(room);
 };
 
 /**
@@ -166,7 +61,7 @@ export const publishAction = async (action: T_Action) => {
  * @returns The response from the API
  */
 export const dispatchDesignerCall = async (
-	call: DesignerCall, 
+	call: DesignerCall,
 	args: unknown[],
 ) => {
 	try {

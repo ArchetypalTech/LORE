@@ -1,18 +1,8 @@
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import { createRandomName, generateNumericUniqueId } from "./editor.utils";
-import { decodeDojoText } from "@/lib/utils/utils";
-import { publishRoom, publishObject, dispatchDesignerCall } from "./publisher";
 import type {
 	Entity,
-	Player,
-	Inspectable,
-	Area,
-	Exit,
-	InventoryItem,
-	Container,
-	Dict,
 	ParentToChildren,
-	ChildToParent,
 	SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 
@@ -61,13 +51,11 @@ const addEntity = (entity: Entity) => {
 };
 
 const removeEntity = (entity: Entity) => {
+	const id = entity.inst.toString();
 	set((prev) => ({
 		...prev,
 		entities: prev.entities.filter((e) => e.inst !== entity.inst),
 	}));
-};
-
-const clearItem = (id: string) => {
 	const newDataPool = new Map<string, AnyObject>(get().dataPool);
 	newDataPool.delete(id);
 	set((prev) => ({
@@ -81,10 +69,13 @@ const getItem = (id: string) => get().dataPool.get(id);
 const syncItem = (obj: AnyObject) => {
 	try {
 		if (obj === undefined) return;
+		// @dev: Ignore things we aren't storing in the datapool, this needs to be expanded
 		if ("Dict" in obj) {
 			return;
 		}
 		let name = "";
+
+		// @dev: retrieve instance value
 		const findInstValue = (obj: AnyObject): string | undefined => {
 			for (const key of Object.keys(obj)) {
 				if (key.startsWith("inst")) {
@@ -97,21 +88,28 @@ const syncItem = (obj: AnyObject) => {
 			}
 			return undefined;
 		};
+
 		const inst = findInstValue(obj);
+
+		// merge items into datapool (or new if don't exist)
 		if (inst !== undefined) {
 			const existing = get().dataPool.get(inst.toString()) || {};
 			Object.assign(existing, obj);
 			setItem({ ...existing } as AnyObject, inst.toString());
 		}
+
+		// add Entity models to entities
 		if ("Entity" in (obj as { Entity: Entity })) {
 			addEntity(obj.Entity as Entity);
-			name = obj.Entity.name;
+			name = obj.Entity!.name;
 		}
+
 		setTimeout(() => {
 			set({
 				isDirty: Date.now(),
 			});
 		}, 1);
+
 		console.log(
 			`[Editor] Sync${name ? `: ${name}` : ""}: ${
 				// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
@@ -188,6 +186,7 @@ const EditorData = createFactory({
 	setItem,
 	syncItem,
 	newEntity,
+	removeEntity,
 	selectEntity,
 	deleteItem,
 	logPool,

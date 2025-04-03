@@ -1,14 +1,10 @@
-import type { ValidationError } from "@editor/lib/schemas";
-import { transformWithSchema } from "@editor/lib/schemas";
-import { formatValidationError } from "@/editor/editor.utils";
 import type { NotificationState } from "@editor/notifications";
 import { initialNotificationState } from "@editor/notifications";
 import { publishConfigToContract } from "@editor/publisher";
-import { saveConfigToFile, loadConfigFromFile } from "@/editor/editor.utils";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import EditorData from "./editor.data";
 import { tick } from "@/lib/utils/utils";
-import { ConfigSchema, type Config } from "./lib/types";
+import type { ValidationError } from "./lib/schemas";
 
 const {
 	get,
@@ -129,105 +125,96 @@ export const actions = {
 		 * Load a config into the editor
 		 */
 		loadConfig: (config: Config) => {
-			console.log("Loading config into editor:", config);
-
-			// Validate the config using our Zod schema
-			const { errors } = transformWithSchema(ConfigSchema, config);
-			console.log("Validation errors in loadConfig:", errors);
-
-			set({
-				isDirty: false,
-				errors,
-			});
-
-			// for (const obj of config.dataPool) {
-			// 	const _t = EditorData().tagItem(obj);
-			// 	EditorData().syncItem(_t);
-			// }
-
-			// Force UI refresh
-			setTimeout(() => {
-				set({ ...get() });
-			}, 100);
+			// console.log("Loading config into editor:", config);
+			// // Validate the config using our Zod schema
+			// const { errors } = transformWithSchema(ConfigSchema, config);
+			// console.log("Validation errors in loadConfig:", errors);
+			// set({
+			// 	isDirty: false,
+			// 	errors,
+			// });
+			// // for (const obj of config.dataPool) {
+			// // 	const _t = EditorData().tagItem(obj);
+			// // 	EditorData().syncItem(_t);
+			// // }
+			// // Force UI refresh
+			// setTimeout(() => {
+			// 	set({ ...get() });
+			// }, 100);
 		},
 
 		/**
 		 * Auto-save the current config to localStorage
 		 */
 		autoSave: async (quiet = false) => {
-			const { config, errors } = await actions.config.validateConfig();
-
-			// Validate the config using our Zod schema
-			// const errors = validateConfig(config);
-			if (errors.length > 0) {
-				console.error("Config has validation errors:", errors);
-				return;
-			}
-			await window.localStorage.setItem("editorConfig", JSON.stringify(config));
-			if (!quiet) {
-				actions.notifications.showSuccess("Autosaved", 1000);
-			}
+			// const { config, errors } = await actions.config.validateConfig();
+			// // Validate the config using our Zod schema
+			// // const errors = validateConfig(config);
+			// if (errors.length > 0) {
+			// 	console.error("Config has validation errors:", errors);
+			// 	return;
+			// }
+			// await window.localStorage.setItem("editorConfig", JSON.stringify(config));
+			// if (!quiet) {
+			// 	actions.notifications.showSuccess("Autosaved", 1000);
+			// }
 		},
 
 		/**
 		 * Save the current config to a JSON file
 		 */
 		validateConfig: async () => {
-			const config = {
-				dataPool: [...EditorData().dataPool.values()],
-			} as Config;
-
-			// Validate the config using our Zod schema
-			const { errors } = transformWithSchema(ConfigSchema, config);
-
-			set({
-				isDirty: false,
-			});
-
-			if (errors.length === 0) {
-				actions.notifications.showSuccess("Config saved successfully");
-			} else {
-				actions.notifications.showError(
-					`Config has ${errors.length} validation errors. First error: ${formatValidationError(errors[0])}`,
-				);
-				console.error("Config has validation errors:", errors);
-			}
-			return { config, errors };
+			// const config = {
+			// 	dataPool: [...EditorData().dataPool.values()],
+			// } as Config;
+			// // Validate the config using our Zod schema
+			// const { errors } = transformWithSchema(ConfigSchema, config);
+			// set({
+			// 	isDirty: false,
+			// });
+			// if (errors.length === 0) {
+			// 	actions.notifications.showSuccess("Config saved successfully");
+			// } else {
+			// 	actions.notifications.showError(
+			// 		`Config has ${errors.length} validation errors. First error: ${formatValidationError(errors[0])}`,
+			// 	);
+			// 	console.error("Config has validation errors:", errors);
+			// }
+			// return { config, errors };
 		},
 
 		saveConfigToFile: async () => {
-			const { config, errors } = await actions.config.validateConfig();
-			// Ensure text definitions are properly formatted and download the file
-			saveConfigToFile(config);
-			if (errors.length === 0) {
-				actions.notifications.showSuccess("Config saved successfully");
-			} else {
-				actions.notifications.showError(
-					`Config has ${errors.length} validation errors. First error: ${formatValidationError(errors[0])}`,
-				);
-			}
+			// const { config, errors } = await actions.config.validateConfig();
+			// // Ensure text definitions are properly formatted and download the file
+			// saveConfigToFile(config);
+			// if (errors.length === 0) {
+			// 	actions.notifications.showSuccess("Config saved successfully");
+			// } else {
+			// 	actions.notifications.showError(
+			// 		`Config has ${errors.length} validation errors. First error: ${formatValidationError(errors[0])}`,
+			// 	);
+			// }
 		},
 
 		/**
 		 * Load a config from a file with notification feedback
 		 */
 		loadConfigFromFile: async (file: File) => {
-			actions.notifications.showLoading("Loading configuration...");
-
-			try {
-				const config = await loadConfigFromFile(file);
-				const configClone = JSON.parse(JSON.stringify(config));
-				actions.config.loadConfig(configClone);
-				actions.notifications.clear();
-				actions.notifications.showSuccess("Config loaded successfully");
-				return config;
-			} catch (error: unknown) {
-				console.error("Error loading config:", error);
-				const errorMsg = error instanceof Error ? error.message : String(error);
-				actions.notifications.clear();
-				actions.notifications.showError(`Error loading config: ${errorMsg}`);
-				return null;
-			}
+			// actions.notifications.showLoading("Loading configuration...");
+			// try {
+			// 	const config = await loadConfigFromFile(file);
+			// 	const configClone = JSON.parse(JSON.stringify(config));
+			// 	actions.config.loadConfig(configClone);
+			// 	actions.notifications.clear();
+			// 	actions.notifications.showSuccess("Config loaded successfully");
+			// 	return config;
+			// } catch (error: unknown) {
+			// 	console.error("Error loading config:", error);
+			// 	const errorMsg = error instanceof Error ? error.message : String(error);
+			// 	actions.notifications.clear();
+			// 	actions.notifications.showError(`Error loading config: ${errorMsg}`);
+			// 	return null;
+			// }
 		},
 
 		/**

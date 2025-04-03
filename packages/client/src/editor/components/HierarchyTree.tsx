@@ -15,7 +15,6 @@ export const HierarchyTreeItem = ({
 }: { node: TreeNode; depth: number }) => {
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity?.Entity!.inst === node.id;
-	const icon = isSelected ? "" : " ";
 	return (
 		<div className={cn("pl-4 font-normal w-full", depth === 0 && "font-medium")}>
 			<div
