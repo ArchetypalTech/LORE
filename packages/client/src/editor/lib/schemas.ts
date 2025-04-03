@@ -3,6 +3,7 @@ import {
 	inspectableActions,
 	type Direction,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
 
 export const ValidationErrorSchema = z.object({
@@ -35,16 +36,33 @@ export const ConfigSchema = z.object({
 });
 export type Config = z.infer<typeof ConfigSchema>;
 
-export const directionToIndex = (value: string) => {
-	if (value.None) return 0;
-	if (value.Some) value = value.Some;
-	const match = direction.findIndex((e) => e === value);
+/*
+ * Enums
+ */
+
+const cleanCairoEnum = (
+	value: CairoCustomEnum | string | { None: boolean } | { Some: unknown },
+) => {
+	if (typeof value !== "string") {
+		if ("None" in value) return "None";
+	}
+	return value;
+};
+
+export const directionToIndex = (
+	value: CairoCustomEnum | string | { None: boolean } | { Some: Direction },
+) => {
+	const match = direction.findIndex((e) => e === cleanCairoEnum(value));
 	return match >= 0 ? match : 0;
 };
 
-export const inspectableActionsToIndex = (value: string) => {
-	if (value.None) return 0;
-	if (value.Some) value = value.Some;
-	const match = inspectableActions.findIndex((e) => e === value);
+export const inspectableActionsToIndex = (
+	value:
+		| CairoCustomEnum
+		| string
+		| { None: boolean }
+		| { Some: CairoCustomEnum },
+) => {
+	const match = inspectableActions.findIndex((e) => e === cleanCairoEnum(value));
 	return match >= 0 ? match : 0;
 };

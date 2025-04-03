@@ -1,18 +1,6 @@
-import { byteArray } from "starknet";
+import { byteArray, type BigNumberish } from "starknet";
 
 const convertIfString = (item: unknown) => {
-	if ((item as TempInt).name === "TempInt") {
-		if ((item as TempInt).value === "") {
-			return 0;
-		}
-		return parseInt((item as TempInt).value);
-	}
-	if ((item as ByteArray).name === "ByteArray") {
-		if ((item as ByteArray).value === "") {
-			return 0;
-		}
-		return byteArray.byteArrayFromString((item as ByteArray).value);
-	}
 	if (item === "") {
 		return 0;
 	}
@@ -97,18 +85,27 @@ export const toCairoArray = (args: unknown[]): unknown[] => {
 	return result;
 };
 
-export class TempInt {
-	name = "TempInt";
-	value: string;
-	constructor(value: string) {
-		this.value = value;
-	}
-}
+export const colorizeHash = (hash: string) => {
+	let coloredHash = "";
 
-export class ByteArray {
-	name = "ByteArray";
-	value: string;
-	constructor(value: string) {
-		this.value = value;
+	for (let i = 0; i < hash.length; i += 3) {
+		const chunk = hash.substring(i, Math.min(i + 3, hash.length));
+		let combinedCharCode = 0;
+		for (let j = 0; j < chunk.length; j++) {
+			combinedCharCode += (chunk.charCodeAt(j) + 10) * (j + 1);
+		}
+		const hue = (combinedCharCode * 37) % 360;
+		const saturation = 20 + (combinedCharCode % 30);
+		const lightness = 45 + (combinedCharCode % 20);
+
+		const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+		coloredHash += `<span style="color:${color}; font-weight:bold;">${chunk}</span>`;
 	}
-}
+
+	return coloredHash;
+};
+
+export const formatColorHash = (bigInt: BigNumberish) => {
+	return colorizeHash(bigInt.toString().slice(-9));
+};

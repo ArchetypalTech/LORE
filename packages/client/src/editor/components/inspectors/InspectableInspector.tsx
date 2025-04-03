@@ -32,8 +32,10 @@ export const InspectableInspector = ({
 				updatedObject.description = value as string[];
 				break;
 			case "is_visible":
-				const val = e.target.checked;
-				updatedObject.is_visible = val as boolean;
+				{
+					const val = (e.target as { checked: boolean }).checked;
+					updatedObject.is_visible = val as boolean;
+				}
 				break;
 		}
 

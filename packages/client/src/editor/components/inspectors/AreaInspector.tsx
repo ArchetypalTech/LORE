@@ -6,6 +6,7 @@ import {
 	type Area,
 	type Direction,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import type { CairoCustomEnum } from "starknet";
 
 export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 	const area = entityObject;
@@ -30,7 +31,7 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		const { id, value } = e.target;
 		switch (id) {
 			case "direction":
-				updatedObject.direction = value as Direction;
+				updatedObject.direction = value as unknown as CairoCustomEnum;
 				break;
 		}
 
@@ -46,7 +47,6 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 	};
 
 	const { direction_value, direction_options } = useMemo(() => {
-		console.log(area.direction);
 		const enum_options = direction.map((e) => {
 			return { value: e.toString(), label: e.toString() };
 		});

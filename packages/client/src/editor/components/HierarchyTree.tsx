@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils/utils";
 import type { BigNumberish } from "starknet";
 
 type TreeNode = {
-	id: string;
+	id: BigNumberish;
 	name: string;
 	children: TreeNode[];
 };
@@ -83,7 +83,7 @@ export const HierarchyTree = () => {
 				New Entity
 			</button>
 			{tree
-				.sort((a, b) => a.id.localeCompare(b.id))
+				.sort((a, b) => a.id.toString().localeCompare(b.id.toString()))
 				.map((node) => (
 					<HierarchyTreeItem key={node.name + node.id} node={node} depth={0} />
 				))}

@@ -50,10 +50,10 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 		await publishEntity(collection.Entity);
 	}
 	if ("Inspectable" in collection) {
-		await publishInspectable(collection.Inspectable);
+		await publishInspectable(collection.Inspectable!);
 	}
 	if ("Area" in collection) {
-		await publishArea(collection.Area);
+		await publishArea(collection.Area!);
 	}
 };
 

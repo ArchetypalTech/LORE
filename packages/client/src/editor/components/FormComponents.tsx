@@ -2,19 +2,25 @@ import { cn, normalizeAddress } from "@/lib/utils/utils";
 import { TagInput as Tags } from "./TagInput";
 import type { ChangeEvent } from "react";
 import { MultiTextArea } from "./MultiTextArea";
+import type React from "react";
 
 export const Header = ({
 	title,
+	subtitle,
 	children,
 	onClickTitle,
 }: {
 	title: string;
+	subtitle: React.ReactNode;
 	children?: React.ReactNode;
 	onClickTitle?: () => void;
 }) => {
 	return (
-		<div className="flex justify-between flex-row gap-2">
-			<h2 onClick={onClickTitle}>{title}</h2>
+		<div className="flex justify-between flex-row gap-2 items-center">
+			<div className="flex flex-col">
+				<h2 onClick={onClickTitle}>{title}</h2>
+				<div>{subtitle}</div>
+			</div>
 			<div className="grow" />
 			{children}
 		</div>
