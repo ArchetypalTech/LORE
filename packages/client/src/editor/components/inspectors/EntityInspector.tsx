@@ -17,7 +17,7 @@ export const EntityInspector = ({ entityObject }: { entityObject: Entity }) => {
 		if (!entity || entity === undefined) return;
 
 		const updatedObject = {
-			...EditorData().getEntity(entity.inst.toString())!.Entity,
+			...EditorData().getEntity(entity.inst)!.Entity,
 		};
 		if (!updatedObject || updatedObject === undefined) {
 			throw new Error("Entity not found");
@@ -35,7 +35,7 @@ export const EntityInspector = ({ entityObject }: { entityObject: Entity }) => {
 		}
 
 		const editorObject = {
-			...EditorData().getItem(entity.inst.toString()),
+			...EditorData().getEntity(entity.inst),
 		} as AnyObject;
 		if (!editorObject) {
 			throw new Error("Editor object not found");

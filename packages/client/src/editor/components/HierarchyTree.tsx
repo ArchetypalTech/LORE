@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import EditorData, { useEditorData } from "../editor.data";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { cn } from "@/lib/utils/utils";
+import type { BigNumberish } from "starknet";
 
 type TreeNode = {
 	id: string;
@@ -47,7 +48,7 @@ export const HierarchyTree = () => {
 		const entities = EditorData().getEntities();
 		const parents = entities.filter((e) => !e!.ChildToParent);
 		//recursively build tree
-		const getNode = (inst: string): TreeNode[] => {
+		const getNode = (inst: BigNumberish): TreeNode[] => {
 			const entity = EditorData().getEntity(inst);
 			if (entity === undefined || entity.Entity === undefined) return [];
 			if ("ParentToChildren" in entity) {
@@ -67,7 +68,7 @@ export const HierarchyTree = () => {
 
 		// construct the tree
 		const tree: TreeNode[] = parents.flatMap((parent) =>
-			getNode(parent!.Entity.inst.toString()),
+			getNode(parent!.Entity.inst),
 		);
 
 		return { tree };

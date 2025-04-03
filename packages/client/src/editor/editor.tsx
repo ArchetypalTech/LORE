@@ -54,7 +54,7 @@ export const Editor = () => {
 		}
 		if (hasObjects) {
 			if (selectedEntity === undefined) {
-				EditorData().selectEntity(entities[0].inst.toString());
+				EditorData().selectEntity(entities[0].inst);
 				return;
 			}
 			setEditorState("loaded");

@@ -5,6 +5,7 @@ import type {
 	ParentToChildren,
 	SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import type { BigNumberish } from "starknet";
 
 export type AnyObject = Partial<SchemaType["lore"]>;
 export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
@@ -20,7 +21,7 @@ const {
 	createFactory,
 	useStore: useEditorData,
 } = StoreBuilder({
-	dataPool: new Map<string, AnyObject>(),
+	dataPool: new Map<BigNumberish, AnyObject>(),
 	entities: [] as Entity[],
 	parents: [] as ParentToChildren[],
 	selectedEntity: undefined as AnyObject | undefined,
@@ -28,20 +29,17 @@ const {
 });
 
 const getEntities = () =>
-	(
-		get().entities.map(
-			(x) => get().dataPool.get(x.inst.toString())!,
-		) as EntityCollection[]
-	)
+	(get().entities.map((x) => get().dataPool.get(x.inst)!) as EntityCollection[])
 		.filter((x) => x !== undefined)
 		.sort((x) => parseInt(x.Entity.inst.toString()));
 
-const getEntity = (id: string) => get().dataPool.get(id);
+const getEntity = (id: BigNumberish) =>
+	get().dataPool.get(id) as EntityCollection;
 
-const setItem = (obj: AnyObject, id: string) => {
+const setItem = (obj: AnyObject, id: BigNumberish) => {
 	set((prev) => ({
 		...prev,
-		dataPool: new Map<string, AnyObject>(get().dataPool).set(id, obj),
+		dataPool: new Map<BigNumberish, AnyObject>(get().dataPool).set(id, obj),
 	}));
 };
 
@@ -53,7 +51,11 @@ const addEntity = (entity: Entity) => {
 };
 
 const removeEntity = (entity: Entity) => {
-	const id = entity.inst.toString();
+	const id = entity.inst;
+	const isSelected = get().selectedEntity?.Entity.inst === id;
+	if (isSelected) {
+		set({ selectedEntity: undefined });
+	}
 	set((prev) => ({
 		...prev,
 		entities: prev.entities.filter((e) => e.inst !== entity.inst),
@@ -66,7 +68,7 @@ const removeEntity = (entity: Entity) => {
 	}));
 };
 
-const getItem = (id: string) => get().dataPool.get(id);
+const getItem = (id: BigNumberish) => get().dataPool.get(id);
 
 const syncItem = (obj: AnyObject) => {
 	try {
@@ -78,7 +80,7 @@ const syncItem = (obj: AnyObject) => {
 		let name = "";
 
 		// @dev: retrieve instance value
-		const findInstValue = (obj: AnyObject): string | undefined => {
+		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
 			for (const key of Object.keys(obj)) {
 				if (key.startsWith("inst")) {
 					return obj["inst" as keyof typeof obj] as string;
@@ -95,9 +97,13 @@ const syncItem = (obj: AnyObject) => {
 
 		// merge items into datapool (or new if don't exist)
 		if (inst !== undefined) {
-			const existing = get().dataPool.get(inst.toString()) || {};
+			const existing = get().dataPool.get(inst) || {};
+			if (existing === undefined) {
+				console.error("Existing object not found:", inst, obj);
+				return;
+			}
 			Object.assign(existing, obj);
-			setItem({ ...existing } as AnyObject, inst.toString());
+			setItem({ ...existing } as AnyObject, inst);
 		}
 
 		// add Entity models to entities
@@ -163,7 +169,7 @@ const deleteItem = async (id: string) => {
 	// }
 };
 
-const selectEntity = (id: string) => {
+const selectEntity = (id: BigNumberish) => {
 	set({ selectedEntity: get().dataPool.get(id) });
 };
 

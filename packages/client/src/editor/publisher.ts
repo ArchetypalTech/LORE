@@ -6,7 +6,6 @@ import type {
 	Entity,
 	Inspectable,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { string } from "zod";
 import { toCairoArray } from "./utils";
 import { directionToIndex, inspectableActionsToIndex } from "./lib/schemas";
 import { byteArray } from "starknet";

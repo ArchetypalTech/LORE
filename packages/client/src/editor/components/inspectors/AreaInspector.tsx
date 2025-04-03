@@ -21,7 +21,7 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		if (!area || area === undefined) return;
 
 		const updatedObject = {
-			...EditorData().getEntity(area.inst.toString())!.Area,
+			...EditorData().getEntity(area.inst)!.Area,
 		};
 		if (!updatedObject || updatedObject === undefined) {
 			throw new Error("Area not found");
@@ -35,7 +35,7 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		}
 
 		const editorObject = {
-			...EditorData().getItem(area.inst.toString()),
+			...EditorData().getEntity(area.inst),
 		} as AnyObject;
 		if (!editorObject) {
 			throw new Error("Editor object not found");
@@ -46,12 +46,13 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 	};
 
 	const { direction_value, direction_options } = useMemo(() => {
+		console.log(area.direction);
 		const enum_options = direction.map((e) => {
 			return { value: e.toString(), label: e.toString() };
 		});
 		if (area.direction.None)
 			return { direction_value: "None", direction_options: enum_options };
-		const converted = direction.find((e) => e === area?.direction.Some);
+		const converted = direction.find((e) => e === area?.direction);
 		return {
 			direction_value: converted?.toString(),
 			direction_options: enum_options,

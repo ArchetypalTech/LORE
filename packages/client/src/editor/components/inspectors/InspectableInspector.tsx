@@ -20,7 +20,7 @@ export const InspectableInspector = ({
 		if (!inspectable || inspectable === undefined) return;
 
 		const updatedObject = {
-			...EditorData().getEntity(inspectable.inst.toString())!.Inspectable,
+			...EditorData().getEntity(inspectable.inst)!.Inspectable,
 		};
 		if (!updatedObject || updatedObject === undefined) {
 			throw new Error("Inspectable not found");
@@ -38,7 +38,7 @@ export const InspectableInspector = ({
 		}
 
 		const editorObject = {
-			...EditorData().getItem(inspectable.inst.toString()),
+			...EditorData().getItem(inspectable.inst),
 		} as AnyObject;
 		if (!editorObject) {
 			throw new Error("Editor object not found");
