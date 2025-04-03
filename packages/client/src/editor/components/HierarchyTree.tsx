@@ -75,10 +75,16 @@ export const HierarchyTree = () => {
 
 	return (
 		<div className="h-full items-start flex flex-col gap-2 justify-start">
+			<button
+				className="btn btn-sm btn-success"
+				onClick={() => EditorData().newEntity({} as Entity)}
+			>
+				New Entity
+			</button>
 			{tree
 				.sort((a, b) => a.id.localeCompare(b.id))
 				.map((node) => (
-					<HierarchyTreeItem key={node.name} node={node} depth={0} />
+					<HierarchyTreeItem key={node.name + node.id} node={node} depth={0} />
 				))}
 		</div>
 	);
