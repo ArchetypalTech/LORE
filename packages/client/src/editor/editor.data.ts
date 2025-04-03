@@ -97,7 +97,7 @@ const syncItem = (obj: AnyObject) => {
 
 		// merge items into datapool (or new if don't exist)
 		if (inst !== undefined) {
-			const existing = get().dataPool.get(inst) || {};
+			const existing = { ...(get().dataPool.get(inst) || {}) };
 			if (existing === undefined) {
 				console.error("Existing object not found:", inst, obj);
 				return;
