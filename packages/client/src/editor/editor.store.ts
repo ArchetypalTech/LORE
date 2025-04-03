@@ -251,6 +251,12 @@ export const actions = {
 				return false;
 			}
 		},
+
+		doLoggedAction: async (action: () => Promise<void>) => {
+			EditorStore().notifications.startPublishing();
+			await action();
+			EditorStore().notifications.finalizePublishing();
+		},
 	},
 };
 

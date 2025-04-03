@@ -2,6 +2,7 @@ import EditorData, { type AnyObject } from "@/editor/editor.data";
 import type { ChangeEvent } from "react";
 import { TextAreaArray, Toggle } from "../FormComponents";
 import type { Inspectable } from "@/lib/dojo_bindings/typescript/models.gen";
+import { tick } from "@/lib/utils/utils";
 
 export const InspectableInspector = ({
 	entityObject,
@@ -19,16 +20,20 @@ export const InspectableInspector = ({
 		if (!inspectable || inspectable === undefined) return;
 
 		const updatedObject = {
-			...EditorData().getEntity(inspectable.inst.toString())!.Entity,
+			...EditorData().getEntity(inspectable.inst.toString())!.Inspectable,
 		};
 		if (!updatedObject || updatedObject === undefined) {
-			throw new Error("Entity not found");
+			throw new Error("Inspectable not found");
 		}
 
 		const { id, value } = e.target;
 		switch (id) {
-			case "direction":
-				updatedObject.name = value;
+			case "description":
+				updatedObject.description = value as string[];
+				break;
+			case "is_visible":
+				const val = e.target.checked;
+				updatedObject.is_visible = val as boolean;
 				break;
 		}
 
@@ -38,9 +43,10 @@ export const InspectableInspector = ({
 		if (!editorObject) {
 			throw new Error("Editor object not found");
 		}
-		Object.assign(editorObject, { Entity: updatedObject });
+		Object.assign(editorObject, { Inspectable: updatedObject });
 		console.log(editorObject);
 		EditorData().syncItem(editorObject);
+		await tick();
 		EditorData().selectEntity(updatedObject.inst!.toString());
 	};
 
@@ -58,7 +64,7 @@ export const InspectableInspector = ({
 	// 	};
 	// }, [inspectable]);
 
-	if (!inspectable) return <div>Entity not found</div>;
+	if (!inspectable) return <div>Inspectable not found</div>;
 
 	return (
 		<div className="flex flex-col gap-2">

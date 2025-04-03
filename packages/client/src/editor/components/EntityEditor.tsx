@@ -70,8 +70,13 @@ export const EntityEditor = () => {
 				if (!Inspector) return <div key={key}>{key}</div>;
 				if (editedEntity[key] === undefined) return null;
 				return (
-					<div key={key} className="flex flex-col gap-2">
-						<h3 className="w-full text-right text-xs uppercase">{key}</h3>
+					<div
+						key={key}
+						className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs"
+					>
+						<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold">
+							{key}
+						</h3>
 						<Inspector key={key} entityObject={editedEntity[key]} />
 					</div>
 				);

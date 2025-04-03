@@ -4,6 +4,7 @@ import { Select } from "../FormComponents";
 import {
 	direction,
 	type Area,
+	type Direction,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 
 export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
@@ -20,16 +21,16 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		if (!area || area === undefined) return;
 
 		const updatedObject = {
-			...EditorData().getEntity(area.inst.toString())!.Entity,
+			...EditorData().getEntity(area.inst.toString())!.Area,
 		};
 		if (!updatedObject || updatedObject === undefined) {
-			throw new Error("Entity not found");
+			throw new Error("Area not found");
 		}
 
 		const { id, value } = e.target;
 		switch (id) {
 			case "direction":
-				updatedObject.name = value;
+				updatedObject.direction = value as string as Direction;
 				break;
 		}
 
@@ -39,7 +40,7 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		if (!editorObject) {
 			throw new Error("Editor object not found");
 		}
-		Object.assign(editorObject, { Entity: updatedObject });
+		Object.assign(editorObject, { Area: updatedObject });
 		console.log(editorObject);
 		EditorData().syncItem(editorObject);
 		EditorData().selectEntity(updatedObject.inst!.toString());
@@ -59,7 +60,7 @@ export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
 		};
 	}, [area]);
 
-	if (!area) return <div>Entity not found</div>;
+	if (!area) return <div>Area not found</div>;
 
 	return (
 		<div className="flex flex-col gap-2">

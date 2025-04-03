@@ -137,7 +137,8 @@ export default function Terminal() {
 						<div id="scroller" className="w-full flex flex-row gap-2">
 							<span>&#x3e;</span>
 							<input
-								className="bg-transparent terminal-line system w-full"
+								id="terminal-input"
+								className="bg-transparent terminal-line system w-full border-0"
 								type="text"
 								value={inputValue}
 								onChange={(e) => setInputValue(e.target.value)}

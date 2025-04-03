@@ -1,7 +1,6 @@
 import { cn, normalizeAddress } from "@/lib/utils/utils";
 import { TagInput as Tags } from "./TagInput";
 import EditorStore from "../editor.store";
-import { Editor } from "../editor";
 import type { ChangeEvent } from "react";
 import { MultiTextArea } from "./MultiTextArea";
 
@@ -25,14 +24,7 @@ export const Header = ({
 
 export const DeleteButton = ({ onClick }: { onClick: () => void }) => {
 	return (
-		<button
-			className="btn btn-danger btn-sm"
-			onClick={async () => {
-				EditorStore().notifications.startPublishing();
-				await onClick();
-				EditorStore().notifications.finalizePublishing();
-			}}
-		>
+		<button className="btn btn-danger btn-sm" onClick={onClick}>
 			❌
 		</button>
 	);
@@ -40,14 +32,7 @@ export const DeleteButton = ({ onClick }: { onClick: () => void }) => {
 
 export const PublishButton = ({ onClick }: { onClick: () => void }) => {
 	return (
-		<button
-			className="btn btn-sm"
-			onClick={async () => {
-				EditorStore().notifications.startPublishing();
-				await onClick();
-				EditorStore().notifications.finalizePublishing();
-			}}
-		>
+		<button className="btn btn-sm" onClick={onClick}>
 			🕊️
 		</button>
 	);

@@ -83,7 +83,10 @@ export const Editor = () => {
 							<EntityEditor />
 						</div>
 						<div
-							className={cn(!dark_mode && "invert", "relative col-span-2 max-h-[50%]")}
+							className={cn(
+								!dark_mode && "invert",
+								"relative col-span-2 h-[700px] hover:opacity-100 opacity-50",
+							)}
 						>
 							<Terminal />
 						</div>
@@ -121,7 +124,7 @@ export const Editor = () => {
 	return (
 		<div
 			id="editor-root"
-			className="relative max-h-screen h-screen w-full flex flex-col"
+			className="relative max-h-screen h-screen w-full flex flex-col font-atkinson"
 		>
 			<Notifications onDismiss={handleDismissNotification} />
 			<div className="h-full w-full lg:container flex flex-col gap-2 mx-auto">

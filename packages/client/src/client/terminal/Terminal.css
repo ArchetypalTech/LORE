@@ -8,6 +8,10 @@ input {
   scrollbar-width: none;
 }
 
+input#terminal-input {
+  @apply bg-transparent w-full border-0;
+}
+
 #scroller * {
   overflow-anchor: none;
 }

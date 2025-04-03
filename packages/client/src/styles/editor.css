@@ -18,7 +18,7 @@ html.modal {
 
 #editor-root {
   button,
-  input,
+  input:not(#terminal-input),
   select,
   input[type="checkbox"] {
     @apply p-2 bg-white/60;
@@ -36,7 +36,7 @@ html.modal {
     @apply text-xs;
   }
 
-  input,
+  input:not(#terminal-input),
   select,
   textarea {
     @apply border border-gray-300 rounded-md border-dashed;
@@ -87,7 +87,7 @@ html.modal {
   }
 
   .tag {
-    @apply rounded-xs px-2 py-1 m-1 inline-flex bg-blue-100;
+    @apply rounded-xs px-2 py-1 m-1 inline-flex bg-gray-200;
   }
 }
 
@@ -97,7 +97,7 @@ html.dark #editor-root {
     @apply text-black bg-[var(--terminal-system)];
   }
 
-  input:not([type="file"]),
+  input:not([type="file"]):not(#terminal-input),
   select,
   textarea {
     @apply bg-black border-[var(--terminal-system)] border-dashed border;

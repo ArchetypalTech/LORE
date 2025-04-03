@@ -15,17 +15,22 @@ export const HierarchyTreeItem = ({
 }: { node: TreeNode; depth: number }) => {
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity?.Entity!.inst === node.id;
-	const icon = isSelected ? "> " : " ";
+	const icon = isSelected ? "" : " ";
 	return (
-		<div className={cn("pl-4 font-normal", depth === 0 && "font-medium")}>
+		<div className={cn("pl-4 font-normal w-full", depth === 0 && "font-medium")}>
 			<div
 				className={cn(
-					"opacity-80",
-					isSelected && "bg-amber-600/70 text-white opacity-100",
+					"relative opacity-80 overflow-visible",
+					isSelected && " text-white opacity-100 font-bold",
 				)}
 				onClick={() => EditorData().selectEntity(node.id.toString())}
 			>
-				{icon}
+				{isSelected && (
+					<div className="absolute top-0 -left-4 w-[100%] h-[100%] bg-black -z-1 px-6" />
+				)}
+				{isSelected && (
+					<div className="absolute top-0 -left-3 font-white">{">"}</div>
+				)}
 				{node.name}
 			</div>
 			{node.children.map((child: TreeNode) => (
@@ -71,11 +76,11 @@ export const HierarchyTree = () => {
 
 	return (
 		<div className="h-full items-start flex flex-col gap-2 justify-start">
-			<div>
-				{tree.map((node) => (
+			{tree
+				.sort((a, b) => a.id.localeCompare(b.id))
+				.map((node) => (
 					<HierarchyTreeItem key={node.name} node={node} depth={0} />
 				))}
-			</div>
 		</div>
 	);
 };
