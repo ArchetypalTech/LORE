@@ -50,7 +50,6 @@ export const MultiTextArea = ({
 	const handleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const newValue = [...value];
 		newValue[parseInt(e.target.id)] = e.target.value;
-		console.log(e);
 		handleNewValue(newValue);
 	};
 
@@ -77,7 +76,7 @@ export const MultiTextArea = ({
 								rows={rows}
 								className={cn("flex w-full", className)}
 							/>
-							<div className="absolute top-0 right-0 scale-50">
+							<div className="absolute top-0 right-0 scale-50 hover:grayscale-0 grayscale-100 opacity-50 hover:opacity-100">
 								<DeleteButton onClick={() => handleRemoveArray(i)} />
 							</div>
 						</div>

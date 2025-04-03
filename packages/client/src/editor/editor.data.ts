@@ -70,7 +70,7 @@ const removeEntity = (entity: Entity) => {
 
 const getItem = (id: BigNumberish) => get().dataPool.get(id);
 
-const syncItem = (obj: AnyObject) => {
+const syncItem = (obj: AnyObject, verbose = false) => {
 	try {
 		if (obj === undefined) return;
 		// @dev: Ignore things we aren't storing in the datapool, this needs to be expanded
@@ -118,14 +118,15 @@ const syncItem = (obj: AnyObject) => {
 			});
 		}, 1);
 
-		console.log(
-			`[Editor] Sync${name ? `: ${name}` : ""}: ${
-				// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
-				Object.keys(obj as any)
-			}`,
-			obj,
-			get(),
-		);
+		if (verbose)
+			console.log(
+				`[Editor] Sync${name ? `: ${name}` : ""}: ${
+					// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
+					Object.keys(obj as any)
+				}`,
+				obj,
+				get(),
+			);
 
 		if ("ParentToChildren" in obj || "ChildToParent" in obj) {
 			// we might have a re-parenting so we force update the hierarchy

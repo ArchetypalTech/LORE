@@ -47,7 +47,7 @@ export const Editor = () => {
 	};
 
 	useEffect(() => {
-		const hasObjects = entities.length > 0;
+		const hasObjects = EditorData().getEntities().length > 0;
 		if (status === "loading") {
 			setEditorState("not connected");
 			return;
@@ -55,6 +55,7 @@ export const Editor = () => {
 		if (hasObjects) {
 			if (selectedEntity === undefined) {
 				EditorData().selectEntity(entities[0].inst);
+				setEditorState("loaded");
 				return;
 			}
 			setEditorState("loaded");

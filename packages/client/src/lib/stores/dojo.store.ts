@@ -13,7 +13,7 @@ import {
 	decodeDojoText,
 } from "../utils/utils";
 import { StoreBuilder } from "../utils/storebuilder";
-import EditorData from "@/editor/editor.data";
+import EditorData, { type AnyObject } from "@/editor/editor.data";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 
@@ -97,11 +97,9 @@ const onPlayerStory = (playerStory: Partial<PlayerStory>) => {
 	const address = !LORE_CONFIG.useController
 		? LORE_CONFIG.wallet.address
 		: WalletStore().controller?.account?.address;
-	console.log(playerStory);
 	const normalizedPlayerId = normalizeAddress(String(playerStory.inst));
 	const normalizedAddress = normalizeAddress(String(address));
 	if (normalizedPlayerId === normalizedAddress) {
-		console.log("Story", playerStory);
 		setOutputter(playerStory as PlayerStory);
 		return;
 	}
@@ -114,7 +112,7 @@ const onReponseData = (
 	if (responseData.PlayerStory) {
 		onPlayerStory(responseData.PlayerStory);
 	}
-	EditorData().syncItem(responseData);
+	EditorData().syncItem(responseData as AnyObject, true);
 };
 
 /* 

@@ -41,7 +41,6 @@ export const EntityInspector = ({ entityObject }: { entityObject: Entity }) => {
 			throw new Error("Editor object not found");
 		}
 		Object.assign(editorObject, { Entity: updatedObject });
-		console.log(editorObject);
 		EditorData().syncItem(editorObject);
 		EditorData().selectEntity(updatedObject.inst!.toString());
 	};
