@@ -26,13 +26,7 @@ export const componentData: {
 		order: number;
 		inspector: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
-		creator: (entity: Entity) => {
-			[K in keyof Partial<NonNullable<EntityCollection>>]: T extends {
-				inst: BigNumberish;
-			}
-				? EntityCollection[K]
-				: never;
-		};
+		creator: (entity: Entity) => Pick<EntityCollection, K>;
 	};
 } = {
 	Entity: {
