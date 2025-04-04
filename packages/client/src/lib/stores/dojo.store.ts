@@ -1,5 +1,5 @@
 import type { InitDojo } from "@lib/dojo";
-import TerminalStore, { addTerminalContent } from "./terminal.store";
+import { addTerminalContent } from "./terminal.store";
 import { LORE_CONFIG } from "../config";
 import WalletStore from "./wallet.store";
 // @dev Use the Dojo bindings, *avoid* recreating these where possible
@@ -13,7 +13,8 @@ import {
 	decodeDojoText,
 } from "../utils/utils";
 import { StoreBuilder } from "../utils/storebuilder";
-import EditorData, { type AnyObject } from "@/editor/editor.data";
+import EditorData from "@/editor/editor.data";
+import type { AnyObject } from "@/editor/lib/schemas";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 

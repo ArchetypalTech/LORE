@@ -3,15 +3,9 @@ import { createRandomName, randomKey } from "./editor.utils";
 import type {
 	Entity,
 	ParentToChildren,
-	SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { BigNumberish } from "starknet";
-
-export type AnyObject = Partial<SchemaType["lore"]>;
-export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
-export type ModelCollection = {
-	[K in keyof AnyObject]?: Partial<AnyObject>;
-};
+import type { AnyObject, EntityCollection } from "./lib/schemas";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 

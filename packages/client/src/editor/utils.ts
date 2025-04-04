@@ -40,7 +40,8 @@ const convertIfString = (item: unknown) => {
  * ]) // returns [2, 288709, 1, 0, 3, 6, 0, 0, 791662, 1, 0, 3, 6, 0, 0]
  */
 
-// @DEV: FIXME: ⚠️ this is a really shitty implementation because handling both the ByteArrays and nested arrays is max pain- this is why we currently manually layout the Calldata in publisher.ts
+// @DEV: FIXME: ⚠️
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <this is a really shitty implementation because handling both the ByteArrays and nested arrays is max pain- this is why we currently manually layout the Calldata in publisher.ts>
 export const toCairoArray = (args: unknown[]): unknown[] => {
 	// Handle empty array case
 	if (args.length === 0) {

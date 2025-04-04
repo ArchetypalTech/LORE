@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import EditorData, {
-	useEditorData,
-	type AnyObject,
-	type EntityCollection,
-} from "../editor.data";
+import EditorData, { useEditorData } from "../editor.data";
+import type { AnyObject, EntityCollection } from "../lib/schemas";
 import { DeleteButton, Header, PublishButton, Select } from "./FormComponents";
 import { EntityInspector } from "./inspectors/EntityInspector";
 import { AreaInspector } from "./inspectors/AreaInspector";

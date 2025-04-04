@@ -2,6 +2,8 @@ import {
 	direction,
 	inspectableActions,
 	type Direction,
+	type Entity,
+	type SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
@@ -65,4 +67,9 @@ export const inspectableActionsToIndex = (
 ) => {
 	const match = inspectableActions.findIndex((e) => e === cleanCairoEnum(value));
 	return match >= 0 ? match : 0;
+};
+export type AnyObject = Partial<SchemaType["lore"]>;
+export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
+export type ModelCollection = {
+	[K in keyof AnyObject]?: Partial<AnyObject>;
 };

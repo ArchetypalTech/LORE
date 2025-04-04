@@ -1,10 +1,10 @@
-import EditorData, { type AnyObject } from "@/editor/editor.data";
+import EditorData from "@/editor/editor.data";
+import type { AnyObject } from "@/editor/lib/schemas";
 import { useMemo, type ChangeEvent } from "react";
 import { Select } from "../FormComponents";
 import {
 	direction,
 	type Area,
-	type Direction,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 

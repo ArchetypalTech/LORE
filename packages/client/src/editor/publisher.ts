@@ -1,12 +1,12 @@
 import { SystemCalls, type DesignerCall } from "../lib/systemCalls";
 import { actions } from "./editor.store";
-import EditorData, { type EntityCollection } from "./editor.data";
+import EditorData from "./editor.data";
+import type { EntityCollection } from "./lib/schemas";
 import type {
 	Area,
 	Entity,
 	Inspectable,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { toCairoArray } from "./utils";
 import { directionToIndex, inspectableActionsToIndex } from "./lib/schemas";
 import { byteArray, num } from "starknet";
 
