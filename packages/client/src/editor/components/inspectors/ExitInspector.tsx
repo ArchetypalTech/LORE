@@ -44,11 +44,9 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 				updatedObject.is_enterable = e.target.checked;
 			},
 			leads_to: (e, updatedObject) => {
-				console.log(e, e.target.value);
 				updatedObject.leads_to = e.target.value;
 			},
 			direction_type: (e, updatedObject) => {
-				console.log(e.target.value);
 				updatedObject.direction_type = stringCairoEnum(e.target.value);
 			},
 		},

@@ -78,14 +78,11 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
 			// First check if 'inst' property exists directly
 			if ("inst" in obj) {
-				return obj.inst as string;
+				return obj.inst as BigNumberish;
 			}
-
 			// Then iterate through keys to find nested instance
 			for (const key of Object.keys(obj)) {
 				const value = obj[key as keyof typeof obj];
-
-				// Only recurse if value is a non-null object
 				if (value && typeof value === "object" && !Array.isArray(value)) {
 					// Type guard to ensure we're passing a compatible value
 					const nestedObj = value as AnyObject;
@@ -97,8 +94,8 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 		};
 
 		const inst = findInstValue(obj);
-
-		// merge items into datapool (or new if don't exist)
+		console.log(obj);
+		// @dev: merge items into datapool (or new if don't exist)
 		if (inst !== undefined) {
 			const existing = { ...(get().dataPool.get(inst) || {}) };
 			if (existing === undefined) {
@@ -109,7 +106,7 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 			setItem({ ...existing } as AnyObject, inst);
 		}
 
-		// add Entity models to entities
+		// @dev: add Entity models to entities
 		if ("Entity" in (obj as { Entity: Entity })) {
 			addEntity(obj.Entity as Entity);
 			name = obj.Entity!.name;
@@ -130,7 +127,7 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 			);
 
 		if ("ParentToChildren" in obj || "ChildToParent" in obj) {
-			// we might have a re-parenting so we force update the hierarchy
+			// @dev: we might have a re-parenting so we force update the hierarchy
 			set({ entities: [...get().entities] });
 		}
 	} catch (e) {
@@ -138,6 +135,7 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 	}
 };
 
+// TODO: implement
 const deleteItem = async (model: AnyObject) => {
 	if ("Entity" in model) {
 		await dispatchDesignerCall("delete_entity", [

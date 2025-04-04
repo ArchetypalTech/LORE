@@ -61,7 +61,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 			if (!editorObject) {
 				throw new Error("Editor object not found");
 			}
-
+			console.log(updatedObject, editorObject);
 			Object.assign(editorObject, { [componentName]: updatedObject });
 			EditorData().syncItem(editorObject);
 			EditorData().selectEntity(entity.Entity.inst);
