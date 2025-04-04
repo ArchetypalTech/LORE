@@ -1,9 +1,13 @@
 import {
 	direction,
 	inspectableActions,
+	type tokenType,
 	type Direction,
 	type Entity,
 	type SchemaType,
+	type DirectionEnum,
+	type InspectableActionsEnum,
+	type TokenTypeEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
@@ -54,6 +58,15 @@ export const cleanCairoEnum = (
 	return value;
 };
 
+export const stringCairoEnum = <T>(
+	value: CairoCustomEnum | string | { None: boolean } | { Some: unknown },
+) => {
+	if (typeof value !== "string") {
+		if ("None" in value) return "None";
+	}
+	return value as keyof T;
+};
+
 export const convertCairoEnum = (
 	cairoEnum: CairoCustomEnum,
 	targetEnum: unknown[] | readonly unknown[],
@@ -96,20 +109,22 @@ export const inspectableActionsToIndex = (
 	return match >= 0 ? match : 0;
 };
 
-export type AnyObject = Omit<
-	Partial<SchemaType["lore"]>,
-	| "AreaValue"
-	| "ContainerValue"
-	| "ExitValue"
-	| "InspectableValue"
-	| "InventoryItemValue"
-	| "PlayerStoryValue"
-	| "PlayerValue"
-	| "DictValue"
-	| "EntityValue"
-	| "ChildToParentValue"
-	| "ParentToChildrenValue"
-	| "ActionMapInspectable"
+export type AnyObject = WithStringEnums<
+	Omit<
+		Partial<SchemaType["lore"]>,
+		| "AreaValue"
+		| "ContainerValue"
+		| "ExitValue"
+		| "InspectableValue"
+		| "InventoryItemValue"
+		| "PlayerStoryValue"
+		| "PlayerValue"
+		| "DictValue"
+		| "EntityValue"
+		| "ChildToParentValue"
+		| "ParentToChildrenValue"
+		| "ActionMapInspectable"
+	>
 >;
 export type EntityComponents = Pick<
 	AnyObject,
@@ -126,7 +141,27 @@ export type ComponentInspector<T> = FC<{
 	componentName: keyof NonNullable<EntityComponents>;
 }>;
 
-export const createDefaultEntity = () => ({
+/**
+ * Utility type that replaces CairoCustomEnum fields with string literal unions
+ * from the corresponding constant arrays.
+ */
+export type WithStringEnums<T> = {
+	[K in keyof T]: T[K] extends DirectionEnum
+		? (typeof direction)[number]
+		: T[K] extends InspectableActionsEnum
+			? (typeof inspectableActions)[number]
+			: T[K] extends TokenTypeEnum
+				? (typeof tokenType)[number]
+				: T[K] extends Array<infer U>
+					? Array<WithStringEnums<U>>
+					: T[K] extends object
+						? WithStringEnums<T[K]>
+						: T[K];
+};
+
+export const createDefaultEntity = (): WithStringEnums<
+	Pick<SchemaType["lore"], "Entity">
+> => ({
 	Entity: {
 		inst: randomKey(),
 		is_entity: true,
@@ -135,7 +170,9 @@ export const createDefaultEntity = () => ({
 	},
 });
 
-export const createDefaultAreaComponent = (entity: Entity) => ({
+export const createDefaultAreaComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Area">> => ({
 	Area: {
 		inst: entity.inst,
 		is_area: true,
@@ -143,7 +180,9 @@ export const createDefaultAreaComponent = (entity: Entity) => ({
 	},
 });
 
-export const createDefaultInspectableComponent = (entity: Entity) => ({
+export const createDefaultInspectableComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
 	Inspectable: {
 		inst: entity.inst,
 		is_inspectable: true,
@@ -153,7 +192,9 @@ export const createDefaultInspectableComponent = (entity: Entity) => ({
 	},
 });
 
-export const createDefaultExitComponent = (entity: Entity) => ({
+export const createDefaultExitComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Exit">> => ({
 	Exit: {
 		inst: entity.inst,
 		is_exit: true,

@@ -1,5 +1,5 @@
 import EditorData from "@/editor/editor.data";
-import type { AnyObject } from "@/editor/lib/schemas";
+import type { AnyObject, WithStringEnums } from "@/editor/lib/schemas";
 import { formatColorHash } from "@/editor/utils";
 import type { ChangeEvent } from "react";
 import type { BigNumberish } from "starknet";
@@ -7,7 +7,7 @@ import { debounce } from "ts-debounce";
 
 type InputHandler<T> = (
 	e: ChangeEvent<HTMLInputElement>,
-	updatedObject: T,
+	updatedObject: WithStringEnums<T>,
 ) => void;
 
 type InspectorProps<T extends { inst: BigNumberish }> = {
@@ -48,11 +48,11 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 			if (inputHandlers[id]) {
 				inputHandlers[id](
 					e as unknown as ChangeEvent<HTMLInputElement>,
-					updatedObject,
+					updatedObject as WithStringEnums<T>,
 				);
 			} else {
 				// Default behavior: direct assignment
-				updatedObject[id] = value;
+				updatedObject[id as keyof T] = value as unknown as T[keyof T];
 			}
 
 			const editorObject = {

@@ -76,14 +76,20 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 
 		// @dev: retrieve instance value
 		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
+			// First check if 'inst' property exists directly
+			if ("inst" in obj) {
+				return obj.inst as string;
+			}
+
+			// Then iterate through keys to find nested instance
 			for (const key of Object.keys(obj)) {
-				if (key.startsWith("inst")) {
-					if ("inst" in obj) {
-						return obj["inst" as keyof typeof obj] as string;
-					}
-				}
-				if (typeof obj[key as keyof typeof obj] === "object") {
-					const res = findInstValue(obj[key as keyof typeof obj]);
+				const value = obj[key as keyof typeof obj];
+
+				// Only recurse if value is a non-null object
+				if (value && typeof value === "object" && !Array.isArray(value)) {
+					// Type guard to ensure we're passing a compatible value
+					const nestedObj = value as AnyObject;
+					const res = findInstValue(nestedObj);
 					if (res !== undefined) return res;
 				}
 			}

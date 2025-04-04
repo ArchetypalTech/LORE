@@ -1,5 +1,5 @@
 import {
-	cleanCairoEnum,
+	stringCairoEnum,
 	useCairoEnum,
 	type ComponentInspector,
 } from "@/editor/lib/schemas";
@@ -11,12 +11,12 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { useInspector } from "./useInspector";
 import EditorData from "@/editor/editor.data";
-import type { CairoCustomEnum } from "starknet";
 
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,
 	componentName,
 }) => {
+	// @dev: get available areas to link to
 	const { area_value, area_options } = useMemo(() => {
 		return {
 			area_value: componentObject.leads_to.toString(),
@@ -27,6 +27,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 		};
 	}, [componentObject]);
 
+	// @dev: convert cairo enum
 	const { value: direction_value, options: direction_options } = useCairoEnum(
 		componentObject.direction_type,
 		direction,
@@ -48,9 +49,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			},
 			direction_type: (e, updatedObject) => {
 				console.log(e.target.value);
-				updatedObject.direction_type = cleanCairoEnum(
-					e.target.value,
-				) as unknown as CairoCustomEnum;
+				updatedObject.direction_type = stringCairoEnum(e.target.value);
 			},
 		},
 	});

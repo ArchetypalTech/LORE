@@ -9,6 +9,7 @@ import {
 	createDefaultEntity,
 	createDefaultInspectableComponent,
 	createDefaultExitComponent,
+	type WithStringEnums,
 } from "../lib/schemas";
 import { DeleteButton, Header, PublishButton, Select } from "./FormComponents";
 import { EntityInspector } from "./inspectors/EntityInspector";
@@ -18,7 +19,6 @@ import { publishEntityCollection } from "../publisher";
 import EditorStore from "../editor.store";
 import { formatColorHash } from "../utils";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import type { BigNumberish } from "starknet";
 import { ExitInspector } from "./inspectors/exitInspector";
 
 export const componentData: {
@@ -26,7 +26,7 @@ export const componentData: {
 		order: number;
 		inspector: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
-		creator: (entity: Entity) => Pick<EntityCollection, K>;
+		creator: (entity: Entity) => WithStringEnums<Pick<EntityCollection, K>>;
 	};
 } = {
 	Entity: {
@@ -66,14 +66,15 @@ const AddComponents = ({ editedEntity }: { editedEntity: AnyObject }) => {
 		return o;
 	}, [editedEntity]);
 
-	const handleAddComponent = async (e: React.MouseEvent<HTMLButtonElement>) => {
+	const handleAddComponent = async (_e: React.MouseEvent<HTMLButtonElement>) => {
 		console.log(selectRef.current?.value);
 		const key = selectRef.current?.value as keyof typeof componentData;
 		const component = componentData[key];
 		if (!component) {
 			throw new Error(`Component not found: ${key}`);
 		}
-		EditorData().syncItem(component.creator(editedEntity.Entity!));
+		const newComponent = component.creator(editedEntity.Entity!);
+		EditorData().syncItem(newComponent as unknown as AnyObject);
 	};
 
 	return (
