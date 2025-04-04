@@ -7,16 +7,13 @@ import type {
 	PlayerStory,
 	SchemaType,
 } from "../dojo_bindings/typescript/models.gen";
-import {
-	normalizeAddress,
-	processWhitespaceTags,
-	decodeDojoText,
-} from "../utils/utils";
+import { processWhitespaceTags, decodeDojoText } from "../utils/utils";
 import { StoreBuilder } from "../utils/storebuilder";
 import EditorData from "@/editor/editor.data";
 import type { AnyObject } from "@/editor/lib/schemas";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
+import { num } from "starknet";
 
 /**
  * Represents the current status of the Dojo system.
@@ -98,8 +95,8 @@ const onPlayerStory = (playerStory: Partial<PlayerStory>) => {
 	const address = !LORE_CONFIG.useController
 		? LORE_CONFIG.wallet.address
 		: WalletStore().controller?.account?.address;
-	const normalizedPlayerId = normalizeAddress(String(playerStory.inst));
-	const normalizedAddress = normalizeAddress(String(address));
+	const normalizedPlayerId = num.cleanHex(String(playerStory.inst));
+	const normalizedAddress = num.cleanHex(String(address));
 	if (normalizedPlayerId === normalizedAddress) {
 		setOutputter(playerStory as PlayerStory);
 		return;
