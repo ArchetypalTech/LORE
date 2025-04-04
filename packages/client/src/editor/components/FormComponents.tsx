@@ -1,4 +1,4 @@
-import { cn, normalizeAddress } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils/utils";
 import { TagInput as Tags } from "./TagInput";
 import type { ChangeEvent } from "react";
 import { MultiTextArea } from "./MultiTextArea";
@@ -236,24 +236,6 @@ export const Toggle = ({
 			<label htmlFor={id} className="ml-2 block text-sm text-gray-700">
 				{id.replaceAll("_", " ")}
 			</label>
-		</div>
-	);
-};
-
-export const ItemId = ({ id }: { id: string }) => {
-	return (
-		<div className="form-group">
-			<label className="block text-sm font-medium text-gray-700">inst</label>
-			<p className="mt-1 text-xs text-gray-500">
-				This ID is generated automatically and should not be changed.
-			</p>
-			<input
-				type="text"
-				id={id}
-				value={normalizeAddress(id)}
-				className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs"
-				disabled
-			/>
 		</div>
 	);
 };
