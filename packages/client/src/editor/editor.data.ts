@@ -108,11 +108,9 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 			name = obj.Entity!.name;
 		}
 
-		setTimeout(() => {
-			set({
-				isDirty: Date.now(),
-			});
-		}, 1);
+		set({
+			isDirty: Date.now(),
+		});
 
 		if (verbose)
 			console.log(

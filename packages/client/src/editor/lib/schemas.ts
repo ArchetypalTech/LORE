@@ -97,7 +97,10 @@ export type ModelCollection = {
 	[K in keyof AnyObject]?: Partial<AnyObject>;
 };
 
-export type ComponentInspector<T> = FC<{ entityObject: T }>;
+export type ComponentInspector<T> = FC<{
+	componentObject: T;
+	componentName: keyof EntityComponents;
+}>;
 
 export const createDefaultEntity = () => ({
 	Entity: {

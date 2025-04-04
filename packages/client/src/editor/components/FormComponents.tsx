@@ -178,7 +178,7 @@ export const Select = React.forwardRef<
 	HTMLSelectElement,
 	{
 		id: string;
-		value: string;
+		value?: string;
 		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 		options: Array<{ value: string; label: string }>;
 		className?: string;

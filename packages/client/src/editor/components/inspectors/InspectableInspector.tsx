@@ -1,84 +1,39 @@
-import EditorData from "@/editor/editor.data";
-import type { AnyObject, ComponentInspector } from "@/editor/lib/schemas";
+import type { ComponentInspector } from "@/editor/lib/schemas";
 import type { ChangeEvent } from "react";
 import { TextAreaArray, Toggle } from "../FormComponents";
 import type { Inspectable } from "@/lib/dojo_bindings/typescript/models.gen";
-import { tick } from "@/lib/utils/utils";
+import { useInspector } from "./useInspector";
 
 export const InspectableInspector: ComponentInspector<Inspectable> = ({
-	entityObject,
+	componentObject,
+	componentName,
 }) => {
-	const inspectable = entityObject;
-	const handleInputChange = async (
-		e:
-			| ChangeEvent<
-					(HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) & {
-						value: string[];
-					}
-			  >
-			| ChangeEvent<HTMLInputElement>,
-	) => {
-		if (!inspectable || inspectable === undefined) return;
+	const { handleInputChange } = useInspector<Inspectable>({
+		componentObject,
+		componentName,
+		inputHandlers: {
+			description: (e, updatedObject) => {
+				updatedObject.description = e.target.value as unknown as string[];
+			},
+			is_visible: (e, updatedObject) => {
+				updatedObject.is_visible = e.target.checked;
+			},
+		},
+	});
 
-		const updatedObject = {
-			...EditorData().getEntity(inspectable.inst)!.Inspectable,
-		};
-		if (!updatedObject || updatedObject === undefined) {
-			throw new Error("Inspectable not found");
-		}
-
-		const { id, value } = e.target;
-		switch (id) {
-			case "description":
-				updatedObject.description = value as string[];
-				break;
-			case "is_visible":
-				{
-					const val = (e.target as { checked: boolean }).checked;
-					updatedObject.is_visible = val as boolean;
-				}
-				break;
-		}
-
-		const editorObject = {
-			...EditorData().getItem(inspectable.inst),
-		} as AnyObject;
-		if (!editorObject) {
-			throw new Error("Editor object not found");
-		}
-		Object.assign(editorObject, { Inspectable: updatedObject });
-		EditorData().syncItem(editorObject);
-		await tick();
-		EditorData().selectEntity(updatedObject.inst!.toString());
-	};
-
-	// const { direction_value, direction_options } = useMemo(() => {
-	// 	const enum_options = direction.map((e) => {
-	// 		return { value: e.toString(), label: e.toString() };
-	// 	});
-	// 	console.log(direction);
-	// 	if (inspectable.direction.None)
-	// 		return { direction_value: "None", direction_options: enum_options };
-	// 	const converted = direction.find((e) => e === inspectable?.direction.Some);
-	// 	return {
-	// 		direction_value: converted?.toString(),
-	// 		direction_options: enum_options,
-	// 	};
-	// }, [inspectable]);
-
-	if (!inspectable) return <div>Inspectable not found</div>;
+	if (!componentObject) return <div>Inspectable not found</div>;
 
 	return (
 		<div className="flex flex-col gap-2">
 			<TextAreaArray
 				id="description"
-				value={inspectable.description}
+				value={componentObject.description}
 				onChange={handleInputChange}
 				rows={1}
 			/>
 			<Toggle
 				id="is_visible"
-				value={inspectable.is_visible}
+				value={componentObject.is_visible}
 				onChange={handleInputChange}
 			/>
 		</div>

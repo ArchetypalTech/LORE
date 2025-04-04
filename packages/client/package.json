@@ -34,6 +34,7 @@
 		"starknet": "^6.23.1",
 		"tailwind-merge": "^3.0.1",
 		"tailwindcss": "^4.0.3",
+		"ts-debounce": "^4.0.0",
 		"uuid": "^11.1.0",
 		"vite": "^6.2.3",
 		"vite-plugin-top-level-await": "^1.5.0",

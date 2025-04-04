@@ -8,6 +8,7 @@ import {
 	createDefaultAreaComponent,
 	createDefaultEntity,
 	createDefaultInspectableComponent,
+	createDefaultExitComponent,
 } from "../lib/schemas";
 import { DeleteButton, Header, PublishButton, Select } from "./FormComponents";
 import { EntityInspector } from "./inspectors/EntityInspector";
@@ -17,6 +18,8 @@ import { publishEntityCollection } from "../publisher";
 import EditorStore from "../editor.store";
 import { formatColorHash } from "../utils";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
+import type { BigNumberish } from "starknet";
+import { ExitInspector } from "./inspectors/exitInspector";
 
 export const componentData: {
 	[K in keyof EntityCollection]: {
@@ -24,7 +27,11 @@ export const componentData: {
 		inspector: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
 		creator: (entity: Entity) => {
-			[K in keyof Partial<NonNullable<EntityCollection>>]: EntityCollection[K];
+			[K in keyof Partial<NonNullable<EntityCollection>>]: T extends {
+				inst: BigNumberish;
+			}
+				? EntityCollection[K]
+				: never;
 		};
 	};
 } = {
@@ -44,6 +51,12 @@ export const componentData: {
 		inspector: InspectableInspector,
 		icon: "🔍",
 		creator: createDefaultInspectableComponent,
+	},
+	Exit: {
+		order: 3,
+		inspector: ExitInspector,
+		icon: "🚪",
+		creator: createDefaultExitComponent,
 	},
 };
 
@@ -75,7 +88,6 @@ const AddComponents = ({ editedEntity }: { editedEntity: AnyObject }) => {
 				<Select
 					ref={selectRef}
 					id=""
-					value="Entity"
 					onChange={() => {}}
 					options={options}
 					disabled={options.length === 0}
@@ -168,7 +180,11 @@ export const EntityEditor = () => {
 							/>
 							<div>{key}</div>
 						</h3>
-						<Inspector key={key} entityObject={editedEntity[key]} />
+						<Inspector
+							key={key}
+							componentObject={editedEntity[key]}
+							componentName={key}
+						/>
 					</div>
 				);
 			})}
