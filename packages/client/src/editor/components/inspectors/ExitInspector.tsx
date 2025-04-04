@@ -13,7 +13,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 		const areas = EditorData()
 			.getEntities()
 			.filter((e) => e.Area !== undefined)
-			.map((e) => ({ value: e.Area!.inst.toString(), label: e.Entity.name }));
+			.map((e) => ({ value: e.Entity!.inst.toString(), label: e.Entity.name }));
 		return areas;
 	}, [componentObject]);
 
@@ -50,9 +50,9 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			/>
 			<Select
 				id="leads_to"
-				options={allAreas}
-				defaultValue={allAreas.find((a) => a.value === componentObject.leads_to)}
+				defaultValue={componentObject.leads_to.toString()}
 				onChange={handleInputChange}
+				options={allAreas}
 			/>
 		</div>
 	);

@@ -179,36 +179,40 @@ export const Select = React.forwardRef<
 	{
 		id: string;
 		value?: string;
+		defaultValue?: string;
 		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 		options: Array<{ value: string; label: string }>;
 		className?: string;
 		disabled?: boolean;
 	}
->(({ id, value, onChange, options, className, disabled }, ref) => {
-	return (
-		<div className={cn("form-group w-full", className)}>
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
-			</label>
-			<select
-				ref={ref}
-				id={id}
-				value={value}
-				onChange={onChange}
-				disabled={disabled}
-				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50",
-				)}
-			>
-				{options.map((option) => (
-					<option key={option.value} value={option.value}>
-						{option.label}
-					</option>
-				))}
-			</select>
-		</div>
-	);
-});
+>(
+	({ id, value, onChange, options, className, disabled, defaultValue }, ref) => {
+		return (
+			<div className={cn("form-group w-full", className)}>
+				<label htmlFor={id} className="block text-sm font-medium text-gray-700">
+					{id}
+				</label>
+				<select
+					ref={ref}
+					id={id}
+					value={value}
+					defaultValue={defaultValue || undefined}
+					onChange={onChange}
+					disabled={disabled}
+					className={cn(
+						"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50",
+					)}
+				>
+					{options.map((option) => (
+						<option key={option.value} value={option.value}>
+							{option.label}
+						</option>
+					))}
+				</select>
+			</div>
+		);
+	},
+);
 
 export const Toggle = ({
 	id,
