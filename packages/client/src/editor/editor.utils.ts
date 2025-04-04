@@ -6,6 +6,7 @@ import {
 	type ValidationError,
 } from "./lib/schemas";
 import { hash } from "starknet";
+import JSONbig from "json-bigint";
 
 /**
  * Load a game config from a JSON file
@@ -17,7 +18,7 @@ export const loadConfigFromFile = async (file: File): Promise<Config> => {
 		reader.onload = (event) => {
 			try {
 				console.log(event.target?.result);
-				const json = JSON.parse(event.target?.result as string);
+				const json = JSONbig.parse(event.target?.result as string);
 				try {
 					console.log(json);
 					const { data, errors } = transformWithSchema(ConfigSchema, json);
@@ -52,7 +53,7 @@ export const saveConfigToFile = (
 	config: Config,
 	filename: string = `lore_config_${new Date().toISOString()}.json`,
 ): void => {
-	const json = JSON.stringify(config, null, 2);
+	const json = JSONbig.stringify(config, null, 2);
 	const blob = new Blob([json], { type: "application/json" });
 	const url = URL.createObjectURL(blob);
 

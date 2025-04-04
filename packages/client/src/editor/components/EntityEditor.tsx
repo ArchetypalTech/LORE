@@ -15,15 +15,15 @@ import { formatColorHash } from "../utils";
 const inspectorMap = {
 	Entity: {
 		order: 0,
-		component: EntityInspector,
+		inspector: EntityInspector,
 	},
 	Area: {
 		order: 1,
-		component: AreaInspector,
+		inspector: AreaInspector,
 	},
 	Inspectable: {
 		order: 2,
-		component: InspectableInspector,
+		inspector: InspectableInspector,
 	},
 };
 
@@ -121,8 +121,9 @@ export const EntityEditor = () => {
 					}}
 				/>
 			</Header>
-			{keys.map((key) => {
-				const Inspector = inspectorMap[key as keyof typeof inspectorMap].component;
+			{keys.map((k) => {
+				const key = k as keyof typeof editedEntity;
+				const Inspector = inspectorMap[key as keyof typeof inspectorMap].inspector;
 				if (!Inspector) return <div key={key}>{key}</div>;
 				if (editedEntity[key] === undefined) return null;
 				return (

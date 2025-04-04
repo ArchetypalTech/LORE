@@ -3,6 +3,7 @@ import { LORE_CONFIG } from "@lib/config";
 import { toCairoArray } from "../editor/utils";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
+import JSONbig from "json-bigint";
 
 /**
  * Sends a command to the entity contract.
@@ -113,7 +114,7 @@ async function execDesignerCall(props: DesignerCallProps) {
 		// we do a manual wait because the waitForTransaction is super slow
 		await new Promise((r) => setTimeout(r, 500));
 
-		return new Response(JSON.stringify(response), {
+		return new Response(JSONbig.stringify(response), {
 			headers: {
 				"Content-Type": "application/json",
 			},
@@ -121,7 +122,7 @@ async function execDesignerCall(props: DesignerCallProps) {
 		});
 	} catch (error) {
 		throw new Error(
-			`[${(error as Error).message}] @ execDesignerCall[${call}](args): ${JSON.stringify(args)} `,
+			`[${(error as Error).message}] @ execDesignerCall[${call}](args): ${JSONbig.stringify(args)} `,
 		);
 	}
 }

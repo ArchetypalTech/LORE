@@ -16,6 +16,14 @@ export const HierarchyTreeItem = ({
 }: { node: TreeNode; depth: number }) => {
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity?.Entity!.inst === node.id;
+
+	const { isPlayer, isArea } = useMemo(() => {
+		const entity = EditorData().getEntity(node.id);
+		const isPlayer = entity?.Player !== undefined;
+		const isArea = entity?.Area !== undefined;
+		return { isPlayer, isArea };
+	}, [node]);
+
 	return (
 		<div className={cn("pl-4 font-normal w-full", depth === 0 && "font-medium")}>
 			<div
@@ -31,7 +39,11 @@ export const HierarchyTreeItem = ({
 				{isSelected && (
 					<div className="absolute top-0 -left-3 font-white">{">"}</div>
 				)}
-				{node.name}
+				{node.name}{" "}
+				<span className="opacity-50 hover:opacity-100">
+					{isPlayer && <span title="Player">👤</span>}{" "}
+					{isArea && <span title="Area">🥾</span>}
+				</span>
 			</div>
 			{node.children.map((child: TreeNode) => (
 				<HierarchyTreeItem key={child.name} node={child} depth={depth + 1} />

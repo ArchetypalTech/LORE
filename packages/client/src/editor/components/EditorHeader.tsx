@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import EditorStore from "../editor.store";
+import EditorStore, { actions } from "../editor.store";
 import UserStore, { useUserStore } from "@/lib/stores/user.store";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { LORE_CONFIG } from "@/lib/config";
@@ -64,28 +64,19 @@ export const EditorHeader = () => {
 					</button>
 				) : (
 					<>
-						{/* <input
+						<input
 							type="file"
 							ref={fileInputRef}
 							accept=".json"
 							className="hidden"
-							disabled={true}
 							onChange={handleFileChange}
 						/>
-						<button
-							disabled={true}
-							className="btn btn-sm btn-success"
-							onClick={handleImportConfig}
-						>
+						<button className="btn btn-sm btn-success" onClick={handleImportConfig}>
 							Import Config
 						</button>
-						<button
-							disabled={true}
-							className="btn btn-sm btn-success"
-							onClick={handleExportConfig}
-						>
+						<button className="btn btn-sm btn-success" onClick={handleExportConfig}>
 							Export Config
-						</button> */}
+						</button>
 						<button
 							className="btn btn-sm btn-warning hover:textFreak"
 							onClick={handlePublish}

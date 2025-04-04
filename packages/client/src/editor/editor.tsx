@@ -22,7 +22,7 @@ export const Editor = () => {
 		status: { status },
 	} = useDojoStore();
 	const { dark_mode } = useUserStore();
-	const { entities, selectedEntity } = useEditorData();
+	const { entities, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 
 	useHead({
@@ -47,6 +47,14 @@ export const Editor = () => {
 	};
 
 	useEffect(() => {
+		// refresh current scope when data is dirty
+		if (isDirty && selectedEntity?.Entity) {
+			EditorData().selectEntity(selectedEntity?.Entity.inst);
+		}
+	}, [isDirty, selectedEntity]);
+
+	useEffect(() => {
+		isDirty;
 		const hasObjects = EditorData().getEntities().length > 0;
 		if (status === "loading") {
 			setEditorState("not connected");
@@ -66,9 +74,10 @@ export const Editor = () => {
 			return;
 		}
 		setEditorState("empty");
-	}, [status, entities, selectedEntity]);
+	}, [status, entities, selectedEntity, isDirty]);
 
 	const editorContents = useMemo(() => {
+		isDirty;
 		switch (editorState) {
 			case "not connected":
 				return (
@@ -119,7 +128,7 @@ export const Editor = () => {
 					</div>
 				);
 		}
-	}, [editorState, dark_mode]);
+	}, [editorState, dark_mode, isDirty]);
 
 	return (
 		<div
