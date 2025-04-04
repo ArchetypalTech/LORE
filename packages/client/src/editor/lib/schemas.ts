@@ -7,6 +7,7 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
+import type { FC } from "react";
 
 export const ValidationErrorSchema = z.object({
 	message: z.string(),
@@ -68,8 +69,30 @@ export const inspectableActionsToIndex = (
 	const match = inspectableActions.findIndex((e) => e === cleanCairoEnum(value));
 	return match >= 0 ? match : 0;
 };
-export type AnyObject = Partial<SchemaType["lore"]>;
+
+export type AnyObject = Omit<
+	Partial<SchemaType["lore"]>,
+	| "AreaValue"
+	| "ContainerValue"
+	| "ExitValue"
+	| "InspectableValue"
+	| "InventoryItemValue"
+	| "PlayerStoryValue"
+	| "PlayerValue"
+	| "DictValue"
+	| "EntityValue"
+	| "ChildToParentValue"
+	| "ParentToChildrenValue"
+	| "ActionMapInspectable"
+>;
+export type EntityComponents = Pick<
+	AnyObject,
+	"Area" | "Container" | "Exit" | "Inspectable"
+>;
 export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
+
 export type ModelCollection = {
 	[K in keyof AnyObject]?: Partial<AnyObject>;
 };
+
+export type ComponentInspector<T> = FC<{ entityObject: T }>;

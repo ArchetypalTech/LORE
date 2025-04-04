@@ -1,5 +1,5 @@
 import EditorData from "@/editor/editor.data";
-import type { AnyObject } from "@/editor/lib/schemas";
+import type { AnyObject, ComponentInspector } from "@/editor/lib/schemas";
 import { useMemo, type ChangeEvent } from "react";
 import { Select } from "../FormComponents";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 
-export const AreaInspector = ({ entityObject }: { entityObject: Area }) => {
+export const AreaInspector: ComponentInspector<Area> = ({ entityObject }) => {
 	const area = entityObject;
 	const handleInputChange = async (
 		e:

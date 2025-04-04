@@ -1,13 +1,13 @@
 import EditorData from "@/editor/editor.data";
-import type { AnyObject } from "@/editor/lib/schemas";
+import type { AnyObject, ComponentInspector } from "@/editor/lib/schemas";
 import type { ChangeEvent } from "react";
 import { TextAreaArray, Toggle } from "../FormComponents";
 import type { Inspectable } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
 
-export const InspectableInspector = ({
+export const InspectableInspector: ComponentInspector<Inspectable> = ({
 	entityObject,
-}: { entityObject: Inspectable }) => {
+}) => {
 	const inspectable = entityObject;
 	const handleInputChange = async (
 		e:

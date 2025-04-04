@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import EditorData, { useEditorData } from "../editor.data";
-import type { AnyObject, EntityCollection } from "../lib/schemas";
+import type {
+	AnyObject,
+	EntityComponents,
+	EntityCollection,
+	ComponentInspector,
+} from "../lib/schemas";
 import { DeleteButton, Header, PublishButton, Select } from "./FormComponents";
 import { EntityInspector } from "./inspectors/EntityInspector";
 import { AreaInspector } from "./inspectors/AreaInspector";
@@ -9,7 +14,12 @@ import { publishEntityCollection } from "../publisher";
 import EditorStore from "../editor.store";
 import { formatColorHash } from "../utils";
 
-const inspectorMap = {
+const inspectorMap: {
+	[K in keyof EntityCollection]: {
+		order: number;
+		inspector: ComponentInspector<NonNullable<EntityCollection[K]>>;
+	};
+} = {
 	Entity: {
 		order: 0,
 		inspector: EntityInspector,
@@ -119,8 +129,8 @@ export const EntityEditor = () => {
 				/>
 			</Header>
 			{keys.map((k) => {
-				const key = k as keyof typeof editedEntity;
-				const Inspector = inspectorMap[key as keyof typeof inspectorMap].inspector;
+				const key = k as keyof EntityComponents;
+				const Inspector = inspectorMap[key as keyof typeof inspectorMap]?.inspector;
 				if (!Inspector) return <div key={key}>{key}</div>;
 				if (editedEntity[key] === undefined) return null;
 				return (

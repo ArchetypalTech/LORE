@@ -1,10 +1,12 @@
 import EditorData from "@/editor/editor.data";
-import type { AnyObject } from "@/editor/lib/schemas";
+import type { AnyObject, ComponentInspector } from "@/editor/lib/schemas";
 import type { ChangeEvent } from "react";
 import { Input, TagInput } from "../FormComponents";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 
-export const EntityInspector = ({ entityObject }: { entityObject: Entity }) => {
+export const EntityInspector: ComponentInspector<Entity> = ({
+	entityObject,
+}) => {
 	const entity = entityObject;
 	const handleInputChange = async (
 		e:
