@@ -8,6 +8,8 @@ import {
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
 import type { FC } from "react";
+import { randomKey } from "../editor.utils";
+import randomName from "@scaleway/random-name";
 
 export const ValidationErrorSchema = z.object({
 	message: z.string(),
@@ -96,3 +98,41 @@ export type ModelCollection = {
 };
 
 export type ComponentInspector<T> = FC<{ entityObject: T }>;
+
+export const createDefaultEntity = () => ({
+	Entity: {
+		inst: randomKey(),
+		is_entity: true,
+		name: randomName(),
+		alt_names: [],
+	},
+});
+
+export const createDefaultAreaComponent = (entity: Entity) => ({
+	Area: {
+		inst: entity.inst,
+		is_area: true,
+		direction: "None",
+	},
+});
+
+export const createDefaultInspectableComponent = (entity: Entity) => ({
+	Inspectable: {
+		inst: entity.inst,
+		is_inspectable: true,
+		is_visible: false,
+		description: [],
+		action_map: [],
+	},
+});
+
+export const createDefaultExitComponent = (entity: Entity) => ({
+	Exit: {
+		inst: entity.inst,
+		is_exit: true,
+		is_enterable: false,
+		leads_to: 0,
+		direction_type: "None",
+		action_map: [],
+	},
+});

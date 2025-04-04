@@ -4,6 +4,7 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
+		"lint": "bunx biome lint ./src/**/*.* --write",
 		"dev": "bunx vite --mode development",
 		"dev:slot": "bunx vite dev --mode slot",
 		"build": "bunx vite build",

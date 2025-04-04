@@ -49,17 +49,26 @@ export const loadConfigFromFile = async (file: File): Promise<Config> => {
 /**
  * Save a game config to a JSON file
  */
-export const saveConfigToFile = (
-	config: Config,
-	filename: string = `lore_config_${new Date().toISOString()}.json`,
-): void => {
+export const saveConfigToFile = (config: Config, filename?: string): void => {
+	const formatter = new Intl.DateTimeFormat("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		// hour12: false // Uncomment for 24-hour format
+	});
+	const newFile =
+		filename ||
+		`lore_config_${formatter.format(new Date()).replaceAll(" ", "_")}.json`;
 	const json = JSONbig.stringify(config, null, 2);
 	const blob = new Blob([json], { type: "application/json" });
 	const url = URL.createObjectURL(blob);
 
 	const a = document.createElement("a");
 	a.href = url;
-	a.download = filename;
+	a.download = newFile;
 	a.click();
 
 	URL.revokeObjectURL(url);

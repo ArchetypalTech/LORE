@@ -46,7 +46,7 @@ const addEntity = (entity: Entity) => {
 
 const removeEntity = (entity: Entity) => {
 	const id = entity.inst;
-	const isSelected = get().selectedEntity?.Entity.inst === id;
+	const isSelected = get().selectedEntity?.Entity?.inst === id;
 	if (isSelected) {
 		set({ selectedEntity: undefined });
 	}
@@ -54,7 +54,7 @@ const removeEntity = (entity: Entity) => {
 		...prev,
 		entities: prev.entities.filter((e) => e.inst !== entity.inst),
 	}));
-	const newDataPool = new Map<string, AnyObject>(get().dataPool);
+	const newDataPool = new Map<BigNumberish, AnyObject>({ ...get().dataPool });
 	newDataPool.delete(id);
 	set((prev) => ({
 		...prev,
@@ -77,7 +77,9 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
 			for (const key of Object.keys(obj)) {
 				if (key.startsWith("inst")) {
-					return obj["inst" as keyof typeof obj] as string;
+					if ("inst" in obj) {
+						return obj["inst" as keyof typeof obj] as string;
+					}
 				}
 				if (typeof obj[key as keyof typeof obj] === "object") {
 					const res = findInstValue(obj[key as keyof typeof obj]);
