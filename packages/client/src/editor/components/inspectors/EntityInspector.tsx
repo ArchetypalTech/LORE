@@ -1,5 +1,4 @@
 import type { ComponentInspector } from "@/editor/lib/schemas";
-import type { ChangeEvent } from "react";
 import { Input, TagInput } from "../FormComponents";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { useInspector } from "./useInspector";
@@ -8,7 +7,7 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 	componentObject,
 	componentName,
 }) => {
-	const { handleInputChange } = useInspector<Entity>({
+	const { handleInputChange, Inspector } = useInspector<Entity>({
 		componentObject,
 		componentName,
 		inputHandlers: {
@@ -26,7 +25,7 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 	if (!componentObject) return <div>Entity not found</div>;
 
 	return (
-		<div className="flex flex-col gap-2">
+		<Inspector>
 			<Input
 				id="name"
 				value={componentObject?.name}
@@ -37,6 +36,6 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 				value={componentObject.alt_names?.join(",") || ""}
 				onChange={handleInputChange}
 			/>
-		</div>
+		</Inspector>
 	);
 };

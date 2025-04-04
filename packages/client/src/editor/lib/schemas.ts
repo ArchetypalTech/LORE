@@ -7,7 +7,7 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
-import type { FC } from "react";
+import { useMemo, type FC } from "react";
 import { randomKey } from "../editor.utils";
 import randomName from "@scaleway/random-name";
 
@@ -45,13 +45,37 @@ export type Config = z.infer<typeof ConfigSchema>;
  * Enums
  */
 
-const cleanCairoEnum = (
+export const cleanCairoEnum = (
 	value: CairoCustomEnum | string | { None: boolean } | { Some: unknown },
 ) => {
 	if (typeof value !== "string") {
 		if ("None" in value) return "None";
 	}
 	return value;
+};
+
+export const convertCairoEnum = (
+	cairoEnum: CairoCustomEnum,
+	targetEnum: unknown[] | readonly unknown[],
+): { value: string; options: HTMLOptionsCollection } => {
+	const value = cleanCairoEnum(cairoEnum);
+	return {
+		value: targetEnum.find((e: unknown) => e === value) as string,
+		options: targetEnum.map((x: unknown) => ({
+			value: x as string,
+			label: x as string,
+		})) as unknown as HTMLOptionsCollection,
+	};
+};
+
+export const useCairoEnum = (
+	cairoEnum: CairoCustomEnum,
+	targetEnum: unknown[] | readonly unknown[],
+) => {
+	return useMemo(
+		() => convertCairoEnum(cairoEnum, targetEnum),
+		[cairoEnum, targetEnum],
+	);
 };
 
 export const directionToIndex = (
@@ -99,7 +123,7 @@ export type ModelCollection = {
 
 export type ComponentInspector<T> = FC<{
 	componentObject: T;
-	componentName: keyof EntityComponents;
+	componentName: keyof NonNullable<EntityComponents>;
 }>;
 
 export const createDefaultEntity = () => ({

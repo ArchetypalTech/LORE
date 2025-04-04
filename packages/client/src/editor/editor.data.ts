@@ -4,8 +4,9 @@ import type {
 	Entity,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import type { BigNumberish } from "starknet";
+import { num, type BigNumberish } from "starknet";
 import type { AnyObject, EntityCollection } from "./lib/schemas";
+import { dispatchDesignerCall } from "./publisher";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -131,37 +132,29 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 	}
 };
 
-const deleteItem = async (id: string) => {
-	// if (get().rooms[id] !== undefined) {
-	// 	const room = get().rooms[id] as T_Room;
-	// 	console.log("TEST Deleting room", room);
-	// 	await deleteItem(room.txtDefId);
-	// 	for (const objId of room.object_ids) {
-	// 		await deleteItem(objId);
-	// 	}
-	// 	await deleteRoom(room.roomId);
-	// }
-	// if (get().objects[id] !== undefined) {
-	// 	const object = get().objects[id] as T_Object;
-	// 	console.log("TEST Deleting object", object);
-	// 	await deleteItem(object.txtDefId);
-	// 	for (const actionId of object.objectActionIds) {
-	// 		await deleteItem(actionId);
-	// 	}
-	// 	await removeObjectFromRoom(object);
-	// 	await deleteObject(object.objectId);
-	// }
-	// if (get().actions[id] !== undefined) {
-	// 	const action = get().actions[id] as T_Action;
-	// 	await removeActionFromObject(action);
-	// 	await deleteAction(action.actionId);
-	// 	console.log("TEST Deleting action", action);
-	// }
-	// if (get().txtDefs[id] !== undefined) {
-	// 	const txtDef = get().txtDefs[id] as T_TextDefinition;
-	// 	await deleteTxt(txtDef.id);
-	// 	console.log("TEST Deleting txtDef", txtDef);
-	// }
+const deleteItem = async (model: AnyObject) => {
+	if ("Entity" in model) {
+		await dispatchDesignerCall("delete_entity", [
+			num.toBigInt(model.Entity!.inst),
+		]);
+	}
+	if ("Inspectable" in model) {
+		await dispatchDesignerCall("delete_inspectable", [
+			num.toBigInt(model.Entity!.inst),
+		]);
+	}
+	if ("Area" in model) {
+		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Entity!.inst)]);
+	}
+	if ("Exit" in model) {
+		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Entity!.inst)]);
+	}
+	if ("ChildToParent" in model) {
+	}
+	if ("ParentToChildren" in model) {
+	}
+	if ("Player" in model) {
+	}
 };
 
 const selectEntity = (id: BigNumberish) => {

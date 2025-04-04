@@ -1,23 +1,38 @@
-import type { ComponentInspector } from "@/editor/lib/schemas";
-import { useMemo, type ChangeEvent } from "react";
-import { Select, TextAreaArray, Toggle } from "../FormComponents";
-import type { Exit } from "@/lib/dojo_bindings/typescript/models.gen";
+import {
+	cleanCairoEnum,
+	useCairoEnum,
+	type ComponentInspector,
+} from "@/editor/lib/schemas";
+import { useMemo } from "react";
+import { Select, Toggle } from "../FormComponents";
+import {
+	direction,
+	type Exit,
+} from "@/lib/dojo_bindings/typescript/models.gen";
 import { useInspector } from "./useInspector";
 import EditorData from "@/editor/editor.data";
+import type { CairoCustomEnum } from "starknet";
 
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,
 	componentName,
 }) => {
-	const allAreas = useMemo(() => {
-		const areas = EditorData()
-			.getEntities()
-			.filter((e) => e.Area !== undefined)
-			.map((e) => ({ value: e.Entity!.inst.toString(), label: e.Entity.name }));
-		return areas;
+	const { area_value, area_options } = useMemo(() => {
+		return {
+			area_value: componentObject.leads_to.toString(),
+			area_options: EditorData()
+				.getEntities()
+				.filter((e) => e.Area !== undefined)
+				.map((e) => ({ value: e.Entity!.inst.toString(), label: e.Entity.name })),
+		};
 	}, [componentObject]);
 
-	const { handleInputChange } = useInspector<Exit>({
+	const { value: direction_value, options: direction_options } = useCairoEnum(
+		componentObject.direction_type,
+		direction,
+	);
+
+	const { handleInputChange, Inspector } = useInspector<Exit>({
 		componentObject,
 		componentName,
 		inputHandlers: {
@@ -31,13 +46,19 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 				console.log(e, e.target.value);
 				updatedObject.leads_to = e.target.value;
 			},
+			direction_type: (e, updatedObject) => {
+				console.log(e.target.value);
+				updatedObject.direction_type = cleanCairoEnum(
+					e.target.value,
+				) as unknown as CairoCustomEnum;
+			},
 		},
 	});
 
 	if (!componentObject) return <div>Exit not found</div>;
 
 	return (
-		<div className="flex flex-col gap-2">
+		<Inspector>
 			<Toggle
 				id="is_exit"
 				value={componentObject.is_exit}
@@ -50,10 +71,16 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			/>
 			<Select
 				id="leads_to"
-				defaultValue={componentObject.leads_to.toString()}
+				defaultValue={area_value}
 				onChange={handleInputChange}
-				options={allAreas}
+				options={area_options}
 			/>
-		</div>
+			<Select
+				id="direction_type"
+				defaultValue={direction_value}
+				onChange={handleInputChange}
+				options={direction_options}
+			/>
+		</Inspector>
 	);
 };

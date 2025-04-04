@@ -1,14 +1,12 @@
 import EditorData from "@/editor/editor.data";
 import type { AnyObject } from "@/editor/lib/schemas";
+import { formatColorHash } from "@/editor/utils";
 import type { ChangeEvent } from "react";
 import type { BigNumberish } from "starknet";
 import { debounce } from "ts-debounce";
 
 type InputHandler<T> = (
-	e:
-		| ChangeEvent<HTMLInputElement>
-		| ChangeEvent<HTMLSelectElement>
-		| ChangeEvent<HTMLOptionElement>,
+	e: ChangeEvent<HTMLInputElement>,
 	updatedObject: T,
 ) => void;
 
@@ -42,16 +40,19 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 
 			const updatedObject = {
 				...component,
-			};
+			} as unknown as T;
 
 			const { id, value } = e.target;
 
 			// Use custom handler if provided, otherwise use default behavior
 			if (inputHandlers[id]) {
-				inputHandlers[id](e, updatedObject);
+				inputHandlers[id](
+					e as unknown as ChangeEvent<HTMLInputElement>,
+					updatedObject,
+				);
 			} else {
 				// Default behavior: direct assignment
-				(updatedObject as any)[id] = value;
+				updatedObject[id] = value;
 			}
 
 			const editorObject = {
@@ -67,5 +68,23 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 		},
 	);
 
-	return { handleInputChange };
+	const Inspector = ({ children }: React.PropsWithChildren) => {
+		return (
+			<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs">
+				<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
+					<div
+						className="text-[7pt] text-black/20 hover:opacity-100 opacity-0"
+						// biome-ignore lint/security/noDangerouslySetInnerHtml: <hey, sometimes, you have to live dangerously!>
+						dangerouslySetInnerHTML={{
+							__html: formatColorHash(componentObject.inst),
+						}}
+					/>
+					<div>{componentName}</div>
+				</h3>
+				<div className="flex flex-col gap-2">{children}</div>
+			</div>
+		);
+	};
+
+	return { handleInputChange, Inspector };
 };

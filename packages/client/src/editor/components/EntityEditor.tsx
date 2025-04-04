@@ -161,31 +161,18 @@ export const EntityEditor = () => {
 			</Header>
 			{keys.map((k) => {
 				const key = k as keyof EntityComponents;
-				const Inspector =
-					componentData[key as keyof typeof componentData]?.inspector;
+				const Inspector = componentData[key as keyof typeof componentData]
+					?.inspector as ComponentInspector<
+					EntityComponents[keyof EntityComponents]
+				>;
 				if (!Inspector) return <div key={key}>{key}</div>;
 				if (editedEntity[key] === undefined) return null;
 				return (
-					<div
+					<Inspector
 						key={key}
-						className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs"
-					>
-						<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
-							<div
-								className="text-[7pt] text-black/20 hover:opacity-100 opacity-0"
-								// biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-								dangerouslySetInnerHTML={{
-									__html: formatColorHash(editedEntity[key].inst),
-								}}
-							/>
-							<div>{key}</div>
-						</h3>
-						<Inspector
-							key={key}
-							componentObject={editedEntity[key]}
-							componentName={key}
-						/>
-					</div>
+						componentObject={editedEntity[key]}
+						componentName={key}
+					/>
 				);
 			})}
 			<AddComponents editedEntity={editedEntity} />

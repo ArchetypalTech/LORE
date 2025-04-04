@@ -1,6 +1,4 @@
-import EditorData from "@/editor/editor.data";
-import type { AnyObject, ComponentInspector } from "@/editor/lib/schemas";
-import { useMemo, type ChangeEvent } from "react";
+import { useCairoEnum, type ComponentInspector } from "@/editor/lib/schemas";
 import { Select } from "../FormComponents";
 import {
 	direction,
@@ -13,24 +11,17 @@ export const AreaInspector: ComponentInspector<Area> = ({
 	componentObject,
 	componentName,
 }) => {
-	const { direction_value, direction_options } = useMemo(() => {
-		const enum_options = direction.map((e) => {
-			return { value: e.toString(), label: e.toString() };
-		});
-		if (componentObject.direction.None)
-			return { direction_value: "None", direction_options: enum_options };
-		const converted = direction.find((e) => e === componentObject?.direction);
-		return {
-			direction_value: converted?.toString(),
-			direction_options: enum_options,
-		};
-	}, [componentObject]);
+	const { value: direction_value, options: direction_options } = useCairoEnum(
+		componentObject?.direction,
+		direction,
+	);
 
-	const { handleInputChange } = useInspector<Area>({
+	const { handleInputChange, Inspector } = useInspector<Area>({
 		componentObject,
 		componentName,
 		inputHandlers: {
 			direction: (e, updatedObject) => {
+				console.log(e.target.value);
 				updatedObject.direction = e.target.value as unknown as CairoCustomEnum;
 			},
 		},
@@ -39,13 +30,13 @@ export const AreaInspector: ComponentInspector<Area> = ({
 	if (!componentObject) return <div>Area not found</div>;
 
 	return (
-		<div className="flex flex-col gap-2">
+		<Inspector>
 			<Select
 				id="direction"
-				value={direction_value}
+				defaultValue={direction_value}
 				onChange={handleInputChange}
 				options={direction_options}
 			/>
-		</div>
+		</Inspector>
 	);
 };

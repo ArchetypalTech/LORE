@@ -181,7 +181,7 @@ export const Select = React.forwardRef<
 		value?: string;
 		defaultValue?: string;
 		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-		options: Array<{ value: string; label: string }>;
+		options: Array<{ value: string; label: string }> | HTMLOptionsCollection;
 		className?: string;
 		disabled?: boolean;
 	}
