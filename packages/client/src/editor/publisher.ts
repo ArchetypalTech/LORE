@@ -5,6 +5,7 @@ import type { EntityCollection } from "./lib/schemas";
 import type {
 	Area,
 	Entity,
+	Exit,
 	Inspectable,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { directionToIndex, inspectableActionsToIndex } from "./lib/schemas";
@@ -55,6 +56,9 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Area" in collection) {
 		await publishArea(collection.Area!);
 	}
+	if ("Exit" in collection) {
+		await publishExit(collection.Exit!);
+	}
 };
 
 const publishEntity = async (entity: Entity) => {
@@ -99,6 +103,25 @@ const publishArea = async (area: Area) => {
 		directionToIndex(area.direction),
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
+};
+
+const publishExit = async (exit: Exit) => {
+	const exitData = [
+		num.toBigInt(exit.inst.toString()),
+		exit.is_exit,
+		exit.is_enterable,
+		num.toBigInt(exit.leads_to.toString()),
+		directionToIndex(exit.direction_type),
+		// exit.action_map.length > 0
+		// 	? exit.action_map.map((x) => [
+		// 			byteArray.byteArrayFromString(x.action),
+		// 			0,
+		// 			inspectableActionsToIndex(x.action_fn),
+		// 		])
+		// 	: 0,
+		0,
+	];
+	await dispatchDesignerCall("create_exit", [exitData]);
 };
 
 /**
