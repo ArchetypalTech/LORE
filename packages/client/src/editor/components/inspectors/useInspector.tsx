@@ -5,13 +5,24 @@ import type {
 	EntityComponents,
 	WithStringEnums,
 } from "@/editor/lib/schemas";
-import { useCallback, type ChangeEvent } from "react";
+import { useCallback, type ChangeEvent, type FC } from "react";
 import type { BigNumberish } from "starknet";
+import { DeleteButton } from "../FormComponents";
 
 type InputHandler<T> = (
 	e: ChangeEvent<HTMLInputElement>,
 	updatedObject: WithStringEnums<T>,
 ) => void;
+
+export type ComponentInspector<T> = FC<{
+	componentObject: T;
+	componentName: keyof NonNullable<EntityComponents>;
+	handleEdit: (
+		componentName: keyof EntityComponents,
+		component: T,
+	) => Promise<void>;
+	handleRemove: (componentName: keyof EntityComponents, component: T) => void;
+}>;
 
 type InspectorProps<T extends { inst: BigNumberish }> = {
 	componentObject: T;
@@ -20,6 +31,7 @@ type InspectorProps<T extends { inst: BigNumberish }> = {
 		componentName: keyof EntityComponents,
 		component: T,
 	) => Promise<void>;
+	handleRemove: (componentName: keyof EntityComponents, component: T) => void;
 	inputHandlers?: {
 		[key: string]: InputHandler<T>;
 	};
@@ -29,6 +41,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 	componentObject,
 	componentName,
 	handleEdit,
+	handleRemove,
 	inputHandlers = {},
 }: InspectorProps<T>) => {
 	const handleInputChange = (
@@ -87,6 +100,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 							}}
 						/>
 						<div>{componentName}</div>
+						<DeleteButton onClick={() => handleRemove(componentName,componentObject)} className="" />
 					</h3>
 					<div className="flex flex-col gap-2">{children}</div>
 				</div>

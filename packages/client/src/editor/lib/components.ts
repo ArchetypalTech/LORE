@@ -1,8 +1,5 @@
-import type {
-	EntityCollection,
-	ComponentInspector,
-	WithStringEnums,
-} from "@/editor/lib/schemas";
+import type { EntityCollection, WithStringEnums } from "@/editor/lib/schemas";
+import type { ComponentInspector } from "../components/inspectors/useInspector";
 import type {
 	Entity,
 	SchemaType,

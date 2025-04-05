@@ -1,4 +1,5 @@
-import { stringCairoEnum, type ComponentInspector } from "@/editor/lib/schemas";
+import { stringCairoEnum } from "@/editor/lib/schemas";
+import type { ComponentInspector } from "./useInspector";
 import { CairoEnumSelect } from "../FormComponents";
 import {
 	direction,
@@ -8,13 +9,11 @@ import { useInspector } from "./useInspector";
 
 export const AreaInspector: ComponentInspector<Area> = ({
 	componentObject,
-	componentName,
-	handleEdit,
+	...props
 }) => {
 	const { handleInputChange, Inspector } = useInspector<Area>({
 		componentObject,
-		componentName,
-		handleEdit,
+		...props,
 		inputHandlers: {
 			direction: (e, updatedObject) => {
 				console.log(e.target.value);

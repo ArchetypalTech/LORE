@@ -1,17 +1,15 @@
-import type { ComponentInspector } from "@/editor/lib/schemas";
+import type { ComponentInspector } from "./useInspector";
 import { Input, TagInput } from "../FormComponents";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { useInspector } from "./useInspector";
 
 export const EntityInspector: ComponentInspector<Entity> = ({
 	componentObject,
-	componentName,
-	handleEdit,
+	...props
 }) => {
 	const { handleInputChange, Inspector } = useInspector<Entity>({
 		componentObject,
-		componentName,
-		handleEdit,
+		...props,
 		inputHandlers: {
 			name: (e, updatedObject) => {
 				console.log(e, e.target.value);

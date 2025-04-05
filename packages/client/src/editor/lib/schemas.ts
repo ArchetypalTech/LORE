@@ -10,9 +10,7 @@ import type {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
-import { useMemo, type FC } from "react";
-import { randomKey } from "../editor.utils";
-import randomName from "@scaleway/random-name";
+import { useMemo } from "react";
 import type { OptionType } from "./types";
 
 export const ValidationErrorSchema = z.object({
@@ -104,19 +102,19 @@ export const toEnumIndex = (
 };
 
 export type AnyObject = WithStringEnums<
-	Omit<
+	Pick<
 		Partial<SchemaType["lore"]>,
-		| "AreaValue"
-		| "ContainerValue"
-		| "ExitValue"
-		| "InspectableValue"
-		| "InventoryItemValue"
-		| "PlayerStoryValue"
-		| "PlayerValue"
-		| "DictValue"
-		| "EntityValue"
-		| "ChildToParentValue"
-		| "ParentToChildrenValue"
+		| "Area"
+		| "Container"
+		| "Exit"
+		| "Inspectable"
+		| "InventoryItem"
+		| "PlayerStory"
+		| "Player"
+		| "Dict"
+		| "Entity"
+		| "ChildToParent"
+		| "ParentToChildren"
 		| "ActionMapInspectable"
 	>
 >;
@@ -131,15 +129,6 @@ export type EditorCollection = WithStringEnums<EntityCollection>;
 export type ModelCollection = {
 	[K in keyof AnyObject]?: Partial<WithStringEnums<AnyObject>>;
 };
-
-export type ComponentInspector<T> = FC<{
-	componentObject: T;
-	componentName: keyof NonNullable<EntityComponents>;
-	handleEdit: (
-		componentName: keyof EntityComponents,
-		component: T,
-	) => Promise<void>;
-}>;
 
 /**
  * Utility type that replaces CairoCustomEnum fields with string literal unions

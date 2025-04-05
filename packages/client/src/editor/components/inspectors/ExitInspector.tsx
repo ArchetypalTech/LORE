@@ -1,4 +1,5 @@
-import { stringCairoEnum, type ComponentInspector } from "@/editor/lib/schemas";
+import { stringCairoEnum } from "@/editor/lib/schemas";
+import type { ComponentInspector } from "./useInspector";
 import { useMemo } from "react";
 import { CairoEnumSelect, Select, Toggle } from "../FormComponents";
 import {
@@ -10,8 +11,7 @@ import EditorData from "@/editor/data/editor.data";
 
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,
-	componentName,
-	handleEdit,
+	...props
 }) => {
 	// @dev: get available areas to link to
 	const { area_value, area_options } = useMemo(() => {
@@ -26,8 +26,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 
 	const { handleInputChange, Inspector } = useInspector<Exit>({
 		componentObject,
-		componentName,
-		handleEdit,
+		...props,
 		inputHandlers: {
 			is_exit: (e, updatedObject) => {
 				updatedObject.is_exit = e.target.checked;

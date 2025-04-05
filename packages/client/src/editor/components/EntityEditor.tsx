@@ -1,9 +1,6 @@
 import EditorData, { useEditorData } from "../data/editor.data";
-import type {
-	EntityComponents,
-	EntityCollection,
-	ComponentInspector,
-} from "../lib/schemas";
+import type { EntityComponents, EntityCollection } from "../lib/schemas";
+import type { ComponentInspector } from "./inspectors/useInspector";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";
 import { publishEntityCollection } from "../publisher";
 import { componentData } from "../lib/components";
@@ -24,19 +21,26 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		}
 	}, [inst, editedEntity]);
 
-	const handleEditComponent = async (
-		componentName: keyof EntityComponents,
-		component: EntityComponents[keyof EntityComponents],
+	const handleEditComponent = async <T extends keyof EntityComponents>(
+		componentName: T,
+		component: EntityComponents[T],
 	) => {
 		console.log(componentName, component);
-		const edited = { ...EditorData().editedEntity! } as EntityCollection;
+		const edited = { ...EditorData().editedEntity! } as EntityComponents;
 		edited[componentName] = component;
 		console.log(edited);
 		EditorData().syncItem(edited);
 		EditorData().set({
 			isDirty: Date.now(),
-			editedEntity: edited,
+			editedEntity: edited as EntityCollection,
 		});
+	};
+
+	const handleRemoveComponent = async (
+		componentName: keyof EntityComponents,
+		component: EntityComponents[keyof EntityComponents],
+	) => {
+		console.log(componentName, component);
 	};
 
 	const allComponents = useCallback(() => {
@@ -59,7 +63,11 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 					EntityComponents[keyof EntityComponents]
 				>;
 				if (!Inspector) return undefined;
-				return { key, Inspector, componentObject: component };
+				return {
+					key: key as keyof EntityComponents,
+					Inspector,
+					componentObject: component as EntityComponents[keyof EntityComponents],
+				};
 			})
 			.filter((x) => x !== undefined);
 	}, [editedEntity, isDirty]);
@@ -103,6 +111,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 						componentObject={componentObject}
 						componentName={key}
 						handleEdit={handleEditComponent}
+						handleRemove={handleRemoveComponent}
 					/>
 				);
 			})}

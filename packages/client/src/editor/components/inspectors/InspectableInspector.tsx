@@ -1,17 +1,15 @@
-import type { ComponentInspector } from "@/editor/lib/schemas";
+import type { ComponentInspector } from "./useInspector";
 import { TextAreaArray, Toggle } from "../FormComponents";
 import type { Inspectable } from "@/lib/dojo_bindings/typescript/models.gen";
 import { useInspector } from "./useInspector";
 
 export const InspectableInspector: ComponentInspector<Inspectable> = ({
 	componentObject,
-	componentName,
-	handleEdit,
+	...props
 }) => {
 	const { handleInputChange, Inspector } = useInspector<Inspectable>({
 		componentObject,
-		componentName,
-		handleEdit,
+		...props,
 		inputHandlers: {
 			description: (e, updatedObject) => {
 				console.log(e.target.value);
