@@ -2,10 +2,11 @@ import EditorData from "@/editor/data/editor.data";
 import { formatColorHash } from "@/editor/editor.utils";
 import type {
 	AnyObject,
-	EntityCollection,
+	ComponentInspector,
+	EntityComponents,
 	WithStringEnums,
 } from "@/editor/lib/schemas";
-import type { ChangeEvent } from "react";
+import { useCallback, useMemo, type ChangeEvent } from "react";
 import type { BigNumberish } from "starknet";
 
 type InputHandler<T> = (
@@ -15,7 +16,11 @@ type InputHandler<T> = (
 
 type InspectorProps<T extends { inst: BigNumberish }> = {
 	componentObject: T;
-	componentName: string;
+	componentName: keyof EntityComponents;
+	handleEdit: (
+		componentName: keyof EntityComponents,
+		component: T,
+	) => Promise<void>;
 	inputHandlers?: {
 		[key: string]: InputHandler<T>;
 	};
@@ -24,6 +29,7 @@ type InspectorProps<T extends { inst: BigNumberish }> = {
 export const useInspector = <T extends { inst: BigNumberish }>({
 	componentObject,
 	componentName,
+	handleEdit,
 	inputHandlers = {},
 }: InspectorProps<T>) => {
 	const handleInputChange = (
@@ -68,27 +74,31 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 		// Object.assign(editorObject, { [componentName]: updatedObject });
 		// EditorData().syncItem(editorObject);
 		// EditorData().selectEntity(entity.Entity.inst);
-		EditorData().updateSelectedEntity(editorObject as EntityCollection);
+		// EditorData().updateSelectedEntity(editorObject as EntityCollection);
+		handleEdit(componentName, updatedObject);
 	};
 
-	const Inspector = ({ children }: React.PropsWithChildren) => {
-		console.warn("trace");
-		return (
-			<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs">
-				<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
-					<div
-						className="text-[7pt] text-black/20 hover:opacity-100 opacity-0"
-						// biome-ignore lint/security/noDangerouslySetInnerHtml: <hey, sometimes, you have to live dangerously!>
-						dangerouslySetInnerHTML={{
-							__html: formatColorHash(componentObject.inst),
-						}}
-					/>
-					<div>{componentName}</div>
-				</h3>
-				<div className="flex flex-col gap-2">{children}</div>
-			</div>
-		);
-	};
+	const Inspector = useCallback(
+		({ children }: React.PropsWithChildren) => {
+			console.warn("trace", componentObject);
+			return (
+				<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs">
+					<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
+						<div
+							className="text-[7pt] text-black/20 hover:opacity-100 opacity-0"
+							// biome-ignore lint/security/noDangerouslySetInnerHtml: <hey, sometimes, you have to live dangerously!>
+							dangerouslySetInnerHTML={{
+								__html: formatColorHash(componentObject.inst),
+							}}
+						/>
+						<div>{componentName}</div>
+					</h3>
+					<div className="flex flex-col gap-2">{children}</div>
+				</div>
+			);
+		},
+		[componentObject, componentName],
+	);
 
 	return { handleInputChange, Inspector };
 };

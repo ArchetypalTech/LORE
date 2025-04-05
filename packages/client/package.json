@@ -4,7 +4,7 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"lint": "bunx biome lint ./src/**/*.* --write",
+		"lint": "bunx biome lint ./src --write && bunx oxlint@latest ./src --config ./.oxlintrc.json --tsconfig ./tsconfig.json --import-plugin ",
 		"dev": "bunx vite --mode development",
 		"dev:slot": "bunx vite dev --mode slot",
 		"build": "bunx vite build",

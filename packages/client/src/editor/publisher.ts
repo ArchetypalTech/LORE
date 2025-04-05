@@ -1,13 +1,15 @@
 import { SystemCalls, type DesignerCall } from "../lib/systemCalls";
 import EditorData from "./data/editor.data";
 import type { EntityCollection } from "./lib/schemas";
-import type {
-	Area,
-	Entity,
-	Exit,
-	Inspectable,
+import {
+	direction,
+	inspectableActions,
+	type Area,
+	type Entity,
+	type Exit,
+	type Inspectable,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { directionToIndex, inspectableActionsToIndex } from "./lib/schemas";
+import { toEnumIndex } from "./lib/schemas";
 import { byteArray, num } from "starknet";
 import { Notifications } from "./lib/notifications";
 
@@ -89,7 +91,7 @@ const publishInspectable = async (inspectable: Inspectable) => {
 			? inspectable.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
 					0,
-					inspectableActionsToIndex(x.action_fn),
+					toEnumIndex(x.action_fn, inspectableActions),
 				])
 			: 0,
 	];
@@ -100,7 +102,7 @@ const publishArea = async (area: Area) => {
 	const areaData = [
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
-		directionToIndex(area.direction),
+		toEnumIndex(area.direction, direction),
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };
@@ -111,7 +113,7 @@ const publishExit = async (exit: Exit) => {
 		exit.is_exit,
 		exit.is_enterable,
 		num.toBigInt(exit.leads_to.toString()),
-		directionToIndex(exit.direction_type),
+		toEnumIndex(exit.direction_type, direction),
 		// exit.action_map.length > 0
 		// 	? exit.action_map.map((x) => [
 		// 			byteArray.byteArrayFromString(x.action),

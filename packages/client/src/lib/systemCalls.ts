@@ -47,23 +47,6 @@ async function execCommand(command: string): Promise<void> {
 	}
 }
 
-/**
- * Formats a command message into calldata for contract invocation.
- * Splits the message into an array of commands and converts them to byte arrays.
- *
- * @param {string} message - The message to format
- * @returns {Promise<{calldata: RawArgsArray, cmds: string[]}>} The formatted calldata and command array
- */
-async function formatCallData(message: string) {
-	const cmds_raw = message.split(/\s+/);
-	const cmds = cmds_raw.filter((word) => word !== "");
-	const cmd_array = cmds.map((cmd) => byteArray.byteArrayFromString(cmd));
-	// create message as readable contract data
-	const calldata = CallData.compile([cmd_array, 23]);
-	console.log("formatCallData(cmds): ", cmds, " -> calldata ->", calldata);
-	return { calldata, cmds };
-}
-
 export type DesignerCall =
 	| "create_entity"
 	| "create_inspectable"

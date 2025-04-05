@@ -16,15 +16,19 @@ import { InspectableInspector } from "../components/inspectors/InspectableInspec
 export const componentData: {
 	[K in keyof EntityCollection]: {
 		order: number;
-		inspector: ComponentInspector<NonNullable<EntityCollection[K]>>;
+		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
-		creator: (entity: Entity) => WithStringEnums<Pick<EntityCollection, K>>;
+		creator?: (entity: Entity) => WithStringEnums<Pick<EntityCollection, K>>;
 	};
 } = {
 	Entity: {
 		order: 0,
 		inspector: EntityInspector,
 		creator: createDefaultEntity,
+	},
+	Player: {
+		order: 1,
+		icon: "👤",
 	},
 	Area: {
 		order: 1,

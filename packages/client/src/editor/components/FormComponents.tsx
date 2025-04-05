@@ -3,6 +3,9 @@ import { TagInput as Tags } from "./TagInput";
 import type { ChangeEvent } from "react";
 import { MultiTextArea } from "./MultiTextArea";
 import React from "react";
+import type { OptionType } from "../lib/types";
+import { useCairoEnum } from "../lib/schemas";
+import type { CairoCustomEnum, CairoEnum } from "starknet";
 
 export const Header = ({
 	title,
@@ -68,6 +71,7 @@ export const Input = ({
 				defaultValue={value}
 				onBlur={onChange}
 				onSubmit={onChange}
+				autoComplete="off"
 				className={cn(
 					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
 					className,
@@ -133,6 +137,7 @@ export const Textarea = ({
 				value={value}
 				onChange={onChange}
 				rows={rows}
+				autoComplete="off"
 				className={cn(
 					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
 					className,
@@ -182,7 +187,7 @@ export const Select = React.forwardRef<
 		value?: string;
 		defaultValue?: string;
 		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-		options: Array<{ value: string; label: string }> | HTMLOptionsCollection;
+		options: Array<{ value: string; label: string }> | OptionType[];
 		className?: string;
 		disabled?: boolean;
 	}
@@ -214,6 +219,21 @@ export const Select = React.forwardRef<
 		);
 	},
 );
+
+export const CairoEnumSelect = React.forwardRef<
+	HTMLSelectElement,
+	{
+		id: string;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+		className?: string;
+		disabled?: boolean;
+		value: CairoCustomEnum;
+		enum: unknown[] | readonly unknown[];
+	}
+>(({ value: original_value, enum: cairoEnum, ...props }, ref) => {
+	const { value, options } = useCairoEnum(original_value, cairoEnum);
+	return <Select ref={ref} value={value} {...props} options={options} />;
+});
 
 export const Toggle = ({
 	id,

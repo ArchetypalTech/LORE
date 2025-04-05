@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils/utils";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { KeyboardEvent, FocusEvent, ChangeEvent } from "react";
 
 interface TagInputProps {
@@ -11,7 +11,7 @@ interface TagInputProps {
 
 export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 	const [input, setInput] = useState("");
-
+	const inputRef = useRef<HTMLInputElement>(null);
 	// Handles keyboard events and blur to add new tags
 	const handleInputEvent = (
 		event: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>,
@@ -78,6 +78,9 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 		// Pass the synthetic event to onChange
 		onChange(syntheticEvent);
 		setInput("");
+		setTimeout(() => {
+			inputRef.current?.focus();
+		}, 1000);
 	};
 
 	// Removes a tag at the specified index
@@ -118,10 +121,13 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 	return (
 		<>
 			<input
+				key={id}
+				ref={inputRef}
 				id={id}
 				list="tag_suggestion"
 				onBlur={handleInputEvent}
 				onKeyUp={handleInputEvent}
+				autoComplete="off"
 				value={input}
 				onChange={(e) => setInput(e.target.value)}
 				className={cn(

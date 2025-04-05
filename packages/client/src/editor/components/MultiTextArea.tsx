@@ -22,14 +22,14 @@ export const MultiTextArea = ({
 				name: id,
 				value: arrays,
 				// Add other properties that might be accessed
-				type: "text",
+				type: "array",
 				checked: false,
 			},
 			currentTarget: {
 				id,
 				name: id,
 				value: arrays,
-				type: "text",
+				type: "array",
 				checked: false,
 			},
 			// Standard event properties
@@ -54,7 +54,7 @@ export const MultiTextArea = ({
 	};
 
 	const handleAddArray = () => {
-		handleNewValue([...value, ""]);
+		handleNewValue([...value, " "]);
 	};
 
 	const handleRemoveArray = (i: number) => {
@@ -71,8 +71,8 @@ export const MultiTextArea = ({
 						<div key={i} className="flex relative">
 							<textarea
 								id={i.toString()}
-								value={v}
-								onChange={handleChange}
+								defaultValue={v}
+								onBlur={handleChange}
 								rows={rows}
 								className={cn("flex w-full", className)}
 							/>

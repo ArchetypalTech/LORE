@@ -143,11 +143,11 @@ export const loadConfigFile = async (file: File): Promise<ConfigSchemaType> => {
 					if (error instanceof Error) {
 						reject(error);
 					} else {
-						reject(new Error("Invalid config format"));
+						reject(new Error(`Invalid config format: ${(error as Error).message}`));
 					}
 				}
 			} catch (error) {
-				reject(new Error("Invalid JSON file"));
+				reject(new Error(`Invalid JSON file: ${(error as Error).message}`));
 			}
 		};
 

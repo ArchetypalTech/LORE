@@ -1,9 +1,5 @@
-import {
-	stringCairoEnum,
-	useCairoEnum,
-	type ComponentInspector,
-} from "@/editor/lib/schemas";
-import { Select } from "../FormComponents";
+import { stringCairoEnum, type ComponentInspector } from "@/editor/lib/schemas";
+import { CairoEnumSelect } from "../FormComponents";
 import {
 	direction,
 	type Area,
@@ -13,16 +9,12 @@ import { useInspector } from "./useInspector";
 export const AreaInspector: ComponentInspector<Area> = ({
 	componentObject,
 	componentName,
+	handleEdit,
 }) => {
-	// @dev: convert cairo enum
-	const { value: direction_value, options: direction_options } = useCairoEnum(
-		componentObject?.direction,
-		direction,
-	);
-
 	const { handleInputChange, Inspector } = useInspector<Area>({
 		componentObject,
 		componentName,
+		handleEdit,
 		inputHandlers: {
 			direction: (e, updatedObject) => {
 				console.log(e.target.value);
@@ -35,11 +27,11 @@ export const AreaInspector: ComponentInspector<Area> = ({
 
 	return (
 		<Inspector>
-			<Select
+			<CairoEnumSelect
 				id="direction"
-				defaultValue={direction_value}
 				onChange={handleInputChange}
-				options={direction_options}
+				value={componentObject.direction}
+				enum={direction}
 			/>
 		</Inspector>
 	);

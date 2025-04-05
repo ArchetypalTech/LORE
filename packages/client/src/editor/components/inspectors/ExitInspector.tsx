@@ -1,10 +1,6 @@
-import {
-	stringCairoEnum,
-	useCairoEnum,
-	type ComponentInspector,
-} from "@/editor/lib/schemas";
+import { stringCairoEnum, type ComponentInspector } from "@/editor/lib/schemas";
 import { useMemo } from "react";
-import { Select, Toggle } from "../FormComponents";
+import { CairoEnumSelect, Select, Toggle } from "../FormComponents";
 import {
 	direction,
 	type Exit,
@@ -15,6 +11,7 @@ import EditorData from "@/editor/data/editor.data";
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,
 	componentName,
+	handleEdit,
 }) => {
 	// @dev: get available areas to link to
 	const { area_value, area_options } = useMemo(() => {
@@ -27,15 +24,10 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 		};
 	}, [componentObject]);
 
-	// @dev: convert cairo enum
-	const { value: direction_value, options: direction_options } = useCairoEnum(
-		componentObject.direction_type,
-		direction,
-	);
-
 	const { handleInputChange, Inspector } = useInspector<Exit>({
 		componentObject,
 		componentName,
+		handleEdit,
 		inputHandlers: {
 			is_exit: (e, updatedObject) => {
 				updatedObject.is_exit = e.target.checked;
@@ -63,7 +55,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			/>
 			<Toggle
 				id="is_enterable"
-				value={componentObject.is_exit}
+				value={componentObject.is_enterable}
 				onChange={handleInputChange}
 			/>
 			<Select
@@ -72,11 +64,11 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 				onChange={handleInputChange}
 				options={area_options}
 			/>
-			<Select
+			<CairoEnumSelect
 				id="direction_type"
-				defaultValue={direction_value}
 				onChange={handleInputChange}
-				options={direction_options}
+				value={componentObject.direction_type}
+				enum={direction}
 			/>
 		</Inspector>
 	);

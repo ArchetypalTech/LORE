@@ -14,6 +14,7 @@ import { z } from "zod";
 import { useMemo, type FC } from "react";
 import { randomKey } from "../editor.utils";
 import randomName from "@scaleway/random-name";
+import type { OptionType } from "./types";
 
 export const ValidationErrorSchema = z.object({
 	message: z.string(),
@@ -43,12 +44,13 @@ export function transformWithSchema<T>(
 export const ConfigSchema = z.object({
 	dataPool: z.array(z.any()),
 });
-export type Config = z.infer<typeof ConfigSchema>;
+export type ConfigSchemaType = z.infer<typeof ConfigSchema>;
 
 /*
  * Enums
  */
 
+// Strip Cairo enum construction
 export const cleanCairoEnum = (
 	value: CairoCustomEnum | string | { None: boolean } | { Some: unknown },
 ) => {
@@ -58,6 +60,7 @@ export const cleanCairoEnum = (
 	return value;
 };
 
+// @dev: highly illegal conversions
 export const stringCairoEnum = <T>(
 	value: CairoCustomEnum | string | { None: boolean } | { Some: unknown },
 ) => {
@@ -67,20 +70,22 @@ export const stringCairoEnum = <T>(
 	return value as keyof T;
 };
 
+// convert a cairo enum to a usable format
 export const convertCairoEnum = (
 	cairoEnum: CairoCustomEnum,
 	targetEnum: unknown[] | readonly unknown[],
-): { value: string; options: HTMLOptionsCollection } => {
+): { value: string; options: OptionType[] } => {
 	const value = cleanCairoEnum(cairoEnum);
 	return {
 		value: targetEnum.find((e: unknown) => e === value) as string,
 		options: targetEnum.map((x: unknown) => ({
 			value: x as string,
 			label: x as string,
-		})) as unknown as HTMLOptionsCollection,
+		})) as unknown as OptionType[],
 	};
 };
 
+// cairo enum selector React hook
 export const useCairoEnum = (
 	cairoEnum: CairoCustomEnum,
 	targetEnum: unknown[] | readonly unknown[],
@@ -91,21 +96,11 @@ export const useCairoEnum = (
 	);
 };
 
-export const directionToIndex = (
-	value: CairoCustomEnum | string | { None: boolean } | { Some: Direction },
+export const toEnumIndex = (
+	value: CairoCustomEnum | string,
+	targetEnum: unknown[] | readonly unknown[],
 ) => {
-	const match = direction.findIndex((e) => e === cleanCairoEnum(value));
-	return match >= 0 ? match : 0;
-};
-
-export const inspectableActionsToIndex = (
-	value:
-		| CairoCustomEnum
-		| string
-		| { None: boolean }
-		| { Some: CairoCustomEnum },
-) => {
-	const match = inspectableActions.findIndex((e) => e === cleanCairoEnum(value));
+	const match = targetEnum.findIndex((e) => e === cleanCairoEnum(value));
 	return match >= 0 ? match : 0;
 };
 
@@ -132,13 +127,19 @@ export type EntityComponents = Pick<
 >;
 export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
 
+export type EditorCollection = WithStringEnums<EntityCollection>;
+
 export type ModelCollection = {
-	[K in keyof AnyObject]?: Partial<AnyObject>;
+	[K in keyof AnyObject]?: Partial<WithStringEnums<AnyObject>>;
 };
 
 export type ComponentInspector<T> = FC<{
 	componentObject: T;
 	componentName: keyof NonNullable<EntityComponents>;
+	handleEdit: (
+		componentName: keyof EntityComponents,
+		component: T,
+	) => Promise<void>;
 }>;
 
 /**

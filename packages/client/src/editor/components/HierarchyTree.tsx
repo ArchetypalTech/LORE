@@ -3,6 +3,7 @@ import EditorData, { useEditorData } from "../data/editor.data";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { cn } from "@/lib/utils/utils";
 import type { BigNumberish } from "starknet";
+import { componentData } from "../lib/components";
 
 type TreeNode = {
 	id: BigNumberish;
@@ -15,13 +16,16 @@ export const HierarchyTreeItem = ({
 	depth,
 }: { node: TreeNode; depth: number }) => {
 	const { selectedEntity } = useEditorData();
-	const isSelected = selectedEntity?.Entity!.inst === node.id;
+	const isSelected = selectedEntity === node.id;
 
-	const { isPlayer, isArea } = useMemo(() => {
+	const icons = useMemo(() => {
 		const entity = EditorData().getEntity(node.id);
-		const isPlayer = entity?.Player !== undefined;
-		const isArea = entity?.Area !== undefined;
-		return { isPlayer, isArea };
+		return Object.entries(componentData)
+			.filter(([key]) => {
+				return entity?.[key as keyof typeof entity] !== undefined;
+			})
+			.sort((a, b) => a[1].order - b[1].order)
+			.slice(0, 2);
 	}, [node]);
 
 	return (
@@ -41,8 +45,15 @@ export const HierarchyTreeItem = ({
 				)}
 				{node.name}{" "}
 				<span className="opacity-50 hover:opacity-100">
-					{isPlayer && <span title="Player">👤</span>}{" "}
-					{isArea && <span title="Area">🥾</span>}
+					{icons.map(([key, value]) => {
+						if (value.icon) {
+							return (
+								<span key={key} title={key}>
+									{value.icon}
+								</span>
+							);
+						}
+					})}
 				</span>
 			</div>
 			{node.children.map((child: TreeNode) => (

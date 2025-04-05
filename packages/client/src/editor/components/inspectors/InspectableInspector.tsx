@@ -6,12 +6,15 @@ import { useInspector } from "./useInspector";
 export const InspectableInspector: ComponentInspector<Inspectable> = ({
 	componentObject,
 	componentName,
+	handleEdit,
 }) => {
 	const { handleInputChange, Inspector } = useInspector<Inspectable>({
 		componentObject,
 		componentName,
+		handleEdit,
 		inputHandlers: {
 			description: (e, updatedObject) => {
+				console.log(e.target.value);
 				updatedObject.description = e.target.value as unknown as string[];
 			},
 			is_visible: (e, updatedObject) => {

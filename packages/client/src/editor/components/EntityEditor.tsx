@@ -1,71 +1,76 @@
-import { useMemo, useRef } from "react";
 import EditorData, { useEditorData } from "../data/editor.data";
 import type {
-	AnyObject,
 	EntityComponents,
 	EntityCollection,
 	ComponentInspector,
 } from "../lib/schemas";
-import { DeleteButton, Header, PublishButton, Select } from "./FormComponents";
+import { DeleteButton, Header, PublishButton } from "./FormComponents";
 import { publishEntityCollection } from "../publisher";
-import { componentData } from "../data/component.data";
+import { componentData } from "../lib/components";
 import { formatColorHash } from "../editor.utils";
 import { Notifications } from "../lib/notifications";
+import { AddComponents } from "./AddComponents";
+import type { BigNumberish } from "starknet";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { tick } from "@/lib/utils/utils";
 
-const AddComponents = ({ editedEntity }: { editedEntity: AnyObject }) => {
-	const selectRef = useRef<HTMLSelectElement>(null);
+export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
+	const { editedEntity, isDirty } = useEditorData();
 
-	const options = useMemo(() => {
-		const o = Object.entries(componentData)
-			.filter(([key]) => {
-				return editedEntity[key as keyof typeof editedEntity] === undefined;
-			})
-			.map(([key]) => ({ value: key, label: key }));
-		return o;
-	}, [editedEntity]);
-
-	const handleAddComponent = async (_e: React.MouseEvent<HTMLButtonElement>) => {
-		console.log(selectRef.current?.value);
-		const key = selectRef.current?.value as keyof typeof componentData;
-		const component = componentData[key];
-		if (!component) {
-			throw new Error(`Component not found: ${key}`);
+	useEffect(() => {
+		if (editedEntity === undefined && inst !== undefined) {
+			EditorData().set({
+				editedEntity: { ...EditorData().getEntity(inst) },
+			});
 		}
-		const newComponent = component.creator(editedEntity.Entity!);
-		EditorData().syncItem(newComponent as unknown as AnyObject);
+	}, [inst, editedEntity]);
+
+	const handleEditComponent = async (
+		componentName: keyof EntityComponents,
+		component: EntityComponents[keyof EntityComponents],
+	) => {
+		console.log(componentName, component);
+		const edited = { ...EditorData().editedEntity! };
+		edited[componentName] = component;
+		console.log(edited);
+		EditorData().syncItem(edited);
+		EditorData().set({
+			isDirty: Date.now(),
+			editedEntity: edited,
+		});
 	};
 
-	return (
-		<div className="w-full flex flex-row gap-2 items-end">
-			<div className="flex grow items-center">
-				<Select
-					ref={selectRef}
-					id=""
-					onChange={() => {}}
-					options={options}
-					disabled={options.length === 0}
-				/>
-			</div>
-			<button
-				className="btn btn-success btn-sm shrink"
-				onClick={handleAddComponent}
-				disabled={options.length === 0}
-			>
-				Add Component
-			</button>
-		</div>
-	);
-};
-
-export const EntityEditor = () => {
-	const { selectedEntity: editedEntity } = useEditorData();
+	const allComponents = useCallback(() => {
+		if (!editedEntity) return [];
+		const components = Object.keys(editedEntity);
+		console.log(Object.entries(componentData));
+		return Object.entries(componentData)
+			.filter(([key, value]) => !(key in components))
+			.sort((a, b) => {
+				const orderA =
+					componentData[a[0] as keyof typeof componentData]?.order || 99;
+				const orderB =
+					componentData[b[0] as keyof typeof componentData]?.order || 99;
+				return orderB - orderA;
+			})
+			.map(([key, value]) => {
+				console.log(key, value);
+				const component = editedEntity[key as keyof typeof editedEntity];
+				if (!component) return undefined;
+				const Inspector = value.inspector as ComponentInspector<
+					EntityComponents[keyof EntityComponents]
+				>;
+				if (!Inspector) return undefined;
+				return { key, Inspector, componentObject: component };
+			})
+			.filter((x) => x !== undefined);
+	}, [editedEntity, isDirty]);
 
 	if (!editedEntity?.Entity) {
-		return <div>Entity has errors</div>;
+		return <div className="uppercase">{"< "} Select an Entity</div>;
 	}
-
 	return (
-		<div className="editor-inspector">
+		<div className="editor-inspector animate-scale-in">
 			<Header
 				title={editedEntity?.Entity.name || "Entity"}
 				subtitle={
@@ -91,30 +96,22 @@ export const EntityEditor = () => {
 					}}
 				/>
 			</Header>
-			{Object.keys(editedEntity)
-				.filter((key) => key in componentData)
-				.sort((a, b) => {
-					const orderA = componentData[a as keyof typeof componentData]?.order || 99;
-					const orderB = componentData[b as keyof typeof componentData]?.order || 99;
-					return orderB - orderA;
-				})
-				.map((k, i) => {
-					const key = k as keyof EntityComponents;
-					const Inspector = componentData[key as keyof typeof componentData]
-						?.inspector as ComponentInspector<
-						EntityComponents[keyof EntityComponents]
-					>;
-					if (!Inspector) return <div key={key}>{key}</div>;
-					if (editedEntity[key] === undefined) return null;
-					return (
-						<Inspector
-							key={i}
-							componentObject={editedEntity[key]}
-							componentName={key}
-						/>
-					);
-				})}
-			<AddComponents editedEntity={editedEntity} />
+			{allComponents().map(({ key, Inspector, componentObject }) => {
+				if (!Inspector) return <div key={key}>{key}</div>;
+				if (componentObject === undefined) return null;
+				return (
+					<Inspector
+						key={key}
+						componentObject={componentObject}
+						componentName={key}
+						handleEdit={handleEditComponent}
+					/>
+				);
+			})}
+			<AddComponents
+				editedEntity={editedEntity}
+				handleEdit={handleEditComponent}
+			/>
 		</div>
 	);
 };

@@ -22,7 +22,7 @@ export const Editor = () => {
 		status: { status },
 	} = useDojoStore();
 	const { dark_mode } = useUserStore();
-	const { entities } = useEditorData();
+	const { entities, selectedEntity } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 
 	useHead({
@@ -53,7 +53,7 @@ export const Editor = () => {
 			return;
 		}
 		if (hasObjects) {
-			if (EditorData().selectEntity === undefined) {
+			if (EditorData().selectedEntity === undefined) {
 				EditorData().selectEntity(entities[0].inst);
 				setEditorState("loaded");
 				return;
@@ -84,7 +84,7 @@ export const Editor = () => {
 						<HierarchyTree />
 						<div className="col-span-2">
 							{editorState !== "empty" ? (
-								<EntityEditor />
+								<EntityEditor key={selectedEntity} inst={selectedEntity!} />
 							) : (
 								<div className="flex flex-col grow">
 									<h2 className="text-center mb-10 text-2xl">Empty World</h2>
@@ -119,7 +119,7 @@ export const Editor = () => {
 					</div>
 				);
 		}
-	}, [editorState, dark_mode]);
+	}, [editorState, dark_mode, selectedEntity]);
 
 	return (
 		<div

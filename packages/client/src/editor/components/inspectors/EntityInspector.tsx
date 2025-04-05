@@ -6,10 +6,12 @@ import { useInspector } from "./useInspector";
 export const EntityInspector: ComponentInspector<Entity> = ({
 	componentObject,
 	componentName,
+	handleEdit,
 }) => {
 	const { handleInputChange, Inspector } = useInspector<Entity>({
 		componentObject,
 		componentName,
+		handleEdit,
 		inputHandlers: {
 			name: (e, updatedObject) => {
 				console.log(e, e.target.value);

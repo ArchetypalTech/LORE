@@ -5,7 +5,11 @@ import type {
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { num, type BigNumberish } from "starknet";
-import type { AnyObject, EntityCollection } from "../lib/schemas";
+import type {
+	AnyObject,
+	EntityCollection,
+	WithStringEnums,
+} from "../lib/schemas";
 import { dispatchDesignerCall } from "../publisher";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
@@ -19,7 +23,8 @@ const {
 	dataPool: new Map<BigNumberish, AnyObject>(),
 	entities: [] as Entity[],
 	parents: [] as ParentToChildren[],
-	selectedEntity: undefined as AnyObject | undefined,
+	selectedEntity: undefined as BigNumberish | undefined,
+	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: Date.now(),
 });
 
@@ -47,7 +52,7 @@ const addEntity = (entity: Entity) => {
 
 const removeEntity = (entity: Entity) => {
 	const id = entity.inst;
-	const isSelected = get().selectedEntity?.Entity?.inst === id;
+	const isSelected = get().selectedEntity === id;
 	if (isSelected) {
 		set({ selectedEntity: undefined });
 	}
@@ -98,12 +103,12 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 		console.log(obj);
 		// @dev: merge items into datapool (or new if don't exist)
 		if (inst !== undefined) {
-			const existing = { ...(get().dataPool.get(inst) || {}) };
+			const existing = { ...get().dataPool.get(inst) };
 			if (existing === undefined) {
 				console.error("Existing object not found:", inst, obj);
 				return;
 			}
-			Object.assign(existing, obj);
+			Object.assign(existing, { ...obj });
 			setItem({ ...existing } as AnyObject, inst);
 		}
 
@@ -113,9 +118,11 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 			name = obj.Entity!.name;
 		}
 
-		// set({
-		// 	isDirty: Date.now(),
-		// });
+		setTimeout(() => {
+			set({
+				isDirty: Date.now(),
+			});
+		}, 100);
 
 		if (verbose)
 			console.log(
@@ -163,10 +170,10 @@ const deleteItem = async (model: AnyObject) => {
 };
 
 const selectEntity = (id: BigNumberish) => {
-	// if (get().selectedEntity !== undefined) {
-	// 	syncItem(get().selectedEntity!);
-	// }
-	set({ selectedEntity: get().dataPool.get(id) });
+	if (get().selectedEntity !== undefined) {
+		syncItem(getEntity(get().selectedEntity!));
+	}
+	set({ selectedEntity: id, editedEntity: undefined });
 };
 
 const updateSelectedEntity = (entity: EntityCollection) => {
@@ -185,6 +192,7 @@ const newEntity = (entity: Entity) => {
 	};
 	Object.assign(newEntity, entity);
 	syncItem({ Entity: newEntity });
+	selectEntity(newEntity.inst);
 	return newEntity;
 };
 
