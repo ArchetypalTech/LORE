@@ -5,7 +5,7 @@ import { MultiTextArea } from "./MultiTextArea";
 import React from "react";
 import type { OptionType } from "../lib/types";
 import { useCairoEnum } from "../lib/schemas";
-import type { CairoCustomEnum, CairoEnum } from "starknet";
+import type { CairoCustomEnum } from "starknet";
 
 export const Header = ({
 	title,

@@ -1,5 +1,4 @@
 import { useRef, useMemo } from "react";
-import EditorData from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { AnyObject, EntityComponents } from "../lib/schemas";
 import { Select } from "./FormComponents";
@@ -40,11 +39,6 @@ export const AddComponents = ({
 		}
 		const newComponent = component.creator(editedEntity.Entity!);
 		console.log(newComponent);
-		// EditorData().syncItem(newComponent as unknown as AnyObject);
-		// EditorData().set({
-		// 	isDirty: Date.now(),
-		// });
-		// EditorData().selectEntity(editedEntity.Entity!.inst);
 		handleEdit(
 			key,
 			newComponent[

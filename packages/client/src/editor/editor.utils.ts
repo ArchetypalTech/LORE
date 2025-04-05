@@ -5,7 +5,7 @@ import {
 	type ConfigSchemaType,
 	type ValidationError,
 } from "./lib/schemas";
-import { byteArray, hash, type BigNumberish } from "starknet";
+import { byteArray, encode, hash, type BigNumberish } from "starknet";
 import JSONbig from "json-bigint";
 
 const convertIfString = (item: unknown) => {
@@ -218,7 +218,9 @@ export const generateNumericUniqueId = (
 };
 
 export const randomKey = () => {
-	return hash.keccakBn(generateNumericUniqueId());
+	return encode.sanitizeHex(
+		hash.keccakBn(generateNumericUniqueId()).toString(),
+	) as BigNumberish;
 };
 
 export const createRandomName = () => {

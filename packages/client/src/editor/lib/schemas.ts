@@ -1,13 +1,12 @@
-import {
+import type {
 	direction,
 	inspectableActions,
-	type tokenType,
-	type Direction,
-	type Entity,
-	type SchemaType,
-	type DirectionEnum,
-	type InspectableActionsEnum,
-	type TokenTypeEnum,
+	tokenType,
+	Entity,
+	SchemaType,
+	DirectionEnum,
+	InspectableActionsEnum,
+	TokenTypeEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";

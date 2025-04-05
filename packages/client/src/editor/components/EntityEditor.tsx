@@ -11,8 +11,7 @@ import { formatColorHash } from "../editor.utils";
 import { Notifications } from "../lib/notifications";
 import { AddComponents } from "./AddComponents";
 import type { BigNumberish } from "starknet";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { tick } from "@/lib/utils/utils";
+import { useCallback, useEffect } from "react";
 
 export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	const { editedEntity, isDirty } = useEditorData();
@@ -30,7 +29,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		component: EntityComponents[keyof EntityComponents],
 	) => {
 		console.log(componentName, component);
-		const edited = { ...EditorData().editedEntity! };
+		const edited = { ...EditorData().editedEntity! } as EntityCollection;
 		edited[componentName] = component;
 		console.log(edited);
 		EditorData().syncItem(edited);
@@ -41,11 +40,11 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	};
 
 	const allComponents = useCallback(() => {
+		isDirty;
 		if (!editedEntity) return [];
 		const components = Object.keys(editedEntity);
-		console.log(Object.entries(componentData));
 		return Object.entries(componentData)
-			.filter(([key, value]) => !(key in components))
+			.filter(([key]) => !(key in components))
 			.sort((a, b) => {
 				const orderA =
 					componentData[a[0] as keyof typeof componentData]?.order || 99;
@@ -54,7 +53,6 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 				return orderB - orderA;
 			})
 			.map(([key, value]) => {
-				console.log(key, value);
 				const component = editedEntity[key as keyof typeof editedEntity];
 				if (!component) return undefined;
 				const Inspector = value.inspector as ComponentInspector<
@@ -70,7 +68,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		return <div className="uppercase">{"< "} Select an Entity</div>;
 	}
 	return (
-		<div className="editor-inspector animate-scale-in">
+		<div className="editor-inspector">
 			<Header
 				title={editedEntity?.Entity.name || "Entity"}
 				subtitle={

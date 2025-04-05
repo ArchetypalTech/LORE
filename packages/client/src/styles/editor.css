@@ -7,7 +7,7 @@
   @keyframes scale-in {
     from {
       opacity: 0.92;
-      transform: scale(0.995) translateY(0.2px);
+      transform: scale(0.985) translateY(0.2px);
     }
     to {
       opacity: 1;

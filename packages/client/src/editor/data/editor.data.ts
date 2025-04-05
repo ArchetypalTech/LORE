@@ -4,12 +4,8 @@ import type {
 	Entity,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { num, type BigNumberish } from "starknet";
-import type {
-	AnyObject,
-	EntityCollection,
-	WithStringEnums,
-} from "../lib/schemas";
+import { encode, num, type BigNumberish } from "starknet";
+import type { AnyObject, EntityCollection } from "../lib/schemas";
 import { dispatchDesignerCall } from "../publisher";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
@@ -28,18 +24,24 @@ const {
 	isDirty: Date.now(),
 });
 
+const getItem = (id: BigNumberish) =>
+	get().dataPool.get(encode.sanitizeHex(id.toString()));
+
+const getEntity = (id: BigNumberish) => getItem(id) as EntityCollection;
+
 const getEntities = () =>
-	(get().entities.map((x) => get().dataPool.get(x.inst)!) as EntityCollection[])
+	get()
+		.entities.map((x) => getEntity(x.inst)!)
 		.filter((x) => x !== undefined)
 		.sort((x) => parseInt(x.Entity.inst.toString()));
-
-const getEntity = (id: BigNumberish) =>
-	get().dataPool.get(id) as EntityCollection;
 
 const setItem = (obj: AnyObject, id: BigNumberish) => {
 	set((prev) => ({
 		...prev,
-		dataPool: new Map<BigNumberish, AnyObject>(get().dataPool).set(id, obj),
+		dataPool: new Map<BigNumberish, AnyObject>(get().dataPool).set(
+			encode.sanitizeHex(id.toString()),
+			obj,
+		),
 	}));
 };
 
@@ -67,8 +69,6 @@ const removeEntity = (entity: Entity) => {
 		dataPool: newDataPool,
 	}));
 };
-
-const getItem = (id: BigNumberish) => get().dataPool.get(id);
 
 const syncItem = (obj: AnyObject, verbose = false) => {
 	console.warn(obj, "trave");
@@ -103,7 +103,7 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 		console.log(obj);
 		// @dev: merge items into datapool (or new if don't exist)
 		if (inst !== undefined) {
-			const existing = { ...get().dataPool.get(inst) };
+			const existing = { ...getItem(inst) };
 			if (existing === undefined) {
 				console.error("Existing object not found:", inst, obj);
 				return;
