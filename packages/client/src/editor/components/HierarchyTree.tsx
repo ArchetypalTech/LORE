@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import EditorData, { useEditorData } from "../editor.data";
+import EditorData, { useEditorData } from "../data/editor.data";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { cn } from "@/lib/utils/utils";
 import type { BigNumberish } from "starknet";

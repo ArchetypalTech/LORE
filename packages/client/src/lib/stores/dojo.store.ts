@@ -9,7 +9,7 @@ import type {
 } from "../dojo_bindings/typescript/models.gen";
 import { processWhitespaceTags, decodeDojoText } from "../utils/utils";
 import { StoreBuilder } from "../utils/storebuilder";
-import EditorData from "@/editor/editor.data";
+import EditorData from "@/editor/data/editor.data";
 import type { AnyObject } from "@/editor/lib/schemas";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";

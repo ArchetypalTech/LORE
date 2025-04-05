@@ -1,6 +1,6 @@
 import { SystemCalls, type DesignerCall } from "../lib/systemCalls";
 import { actions } from "./editor.store";
-import EditorData from "./editor.data";
+import EditorData from "./data/editor.data";
 import type { EntityCollection } from "./lib/schemas";
 import type {
 	Area,

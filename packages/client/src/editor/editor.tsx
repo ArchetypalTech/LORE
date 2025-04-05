@@ -5,7 +5,7 @@ import { EditorHeader } from "./components/EditorHeader";
 import { useHead } from "@unhead/react";
 import EditorStore from "./editor.store";
 import { APP_EDITOR_SEO } from "@/data/app.data";
-import EditorData, { useEditorData } from "./editor.data";
+import EditorData, { useEditorData } from "./data/editor.data";
 import { cn } from "@/lib/utils/utils";
 import { EditorFooter } from "./components/EditorFooter";
 import { useDojoStore } from "@/lib/stores/dojo.store";
@@ -22,7 +22,7 @@ export const Editor = () => {
 		status: { status },
 	} = useDojoStore();
 	const { dark_mode } = useUserStore();
-	const { entities, selectedEntity, isDirty } = useEditorData();
+	const { entities } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 
 	useHead({
@@ -47,21 +47,13 @@ export const Editor = () => {
 	};
 
 	useEffect(() => {
-		// refresh current scope when data is dirty
-		if (isDirty && selectedEntity?.Entity) {
-			EditorData().selectEntity(selectedEntity?.Entity.inst);
-		}
-	}, [isDirty, selectedEntity]);
-
-	useEffect(() => {
-		isDirty;
 		const hasObjects = EditorData().getEntities().length > 0;
 		if (status === "loading") {
 			setEditorState("not connected");
 			return;
 		}
 		if (hasObjects) {
-			if (selectedEntity === undefined) {
+			if (EditorData().selectEntity === undefined) {
 				EditorData().selectEntity(entities[0].inst);
 				setEditorState("loaded");
 				return;
@@ -74,10 +66,9 @@ export const Editor = () => {
 			return;
 		}
 		setEditorState("empty");
-	}, [status, entities, selectedEntity, isDirty]);
+	}, [status, entities]);
 
 	const editorContents = useMemo(() => {
-		isDirty;
 		switch (editorState) {
 			case "not connected":
 				return (
@@ -128,7 +119,7 @@ export const Editor = () => {
 					</div>
 				);
 		}
-	}, [editorState, dark_mode, isDirty]);
+	}, [editorState, dark_mode]);
 
 	return (
 		<div

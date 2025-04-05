@@ -1,12 +1,12 @@
 import { StoreBuilder } from "@/lib/utils/storebuilder";
-import { createRandomName, randomKey } from "./editor.utils";
+import { createRandomName, randomKey } from "../editor.utils";
 import type {
 	Entity,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { num, type BigNumberish } from "starknet";
-import type { AnyObject, EntityCollection } from "./lib/schemas";
-import { dispatchDesignerCall } from "./publisher";
+import type { AnyObject, EntityCollection } from "../lib/schemas";
+import { dispatchDesignerCall } from "../publisher";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -66,6 +66,7 @@ const removeEntity = (entity: Entity) => {
 const getItem = (id: BigNumberish) => get().dataPool.get(id);
 
 const syncItem = (obj: AnyObject, verbose = false) => {
+	console.warn(obj, "trave");
 	try {
 		if (obj === undefined) return;
 		// @dev: Ignore things we aren't storing in the datapool, this needs to be expanded
@@ -112,9 +113,9 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 			name = obj.Entity!.name;
 		}
 
-		set({
-			isDirty: Date.now(),
-		});
+		// set({
+		// 	isDirty: Date.now(),
+		// });
 
 		if (verbose)
 			console.log(
@@ -162,7 +163,16 @@ const deleteItem = async (model: AnyObject) => {
 };
 
 const selectEntity = (id: BigNumberish) => {
+	// if (get().selectedEntity !== undefined) {
+	// 	syncItem(get().selectedEntity!);
+	// }
 	set({ selectedEntity: get().dataPool.get(id) });
+};
+
+const updateSelectedEntity = (entity: EntityCollection) => {
+	const selectedEntity = get().selectedEntity!;
+	Object.assign(selectedEntity, entity);
+	set({ selectedEntity });
 };
 
 const newEntity = (entity: Entity) => {
@@ -193,6 +203,7 @@ const EditorData = createFactory({
 	newEntity,
 	removeEntity,
 	selectEntity,
+	updateSelectedEntity,
 	deleteItem,
 	logPool,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,

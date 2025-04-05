@@ -10,7 +10,7 @@ import {
 	type Exit,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { useInspector } from "./useInspector";
-import EditorData from "@/editor/editor.data";
+import EditorData from "@/editor/data/editor.data";
 
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,

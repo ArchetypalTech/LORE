@@ -2,7 +2,7 @@ import type { NotificationState } from "@editor/notifications";
 import { initialNotificationState } from "@editor/notifications";
 import { publishConfigToContract } from "@editor/publisher";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
-import EditorData from "./editor.data";
+import EditorData from "./data/editor.data";
 import { tick } from "@/lib/utils/utils";
 import {
 	ConfigSchema,

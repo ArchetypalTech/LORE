@@ -1,5 +1,5 @@
 import { LORE_CONFIG } from "@lib/config";
-import EditorData from "../editor.data";
+import EditorData from "../data/editor.data";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 
 export const EditorFooter = () => {
