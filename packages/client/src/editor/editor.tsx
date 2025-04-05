@@ -14,6 +14,7 @@ import { useUserStore } from "@/lib/stores/user.store";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { Notifications as NotificationStore } from "./lib/notifications";
 import Notifications from "./components/Notifications";
+import { toast, Toaster } from "sonner";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -22,7 +23,7 @@ export const Editor = () => {
 		status: { status },
 	} = useDojoStore();
 	const { dark_mode } = useUserStore();
-	const { entities, selectedEntity } = useEditorData();
+	const { entities, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 
 	useHead({
@@ -45,6 +46,12 @@ export const Editor = () => {
 	const handleDismissNotification = () => {
 		NotificationStore().clear();
 	};
+
+	useEffect(() => {
+		if (!isDirty) {
+			toast.dismiss("editor-dirty");
+		}
+	}, [isDirty]);
 
 	useEffect(() => {
 		const hasObjects = EditorData().getEntities().length > 0;
@@ -72,7 +79,7 @@ export const Editor = () => {
 		switch (editorState) {
 			case "not connected":
 				return (
-					<div className="relative w-full h-full flex items-center justify-center">
+					<div className="use-editor-styles relative w-full h-full flex items-center justify-center">
 						<div className="animate-spin mr-3">🥾</div>
 						No Dojo connection
 					</div>
@@ -82,7 +89,7 @@ export const Editor = () => {
 				return (
 					<div className="relative grid grid-cols-5 gap-4">
 						<HierarchyTree />
-						<div className="col-span-2">
+						<div className="use-editor-styles col-span-2">
 							{editorState !== "empty" ? (
 								<EntityEditor key={selectedEntity} inst={selectedEntity!} />
 							) : (
@@ -122,17 +129,17 @@ export const Editor = () => {
 	}, [editorState, dark_mode, selectedEntity]);
 
 	return (
-		<div
-			id="editor-root"
-			className="relative max-h-screen h-screen w-full flex flex-col font-atkinson"
-		>
+		<>
 			<Notifications onDismiss={handleDismissNotification} />
-			<div className="h-full w-full lg:container flex flex-col gap-2 mx-auto">
+			<Toaster expand visibleToasts={4} />
+			<div
+				id="editor-root"
+				className="fixed max-h-screen h-screen w-full font-atkinson overflow-scroll"
+			>
 				<EditorHeader />
-				{editorContents}
-				<div className="flex grow" />
+				<div className="relative">{editorContents}</div>
 				<EditorFooter />
 			</div>
-		</div>
+		</>
 	);
 };

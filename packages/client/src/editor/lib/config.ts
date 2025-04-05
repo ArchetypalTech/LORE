@@ -14,6 +14,7 @@ import {
 	type ConfigSchemaType,
 } from "./schemas";
 import JSONbig from "json-bigint";
+import { toast } from "sonner";
 
 const { get, set, createFactory } = StoreBuilder({});
 
@@ -55,15 +56,12 @@ const config = {
 	 * Save the current config to a JSON file
 	 */
 	validateConfig: async (config: ConfigSchemaType) => {
-		// Validate the config using our Zod schema
 		const { data, errors } = transformWithSchema(ConfigSchema, config);
 		set({
 			isDirty: false,
 			errors,
 		});
-		if (errors.length === 0) {
-			Notifications().showSuccess("Config saved successfully");
-		} else {
+		if (errors.length > 0) {
 			Notifications().showError(
 				`Config has ${errors.length} validation errors. First error: ${formatValidationError(errors[0])}`,
 			);
@@ -77,7 +75,6 @@ const config = {
 			dataPool: [...EditorData().dataPool.values()],
 		} as ConfigSchemaType;
 		const { result, errors } = await config.validateConfig(dataPool);
-		// Ensure text definitions are properly formatted and download the file
 		if (errors.length === 0) {
 			await saveConfigToFile(result);
 			Notifications().showSuccess("Config saved successfully");
@@ -88,19 +85,19 @@ const config = {
 	 * Load a config from a file with notification feedback
 	 */
 	loadConfigFromFile: async (file: File) => {
-		Notifications().showLoading("Loading configuration...");
+		toast.loading("Loading configuration...", { id: "loading-config" });
 		try {
 			const config = await loadConfigFile(file);
 			const configClone = JSONbig.parse(JSONbig.stringify(config));
 			Config().loadConfig(configClone);
-			Notifications().clear();
-			Notifications().showSuccess("Config loaded successfully");
+			toast.dismiss("loading-config");
+			toast.success("Config loaded successfully");
 			return config;
 		} catch (error: unknown) {
 			console.error("Error loading config:", error);
 			const errorMsg = error instanceof Error ? error.message : String(error);
-			Notifications().clear();
-			Notifications().showError(`Error loading config: ${errorMsg}`);
+			toast.dismiss("loading-config");
+			toast.error(`Error loading config: ${errorMsg}`);
 		}
 		return null;
 	},

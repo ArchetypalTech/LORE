@@ -110,7 +110,10 @@ const onReponseData = (
 	if (responseData.PlayerStory) {
 		onPlayerStory(responseData.PlayerStory);
 	}
-	EditorData().syncItem(responseData as AnyObject, true);
+	EditorData().syncItem(responseData as AnyObject, {
+		verbose: true,
+		sync: true,
+	});
 };
 
 /* 

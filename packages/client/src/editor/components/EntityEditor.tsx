@@ -29,11 +29,10 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		const edited = { ...EditorData().editedEntity! } as EntityComponents;
 		edited[componentName] = component;
 		console.log(edited);
-		EditorData().syncItem(edited);
 		EditorData().set({
-			isDirty: Date.now(),
 			editedEntity: edited as EntityCollection,
 		});
+		EditorData().syncItem(edited);
 	};
 
 	const handleRemoveComponent = async (
@@ -41,6 +40,13 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		component: EntityComponents[keyof EntityComponents],
 	) => {
 		console.log(componentName, component);
+		EditorData().set({
+			editedEntity: EditorData().removeComponent(
+				editedEntity!,
+				component,
+				componentName,
+			),
+		});
 	};
 
 	const allComponents = useCallback(() => {
@@ -76,7 +82,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		return <div className="uppercase">{"< "} Select an Entity</div>;
 	}
 	return (
-		<div className="editor-inspector">
+		<div className="editor-inspector mb-25">
 			<Header
 				title={editedEntity?.Entity.name || "Entity"}
 				subtitle={
@@ -91,7 +97,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 			>
 				<DeleteButton
 					onClick={async () => {
-						await EditorData().removeEntity(editedEntity.Entity!);
+						await EditorData().removeEntity(editedEntity);
 					}}
 				/>
 				<PublishButton

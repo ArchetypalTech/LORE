@@ -29,7 +29,12 @@ export const HierarchyTreeItem = ({
 	}, [node]);
 
 	return (
-		<div className={cn("pl-4 font-normal w-full", depth === 0 && "font-medium")}>
+		<div
+			className={cn(
+				"pl-4 font-normal w-full animate-scale-in",
+				depth === 0 && "font-medium",
+			)}
+		>
 			<div
 				className={cn(
 					"relative opacity-80 overflow-visible",
@@ -98,7 +103,7 @@ export const HierarchyTree = () => {
 	}, [dataPool]);
 
 	return (
-		<div className="h-full items-start flex flex-col gap-2 justify-start">
+		<div className="use-editor-styles h-full items-start flex flex-col gap-2 justify-start">
 			<button
 				className="btn btn-sm btn-success"
 				onClick={() => EditorData().newEntity({} as Entity)}

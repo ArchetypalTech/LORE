@@ -78,9 +78,6 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 		// Pass the synthetic event to onChange
 		onChange(syntheticEvent);
 		setInput("");
-		setTimeout(() => {
-			inputRef.current?.focus();
-		}, 1000);
 	};
 
 	// Removes a tag at the specified index

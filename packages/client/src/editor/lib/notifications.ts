@@ -1,4 +1,5 @@
 import { StoreBuilder } from "@/lib/utils/storebuilder";
+import { toast } from "sonner";
 
 // Define notification state types
 export type NotificationType =
@@ -45,33 +46,11 @@ const notifications = {
 	clear: () => {
 		setNotification(initialNotificationState);
 	},
-	showError: (message: string, blocking = false) => {
-		setNotification({
-			type: "error",
-			message,
-			blocking,
-			logs: undefined,
-		});
+	showError: (message: string) => {
+		toast.error(message, { richColors: true });
 	},
-	showSuccess: (message: string, timeout = 3000) => {
-		if (getNotification().blocking) {
-			return;
-		}
-		setNotification({
-			type: "success",
-			message,
-			blocking: false,
-			logs: undefined,
-			timeout,
-		});
-	},
-	showLoading: (message: string) => {
-		setNotification({
-			type: "loading",
-			message,
-			blocking: true,
-			logs: undefined,
-		});
+	showSuccess: (message: string) => {
+		toast.success(message, { richColors: true });
 	},
 	startPublishing: async (message = "Publishing to contract...") => {
 		if (getNotification().type === "publishing") return;
@@ -85,7 +64,6 @@ const notifications = {
 		const currentNotification = getNotification();
 		return currentNotification.logs || [];
 	},
-
 	/**
 	 * Add a log entry to a publishing notification
 	 */

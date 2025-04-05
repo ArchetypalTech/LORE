@@ -1,15 +1,10 @@
 import { LORE_CONFIG } from "@lib/config";
 import EditorData from "../data/editor.data";
-import { APP_EDITOR_DATA } from "@/data/app.data";
 
 export const EditorFooter = () => {
 	return (
-		<footer className="gap-2 mt-4 mb-1 flex items-center p-4 not-dark:invert not-dark:bg-gray-300 w-full justify-center rounded-2xl">
+		<footer className="fixed bottom-0 use-editor-styles gap-2 mt-4 mb-1 flex items-center p-4 not-dark:bg-transparent w-full justify-center rounded-2xl">
 			<div className="lg:container flex flex-row justify-between w-full gap-2 items-center">
-				<h1 className="text-xl font-bold font-berkeley textFreak mx-2">
-					{APP_EDITOR_DATA.title}
-				</h1>
-
 				<div className="flex grow" />
 				<div className="flex gap-2">
 					<a

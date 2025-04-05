@@ -24,7 +24,7 @@ export default function Terminal() {
 	useEffect(() => {
 		// Focus input on mount
 		if (terminalInputRef.current) {
-			terminalInputRef.current.focus();
+			// terminalInputRef.current.focus();
 		}
 		// Set timeout for connection status
 		const timeout = setTimeout(() => {
@@ -101,13 +101,13 @@ export default function Terminal() {
 
 		if (terminalInputRef.current) {
 			terminalInputRef.current.disabled = false;
-			terminalInputRef.current.focus();
+			// terminalInputRef.current.focus();
 		}
 	};
 
 	const focusInput = () => {
 		if (terminalInputRef.current) {
-			terminalInputRef.current.focus();
+			// terminalInputRef.current.focus();
 		}
 	};
 

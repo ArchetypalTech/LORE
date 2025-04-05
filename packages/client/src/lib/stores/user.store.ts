@@ -13,7 +13,7 @@ const {
 	createFactory,
 } = StoreBuilder(
 	{
-		dark_mode,
+		dark_mode, //@deprecated
 		typewriter_effect: true,
 	},
 	{

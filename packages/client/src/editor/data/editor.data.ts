@@ -5,8 +5,15 @@ import type {
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { encode, num, type BigNumberish } from "starknet";
-import type { AnyObject, EntityCollection } from "../lib/schemas";
+import type {
+	AnyObject,
+	EntityCollection,
+	EntityComponents,
+} from "../lib/schemas";
 import { dispatchDesignerCall } from "../publisher";
+import { toast } from "sonner";
+import { Config } from "../lib/config";
+import JSONbig from "json-bigint";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -19,15 +26,17 @@ const {
 	dataPool: new Map<BigNumberish, AnyObject>(),
 	entities: [] as Entity[],
 	parents: [] as ParentToChildren[],
+	deletedQueue: [] as AnyObject[],
 	selectedEntity: undefined as BigNumberish | undefined,
 	editedEntity: undefined as EntityCollection | undefined,
-	isDirty: Date.now(),
+	isDirty: undefined as number | undefined,
 });
 
 const getItem = (id: BigNumberish) =>
 	get().dataPool.get(encode.sanitizeHex(id.toString()));
 
-const getEntity = (id: BigNumberish) => getItem(id) as EntityCollection;
+const getEntity = (id: BigNumberish) =>
+	JSONbig.parse(JSONbig.stringify(getItem(id))) as EntityCollection;
 
 const getEntities = () =>
 	get()
@@ -35,7 +44,7 @@ const getEntities = () =>
 		.filter((x) => x !== undefined)
 		.sort((x) => parseInt(x.Entity.inst.toString()));
 
-const setItem = (obj: AnyObject, id: BigNumberish) => {
+const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
 	set((prev) => ({
 		...prev,
 		dataPool: new Map<BigNumberish, AnyObject>(get().dataPool).set(
@@ -43,6 +52,20 @@ const setItem = (obj: AnyObject, id: BigNumberish) => {
 			obj,
 		),
 	}));
+	if (!sync) {
+		set({
+			isDirty: Date.now(),
+		});
+		toast("Your changes are not yet published", {
+			id: "editor-dirty",
+			duration: Infinity,
+			position: "bottom-center",
+			action: {
+				label: "Publish",
+				onClick: () => Config().publishToContract(),
+			},
+		});
+	}
 };
 
 const addEntity = (entity: Entity) => {
@@ -52,25 +75,98 @@ const addEntity = (entity: Entity) => {
 	}));
 };
 
-const removeEntity = (entity: Entity) => {
-	const id = entity.inst;
-	const isSelected = get().selectedEntity === id;
+const removeComponent = (
+	entity: EntityCollection,
+	component: EntityCollection[keyof EntityCollection],
+	componentName: keyof EntityCollection,
+): EntityCollection => {
+	const edited = { ...entity! } as EntityCollection;
+	const deleted = { ...component };
+	edited[componentName] = undefined;
+	EditorData().set({
+		deletedQueue: [
+			...EditorData().deletedQueue,
+			{ [componentName]: deleted } as Partial<EntityCollection>,
+		],
+	});
+	EditorData().syncItem(edited);
+	return edited as EntityCollection;
+};
+
+const removeParent = (child: EntityCollection, parent: EntityCollection) => {
+	console.log("rp", child, parent);
+	if ("ChildToParent" in child && "ParentToChildren" in parent) {
+		console.log("rp2", child, parent);
+		if (child.ChildToParent!.parent === parent.Entity.inst) {
+			console.log("rp3", child, parent);
+			removeComponent(
+				child,
+				{ ChildToParent: child.ChildToParent! },
+				"ChildToParent",
+			);
+			EditorData().syncItem(child);
+			parent.ParentToChildren!.children = parent.ParentToChildren!.children.filter(
+				(c) => c !== child.Entity.inst,
+			);
+			if (parent.ParentToChildren!.children.length === 0) {
+				removeComponent(
+					parent,
+					{ ["ParentToChildren"]: parent.ParentToChildren! },
+					"ParentToChildren",
+				);
+			}
+			EditorData().syncItem(parent);
+			return;
+		}
+		throw new Error("Not parent of child");
+	}
+	throw new Error("Child does not have parent");
+};
+
+const removeEntity = (entity: EntityCollection) => {
+	if (!("Entity" in entity)) {
+		throw new Error("Entity is not an entity");
+	}
+	const inst = entity.Entity!.inst;
+	const isSelected = get().selectedEntity === inst;
 	if (isSelected) {
 		set({ selectedEntity: undefined });
 	}
+	console.log("remove", entity);
+	if ("ParentToChildren" in entity) {
+		const children = (
+			entity.ParentToChildren as ParentToChildren
+		)?.children.flat();
+		children.forEach((child) => {
+			removeParent(getEntity(child)!, getEntity(inst));
+		});
+	}
+	Object.keys(entity).forEach((key) => {
+		removeComponent(entity, entity[key as keyof EntityCollection], key);
+	});
+	const newDataPool = new Map<BigNumberish, AnyObject>(get().dataPool);
+	newDataPool.delete(inst);
 	set((prev) => ({
 		...prev,
-		entities: prev.entities.filter((e) => e.inst !== entity.inst),
-	}));
-	const newDataPool = new Map<BigNumberish, AnyObject>({ ...get().dataPool });
-	newDataPool.delete(id);
-	set((prev) => ({
-		...prev,
+		entities: prev.entities.filter((e) => e.inst !== inst),
 		dataPool: newDataPool,
+		isDirty: Date.now(),
 	}));
+	toast("Your changes are not yet published", {
+		id: "editor-dirty",
+		duration: Infinity,
+		position: "bottom-center",
+		action: {
+			label: "Publish",
+			onClick: () => Config().publishToContract(),
+		},
+	});
 };
 
-const syncItem = (obj: AnyObject, verbose = false) => {
+const syncItem = (
+	obj: AnyObject,
+	{ verbose = false, sync = false }: { verbose?: boolean; sync?: boolean } = {},
+) => {
 	console.warn(obj, "trave");
 	try {
 		if (obj === undefined) return;
@@ -79,7 +175,11 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 			return;
 		}
 		let name = "";
-
+		// @dev: add Entity models to entities
+		if ("Entity" in (obj as { Entity: Entity })) {
+			addEntity(obj.Entity as Entity);
+			name = obj.Entity!.name;
+		}
 		// @dev: retrieve instance value
 		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
 			// First check if 'inst' property exists directly
@@ -108,21 +208,14 @@ const syncItem = (obj: AnyObject, verbose = false) => {
 				console.error("Existing object not found:", inst, obj);
 				return;
 			}
-			Object.assign(existing, { ...obj });
-			setItem({ ...existing } as AnyObject, inst);
+			const merged = { ...existing, ...obj };
+			const compare = JSONbig.stringify(merged).includes(
+				JSONbig.stringify(existing),
+			);
+			if (!compare) {
+				setItem({ ...merged } as AnyObject, inst, sync);
+			}
 		}
-
-		// @dev: add Entity models to entities
-		if ("Entity" in (obj as { Entity: Entity })) {
-			addEntity(obj.Entity as Entity);
-			name = obj.Entity!.name;
-		}
-
-		setTimeout(() => {
-			set({
-				isDirty: Date.now(),
-			});
-		}, 100);
 
 		if (verbose)
 			console.log(
@@ -198,8 +291,12 @@ const newEntity = (entity: Entity) => {
 
 const logPool = () => {
 	const poolArray = get().dataPool.values().toArray();
-	console.info("Text Definitions");
+	console.info("Pool");
 	console.table(poolArray);
+	console.info("DeleteQueue", get().deletedQueue);
+	console.info("Entities", get().entities);
+	console.info("Selected", get().selectedEntity);
+	console.info("Edited", get().editedEntity);
 };
 
 const EditorData = createFactory({
@@ -212,6 +309,7 @@ const EditorData = createFactory({
 	removeEntity,
 	selectEntity,
 	updateSelectedEntity,
+	removeComponent,
 	deleteItem,
 	logPool,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
