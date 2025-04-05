@@ -1,13 +1,12 @@
 import EditorData from "@/editor/data/editor.data";
+import { formatColorHash } from "@/editor/editor.utils";
 import type {
 	AnyObject,
 	EntityCollection,
 	WithStringEnums,
 } from "@/editor/lib/schemas";
-import { formatColorHash } from "@/editor/utils";
 import type { ChangeEvent } from "react";
 import type { BigNumberish } from "starknet";
-import { debounce } from "ts-debounce";
 
 type InputHandler<T> = (
 	e: ChangeEvent<HTMLInputElement>,

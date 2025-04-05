@@ -1,9 +1,7 @@
 import "@styles/editor.css";
 import { useEffect, useMemo, useState } from "react";
-import Notifications from "./components/Notifications";
 import { EditorHeader } from "./components/EditorHeader";
 import { useHead } from "@unhead/react";
-import EditorStore from "./editor.store";
 import { APP_EDITOR_SEO } from "@/data/app.data";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { cn } from "@/lib/utils/utils";
@@ -14,6 +12,8 @@ import { EntityEditor } from "./components/EntityEditor";
 import Terminal from "@/client/terminal/Terminal";
 import { useUserStore } from "@/lib/stores/user.store";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
+import { Notifications as NotificationStore } from "./lib/notifications";
+import Notifications from "./components/Notifications";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -43,7 +43,7 @@ export const Editor = () => {
 	});
 
 	const handleDismissNotification = () => {
-		EditorStore().notifications.clear();
+		NotificationStore().clear();
 	};
 
 	useEffect(() => {

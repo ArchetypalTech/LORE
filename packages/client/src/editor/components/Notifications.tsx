@@ -1,8 +1,8 @@
 import { useEffect, useCallback } from "react";
 import type { FC } from "react";
 import "@styles/notifications.css";
-import { useNotificationStore } from "../editor.store";
 import JSONBig from "json-bigint";
+import { useNotifications } from "../lib/notifications";
 
 interface NotificationsProps {
 	onDismiss?: () => void;
@@ -21,7 +21,7 @@ const styles = {
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 const Notifications: FC<NotificationsProps> = ({ onDismiss }) => {
-	const { type, message, blocking, logs, timeout } = useNotificationStore();
+	const { type, message, blocking, logs, timeout } = useNotifications();
 
 	// Handle dismiss button click
 	const handleDismiss = useCallback(() => {

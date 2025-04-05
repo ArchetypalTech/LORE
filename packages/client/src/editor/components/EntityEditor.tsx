@@ -8,9 +8,9 @@ import type {
 } from "../lib/schemas";
 import { DeleteButton, Header, PublishButton, Select } from "./FormComponents";
 import { publishEntityCollection } from "../publisher";
-import EditorStore from "../editor.store";
-import { formatColorHash } from "../utils";
 import { componentData } from "../data/component.data";
+import { formatColorHash } from "../editor.utils";
+import { Notifications } from "../lib/notifications";
 
 const AddComponents = ({ editedEntity }: { editedEntity: AnyObject }) => {
 	const selectRef = useRef<HTMLSelectElement>(null);
@@ -85,7 +85,7 @@ export const EntityEditor = () => {
 				/>
 				<PublishButton
 					onClick={async () => {
-						await EditorStore().notifications.doLoggedAction(() =>
+						await Notifications().doLoggedAction(() =>
 							publishEntityCollection(editedEntity as EntityCollection),
 						);
 					}}

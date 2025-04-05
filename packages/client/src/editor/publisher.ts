@@ -1,5 +1,4 @@
 import { SystemCalls, type DesignerCall } from "../lib/systemCalls";
-import { actions } from "./editor.store";
 import EditorData from "./data/editor.data";
 import type { EntityCollection } from "./lib/schemas";
 import type {
@@ -10,6 +9,7 @@ import type {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { directionToIndex, inspectableActionsToIndex } from "./lib/schemas";
 import { byteArray, num } from "starknet";
+import { Notifications } from "./lib/notifications";
 
 /**
  * Publishes a game configuration to the contract
@@ -136,12 +136,12 @@ export const dispatchDesignerCall = async (
 ) => {
 	try {
 		const response = await SystemCalls.execDesignerCall({ call, args });
-		actions.notifications.addPublishingLog(
+		Notifications().addPublishingLog(
 			new CustomEvent("designerCall", { detail: { call, args } }),
 		);
 		return response.json();
 	} catch (error) {
-		actions.notifications.addPublishingLog(
+		Notifications().addPublishingLog(
 			new CustomEvent("error", {
 				detail: { error: { message: (error as Error).message }, call, args },
 			}),

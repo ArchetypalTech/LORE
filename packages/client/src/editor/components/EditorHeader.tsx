@@ -1,9 +1,9 @@
 import { useMemo, useRef } from "react";
-import EditorStore, { actions } from "../editor.store";
 import UserStore, { useUserStore } from "@/lib/stores/user.store";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { LORE_CONFIG } from "@/lib/config";
 import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store";
+import { Config } from "../lib/config";
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -21,7 +21,7 @@ export const EditorHeader = () => {
 		if (e.target.files && e.target.files.length > 0) {
 			const file = e.target.files[0];
 			try {
-				await EditorStore().config.loadConfigFromFile(file);
+				await Config().loadConfigFromFile(file);
 			} catch (error) {
 				console.error("Error loading file:", error);
 			}
@@ -30,12 +30,12 @@ export const EditorHeader = () => {
 
 	// Handler for export config
 	const handleExportConfig = async () => {
-		await EditorStore().config.saveConfigToFile();
+		await Config().saveConfigToFile();
 	};
 
 	// Handler for publish to contract
 	const handlePublish = async () => {
-		await EditorStore().config.publishToContract();
+		await Config().publishToContract();
 	};
 
 	const requireConnect = useMemo(() => {
