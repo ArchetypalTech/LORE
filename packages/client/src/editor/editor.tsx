@@ -14,6 +14,8 @@ import { useUserStore } from "@/lib/stores/user.store";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { toast, Toaster } from "sonner";
 import { Button } from "./components/ui/Button";
+import { NoEntity } from "./components/ui/NoEntity";
+import { HousePlus } from "lucide-react";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -22,7 +24,7 @@ export const Editor = () => {
 		status: { status },
 	} = useDojoStore();
 	const { dark_mode } = useUserStore();
-	const { selectedEntity, isDirty } = useEditorData();
+	const { dataPool, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 
 	useHead({
@@ -49,11 +51,13 @@ export const Editor = () => {
 	}, [isDirty]);
 
 	useEffect(() => {
+		dataPool;
 		const hasObjects = EditorData().getEntities().length > 0;
 		if (status === "loading") {
 			setEditorState("not connected");
 			return;
 		}
+		console.log(hasObjects, EditorData().getEntities());
 		if (hasObjects) {
 			if (EditorData().selectedEntity === undefined) {
 				EditorData().selectEntity(EditorData().getEntities()[0]?.Entity?.inst);
@@ -68,7 +72,7 @@ export const Editor = () => {
 			return;
 		}
 		setEditorState("empty");
-	}, [status]);
+	}, [status, dataPool]);
 
 	const editorContents = useMemo(() => {
 		switch (editorState) {
@@ -89,9 +93,12 @@ export const Editor = () => {
 								<EntityEditor key={selectedEntity} inst={selectedEntity!} />
 							) : (
 								<div className="flex flex-col grow">
-									<h2 className="text-center mb-10 text-2xl">Empty World</h2>
-									<Button onClick={() => EditorData().newEntity({} as Entity)}>
-										Create Entity
+									<NoEntity />
+									<Button
+										className="max-w-30 mx-auto"
+										onClick={() => EditorData().newEntity({} as Entity)}
+									>
+										<HousePlus /> New Entity
 									</Button>
 								</div>
 							)}
@@ -125,16 +132,16 @@ export const Editor = () => {
 			<Toaster expand visibleToasts={4} />
 			<div
 				id="editor-root"
-				className="fixed max-h-screen h-screen w-full font-atkinson overflow-scroll"
+				className="fixed max-h-screen h-screen w-full font-atkinson overflow-scroll px-4"
 			>
-				<div className="relative max-w-[1200px] mx-auto">
+				<div className="relative h-full max-w-[1200px] mx-auto">
 					<EditorHeader />
 					<div className="relative lg:container mx-auto p-0 m-0">
 						{editorContents}
 					</div>
-					<EditorFooter />
 				</div>
 			</div>
+			<EditorFooter />
 		</>
 	);
 };

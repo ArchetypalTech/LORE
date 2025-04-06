@@ -4,7 +4,7 @@ import { Button } from "./ui/Button";
 
 export const EditorFooter = () => {
 	return (
-		<footer className="fixed bottom-0 use-editor-styles gap-2 mt-4 mb-1 flex items-center py-4 not-dark:bg-transparent w-full justify-center rounded-2xl max-w-[1200px] mx-auto">
+		<footer className="fixed r-4 bottom-0 use-editor-styles gap-2 mt-4 mb-1 flex items-center py-4 not-dark:bg-transparent w-full justify-center rounded-2xl max-w-[1200px] px-4">
 			<div className="lg:container flex flex-row justify-between w-full gap-2 items-center">
 				<div className="flex grow" />
 				<div className="flex gap-2">
@@ -24,7 +24,7 @@ export const EditorFooter = () => {
 							EditorData().resetChanges();
 						}}
 					>
-						Reset Editor
+						♻️ Sync Editor
 					</Button>
 					<Button
 						variant="secondary"

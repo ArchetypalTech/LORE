@@ -170,7 +170,7 @@
     }
 
     label {
-      @apply pb-0.5 text-xs opacity-50 font-medium;
+      @apply text-xs opacity-50 font-medium;
     }
 
     label:not(.btn) {

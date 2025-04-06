@@ -9,15 +9,15 @@ const buttonVariants = cva(
 		variants: {
 			variant: {
 				default:
-					"text-primary shadow not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-gray-200",
+					"text-primary shadow-xs not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-gray-200",
 				destructive:
-					"highlight text-destructive-foreground shadow-sm not-hover:bg-gradient-to-r from-secondary to-destructive/5 hover:bg-destructive/40",
+					"highlight text-destructive-foreground shadow-xs not-hover:bg-gradient-to-r from-secondary to-destructive/5 hover:bg-destructive/40",
 				outline:
-					"border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+					"border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
 				secondary:
 					"text-primary shadow not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-gray-200",
 				hero:
-					"highlight text-primary shadow hover:text-primary-foreground not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-blue-300",
+					"highlight text-primary shadow-sm hover:text-primary-foreground not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-blue-300",
 				ghost: "hover:bg-accent hover:text-accent-foreground border-0",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
@@ -25,8 +25,8 @@ const buttonVariants = cva(
 				default: "h-9 px-4 py-2",
 				sm: "h-8 rounded-md px-3 text-xs",
 				lg: "h-10 rounded-md px-8",
-				icon: "h-9 w-9",
-				none: "p-1 m-0 text-xs h-4 w-4",
+				icon: "h-9 w-9 cursor-pointer",
+				none: "p-1 m-0 text-xs h-4 w-4 cursor-pointer",
 			},
 		},
 		defaultVariants: {

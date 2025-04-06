@@ -105,7 +105,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 								variant={"ghost"}
 								size="sm"
 								onClick={() => handleRemove(componentName)}
-								className="w-2 opacity-50"
+								className="w-2 opacity-50 h-2 hover:opacity-100"
 							>
 								<Trash2 />
 							</Button>

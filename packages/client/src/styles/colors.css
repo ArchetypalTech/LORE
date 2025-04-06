@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* #client-root { */
 :root {
   --terminal-hash: #ffd700;
   --terminal-out: #36ad11;
@@ -9,3 +10,14 @@
   --terminal-error: #dc2626;
   --terminal-magenta: #d946ef;
 }
+/* } */
+/* 
+#editor-root {
+  --terminal-hash: var(--color-gray-700);
+  --terminal-system: var(--color-gray-700);
+  --terminal-input: var(--color-gray-700);
+  --terminal-output: var(--color-gray-700);
+  --terminal-error: var(--color-gray-700);
+  --terminal-success: var(--color-gray-700);
+  --terminal-warning: var(--color-gray-700);
+} */
