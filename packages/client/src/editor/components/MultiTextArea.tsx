@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils/utils";
 import type { ChangeEvent } from "react";
 import { DeleteButton } from "./FormComponents";
+import { Textarea } from "./ui/Textarea";
+import { Button } from "./ui/Button";
 
 export const MultiTextArea = ({
 	id,
@@ -69,7 +71,7 @@ export const MultiTextArea = ({
 				{value.map((v, i) => {
 					return (
 						<div key={i} className="flex relative">
-							<textarea
+							<Textarea
 								id={i.toString()}
 								defaultValue={v}
 								onBlur={handleChange}
@@ -82,9 +84,9 @@ export const MultiTextArea = ({
 						</div>
 					);
 				})}
-				<button className="btn btn-success btn-sm" onClick={handleAddArray}>
+				<Button variant="secondary" onClick={handleAddArray}>
 					Add {id}
-				</button>
+				</Button>
 			</div>
 		</>
 	);

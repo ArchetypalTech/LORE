@@ -7,9 +7,6 @@
   @apply text-sm;
 }
 
-#editor-root > div {
-  @apply p-4;
-}
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -43,6 +40,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --text-xs: 0.775rem;
 }
 
 .dark {
@@ -132,106 +130,67 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
   body {
     @apply bg-background text-foreground;
   }
 
-  .btn.hero {
-    @apply rounded;
-    background: linear-gradient(156deg, #fff, #f0f0f0);
-  }
-}
+  #editor-root .use-editor-styles {
+    .editor-inspector {
+      @apply rounded flex flex-col gap-2;
+    }
 
-html.dark {
-  @apply bg-black text-[var(--terminal-system)] transition-all duration-150;
-}
+    .btn.highlight::after {
+      content: "";
+      position: absolute;
+      top: 65%;
+      left: 0;
+      width: 100%;
+      height: 35%;
+      background: linear-gradient(
+        0deg,
+        #e8e8e8 0,
+        hsla(0, 0%, 91%, 0.987) 8.1%,
+        hsla(0, 0%, 91%, 0.951) 15.5%,
+        hsla(0, 0%, 91%, 0.896) 22.5%,
+        hsla(0, 0%, 91%, 0.825) 29%,
+        hsla(0, 0%, 91%, 0.741) 35.3%,
+        hsla(0, 0%, 91%, 0.648) 41.2%,
+        hsla(0, 0%, 91%, 0.55) 47.1%,
+        hsla(0, 0%, 91%, 0.45) 52.9%,
+        hsla(0, 0%, 91%, 0.352) 58.8%,
+        hsla(0, 0%, 91%, 0.259) 64.7%,
+        hsla(0, 0%, 91%, 0.175) 71%,
+        hsla(0, 0%, 91%, 0.104) 77.5%,
+        hsla(0, 0%, 91%, 0.049) 84.5%,
+        hsla(0, 0%, 91%, 0.013) 91.9%,
+        hsla(0, 0%, 91%, 0)
+      );
+      opacity: 0.6;
+      transition: transform 0.05s;
+    }
 
-html.modal {
-  @apply overflow-clip;
-}
+    label {
+      @apply pb-0.5 text-xs opacity-50 font-medium;
+    }
 
-#editor-root .use-editor-styles {
-  .editor-inspector {
-    @apply rounded flex flex-col gap-2;
-  }
+    label:not(.btn) {
+      @apply text-xs;
+    }
 
-  .btn.hero::after {
-    content: "";
-    position: absolute;
-    top: 65%;
-    background: blue;
-    left: 0;
-    width: 100%;
-    height: 35%;
-    background: linear-gradient(
-      0deg,
-      #e8e8e8 0,
-      hsla(0, 0%, 91%, 0.987) 8.1%,
-      hsla(0, 0%, 91%, 0.951) 15.5%,
-      hsla(0, 0%, 91%, 0.896) 22.5%,
-      hsla(0, 0%, 91%, 0.825) 29%,
-      hsla(0, 0%, 91%, 0.741) 35.3%,
-      hsla(0, 0%, 91%, 0.648) 41.2%,
-      hsla(0, 0%, 91%, 0.55) 47.1%,
-      hsla(0, 0%, 91%, 0.45) 52.9%,
-      hsla(0, 0%, 91%, 0.352) 58.8%,
-      hsla(0, 0%, 91%, 0.259) 64.7%,
-      hsla(0, 0%, 91%, 0.175) 71%,
-      hsla(0, 0%, 91%, 0.104) 77.5%,
-      hsla(0, 0%, 91%, 0.049) 84.5%,
-      hsla(0, 0%, 91%, 0.013) 91.9%,
-      hsla(0, 0%, 91%, 0)
-    );
-    opacity: 0.6;
-    transition: transform 0.2s;
-  }
+    textarea {
+      @apply min-h-[100px] p-2;
+    }
 
-  label.btn {
-    @apply p-2;
-  }
+    .tag {
+      @apply rounded-xs px-2 py-1 m-1 inline-flex bg-gray-200;
+    }
 
-  label {
-    @apply pb-0.5;
+    h2 {
+      @apply text-xl font-bold;
+    }
   }
 
-  label:not(.btn) {
-    @apply text-xs;
-  }
-
-  input:not(#terminal-input),
-  select,
-  textarea {
-    @apply border border-gray-300 rounded-md border-dashed;
-  }
-
-  textarea {
-    @apply bg-white min-h-[100px] p-2;
-  }
-  /* 
-  .btn {
-    @apply relative py-2 px-4 bg-gray-100 border border-black/4 border-t-black/1 border-b-black/20  active:bg-white active:text-black select-none disabled:opacity-50 not-disabled:hover:bg-blue-300 not-disabled:hover:text-white;
-  }
-
-  .btn.btn-sm {
-    @apply py-1.5 px-2.5 text-sm;
-  }
-
-  .btn.btn-active {
-    @apply bg-blue-500 text-white;
-  }
-
-  .btn-primary {
-    @apply py-2 px-4 rounded bg-gray-700 text-white not-disabled:hover:bg-gray-500;
-  }
-
-  .btn.btn-danger {
-    @apply not-disabled:hover:bg-[var(--terminal-error)]/30 hover:text-white;
-  } */
-
-  .tag {
-    @apply rounded-xs px-2 py-1 m-1 inline-flex bg-gray-200;
+  html.modal {
+    @apply overflow-clip;
   }
 }

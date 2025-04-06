@@ -4,18 +4,18 @@ import type {
 	Entity,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { encode, num, type BigNumberish } from "starknet";
+import { encode, type BigNumberish } from "starknet";
 import type {
 	AnyObject,
 	EditorCollection,
 	EntityCollection,
-	EntityComponents,
 } from "../lib/schemas";
-import { dispatchDesignerCall } from "../publisher";
 import { toast } from "sonner";
 import { Config } from "../lib/config";
 import JSONbig from "json-bigint";
 import type { ChangeSet, EditorAction } from "../lib/types";
+import { publishConfigToContract } from "../publisher";
+import { Notifications } from "../lib/notifications";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -34,11 +34,16 @@ const {
 	isDirty: undefined as number | undefined,
 });
 
-const getItem = (id: BigNumberish) =>
-	get().dataPool.get(encode.sanitizeHex(id.toString()));
+const getItem = (id: BigNumberish, syncPool = false) =>
+	get()[syncPool ? "syncPool" : "dataPool"].get(
+		encode.sanitizeHex(id.toString()),
+	);
 
-const getEntity = (id: BigNumberish) =>
-	JSONbig.parse(JSONbig.stringify(getItem(id))) as EntityCollection;
+const getEntity = (id: BigNumberish, syncPool = false) => {
+	const item = getItem(id, syncPool);
+	if (item === undefined) return undefined;
+	return JSONbig.parse(JSONbig.stringify(item)) as EntityCollection;
+};
 
 const getEntities = () =>
 	get()
@@ -58,32 +63,19 @@ const resetChanges = () => {
 };
 
 const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
+	const inst = encode.sanitizeHex(id.toString());
 	set((prev) => ({
 		...prev,
-		dataPool: new Map<BigNumberish, AnyObject>(get().dataPool).set(
-			encode.sanitizeHex(id.toString()),
-			obj,
-		),
+		dataPool: new Map<BigNumberish, AnyObject>(get().dataPool).set(inst, obj),
 		syncPool: sync
-			? new Map<BigNumberish, AnyObject>(get().syncPool).set(
-					encode.sanitizeHex(id.toString()),
-					obj,
-				)
+			? new Map<BigNumberish, AnyObject>(get().syncPool).set(inst, obj)
 			: get().syncPool,
 	}));
 	if (!sync) {
 		set({
 			isDirty: Date.now(),
 		});
-		toast("Your changes are not yet published", {
-			id: "editor-dirty",
-			duration: Infinity,
-			position: "bottom-center",
-			action: {
-				label: "Publish",
-				onClick: () => Config().publishToContract(),
-			},
-		});
+		Notifications().needsToPublish();
 	}
 };
 
@@ -103,11 +95,13 @@ const updateComponent = <T extends keyof EntityCollection>(
 	component: EntityCollection[T],
 ) => {
 	const edited = getEntity(inst);
+	if (edited === undefined) {
+		throw new Error("Entity not found");
+	}
 	edited[componentName] = component;
 	if (
 		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
 	) {
-		console.log("update");
 		set({
 			changeSet: get().changeSet.filter(
 				(x) => x.inst !== inst && componentName in x.object,
@@ -116,7 +110,6 @@ const updateComponent = <T extends keyof EntityCollection>(
 	}
 	createAction("update", inst, { [componentName]: component });
 	syncItem(edited);
-	console.log(JSONbig.stringify(get().changeSet));
 	return edited as EntityCollection;
 };
 
@@ -125,6 +118,9 @@ const removeComponent = (
 	componentName: keyof EntityCollection,
 ): EntityCollection | undefined => {
 	const edited = getEntity(inst);
+	if (edited === undefined) {
+		throw new Error("Entity not found");
+	}
 	if (componentName === "Entity") {
 		removeEntity(edited);
 		return undefined;
@@ -183,9 +179,11 @@ const removeEntity = (entity: EntityCollection) => {
 		throw new Error("Entity is not an entity");
 	}
 	const inst = entity.Entity!.inst;
-	const isSelected = get().selectedEntity === inst;
-	if (isSelected) {
+	if (get().selectedEntity === inst) {
 		set({ selectedEntity: undefined });
+	}
+	if (get().editedEntity?.Entity?.inst === inst) {
+		set({ editedEntity: undefined });
 	}
 	// unparent all children
 	if ("ParentToChildren" in entity) {
@@ -200,26 +198,26 @@ const removeEntity = (entity: EntityCollection) => {
 		removeParent(getEntity(entity.ChildToParent!.inst)!);
 	}
 
-	// remove all components
-	Object.keys(entity).forEach((key) => {
-		if (key === "Entity") return;
-		removeComponent(entity.Entity.inst, key as keyof EntityCollection);
-	});
-
 	// remove all potential create/update actions for this entity
 	const prevUpdates = get().changeSet.filter(
-		(x) =>
-			(x.inst === inst && (x.type === "create" || x.type === "update")) ||
-			x.inst !== inst,
+		(x) => x.inst === inst && x.type === "update",
 	);
 	set({
 		changeSet: get().changeSet.filter((x) => !prevUpdates.includes(x)),
 	});
 
-	// add to changeset
-	createAction("delete", entity.Entity.inst, {
-		["Entity" as keyof EntityCollection]: entity.Entity!,
-	});
+	// check if actually exists in original datapool
+	if (getEntity(inst, true) !== undefined) {
+		// remove all components
+		Object.keys(entity).forEach((key) => {
+			if (key === "Entity") return;
+			removeComponent(entity.Entity.inst, key as keyof EntityCollection);
+		});
+		// add to changeset
+		createAction("delete", entity.Entity.inst, {
+			["Entity" as keyof EntityCollection]: entity.Entity!,
+		});
+	}
 
 	// remove from data pool
 	const newDataPool = new Map<BigNumberish, AnyObject>(get().dataPool);
@@ -229,22 +227,13 @@ const removeEntity = (entity: EntityCollection) => {
 		dataPool: newDataPool,
 		isDirty: Date.now(),
 	}));
-	toast("Your changes are not yet published", {
-		id: "editor-dirty",
-		duration: Infinity,
-		position: "bottom-center",
-		action: {
-			label: "Publish",
-			onClick: () => Config().publishToContract(),
-		},
-	});
+	Notifications().needsToPublish();
 };
 
 const syncItem = (
 	obj: AnyObject,
 	{ verbose = false, sync = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
-	console.warn(obj, "trave");
 	try {
 		if (obj === undefined) return;
 		// @dev: Ignore things we aren't storing in the datapool, this needs to be expanded
@@ -312,7 +301,10 @@ const syncItem = (
 
 const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
-		syncItem(getEntity(get().selectedEntity!));
+		const entity = getEntity(get().selectedEntity!);
+		if (entity !== undefined) {
+			syncItem(entity);
+		}
 	}
 	set({ selectedEntity: id, editedEntity: undefined });
 };
@@ -333,6 +325,7 @@ const newEntity = (entity: Entity) => {
 	};
 	Object.assign(newEntity, entity);
 	syncItem({ Entity: newEntity });
+	updateComponent(newEntity.inst, "Entity", newEntity);
 	selectEntity(newEntity.inst);
 	return newEntity;
 };
@@ -357,8 +350,6 @@ const dojoSync = (
 const EditorData = createFactory({
 	getEntities,
 	getEntity,
-	getItem,
-	setItem,
 	newEntity,
 	removeEntity,
 	selectEntity,

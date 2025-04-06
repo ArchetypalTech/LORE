@@ -2,6 +2,7 @@ import { useRef, useMemo } from "react";
 import { componentData } from "../lib/components";
 import type { AnyObject, EntityComponents } from "../lib/schemas";
 import { Select } from "./FormComponents";
+import { Button } from "./ui/Button";
 
 export const AddComponents = ({
 	editedEntity,
@@ -13,7 +14,7 @@ export const AddComponents = ({
 		component: EntityComponents[keyof EntityComponents],
 	) => Promise<void>;
 }) => {
-	const selectRef = useRef<HTMLSelectElement>(null);
+	const selectRef = useRef<HTMLSelectElement>(null!);
 
 	const options = useMemo(() => {
 		const o = Object.entries(componentData)
@@ -28,8 +29,8 @@ export const AddComponents = ({
 	}, [editedEntity]);
 
 	const handleAddComponent = async (_e: React.MouseEvent<HTMLButtonElement>) => {
-		console.log(selectRef.current?.value);
-		const key = selectRef.current?.value as keyof EntityComponents;
+		console.log(selectRef.current, selectRef.current.value);
+		const key = selectRef.current?.getValue() as keyof EntityComponents;
 		const component = componentData[key];
 		if (!component) {
 			throw new Error(`Component not found: ${key}`);
@@ -53,18 +54,20 @@ export const AddComponents = ({
 				<Select
 					ref={selectRef}
 					id=""
+					defaultValue={options?.[0]?.value || undefined}
 					onChange={() => {}}
 					options={options}
 					disabled={options.length === 0}
 				/>
 			</div>
-			<button
-				className="btn btn-success btn-sm shrink"
+			<Button
+				variant={"hero"}
+				className="shrink"
 				onClick={handleAddComponent}
 				disabled={options.length === 0}
 			>
 				Add Component
-			</button>
+			</Button>
 		</div>
 	);
 };

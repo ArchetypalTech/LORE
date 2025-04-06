@@ -1,9 +1,10 @@
 import { LORE_CONFIG } from "@lib/config";
 import EditorData from "../data/editor.data";
+import { Button } from "./ui/Button";
 
 export const EditorFooter = () => {
 	return (
-		<footer className="fixed bottom-0 use-editor-styles gap-2 mt-4 mb-1 flex items-center p-4 not-dark:bg-transparent w-full justify-center rounded-2xl">
+		<footer className="fixed bottom-0 use-editor-styles gap-2 mt-4 mb-1 flex items-center py-4 not-dark:bg-transparent w-full justify-center rounded-2xl max-w-[1200px] mx-auto">
 			<div className="lg:container flex flex-row justify-between w-full gap-2 items-center">
 				<div className="flex grow" />
 				<div className="flex gap-2">
@@ -13,26 +14,26 @@ export const EditorFooter = () => {
 						rel="noopener noreferrer"
 						className="hover:underline text-xs textFreak"
 					>
-						<button className="btn btn-sm btn-success">Torii SQL</button>
+						<Button variant="secondary">Torii SQL</Button>
 					</a>
 				</div>
 				<div className="flex gap-2">
-					<button
-						className="btn btn-sm btn-success"
+					<Button
+						variant="secondary"
 						onClick={() => {
 							EditorData().resetChanges();
 						}}
 					>
 						Reset Editor
-					</button>
-					<button
-						className="btn btn-sm btn-success"
+					</Button>
+					<Button
+						variant="secondary"
 						onClick={() => {
 							EditorData().logPool();
 						}}
 					>
 						Console Log DataPool
-					</button>
+					</Button>
 				</div>
 			</div>
 		</footer>

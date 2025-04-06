@@ -4,6 +4,7 @@ import { LORE_CONFIG } from "@/lib/config";
 import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store";
 import { Config } from "../lib/config";
 import { Button } from "./ui/Button";
+import { publishConfigToContract } from "../publisher";
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +35,7 @@ export const EditorHeader = () => {
 
 	// Handler for publish to contract
 	const handlePublish = async () => {
-		await Config().publishToContract();
+		await publishConfigToContract();
 	};
 
 	const requireConnect = useMemo(() => {
@@ -43,8 +44,8 @@ export const EditorHeader = () => {
 	}, [isConnected]);
 
 	return (
-		<div className="use-editor-styles relative ">
-			<header className="flex flex-row justify-between gap-2 items-center pb-2 w-full lg:container">
+		<div className="use-editor-styles relative pt-5 pb-2">
+			<header className="mx-auto flex flex-row justify-between gap-2 items-center pb-2 w-full lg:container">
 				<div className="flex flex-row font-berkeley">
 					<h1 className="text-xl font-bold font-berkeley">
 						{APP_EDITOR_DATA.title}

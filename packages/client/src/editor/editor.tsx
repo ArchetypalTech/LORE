@@ -12,9 +12,8 @@ import { EntityEditor } from "./components/EntityEditor";
 import Terminal from "@/client/terminal/Terminal";
 import { useUserStore } from "@/lib/stores/user.store";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { Notifications as NotificationStore } from "./lib/notifications";
-import Notifications from "./components/Notifications";
 import { toast, Toaster } from "sonner";
+import { Button } from "./components/ui/Button";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -42,10 +41,6 @@ export const Editor = () => {
 			};
 		}),
 	});
-
-	const handleDismissNotification = () => {
-		NotificationStore().clear();
-	};
 
 	useEffect(() => {
 		if (!isDirty) {
@@ -95,12 +90,9 @@ export const Editor = () => {
 							) : (
 								<div className="flex flex-col grow">
 									<h2 className="text-center mb-10 text-2xl">Empty World</h2>
-									<button
-										className="btn"
-										onClick={() => EditorData().newEntity({} as Entity)}
-									>
+									<Button onClick={() => EditorData().newEntity({} as Entity)}>
 										Create Entity
-									</button>
+									</Button>
 								</div>
 							)}
 						</div>
@@ -130,15 +122,18 @@ export const Editor = () => {
 
 	return (
 		<>
-			<Notifications onDismiss={handleDismissNotification} />
 			<Toaster expand visibleToasts={4} />
 			<div
 				id="editor-root"
 				className="fixed max-h-screen h-screen w-full font-atkinson overflow-scroll"
 			>
-				<EditorHeader />
-				<div className="relative">{editorContents}</div>
-				<EditorFooter />
+				<div className="relative max-w-[1200px] mx-auto">
+					<EditorHeader />
+					<div className="relative lg:container mx-auto p-0 m-0">
+						{editorContents}
+					</div>
+					<EditorFooter />
+				</div>
 			</div>
 		</>
 	);

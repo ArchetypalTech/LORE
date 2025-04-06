@@ -1,5 +1,6 @@
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import { toast } from "sonner";
+import { publishConfigToContract } from "../publisher";
 
 // Define notification state types
 export type NotificationType =
@@ -15,7 +16,7 @@ export interface NotificationState {
 	type: NotificationType;
 	message: string;
 	blocking: boolean;
-	logs?: CustomEvent[];
+	logs: CustomEvent[];
 	timeout?: number | null;
 }
 
@@ -24,6 +25,7 @@ export const initialNotificationState: NotificationState = {
 	type: "none",
 	message: "",
 	blocking: false,
+	logs: [],
 };
 
 const {
@@ -43,22 +45,33 @@ const notifications = {
 		await action();
 		notifications.finalizePublishing();
 	},
+	needsToPublish: () => {
+		toast("Your changes are not yet published", {
+			id: "editor-dirty",
+			duration: Infinity,
+			position: "bottom-center",
+			action: {
+				label: "Publish",
+				onClick: () => publishConfigToContract(),
+			},
+		});
+	},
 	clear: () => {
 		setNotification(initialNotificationState);
 	},
 	showError: (message: string) => {
-		toast.error(message, { richColors: true });
+		toast.error(message, { richColors: true, duration: 4000, dismissible: true });
 	},
 	showSuccess: (message: string) => {
 		toast.success(message, { richColors: true });
 	},
-	startPublishing: async (message = "Publishing to contract...") => {
-		if (getNotification().type === "publishing") return;
-		console.log("[Notification]: Starting Publishing");
+	startPublishing: async () => {
+		toast.loading("Publishing to the world...", {
+			richColors: true,
+			position: "bottom-center",
+			id: "publishing-world",
+		});
 		setNotification({
-			type: "publishing",
-			message,
-			blocking: true,
 			logs: [],
 		});
 		const currentNotification = getNotification();
@@ -69,9 +82,8 @@ const notifications = {
 	 */
 	addPublishingLog: (log: CustomEvent) => {
 		const state = getNotification();
-		if (state.type !== "publishing" || state.logs === undefined) {
-			console.warn("Cannot add log to non-publishing notification");
-			return;
+		if (log.type === "error") {
+			notifications.showError(log.detail.error.message);
 		}
 		setNotification({
 			...state,
@@ -81,16 +93,11 @@ const notifications = {
 
 	finalizePublishing: () => {
 		const state = getNotification();
-		notifications.clear();
-		if (state.logs === undefined) {
-			notifications.showError("No logs to show");
-			console.error("No logs to show");
-			return;
-		}
+		toast.dismiss("publishing-world");
 		if (state.logs.some((log) => log.type === "error")) {
 			notifications.showError("Errors while publishing");
 		} else {
-			notifications.showSuccess("Published to the world successfully");
+			toast.info("World published");
 		}
 	},
 };

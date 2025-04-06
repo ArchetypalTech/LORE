@@ -1,13 +1,11 @@
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import { Notifications } from "./notifications";
-import { tick } from "@/lib/utils/utils";
 import EditorData from "../data/editor.data";
 import {
 	formatValidationError,
 	loadConfigFile,
 	saveConfigToFile,
 } from "../editor.utils";
-import { publishConfigToContract } from "../publisher";
 import {
 	ConfigSchema,
 	transformWithSchema,
@@ -100,24 +98,6 @@ const config = {
 			toast.error(`Error loading config: ${errorMsg}`);
 		}
 		return null;
-	},
-
-	/**
-	 * Publish the current config to the contract
-	 */
-	publishToContract: async () => {
-		try {
-			await Notifications().startPublishing();
-			await publishConfigToContract();
-			Notifications().finalizePublishing();
-			await tick();
-			console.log(EditorData().dataPool);
-			return true;
-		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : String(error);
-			Notifications().showError(`Error publishing to contract: ${errorMsg}`);
-			return false;
-		}
 	},
 };
 

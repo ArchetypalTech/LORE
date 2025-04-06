@@ -1,14 +1,14 @@
 import EditorData, { useEditorData } from "../data/editor.data";
-import type { EntityComponents, EntityCollection } from "../lib/schemas";
+import type { EntityCollection, EntityComponents } from "../lib/schemas";
 import type { ComponentInspector } from "./inspectors/useInspector";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";
 import { componentData } from "../lib/components";
 import { formatColorHash } from "../editor.utils";
-import { Notifications } from "../lib/notifications";
 import { AddComponents } from "./AddComponents";
 import type { BigNumberish } from "starknet";
 import { useCallback, useEffect } from "react";
 import { publishConfigToContract } from "../publisher";
+import { NoEntity } from "./ui/NoEntity";
 
 export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	const { editedEntity, isDirty } = useEditorData();
@@ -16,7 +16,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	useEffect(() => {
 		if (editedEntity === undefined && inst !== undefined) {
 			EditorData().set({
-				editedEntity: { ...EditorData().getEntity(inst) },
+				editedEntity: { ...EditorData().getEntity(inst)! },
 			});
 		}
 	}, [inst, editedEntity]);
@@ -29,7 +29,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 			editedEntity: EditorData().updateComponent(
 				editedEntity!.Entity!.inst,
 				componentName,
-				component,
+				component as EntityCollection[T],
 			),
 		});
 	};
@@ -75,8 +75,9 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	}, [editedEntity, isDirty]);
 
 	if (!editedEntity?.Entity) {
-		return <div className="uppercase">{"< "} Select an Entity</div>;
+		return <NoEntity />;
 	}
+
 	return (
 		<div className="editor-inspector mb-25">
 			<Header
@@ -98,7 +99,9 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 				/>
 				<PublishButton
 					onClick={async () => {
-						await Notifications().doLoggedAction(() => publishConfigToContract());
+						await publishConfigToContract(
+							EditorData().changeSet.filter((x) => x.inst === inst),
+						);
 					}}
 				/>
 			</Header>

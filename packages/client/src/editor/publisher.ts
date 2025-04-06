@@ -12,36 +12,59 @@ import {
 import { toEnumIndex } from "./lib/schemas";
 import { byteArray, num } from "starknet";
 import { Notifications } from "./lib/notifications";
+import { toast } from "sonner";
+import type { ChangeSet } from "./lib/types";
+import { tick } from "@/lib/utils/utils";
 
 /**
  * Publishes a game configuration to the contract
  * @param config The game configuration to publish
  * @returns A promise that resolves when the publishing is complete
  */
-export const publishConfigToContract = async (): Promise<void> => {
+export const publishConfigToContract = async (changes?: ChangeSet[]) => {
 	// Then process each room in the config
 	// Create entity
+
 	try {
-		await publishChangeset();
+		await Notifications().startPublishing();
+		await publishChangeset(changes);
+		Notifications().finalizePublishing();
+		await tick();
+		console.log(EditorData().dataPool);
+		return true;
 	} catch (error) {
-		console.error("Error creating room:", error);
-		throw new Error(
-			`Error creating room: ${error instanceof Error ? error.message : String(error)}`,
-		);
+		const errorMsg = error instanceof Error ? error.message : String(error);
+		Notifications().showError(`Error publishing to contract: ${errorMsg}`);
+		return false;
 	}
 };
 
-const publishChangeset = async () => {
-	const changes = EditorData().changeSet;
-	for (const change of changes) {
-		if (change.type === "create") {
-			await publishEntityCollection(change.object as EntityCollection);
-		}
-		if (change.type === "update") {
-			await publishEntityCollection(change.object as EntityCollection);
-		}
-		if (change.type === "delete") {
-			await deleteCollection(change.object as EntityCollection);
+const publishChangeset = async (changes?: ChangeSet[]) => {
+	const preparedChanges = changes || EditorData().changeSet;
+	for (const change of preparedChanges) {
+		try {
+			if (change.type === "update") {
+				await publishEntityCollection(change.object as EntityCollection);
+			}
+			if (change.type === "delete") {
+				await deleteCollection(change.object as EntityCollection);
+			}
+		} catch (error) {
+			console.error("Error creating room:", error);
+			toast.error(
+				`Error creating room: ${error instanceof Error ? error.message : String(error)}`,
+				{ richColors: true, duration: 4000, dismissible: true },
+			);
+		} finally {
+			EditorData().set({
+				changeSet: EditorData().changeSet.filter((x) => x !== change),
+			});
+			console.log(EditorData().changeSet);
+			if (EditorData().changeSet.length > 0) {
+				Notifications().needsToPublish();
+			} else {
+				toast.dismiss("editor-dirty");
+			}
 		}
 	}
 };
@@ -132,14 +155,14 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 	if ("Inspectable" in model) {
 		await dispatchDesignerCall("delete_inspectable", [
-			num.toBigInt(model.Entity!.inst),
+			num.toBigInt(model.Inspectable!.inst),
 		]);
 	}
 	if ("Area" in model) {
-		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Entity!.inst)]);
+		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Area!.inst)]);
 	}
 	if ("Exit" in model) {
-		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Entity!.inst)]);
+		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Exit!.inst)]);
 	}
 	if ("ChildToParent" in model) {
 	}
@@ -176,7 +199,7 @@ export const dispatchDesignerCall = async (
 				"Torii && Katana might need a reset when it says too many connections",
 			);
 		}
-		console.error(
+		throw new Error(
 			`Error sending designer call: ${(error as Error).message}, ${call}, ${args}`,
 		);
 	}

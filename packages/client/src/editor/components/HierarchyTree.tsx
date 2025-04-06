@@ -4,6 +4,8 @@ import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { cn } from "@/lib/utils/utils";
 import type { BigNumberish } from "starknet";
 import { componentData } from "../lib/components";
+import { Button } from "./ui/Button";
+import { HousePlus } from "lucide-react";
 
 type TreeNode = {
 	id: BigNumberish;
@@ -105,12 +107,13 @@ export const HierarchyTree = () => {
 
 	return (
 		<div className="use-editor-styles h-full items-start flex flex-col gap-2 justify-start">
-			<button
-				className="btn btn-sm btn-success"
+			<Button
+				// className="w-full"
 				onClick={() => EditorData().newEntity({} as Entity)}
 			>
+				<HousePlus />
 				New Entity
-			</button>
+			</Button>
 			{tree
 				.sort((a, b) => a.id.toString().localeCompare(b.id.toString()))
 				.map((node) => (

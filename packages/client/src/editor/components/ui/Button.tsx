@@ -4,19 +4,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/utils";
 
 const buttonVariants = cva(
-	"relative btn inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 not-disabled:hover:scale-102 active:scale-98 rounded ring-t-black/1 ring-b-black/20 border border-black/4 border-t-black/1 border-b-black/20",
+	"relative btn inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none ring-0 ring-primary/5 focus-visible:ring-1 focus-visible:ring-white disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-98 rounded border border-x-gray-200 border-t-black/1 border-b-black/20",
 	{
 		variants: {
 			variant: {
-				default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+				default:
+					"text-primary shadow not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-gray-200",
 				destructive:
-					"bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+					"highlight text-destructive-foreground shadow-sm not-hover:bg-gradient-to-r from-secondary to-destructive/5 hover:bg-destructive/40",
 				outline:
 					"border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
 				secondary:
-					"bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-				hero: "bg-primary-foreground text-primary shadow hover:bg-blue-500",
-				ghost: "hover:bg-accent hover:text-accent-foreground",
+					"text-primary shadow not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-gray-200",
+				hero:
+					"highlight text-primary shadow hover:text-primary-foreground not-hover:bg-gradient-to-r from-secondary to-primary/5 hover:bg-blue-300",
+				ghost: "hover:bg-accent hover:text-accent-foreground border-0",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
 			size: {
@@ -24,6 +26,7 @@ const buttonVariants = cva(
 				sm: "h-8 rounded-md px-3 text-xs",
 				lg: "h-10 rounded-md px-8",
 				icon: "h-9 w-9",
+				none: "p-1 m-0 text-xs h-4 w-4",
 			},
 		},
 		defaultVariants: {

@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils/utils";
 import { useRef, useState } from "react";
 import type { KeyboardEvent, FocusEvent, ChangeEvent } from "react";
+import { Input } from "./ui/Input";
+import { Button } from "./ui/Button";
 
 interface TagInputProps {
 	id: string;
@@ -78,6 +80,9 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 		// Pass the synthetic event to onChange
 		onChange(syntheticEvent);
 		setInput("");
+		setTimeout(() => {
+			inputRef.current?.focus();
+		}, 250);
 	};
 
 	// Removes a tag at the specified index
@@ -117,7 +122,7 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 
 	return (
 		<>
-			<input
+			<Input
 				key={id}
 				ref={inputRef}
 				id={id}
@@ -127,10 +132,6 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 				autoComplete="off"
 				value={input}
 				onChange={(e) => setInput(e.target.value)}
-				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-					className,
-				)}
 			/>
 			<div className="flex flex-wrap mt-2">
 				{value.map((tag, index) => {
@@ -138,19 +139,20 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 					return (
 						<span
 							key={index}
-							className="tag inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+							className="tag inline-block bg-gray-200 pl-2 pr-1 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2 rounded-sm"
 						>
 							{tag}{" "}
-							<a
-								href="#del"
-								className="tag-handler ml-2 text-black no-underline"
+							<Button
+								variant="ghost"
+								size="none"
+								className="tag-handler text-black no-underline"
 								onClick={(e) => {
 									e.preventDefault();
 									handleRemoveTag(index);
 								}}
 							>
 								⨉
-							</a>
+							</Button>
 						</span>
 					);
 				})}

@@ -6,6 +6,9 @@ import React from "react";
 import type { OptionType } from "../lib/types";
 import { useCairoEnum } from "../lib/schemas";
 import type { CairoCustomEnum } from "starknet";
+import { Button } from "./ui/Button";
+import { SelectInput } from "./ui/Select";
+import { Input as UIInput } from "./ui/Input";
 
 export const Header = ({
 	title,
@@ -21,7 +24,7 @@ export const Header = ({
 	return (
 		<div className="flex justify-between flex-row gap-2 items-center">
 			<div className="flex flex-col">
-				<h2 onClick={onClickTitle}>{title}</h2>
+				<h2>{title}</h2>
 				<div>{subtitle}</div>
 			</div>
 			<div className="grow" />
@@ -35,9 +38,14 @@ export const DeleteButton = ({
 	className,
 }: { onClick: () => void; className?: string }) => {
 	return (
-		<button className={cn("btn btn-danger btn-sm", className)} onClick={onClick}>
+		<Button
+			size="icon"
+			variant="destructive"
+			className={cn(className)}
+			onClick={onClick}
+		>
 			❌
-		</button>
+		</Button>
 	);
 };
 
@@ -46,9 +54,14 @@ export const PublishButton = ({
 	className,
 }: { onClick: () => void; className?: string }) => {
 	return (
-		<button className={cn("btn btn-sm", className)} onClick={onClick}>
+		<Button
+			size="icon"
+			variant={"hero"}
+			className={cn(className)}
+			onClick={onClick}
+		>
 			🕊️
-		</button>
+		</Button>
 	);
 };
 
@@ -69,19 +82,13 @@ export const Input = ({
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id.replaceAll("_", " ")}
-			</label>
-			<input
+			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
+			<UIInput
 				id={id}
 				defaultValue={value}
 				onBlur={onChange}
 				onSubmit={onChange}
 				autoComplete="off"
-				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-					className,
-				)}
 				disabled={disabled}
 				readOnly={readOnly}
 			/>
@@ -104,9 +111,7 @@ export const TagInput = ({
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id.replaceAll("_", " ")}
-			</label>
+			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
 			<p className="mt-1 text-xs text-gray-500">{description}</p>
 			<Tags
 				id={id}
@@ -135,19 +140,13 @@ export const Textarea = ({
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id.replaceAll("_", " ")}
-			</label>
+			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
 			<textarea
 				id={id}
 				value={value}
 				onChange={onChange}
 				rows={rows}
 				autoComplete="off"
-				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-					className,
-				)}
 			/>
 			{children}
 		</div>
@@ -171,9 +170,7 @@ export const TextAreaArray = ({
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
-			</label>
+			<label htmlFor={id}>{id}</label>
 			<MultiTextArea
 				id={id}
 				value={value}
@@ -187,50 +184,30 @@ export const TextAreaArray = ({
 };
 
 export const Select = React.forwardRef<
-	HTMLSelectElement,
+	{ getValue: () => string | undefined },
 	{
 		id: string;
 		value?: string;
 		defaultValue?: string;
-		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement> | string) => void;
 		options: Array<{ value: string; label: string }> | OptionType[];
 		className?: string;
 		disabled?: boolean;
 	}
->(
-	({ id, value, onChange, options, className, disabled, defaultValue }, ref) => {
-		return (
-			<div className={cn("form-group w-full", className)}>
-				<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-					{id}
-				</label>
-				<select
-					ref={ref}
-					id={id}
-					value={value}
-					defaultValue={defaultValue || undefined}
-					onChange={onChange}
-					disabled={disabled}
-					className={cn(
-						"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50",
-					)}
-				>
-					{options.map((option) => (
-						<option key={option.value} value={option.value}>
-							{option.label}
-						</option>
-					))}
-				</select>
-			</div>
-		);
-	},
-);
+>(({ id, className, ...props }, ref) => {
+	return (
+		<div className={cn("form-group w-full", className)}>
+			<label htmlFor={id}>{id}</label>
+			<SelectInput ref={ref} id={id} {...props} />
+		</div>
+	);
+});
 
 export const CairoEnumSelect = React.forwardRef<
-	HTMLSelectElement,
+	{ getValue: () => string | undefined },
 	{
 		id: string;
-		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement> | string) => void;
 		className?: string;
 		disabled?: boolean;
 		value: CairoCustomEnum;
@@ -264,7 +241,7 @@ export const Toggle = ({
 					className,
 				)}
 			/>
-			<label htmlFor={id} className="ml-2 block text-sm text-gray-700">
+			<label htmlFor={id} className="ml-2 block text-xs ">
 				{id.replaceAll("_", " ")}
 			</label>
 		</div>

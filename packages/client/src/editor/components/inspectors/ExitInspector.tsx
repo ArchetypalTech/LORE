@@ -38,6 +38,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 				updatedObject.leads_to = e.target.value;
 			},
 			direction_type: (e, updatedObject) => {
+				console.log(e);
 				updatedObject.direction_type = stringCairoEnum(e.target.value);
 			},
 		},

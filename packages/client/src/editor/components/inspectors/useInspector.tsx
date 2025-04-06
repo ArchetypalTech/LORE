@@ -7,7 +7,8 @@ import type {
 } from "@/editor/lib/schemas";
 import { useCallback, type ChangeEvent, type FC } from "react";
 import type { BigNumberish } from "starknet";
-import { DeleteButton } from "../FormComponents";
+import { Button } from "../ui/Button";
+import { Trash2 } from "lucide-react";
 
 type InputHandler<T> = (
 	e: ChangeEvent<HTMLInputElement>,
@@ -82,13 +83,11 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 		if (!editorObject) {
 			throw new Error("Editor object not found");
 		}
-		console.log(updatedObject, editorObject);
 		handleEdit(componentName, updatedObject);
 	};
 
 	const Inspector = useCallback(
 		({ children }: React.PropsWithChildren) => {
-			console.warn("trace", componentObject);
 			return (
 				<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs animate-scale-in">
 					<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
@@ -102,7 +101,14 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 						/>
 						<div className="flex grow" />
 						{componentName !== "Entity" && (
-							<DeleteButton onClick={() => handleRemove(componentName)} className="" />
+							<Button
+								variant={"ghost"}
+								size="sm"
+								onClick={() => handleRemove(componentName)}
+								className="w-2 opacity-50"
+							>
+								<Trash2 />
+							</Button>
 						)}
 					</h3>
 					<div className="flex flex-col gap-2">{children}</div>
