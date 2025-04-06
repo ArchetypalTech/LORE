@@ -20,6 +20,14 @@ export const EditorFooter = () => {
 					<button
 						className="btn btn-sm btn-success"
 						onClick={() => {
+							EditorData().resetChanges();
+						}}
+					>
+						Reset Editor
+					</button>
+					<button
+						className="btn btn-sm btn-success"
+						onClick={() => {
 							EditorData().logPool();
 						}}
 					>

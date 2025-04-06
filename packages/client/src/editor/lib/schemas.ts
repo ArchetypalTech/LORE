@@ -118,13 +118,18 @@ export type AnyObject = WithStringEnums<
 		| "ActionMapInspectable"
 	>
 >;
+
+export type OneOf<Obj> = Obj[keyof Obj];
+
 export type EntityComponents = Pick<
-	AnyObject,
-	"Area" | "Container" | "Exit" | "Inspectable"
+	SchemaType["lore"],
+	"Area" | "Container" | "Exit" | "Inspectable" | "InventoryItem"
 >;
 export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
 
-export type EditorCollection = WithStringEnums<EntityCollection>;
+export type EditorCollection = {
+	[K in keyof EntityCollection]?: WithStringEnums<Partial<SchemaType["lore"]>>;
+};
 
 export type ModelCollection = {
 	[K in keyof AnyObject]?: Partial<WithStringEnums<AnyObject>>;

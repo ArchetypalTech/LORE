@@ -7,6 +7,7 @@ import type {
 import { encode, num, type BigNumberish } from "starknet";
 import type {
 	AnyObject,
+	EditorCollection,
 	EntityCollection,
 	EntityComponents,
 } from "../lib/schemas";
@@ -14,6 +15,7 @@ import { dispatchDesignerCall } from "../publisher";
 import { toast } from "sonner";
 import { Config } from "../lib/config";
 import JSONbig from "json-bigint";
+import type { ChangeSet, EditorAction } from "../lib/types";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -23,10 +25,11 @@ const {
 	createFactory,
 	useStore: useEditorData,
 } = StoreBuilder({
+	syncPool: new Map<BigNumberish, AnyObject>(),
 	dataPool: new Map<BigNumberish, AnyObject>(),
 	entities: [] as Entity[],
 	parents: [] as ParentToChildren[],
-	deletedQueue: [] as AnyObject[],
+	changeSet: [] as ChangeSet[],
 	selectedEntity: undefined as BigNumberish | undefined,
 	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: undefined as number | undefined,
@@ -39,10 +42,19 @@ const getEntity = (id: BigNumberish) =>
 	JSONbig.parse(JSONbig.stringify(getItem(id))) as EntityCollection;
 
 const getEntities = () =>
-	get()
-		.entities.map((x) => getEntity(x.inst)!)
+	Object.entries(get().entities)
+		.map(([_, value]) => getEntity(value.inst)!)
 		.filter((x) => x !== undefined)
 		.sort((x) => parseInt(x.Entity.inst.toString()));
+
+const resetChanges = () => {
+	set({
+		dataPool: new Map<BigNumberish, AnyObject>(get().syncPool),
+		changeSet: [],
+	});
+	selectEntity(get().selectedEntity!);
+	toast.dismiss("editor-dirty");
+};
 
 const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
 	set((prev) => ({
@@ -51,6 +63,12 @@ const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
 			encode.sanitizeHex(id.toString()),
 			obj,
 		),
+		syncPool: sync
+			? new Map<BigNumberish, AnyObject>(get().syncPool).set(
+					encode.sanitizeHex(id.toString()),
+					obj,
+				)
+			: get().syncPool,
 	}));
 	if (!sync) {
 		set({
@@ -68,6 +86,16 @@ const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
 	}
 };
 
+const createAction = (
+	type: EditorAction,
+	inst: BigNumberish,
+	object: EditorCollection,
+) => {
+	set({
+		changeSet: [...get().changeSet, { type, object, inst }],
+	});
+};
+
 const addEntity = (entity: Entity) => {
 	set((prev) => ({
 		...prev,
@@ -76,46 +104,41 @@ const addEntity = (entity: Entity) => {
 };
 
 const removeComponent = (
-	entity: EntityCollection,
-	component: EntityCollection[keyof EntityCollection],
+	inst: BigNumberish,
 	componentName: keyof EntityCollection,
 ): EntityCollection => {
-	const edited = { ...entity! } as EntityCollection;
-	const deleted = { ...component };
+	const edited = getEntity(inst);
+	console.warn("removeComponent", edited, componentName);
+	const deleted = edited[componentName];
 	edited[componentName] = undefined;
-	EditorData().set({
-		deletedQueue: [
-			...EditorData().deletedQueue,
-			{ [componentName]: deleted } as Partial<EntityCollection>,
-		],
-	});
+	createAction("delete", inst, { [componentName]: deleted });
 	EditorData().syncItem(edited);
 	return edited as EntityCollection;
 };
 
-const removeParent = (child: EntityCollection, parent: EntityCollection) => {
-	console.log("rp", child, parent);
-	if ("ChildToParent" in child && "ParentToChildren" in parent) {
+const removeParent = (child: EntityCollection) => {
+	console.log("rp", child);
+	if ("ChildToParent" in child) {
+		const parent = getEntity(child.ChildToParent!.parent)!;
 		console.log("rp2", child, parent);
 		if (child.ChildToParent!.parent === parent.Entity.inst) {
 			console.log("rp3", child, parent);
-			removeComponent(
-				child,
-				{ ChildToParent: child.ChildToParent! },
-				"ChildToParent",
-			);
+			createAction("delete", child.ChildToParent!.inst, {
+				["ChildToParent" as keyof EntityCollection]: child.ChildToParent!,
+			});
 			EditorData().syncItem(child);
 			parent.ParentToChildren!.children = parent.ParentToChildren!.children.filter(
 				(c) => c !== child.Entity.inst,
 			);
 			if (parent.ParentToChildren!.children.length === 0) {
-				removeComponent(
-					parent,
-					{ ["ParentToChildren"]: parent.ParentToChildren! },
-					"ParentToChildren",
-				);
+				createAction("delete", parent.ParentToChildren!.inst, {
+					["ParentToChildren" as keyof EntityCollection]: parent.ParentToChildren!,
+				});
 			}
 			EditorData().syncItem(parent);
+			EditorData().set({
+				isDirty: Date.now(),
+			});
 			return;
 		}
 		throw new Error("Not parent of child");
@@ -133,17 +156,39 @@ const removeEntity = (entity: EntityCollection) => {
 		set({ selectedEntity: undefined });
 	}
 	console.log("remove", entity);
+
+	// unparent all children
 	if ("ParentToChildren" in entity) {
 		const children = (
 			entity.ParentToChildren as ParentToChildren
 		)?.children.flat();
 		children.forEach((child) => {
-			removeParent(getEntity(child)!, getEntity(inst));
+			removeParent(getEntity(child)!);
 		});
 	}
+	if ("ChildToParent" in entity) {
+		removeParent(getEntity(entity.ChildToParent!.inst)!);
+	}
+
+	// remove all components
 	Object.keys(entity).forEach((key) => {
-		removeComponent(entity, entity[key as keyof EntityCollection], key);
+		if (key === "Entity") return;
+		removeComponent(entity.Entity.inst, key as keyof EntityCollection);
 	});
+
+	// remove all potential create/update actions for this entity
+	set({
+		changeSet: get().changeSet.filter(
+			(x) => x.inst !== inst && x.type !== "delete",
+		),
+	});
+
+	// add to changeset
+	createAction("delete", entity.Entity.inst, {
+		["Entity" as keyof EntityCollection]: entity.Entity!,
+	});
+
+	// remove from data pool
 	const newDataPool = new Map<BigNumberish, AnyObject>(get().dataPool);
 	newDataPool.delete(inst);
 	set((prev) => ({
@@ -293,7 +338,7 @@ const logPool = () => {
 	const poolArray = get().dataPool.values().toArray();
 	console.info("Pool");
 	console.table(poolArray);
-	console.info("DeleteQueue", get().deletedQueue);
+	console.info("ChangeSet", get().changeSet);
 	console.info("Entities", get().entities);
 	console.info("Selected", get().selectedEntity);
 	console.info("Edited", get().editedEntity);
@@ -312,6 +357,7 @@ const EditorData = createFactory({
 	removeComponent,
 	deleteItem,
 	logPool,
+	resetChanges,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });
 

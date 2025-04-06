@@ -42,8 +42,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		console.log(componentName, component);
 		EditorData().set({
 			editedEntity: EditorData().removeComponent(
-				editedEntity!,
-				component,
+				editedEntity!.Entity.inst,
 				componentName,
 			),
 		});

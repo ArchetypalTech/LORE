@@ -69,10 +69,11 @@ export const HierarchyTreeItem = ({
 };
 
 export const HierarchyTree = () => {
-	const { dataPool } = useEditorData();
+	const { dataPool, isDirty } = useEditorData();
 
 	const { tree } = useMemo(() => {
 		dataPool;
+		isDirty;
 		const entities = EditorData().getEntities();
 		const parents = entities.filter((e) => !e!.ChildToParent);
 		//recursively build tree
@@ -100,7 +101,7 @@ export const HierarchyTree = () => {
 		);
 
 		return { tree };
-	}, [dataPool]);
+	}, [dataPool, isDirty]);
 
 	return (
 		<div className="use-editor-styles h-full items-start flex flex-col gap-2 justify-start">
