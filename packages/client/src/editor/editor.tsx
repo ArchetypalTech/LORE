@@ -129,7 +129,7 @@ export const Editor = () => {
 
 	return (
 		<>
-			<Toaster expand visibleToasts={4} />
+			<Toaster expand visibleToasts={4} position="top-left" />
 			<div
 				id="editor-root"
 				className="fixed max-h-screen h-screen w-full font-atkinson overflow-scroll px-4"
