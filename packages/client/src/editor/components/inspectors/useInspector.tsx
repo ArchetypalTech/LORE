@@ -9,6 +9,7 @@ import { useCallback, type ChangeEvent, type FC } from "react";
 import type { BigNumberish } from "starknet";
 import { Button } from "../ui/Button";
 import { Trash2 } from "lucide-react";
+import { componentData } from "@/editor/lib/components";
 
 type InputHandler<T> = (
 	e: ChangeEvent<HTMLInputElement>,
@@ -91,7 +92,10 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 			return (
 				<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs animate-scale-in">
 					<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
-						<div>{componentName}</div>
+						<h6>
+							{`${componentData[componentName]?.icon} `}
+							{componentName}
+						</h6>
 						<div
 							className="text-[7pt] text-black/20 hover:opacity-100 opacity-0"
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: <hey, sometimes, you have to live dangerously!>

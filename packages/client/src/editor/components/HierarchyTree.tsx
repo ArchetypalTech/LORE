@@ -39,19 +39,21 @@ export const HierarchyTreeItem = ({
 		>
 			<div
 				className={cn(
-					"relative opacity-80 overflow-visible",
+					"relative opacity-80 overflow-visible flex flex-row",
 					isSelected && " text-white opacity-100 font-bold",
 				)}
 				onClick={() => EditorData().selectEntity(node.id.toString())}
 			>
-				{isSelected && (
-					<div className="absolute top-0 -left-4 w-[100%] h-[100%] bg-black -z-1 px-6" />
-				)}
-				{isSelected && (
-					<div className="absolute top-0 -left-3 font-white">{">"}</div>
-				)}
-				{node.name}{" "}
-				<span className="opacity-50 hover:opacity-100">
+				<div className="relative flex">
+					{isSelected && (
+						<div className="absolute top-0 -left-4 w-[calc(100%+1.25rem)] h-[100%] bg-black/50 -z-1 pl-4 pr-4 rotate-[.26deg]" />
+					)}
+					{isSelected && (
+						<div className="absolute top-0 -left-3 font-white">{">"}</div>
+					)}
+					{node.name}{" "}
+				</div>
+				<span className="opacity-50 hover:opacity-100 ml-2">
 					{icons.map(([key, value]) => {
 						if (value.icon) {
 							return (
@@ -106,7 +108,7 @@ export const HierarchyTree = () => {
 	}, [dataPool, isDirty]);
 
 	return (
-		<div className="use-editor-styles h-full items-start flex flex-col gap-2 justify-start">
+		<div className="use-editor-styles h-full items-start flex flex-col gap-4 justify-start">
 			<Button
 				// className="w-full"
 				onClick={() => EditorData().newEntity({} as Entity)}
@@ -114,9 +116,11 @@ export const HierarchyTree = () => {
 				<HousePlus />
 				New Entity
 			</Button>
-			{tree.map((node) => (
-				<HierarchyTreeItem key={node.name + node.id} node={node} depth={0} />
-			))}
+			<div className="flex flex-col gap-1.25">
+				{tree.map((node) => (
+					<HierarchyTreeItem key={node.name + node.id} node={node} depth={0} />
+				))}
+			</div>
 		</div>
 	);
 };

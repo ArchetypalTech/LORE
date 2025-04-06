@@ -111,7 +111,7 @@ export const colorizeHash = (hash: string) => {
 
 		const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 
-		coloredHash += `<span style="color:${color}; font-weight:bold;">${chunk}</span>`;
+		coloredHash += `<span style="color:${color}; font-weight:bold;" class="mr-1">${chunk}</span>`;
 	}
 
 	return coloredHash;

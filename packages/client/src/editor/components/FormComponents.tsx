@@ -14,17 +14,21 @@ export const Header = ({
 	title,
 	subtitle,
 	children,
-	onClickTitle,
 }: {
 	title: string;
 	subtitle: React.ReactNode;
 	children?: React.ReactNode;
-	onClickTitle?: () => void;
 }) => {
 	return (
 		<div className="flex justify-between flex-row gap-2 items-center">
-			<div className="flex flex-col">
-				<h2>{title}</h2>
+			<div className="relative flex flex-col">
+				<div className="relative text-white">
+					<h2 className="">{title}</h2>
+					<div className="absolute top-0 -left-4.5 w-[calc(100%+1.35rem)] h-[100%] bg-black -z-1 pl-5 pr-4 rotate-[.26deg]" />
+					<div className="absolute top-0 -left-3.5 font-white">
+						<h2>{">"}</h2>
+					</div>
+				</div>
 				<div>{subtitle}</div>
 			</div>
 			<div className="grow" />
@@ -91,6 +95,7 @@ export const Input = ({
 				autoComplete="off"
 				disabled={disabled}
 				readOnly={readOnly}
+				className={className}
 			/>
 		</div>
 	);
@@ -141,12 +146,12 @@ export const Textarea = ({
 	return (
 		<div className="form-group">
 			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
-			<textarea
+			<Textarea
 				id={id}
 				value={value}
 				onChange={onChange}
 				rows={rows}
-				autoComplete="off"
+				className={className}
 			/>
 			{children}
 		</div>
