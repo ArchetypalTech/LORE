@@ -76,7 +76,7 @@ export const MultiTextArea = ({
 								defaultValue={v}
 								onBlur={handleChange}
 								rows={rows}
-								className={cn("flex w-full", className)}
+								className={cn("flex w-full bg-white", className)}
 							/>
 							<div className="absolute top-0 right-0 scale-50 hover:grayscale-0 grayscale-100 opacity-50 hover:opacity-100">
 								<DeleteButton onClick={() => handleRemoveArray(i)} />

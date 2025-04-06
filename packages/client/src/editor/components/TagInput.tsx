@@ -131,6 +131,7 @@ export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
 				onKeyUp={handleInputEvent}
 				autoComplete="off"
 				value={input}
+				className={"bg-white"}
 				onChange={(e) => setInput(e.target.value)}
 			/>
 			<div className="flex flex-wrap mt-2">

@@ -105,7 +105,7 @@ export const Editor = () => {
 						</div>
 						<div
 							className={cn(
-								!dark_mode && "invert grayscale-100 contrast-120",
+								!dark_mode && "invert contrast-120",
 								"relative col-span-2 h-[700px] hover:opacity-100 opacity-50",
 							)}
 						>

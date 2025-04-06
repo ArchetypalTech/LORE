@@ -9,6 +9,7 @@ import type { CairoCustomEnum } from "starknet";
 import { Button } from "./ui/Button";
 import { SelectInput } from "./ui/Select";
 import { Input as UIInput } from "./ui/Input";
+import { Textarea as UITextarea } from "./ui/Textarea";
 
 export const Header = ({
 	title,
@@ -95,7 +96,7 @@ export const Input = ({
 				autoComplete="off"
 				disabled={disabled}
 				readOnly={readOnly}
-				className={className}
+				className={cn("bg-white", className)}
 			/>
 		</div>
 	);
@@ -146,12 +147,12 @@ export const Textarea = ({
 	return (
 		<div className="form-group">
 			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
-			<Textarea
+			<UITextarea
 				id={id}
 				value={value}
 				onChange={onChange}
 				rows={rows}
-				className={className}
+				className={cn("bg-white", className)}
 			/>
 			{children}
 		</div>

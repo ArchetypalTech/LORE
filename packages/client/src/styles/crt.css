@@ -256,10 +256,10 @@
   animation: flicker 250s infinite;
 }
 
-.textFreak {
+#client-root .textFreak {
   animation: textShadow 500s infinite;
 }
 
-.buzzing {
+#client-root .buzzing {
   animation: brightbuzz 240s infinite;
 }
