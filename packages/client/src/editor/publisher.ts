@@ -20,35 +20,33 @@ import { Notifications } from "./lib/notifications";
  */
 export const publishConfigToContract = async (): Promise<void> => {
 	// Then process each room in the config
-	for (const collection of EditorData().getEntities()) {
-		// Create entity
-		console.log("Creating entityCollection:", collection);
-		try {
-			await publishEntityCollection(collection);
-		} catch (error) {
-			console.error("Error creating room:", error);
-			throw new Error(
-				`Error creating room: ${error instanceof Error ? error.message : String(error)}`,
-			);
+	// Create entity
+	try {
+		await publishChangeset();
+	} catch (error) {
+		console.error("Error creating room:", error);
+		throw new Error(
+			`Error creating room: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
+};
+
+const publishChangeset = async () => {
+	const changes = EditorData().changeSet;
+	for (const change of changes) {
+		if (change.type === "create") {
+			await publishEntityCollection(change.object as EntityCollection);
+		}
+		if (change.type === "update") {
+			await publishEntityCollection(change.object as EntityCollection);
+		}
+		if (change.type === "delete") {
+			await deleteCollection(change.object as EntityCollection);
 		}
 	}
 };
 
-// export const processTxtDef = async (txtDef: T_TextDefinition) => {
-// 	if (txtDef.id === "0") {
-// 		return;
-// 	}
-// 	const t = txtDef.text;
-// 	actions.notifications.startPublishing();
-// 	const txtData = [
-// 		parseInt(txtDef.id), // ID for the text
-// 		parseInt(txtDef.owner), // Owner ID
-// 		t.length > 0 ? encodeURI(decodeDojoText(t)) : " ", // The actual text content
-// 	];
-// 	await dispatchDesignerCall("create_txts", [txtData]);
-// };
-
-export const publishEntityCollection = async (collection: EntityCollection) => {
+const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection) {
 		await publishEntity(collection.Entity);
 	}
@@ -124,6 +122,31 @@ const publishExit = async (exit: Exit) => {
 		0,
 	];
 	await dispatchDesignerCall("create_exit", [exitData]);
+};
+
+const deleteCollection = async (model: EntityCollection) => {
+	if ("Entity" in model) {
+		await dispatchDesignerCall("delete_entity", [
+			num.toBigInt(model.Entity!.inst),
+		]);
+	}
+	if ("Inspectable" in model) {
+		await dispatchDesignerCall("delete_inspectable", [
+			num.toBigInt(model.Entity!.inst),
+		]);
+	}
+	if ("Area" in model) {
+		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Entity!.inst)]);
+	}
+	if ("Exit" in model) {
+		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Entity!.inst)]);
+	}
+	if ("ChildToParent" in model) {
+	}
+	if ("ParentToChildren" in model) {
+	}
+	if ("Player" in model) {
+	}
 };
 
 /**

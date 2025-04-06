@@ -30,7 +30,10 @@ export const Header = ({
 	);
 };
 
-export const DeleteButton = ({ onClick, className }: { onClick: () => void, className?: string }) => {
+export const DeleteButton = ({
+	onClick,
+	className,
+}: { onClick: () => void; className?: string }) => {
 	return (
 		<button className={cn("btn btn-danger btn-sm", className)} onClick={onClick}>
 			❌
@@ -38,9 +41,12 @@ export const DeleteButton = ({ onClick, className }: { onClick: () => void, clas
 	);
 };
 
-export const PublishButton = ({ onClick, className }: { onClick: () => void, className?: string }) => {
+export const PublishButton = ({
+	onClick,
+	className,
+}: { onClick: () => void; className?: string }) => {
 	return (
-		<button className={cn("btn btn-sm", className)} onClick={onClick} >
+		<button className={cn("btn btn-sm", className)} onClick={onClick}>
 			🕊️
 		</button>
 	);

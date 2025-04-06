@@ -12,7 +12,6 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 		...props,
 		inputHandlers: {
 			description: (e, updatedObject) => {
-				console.log(e.target.value);
 				updatedObject.description = e.target.value as unknown as string[];
 			},
 			is_visible: (e, updatedObject) => {

@@ -3,6 +3,7 @@ import { APP_EDITOR_DATA } from "@/data/app.data";
 import { LORE_CONFIG } from "@/lib/config";
 import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store";
 import { Config } from "../lib/config";
+import { Button } from "./ui/Button";
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,14 +56,14 @@ export const EditorHeader = () => {
 				<div className="flex grow" />
 				<div className="flex gap-2">
 					{requireConnect ? (
-						<button
+						<Button
 							className="btn btn-sm btn-warning"
 							onClick={async () => {
 								await WalletStore().connectController();
 							}}
 						>
 							Connect Controller
-						</button>
+						</Button>
 					) : (
 						<>
 							<input
@@ -72,18 +73,15 @@ export const EditorHeader = () => {
 								className="hidden"
 								onChange={handleFileChange}
 							/>
-							<button className="btn btn-sm" onClick={handleImportConfig}>
-								Import Config
-							</button>
-							<button className="btn btn-sm" onClick={handleExportConfig}>
-								Export Config
-							</button>
-							<button
-								className="btn btn-sm btn-hero hover:textFreak"
+							<Button onClick={handleImportConfig}>Import Config</Button>
+							<Button onClick={handleExportConfig}>Export Config</Button>
+							<Button
+								variant="hero"
+								className="hover:textFreak"
 								onClick={handlePublish}
 							>
 								🕊️ Publish
-							</button>
+							</Button>
 						</>
 					)}
 					{/* <button className="btn" onClick={() => UserStore().toggleDarkMode()}>

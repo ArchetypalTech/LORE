@@ -115,7 +115,7 @@ const updateComponent = <T extends keyof EntityCollection>(
 		});
 	}
 	createAction("update", inst, { [componentName]: component });
-	EditorData().syncItem(edited);
+	syncItem(edited);
 	console.log(JSONbig.stringify(get().changeSet));
 	return edited as EntityCollection;
 };
@@ -138,12 +138,12 @@ const removeComponent = (
 		console.log("update");
 		set({
 			changeSet: get().changeSet.filter(
-				(x) => x.inst !== inst && componentName in x.object,
+				(x) => x.inst !== inst || (x.inst === inst && !(componentName in x.object)),
 			),
 		});
 	}
 	createAction("delete", inst, { [componentName]: deleted });
-	EditorData().syncItem(edited);
+	syncItem(edited);
 	return edited as EntityCollection;
 };
 
@@ -166,8 +166,8 @@ const removeParent = (child: EntityCollection) => {
 					["ParentToChildren" as keyof EntityCollection]: parent.ParentToChildren!,
 				});
 			}
-			EditorData().syncItem(child);
-			EditorData().syncItem(parent);
+			syncItem(child);
+			syncItem(parent);
 			EditorData().set({
 				isDirty: Date.now(),
 			});
@@ -208,7 +208,9 @@ const removeEntity = (entity: EntityCollection) => {
 
 	// remove all potential create/update actions for this entity
 	const prevUpdates = get().changeSet.filter(
-		(x) => x.inst === inst && (x.type === "create" || x.type === "update"),
+		(x) =>
+			(x.inst === inst && (x.type === "create" || x.type === "update")) ||
+			x.inst !== inst,
 	);
 	set({
 		changeSet: get().changeSet.filter((x) => !prevUpdates.includes(x)),
@@ -274,7 +276,7 @@ const syncItem = (
 		};
 
 		const inst = findInstValue(obj);
-		console.log(obj);
+
 		// @dev: merge items into datapool (or new if don't exist)
 		if (inst !== undefined) {
 			const existing = { ...getItem(inst) };
@@ -307,30 +309,6 @@ const syncItem = (
 };
 
 // TODO: implement
-const deleteItem = async (model: AnyObject) => {
-	if ("Entity" in model) {
-		await dispatchDesignerCall("delete_entity", [
-			num.toBigInt(model.Entity!.inst),
-		]);
-	}
-	if ("Inspectable" in model) {
-		await dispatchDesignerCall("delete_inspectable", [
-			num.toBigInt(model.Entity!.inst),
-		]);
-	}
-	if ("Area" in model) {
-		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Entity!.inst)]);
-	}
-	if ("Exit" in model) {
-		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Entity!.inst)]);
-	}
-	if ("ChildToParent" in model) {
-	}
-	if ("ParentToChildren" in model) {
-	}
-	if ("Player" in model) {
-	}
-};
 
 const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
@@ -387,7 +365,6 @@ const EditorData = createFactory({
 	updateComponent,
 	updateSelectedEntity,
 	removeComponent,
-	deleteItem,
 	logPool,
 	resetChanges,
 	dojoSync,

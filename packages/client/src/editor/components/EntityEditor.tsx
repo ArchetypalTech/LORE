@@ -2,13 +2,13 @@ import EditorData, { useEditorData } from "../data/editor.data";
 import type { EntityComponents, EntityCollection } from "../lib/schemas";
 import type { ComponentInspector } from "./inspectors/useInspector";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";
-import { publishEntityCollection } from "../publisher";
 import { componentData } from "../lib/components";
 import { formatColorHash } from "../editor.utils";
 import { Notifications } from "../lib/notifications";
 import { AddComponents } from "./AddComponents";
 import type { BigNumberish } from "starknet";
 import { useCallback, useEffect } from "react";
+import { publishConfigToContract } from "../publisher";
 
 export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	const { editedEntity, isDirty } = useEditorData();
@@ -98,9 +98,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 				/>
 				<PublishButton
 					onClick={async () => {
-						await Notifications().doLoggedAction(() =>
-							publishEntityCollection(editedEntity as EntityCollection),
-						);
+						await Notifications().doLoggedAction(() => publishConfigToContract());
 					}}
 				/>
 			</Header>
