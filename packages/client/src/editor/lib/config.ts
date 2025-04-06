@@ -36,7 +36,7 @@ const config = {
 		if (errors.length === 0) {
 			try {
 				for (const obj of result.dataPool) {
-					EditorData().syncItem(obj);
+					EditorData().dojoSync(obj);
 				}
 				// Force UI refresh
 				setTimeout(() => {

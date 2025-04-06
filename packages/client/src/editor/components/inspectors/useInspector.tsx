@@ -21,7 +21,7 @@ export type ComponentInspector<T> = FC<{
 		componentName: keyof EntityComponents,
 		component: T,
 	) => Promise<void>;
-	handleRemove: (componentName: keyof EntityComponents, component: T) => void;
+	handleRemove: (componentName: keyof EntityComponents) => void;
 }>;
 
 type InspectorProps<T extends { inst: BigNumberish }> = {
@@ -31,7 +31,7 @@ type InspectorProps<T extends { inst: BigNumberish }> = {
 		componentName: keyof EntityComponents,
 		component: T,
 	) => Promise<void>;
-	handleRemove: (componentName: keyof EntityComponents, component: T) => void;
+	handleRemove: (componentName: keyof EntityComponents) => void;
 	inputHandlers?: {
 		[key: string]: InputHandler<T>;
 	};
@@ -92,6 +92,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 			return (
 				<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs animate-scale-in">
 					<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
+						<div>{componentName}</div>
 						<div
 							className="text-[7pt] text-black/20 hover:opacity-100 opacity-0"
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: <hey, sometimes, you have to live dangerously!>
@@ -99,14 +100,16 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 								__html: formatColorHash(componentObject.inst),
 							}}
 						/>
-						<div>{componentName}</div>
-						<DeleteButton onClick={() => handleRemove(componentName,componentObject)} className="" />
+						<div className="flex grow" />
+						{componentName !== "Entity" && (
+							<DeleteButton onClick={() => handleRemove(componentName)} className="" />
+						)}
 					</h3>
 					<div className="flex flex-col gap-2">{children}</div>
 				</div>
 			);
 		},
-		[componentObject, componentName],
+		[componentObject, componentName, handleRemove],
 	);
 
 	return { handleInputChange, Inspector };

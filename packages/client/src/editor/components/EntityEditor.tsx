@@ -25,21 +25,18 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		componentName: T,
 		component: EntityComponents[T],
 	) => {
-		console.log(componentName, component);
-		const edited = { ...EditorData().editedEntity! } as EntityComponents;
-		edited[componentName] = component;
-		console.log(edited);
 		EditorData().set({
-			editedEntity: edited as EntityCollection,
+			editedEntity: EditorData().updateComponent(
+				editedEntity!.Entity!.inst,
+				componentName,
+				component,
+			),
 		});
-		EditorData().syncItem(edited);
 	};
 
 	const handleRemoveComponent = async (
 		componentName: keyof EntityComponents,
-		component: EntityComponents[keyof EntityComponents],
 	) => {
-		console.log(componentName, component);
 		EditorData().set({
 			editedEntity: EditorData().removeComponent(
 				editedEntity!.Entity.inst,

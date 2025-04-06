@@ -110,9 +110,8 @@ const onReponseData = (
 	if (responseData.PlayerStory) {
 		onPlayerStory(responseData.PlayerStory);
 	}
-	EditorData().syncItem(responseData as unknown as AnyObject, {
+	EditorData().dojoSync(responseData as unknown as AnyObject, {
 		verbose: true,
-		sync: true,
 	});
 };
 
@@ -182,9 +181,7 @@ const initializeConfig = async (
 			status: "initialized",
 			error: null,
 		});
-		// if (!LORE_CONFIG.EDITOR_MODE) {
 		sendCommand("_bootLoader");
-		// }
 
 		console.log("[DOJO]: initialized");
 		set({ existingSubscription: subscription });

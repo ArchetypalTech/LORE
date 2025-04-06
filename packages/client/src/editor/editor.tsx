@@ -23,7 +23,7 @@ export const Editor = () => {
 		status: { status },
 	} = useDojoStore();
 	const { dark_mode } = useUserStore();
-	const { entities, selectedEntity, isDirty } = useEditorData();
+	const { selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 
 	useHead({
@@ -61,7 +61,7 @@ export const Editor = () => {
 		}
 		if (hasObjects) {
 			if (EditorData().selectedEntity === undefined) {
-				EditorData().selectEntity(entities[0].inst);
+				EditorData().selectEntity(EditorData().getEntities()[0]?.Entity?.inst);
 				setEditorState("loaded");
 				return;
 			}
@@ -73,7 +73,7 @@ export const Editor = () => {
 			return;
 		}
 		setEditorState("empty");
-	}, [status, entities]);
+	}, [status]);
 
 	const editorContents = useMemo(() => {
 		switch (editorState) {

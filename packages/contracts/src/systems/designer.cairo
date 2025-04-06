@@ -58,6 +58,9 @@ pub mod designer {
             for inst in ids {
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
+                // delete_inspectable(world, model.Inspectable);
+            // delete_area(world, model.Area);
+            // delete_exit(world, model.Exit);
             }
         }
 

@@ -27,7 +27,6 @@ const {
 } = StoreBuilder({
 	syncPool: new Map<BigNumberish, AnyObject>(),
 	dataPool: new Map<BigNumberish, AnyObject>(),
-	entities: [] as Entity[],
 	parents: [] as ParentToChildren[],
 	changeSet: [] as ChangeSet[],
 	selectedEntity: undefined as BigNumberish | undefined,
@@ -42,8 +41,10 @@ const getEntity = (id: BigNumberish) =>
 	JSONbig.parse(JSONbig.stringify(getItem(id))) as EntityCollection;
 
 const getEntities = () =>
-	Object.entries(get().entities)
-		.map(([_, value]) => getEntity(value.inst)!)
+	get()
+		.dataPool.values()
+		.toArray()
+		.map((x) => x.Entity && getEntity(x?.Entity?.inst)!)
 		.filter((x) => x !== undefined)
 		.sort((x) => parseInt(x.Entity.inst.toString()));
 
@@ -96,21 +97,51 @@ const createAction = (
 	});
 };
 
-const addEntity = (entity: Entity) => {
-	set((prev) => ({
-		...prev,
-		entities: [...prev.entities.filter((e) => e.inst !== entity.inst), entity],
-	}));
+const updateComponent = <T extends keyof EntityCollection>(
+	inst: BigNumberish,
+	componentName: T,
+	component: EntityCollection[T],
+) => {
+	const edited = getEntity(inst);
+	edited[componentName] = component;
+	if (
+		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
+	) {
+		console.log("update");
+		set({
+			changeSet: get().changeSet.filter(
+				(x) => x.inst !== inst && componentName in x.object,
+			),
+		});
+	}
+	createAction("update", inst, { [componentName]: component });
+	EditorData().syncItem(edited);
+	console.log(JSONbig.stringify(get().changeSet));
+	return edited as EntityCollection;
 };
 
 const removeComponent = (
 	inst: BigNumberish,
 	componentName: keyof EntityCollection,
-): EntityCollection => {
+): EntityCollection | undefined => {
 	const edited = getEntity(inst);
+	if (componentName === "Entity") {
+		removeEntity(edited);
+		return undefined;
+	}
 	console.warn("removeComponent", edited, componentName);
 	const deleted = edited[componentName];
 	edited[componentName] = undefined;
+	if (
+		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
+	) {
+		console.log("update");
+		set({
+			changeSet: get().changeSet.filter(
+				(x) => x.inst !== inst && componentName in x.object,
+			),
+		});
+	}
 	createAction("delete", inst, { [componentName]: deleted });
 	EditorData().syncItem(edited);
 	return edited as EntityCollection;
@@ -126,7 +157,7 @@ const removeParent = (child: EntityCollection) => {
 			createAction("delete", child.ChildToParent!.inst, {
 				["ChildToParent" as keyof EntityCollection]: child.ChildToParent!,
 			});
-			EditorData().syncItem(child);
+			child.ChildToParent = undefined;
 			parent.ParentToChildren!.children = parent.ParentToChildren!.children.filter(
 				(c) => c !== child.Entity.inst,
 			);
@@ -135,6 +166,7 @@ const removeParent = (child: EntityCollection) => {
 					["ParentToChildren" as keyof EntityCollection]: parent.ParentToChildren!,
 				});
 			}
+			EditorData().syncItem(child);
 			EditorData().syncItem(parent);
 			EditorData().set({
 				isDirty: Date.now(),
@@ -155,8 +187,6 @@ const removeEntity = (entity: EntityCollection) => {
 	if (isSelected) {
 		set({ selectedEntity: undefined });
 	}
-	console.log("remove", entity);
-
 	// unparent all children
 	if ("ParentToChildren" in entity) {
 		const children = (
@@ -177,10 +207,11 @@ const removeEntity = (entity: EntityCollection) => {
 	});
 
 	// remove all potential create/update actions for this entity
+	const prevUpdates = get().changeSet.filter(
+		(x) => x.inst === inst && (x.type === "create" || x.type === "update"),
+	);
 	set({
-		changeSet: get().changeSet.filter(
-			(x) => x.inst !== inst && x.type !== "delete",
-		),
+		changeSet: get().changeSet.filter((x) => !prevUpdates.includes(x)),
 	});
 
 	// add to changeset
@@ -193,7 +224,6 @@ const removeEntity = (entity: EntityCollection) => {
 	newDataPool.delete(inst);
 	set((prev) => ({
 		...prev,
-		entities: prev.entities.filter((e) => e.inst !== inst),
 		dataPool: newDataPool,
 		isDirty: Date.now(),
 	}));
@@ -222,7 +252,6 @@ const syncItem = (
 		let name = "";
 		// @dev: add Entity models to entities
 		if ("Entity" in (obj as { Entity: Entity })) {
-			addEntity(obj.Entity as Entity);
 			name = obj.Entity!.name;
 		}
 		// @dev: retrieve instance value
@@ -271,11 +300,7 @@ const syncItem = (
 				obj,
 				get(),
 			);
-
-		if ("ParentToChildren" in obj || "ChildToParent" in obj) {
-			// @dev: we might have a re-parenting so we force update the hierarchy
-			set({ entities: [...get().entities] });
-		}
+		set({ isDirty: Date.now() });
 	} catch (e) {
 		console.error("data-sync error:", e, "object: ", obj);
 	}
@@ -339,9 +364,16 @@ const logPool = () => {
 	console.info("Pool");
 	console.table(poolArray);
 	console.info("ChangeSet", get().changeSet);
-	console.info("Entities", get().entities);
+	console.info("Entities", getEntities());
 	console.info("Selected", get().selectedEntity);
 	console.info("Edited", get().editedEntity);
+};
+
+const dojoSync = (
+	obj: AnyObject,
+	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
+) => {
+	syncItem(obj, { verbose, sync: true });
 };
 
 const EditorData = createFactory({
@@ -349,15 +381,16 @@ const EditorData = createFactory({
 	getEntity,
 	getItem,
 	setItem,
-	syncItem,
 	newEntity,
 	removeEntity,
 	selectEntity,
+	updateComponent,
 	updateSelectedEntity,
 	removeComponent,
 	deleteItem,
 	logPool,
 	resetChanges,
+	dojoSync,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });
 
