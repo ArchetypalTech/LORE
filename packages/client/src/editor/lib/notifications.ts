@@ -68,7 +68,6 @@ const notifications = {
 	startPublishing: async () => {
 		toast.loading("Publishing to the world...", {
 			richColors: true,
-			position: "bottom-center",
 			id: "publishing-world",
 		});
 		setNotification({
@@ -97,7 +96,7 @@ const notifications = {
 		if (state.logs.some((log) => log.type === "error")) {
 			notifications.showError("Errors while publishing");
 		} else {
-			toast.info("World published");
+			toast.info("World published", { richColors: true });
 		}
 	},
 };

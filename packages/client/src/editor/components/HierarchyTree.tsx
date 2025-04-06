@@ -114,11 +114,9 @@ export const HierarchyTree = () => {
 				<HousePlus />
 				New Entity
 			</Button>
-			{tree
-				.sort((a, b) => a.id.toString().localeCompare(b.id.toString()))
-				.map((node) => (
-					<HierarchyTreeItem key={node.name + node.id} node={node} depth={0} />
-				))}
+			{tree.map((node) => (
+				<HierarchyTreeItem key={node.name + node.id} node={node} depth={0} />
+			))}
 		</div>
 	);
 };

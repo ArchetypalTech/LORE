@@ -11,10 +11,8 @@ import type {
 	EntityCollection,
 } from "../lib/schemas";
 import { toast } from "sonner";
-import { Config } from "../lib/config";
 import JSONbig from "json-bigint";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import { publishConfigToContract } from "../publisher";
 import { Notifications } from "../lib/notifications";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
@@ -51,7 +49,9 @@ const getEntities = () =>
 		.toArray()
 		.map((x) => x.Entity && getEntity(x?.Entity?.inst)!)
 		.filter((x) => x !== undefined)
-		.sort((x) => parseInt(x.Entity.inst.toString()));
+		.sort((a, b) =>
+			a.Entity.inst.toString().localeCompare(b.Entity.inst.toString()),
+		);
 
 const resetChanges = () => {
 	set({
@@ -180,7 +180,8 @@ const removeEntity = (entity: EntityCollection) => {
 	}
 	const inst = entity.Entity!.inst;
 	if (get().selectedEntity === inst) {
-		set({ selectedEntity: undefined });
+		const index = getEntities().findIndex((x) => x.Entity?.inst === inst);
+		set({ selectedEntity: getEntities()[index + 1]?.Entity?.inst });
 	}
 	if (get().editedEntity?.Entity?.inst === inst) {
 		set({ editedEntity: undefined });
