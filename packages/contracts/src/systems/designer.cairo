@@ -22,7 +22,7 @@ pub trait IDesigner<TContractState> {
 pub mod designer {
     use super::IDesigner;
     use lore::components::{inspectable::{Inspectable}, area::Area, exit::Exit};
-    use lore::lib::{entity::Entity};
+    use lore::lib::{entity::Entity, relations::{ParentToChildren, ChildToParent}};
     use dojo::{model::ModelStorage};
 
     #[abi(embed_v0)]
