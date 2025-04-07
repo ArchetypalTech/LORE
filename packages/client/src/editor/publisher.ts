@@ -12,8 +12,8 @@ import { byteArray, num } from "starknet";
 import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
 import EditorData from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
-import type { EntityCollection } from "./lib/types";
 import { toEnumIndex } from "./lib/schemas";
+import type { EntityCollection } from "./lib/types";
 import type { ChangeSet } from "./lib/types";
 
 /**

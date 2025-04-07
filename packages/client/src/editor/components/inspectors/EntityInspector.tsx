@@ -12,7 +12,6 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 		...props,
 		inputHandlers: {
 			name: (e, updatedObject) => {
-				console.log(e, e.target.value);
 				updatedObject.name = e.target.value;
 			},
 			alt_names: (e, updatedObject) => {

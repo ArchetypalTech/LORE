@@ -11,8 +11,14 @@ import { type ChangeEvent, type FC, useCallback } from "react";
 import type { BigNumberish } from "starknet";
 import { Button } from "../ui/Button";
 
+// Using a type union to handle different HTML element types
+type InputEvent =
+	| ChangeEvent<HTMLInputElement>
+	| ChangeEvent<HTMLSelectElement>
+	| ChangeEvent<HTMLTextAreaElement>;
+
 type InputHandler<T> = (
-	e: ChangeEvent<HTMLInputElement>,
+	e: InputEvent,
 	updatedObject: WithStringEnums<T>,
 ) => void;
 
@@ -46,7 +52,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 	handleRemove,
 	inputHandlers = {},
 }: InspectorProps<T>) => {
-	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+	const handleInputChange = (e: InputEvent) => {
 		if (!componentObject) return;
 
 		const entity = EditorData().getEntity(componentObject.inst);
@@ -66,10 +72,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 
 		// Use custom handler if provided, otherwise use default behavior
 		if (inputHandlers[id]) {
-			inputHandlers[id](
-				e as unknown as ChangeEvent<HTMLInputElement>,
-				updatedObject as WithStringEnums<T>,
-			);
+			inputHandlers[id](e, updatedObject as WithStringEnums<T>);
 		} else {
 			// Default behavior: direct assignment
 			updatedObject[id as keyof T] = value as unknown as T[keyof T];

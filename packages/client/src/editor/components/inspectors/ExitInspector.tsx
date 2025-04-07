@@ -4,7 +4,7 @@ import {
 	type Exit,
 	direction,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { useMemo } from "react";
+import { type ChangeEvent, useMemo } from "react";
 import { CairoEnumSelect, Select, Toggle } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
@@ -29,16 +29,17 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 		...props,
 		inputHandlers: {
 			is_exit: (e, updatedObject) => {
-				updatedObject.is_exit = e.target.checked;
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.is_exit = event.target.checked;
 			},
 			is_enterable: (e, updatedObject) => {
-				updatedObject.is_enterable = e.target.checked;
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.is_enterable = event.target.checked;
 			},
 			leads_to: (e, updatedObject) => {
 				updatedObject.leads_to = e.target.value;
 			},
 			direction_type: (e, updatedObject) => {
-				console.log(e);
 				updatedObject.direction_type = stringCairoEnum(e.target.value);
 			},
 		},

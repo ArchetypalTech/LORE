@@ -1,8 +1,7 @@
-import type { EntityCollection, WithStringEnums } from "./types";
 import {
-	schema,
 	type Entity,
 	type SchemaType,
+	schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import randomName from "@scaleway/random-name";
 import { AreaInspector } from "../components/inspectors/AreaInspector";
@@ -11,6 +10,7 @@ import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { randomKey } from "../editor.utils";
+import type { EntityCollection, WithStringEnums } from "./types";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">

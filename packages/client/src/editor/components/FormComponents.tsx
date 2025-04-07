@@ -195,7 +195,7 @@ export const Select = React.forwardRef<
 		id: string;
 		value?: string;
 		defaultValue?: string;
-		onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 		options: Array<{ value: string; label: string }> | OptionType[];
 		className?: string;
 		disabled?: boolean;
@@ -213,7 +213,7 @@ export const CairoEnumSelect = React.forwardRef<
 	{ getValue: () => string | undefined },
 	{
 		id: string;
-		onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 		className?: string;
 		disabled?: boolean;
 		value: CairoCustomEnum;
