@@ -3,7 +3,7 @@ import type { BigNumberish } from "starknet";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { formatColorHash } from "../editor.utils";
 import { componentData } from "../lib/components";
-import type { EntityCollection } from "../lib/schemas";
+import type { EntityCollection } from "../lib/types";
 import { publishConfigToContract } from "../publisher";
 import { AddComponents } from "./AddComponents";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";

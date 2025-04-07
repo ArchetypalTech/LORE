@@ -1,5 +1,5 @@
 import EditorData from "@/editor/data/editor.data";
-import type { AnyObject } from "@/editor/lib/schemas";
+import type { EntityCollection } from "@/editor/lib/types";
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 import type { InitDojo } from "@lib/dojo";
 import { num } from "starknet";
@@ -110,7 +110,7 @@ const onReponseData = (
 	if (responseData.PlayerStory) {
 		onPlayerStory(responseData.PlayerStory);
 	}
-	EditorData().dojoSync(responseData as unknown as AnyObject, {
+	EditorData().dojoSync(responseData as EntityCollection, {
 		verbose: true,
 	});
 };

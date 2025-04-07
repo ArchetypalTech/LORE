@@ -1,7 +1,8 @@
-import type { EntityCollection, WithStringEnums } from "@/editor/lib/schemas";
-import type {
-	Entity,
-	SchemaType,
+import type { EntityCollection, WithStringEnums } from "./types";
+import {
+	schema,
+	type Entity,
+	type SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import randomName from "@scaleway/random-name";
 import { AreaInspector } from "../components/inspectors/AreaInspector";
@@ -15,6 +16,7 @@ export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
 > => ({
 	Entity: {
+		...schema.lore.Entity,
 		inst: randomKey(),
 		is_entity: true,
 		name: randomName(),
@@ -26,6 +28,7 @@ export const createDefaultAreaComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Area">> => ({
 	Area: {
+		...schema.lore.Area,
 		inst: entity.inst,
 		is_area: true,
 		direction: "None",
@@ -36,9 +39,9 @@ export const createDefaultInspectableComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
 	Inspectable: {
+		...schema.lore.Inspectable,
 		inst: entity.inst,
 		is_inspectable: true,
-		is_visible: true,
 		description: [],
 		action_map: [],
 	},
@@ -48,12 +51,34 @@ export const createDefaultExitComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Exit">> => ({
 	Exit: {
+		...schema.lore.Exit,
 		inst: entity.inst,
 		is_exit: true,
 		is_enterable: true,
-		leads_to: 0,
 		direction_type: "None",
 		action_map: [],
+	},
+});
+
+export const createDefaultChildToParentComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "ChildToParent">> => ({
+	ChildToParent: {
+		...schema.lore.ChildToParent,
+		inst: entity.inst,
+		is_child: true,
+		parent: 0,
+	},
+});
+
+export const createDefaultParentToChildrenComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "ParentToChildren">> => ({
+	ParentToChildren: {
+		...schema.lore.ParentToChildren,
+		inst: entity.inst,
+		is_parent: true,
+		children: [],
 	},
 });
 

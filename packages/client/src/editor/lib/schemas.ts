@@ -1,13 +1,3 @@
-import type {
-	DirectionEnum,
-	Entity,
-	InspectableActionsEnum,
-	SchemaType,
-	TokenTypeEnum,
-	direction,
-	inspectableActions,
-	tokenType,
-} from "@/lib/dojo_bindings/typescript/models.gen";
 import { useMemo } from "react";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
@@ -78,7 +68,7 @@ export const convertCairoEnum = (
 		options: targetEnum.map((x: unknown) => ({
 			value: x as string,
 			label: x as string,
-		})) as unknown as OptionType[],
+		})) as OptionType[],
 	};
 };
 
@@ -99,52 +89,4 @@ export const toEnumIndex = (
 ) => {
 	const match = targetEnum.findIndex((e) => e === cleanCairoEnum(value));
 	return match >= 0 ? match : 0;
-};
-
-export type AnyObject = WithStringEnums<
-	Pick<
-		Partial<SchemaType["lore"]>,
-		| "Area"
-		| "Container"
-		| "Exit"
-		| "Inspectable"
-		| "InventoryItem"
-		| "PlayerStory"
-		| "Player"
-		| "Dict"
-		| "Entity"
-		| "ChildToParent"
-		| "ParentToChildren"
-		| "ActionMapInspectable"
-	>
->;
-
-export type OneOf<Obj> = Obj[keyof Obj];
-
-export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
-
-export type EditorCollection = {
-	[K in keyof EntityCollection]?: WithStringEnums<Partial<SchemaType["lore"]>>;
-};
-
-export type ModelCollection = {
-	[K in keyof AnyObject]?: Partial<WithStringEnums<AnyObject>>;
-};
-
-/**
- * Utility type that replaces CairoCustomEnum fields with string literal unions
- * from the corresponding constant arrays.
- */
-export type WithStringEnums<T> = {
-	[K in keyof T]: T[K] extends DirectionEnum
-		? (typeof direction)[number]
-		: T[K] extends InspectableActionsEnum
-			? (typeof inspectableActions)[number]
-			: T[K] extends TokenTypeEnum
-				? (typeof tokenType)[number]
-				: T[K] extends Array<infer U>
-					? Array<WithStringEnums<U>>
-					: T[K] extends object
-						? WithStringEnums<T[K]>
-						: T[K];
 };

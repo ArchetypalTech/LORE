@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { componentData } from "../lib/components";
-import type { AnyObject, EntityCollection } from "../lib/schemas";
+import type { AnyObject, EntityCollection } from "../lib/types";
 import { Select } from "./FormComponents";
 import { Button } from "./ui/Button";
 import type { SelectInputRef } from "./ui/Select";

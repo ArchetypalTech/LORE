@@ -5,7 +5,7 @@ import type {
 	AnyObject,
 	EntityCollection,
 	WithStringEnums,
-} from "@/editor/lib/schemas";
+} from "@/editor/lib/types";
 import { Trash2 } from "lucide-react";
 import { type ChangeEvent, type FC, useCallback } from "react";
 import type { BigNumberish } from "starknet";

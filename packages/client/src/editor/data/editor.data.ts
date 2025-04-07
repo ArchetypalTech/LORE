@@ -12,7 +12,7 @@ import type {
 	AnyObject,
 	EditorCollection,
 	EntityCollection,
-} from "../lib/schemas";
+} from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
