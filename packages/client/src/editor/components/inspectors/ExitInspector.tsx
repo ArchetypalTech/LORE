@@ -28,10 +28,6 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 		componentObject,
 		...props,
 		inputHandlers: {
-			is_exit: (e, updatedObject) => {
-				const event = e as ChangeEvent<HTMLInputElement>;
-				updatedObject.is_exit = event.target.checked;
-			},
 			is_enterable: (e, updatedObject) => {
 				const event = e as ChangeEvent<HTMLInputElement>;
 				updatedObject.is_enterable = event.target.checked;
@@ -49,11 +45,6 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 
 	return (
 		<Inspector>
-			<Toggle
-				id="is_exit"
-				value={componentObject.is_exit}
-				onChange={handleInputChange}
-			/>
 			<Toggle
 				id="is_enterable"
 				value={componentObject.is_enterable}

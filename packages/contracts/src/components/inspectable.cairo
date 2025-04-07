@@ -71,6 +71,7 @@ pub impl InspectableComponent of Component<Inspectable> {
         let mut inspectable: Inspectable = world.read_model(inst);
         inspectable.inst = inst;
         inspectable.is_inspectable = true;
+        inspectable.is_visible = true;
         inspectable
             .action_map =
                 array![
