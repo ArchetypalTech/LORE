@@ -2,13 +2,7 @@
 
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import {
-	Check,
-	ChevronDown,
-	ChevronDownIcon,
-	ChevronUp,
-	ChevronUpIcon,
-} from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
 import type { OptionType } from "@/editor/lib/types";
 
@@ -151,8 +145,10 @@ const SelectSeparator = React.forwardRef<
 ));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
+export type SelectInputRef = { getValue: () => string | undefined };
+
 const SelectInput = React.forwardRef<
-	{ getValue: () => string | undefined },
+	SelectInputRef,
 	React.HTMLAttributes<HTMLSelectElement> & {
 		value?: string;
 		defaultValue?: string;

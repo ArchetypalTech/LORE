@@ -2,7 +2,7 @@ import EditorData from "@/editor/data/editor.data";
 import { formatColorHash } from "@/editor/editor.utils";
 import type {
 	AnyObject,
-	EntityComponents,
+	EntityCollection,
 	WithStringEnums,
 } from "@/editor/lib/schemas";
 import { useCallback, type ChangeEvent, type FC } from "react";
@@ -18,22 +18,22 @@ type InputHandler<T> = (
 
 export type ComponentInspector<T> = FC<{
 	componentObject: T;
-	componentName: keyof NonNullable<EntityComponents>;
+	componentName: keyof NonNullable<EntityCollection>;
 	handleEdit: (
-		componentName: keyof EntityComponents,
+		componentName: keyof EntityCollection,
 		component: T,
 	) => Promise<void>;
-	handleRemove: (componentName: keyof EntityComponents) => void;
+	handleRemove: (componentName: keyof EntityCollection) => void;
 }>;
 
 type InspectorProps<T extends { inst: BigNumberish }> = {
 	componentObject: T;
-	componentName: keyof EntityComponents;
+	componentName: keyof EntityCollection;
 	handleEdit: (
-		componentName: keyof EntityComponents,
+		componentName: keyof EntityCollection,
 		component: T,
 	) => Promise<void>;
-	handleRemove: (componentName: keyof EntityComponents) => void;
+	handleRemove: (componentName: keyof EntityCollection) => void;
 	inputHandlers?: {
 		[key: string]: InputHandler<T>;
 	};
@@ -46,9 +46,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 	handleRemove,
 	inputHandlers = {},
 }: InspectorProps<T>) => {
-	const handleInputChange = (
-		e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLOptionElement>,
-	) => {
+	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
 		if (!componentObject) return;
 
 		const entity = EditorData().getEntity(componentObject.inst);

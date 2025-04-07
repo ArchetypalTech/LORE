@@ -1,5 +1,5 @@
 import EditorData, { useEditorData } from "../data/editor.data";
-import type { EntityCollection, EntityComponents } from "../lib/schemas";
+import type { EntityCollection } from "../lib/schemas";
 import type { ComponentInspector } from "./inspectors/useInspector";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";
 import { componentData } from "../lib/components";
@@ -21,9 +21,9 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 		}
 	}, [inst, editedEntity]);
 
-	const handleEditComponent = async <T extends keyof EntityComponents>(
+	const handleEditComponent = async <T extends keyof EntityCollection>(
 		componentName: T,
-		component: EntityComponents[T],
+		component: EntityCollection[T],
 	) => {
 		EditorData().set({
 			editedEntity: EditorData().updateComponent(
@@ -35,7 +35,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	};
 
 	const handleRemoveComponent = async (
-		componentName: keyof EntityComponents,
+		componentName: keyof EntityCollection,
 	) => {
 		EditorData().set({
 			editedEntity: EditorData().removeComponent(
@@ -62,13 +62,13 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 				const component = editedEntity[key as keyof typeof editedEntity];
 				if (!component) return undefined;
 				const Inspector = value.inspector as ComponentInspector<
-					EntityComponents[keyof EntityComponents]
+					EntityCollection[keyof EntityCollection]
 				>;
 				if (!Inspector) return undefined;
 				return {
-					key: key as keyof EntityComponents,
+					key: key as keyof EntityCollection,
 					Inspector,
-					componentObject: component as EntityComponents[keyof EntityComponents],
+					componentObject: component as EntityCollection[keyof EntityCollection],
 				};
 			})
 			.filter((x) => x !== undefined);

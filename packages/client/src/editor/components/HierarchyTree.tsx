@@ -110,6 +110,7 @@ export const HierarchyTree = () => {
 	return (
 		<div className="use-editor-styles h-full items-start flex flex-col gap-4 justify-start">
 			<Button
+				variant={"hero"}
 				// className="w-full"
 				onClick={() => EditorData().newEntity({} as Entity)}
 			>

@@ -1,8 +1,9 @@
 import { useRef, useMemo } from "react";
 import { componentData } from "../lib/components";
-import type { AnyObject, EntityComponents } from "../lib/schemas";
+import type { AnyObject, EntityCollection } from "../lib/schemas";
 import { Select } from "./FormComponents";
 import { Button } from "./ui/Button";
+import type { SelectInputRef } from "./ui/Select";
 
 export const AddComponents = ({
 	editedEntity,
@@ -10,11 +11,11 @@ export const AddComponents = ({
 }: {
 	editedEntity: AnyObject;
 	handleEdit: (
-		key: keyof EntityComponents,
-		component: EntityComponents[keyof EntityComponents],
+		key: keyof EntityCollection,
+		component: EntityCollection[keyof EntityCollection],
 	) => Promise<void>;
 }) => {
-	const selectRef = useRef<HTMLSelectElement>(null!);
+	const selectRef = useRef<SelectInputRef>(null!);
 
 	const options = useMemo(() => {
 		const o = Object.entries(componentData)
@@ -29,8 +30,7 @@ export const AddComponents = ({
 	}, [editedEntity]);
 
 	const handleAddComponent = async (_e: React.MouseEvent<HTMLButtonElement>) => {
-		console.log(selectRef.current, selectRef.current.value);
-		const key = selectRef.current?.getValue() as keyof EntityComponents;
+		const key = selectRef.current?.getValue() as keyof EntityCollection;
 		const component = componentData[key];
 		if (!component) {
 			throw new Error(`Component not found: ${key}`);
@@ -44,7 +44,7 @@ export const AddComponents = ({
 			key,
 			newComponent[
 				key as keyof typeof newComponent
-			] as EntityComponents[keyof EntityComponents],
+			] as EntityCollection[keyof EntityCollection],
 		);
 	};
 

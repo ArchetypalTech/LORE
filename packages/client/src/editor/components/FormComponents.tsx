@@ -7,7 +7,7 @@ import type { OptionType } from "../lib/types";
 import { useCairoEnum } from "../lib/schemas";
 import type { CairoCustomEnum } from "starknet";
 import { Button } from "./ui/Button";
-import { SelectInput } from "./ui/Select";
+import { SelectInput, type SelectInputRef } from "./ui/Select";
 import { Input as UIInput } from "./ui/Input";
 import { Textarea as UITextarea } from "./ui/Textarea";
 
@@ -190,12 +190,12 @@ export const TextAreaArray = ({
 };
 
 export const Select = React.forwardRef<
-	{ getValue: () => string | undefined },
+	SelectInputRef,
 	{
 		id: string;
 		value?: string;
 		defaultValue?: string;
-		onChange: (e: React.ChangeEvent<HTMLSelectElement> | string) => void;
+		onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 		options: Array<{ value: string; label: string }> | OptionType[];
 		className?: string;
 		disabled?: boolean;
@@ -213,7 +213,7 @@ export const CairoEnumSelect = React.forwardRef<
 	{ getValue: () => string | undefined },
 	{
 		id: string;
-		onChange: (e: React.ChangeEvent<HTMLSelectElement> | string) => void;
+		onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 		className?: string;
 		disabled?: boolean;
 		value: CairoCustomEnum;

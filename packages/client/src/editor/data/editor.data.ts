@@ -298,8 +298,6 @@ const syncItem = (
 	}
 };
 
-// TODO: implement
-
 const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
 		const entity = getEntity(get().selectedEntity!);

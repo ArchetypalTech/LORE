@@ -121,10 +121,6 @@ export type AnyObject = WithStringEnums<
 
 export type OneOf<Obj> = Obj[keyof Obj];
 
-export type EntityComponents = Pick<
-	SchemaType["lore"],
-	"Area" | "Container" | "Exit" | "Inspectable" | "InventoryItem"
->;
 export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
 
 export type EditorCollection = {

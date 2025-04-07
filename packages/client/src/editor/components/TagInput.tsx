@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils/utils";
 import { useRef, useState } from "react";
 import type { KeyboardEvent, FocusEvent, ChangeEvent } from "react";
 import { Input } from "./ui/Input";
@@ -11,7 +10,7 @@ interface TagInputProps {
 	className?: string;
 }
 
-export const TagInput = ({ id, value, onChange, className }: TagInputProps) => {
+export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 	const [input, setInput] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
 	// Handles keyboard events and blur to add new tags

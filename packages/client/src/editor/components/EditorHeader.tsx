@@ -47,7 +47,7 @@ export const EditorHeader = () => {
 		<div className="use-editor-styles relative pt-5 pb-2">
 			<header className="mx-auto flex flex-row justify-between gap-2 items-center pb-2 w-full lg:container">
 				<div className="flex flex-row font-berkeley">
-					<h1 className="text-xl font-bold font-berkeley">
+					<h1 className="text-xl font-bold font-berkeley rotate-[-1.65deg]">
 						{APP_EDITOR_DATA.title}
 					</h1>
 					<div className="mx-1 text-[7pt]">
