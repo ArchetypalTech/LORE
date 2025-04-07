@@ -1,10 +1,10 @@
-import { useMemo, useRef } from "react";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { LORE_CONFIG } from "@/lib/config";
 import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store";
+import { useMemo, useRef } from "react";
 import { Config } from "../lib/config";
-import { Button } from "./ui/Button";
 import { publishConfigToContract } from "../publisher";
+import { Button } from "./ui/Button";
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);

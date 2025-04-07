@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { immer } from "zustand/middleware/immer";
 import { persist } from "zustand/middleware";
 import type { PersistStorage } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
 
 export type PersistConfig = {
 	name: string;

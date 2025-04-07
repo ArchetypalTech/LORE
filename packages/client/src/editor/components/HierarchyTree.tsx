@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import EditorData, { useEditorData } from "../data/editor.data";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { cn } from "@/lib/utils/utils";
+import { HousePlus } from "lucide-react";
+import { useMemo } from "react";
 import type { BigNumberish } from "starknet";
+import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import { Button } from "./ui/Button";
-import { HousePlus } from "lucide-react";
 
 type TreeNode = {
 	id: BigNumberish;

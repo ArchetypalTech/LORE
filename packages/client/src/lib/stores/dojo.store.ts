@@ -1,19 +1,19 @@
+import EditorData from "@/editor/data/editor.data";
+import type { AnyObject } from "@/editor/lib/schemas";
+import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 import type { InitDojo } from "@lib/dojo";
-import { addTerminalContent } from "./terminal.store";
+import { num } from "starknet";
 import { LORE_CONFIG } from "../config";
-import WalletStore from "./wallet.store";
 // @dev Use the Dojo bindings, *avoid* recreating these where possible
 import type {
 	PlayerStory,
 	SchemaType,
 } from "../dojo_bindings/typescript/models.gen";
-import { processWhitespaceTags, decodeDojoText } from "../utils/utils";
-import { StoreBuilder } from "../utils/storebuilder";
-import EditorData from "@/editor/data/editor.data";
-import type { AnyObject } from "@/editor/lib/schemas";
 import { sendCommand } from "../terminalCommands/commandHandler";
-import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
-import { num } from "starknet";
+import { StoreBuilder } from "../utils/storebuilder";
+import { decodeDojoText, processWhitespaceTags } from "../utils/utils";
+import { addTerminalContent } from "./terminal.store";
+import WalletStore from "./wallet.store";
 
 /**
  * Represents the current status of the Dojo system.

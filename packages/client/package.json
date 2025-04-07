@@ -4,7 +4,10 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"lint": "bunx biome lint ./src --write && bunx oxlint@latest ./src --config ./.oxlintrc.json --tsconfig ./tsconfig.json --import-plugin ",
+		"lint": "bun run biome:check && bun run biome:lint && bun run biome:format",
+		"biome:check": "bunx biome check --write",
+		"biome:lint": "bunx biome lint ./src --write && bunx oxlint@latest ./src --config ./.oxlintrc.json --tsconfig ./tsconfig.json --import-plugin ",
+		"biome:format": "bunx biome format ./src --write",
 		"dev": "bunx vite --mode development",
 		"dev:slot": "bunx vite dev --mode slot",
 		"build": "bunx vite build",

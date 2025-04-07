@@ -1,21 +1,21 @@
 import "@styles/editor.css";
-import { useEffect, useMemo, useState } from "react";
-import { EditorHeader } from "./components/EditorHeader";
-import { useHead } from "@unhead/react";
-import { APP_EDITOR_SEO } from "@/data/app.data";
-import EditorData, { useEditorData } from "./data/editor.data";
-import { cn } from "@/lib/utils/utils";
-import { EditorFooter } from "./components/EditorFooter";
-import { useDojoStore } from "@/lib/stores/dojo.store";
-import { HierarchyTree } from "./components/HierarchyTree";
-import { EntityEditor } from "./components/EntityEditor";
 import Terminal from "@/client/terminal/Terminal";
-import { useUserStore } from "@/lib/stores/user.store";
+import { APP_EDITOR_SEO } from "@/data/app.data";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { toast, Toaster } from "sonner";
+import { useDojoStore } from "@/lib/stores/dojo.store";
+import { useUserStore } from "@/lib/stores/user.store";
+import { cn } from "@/lib/utils/utils";
+import { useHead } from "@unhead/react";
+import { HousePlus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Toaster, toast } from "sonner";
+import { EditorFooter } from "./components/EditorFooter";
+import { EditorHeader } from "./components/EditorHeader";
+import { EntityEditor } from "./components/EntityEditor";
+import { HierarchyTree } from "./components/HierarchyTree";
 import { Button } from "./components/ui/Button";
 import { NoEntity } from "./components/ui/NoEntity";
-import { HousePlus } from "lucide-react";
+import EditorData, { useEditorData } from "./data/editor.data";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 

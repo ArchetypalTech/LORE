@@ -1,12 +1,12 @@
 import randomName from "@scaleway/random-name";
+import JSONbig from "json-bigint";
+import { type BigNumberish, byteArray, encode, hash } from "starknet";
 import {
 	ConfigSchema,
-	transformWithSchema,
 	type ConfigSchemaType,
 	type ValidationError,
+	transformWithSchema,
 } from "./lib/schemas";
-import { byteArray, encode, hash, type BigNumberish } from "starknet";
-import JSONbig from "json-bigint";
 
 const convertIfString = (item: unknown) => {
 	if (item === "") {

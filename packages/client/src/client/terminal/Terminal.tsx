@@ -1,9 +1,9 @@
+import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
+import { nextItem, useTerminalStore } from "@lib/stores/terminal.store";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
-import { useTerminalStore, nextItem } from "@lib/stores/terminal.store";
-import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
-import Typewriter from "./Typewriter";
 import TerminalLine from "./TerminalLine";
+import Typewriter from "./Typewriter";
 import "./Terminal.css";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 

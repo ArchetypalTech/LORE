@@ -1,15 +1,15 @@
 import EditorData from "@/editor/data/editor.data";
 import { formatColorHash } from "@/editor/editor.utils";
+import { componentData } from "@/editor/lib/components";
 import type {
 	AnyObject,
 	EntityCollection,
 	WithStringEnums,
 } from "@/editor/lib/schemas";
-import { useCallback, type ChangeEvent, type FC } from "react";
+import { Trash2 } from "lucide-react";
+import { type ChangeEvent, type FC, useCallback } from "react";
 import type { BigNumberish } from "starknet";
 import { Button } from "../ui/Button";
-import { Trash2 } from "lucide-react";
-import { componentData } from "@/editor/lib/components";
 
 type InputHandler<T> = (
 	e: ChangeEvent<HTMLInputElement>,

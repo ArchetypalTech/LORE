@@ -1,9 +1,9 @@
-import { CallData, byteArray, type RawArgsArray } from "starknet";
+import { toCairoArray } from "@/editor/editor.utils";
 import { LORE_CONFIG } from "@lib/config";
+import JSONbig from "json-bigint";
+import { CallData, type RawArgsArray, byteArray } from "starknet";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
-import JSONbig from "json-bigint";
-import { toCairoArray } from "@/editor/editor.utils";
 
 /**
  * Sends a command to the entity contract.

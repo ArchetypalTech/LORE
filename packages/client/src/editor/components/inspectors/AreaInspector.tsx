@@ -1,10 +1,10 @@
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import type { ComponentInspector } from "./useInspector";
-import { CairoEnumSelect } from "../FormComponents";
 import {
-	direction,
 	type Area,
+	direction,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import { CairoEnumSelect } from "../FormComponents";
+import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 
 export const AreaInspector: ComponentInspector<Area> = ({

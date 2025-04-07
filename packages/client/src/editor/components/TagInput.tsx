@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import type { KeyboardEvent, FocusEvent, ChangeEvent } from "react";
-import { Input } from "./ui/Input";
+import type { ChangeEvent, FocusEvent, KeyboardEvent } from "react";
 import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 
 interface TagInputProps {
 	id: string;

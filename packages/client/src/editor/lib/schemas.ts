@@ -1,16 +1,16 @@
 import type {
+	DirectionEnum,
+	Entity,
+	InspectableActionsEnum,
+	SchemaType,
+	TokenTypeEnum,
 	direction,
 	inspectableActions,
 	tokenType,
-	Entity,
-	SchemaType,
-	DirectionEnum,
-	InspectableActionsEnum,
-	TokenTypeEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import { useMemo } from "react";
 import type { CairoCustomEnum } from "starknet";
 import { z } from "zod";
-import { useMemo } from "react";
 import type { OptionType } from "./types";
 
 export const ValidationErrorSchema = z.object({

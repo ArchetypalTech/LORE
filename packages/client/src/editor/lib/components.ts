@@ -1,14 +1,14 @@
 import type { EntityCollection, WithStringEnums } from "@/editor/lib/schemas";
-import type { ComponentInspector } from "../components/inspectors/useInspector";
 import type {
 	Entity,
 	SchemaType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import randomName from "@scaleway/random-name";
 import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
-import randomName from "@scaleway/random-name";
+import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { randomKey } from "../editor.utils";
 
 export const createDefaultEntity = (): WithStringEnums<

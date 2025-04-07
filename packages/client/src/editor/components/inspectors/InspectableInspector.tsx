@@ -1,6 +1,6 @@
-import type { ComponentInspector } from "./useInspector";
-import { TextAreaArray, Toggle } from "../FormComponents";
 import type { Inspectable } from "@/lib/dojo_bindings/typescript/models.gen";
+import { TextAreaArray, Toggle } from "../FormComponents";
+import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 
 export const InspectableInspector: ComponentInspector<Inspectable> = ({

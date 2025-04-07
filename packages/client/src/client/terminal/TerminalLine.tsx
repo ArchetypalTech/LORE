@@ -1,5 +1,5 @@
-import { cn } from "../../lib/utils/utils";
 import type { TerminalContentItem } from "@lib/stores/terminal.store";
+import { cn } from "../../lib/utils/utils";
 import "./Terminal.css";
 
 interface TerminalLineProps {

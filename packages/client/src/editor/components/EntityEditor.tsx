@@ -1,13 +1,13 @@
-import EditorData, { useEditorData } from "../data/editor.data";
-import type { EntityCollection } from "../lib/schemas";
-import type { ComponentInspector } from "./inspectors/useInspector";
-import { DeleteButton, Header, PublishButton } from "./FormComponents";
-import { componentData } from "../lib/components";
-import { formatColorHash } from "../editor.utils";
-import { AddComponents } from "./AddComponents";
-import type { BigNumberish } from "starknet";
 import { useCallback, useEffect } from "react";
+import type { BigNumberish } from "starknet";
+import EditorData, { useEditorData } from "../data/editor.data";
+import { formatColorHash } from "../editor.utils";
+import { componentData } from "../lib/components";
+import type { EntityCollection } from "../lib/schemas";
 import { publishConfigToContract } from "../publisher";
+import { AddComponents } from "./AddComponents";
+import { DeleteButton, Header, PublishButton } from "./FormComponents";
+import type { ComponentInspector } from "./inspectors/useInspector";
 import { NoEntity } from "./ui/NoEntity";
 
 export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {

@@ -1,18 +1,18 @@
 import { StoreBuilder } from "@/lib/utils/storebuilder";
-import { Notifications } from "./notifications";
+import JSONbig from "json-bigint";
+import { toast } from "sonner";
 import EditorData from "../data/editor.data";
 import {
 	formatValidationError,
 	loadConfigFile,
 	saveConfigToFile,
 } from "../editor.utils";
+import { Notifications } from "./notifications";
 import {
 	ConfigSchema,
-	transformWithSchema,
 	type ConfigSchemaType,
+	transformWithSchema,
 } from "./schemas";
-import JSONbig from "json-bigint";
-import { toast } from "sonner";
 
 const { get, set, createFactory } = StoreBuilder({});
 

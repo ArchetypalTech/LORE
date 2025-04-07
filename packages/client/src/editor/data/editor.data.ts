@@ -1,19 +1,19 @@
-import { StoreBuilder } from "@/lib/utils/storebuilder";
-import { createRandomName, randomKey } from "../editor.utils";
 import type {
 	Entity,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { encode, type BigNumberish } from "starknet";
+import { StoreBuilder } from "@/lib/utils/storebuilder";
+import JSONbig from "json-bigint";
+import { toast } from "sonner";
+import { type BigNumberish, encode } from "starknet";
+import { createRandomName, randomKey } from "../editor.utils";
+import { Notifications } from "../lib/notifications";
 import type {
 	AnyObject,
 	EditorCollection,
 	EntityCollection,
 } from "../lib/schemas";
-import { toast } from "sonner";
-import JSONbig from "json-bigint";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import { Notifications } from "../lib/notifications";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 

@@ -1,13 +1,13 @@
+import EditorData from "@/editor/data/editor.data";
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import type { ComponentInspector } from "./useInspector";
+import {
+	type Exit,
+	direction,
+} from "@/lib/dojo_bindings/typescript/models.gen";
 import { useMemo } from "react";
 import { CairoEnumSelect, Select, Toggle } from "../FormComponents";
-import {
-	direction,
-	type Exit,
-} from "@/lib/dojo_bindings/typescript/models.gen";
+import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import EditorData from "@/editor/data/editor.data";
 
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,

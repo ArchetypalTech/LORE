@@ -1,6 +1,6 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { CairoCustomEnum, type BigNumberish } from 'starknet';
+import { type BigNumberish, CairoCustomEnum } from "starknet";
 
 // Type definition for `lore::components::area::Area` struct
 export interface Area {
@@ -179,94 +179,95 @@ export interface ParentToChildrenValue {
 }
 
 // Type definition for `lore::components::inspectable::InspectableActions` enum
-export const inspectableActions = [
-	'SetVisible',
-	'ReadDescription',
-] as const;
-export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
+export const inspectableActions = ["SetVisible", "ReadDescription"] as const;
+export type InspectableActions = {
+	[key in (typeof inspectableActions)[number]]: string;
+};
 export type InspectableActionsEnum = CairoCustomEnum;
 
 // Type definition for `lore::constants::constants::Direction` enum
 export const direction = [
-	'None',
-	'North',
-	'South',
-	'East',
-	'West',
-	'Up',
-	'Down',
+	"None",
+	"North",
+	"South",
+	"East",
+	"West",
+	"Up",
+	"Down",
 ] as const;
-export type Direction = { [key in typeof direction[number]]: string };
+export type Direction = { [key in (typeof direction)[number]]: string };
 export type DirectionEnum = CairoCustomEnum;
 
 // Type definition for `lore::lib::a_lexer::TokenType` enum
 export const tokenType = [
-	'Unknown',
-	'Verb',
-	'Direction',
-	'Article',
-	'Preposition',
-	'Pronoun',
-	'Adjective',
-	'Noun',
-	'Quantifier',
-	'Interrogative',
-	'System',
+	"Unknown",
+	"Verb",
+	"Direction",
+	"Article",
+	"Preposition",
+	"Pronoun",
+	"Adjective",
+	"Noun",
+	"Quantifier",
+	"Interrogative",
+	"System",
 ] as const;
-export type TokenType = { [key in typeof tokenType[number]]: string };
+export type TokenType = { [key in (typeof tokenType)[number]]: string };
 export type TokenTypeEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
 	lore: {
-		Area: Area,
-		AreaValue: AreaValue,
-		Container: Container,
-		ContainerValue: ContainerValue,
-		Exit: Exit,
-		ExitValue: ExitValue,
-		ActionMapInspectable: ActionMapInspectable,
-		Inspectable: Inspectable,
-		InspectableValue: InspectableValue,
-		InventoryItem: InventoryItem,
-		InventoryItemValue: InventoryItemValue,
-		Player: Player,
-		PlayerStory: PlayerStory,
-		PlayerStoryValue: PlayerStoryValue,
-		PlayerValue: PlayerValue,
-		Dict: Dict,
-		DictValue: DictValue,
-		Entity: Entity,
-		EntityValue: EntityValue,
-		ChildToParent: ChildToParent,
-		ChildToParentValue: ChildToParentValue,
-		ParentToChildren: ParentToChildren,
-		ParentToChildrenValue: ParentToChildrenValue,
-	},
+		Area: Area;
+		AreaValue: AreaValue;
+		Container: Container;
+		ContainerValue: ContainerValue;
+		Exit: Exit;
+		ExitValue: ExitValue;
+		ActionMapInspectable: ActionMapInspectable;
+		Inspectable: Inspectable;
+		InspectableValue: InspectableValue;
+		InventoryItem: InventoryItem;
+		InventoryItemValue: InventoryItemValue;
+		Player: Player;
+		PlayerStory: PlayerStory;
+		PlayerStoryValue: PlayerStoryValue;
+		PlayerValue: PlayerValue;
+		Dict: Dict;
+		DictValue: DictValue;
+		Entity: Entity;
+		EntityValue: EntityValue;
+		ChildToParent: ChildToParent;
+		ChildToParentValue: ChildToParentValue;
+		ParentToChildren: ParentToChildren;
+		ParentToChildrenValue: ParentToChildrenValue;
+	};
 }
 export const schema: SchemaType = {
 	lore: {
 		Area: {
 			inst: 0,
 			is_area: false,
-		direction: new CairoCustomEnum({ 
-					None: "",
+			direction: new CairoCustomEnum({
+				None: "",
 				North: undefined,
 				South: undefined,
 				East: undefined,
 				West: undefined,
 				Up: undefined,
-				Down: undefined, }),
+				Down: undefined,
+			}),
 		},
 		AreaValue: {
 			is_area: false,
-		direction: new CairoCustomEnum({ 
-					None: "",
+			direction: new CairoCustomEnum({
+				None: "",
 				North: undefined,
 				South: undefined,
 				East: undefined,
 				West: undefined,
 				Up: undefined,
-				Down: undefined, }),
+				Down: undefined,
+			}),
 		},
 		Container: {
 			inst: 0,
@@ -290,53 +291,70 @@ export const schema: SchemaType = {
 			is_exit: false,
 			is_enterable: false,
 			leads_to: 0,
-		direction_type: new CairoCustomEnum({ 
-					None: "",
+			direction_type: new CairoCustomEnum({
+				None: "",
 				North: undefined,
 				South: undefined,
 				East: undefined,
 				West: undefined,
 				Up: undefined,
-				Down: undefined, }),
+				Down: undefined,
+			}),
 			action_map: [""],
 		},
 		ExitValue: {
 			is_exit: false,
 			is_enterable: false,
 			leads_to: 0,
-		direction_type: new CairoCustomEnum({ 
-					None: "",
+			direction_type: new CairoCustomEnum({
+				None: "",
 				North: undefined,
 				South: undefined,
 				East: undefined,
 				West: undefined,
 				Up: undefined,
-				Down: undefined, }),
+				Down: undefined,
+			}),
 			action_map: [""],
 		},
 		ActionMapInspectable: {
-		action: "",
+			action: "",
 			inst: 0,
-		action_fn: new CairoCustomEnum({ 
-					SetVisible: "",
-				ReadDescription: undefined, }),
+			action_fn: new CairoCustomEnum({
+				SetVisible: "",
+				ReadDescription: undefined,
+			}),
 		},
 		Inspectable: {
 			inst: 0,
 			is_inspectable: false,
 			is_visible: false,
 			description: [""],
-			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					SetVisible: "",
-				ReadDescription: undefined, }), }],
+			action_map: [
+				{
+					action: "",
+					inst: 0,
+					action_fn: new CairoCustomEnum({
+						SetVisible: "",
+						ReadDescription: undefined,
+					}),
+				},
+			],
 		},
 		InspectableValue: {
 			is_inspectable: false,
 			is_visible: false,
 			description: [""],
-			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					SetVisible: "",
-				ReadDescription: undefined, }), }],
+			action_map: [
+				{
+					action: "",
+					inst: 0,
+					action_fn: new CairoCustomEnum({
+						SetVisible: "",
+						ReadDescription: undefined,
+					}),
+				},
+			],
 		},
 		InventoryItem: {
 			inst: 0,
@@ -371,9 +389,9 @@ export const schema: SchemaType = {
 		},
 		Dict: {
 			dict_key: 0,
-		word: "",
-		tokenType: new CairoCustomEnum({ 
-					Unknown: "",
+			word: "",
+			tokenType: new CairoCustomEnum({
+				Unknown: "",
 				Verb: undefined,
 				Direction: undefined,
 				Article: undefined,
@@ -383,13 +401,14 @@ export const schema: SchemaType = {
 				Noun: undefined,
 				Quantifier: undefined,
 				Interrogative: undefined,
-				System: undefined, }),
+				System: undefined,
+			}),
 			n_value: 0,
 		},
 		DictValue: {
-		word: "",
-		tokenType: new CairoCustomEnum({ 
-					Unknown: "",
+			word: "",
+			tokenType: new CairoCustomEnum({
+				Unknown: "",
 				Verb: undefined,
 				Direction: undefined,
 				Article: undefined,
@@ -399,18 +418,19 @@ export const schema: SchemaType = {
 				Noun: undefined,
 				Quantifier: undefined,
 				Interrogative: undefined,
-				System: undefined, }),
+				System: undefined,
+			}),
 			n_value: 0,
 		},
 		Entity: {
 			inst: 0,
 			is_entity: false,
-		name: "",
+			name: "",
 			alt_names: [""],
 		},
 		EntityValue: {
 			is_entity: false,
-		name: "",
+			name: "",
 			alt_names: [""],
 		},
 		ChildToParent: {
@@ -434,30 +454,30 @@ export const schema: SchemaType = {
 	},
 };
 export enum ModelsMapping {
-	Area = 'lore-Area',
-	AreaValue = 'lore-AreaValue',
-	Container = 'lore-Container',
-	ContainerValue = 'lore-ContainerValue',
-	Exit = 'lore-Exit',
-	ExitValue = 'lore-ExitValue',
-	ActionMapInspectable = 'lore-ActionMapInspectable',
-	Inspectable = 'lore-Inspectable',
-	InspectableActions = 'lore-InspectableActions',
-	InspectableValue = 'lore-InspectableValue',
-	InventoryItem = 'lore-InventoryItem',
-	InventoryItemValue = 'lore-InventoryItemValue',
-	Player = 'lore-Player',
-	PlayerStory = 'lore-PlayerStory',
-	PlayerStoryValue = 'lore-PlayerStoryValue',
-	PlayerValue = 'lore-PlayerValue',
-	Direction = 'lore-Direction',
-	TokenType = 'lore-TokenType',
-	Dict = 'lore-Dict',
-	DictValue = 'lore-DictValue',
-	Entity = 'lore-Entity',
-	EntityValue = 'lore-EntityValue',
-	ChildToParent = 'lore-ChildToParent',
-	ChildToParentValue = 'lore-ChildToParentValue',
-	ParentToChildren = 'lore-ParentToChildren',
-	ParentToChildrenValue = 'lore-ParentToChildrenValue',
+	Area = "lore-Area",
+	AreaValue = "lore-AreaValue",
+	Container = "lore-Container",
+	ContainerValue = "lore-ContainerValue",
+	Exit = "lore-Exit",
+	ExitValue = "lore-ExitValue",
+	ActionMapInspectable = "lore-ActionMapInspectable",
+	Inspectable = "lore-Inspectable",
+	InspectableActions = "lore-InspectableActions",
+	InspectableValue = "lore-InspectableValue",
+	InventoryItem = "lore-InventoryItem",
+	InventoryItemValue = "lore-InventoryItemValue",
+	Player = "lore-Player",
+	PlayerStory = "lore-PlayerStory",
+	PlayerStoryValue = "lore-PlayerStoryValue",
+	PlayerValue = "lore-PlayerValue",
+	Direction = "lore-Direction",
+	TokenType = "lore-TokenType",
+	Dict = "lore-Dict",
+	DictValue = "lore-DictValue",
+	Entity = "lore-Entity",
+	EntityValue = "lore-EntityValue",
+	ChildToParent = "lore-ChildToParent",
+	ChildToParentValue = "lore-ChildToParentValue",
+	ParentToChildren = "lore-ParentToChildren",
+	ParentToChildrenValue = "lore-ParentToChildrenValue",
 }

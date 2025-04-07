@@ -1,20 +1,20 @@
-import { SystemCalls, type DesignerCall } from "../lib/systemCalls";
-import EditorData from "./data/editor.data";
-import type { EntityCollection } from "./lib/schemas";
 import {
-	direction,
-	inspectableActions,
 	type Area,
 	type Entity,
 	type Exit,
 	type Inspectable,
+	direction,
+	inspectableActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { toEnumIndex } from "./lib/schemas";
-import { byteArray, num } from "starknet";
-import { Notifications } from "./lib/notifications";
-import { toast } from "sonner";
-import type { ChangeSet } from "./lib/types";
 import { tick } from "@/lib/utils/utils";
+import { toast } from "sonner";
+import { byteArray, num } from "starknet";
+import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
+import EditorData from "./data/editor.data";
+import { Notifications } from "./lib/notifications";
+import type { EntityCollection } from "./lib/schemas";
+import { toEnumIndex } from "./lib/schemas";
+import type { ChangeSet } from "./lib/types";
 
 /**
  * Publishes a game configuration to the contract

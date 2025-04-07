@@ -1,6 +1,6 @@
-import type { ComponentInspector } from "./useInspector";
-import { Input, TagInput } from "../FormComponents";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
+import { Input, TagInput } from "../FormComponents";
+import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 
 export const EntityInspector: ComponentInspector<Entity> = ({
