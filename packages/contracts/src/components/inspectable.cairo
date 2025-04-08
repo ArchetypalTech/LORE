@@ -35,11 +35,11 @@ pub struct ActionMapInspectable {
 
 #[generate_trait]
 pub impl InspectableImpl of InspectableTrait {
-    fn look_at(self: Inspectable, world: WorldStorage) -> ByteArray {
+    fn look_at(self: @Inspectable, world: WorldStorage) -> ByteArray {
         self.get_random_description(world)
     }
 
-    fn get_random_description(self: Inspectable, world: WorldStorage) -> ByteArray {
+    fn get_random_description(self: @Inspectable, world: WorldStorage) -> ByteArray {
         if self.description.len() == 0 {
             return "";
         }
@@ -98,14 +98,14 @@ pub impl InspectableComponent of Component<Inspectable> {
     fn can_use_command(
         self: @Inspectable, world: WorldStorage, player: @Player, command: @Command,
     ) -> bool {
-        get_action_token(self.clone(), world, command.clone()).is_some()
+        get_action_token(self, world, command).is_some()
     }
 
     fn execute_command(
         mut self: Inspectable, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         println!("Inspectable execute_command");
-        let (action, _token) = get_action_token(self.clone(), world, command.clone()).unwrap();
+        let (action, _token) = get_action_token(@self, world, command).unwrap();
         match action.action_fn {
             InspectableActions::SetVisible => {
                 self.is_visible = !self.is_visible;
@@ -127,10 +127,10 @@ pub impl InspectableComponent of Component<Inspectable> {
 
 // @dev: wip how to access tokens
 fn get_action_token(
-    self: Inspectable, world: WorldStorage, command: Command,
+    self: @Inspectable, world: WorldStorage, command: @Command,
 ) -> Option<(ActionMapInspectable, Token)> {
     let mut action_token: Option<(ActionMapInspectable, Token)> = Option::None;
-    for token in command.tokens {
+    for token in command.clone().tokens {
         for action in self.clone().action_map {
             if (token.text == action.action) {
                 action_token = Option::Some((action, token));

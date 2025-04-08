@@ -4,14 +4,14 @@ use core::result::{Result};
 #[generate_trait]
 pub impl ByteArrayTraitExt of ByteArrayTrait {
     #[inline]
-    fn felt252_at(self: ByteArray, index: usize) -> felt252 {
+    fn felt252_at(self: @ByteArray, index: usize) -> felt252 {
         let b: u8 = self.at(index).unwrap();
         let byte: felt252 = b.try_into().unwrap();
         byte
     }
 
     #[inline]
-    fn equals(self: ByteArray, other: ByteArray) -> bool {
+    fn equals(self: @ByteArray, other: @ByteArray) -> bool {
         let mut equals: bool = true;
         for i in 0..self.len() {
             if self.at(i).unwrap() != other.at(i).unwrap() {
@@ -23,7 +23,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
     }
 
     #[inline]
-    fn to_felt252_word(self: ByteArray) -> Result<felt252, felt252> {
+    fn to_felt252_word(self: @ByteArray) -> Result<felt252, felt252> {
         if (self.len() >= 31) {
             return Result::Err(0);
         }
@@ -36,7 +36,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         Result::Ok(result)
     }
 
-    fn split_into_words(self: ByteArray) -> Array<ByteArray> {
+    fn split_into_words(self: @ByteArray) -> Array<ByteArray> {
         let mut words: Array<ByteArray> = ArrayTrait::new();
         let mut current_word: ByteArray = "";
         for i in 0..self.len() {
@@ -107,8 +107,8 @@ mod tests {
         let a: ByteArray = "hello";
         let b: ByteArray = "hello";
         let c: ByteArray = "world";
-        assert(a.clone().equals(b), 'a and b are equal');
-        assert(!a.equals(c), 'a and c are not equal');
+        assert(a.clone().equals(@b), 'a and b are equal');
+        assert(!a.equals(@c), 'a and c are not equal');
     }
 
     #[test]
@@ -121,9 +121,9 @@ mod tests {
         let w2: ByteArray = words.at(words.len() - 1).clone();
         // println!("words: {:?}, length: {}", words, words.len());
         assert(words.len() == 10, 'words.len() == 10');
-        assert(!word1.clone().equals(word2.clone()), 'word1 and word2 not similar');
-        assert(!w1.clone().equals(w2.clone()), 'w1 and w2 not similar');
-        assert(w1.equals(word1), 'words[0] == "hello".into()');
-        assert(w2.equals(word2), 'words[1] == b"world".into()');
+        assert(!word1.clone().equals(@word2), 'word1 and word2 not similar');
+        assert(!w1.clone().equals(@w2), 'w1 and w2 not similar');
+        assert(w1.equals(@word1), 'words[0] == "hello".into()');
+        assert(w2.equals(@word2), 'words[1] == b"world".into()');
     }
 }

@@ -11,7 +11,7 @@ use lore::{ //
     }, //
     constants::errors::Error, //
     components::{
-        player::{Player, PlayerImpl}, area::{Area, AreaComponent}, Component,
+        player::{Player, PlayerImpl}, area::{AreaComponent}, Component,
         inspectable::{Inspectable, InspectableImpl, InspectableComponent},
     } //
 };
@@ -23,9 +23,14 @@ pub fn handle_command(
     if sys_command {
         return system_command(command.clone(), world, player);
     }
-    let context = player.get_context(@world);
+    let verbs = command.get_verbs(world, player);
+    if verbs.len() == 0 {
+        return Result::Err(Error::ActionFailed);
+    }
     let mut executed: bool = false;
-    for item in context {
+    let mut nouns = command.get_nouns(world, player);
+    for noun in nouns {
+        let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
         match InspectableComponent::get_component(world, item.inst) {
             Option::Some(inspectable) => {
                 if inspectable.clone().can_use_command(world, @player, @command) {
@@ -50,6 +55,26 @@ pub fn handle_command(
         }
     };
     if executed {
+        return Result::Ok(command);
+    }
+
+    // We haven't found any targets that have a verb mapped to the action
+    // Are there any default actions we can do?
+    let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
+    if initialVerb == 'look' {
+        let context = player.get_context(@world);
+        let room = player.get_room(@world);
+        if room.is_none() {
+            return Result::Err(Error::ActionFailed);
+        }
+        player.say(world, format!("{}", room.unwrap().name));
+        for item in context {
+            let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
+            if inspectable.is_some() {
+                let description = inspectable.unwrap().get_random_description(world);
+                player.say(world, format!("{}", description));
+            }
+        };
         return Result::Ok(command);
     }
     Result::Ok(command)
