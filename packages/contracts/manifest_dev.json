@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x24b22d8b9284adfbf2f71f9ed17eb909dcb3e4f20f5374f7d74d9f69e4ccdae",
-      "class_hash": "0x3924d42869db3db991d6088d57beac150e2ceafdee81d2605e0f44da14b73a7",
+      "address": "0x28d821328ffaa9afcb7fdc0bcc3351436e4bcf020035b1427eb53d60d8b9ee2",
+      "class_hash": "0x706bbae57da88cdce4607c362bd35b664138b5ee7d01d67ec7e462cf100d916",
       "abi": [
         {
           "type": "impl",
@@ -1547,6 +1547,42 @@
           ]
         },
         {
+          "type": "struct",
+          "name": "lore::lib::relations::ParentToChildren",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_parent",
+              "type": "core::bool"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::relations::ChildToParent",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_child",
+              "type": "core::bool"
+            },
+            {
+              "name": "parent",
+              "type": "core::felt252"
+            }
+          ]
+        },
+        {
           "type": "interface",
           "name": "lore::systems::designer::IDesigner",
           "items": [
@@ -1600,6 +1636,30 @@
             },
             {
               "type": "function",
+              "name": "create_parent",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::relations::ParentToChildren>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_child",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::relations::ChildToParent>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "delete_entity",
               "inputs": [
                 {
@@ -1637,6 +1697,30 @@
             {
               "type": "function",
               "name": "delete_exit",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_parent",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_child",
               "inputs": [
                 {
                   "name": "ids",
@@ -1771,16 +1855,20 @@
         "create_inspectable",
         "create_area",
         "create_exit",
+        "create_parent",
+        "create_child",
         "delete_entity",
         "delete_inspectable",
         "delete_area",
         "delete_exit",
+        "delete_parent",
+        "delete_child",
         "upgrade"
       ]
     },
     {
-      "address": "0x29891ba7d6d8096b25bc8b4ee0d3a0ba15173bc70893f19c0bafb11dc982670",
-      "class_hash": "0x77e2c63e8de40c741c81ec1c1bc922bc26d0fa4d5833fda43ae65bd2c0c8246",
+      "address": "0x1a3a1dc6fb4c30a3082d7cbb24a47b708b669c6fc1a08ec5d20c7b8b223a9ef",
+      "class_hash": "0x471e5ea9870e79204df5d831aff6583157fcb51d3d243dabc628b5bf3fe5148",
       "abi": [
         {
           "type": "impl",
