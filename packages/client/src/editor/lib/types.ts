@@ -1,94 +1,74 @@
-import type { Room } from "@lib/dojo_bindings/typescript/models.gen";
-import { z } from "zod";
-import {
-	ActionTypeEnum,
-	BiomeTypeEnum,
+import type {
 	DirectionEnum,
-	MaterialTypeEnum,
-	ObjectTypeEnum,
-	RoomTypeEnum,
-} from "./schemas";
+	Entity,
+	InspectableActionsEnum,
+	SchemaType,
+	TokenTypeEnum,
+	direction,
+	inspectableActions,
+	tokenType,
+} from "@/lib/dojo_bindings/typescript/models.gen";
+import type { BigNumberish } from "starknet";
 
-export interface Level {
-	levelName: string;
-	rooms: Room[];
+export interface OptionType {
+	value: string;
+	label: string;
+	disabled?: boolean;
 }
 
-// Editor state types
-export interface EditorState {
-	currentLevel: Level;
-	currentRoomIndex: number;
-	isDirty: boolean;
-	errors: ValidationError[];
+export type EditorAction = "update" | "delete";
+export type ChangeSet = {
+	type: EditorAction;
+	object: EditorCollection;
+	inst: BigNumberish;
+};
+export type AnyObject = WithStringEnums<
+	Pick<
+		Partial<SchemaType["lore"]>,
+		| "Area"
+		| "Container"
+		| "Exit"
+		| "Inspectable"
+		| "InventoryItem"
+		| "PlayerStory"
+		| "Player"
+		| "Dict"
+		| "Entity"
+		| "ChildToParent"
+		| "ParentToChildren"
+		| "ActionMapInspectable"
+	>
+>;
+
+export type OneOf<Obj> = Obj[keyof Obj];
+
+export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
+
+export type EditorCollection = {
+	[K in keyof EntityCollection]?: WithStringEnums<Partial<SchemaType["lore"]>>;
+};
+
+/**
+ * Utility type that replaces CairoCustomEnum fields with string literal unions
+ * from the corresponding constant arrays.
+ */
+
+export type WithStringEnums<T> = {
+	[K in keyof T]: T[K] extends DirectionEnum
+		? (typeof direction)[number]
+		: T[K] extends InspectableActionsEnum
+			? (typeof inspectableActions)[number]
+			: T[K] extends TokenTypeEnum
+				? (typeof tokenType)[number]
+				: T[K] extends Array<infer U>
+					? Array<WithStringEnums<U>>
+					: T[K] extends object
+						? WithStringEnums<T[K]>
+						: T[K];
+};
+
+export interface ActionMap<T> {
+	action: string;
+	inst: BigNumberish;
+	action_fn: T;
 }
-
-export interface ValidationError {
-	type: "RoomID" | "Object" | "ActionID" | "AffectsActionID";
-	message: string;
-	details: {
-		id?: string;
-		roomName?: string;
-		objectType?: string;
-		actionType?: string;
-	};
-}
-
-// Define the TextDefinition schema
-export const T_TextDefinitionSchema = z.object({
-	id: z.string(),
-	owner: z.string().transform((val) => val || "0"),
-	text: z.string(),
-});
-export type T_TextDefinition = z.infer<typeof T_TextDefinitionSchema>;
-
-// Define the Action schema
-export const T_ActionSchema = z.object({
-	actionId: z.string(),
-	actionType: ActionTypeEnum,
-	dBitTxt: z.string(),
-	enabled: z.boolean(),
-	revertable: z.boolean(),
-	dBit: z.boolean(),
-	affectsActionId: z.string().transform((val) => val || "0"),
-	affectedByActionId: z.string().transform((val) => val || "0"),
-});
-export type T_Action = z.infer<typeof T_ActionSchema>;
-
-// Define the Object schema
-export const T_ObjectSchema = z.object({
-	inst: z.string(),
-	is_object: z.boolean(),
-	objType: ObjectTypeEnum,
-	dirType: DirectionEnum,
-	destId: z.string().transform((val) => val || "0"),
-	matType: MaterialTypeEnum,
-	objectActionIds: z.array(z.string()),
-	txtDefId: z.string().transform((val) => val || "0"),
-	name: z.string(),
-	altNames: z.array(z.string()),
-});
-export type T_Object = z.infer<typeof T_ObjectSchema>;
-
-// Define the Room schema
-export const T_RoomSchema = z.object({
-	roomId: z.string(),
-	roomType: RoomTypeEnum,
-	biomeType: BiomeTypeEnum,
-	object_ids: z.array(z.string()).transform((val) => val || "0"),
-	txtDefId: z.string().transform((val) => val || "0"),
-	shortTxt: z.string().transform((val) => val || "0"),
-});
-export type T_Room = z.infer<typeof T_RoomSchema>;
-
-// Define the Config schema
-export const ConfigSchema = z.object({
-	dataPool: z.array(
-		z.union([
-			T_RoomSchema,
-			T_ObjectSchema,
-			T_ActionSchema,
-			T_TextDefinitionSchema,
-		]),
-	),
-});
-export type Config = z.infer<typeof ConfigSchema>;

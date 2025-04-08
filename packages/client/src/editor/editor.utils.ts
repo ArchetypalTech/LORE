@@ -1,35 +1,137 @@
-import type {
-	ValidationError,
-	Direction,
-	OBJECT_TYPES,
-	ACTION_TYPES,
-	MATERIAL_TYPES,
-	ROOM_TYPES,
-	BIOME_TYPES,
-} from "@editor/lib/schemas";
-import {
-	DirectionEnum,
-	ObjectTypeEnum,
-	ActionTypeEnum,
-	MaterialTypeEnum,
-	RoomTypeEnum,
-	BiomeTypeEnum,
-	transformWithSchema,
-} from "@editor/lib/schemas";
 import randomName from "@scaleway/random-name";
-import { ConfigSchema, type Config } from "./lib/types";
+import JSONbig from "json-bigint";
+import { type BigNumberish, byteArray, encode, hash } from "starknet";
+import {
+	ConfigSchema,
+	type ConfigSchemaType,
+	type ValidationError,
+	transformWithSchema,
+} from "./lib/schemas";
+
+const convertIfString = (item: unknown) => {
+	if (item === "") {
+		return 0;
+	}
+	// check if string is NOT all numbers
+	if (typeof item === "string" && !/^[0-9]+$/.test(item) && item !== "") {
+		return byteArray.byteArrayFromString(item);
+	}
+	return item;
+};
+
+/**
+ * Converts a JavaScript array to a Cairo array format.
+ *
+ * Cairo arrays are represented as [length, item1, item2, ...].
+ * Empty arrays are represented as [0].
+ *
+ * For Cairo object arrays in the format [[var,var,var,[],var,var],[var,var,var,[],var,var]],
+ * we need special handling:
+ * - When we have an array, we start with the length then items
+ * - When we have a Cairo object, we flatten it
+ * - When we have an array in a Cairo object, we use the array format [length, item, item, item]
+ *
+ * Examples:
+ * // Simple array
+ * toCairoArray([1, 2, 3]) // returns [3, 1, 2, 3]
+ *
+ * // Empty array
+ * toCairoArray([]) // returns [0]
+ *
+ * // Nested arrays
+ * toCairoArray([1, [2, 3], 4]) // returns [3, 1, 2, 2, 3, 4]
+ * toCairoArray([[1, 2], [3, 4]]) // returns [2, 2, 1, 2, 2, 3, 4]
+ *
+ * // Cairo object array
+ * toCairoArray([
+ *   [288709, 1, 0, 3, 6, [], 0],
+ *   [791662, 1, 0, 3, 6, [], 0]
+ * ]) // returns [2, 288709, 1, 0, 3, 6, 0, 0, 791662, 1, 0, 3, 6, 0, 0]
+ */
+
+// @DEV: FIXME: ⚠️
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <this is a really shitty implementation because handling both the ByteArrays and nested arrays is max pain- this is why we currently manually layout the Calldata in publisher.ts>
+export const toCairoArray = (args: unknown[]): unknown[] => {
+	// Handle empty array case
+	if (args.length === 0) {
+		return [0]; // Empty array is represented as [0] in Cairo
+	}
+
+	const result: unknown[] = [args.length];
+
+	for (const arg of args) {
+		// If the argument is an array, process it recursively
+		if (Array.isArray(arg)) {
+			// For nested arrays within Cairo objects
+			if (arg.length === 0) {
+				result.push(0);
+			} else {
+				// Process each element in the array
+				const processedItems: unknown[] = [];
+
+				for (const item of arg) {
+					if (Array.isArray(item)) {
+						// Recursive case: nested array
+						if (item.length === 0) {
+							processedItems.push(0);
+						} else {
+							// Convert the nested array to Cairo format
+							processedItems.push(toCairoArray(item));
+						}
+					} else {
+						// Base case: convert primitive value
+						processedItems.push(convertIfString(item));
+					}
+				}
+
+				// Add processed items to result
+				result.push(...processedItems);
+			}
+		} else {
+			// For primitive values, apply conversion
+			result.push(convertIfString(arg));
+		}
+	}
+
+	return result;
+};
+
+export const colorizeHash = (hash: string) => {
+	let coloredHash = "";
+
+	for (let i = 0; i < hash.length; i += 3) {
+		const chunk = hash.substring(i, Math.min(i + 3, hash.length));
+		let combinedCharCode = 0;
+		for (let j = 0; j < chunk.length; j++) {
+			combinedCharCode += (chunk.charCodeAt(j) + 10) * (j + 1);
+		}
+		const hue = (combinedCharCode * 37) % 360;
+		const saturation = 20 + (combinedCharCode % 30);
+		const lightness = 45 + (combinedCharCode % 20);
+
+		const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+		coloredHash += `<span style="color:${color}; font-weight:bold;" class="mr-1">${chunk}</span>`;
+	}
+
+	return coloredHash;
+};
+
+export const formatColorHash = (bigInt: BigNumberish) => {
+	return colorizeHash(bigInt.toString().slice(-9));
+};
 
 /**
  * Load a game config from a JSON file
  */
-export const loadConfigFromFile = async (file: File): Promise<Config> => {
+export const loadConfigFile = async (file: File): Promise<ConfigSchemaType> => {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 
 		reader.onload = (event) => {
 			try {
 				console.log(event.target?.result);
-				const json = JSON.parse(event.target?.result as string);
+				const json = JSONbig.parse(event.target?.result as string);
 				try {
 					console.log(json);
 					const { data, errors } = transformWithSchema(ConfigSchema, json);
@@ -41,11 +143,11 @@ export const loadConfigFromFile = async (file: File): Promise<Config> => {
 					if (error instanceof Error) {
 						reject(error);
 					} else {
-						reject(new Error("Invalid config format"));
+						reject(new Error(`Invalid config format: ${(error as Error).message}`));
 					}
 				}
 			} catch (error) {
-				reject(new Error("Invalid JSON file"));
+				reject(new Error(`Invalid JSON file: ${(error as Error).message}`));
 			}
 		};
 
@@ -61,114 +163,31 @@ export const loadConfigFromFile = async (file: File): Promise<Config> => {
  * Save a game config to a JSON file
  */
 export const saveConfigToFile = (
-	config: Config,
-	filename: string = `lore_config_${new Date().toISOString()}.json`,
+	config: ConfigSchemaType,
+	filename?: string,
 ): void => {
-	const json = JSON.stringify(config, null, 2);
+	const formatter = new Intl.DateTimeFormat("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		// hour12: false // Uncomment for 24-hour format
+	});
+	const newFile =
+		filename ||
+		`lore_config_${formatter.format(new Date()).replaceAll(" ", "_")}.json`;
+	const json = JSONbig.stringify(config, null, 2);
 	const blob = new Blob([json], { type: "application/json" });
 	const url = URL.createObjectURL(blob);
 
 	const a = document.createElement("a");
 	a.href = url;
-	a.download = filename;
+	a.download = newFile;
 	a.click();
 
 	URL.revokeObjectURL(url);
-};
-
-/**
- * Convert a Direction enum value to its index
- */
-export const directionToIndex = (
-	direction: Direction | null | undefined,
-): number => {
-	const values = Object.values(DirectionEnum.enum);
-	const index = values.indexOf(direction as Direction);
-	// Return the index if found, or the index of "None" as fallback
-	if (Number.isNaN(index)) {
-		return 0;
-	}
-	return index >= 0 ? index : 0;
-};
-
-/**
- * Convert an ObjectType enum value to its index
- */
-export const objectTypeToIndex = (
-	type: (typeof OBJECT_TYPES)[number] | null | undefined,
-): number => {
-	if (!type) return 0;
-	const values = Object.values(ObjectTypeEnum.enum);
-	const index = values.indexOf(type);
-	// Return the index if found, or the index of "None" as fallback
-	if (Number.isNaN(index)) {
-		return 0;
-	}
-	return index >= 0 ? index : 0;
-};
-
-/**
- * Convert an ActionType enum value to its index
- */
-export const actionTypeToIndex = (
-	type: (typeof ACTION_TYPES)[number] | null | undefined,
-): number => {
-	if (!type) return 0;
-	const values = Object.values(ActionTypeEnum.enum);
-	const index = values.indexOf(type);
-	// Return the index if found, or the index of "None" as fallback
-	if (Number.isNaN(index)) {
-		return 0;
-	}
-	return index >= 0 ? index : 0;
-};
-
-/**
- * Convert a MaterialType enum value to its index
- */
-export const materialTypeToIndex = (
-	type: (typeof MATERIAL_TYPES)[number] | null | undefined,
-): number => {
-	if (!type) return 0;
-	const values = Object.values(MaterialTypeEnum.enum);
-	const index = values.indexOf(type);
-	// Return the index if found, or the index of "None" as fallback
-	if (Number.isNaN(index)) {
-		return 0;
-	}
-	return index >= 0 ? index : 0;
-};
-
-/**
- * Convert a RoomType enum value to its index
- */
-export const roomTypeToIndex = (
-	type: (typeof ROOM_TYPES)[number] | null | undefined,
-): number => {
-	if (!type) return 0;
-	const values = Object.values(RoomTypeEnum.enum);
-	const index = values.indexOf(type);
-	// Return the index if found, or the index of "None" as fallback
-	if (Number.isNaN(index)) {
-		return 0;
-	}
-	return index >= 0 ? index : 0;
-};
-
-/**
- * Convert a BiomeType enum value to its index
- */
-export const biomeTypeToIndex = (
-	type: (typeof BIOME_TYPES)[number] | null | undefined,
-): number => {
-	if (!type) return 0;
-	const values = Object.values(BiomeTypeEnum.enum);
-	const index = values.indexOf(type);
-	// Return the index if found, or the index of "None" as fallback
-	if (Number.isNaN(index)) {
-		return 0;
-	}
-	return index >= 0 ? index : 0;
 };
 
 /**
@@ -196,6 +215,12 @@ export const generateNumericUniqueId = (
 	} while (existingIds.has(id));
 
 	return id;
+};
+
+export const randomKey = () => {
+	return encode.sanitizeHex(
+		hash.keccakBn(generateNumericUniqueId()).toString(),
+	) as BigNumberish;
 };
 
 export const createRandomName = () => {

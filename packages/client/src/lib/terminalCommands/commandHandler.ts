@@ -1,8 +1,8 @@
-import { addTerminalContent } from "@lib/stores/terminal.store";
-import { TERMINAL_SYSTEM_COMMANDS } from "../../data/command.data";
-import { SystemCalls } from "@lib/systemCalls";
 import { LORE_CONFIG } from "@lib/config";
+import { addTerminalContent } from "@lib/stores/terminal.store";
 import WalletStore from "@lib/stores/wallet.store";
+import { SystemCalls } from "@lib/systemCalls";
+import { TERMINAL_SYSTEM_COMMANDS } from "../../data/command.data";
 
 /**
  * Handles terminal commands entered by the user

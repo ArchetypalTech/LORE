@@ -1,13 +1,13 @@
+import { APP_DATA } from "@/data/app.data";
+import { HELP_TEXTS } from "@/data/help.data";
+import DojoStore from "@/lib/stores/dojo.store";
+import { LORE_CONFIG } from "@lib/config";
 import {
 	addTerminalContent,
 	clearTerminalContent,
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
-import { LORE_CONFIG } from "@lib/config";
 import WalletStore from "../lib/stores/wallet.store";
-import { HELP_TEXTS } from "@/data/help.data";
-import { APP_DATA } from "@/data/app.data";
-import DojoStore from "@/lib/stores/dojo.store";
 
 /**
  * Context object passed to each terminal command handler

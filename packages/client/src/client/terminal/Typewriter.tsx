@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import type { TerminalContentItem } from "@lib/stores/terminal.store";
 import { nextItem, useTerminalStore } from "@lib/stores/terminal.store";
 import UserStore from "@lib/stores/user.store";
+import { useEffect, useState } from "react";
 import TerminalLine from "./TerminalLine";
 
 export default function Typewriter() {

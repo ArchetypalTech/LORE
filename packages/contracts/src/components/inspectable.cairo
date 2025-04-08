@@ -40,6 +40,9 @@ pub impl InspectableImpl of InspectableTrait {
     }
 
     fn get_random_description(self: Inspectable, world: WorldStorage) -> ByteArray {
+        if self.description.len() == 0 {
+            return "";
+        }
         let rng: u32 = random::random_u16(world.dispatcher.uuid().try_into().unwrap())
             .try_into()
             .unwrap();
@@ -68,6 +71,7 @@ pub impl InspectableComponent of Component<Inspectable> {
         let mut inspectable: Inspectable = world.read_model(inst);
         inspectable.inst = inst;
         inspectable.is_inspectable = true;
+        inspectable.is_visible = true;
         inspectable
             .action_map =
                 array![

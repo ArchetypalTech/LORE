@@ -11,8 +11,8 @@ pub fn random_u8(seed: felt252) -> u8 {
 #[inline]
 pub fn random_u16(seed: felt252) -> u16 {
     let mut dice = DiceTrait::new(255, seed);
-    let var_1: u16 = dice.roll().into();
-    let var_2: u16 = dice.roll().into();
+    let var_1: u16 = dice.roll().into() + 1;
+    let var_2: u16 = dice.roll().into() + 1;
     let result: u16 = (var_1 * 42_u16 + var_2).into();
     result
 }

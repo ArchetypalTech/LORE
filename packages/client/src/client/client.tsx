@@ -21,8 +21,13 @@ export const Client = () => {
 	});
 
 	return (
-		<div id="client-root" className="flex relative w-screen h-screen">
-			<Terminal />
+		<div
+			id="client-root"
+			className="flex relative w-screen h-screen items-center justify-center "
+		>
+			<div className="flex items-center justify-center w-full h-full max-h-[70%] crt buzzing">
+				<Terminal />
+			</div>
 		</div>
 	);
 };

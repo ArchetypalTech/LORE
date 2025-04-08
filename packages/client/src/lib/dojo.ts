@@ -1,10 +1,10 @@
-import { LORE_CONFIG } from "@lib/config";
-import { createDojoConfig, DojoProvider } from "@dojoengine/core";
+import { DojoProvider, createDojoConfig } from "@dojoengine/core";
 import {
-	init,
-	ToriiQueryBuilder,
 	type StandardizedQueryResult,
+	ToriiQueryBuilder,
+	init,
 } from "@dojoengine/sdk";
+import { LORE_CONFIG } from "@lib/config";
 import {
 	type SchemaType,
 	schema,

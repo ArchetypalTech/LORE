@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x6a04ba20cdae0ebcbb776848d90286e9b2ad1f46c9e517d2b46c04ff65077f7",
-      "class_hash": "0x3bdb7fd1b4e7d18afe04fb35fd8aaca0e9e9d914c603b54cb816328a6a12362",
+      "address": "0x28d821328ffaa9afcb7fdc0bcc3351436e4bcf020035b1427eb53d60d8b9ee2",
+      "class_hash": "0x706bbae57da88cdce4607c362bd35b664138b5ee7d01d67ec7e462cf100d916",
       "abi": [
         {
           "type": "impl",
@@ -1465,6 +1465,124 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::constants::constants::Direction",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "North",
+              "type": "()"
+            },
+            {
+              "name": "South",
+              "type": "()"
+            },
+            {
+              "name": "East",
+              "type": "()"
+            },
+            {
+              "name": "West",
+              "type": "()"
+            },
+            {
+              "name": "Up",
+              "type": "()"
+            },
+            {
+              "name": "Down",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::area::Area",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_area",
+              "type": "core::bool"
+            },
+            {
+              "name": "direction",
+              "type": "lore::constants::constants::Direction"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::exit::Exit",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_exit",
+              "type": "core::bool"
+            },
+            {
+              "name": "is_enterable",
+              "type": "core::bool"
+            },
+            {
+              "name": "leads_to",
+              "type": "core::felt252"
+            },
+            {
+              "name": "direction_type",
+              "type": "lore::constants::constants::Direction"
+            },
+            {
+              "name": "action_map",
+              "type": "core::array::Array::<core::byte_array::ByteArray>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::relations::ParentToChildren",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_parent",
+              "type": "core::bool"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::relations::ChildToParent",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_child",
+              "type": "core::bool"
+            },
+            {
+              "name": "parent",
+              "type": "core::felt252"
+            }
+          ]
+        },
+        {
           "type": "interface",
           "name": "lore::systems::designer::IDesigner",
           "items": [
@@ -1494,7 +1612,55 @@
             },
             {
               "type": "function",
-              "name": "delete_entities",
+              "name": "create_area",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::area::Area>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_exit",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::exit::Exit>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_parent",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::relations::ParentToChildren>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_child",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::relations::ChildToParent>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_entity",
               "inputs": [
                 {
                   "name": "ids",
@@ -1506,7 +1672,55 @@
             },
             {
               "type": "function",
-              "name": "delete_inspectables",
+              "name": "delete_inspectable",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_area",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_exit",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_parent",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_child",
               "inputs": [
                 {
                   "name": "ids",
@@ -1639,14 +1853,22 @@
       "systems": [
         "create_entity",
         "create_inspectable",
-        "delete_entities",
-        "delete_inspectables",
+        "create_area",
+        "create_exit",
+        "create_parent",
+        "create_child",
+        "delete_entity",
+        "delete_inspectable",
+        "delete_area",
+        "delete_exit",
+        "delete_parent",
+        "delete_child",
         "upgrade"
       ]
     },
     {
-      "address": "0x29891ba7d6d8096b25bc8b4ee0d3a0ba15173bc70893f19c0bafb11dc982670",
-      "class_hash": "0x77e2c63e8de40c741c81ec1c1bc922bc26d0fa4d5833fda43ae65bd2c0c8246",
+      "address": "0x1a3a1dc6fb4c30a3082d7cbb24a47b708b669c6fc1a08ec5d20c7b8b223a9ef",
+      "class_hash": "0x471e5ea9870e79204df5d831aff6583157fcb51d3d243dabc628b5bf3fe5148",
       "abi": [
         {
           "type": "impl",
