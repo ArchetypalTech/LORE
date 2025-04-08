@@ -21,7 +21,7 @@ const config = {
 	 * Initialize the editor with a config
 	 */
 	initialize: async () => {
-		console.log("> Hi.");
+		console.log("[LORE]: > Hi.");
 	},
 
 	/**

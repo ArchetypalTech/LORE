@@ -66,3 +66,9 @@ export type WithStringEnums<T> = {
 						? WithStringEnums<T[K]>
 						: T[K];
 };
+
+export interface ActionMap<T> {
+	action: string;
+	inst: BigNumberish;
+	action_fn: T;
+}

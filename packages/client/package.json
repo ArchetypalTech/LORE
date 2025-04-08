@@ -16,6 +16,9 @@
 	},
 	"dependencies": {
 		"@cartridge/controller": "^0.7.4",
+		"@dnd-kit/core": "^6.3.1",
+		"@dnd-kit/sortable": "^10.0.0",
+		"@dnd-kit/utilities": "^3.2.2",
 		"@dojoengine/core": "^1.3.1",
 		"@dojoengine/create-burner": "^1.3.1",
 		"@dojoengine/sdk": "^1.3.1",
@@ -31,6 +34,7 @@
 		"@vitejs/plugin-react-swc": "^3.8.1",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"dnd-kit-tree": "^1.0.22",
 		"envalid": "^8.0.0",
 		"immer": "^10.1.1",
 		"json-bigint": "^1.0.0",

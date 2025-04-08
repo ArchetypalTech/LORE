@@ -143,6 +143,15 @@ const removeComponent = (
 	return edited as EntityCollection;
 };
 
+const addToParent = (child: EntityCollection, parent: EntityCollection) => {
+	const entity = getEntity(child.Entity.inst)!;
+	if ("ChildToParent" in entity) {
+		removeParent(getEntity(entity.ChildToParent!.inst)!);
+	}
+};
+
+// const removeChild = (parent: EntityCollection, child: EntityCollection) => {
+
 const removeParent = (child: EntityCollection) => {
 	console.log("rp", child);
 	if ("ChildToParent" in child) {

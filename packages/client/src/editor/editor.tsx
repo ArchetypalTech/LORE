@@ -57,7 +57,6 @@ export const Editor = () => {
 			setEditorState("not connected");
 			return;
 		}
-		console.log(hasObjects, EditorData().getEntities());
 		if (hasObjects) {
 			if (EditorData().selectedEntity === undefined) {
 				EditorData().selectEntity(EditorData().getEntities()[0]?.Entity?.inst);

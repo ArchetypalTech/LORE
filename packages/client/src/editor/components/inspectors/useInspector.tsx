@@ -92,7 +92,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 		({ children }: React.PropsWithChildren) => {
 			return (
 				<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs animate-scale-in">
-					<h3 className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
+					<div className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
 						<h6>
 							{`${componentData[componentName]?.icon} `}
 							{componentName}
@@ -115,7 +115,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 								<Trash2 />
 							</Button>
 						)}
-					</h3>
+					</div>
 					<div className="flex flex-col gap-2">{children}</div>
 				</div>
 			);
