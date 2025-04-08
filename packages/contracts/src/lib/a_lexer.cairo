@@ -164,8 +164,80 @@ pub mod lexer {
         // here we do fancy stuff
         // when there is a preposition, can we assume the next token is a noun? we know more about
         // the context now and what objects we recognize. Do we need to figure out adjectives.
-
+        println!("post_process_command: {:?}", command);
+        let verbs = get_verbs(world, player, command.clone());
+        println!("verbs: {:?}", verbs);
         command
+    }
+
+    fn get_nouns(world: WorldStorage, player: Player, command: Command) -> Array<Token> {
+        let mut nouns: Array<Token> = array![];
+        for i in 0..command.tokens.len() {
+            let token = command.tokens.at(i).clone();
+
+            // Only consider tokens labeled as Noun
+            if token.token_type != TokenType::Noun {
+                continue;
+            }
+
+            for item in player.get_context(@world) {
+                let names = item.get_names();
+                for name in names {
+                    if token.text == name {
+                        nouns.append(token.clone());
+                        break;
+                    }
+                }
+            }
+        };
+        nouns
+    }
+
+    pub fn get_verbs(world: WorldStorage, player: Player, command: Command) -> Array<Token> {
+        let mut verbs: Array<Token> = array![];
+        for i in 0..command.tokens.len() {
+            let token = command.tokens.at(i).clone();
+
+            // Only proceed if it's a verb
+            if token.token_type != TokenType::Verb {
+                continue;
+            }
+
+            // Match verb against known names from context
+            for item in player.get_context(@world) {
+                let names = item.get_names();
+                for name in names {
+                    if token.text == name {
+                        verbs.append(token.clone());
+                        break; // matched one, no need to check more
+                    }
+                }
+            }
+        };
+        verbs
+    }
+
+    fn get_directions(world: WorldStorage, player: Player, command: Command) -> Array<Token> {
+        let mut directions: Array<Token> = array![];
+        for i in 0..command.tokens.len() {
+            let token = command.tokens.at(i).clone();
+
+            // Only consider direction-type tokens
+            if token.token_type != TokenType::Direction {
+                continue;
+            }
+
+            for item in player.get_context(@world) {
+                let names = item.get_names();
+                for name in names {
+                    if token.text == name {
+                        directions.append(token.clone());
+                        break;
+                    }
+                }
+            }
+        };
+        directions
     }
 }
 
@@ -190,5 +262,29 @@ mod tests {
         // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
     // assert(command.tokens[1].token_value == prepositionToken, 'token value is 4');
+    }
+
+    #[test]
+    fn test_get_verbs() {
+        let (world, _, _, player_1, _) = helpers::setup_core();
+        let prompt_text: ByteArray = "look at the magic circle";
+        let expected_verb: ByteArray = "look"; // Correctly set verb as a ByteArray
+
+        // Setup environment
+        create_test_level(world);
+        let player = caller_as_player(world, player_1);
+        player.move_to_room(world, 2826);
+
+        // Parse command
+        let g_command = lexer::parse(prompt_text, world, player);
+        assert!(g_command.is_ok(), "Command parsing should succeed");
+        let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
+        // Get verbs from the parsed command
+        let verbs = lexer::get_verbs(world, player, command);
+        println!("Verbs: {:?}", verbs);
+        // Check the number of verbs found
+        assert_eq!(verbs.len(), 1, "There should be exactly one verb");
+        // Check if the first verb matches the expected verb ("look")
+        assert_eq!(verbs[0].text, @expected_verb, "The verb should be 'look'");
     }
 }
