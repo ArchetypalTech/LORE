@@ -112,7 +112,7 @@ const updateComponent = <T extends keyof EntityCollection>(
 	) {
 		set({
 			changeSet: get().changeSet.filter(
-				(x) => x.inst !== inst && componentName in x.object,
+				(x) => x.inst === inst && componentName in x.object,
 			),
 		});
 	}
