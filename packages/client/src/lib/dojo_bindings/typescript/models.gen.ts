@@ -36,6 +36,13 @@ export interface ContainerValue {
 	item_ids: Array<BigNumberish>;
 }
 
+// Type definition for `lore::components::exit::ActionMapExit` struct
+export interface ActionMapExit {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ExitActionsEnum;
+}
+
 // Type definition for `lore::components::exit::Exit` struct
 export interface Exit {
 	inst: BigNumberish;
@@ -43,7 +50,7 @@ export interface Exit {
 	is_enterable: boolean;
 	leads_to: BigNumberish;
 	direction_type: DirectionEnum;
-	action_map: Array<string>;
+	action_map: Array<ActionMapExit>;
 }
 
 // Type definition for `lore::components::exit::ExitValue` struct
@@ -52,7 +59,7 @@ export interface ExitValue {
 	is_enterable: boolean;
 	leads_to: BigNumberish;
 	direction_type: DirectionEnum;
-	action_map: Array<string>;
+	action_map: Array<ActionMapExit>;
 }
 
 // Type definition for `lore::components::inspectable::ActionMapInspectable` struct
@@ -178,10 +185,18 @@ export interface ParentToChildrenValue {
 	children: Array<BigNumberish>;
 }
 
+// Type definition for `lore::components::exit::ExitActions` enum
+export const exitActions = [
+	'UseExit',
+] as const;
+export type ExitActions = { [key in typeof exitActions[number]]: string };
+export type ExitActionsEnum = CairoCustomEnum;
+
 // Type definition for `lore::components::inspectable::InspectableActions` enum
 export const inspectableActions = [
 	'SetVisible',
-	'ReadDescription',
+	'ReadRandomDescription',
+	'ReadFirstDescription',
 ] as const;
 export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
 export type InspectableActionsEnum = CairoCustomEnum;
@@ -222,6 +237,7 @@ export interface SchemaType extends ISchemaType {
 		AreaValue: AreaValue,
 		Container: Container,
 		ContainerValue: ContainerValue,
+		ActionMapExit: ActionMapExit,
 		Exit: Exit,
 		ExitValue: ExitValue,
 		ActionMapInspectable: ActionMapInspectable,
@@ -285,6 +301,12 @@ export const schema: SchemaType = {
 			num_slots: 0,
 			item_ids: [0],
 		},
+		ActionMapExit: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseExit: "", }),
+		},
 		Exit: {
 			inst: 0,
 			is_exit: false,
@@ -298,7 +320,8 @@ export const schema: SchemaType = {
 				West: undefined,
 				Up: undefined,
 				Down: undefined, }),
-			action_map: [""],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseExit: "", }), }],
 		},
 		ExitValue: {
 			is_exit: false,
@@ -312,14 +335,16 @@ export const schema: SchemaType = {
 				West: undefined,
 				Up: undefined,
 				Down: undefined, }),
-			action_map: [""],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseExit: "", }), }],
 		},
 		ActionMapInspectable: {
 		action: "",
 			inst: 0,
 		action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
-				ReadDescription: undefined, }),
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined, }),
 		},
 		Inspectable: {
 			inst: 0,
@@ -328,7 +353,8 @@ export const schema: SchemaType = {
 			description: [""],
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
-				ReadDescription: undefined, }), }],
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined, }), }],
 		},
 		InspectableValue: {
 			is_inspectable: false,
@@ -336,7 +362,8 @@ export const schema: SchemaType = {
 			description: [""],
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
-				ReadDescription: undefined, }), }],
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined, }), }],
 		},
 		InventoryItem: {
 			inst: 0,
@@ -438,7 +465,9 @@ export enum ModelsMapping {
 	AreaValue = 'lore-AreaValue',
 	Container = 'lore-Container',
 	ContainerValue = 'lore-ContainerValue',
+	ActionMapExit = 'lore-ActionMapExit',
 	Exit = 'lore-Exit',
+	ExitActions = 'lore-ExitActions',
 	ExitValue = 'lore-ExitValue',
 	ActionMapInspectable = 'lore-ActionMapInspectable',
 	Inspectable = 'lore-Inspectable',

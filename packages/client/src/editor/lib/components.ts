@@ -56,7 +56,11 @@ export const createDefaultExitComponent = (
 		is_exit: true,
 		is_enterable: true,
 		direction_type: "None",
-		action_map: [],
+		action_map: [
+			{ action: "go", inst: 0, action_fn: "UseExit" },
+			{ action: "enter", inst: 0, action_fn: "UseExit" },
+			{ action: "use", inst: 0, action_fn: "UseExit" },
+		],
 	},
 });
 

@@ -4,7 +4,7 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{
     constants::errors::Error, lib::{entity::{EntityImpl, Entity}, a_lexer::Command},
-    components::Component,
+    components::{Component, inspectable::{Inspectable, InspectableImpl}},
 };
 
 pub struct EntityKey {
@@ -32,6 +32,23 @@ pub struct PlayerStory {
 
 #[generate_trait]
 pub impl PlayerImpl of PlayerTrait {
+    fn describe_room(mut self: @Player, mut world: WorldStorage) -> Result<(), Error> {
+        let context = self.get_context(@world);
+        let room = self.get_room(@world);
+        if room.is_none() {
+            return Result::Err(Error::ActionFailed);
+        }
+        self.say(world, format!("{}", room.unwrap().name));
+        for item in context {
+            let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
+            if inspectable.is_some() {
+                let description = inspectable.unwrap().get_random_description(world);
+                self.say(world, format!("{}", description));
+            }
+        };
+        Result::Ok(())
+    }
+
     fn move_to_room(mut self: Player, mut world: WorldStorage, room_id: felt252) {
         self.location = room_id;
         let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();

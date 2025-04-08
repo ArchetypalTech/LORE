@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x28d821328ffaa9afcb7fdc0bcc3351436e4bcf020035b1427eb53d60d8b9ee2",
-      "class_hash": "0x706bbae57da88cdce4607c362bd35b664138b5ee7d01d67ec7e462cf100d916",
+      "address": "0x5d612fb41c66ec1cd7a69c792c57f4079d05069339084a0da4acaead8663305",
+      "class_hash": "0x381a1c6dde42c79fc80b1845c728a8b763d8425c01eede16d2072b8bdcc4859",
       "abi": [
         {
           "type": "impl",
@@ -1415,7 +1415,11 @@
               "type": "()"
             },
             {
-              "name": "ReadDescription",
+              "name": "ReadRandomDescription",
+              "type": "()"
+            },
+            {
+              "name": "ReadFirstDescription",
               "type": "()"
             }
           ]
@@ -1517,6 +1521,34 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::components::exit::ExitActions",
+          "variants": [
+            {
+              "name": "UseExit",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::exit::ActionMapExit",
+          "members": [
+            {
+              "name": "action",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action_fn",
+              "type": "lore::components::exit::ExitActions"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "lore::components::exit::Exit",
           "members": [
@@ -1542,7 +1574,7 @@
             },
             {
               "name": "action_map",
-              "type": "core::array::Array::<core::byte_array::ByteArray>"
+              "type": "core::array::Array::<lore::components::exit::ActionMapExit>"
             }
           ]
         },
@@ -1867,8 +1899,8 @@
       ]
     },
     {
-      "address": "0x37fcd811cf824aaa4cc7108e184e12baa0951c8922cb012f1ab38872957410",
-      "class_hash": "0x2042f59b198acb72ff4897c4b9113c46945d1840ccac7e98b9baba64803dad8",
+      "address": "0x7ebc777290c3bdc324b0bf028c47d74b8b882a499fb042b6b9fab09945d1f9d",
+      "class_hash": "0x5ccb5112c472bc08dcfa9fb8b348d7c79b47e840eb18fee95b1fadeffed7e5f",
       "abi": [
         {
           "type": "impl",
@@ -2101,13 +2133,13 @@
     },
     {
       "members": [],
-      "class_hash": "0x18ed6185a4854d49b95278dc347ba45014ea8ff8bf7786f1891da9a9e5a3a0d",
+      "class_hash": "0x798f63b31e85cb0818726eb3149b2851515178f34e5b526f0ded58f2abbd478",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
     },
     {
       "members": [],
-      "class_hash": "0xaaf50e34291a96593ef54cf8851dd67714c316ca8a07864acd0cf81851ea1d",
+      "class_hash": "0x39ac9871b42c5deb20aaf8f6a55de0622ffc7534cc82e17eab5623e8fdd6622",
       "tag": "lore-Inspectable",
       "selector": "0x761c792e623173857f21316868bd06f19050cfc26238d33476231e335cf59c9"
     },

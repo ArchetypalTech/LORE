@@ -6,6 +6,7 @@ import {
 	type Inspectable,
 	type ParentToChildren,
 	direction,
+	exitActions,
 	inspectableActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
@@ -143,14 +144,13 @@ const publishExit = async (exit: Exit) => {
 		exit.is_enterable,
 		num.toBigInt(exit.leads_to.toString()),
 		toEnumIndex(exit.direction_type, direction),
-		// exit.action_map.length > 0
-		// 	? exit.action_map.map((x) => [
-		// 			byteArray.byteArrayFromString(x.action),
-		// 			0,
-		// 			inspectableActionsToIndex(x.action_fn),
-		// 		])
-		// 	: 0,
-		0,
+		exit.action_map.length > 0
+			? exit.action_map.map((x) => [
+					byteArray.byteArrayFromString(x.action),
+					0,
+					toEnumIndex(x.action_fn, exitActions),
+				])
+			: 0,
 	];
 	await dispatchDesignerCall("create_exit", [exitData]);
 };
