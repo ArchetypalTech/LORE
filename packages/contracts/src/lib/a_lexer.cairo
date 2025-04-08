@@ -1,3 +1,13 @@
+use dojo::world::IWorldDispatcherTrait;
+use core::array::{ArrayTrait, ArrayImpl, Array};
+use dojo::{world::WorldStorage};
+
+use lore::{
+    components::{player::{Player, PlayerImpl}}, //
+    constants::errors::Error, //
+    lib::{utils::ByteArrayTraitExt, dictionary::{get_dict_entry, initialize_dictionary}},
+};
+
 #[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
 pub enum TokenType {
     Unknown,
@@ -64,16 +74,75 @@ pub impl CommandImpl of CommandTrait {
         is_system_command
     }
     //get_targets() -> Array<Entity>
-// let list = command.get_targets();
-// let amount = list.len();
+    // let list = command.get_targets();
+    // let amount = list.len();
 
+    fn get_verbs(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+        let mut verbs: Array<Token> = array![];
+        for i in 0..self.tokens.len() {
+            let token = self.tokens.at(i).clone();
+
+            // Only proceed if it's a verb
+            if token.token_type != TokenType::Verb {
+                continue;
+            }
+            verbs.append(token.clone());
+        };
+        verbs
+    }
+
+    fn get_nouns(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+        let mut nouns: Array<Token> = array![];
+        for i in 0..self.tokens.len() {
+            let token = self.tokens.at(i).clone();
+
+            // Only consider tokens labeled as Noun
+            if token.token_type != TokenType::Noun {
+                continue;
+            }
+            nouns.append(token.clone());
+        };
+        nouns
+    }
+
+    fn get_directions(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+        let mut directions: Array<Token> = array![];
+        for i in 0..self.tokens.len() {
+            let token = self.tokens.at(i).clone();
+
+            // Only consider direction-type tokens
+            if token.token_type != TokenType::Direction {
+                continue;
+            }
+            directions.append(token.clone());
+        };
+        directions
+    }
+
+    fn get_Targets(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+        let mut targets: Array<Token> = array![];
+        for i in 0..self.tokens.len() {
+            let token = self.tokens.at(i).clone();
+            // Only consider Noun-type tokens
+            if token.token_type != TokenType::Noun {
+                continue;
+            }
+            // Only consider if the target is different from 0
+            if token.target == 0 {
+                continue;
+            }
+
+            targets.append(token.clone());
+        };
+        targets
+    }
 }
 
 pub mod lexer {
     use super::super::entity::EntityTrait;
     use dojo::world::IWorldDispatcherTrait;
     use core::array::{ArrayTrait, ArrayImpl, Array};
-    use super::{TokenType, Command, Token};
+    use super::{TokenType, Command, Token, CommandImpl};
 
     use dojo::{world::WorldStorage};
 
@@ -165,88 +234,26 @@ pub mod lexer {
         // when there is a preposition, can we assume the next token is a noun? we know more about
         // the context now and what objects we recognize. Do we need to figure out adjectives.
         println!("post_process_command: {:?}", command);
-        let verbs = get_verbs(world, player, command.clone());
-        println!("verbs: {:?}", verbs);
+        let verbs = command.get_verbs(world, player);
+        println!("PPC-verbs: {:?}", verbs);
+        let nouns = command.get_nouns(world, player);
+        println!("PPC-nouns: {:?}", nouns);
+        let directions = command.get_directions(world, player);
+        println!("PPC-directions: {:?}", directions);
+        let targets = command.get_Targets(world, player);
+        println!("PPC-targets: {:?}", targets);
         command
-    }
-
-    fn get_nouns(world: WorldStorage, player: Player, command: Command) -> Array<Token> {
-        let mut nouns: Array<Token> = array![];
-        for i in 0..command.tokens.len() {
-            let token = command.tokens.at(i).clone();
-
-            // Only consider tokens labeled as Noun
-            if token.token_type != TokenType::Noun {
-                continue;
-            }
-
-            for item in player.get_context(@world) {
-                let names = item.get_names();
-                for name in names {
-                    if token.text == name {
-                        nouns.append(token.clone());
-                        break;
-                    }
-                }
-            }
-        };
-        nouns
-    }
-
-    pub fn get_verbs(world: WorldStorage, player: Player, command: Command) -> Array<Token> {
-        let mut verbs: Array<Token> = array![];
-        for i in 0..command.tokens.len() {
-            let token = command.tokens.at(i).clone();
-
-            // Only proceed if it's a verb
-            if token.token_type != TokenType::Verb {
-                continue;
-            }
-
-            // Match verb against known names from context
-            for item in player.get_context(@world) {
-                let names = item.get_names();
-                for name in names {
-                    if token.text == name {
-                        verbs.append(token.clone());
-                        break; // matched one, no need to check more
-                    }
-                }
-            }
-        };
-        verbs
-    }
-
-    fn get_directions(world: WorldStorage, player: Player, command: Command) -> Array<Token> {
-        let mut directions: Array<Token> = array![];
-        for i in 0..command.tokens.len() {
-            let token = command.tokens.at(i).clone();
-
-            // Only consider direction-type tokens
-            if token.token_type != TokenType::Direction {
-                continue;
-            }
-
-            for item in player.get_context(@world) {
-                let names = item.get_names();
-                for name in names {
-                    if token.text == name {
-                        directions.append(token.clone());
-                        break;
-                    }
-                }
-            }
-        };
-        directions
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::lexer;
+    use super::CommandImpl;
+    use super::TokenType;
     use lore::{
         tests::helpers, lib::{level_test::create_test_level, a_lexer::{TokenTypeFelt252}},
-        components::{player::{PlayerImpl, caller_as_player}},
+        components::{player::{PlayerImpl, caller_as_player}}, lib::dictionary::{add_to_dictionary},
     };
 
     #[test]
@@ -280,11 +287,36 @@ mod tests {
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
-        let verbs = lexer::get_verbs(world, player, command);
+        let verbs = command.get_verbs(world, player);
         println!("Verbs: {:?}", verbs);
         // Check the number of verbs found
         assert_eq!(verbs.len(), 1, "There should be exactly one verb");
         // Check if the first verb matches the expected verb ("look")
         assert_eq!(verbs[0].text, @expected_verb, "The verb should be 'look'");
+    }
+
+    #[test]
+    fn test_get_nouns() {
+        let (world, _, _, player_1, _) = helpers::setup_core();
+        let prompt_text: ByteArray = "look at the ball";
+        let expected_noun: ByteArray = "ball"; // Correctly set verb as a ByteArray
+
+        // Setup environment
+        create_test_level(world);
+        let player = caller_as_player(world, player_1);
+        player.move_to_room(world, 2826);
+        let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);
+
+        // Parse command
+        let g_command = lexer::parse(prompt_text, world, player);
+        assert!(g_command.is_ok(), "Command parsing should succeed");
+        let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
+        // Get verbs from the parsed command
+        let nouns = command.get_nouns(world, player);
+        println!("Nouns: {:?}", nouns);
+        // Check the number of verbs found
+        assert_eq!(nouns.len(), 1, "There should be exactly one noun");
+        // Check if the first verb matches the expected verb ("look")
+        assert_eq!(nouns[0].text, @expected_noun, "The noun should be 'door'");
     }
 }
