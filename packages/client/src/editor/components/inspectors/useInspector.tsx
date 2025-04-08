@@ -94,7 +94,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 				<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs animate-scale-in">
 					<div className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
 						<h6>
-							{`${componentData[componentName]?.icon} `}
+							{`${componentData[componentName]?.icon || ""} `}
 							{componentName}
 						</h6>
 						<div

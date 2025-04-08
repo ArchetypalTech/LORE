@@ -1,11 +1,15 @@
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { cn } from "@/lib/utils/utils";
 import { HousePlus } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { BigNumberish } from "starknet";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { Button } from "./ui/Button";
-import { SortableTree, type RenderItemProps } from "dnd-kit-tree";
+import {
+	SortableTree,
+	type RenderItemProps,
+	type TreeItems,
+} from "dnd-kit-tree";
 import type { EntityCollection } from "../lib/types";
 import { componentData } from "../lib/components";
 
@@ -115,7 +119,7 @@ export const HierarchyTreeItem = ({
 								})}
 							</div>
 							{clone && childCount > 0 && (
-								<div className="flex absolute items-center justify-center rounded-full bg-blue-500 top-[-12px] right-[-12px] w-[25px] h-[25px] font-xs text-white">
+								<div className="flex absolute items-center justify-center rounded-xs bg-black top-[-12px] right-[-12px] w-[25px] h-[25px] font-xs text-white rotate-[2deg]">
 									{childCount}
 								</div>
 							)}
@@ -150,16 +154,16 @@ const createTree = () => {
 	};
 
 	// construct the tree
-	const tree: TreeNode[] = parents.flatMap((parent) =>
+	const tree = parents.flatMap((parent) =>
 		getNode(parent!.Entity.inst),
-	);
+	) as unknown as TreeItems<TreeNode>;
 
 	return { tree };
 };
 
 export const HierarchyTree = () => {
 	const { dataPool, isDirty } = useEditorData();
-	const [data, setData] = useState<TreeNode[]>(createTree().tree);
+	const [data, setData] = useState<TreeItems<TreeNode>>(createTree().tree);
 
 	useEffect(() => {
 		dataPool;
@@ -183,6 +187,20 @@ export const HierarchyTree = () => {
 					collapsible={false}
 					value={data}
 					onChange={setData}
+					onMove={(action) => {
+						const child = EditorData().getEntity(action.id);
+
+						if (!child) throw new Error("Child not found");
+						if (action.parentId === undefined) {
+							EditorData().removeParent(child);
+							return;
+						}
+
+						const parent = EditorData().getEntity(action.parentId!);
+						if (!parent) throw new Error("Parent not found");
+						EditorData().addToParent(child, parent);
+						return;
+					}}
 					renderItem={HierarchyTreeItem}
 				/>
 			</div>

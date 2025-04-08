@@ -52,10 +52,14 @@ export type DesignerCall =
 	| "create_inspectable"
 	| "create_area"
 	| "create_exit"
+	| "create_parent"
+	| "create_child"
 	| "delete_entity"
 	| "delete_inspectable"
 	| "delete_area"
-	| "delete_exit";
+	| "delete_exit"
+	| "delete_parent"
+	| "delete_child";
 
 type DesignerCallProps = {
 	call: DesignerCall;

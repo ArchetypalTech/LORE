@@ -1,8 +1,10 @@
 import {
 	type Area,
+	type ChildToParent,
 	type Entity,
 	type Exit,
 	type Inspectable,
+	type ParentToChildren,
 	direction,
 	inspectableActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -52,7 +54,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 		} catch (error) {
 			console.error("Error creating room:", error);
 			toast.error(
-				`Error creating room: ${error instanceof Error ? error.message : String(error)}`,
+				`Error creating ${Object.keys(change.object).join(",")}: ${error instanceof Error ? error.message : String(error)}`,
 				{ richColors: true, duration: 4000, dismissible: true },
 			);
 		} finally {
@@ -81,6 +83,12 @@ const publishEntityCollection = async (collection: EntityCollection) => {
 	}
 	if ("Exit" in collection) {
 		await publishExit(collection.Exit!);
+	}
+	if ("ChildToParent" in collection) {
+		await publishChildToParent(collection.ChildToParent!);
+	}
+	if ("ParentToChildren" in collection) {
+		await publishParentToChildren(collection.ParentToChildren!);
 	}
 };
 
@@ -147,6 +155,26 @@ const publishExit = async (exit: Exit) => {
 	await dispatchDesignerCall("create_exit", [exitData]);
 };
 
+const publishChildToParent = async (childToParent: ChildToParent) => {
+	const childToParentData = [
+		num.toBigInt(childToParent.inst.toString()),
+		childToParent.is_child,
+		num.toBigInt(childToParent.parent),
+	];
+	await dispatchDesignerCall("create_child", [childToParentData]);
+};
+
+const publishParentToChildren = async (parentToChildren: ParentToChildren) => {
+	const parentToChildrenData = [
+		num.toBigInt(parentToChildren.inst.toString()),
+		parentToChildren.is_parent,
+		parentToChildren.children.length > 0
+			? parentToChildren.children.map((x) => num.toBigInt(x))
+			: 0,
+	];
+	await dispatchDesignerCall("create_parent", [parentToChildrenData]);
+};
+
 const deleteCollection = async (model: EntityCollection) => {
 	if ("Entity" in model) {
 		await dispatchDesignerCall("delete_entity", [
@@ -165,8 +193,14 @@ const deleteCollection = async (model: EntityCollection) => {
 		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Exit!.inst)]);
 	}
 	if ("ChildToParent" in model) {
+		await dispatchDesignerCall("delete_child", [
+			num.toBigInt(model.ChildToParent!.inst),
+		]);
 	}
 	if ("ParentToChildren" in model) {
+		await dispatchDesignerCall("delete_parent", [
+			num.toBigInt(model.ParentToChildren!.inst),
+		]);
 	}
 	if ("Player" in model) {
 	}

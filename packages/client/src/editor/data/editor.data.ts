@@ -14,6 +14,10 @@ import type {
 	EntityCollection,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
+import {
+	createDefaultChildToParentComponent,
+	createDefaultParentToChildrenComponent,
+} from "../lib/components";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -50,7 +54,7 @@ const getEntities = () =>
 		.map((x) => x.Entity && getEntity(x?.Entity?.inst)!)
 		.filter((x) => x !== undefined)
 		.sort((a, b) =>
-			a.Entity.inst.toString().localeCompare(b.Entity.inst.toString()),
+			a.Entity.name.toString().localeCompare(b.Entity.name.toString()),
 		);
 
 const resetChanges = () => {
@@ -92,13 +96,17 @@ const createAction = (
 const updateComponent = <T extends keyof EntityCollection>(
 	inst: BigNumberish,
 	componentName: T,
-	component: EntityCollection[T],
+	component: EntityCollection[T] | undefined,
 ) => {
+	if (component === undefined) {
+		return removeComponent(inst, componentName);
+	}
 	const edited = getEntity(inst);
 	if (edited === undefined) {
 		throw new Error("Entity not found");
 	}
 	edited[componentName] = component;
+	console.log(edited, componentName, component);
 	if (
 		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
 	) {
@@ -107,6 +115,17 @@ const updateComponent = <T extends keyof EntityCollection>(
 				(x) => x.inst !== inst && componentName in x.object,
 			),
 		});
+	}
+	// check synced item, do we really need to create an update action
+	const syncedEntity = getEntity(inst, true);
+	if (syncedEntity?.[componentName] !== undefined) {
+		if (
+			JSONbig.stringify(syncedEntity[componentName]) ===
+			JSONbig.stringify(component)
+		) {
+			syncItem(edited);
+			return edited as EntityCollection;
+		}
 	}
 	createAction("update", inst, { [componentName]: component });
 	syncItem(edited);
@@ -138,41 +157,61 @@ const removeComponent = (
 			),
 		});
 	}
-	createAction("delete", inst, { [componentName]: deleted });
+	// check synced item, do we really need to delete anything
+	const syncedEntity = getEntity(inst, true);
+	if (syncedEntity?.[componentName] !== undefined) {
+		createAction("delete", inst, { [componentName]: deleted });
+	}
 	syncItem(edited);
 	return edited as EntityCollection;
 };
 
 const addToParent = (child: EntityCollection, parent: EntityCollection) => {
-	const entity = getEntity(child.Entity.inst)!;
-	if ("ChildToParent" in entity) {
-		removeParent(getEntity(entity.ChildToParent!.inst)!);
+	const newChild = getEntity(child.Entity.inst)!;
+	if ("ChildToParent" in newChild) {
+		removeParent(getEntity(newChild.ChildToParent!.inst)!);
 	}
+	const childComponent = newChild.ChildToParent
+		? { ChildToParent: newChild.ChildToParent }
+		: createDefaultChildToParentComponent(newChild.Entity);
+	console.log(childComponent);
+	childComponent.ChildToParent.parent = parent.Entity.inst;
+	updateComponent(
+		newChild.Entity.inst,
+		"ChildToParent",
+		childComponent.ChildToParent,
+	);
+
+	const newParent = getEntity(parent.Entity.inst)!;
+	const parentComponent = newParent.ParentToChildren
+		? { ParentToChildren: newParent.ParentToChildren }
+		: createDefaultParentToChildrenComponent(newParent.Entity);
+	parentComponent.ParentToChildren.children.push(newChild.Entity.inst);
+	updateComponent(
+		newParent.Entity.inst,
+		"ParentToChildren",
+		parentComponent.ParentToChildren,
+	);
 };
 
-// const removeChild = (parent: EntityCollection, child: EntityCollection) => {
-
 const removeParent = (child: EntityCollection) => {
-	console.log("rp", child);
 	if ("ChildToParent" in child) {
 		const parent = getEntity(child.ChildToParent!.parent)!;
-		console.log("rp2", child, parent);
 		if (child.ChildToParent!.parent === parent.Entity.inst) {
-			console.log("rp3", child, parent);
-			createAction("delete", child.ChildToParent!.inst, {
-				["ChildToParent" as keyof EntityCollection]: child.ChildToParent!,
-			});
-			child.ChildToParent = undefined;
+			updateComponent(child.Entity.inst, "ChildToParent", undefined);
+			// removeComponent(child.Entity.inst, "ChildToParent");
 			parent.ParentToChildren!.children = parent.ParentToChildren!.children.filter(
 				(c) => c !== child.Entity.inst,
 			);
 			if (parent.ParentToChildren!.children.length === 0) {
-				createAction("delete", parent.ParentToChildren!.inst, {
-					["ParentToChildren" as keyof EntityCollection]: parent.ParentToChildren!,
-				});
+				updateComponent(parent.Entity.inst, "ParentToChildren", undefined);
+			} else {
+				updateComponent(
+					parent.Entity.inst,
+					"ParentToChildren",
+					parent.ParentToChildren,
+				);
 			}
-			syncItem(child);
-			syncItem(parent);
 			EditorData().set({
 				isDirty: Date.now(),
 			});
@@ -180,7 +219,6 @@ const removeParent = (child: EntityCollection) => {
 		}
 		throw new Error("Not parent of child");
 	}
-	throw new Error("Child does not have parent");
 };
 
 const removeEntity = (entity: EntityCollection) => {
@@ -334,7 +372,13 @@ const newEntity = (entity: Entity) => {
 	Object.assign(newEntity, entity);
 	syncItem({ Entity: newEntity });
 	updateComponent(newEntity.inst, "Entity", newEntity);
-	selectEntity(newEntity.inst);
+	if (get().selectedEntity !== undefined) {
+		const e = getEntity(inst)!;
+		const newParent = getEntity(get().selectedEntity!)!;
+		addToParent(e, newParent);
+	} else {
+		selectEntity(newEntity.inst);
+	}
 	return newEntity;
 };
 
@@ -367,6 +411,8 @@ const EditorData = createFactory({
 	logPool,
 	resetChanges,
 	dojoSync,
+	addToParent,
+	removeParent,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });
 
