@@ -49,6 +49,7 @@ pub fn initialize_dictionary(world: WorldStorage) {
 pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "look", TokenType::Verb, 1).unwrap();
     add_to_dictionary(world, "l", TokenType::Verb, 1).unwrap();
+    add_to_dictionary(world, "stare", TokenType::Verb, 1).unwrap();
     add_to_dictionary(world, "examine", TokenType::Verb, 1).unwrap();
     add_to_dictionary(world, "x", TokenType::Verb, 1).unwrap();
     add_to_dictionary(world, "take", TokenType::Verb, 1).unwrap();
