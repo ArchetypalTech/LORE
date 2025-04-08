@@ -1,11 +1,11 @@
 import path from "node:path";
-import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { black, bgGreen } from "ansicolor";
+import react from "@vitejs/plugin-react";
+import { bgGreen, black } from "ansicolor";
+import { defineConfig, loadEnv } from "vite";
 import mkcert from "vite-plugin-mkcert";
-import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
+import wasm from "vite-plugin-wasm";
 import { patchBindings } from "./scripts/vite-fix-bindings";
 
 //TODO: https://github.com/nksaraf/vinxi

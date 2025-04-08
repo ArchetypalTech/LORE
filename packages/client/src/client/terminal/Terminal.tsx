@@ -1,9 +1,9 @@
+import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
+import { nextItem, useTerminalStore } from "@lib/stores/terminal.store";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
-import { useTerminalStore, nextItem } from "@lib/stores/terminal.store";
-import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
-import Typewriter from "./Typewriter";
 import TerminalLine from "./TerminalLine";
+import Typewriter from "./Typewriter";
 import "./Terminal.css";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 
@@ -24,11 +24,11 @@ export default function Terminal() {
 	useEffect(() => {
 		// Focus input on mount
 		if (terminalInputRef.current) {
-			terminalInputRef.current.focus();
+			// terminalInputRef.current.focus();
 		}
 		// Set timeout for connection status
 		const timeout = setTimeout(() => {
-			if (status !== "inputEnabled") {
+			if (status !== "inputEnabled" && status !== "initialized") {
 				DojoStore().setStatus({
 					status: "error",
 					error: "TIMEOUT",
@@ -101,18 +101,18 @@ export default function Terminal() {
 
 		if (terminalInputRef.current) {
 			terminalInputRef.current.disabled = false;
-			terminalInputRef.current.focus();
+			// terminalInputRef.current.focus();
 		}
 	};
 
 	const focusInput = () => {
 		if (terminalInputRef.current) {
-			terminalInputRef.current.focus();
+			// terminalInputRef.current.focus();
 		}
 	};
 
 	return (
-		<div className="flex items-center justify-center w-full h-full crt buzzing font-berkeley">
+		<div className="flex items-center justify-center w-full h-full font-berkeley">
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}
@@ -137,13 +137,16 @@ export default function Terminal() {
 						<div id="scroller" className="w-full flex flex-row gap-2">
 							<span>&#x3e;</span>
 							<input
-								className="bg-transparent terminal-line system w-full"
+								id="terminal-input"
+								className="bg-transparent terminal-line system w-full border-0"
 								type="text"
 								value={inputValue}
 								onChange={(e) => setInputValue(e.target.value)}
 								ref={terminalInputRef}
 								onKeyDown={handleKeyDown}
 								style={{ outline: "none" }}
+								autoComplete="off"
+								autoCorrect="off"
 							/>
 							<div
 								id="input-anchor"

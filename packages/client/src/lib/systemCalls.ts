@@ -1,6 +1,7 @@
-import { CallData, byteArray, type RawArgsArray } from "starknet";
+import { toCairoArray } from "@/editor/editor.utils";
 import { LORE_CONFIG } from "@lib/config";
-import { toCairoArray } from "../editor/utils";
+import JSONbig from "json-bigint";
+import { CallData, type RawArgsArray, byteArray } from "starknet";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
 
@@ -46,33 +47,19 @@ async function execCommand(command: string): Promise<void> {
 	}
 }
 
-/**
- * Formats a command message into calldata for contract invocation.
- * Splits the message into an array of commands and converts them to byte arrays.
- *
- * @param {string} message - The message to format
- * @returns {Promise<{calldata: RawArgsArray, cmds: string[]}>} The formatted calldata and command array
- */
-async function formatCallData(message: string) {
-	const cmds_raw = message.split(/\s+/);
-	const cmds = cmds_raw.filter((word) => word !== "");
-	const cmd_array = cmds.map((cmd) => byteArray.byteArrayFromString(cmd));
-	// create message as readable contract data
-	const calldata = CallData.compile([cmd_array, 23]);
-	console.log("formatCallData(cmds): ", cmds, " -> calldata ->", calldata);
-	return { calldata, cmds };
-}
-
 export type DesignerCall =
-	| "create_objects"
-	| "create_actions"
-	| "create_rooms"
-	| "create_txt"
-	| "delete_objects"
-	| "create_txts"
-	| "delete_actions"
-	| "delete_rooms"
-	| "delete_txts";
+	| "create_entity"
+	| "create_inspectable"
+	| "create_area"
+	| "create_exit"
+	| "create_parent"
+	| "create_child"
+	| "delete_entity"
+	| "delete_inspectable"
+	| "delete_area"
+	| "delete_exit"
+	| "delete_parent"
+	| "delete_child";
 
 type DesignerCallProps = {
 	call: DesignerCall;
@@ -89,11 +76,10 @@ type DesignerCallProps = {
  */
 async function execDesignerCall(props: DesignerCallProps) {
 	const { call, args } = props;
-	console.log(call, args);
 	try {
 		// other calls follow the same format Array<Object> see Cairo Models
 
-		const data = toCairoArray(args) as RawArgsArray;
+		const data = toCairoArray(args).flat() as RawArgsArray;
 		const calldata = CallData.compile(data);
 
 		let response: unknown;
@@ -115,7 +101,7 @@ async function execDesignerCall(props: DesignerCallProps) {
 		// we do a manual wait because the waitForTransaction is super slow
 		await new Promise((r) => setTimeout(r, 500));
 
-		return new Response(JSON.stringify(response), {
+		return new Response(JSONbig.stringify(response), {
 			headers: {
 				"Content-Type": "application/json",
 			},
@@ -123,7 +109,7 @@ async function execDesignerCall(props: DesignerCallProps) {
 		});
 	} catch (error) {
 		throw new Error(
-			`[${(error as Error).message}] @ execDesignerCall[${call}](args): ${JSON.stringify(args)} `,
+			`[${(error as Error).message}] @ execDesignerCall[${call}](args): ${JSONbig.stringify(args)} `,
 		);
 	}
 }

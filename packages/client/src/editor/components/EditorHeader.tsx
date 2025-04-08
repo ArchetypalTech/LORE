@@ -1,13 +1,13 @@
-import { useMemo, useRef } from "react";
-import EditorStore from "../editor.store";
-import UserStore, { useUserStore } from "@/lib/stores/user.store";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { LORE_CONFIG } from "@/lib/config";
 import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store";
+import { useMemo, useRef } from "react";
+import { Config } from "../lib/config";
+import { publishConfigToContract } from "../publisher";
+import { Button } from "./ui/Button";
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const { dark_mode } = useUserStore();
 	const { isConnected } = useWalletStore();
 
 	// Handler for file upload
@@ -21,7 +21,7 @@ export const EditorHeader = () => {
 		if (e.target.files && e.target.files.length > 0) {
 			const file = e.target.files[0];
 			try {
-				await EditorStore().config.loadConfigFromFile(file);
+				await Config().loadConfigFromFile(file);
 			} catch (error) {
 				console.error("Error loading file:", error);
 			}
@@ -30,12 +30,12 @@ export const EditorHeader = () => {
 
 	// Handler for export config
 	const handleExportConfig = async () => {
-		await EditorStore().config.saveConfigToFile();
+		await Config().saveConfigToFile();
 	};
 
 	// Handler for publish to contract
 	const handlePublish = async () => {
-		await EditorStore().config.publishToContract();
+		await publishConfigToContract();
 	};
 
 	const requireConnect = useMemo(() => {
@@ -44,51 +44,52 @@ export const EditorHeader = () => {
 	}, [isConnected]);
 
 	return (
-		<header className="flex flex-row justify-between gap-2 items-center pb-2 w-full lg:container">
-			<div className="flex flex-row font-berkeley">
-				<h1 className="text-xl font-bold font-berkeley">{APP_EDITOR_DATA.title}</h1>
-				<div className="mx-1 text-[7pt]">
-					({import.meta.env.MODE ? import.meta.env.MODE.toUpperCase() : "DEV"})
+		<div className="use-editor-styles relative pt-5 pb-2">
+			<header className="mx-auto flex flex-row justify-between gap-2 items-center pb-2 w-full lg:container">
+				<div className="flex flex-row font-berkeley">
+					<h1 className="text-xl font-bold font-berkeley rotate-[-1.65deg]">
+						{APP_EDITOR_DATA.title}
+					</h1>
+					<div className="mx-1 text-[7pt]">
+						({import.meta.env.MODE ? import.meta.env.MODE.toUpperCase() : "DEV"})
+					</div>
 				</div>
-			</div>
-			<div className="flex grow" />
-			<div className="flex gap-2">
-				{requireConnect ? (
-					<button
-						className="btn btn-sm btn-warning"
-						onClick={async () => {
-							await WalletStore().connectController();
-						}}
-					>
-						Connect Controller
-					</button>
-				) : (
-					<>
-						<input
-							type="file"
-							ref={fileInputRef}
-							accept=".json"
-							className="hidden"
-							onChange={handleFileChange}
-						/>
-						<button className="btn btn-sm btn-success" onClick={handleImportConfig}>
-							Import Config
-						</button>
-						<button className="btn btn-sm btn-success" onClick={handleExportConfig}>
-							Export Config
-						</button>
-						<button
-							className="btn btn-sm btn-warning hover:textFreak"
-							onClick={handlePublish}
+				<div className="flex grow" />
+				<div className="flex gap-2">
+					{requireConnect ? (
+						<Button
+							className="btn btn-sm btn-warning"
+							onClick={async () => {
+								await WalletStore().connectController();
+							}}
 						>
-							📤 Publish
-						</button>
-					</>
-				)}
-				<button className="btn" onClick={() => UserStore().toggleDarkMode()}>
+							Connect Controller
+						</Button>
+					) : (
+						<>
+							<input
+								type="file"
+								ref={fileInputRef}
+								accept=".json"
+								className="hidden"
+								onChange={handleFileChange}
+							/>
+							<Button onClick={handleImportConfig}>Import Config</Button>
+							<Button onClick={handleExportConfig}>Export Config</Button>
+							<Button
+								variant="hero"
+								className="hover:textFreak"
+								onClick={handlePublish}
+							>
+								🕊️ Publish
+							</Button>
+						</>
+					)}
+					{/* <button className="btn" onClick={() => UserStore().toggleDarkMode()}>
 					{dark_mode ? "☀️" : "🌑"}
-				</button>
-			</div>
-		</header>
+				</button> */}
+				</div>
+			</header>
+		</div>
 	);
 };

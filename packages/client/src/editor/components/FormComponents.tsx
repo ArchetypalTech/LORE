@@ -1,48 +1,72 @@
-import { cn, normalizeAddress } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils/utils";
+import type { ChangeEvent } from "react";
+import React from "react";
+import type { CairoCustomEnum } from "starknet";
+import { useCairoEnum } from "../lib/schemas";
+import type { OptionType } from "../lib/types";
+import { MultiTextArea } from "./MultiTextArea";
 import { TagInput as Tags } from "./TagInput";
-import EditorStore from "../editor.store";
-import { Editor } from "../editor";
+import { Button } from "./ui/Button";
+import { Input as UIInput } from "./ui/Input";
+import { SelectInput, type SelectInputRef } from "./ui/Select";
+import { Textarea as UITextarea } from "./ui/Textarea";
 
 export const Header = ({
 	title,
+	subtitle,
 	children,
-	onClickTitle,
 }: {
 	title: string;
+	subtitle: React.ReactNode;
 	children?: React.ReactNode;
-	onClickTitle?: () => void;
 }) => {
 	return (
-		<div className="flex justify-between flex-row gap-2">
-			<h2 onClick={onClickTitle}>{title}</h2>
+		<div className="flex justify-between flex-row gap-2 items-center">
+			<div className="relative flex flex-col">
+				<div className="relative text-white">
+					<h2 className="">{title}</h2>
+					<div className="absolute top-0 -left-4.5 w-[calc(100%+1.35rem)] h-[100%] bg-black -z-1 pl-5 pr-4 rotate-[.26deg]" />
+					<div className="absolute top-0 -left-3.5 font-white">
+						<h2>{">"}</h2>
+					</div>
+				</div>
+				<div>{subtitle}</div>
+			</div>
 			<div className="grow" />
 			{children}
 		</div>
 	);
 };
 
-export const DeleteButton = ({ onClick }: { onClick: () => void }) => {
+export const DeleteButton = ({
+	onClick,
+	className,
+}: { onClick: () => void; className?: string }) => {
 	return (
-		<button className="btn btn-danger btn-sm" onClick={ async () => {
-			EditorStore().notifications.startPublishing();
-			await onClick();			
-			EditorStore().notifications.finalizePublishing();			
-		}}>
+		<Button
+			size="icon"
+			variant="destructive"
+			className={cn(className)}
+			onClick={onClick}
+		>
 			❌
-		</button>
+		</Button>
 	);
 };
 
-export const PublishButton = ({ onClick }: { onClick: () => void }) => {
+export const PublishButton = ({
+	onClick,
+	className,
+}: { onClick: () => void; className?: string }) => {
 	return (
-		<button className="btn btn-sm" onClick={ async () => {
-			EditorStore().notifications.startPublishing();
-			await onClick();
-			EditorStore().notifications.finalizePublishing();
-		}}>
+		<Button
+			size="icon"
+			variant={"hero"}
+			className={cn(className)}
+			onClick={onClick}
+		>
 			🕊️
-			
-		</button>
+		</Button>
 	);
 };
 
@@ -63,19 +87,16 @@ export const Input = ({
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
-			</label>
-			<input
+			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
+			<UIInput
 				id={id}
-				value={value}
-				onChange={onChange}
-				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-					className,
-				)}
+				defaultValue={value}
+				onBlur={onChange}
+				onSubmit={onChange}
+				autoComplete="off"
 				disabled={disabled}
 				readOnly={readOnly}
+				className={cn("bg-white", className)}
 			/>
 		</div>
 	);
@@ -90,17 +111,20 @@ export const TagInput = ({
 }: {
 	id: string;
 	value: string;
-	onChange: (tags: string[]) => void;
+	onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 	className?: string;
 	description?: string;
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
-			</label>
+			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
 			<p className="mt-1 text-xs text-gray-500">{description}</p>
-			<Tags value={value.split(",")} onChange={onChange} className={className} />
+			<Tags
+				id={id}
+				value={value.split(",")}
+				onChange={onChange}
+				className={className}
+			/>
 		</div>
 	);
 };
@@ -122,69 +146,92 @@ export const Textarea = ({
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
-			</label>
-			<textarea
+			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
+			<UITextarea
 				id={id}
 				value={value}
 				onChange={onChange}
 				rows={rows}
-				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-					className,
-				)}
+				className={cn("bg-white", className)}
 			/>
 			{children}
 		</div>
 	);
 };
 
-export const Select = ({
+export const TextAreaArray = ({
 	id,
 	value,
-	onChange,
-	options,
+	rows,
 	className,
+	children,
+	onChange,
 }: {
 	id: string;
-	value: string;
-	onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-	options: Array<{ value: string; label: string }>;
+	value: string[];
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	rows: number;
 	className?: string;
+	children?: React.ReactNode;
 }) => {
 	return (
 		<div className="form-group">
-			<label htmlFor={id} className="block text-sm font-medium text-gray-700">
-				{id}
-			</label>
-			<select
+			<label htmlFor={id}>{id}</label>
+			<MultiTextArea
 				id={id}
 				value={value}
+				rows={rows}
+				className={className}
 				onChange={onChange}
-				className={cn(
-					"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-					className,
-				)}
-			>
-				{options.map((option) => (
-					<option key={option.value} value={option.value}>
-						{option.label}
-					</option>
-				))}
-			</select>
+			/>
+			{children}
 		</div>
 	);
 };
 
+export const Select = React.forwardRef<
+	SelectInputRef,
+	{
+		id: string;
+		value?: string;
+		defaultValue?: string;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+		options: Array<{ value: string; label: string }> | OptionType[];
+		className?: string;
+		disabled?: boolean;
+	}
+>(({ id, className, ...props }, ref) => {
+	return (
+		<div className={cn("form-group w-full", className)}>
+			<label htmlFor={id}>{id}</label>
+			<SelectInput ref={ref} id={id} {...props} />
+		</div>
+	);
+});
+
+export const CairoEnumSelect = React.forwardRef<
+	{ getValue: () => string | undefined },
+	{
+		id: string;
+		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+		className?: string;
+		disabled?: boolean;
+		value: CairoCustomEnum;
+		enum: unknown[] | readonly unknown[];
+	}
+>(({ value: original_value, enum: cairoEnum, ...props }, ref) => {
+	const { value, options } = useCairoEnum(original_value, cairoEnum);
+	return <Select ref={ref} value={value} {...props} options={options} />;
+});
+
 export const Toggle = ({
 	id,
-	checked,
+	value,
 	onChange,
 	className,
 }: {
 	id: string;
-	checked: boolean;
+	value: boolean;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	className?: string;
 }) => {
@@ -193,49 +240,16 @@ export const Toggle = ({
 			<input
 				type="checkbox"
 				id={id}
-				checked={checked}
+				checked={value}
 				onChange={onChange}
 				className={cn(
 					"h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500",
 					className,
 				)}
 			/>
-			<label htmlFor={id} className="ml-2 block text-sm text-gray-700">
-				{id}
+			<label htmlFor={id} className="ml-2 block text-xs ">
+				{id.replaceAll("_", " ")}
 			</label>
-		</div>
-	);
-};
-
-export const TextDef = ({
-	id,
-	owner,
-}: {
-	id: string;
-	owner: string;
-}) => {
-	return (
-		<div className="text-xs flex flex-col hover:text-black/40 text-black/0">
-			<div className="text-nowrap">id: {id}</div>
-			<div className="text-nowrap">owner: {owner}</div>
-		</div>
-	);
-};
-
-export const ItemId = ({ id }: { id: string }) => {
-	return (
-		<div className="form-group">
-			<label className="block text-sm font-medium text-gray-700">inst</label>
-			<p className="mt-1 text-xs text-gray-500">
-				This ID is generated automatically and should not be changed.
-			</p>
-			<input
-				type="text"
-				id={id}
-				value={normalizeAddress(id)}
-				className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs"
-				disabled
-			/>
 		</div>
 	);
 };

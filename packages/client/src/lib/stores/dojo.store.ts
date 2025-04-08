@@ -1,21 +1,19 @@
+import EditorData from "@/editor/data/editor.data";
+import type { EntityCollection } from "@/editor/lib/types";
+import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 import type { InitDojo } from "@lib/dojo";
-import TerminalStore, { addTerminalContent } from "./terminal.store";
+import { num } from "starknet";
 import { LORE_CONFIG } from "../config";
-import WalletStore from "./wallet.store";
 // @dev Use the Dojo bindings, *avoid* recreating these where possible
 import type {
 	PlayerStory,
 	SchemaType,
 } from "../dojo_bindings/typescript/models.gen";
-import {
-	normalizeAddress,
-	processWhitespaceTags,
-	decodeDojoText,
-} from "../utils/utils";
-import { StoreBuilder } from "../utils/storebuilder";
-import EditorData from "@/editor/editor.data";
 import { sendCommand } from "../terminalCommands/commandHandler";
-import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
+import { StoreBuilder } from "../utils/storebuilder";
+import { decodeDojoText, processWhitespaceTags } from "../utils/utils";
+import { addTerminalContent } from "./terminal.store";
+import WalletStore from "./wallet.store";
 
 /**
  * Represents the current status of the Dojo system.
@@ -81,7 +79,6 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	set({ lastProcessedText: trimmedNewText });
 	set({ playerStory });
 
-	console.log(isNewText);
 	for (const line of lines) {
 		const sys = line.startsWith("+sys+");
 		const formatted = line.replaceAll("+sys+", "");
@@ -98,11 +95,9 @@ const onPlayerStory = (playerStory: Partial<PlayerStory>) => {
 	const address = !LORE_CONFIG.useController
 		? LORE_CONFIG.wallet.address
 		: WalletStore().controller?.account?.address;
-	console.log(playerStory);
-	const normalizedPlayerId = normalizeAddress(String(playerStory.inst));
-	const normalizedAddress = normalizeAddress(String(address));
+	const normalizedPlayerId = num.cleanHex(String(playerStory.inst));
+	const normalizedAddress = num.cleanHex(String(address));
 	if (normalizedPlayerId === normalizedAddress) {
-		console.log("Story", playerStory);
 		setOutputter(playerStory as PlayerStory);
 		return;
 	}
@@ -111,11 +106,13 @@ const onPlayerStory = (playerStory: Partial<PlayerStory>) => {
 const onReponseData = (
 	responseData: ParsedEntity<SchemaType>["models"]["lore"],
 ) => {
-	console.log("[DOJO] onReponseData", responseData);
+	// console.log("[DOJO] onReponseData", responseData);
 	if (responseData.PlayerStory) {
 		onPlayerStory(responseData.PlayerStory);
 	}
-	EditorData().syncItem(responseData);
+	EditorData().dojoSync(responseData as EntityCollection, {
+		verbose: true,
+	});
 };
 
 /* 
@@ -184,9 +181,7 @@ const initializeConfig = async (
 			status: "initialized",
 			error: null,
 		});
-		if (!LORE_CONFIG.EDITOR_MODE) {
-			sendCommand("_bootLoader");
-		}
+		sendCommand("_bootLoader");
 
 		console.log("[DOJO]: initialized");
 		set({ existingSubscription: subscription });
