@@ -67,6 +67,32 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         }
         words
     }
+
+    fn end_with(self: ByteArray, suffix: ByteArray) -> bool {
+        let self_len = self.len();
+        let suffix_len = suffix.len();
+
+        // If suffix is longer than self, it can’t be a suffix by definition,
+        // so we skip all further logic and immediately return false.
+        if suffix_len > self_len {
+            return false;
+        }
+
+        // Create a mutable variable that we assume is true.
+        // Change it to false only if we find a mismatch during the loop.
+        let mut ends_with = true;
+
+        // Compare each byte in suffix to the corresponding byte at the end of self
+        for i in 0..suffix_len {
+            if self.at(self_len - suffix_len + i).unwrap() != suffix.at(i).unwrap() {
+                ends_with = false;
+                break;
+            }
+        };
+
+        // Return the result stored in ends_with
+        ends_with
+    }
 }
 
 #[cfg(test)]
