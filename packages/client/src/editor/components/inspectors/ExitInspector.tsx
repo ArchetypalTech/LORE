@@ -62,6 +62,12 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 				value={componentObject.direction_type}
 				enum={direction}
 			/>
+			{componentObject.action_map?.map((action, index) => (
+				<div key={index}>
+					{action.action} {" -> "}
+					{action.action_fn}
+				</div>
+			))}
 		</Inspector>
 	);
 };

@@ -11,7 +11,7 @@ use lore::{ //
     }, //
     constants::errors::Error, //
     components::{
-        player::{Player, PlayerImpl}, area::{Area, AreaComponent}, Component,
+        player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{ExitComponent}, Component,
         inspectable::{Inspectable, InspectableImpl, InspectableComponent},
     } //
 };
@@ -23,13 +23,18 @@ pub fn handle_command(
     if sys_command {
         return system_command(command.clone(), world, player);
     }
-    let context = player.get_context(@world);
+    let verbs = command.get_verbs(world, player);
+    if verbs.len() == 0 {
+        return Result::Err(Error::ActionFailed);
+    }
     let mut executed: bool = false;
-    for item in context {
+    let mut nouns = command.get_nouns(world, player);
+    for noun in nouns {
+        let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
         match InspectableComponent::get_component(world, item.inst) {
-            Option::Some(inspectable) => {
-                if inspectable.clone().can_use_command(world, @player, @command) {
-                    if inspectable.clone().execute_command(world, @player, @command).is_ok() {
+            Option::Some(c) => {
+                if c.clone().can_use_command(world, @player, @command) {
+                    if c.clone().execute_command(world, @player, @command).is_ok() {
                         executed = true;
                         break;
                     }
@@ -38,9 +43,20 @@ pub fn handle_command(
             Option::None => {},
         };
         match AreaComponent::get_component(world, item.inst) {
-            Option::Some(area) => {
-                if area.can_use_command(world, @player, @command) {
-                    if area.execute_command(world, @player, @command).is_ok() {
+            Option::Some(c) => {
+                if c.can_use_command(world, @player, @command) {
+                    if c.execute_command(world, @player, @command).is_ok() {
+                        executed = true;
+                        break;
+                    }
+                }
+            },
+            Option::None => {},
+        }
+        match ExitComponent::get_component(world, item.inst) {
+            Option::Some(c) => {
+                if c.can_use_command(world, @player, @command) {
+                    if c.execute_command(world, @player, @command).is_ok() {
                         executed = true;
                         break;
                     }
@@ -52,18 +68,29 @@ pub fn handle_command(
     if executed {
         return Result::Ok(command);
     }
-    Result::Ok(command)
+
+    // We haven't found any targets that have a verb mapped to the action
+    // Are there any default actions we can do?
+    let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
+    if initialVerb == 'look' {
+        let res = player.describe_room(world);
+        if res.is_err() {
+            return Result::Err(Error::ActionFailed);
+        };
+        return Result::Ok(command);
+    }
+    Result::Err(Error::ActionFailed)
 }
 
 pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "system_initialized", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_debug", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_move", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_init_dict", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
 }
 
@@ -81,6 +108,17 @@ fn system_command(
         println!("not zero: {:?}", system_command);
         if (system_command == "g_error") {
             return Result::Err(Error::TestError);
+        }
+        if (system_command == "g_debug") {
+            let mut modifiedPlayer = player;
+            modifiedPlayer.use_debug = !player.use_debug;
+            if modifiedPlayer.use_debug {
+                player.say(world, "+sys+you are in debug mode");
+            } else {
+                player.say(world, "+sys+you are no longer in debug mode");
+            }
+            modifiedPlayer.store(world);
+            return Result::Ok(command);
         }
         if (system_command == "g_command") {
             println!("g_command: {:?}", system_command);

@@ -35,6 +35,12 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 				value={componentObject.is_visible}
 				onChange={handleInputChange}
 			/>
+			{componentObject.action_map?.map((action, index) => (
+				<div key={index}>
+					{action.action} {" -> "}
+					{action.action_fn}
+				</div>
+			))}
 		</Inspector>
 	);
 };

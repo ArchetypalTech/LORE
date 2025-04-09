@@ -5,7 +5,8 @@ pub mod inspectable;
 pub mod inventoryItem;
 pub mod player;
 
-use dojo::{world::WorldStorage, model::{Model, ModelStorage, ModelPtr}};
+use dojo::{world::WorldStorage, model::{Model //ModelStorage, ModelPtr
+}};
 use lore::{constants::errors::Error, lib::{a_lexer::{Command}, entity::{Entity, EntityImpl}}};
 
 #[derive(Copy, Drop, Serde, Debug, Introspect)]
