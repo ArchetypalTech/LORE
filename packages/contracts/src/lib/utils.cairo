@@ -119,6 +119,60 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         // Return the result stored in starts_with
         starts_with
     }
+
+    fn contains(self: ByteArray, substring: ByteArray) -> bool {
+        let self_len = self.len();
+        let substring_len = substring.len();
+
+        // If substring is longer than self, it can’t be a substring
+        if substring_len > self_len {
+            return false;
+        }
+
+        // Set default to false — assume that is not found until proven
+        let mut found = false;
+
+        // Compute the max starting index for checking substring
+        let max_start = self_len - substring_len + 1;
+
+        // Slide a window over self
+        for i in 0..max_start {
+            let mut matched = true;
+
+            for j in 0..substring_len {
+                let self_byte = self.at(i + j).unwrap();
+                let sub_byte = substring.at(j).unwrap();
+
+                if self_byte != sub_byte {
+                    matched = false;
+                    break;
+                }
+            };
+
+            if matched {
+                found = true;
+                break;
+            }
+        };
+
+        found
+    }
+
+    fn to_lowercase(self: ByteArray) -> ByteArray {
+        let mut result: ByteArray = "";
+        for i in 0..self.len() {
+            let byte: felt252 = self.clone().felt252_at(i);
+            let mut b: u8 = byte.try_into().unwrap();
+
+            // ASCII 'A' = 65, 'Z' = 90
+            // ASCII 'a' = 97, 'z' = 122
+            if b >= 65_u8 && b <= 90_u8 {
+                b = b + 32_u8; // convert to lowercase
+            }
+            result.append_byte(b);
+        };
+        result
+    }
 }
 
 #[cfg(test)]
@@ -199,12 +253,45 @@ mod tests {
         let prefix: ByteArray = "re";
         let expected_result: bool = true;
         let end_with: bool = input.starts_with(prefix);
-        assert_eq!(end_with, expected_result, "ending should be true");
+        assert_eq!(end_with, expected_result, "starting should be true");
 
         let input: ByteArray = "cowork";
         let prefix: ByteArray = "re";
         let expected_result: bool = false;
         let end_with: bool = input.starts_with(prefix);
-        assert_eq!(end_with, expected_result, "ending should be false");
+        assert_eq!(end_with, expected_result, "starting should be false");
+    }
+
+    #[test]
+    fn ByteArrayExt_contains() {
+        let input: ByteArray = "reusable";
+        let substring: ByteArray = "usab";
+        let expected_result: bool = true;
+        let end_with: bool = input.contains(substring);
+        assert_eq!(end_with, expected_result, "containing should be true");
+
+        let input: ByteArray = "cowork";
+        let substring: ByteArray = "re";
+        let expected_result: bool = false;
+        let end_with: bool = input.contains(substring);
+        assert_eq!(end_with, expected_result, "containing should be false");
+    }
+
+    #[test]
+    fn ByteArrayExt_to_lowercase() {
+        let input: ByteArray = "REUSABLE";
+        let expected_result: ByteArray = "reusable";
+        let end_with: ByteArray = input.to_lowercase();
+        assert_eq!(end_with, expected_result, "lowercase should be true");
+
+        let input: ByteArray = "Cowork";
+        let expected_result: ByteArray = "cowork";
+        let end_with: ByteArray = input.to_lowercase();
+        assert_eq!(end_with, expected_result, "lowercase should be false");
+
+        let input: ByteArray = "BoOm";
+        let expected_result: ByteArray = "boom";
+        let end_with: ByteArray = input.to_lowercase();
+        assert_eq!(end_with, expected_result, "lowercase should be false");
     }
 }
