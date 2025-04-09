@@ -77,7 +77,7 @@ pub impl CommandImpl of CommandTrait {
     // let list = command.get_targets();
     // let amount = list.len();
 
-    fn get_verbs(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+    fn get_verbs(self: @Command) -> Array<Token> {
         let mut verbs: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -91,7 +91,7 @@ pub impl CommandImpl of CommandTrait {
         verbs
     }
 
-    fn get_nouns(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+    fn get_nouns(self: @Command) -> Array<Token> {
         let mut nouns: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -105,7 +105,7 @@ pub impl CommandImpl of CommandTrait {
         nouns
     }
 
-    fn get_directions(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+    fn get_directions(self: @Command) -> Array<Token> {
         let mut directions: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -119,7 +119,7 @@ pub impl CommandImpl of CommandTrait {
         directions
     }
 
-    fn get_Targets(self: @Command, world: WorldStorage, player: Player) -> Array<Token> {
+    fn get_Targets(self: @Command) -> Array<Token> {
         let mut targets: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -128,7 +128,7 @@ pub impl CommandImpl of CommandTrait {
                 continue;
             }
             // Only consider if the target is different from 0
-            if token.target == 0 {
+            if token.target != 0 {
                 continue;
             }
 
@@ -139,6 +139,7 @@ pub impl CommandImpl of CommandTrait {
 }
 
 pub mod lexer {
+    use super::CommandTrait;
     use super::super::entity::EntityTrait;
     use dojo::world::IWorldDispatcherTrait;
     use core::array::{ArrayTrait, ArrayImpl, Array};
@@ -234,13 +235,13 @@ pub mod lexer {
         // when there is a preposition, can we assume the next token is a noun? we know more about
         // the context now and what objects we recognize. Do we need to figure out adjectives.
         println!("post_process_command: {:?}", command);
-        let verbs = command.get_verbs(world, player);
+        let verbs = command.get_verbs();
         println!("PPC-verbs: {:?}", verbs);
-        let nouns = command.get_nouns(world, player);
+        let nouns = command.get_nouns();
         println!("PPC-nouns: {:?}", nouns);
-        let directions = command.get_directions(world, player);
+        let directions = command.get_directions();
         println!("PPC-directions: {:?}", directions);
-        let targets = command.get_Targets(world, player);
+        let targets = command.get_Targets();
         println!("PPC-targets: {:?}", targets);
         command
     }
@@ -287,7 +288,7 @@ mod tests {
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
-        let verbs = command.get_verbs(world, player);
+        let verbs = command.get_verbs();
         println!("Verbs: {:?}", verbs);
         // Check the number of verbs found
         assert_eq!(verbs.len(), 1, "There should be exactly one verb");
@@ -312,7 +313,7 @@ mod tests {
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
-        let nouns = command.get_nouns(world, player);
+        let nouns = command.get_nouns();
         println!("Nouns: {:?}", nouns);
         // Check the number of verbs found
         assert_eq!(nouns.len(), 1, "There should be exactly one noun");
