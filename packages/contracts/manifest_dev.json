@@ -1899,8 +1899,8 @@
       ]
     },
     {
-      "address": "0x7ebc777290c3bdc324b0bf028c47d74b8b882a499fb042b6b9fab09945d1f9d",
-      "class_hash": "0x5ccb5112c472bc08dcfa9fb8b348d7c79b47e840eb18fee95b1fadeffed7e5f",
+      "address": "0x6afce0e0a6d4b5620b58aea8a0cd5c43fe29b00517c2c1808fa1c94f3189799",
+      "class_hash": "0x7f62b0baa150c956a58bf180bdacae468acd869f80b17e29490afec75939492",
       "abi": [
         {
           "type": "impl",

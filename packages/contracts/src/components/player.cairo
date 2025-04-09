@@ -52,8 +52,10 @@ pub impl PlayerImpl of PlayerTrait {
     fn move_to_room(mut self: Player, mut world: WorldStorage, room_id: felt252) {
         self.location = room_id;
         let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
-        ent.set_parent(world, @EntityImpl::get_entity(@world, @room_id).unwrap());
+        let room = EntityImpl::get_entity(@world, @room_id).unwrap();
+        ent.set_parent(world, @room);
         world.write_model(@self);
+        self.clone().say(world, format!("You {:?} enter {:?}", ent, room));
     }
 
     fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {

@@ -145,8 +145,9 @@ const removeComponent = (
 		return undefined;
 	}
 	console.warn("removeComponent", edited, componentName);
-	const deleted = edited[componentName];
+	const deleted = { ...edited[componentName] };
 	edited[componentName] = undefined;
+	delete edited[componentName];
 	if (
 		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
 	) {
@@ -197,9 +198,8 @@ const addToParent = (child: EntityCollection, parent: EntityCollection) => {
 const removeParent = (child: EntityCollection) => {
 	if ("ChildToParent" in child) {
 		const parent = getEntity(child.ChildToParent!.parent)!;
+		updateComponent(child.Entity.inst, "ChildToParent", undefined);
 		if (child.ChildToParent!.parent === parent.Entity.inst) {
-			updateComponent(child.Entity.inst, "ChildToParent", undefined);
-			// removeComponent(child.Entity.inst, "ChildToParent");
 			parent.ParentToChildren!.children = parent.ParentToChildren!.children.filter(
 				(c) => c !== child.Entity.inst,
 			);
@@ -217,7 +217,10 @@ const removeParent = (child: EntityCollection) => {
 			});
 			return;
 		}
-		throw new Error("Not parent of child");
+		EditorData().set({
+			isDirty: Date.now(),
+		});
+		throw new Error("Parent missing");
 	}
 };
 
@@ -226,6 +229,7 @@ const removeEntity = (entity: EntityCollection) => {
 		throw new Error("Entity is not an entity");
 	}
 	const inst = entity.Entity!.inst;
+	// unbreak whatever we're editing / selecting
 	if (get().selectedEntity === inst) {
 		const index = getEntities().findIndex((x) => x.Entity?.inst === inst);
 		set({ selectedEntity: getEntities()[index + 1]?.Entity?.inst });
@@ -246,7 +250,7 @@ const removeEntity = (entity: EntityCollection) => {
 		removeParent(getEntity(entity.ChildToParent!.inst)!);
 	}
 
-	// remove all potential create/update actions for this entity
+	// remove all potential update actions for this entity
 	const prevUpdates = get().changeSet.filter(
 		(x) => x.inst === inst && x.type === "update",
 	);
