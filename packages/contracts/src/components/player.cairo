@@ -4,7 +4,7 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{
     constants::errors::Error, lib::{entity::{EntityImpl, Entity}, a_lexer::Command},
-    components::Component,
+    components::{Component, inspectable::{Inspectable, InspectableImpl}},
 };
 
 pub struct EntityKey {
@@ -20,6 +20,7 @@ pub struct Player {
     // properties
     pub address: ContractAddress,
     pub location: felt252,
+    pub use_debug: bool,
 }
 
 #[derive(Clone, Drop, Serde, Debug, Introspect)]
@@ -32,11 +33,32 @@ pub struct PlayerStory {
 
 #[generate_trait]
 pub impl PlayerImpl of PlayerTrait {
+    fn describe_room(mut self: @Player, mut world: WorldStorage) -> Result<(), Error> {
+        let context = self.get_context(@world);
+        let room = self.get_room(@world);
+        if room.is_none() {
+            return Result::Err(Error::ActionFailed);
+        }
+        self.say(world, format!("{}", room.unwrap().name));
+        for item in context {
+            let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
+            if inspectable.is_some() {
+                let description = inspectable.unwrap().get_random_description(world);
+                self.say(world, format!("{}", description));
+            }
+        };
+        Result::Ok(())
+    }
+
     fn move_to_room(mut self: Player, mut world: WorldStorage, room_id: felt252) {
         self.location = room_id;
         let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
-        ent.set_parent(world, @EntityImpl::get_entity(@world, @room_id).unwrap());
+        let room = EntityImpl::get_entity(@world, @room_id).unwrap();
+        ent.set_parent(world, @room);
         world.write_model(@self);
+        if self.use_debug {
+            self.clone().say(world, format!("You {:?} enter {:?}", ent, room));
+        }
     }
 
     fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
@@ -49,6 +71,9 @@ pub impl PlayerImpl of PlayerTrait {
     fn add_command_text(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
         let mut playerStory: PlayerStory = world.read_model(*self.inst);
         let mut storyLine = playerStory.story.clone();
+        if (storyLine.len() > 10) {
+            let _ = storyLine.pop_front();
+        }
         storyLine.append(format!("> {}", text));
         world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
     }

@@ -10,7 +10,7 @@ pub fn create_test_level(mut world: WorldStorage) {
 
 fn room_start(mut world: WorldStorage) {
     let obj = Entity {
-        inst: 2826, is_entity: true, name: "The Bang", alt_names: array!["pontoon", "boat"],
+        inst: 2826, is_entity: true, name: "The Bang", alt_names: array!["bang", "explosion"],
     };
     world.write_model(@obj);
     let mut inspectable: Inspectable = Component::add_component(world, obj.inst);

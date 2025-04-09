@@ -10,7 +10,8 @@ use super::{Component, player::{Player, PlayerImpl}};
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
 pub enum InspectableActions {
     SetVisible,
-    ReadDescription,
+    ReadRandomDescription,
+    ReadFirstDescription,
 }
 
 // Inspectable component
@@ -35,11 +36,11 @@ pub struct ActionMapInspectable {
 
 #[generate_trait]
 pub impl InspectableImpl of InspectableTrait {
-    fn look_at(self: Inspectable, world: WorldStorage) -> ByteArray {
+    fn look_at(self: @Inspectable, world: WorldStorage) -> ByteArray {
         self.get_random_description(world)
     }
 
-    fn get_random_description(self: Inspectable, world: WorldStorage) -> ByteArray {
+    fn get_random_description(self: @Inspectable, world: WorldStorage) -> ByteArray {
         if self.description.len() == 0 {
             return "";
         }
@@ -47,6 +48,14 @@ pub impl InspectableImpl of InspectableTrait {
             .try_into()
             .unwrap();
         let description = self.description.at(rng % self.description.len()).clone();
+        description
+    }
+
+    fn get_first_description(self: @Inspectable, world: WorldStorage) -> ByteArray {
+        if self.description.len() == 0 {
+            return "";
+        }
+        let description = self.description.at(0).clone();
         description
     }
 }
@@ -76,10 +85,14 @@ pub impl InspectableComponent of Component<Inspectable> {
             .action_map =
                 array![
                     ActionMapInspectable {
-                        action: "look", inst: 0, action_fn: InspectableActions::ReadDescription,
+                        action: "look",
+                        inst: 0,
+                        action_fn: InspectableActions::ReadRandomDescription,
                     },
                     ActionMapInspectable {
-                        action: "stare", inst: 0, action_fn: InspectableActions::ReadDescription,
+                        action: "stare",
+                        inst: 0,
+                        action_fn: InspectableActions::ReadRandomDescription,
                     },
                 ];
         inspectable.store(world);
@@ -98,22 +111,26 @@ pub impl InspectableComponent of Component<Inspectable> {
     fn can_use_command(
         self: @Inspectable, world: WorldStorage, player: @Player, command: @Command,
     ) -> bool {
-        get_action_token(self.clone(), world, command.clone()).is_some()
+        get_action_token(self, world, command).is_some()
     }
 
     fn execute_command(
         mut self: Inspectable, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         println!("Inspectable execute_command");
-        let (action, _token) = get_action_token(self.clone(), world, command.clone()).unwrap();
+        let (action, _token) = get_action_token(@self, world, command).unwrap();
         match action.action_fn {
             InspectableActions::SetVisible => {
                 self.is_visible = !self.is_visible;
                 world.write_model(@self);
                 return Result::Ok(());
             },
-            InspectableActions::ReadDescription => {
+            InspectableActions::ReadRandomDescription => {
                 player.say(world, self.get_random_description(world));
+                return Result::Ok(());
+            },
+            InspectableActions::ReadFirstDescription => {
+                player.say(world, self.get_first_description(world));
                 return Result::Ok(());
             },
         }
@@ -127,11 +144,11 @@ pub impl InspectableComponent of Component<Inspectable> {
 
 // @dev: wip how to access tokens
 fn get_action_token(
-    self: Inspectable, world: WorldStorage, command: Command,
+    self: @Inspectable, world: WorldStorage, command: @Command,
 ) -> Option<(ActionMapInspectable, Token)> {
     let mut action_token: Option<(ActionMapInspectable, Token)> = Option::None;
-    for token in command.tokens {
-        for action in self.clone().action_map {
+    for token in command.tokens.clone() {
+        for action in self.action_map.clone() {
             if (token.text == action.action) {
                 action_token = Option::Some((action, token));
                 break;
@@ -169,7 +186,7 @@ mod tests {
                     action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
                 },
                 ActionMapInspectable {
-                    action: "look", inst: 0, action_fn: InspectableActions::ReadDescription,
+                    action: "look", inst: 0, action_fn: InspectableActions::ReadRandomDescription,
                 },
             ],
         };

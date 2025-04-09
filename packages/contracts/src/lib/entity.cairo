@@ -114,8 +114,13 @@ pub impl EntityImpl of EntityTrait {
             }
         };
         parent_relation.children = new_children;
-        world.write_model(@parent_relation);
-        world.write_model(@ChildToParent { inst: *self.inst, is_child: false, parent: 0 });
+        if parent_relation.children.len() == 0 {
+            world.erase_model(@parent_relation);
+        } else {
+            world.write_model(@parent_relation);
+        }
+        let child: ChildToParent = world.read_model(self.inst.clone());
+        world.erase_model(@child);
     }
 
     // @DEV: the cloning and writing in between is very dangerous, this might need a revision and at

@@ -6,6 +6,7 @@ import {
 	type Inspectable,
 	type ParentToChildren,
 	direction,
+	exitActions,
 	inspectableActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
@@ -72,23 +73,26 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 };
 
 const publishEntityCollection = async (collection: EntityCollection) => {
-	if ("Entity" in collection) {
+	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
-	if ("Inspectable" in collection) {
-		await publishInspectable(collection.Inspectable!);
+	if ("Inspectable" in collection && collection.Inspectable !== undefined) {
+		await publishInspectable(collection.Inspectable);
 	}
-	if ("Area" in collection) {
-		await publishArea(collection.Area!);
+	if ("Area" in collection && collection.Area !== undefined) {
+		await publishArea(collection.Area);
 	}
-	if ("Exit" in collection) {
-		await publishExit(collection.Exit!);
+	if ("Exit" in collection && collection.Exit !== undefined) {
+		await publishExit(collection.Exit);
 	}
-	if ("ChildToParent" in collection) {
-		await publishChildToParent(collection.ChildToParent!);
+	if ("ChildToParent" in collection && collection.ChildToParent !== undefined) {
+		await publishChildToParent(collection.ChildToParent);
 	}
-	if ("ParentToChildren" in collection) {
-		await publishParentToChildren(collection.ParentToChildren!);
+	if (
+		"ParentToChildren" in collection &&
+		collection.ParentToChildren !== undefined
+	) {
+		await publishParentToChildren(collection.ParentToChildren);
 	}
 };
 
@@ -143,14 +147,13 @@ const publishExit = async (exit: Exit) => {
 		exit.is_enterable,
 		num.toBigInt(exit.leads_to.toString()),
 		toEnumIndex(exit.direction_type, direction),
-		// exit.action_map.length > 0
-		// 	? exit.action_map.map((x) => [
-		// 			byteArray.byteArrayFromString(x.action),
-		// 			0,
-		// 			inspectableActionsToIndex(x.action_fn),
-		// 		])
-		// 	: 0,
-		0,
+		exit.action_map.length > 0
+			? exit.action_map.map((x) => [
+					byteArray.byteArrayFromString(x.action),
+					0,
+					toEnumIndex(x.action_fn, exitActions),
+				])
+			: 0,
 	];
 	await dispatchDesignerCall("create_exit", [exitData]);
 };
@@ -176,28 +179,28 @@ const publishParentToChildren = async (parentToChildren: ParentToChildren) => {
 };
 
 const deleteCollection = async (model: EntityCollection) => {
-	if ("Entity" in model) {
+	if ("Entity" in model && model.Entity !== undefined) {
 		await dispatchDesignerCall("delete_entity", [
 			num.toBigInt(model.Entity!.inst),
 		]);
 	}
-	if ("Inspectable" in model) {
+	if ("Inspectable" in model && model.Inspectable !== undefined) {
 		await dispatchDesignerCall("delete_inspectable", [
 			num.toBigInt(model.Inspectable!.inst),
 		]);
 	}
-	if ("Area" in model) {
+	if ("Area" in model && model.Area !== undefined) {
 		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Area!.inst)]);
 	}
-	if ("Exit" in model) {
+	if ("Exit" in model && model.Exit !== undefined) {
 		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Exit!.inst)]);
 	}
-	if ("ChildToParent" in model) {
+	if ("ChildToParent" in model && model.ChildToParent !== undefined) {
 		await dispatchDesignerCall("delete_child", [
 			num.toBigInt(model.ChildToParent!.inst),
 		]);
 	}
-	if ("ParentToChildren" in model) {
+	if ("ParentToChildren" in model && model.ParentToChildren !== undefined) {
 		await dispatchDesignerCall("delete_parent", [
 			num.toBigInt(model.ParentToChildren!.inst),
 		]);

@@ -3,13 +3,12 @@ import {
 	type SchemaType,
 	schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import randomName from "@scaleway/random-name";
 import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
-import { randomKey } from "../editor.utils";
+import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 
 export const createDefaultEntity = (): WithStringEnums<
@@ -19,7 +18,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		...schema.lore.Entity,
 		inst: randomKey(),
 		is_entity: true,
-		name: randomName(),
+		name: createRandomName(),
 		alt_names: [],
 	},
 });
@@ -56,7 +55,11 @@ export const createDefaultExitComponent = (
 		is_exit: true,
 		is_enterable: true,
 		direction_type: "None",
-		action_map: [],
+		action_map: [
+			{ action: "go", inst: 0, action_fn: "UseExit" },
+			{ action: "enter", inst: 0, action_fn: "UseExit" },
+			{ action: "use", inst: 0, action_fn: "UseExit" },
+		],
 	},
 });
 

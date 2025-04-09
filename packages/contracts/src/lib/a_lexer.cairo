@@ -1,11 +1,7 @@
-use dojo::world::IWorldDispatcherTrait;
 use core::array::{ArrayTrait, ArrayImpl, Array};
 use dojo::{world::WorldStorage};
 
-use lore::{
-    components::{player::{Player, PlayerImpl}}, //
-    constants::errors::Error, //
-    lib::{utils::ByteArrayTraitExt, dictionary::{get_dict_entry, initialize_dictionary}},
+use lore::{components::{player::{Player, PlayerImpl}} //
 };
 
 #[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
@@ -158,7 +154,7 @@ pub mod lexer {
         message: ByteArray, world: WorldStorage, player: Player,
     ) -> Result<Command, Error> {
         initialize_dictionary(world);
-        let words = message.clone().split_into_words();
+        let words = message.split_into_words();
         let tokens = match_tokens(world, words.clone());
         let mut command = Command {
             command_id: world.dispatcher.uuid().try_into().unwrap(),
@@ -209,7 +205,7 @@ pub mod lexer {
     fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
         // get player for their context (room + room objects + inventory)
         let context = player.get_context(@world);
-        let mut tokens = command.tokens.clone();
+        let mut newTokens: Array<Token> = array![];
         for i in 0..command.tokens.len() {
             let mut token = command.tokens.at(i).clone();
             for item in context.clone() {
@@ -224,8 +220,9 @@ pub mod lexer {
                     }
                 }
             };
-            tokens.append(token);
+            newTokens.append(token);
         };
+        command.tokens = newTokens;
         // println!("tokens: {:?}", tokens);
         command
     }
