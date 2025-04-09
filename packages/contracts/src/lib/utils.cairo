@@ -68,7 +68,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         words
     }
 
-    fn ends_with(self: ByteArray, suffix: ByteArray) -> bool {
+    fn ends_with(self: @ByteArray, suffix: @ByteArray) -> bool {
         let self_len = self.len();
         let suffix_len = suffix.len();
 
@@ -94,7 +94,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         ends_with
     }
 
-    fn starts_with(self: ByteArray, prefix: ByteArray) -> bool {
+    fn starts_with(self: @ByteArray, prefix: @ByteArray) -> bool {
         let self_len = self.len();
         let prefix_len = prefix.len();
 
@@ -120,7 +120,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         starts_with
     }
 
-    fn contains(self: ByteArray, substring: ByteArray) -> bool {
+    fn contains(self: @ByteArray, substring: @ByteArray) -> bool {
         let self_len = self.len();
         let substring_len = substring.len();
 
@@ -238,13 +238,13 @@ mod tests {
         let input: ByteArray = "meeting";
         let suffix: ByteArray = "ing";
         let expected_result: bool = true;
-        let end_with: bool = input.ends_with(suffix);
+        let end_with: bool = input.ends_with(@suffix);
         assert_eq!(end_with, expected_result, "ending should be true");
 
         let input: ByteArray = "cook";
         let suffix: ByteArray = "ing";
         let expected_result: bool = false;
-        let end_with: bool = input.ends_with(suffix);
+        let end_with: bool = input.ends_with(@suffix);
         assert_eq!(end_with, expected_result, "ending should be false");
     }
 
@@ -252,13 +252,13 @@ mod tests {
         let input: ByteArray = "reusable";
         let prefix: ByteArray = "re";
         let expected_result: bool = true;
-        let end_with: bool = input.starts_with(prefix);
+        let end_with: bool = input.starts_with(@prefix);
         assert_eq!(end_with, expected_result, "starting should be true");
 
         let input: ByteArray = "cowork";
         let prefix: ByteArray = "re";
         let expected_result: bool = false;
-        let end_with: bool = input.starts_with(prefix);
+        let end_with: bool = input.starts_with(@prefix);
         assert_eq!(end_with, expected_result, "starting should be false");
     }
 
@@ -267,13 +267,13 @@ mod tests {
         let input: ByteArray = "reusable";
         let substring: ByteArray = "usab";
         let expected_result: bool = true;
-        let end_with: bool = input.contains(substring);
+        let end_with: bool = input.contains(@substring);
         assert_eq!(end_with, expected_result, "containing should be true");
 
         let input: ByteArray = "cowork";
         let substring: ByteArray = "re";
         let expected_result: bool = false;
-        let end_with: bool = input.contains(substring);
+        let end_with: bool = input.contains(@substring);
         assert_eq!(end_with, expected_result, "containing should be false");
     }
 
