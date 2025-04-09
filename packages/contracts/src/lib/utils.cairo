@@ -67,6 +67,112 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         }
         words
     }
+
+    fn ends_with(self: @ByteArray, suffix: @ByteArray) -> bool {
+        let self_len = self.len();
+        let suffix_len = suffix.len();
+
+        // If suffix is longer than self, it can’t be a suffix by definition,
+        // so we skip all further logic and immediately return false.
+        if suffix_len > self_len {
+            return false;
+        }
+
+        // Create a mutable variable that we assume is true.
+        // Change it to false only if we find a mismatch during the loop.
+        let mut ends_with = true;
+
+        // Compare each byte in suffix to the corresponding byte at the end of self
+        for i in 0..suffix_len {
+            if self.at(self_len - suffix_len + i).unwrap() != suffix.at(i).unwrap() {
+                ends_with = false;
+                break;
+            }
+        };
+
+        // Return the result stored in ends_with
+        ends_with
+    }
+
+    fn starts_with(self: @ByteArray, prefix: @ByteArray) -> bool {
+        let self_len = self.len();
+        let prefix_len = prefix.len();
+
+        // If prefix is longer than self, it can’t be a prefix by definition,
+        // so we skip all further logic and immediately return false.
+        if prefix_len > self_len {
+            return false;
+        }
+
+        // Create a mutable variable that we assume is true.
+        // Change it to false only if we find a mismatch during the loop.
+        let mut starts_with = true;
+
+        // Compare each byte in prefix to the corresponding byte at the start of self
+        for i in 0..prefix_len {
+            if self.at(i).unwrap() != prefix.at(i).unwrap() {
+                starts_with = false;
+                break;
+            }
+        };
+
+        // Return the result stored in starts_with
+        starts_with
+    }
+
+    fn contains(self: @ByteArray, substring: @ByteArray) -> bool {
+        let self_len = self.len();
+        let substring_len = substring.len();
+
+        // If substring is longer than self, it can’t be a substring
+        if substring_len > self_len {
+            return false;
+        }
+
+        // Set default to false — assume that is not found until proven
+        let mut found = false;
+
+        // Compute the max starting index for checking substring
+        let max_start = self_len - substring_len + 1;
+
+        // Slide a window over self
+        for i in 0..max_start {
+            let mut matched = true;
+
+            for j in 0..substring_len {
+                let self_byte = self.at(i + j).unwrap();
+                let sub_byte = substring.at(j).unwrap();
+
+                if self_byte != sub_byte {
+                    matched = false;
+                    break;
+                }
+            };
+
+            if matched {
+                found = true;
+                break;
+            }
+        };
+
+        found
+    }
+
+    fn to_lowercase(self: ByteArray) -> ByteArray {
+        let mut result: ByteArray = "";
+        for i in 0..self.len() {
+            let byte: felt252 = self.clone().felt252_at(i);
+            let mut b: u8 = byte.try_into().unwrap();
+
+            // ASCII 'A' = 65, 'Z' = 90
+            // ASCII 'a' = 97, 'z' = 122
+            if b >= 65_u8 && b <= 90_u8 {
+                b = b + 32_u8; // convert to lowercase
+            }
+            result.append_byte(b);
+        };
+        result
+    }
 }
 
 #[cfg(test)]
@@ -125,5 +231,67 @@ mod tests {
         assert(!w1.clone().equals(w2.clone()), 'w1 and w2 not similar');
         assert(w1.equals(word1), 'words[0] == "hello".into()');
         assert(w2.equals(word2), 'words[1] == b"world".into()');
+    }
+
+    #[test]
+    fn ByteArrayExt_ends_with() {
+        let input: ByteArray = "meeting";
+        let suffix: ByteArray = "ing";
+        let expected_result: bool = true;
+        let end_with: bool = input.ends_with(@suffix);
+        assert_eq!(end_with, expected_result, "ending should be true");
+
+        let input: ByteArray = "cook";
+        let suffix: ByteArray = "ing";
+        let expected_result: bool = false;
+        let end_with: bool = input.ends_with(@suffix);
+        assert_eq!(end_with, expected_result, "ending should be false");
+    }
+
+    fn ByteArrayExt_starts_with() {
+        let input: ByteArray = "reusable";
+        let prefix: ByteArray = "re";
+        let expected_result: bool = true;
+        let end_with: bool = input.starts_with(@prefix);
+        assert_eq!(end_with, expected_result, "starting should be true");
+
+        let input: ByteArray = "cowork";
+        let prefix: ByteArray = "re";
+        let expected_result: bool = false;
+        let end_with: bool = input.starts_with(@prefix);
+        assert_eq!(end_with, expected_result, "starting should be false");
+    }
+
+    #[test]
+    fn ByteArrayExt_contains() {
+        let input: ByteArray = "reusable";
+        let substring: ByteArray = "usab";
+        let expected_result: bool = true;
+        let end_with: bool = input.contains(@substring);
+        assert_eq!(end_with, expected_result, "containing should be true");
+
+        let input: ByteArray = "cowork";
+        let substring: ByteArray = "re";
+        let expected_result: bool = false;
+        let end_with: bool = input.contains(@substring);
+        assert_eq!(end_with, expected_result, "containing should be false");
+    }
+
+    #[test]
+    fn ByteArrayExt_to_lowercase() {
+        let input: ByteArray = "REUSABLE";
+        let expected_result: ByteArray = "reusable";
+        let end_with: ByteArray = input.to_lowercase();
+        assert_eq!(end_with, expected_result, "lowercase should be true");
+
+        let input: ByteArray = "Cowork";
+        let expected_result: ByteArray = "cowork";
+        let end_with: ByteArray = input.to_lowercase();
+        assert_eq!(end_with, expected_result, "lowercase should be false");
+
+        let input: ByteArray = "BoOm";
+        let expected_result: ByteArray = "boom";
+        let end_with: ByteArray = input.to_lowercase();
+        assert_eq!(end_with, expected_result, "lowercase should be false");
     }
 }
