@@ -20,6 +20,7 @@ pub struct Player {
     // properties
     pub address: ContractAddress,
     pub location: felt252,
+    pub use_debug: bool,
 }
 
 #[derive(Clone, Drop, Serde, Debug, Introspect)]
@@ -55,7 +56,9 @@ pub impl PlayerImpl of PlayerTrait {
         let room = EntityImpl::get_entity(@world, @room_id).unwrap();
         ent.set_parent(world, @room);
         world.write_model(@self);
-        self.clone().say(world, format!("You {:?} enter {:?}", ent, room));
+        if self.use_debug {
+            self.clone().say(world, format!("You {:?} enter {:?}", ent, room));
+        }
     }
 
     fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
@@ -68,6 +71,9 @@ pub impl PlayerImpl of PlayerTrait {
     fn add_command_text(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
         let mut playerStory: PlayerStory = world.read_model(*self.inst);
         let mut storyLine = playerStory.story.clone();
+        if (storyLine.len() > 10) {
+            let _ = storyLine.pop_front();
+        }
         storyLine.append(format!("> {}", text));
         world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
     }

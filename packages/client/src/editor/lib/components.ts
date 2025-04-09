@@ -3,7 +3,6 @@ import {
 	type SchemaType,
 	schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import randomName from "@scaleway/random-name";
 import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";

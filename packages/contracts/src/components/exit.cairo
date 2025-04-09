@@ -97,7 +97,9 @@ pub impl ExitComponent of Component<Exit> {
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         match action.action_fn {
             ExitActions::UseExit => {
-                player.say(world, format!("You go to {:?}", self));
+                if *player.use_debug {
+                    player.say(world, format!("You go to {:?}", self));
+                }
                 player.clone().move_to_room(world, self.leads_to);
                 let _ = player.describe_room(world);
                 return Result::Ok(());

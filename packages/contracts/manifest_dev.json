@@ -1899,8 +1899,8 @@
       ]
     },
     {
-      "address": "0x398f597ade3dcd47c4cd3b14a487c7ab846281527e64b55f2d5d01034c3bab",
-      "class_hash": "0x65c56980816c22f21a43e4a4a2bca11cfd3a2f77830e91301f9f530962b23a2",
+      "address": "0x1d11bbdc9436a425590ff5f04ef4ee668a75e49b65db9f009cd6f62701abd61",
+      "class_hash": "0x195907aa80a8bca69564667ae119600c5d626e08255b07a6169baf1972035d2",
       "abi": [
         {
           "type": "impl",
@@ -2157,7 +2157,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x57ee8f11e8c4fbf81791b6f96715fa4113717f4f552aac899a77497d12e2769",
+      "class_hash": "0x592d452e8386ba51bb7128ba77ff44ad891a6f44620c66db10dcd511bdbe266",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },

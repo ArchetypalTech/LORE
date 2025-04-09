@@ -79,18 +79,18 @@ pub fn handle_command(
         };
         return Result::Ok(command);
     }
-    Result::Ok(command)
+    Result::Err(Error::ActionFailed)
 }
 
 pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "system_initialized", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_debug", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_move", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_init_dict", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
 }
 
@@ -108,6 +108,17 @@ fn system_command(
         println!("not zero: {:?}", system_command);
         if (system_command == "g_error") {
             return Result::Err(Error::TestError);
+        }
+        if (system_command == "g_debug") {
+            let mut modifiedPlayer = player;
+            modifiedPlayer.use_debug = !player.use_debug;
+            if modifiedPlayer.use_debug {
+                player.say(world, "+sys+you are in debug mode");
+            } else {
+                player.say(world, "+sys+you are no longer in debug mode");
+            }
+            modifiedPlayer.store(world);
+            return Result::Ok(command);
         }
         if (system_command == "g_command") {
             println!("g_command: {:?}", system_command);

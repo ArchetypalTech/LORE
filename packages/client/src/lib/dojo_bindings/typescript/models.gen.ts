@@ -109,6 +109,7 @@ export interface Player {
 	is_player: boolean;
 	address: string;
 	location: BigNumberish;
+	use_debug: boolean;
 }
 
 // Type definition for `lore::components::player::PlayerStory` struct
@@ -127,6 +128,7 @@ export interface PlayerValue {
 	is_player: boolean;
 	address: string;
 	location: BigNumberish;
+	use_debug: boolean;
 }
 
 // Type definition for `lore::lib::dictionary::Dict` struct
@@ -383,6 +385,7 @@ export const schema: SchemaType = {
 			is_player: false,
 			address: "",
 			location: 0,
+			use_debug: false,
 		},
 		PlayerStory: {
 			inst: 0,
@@ -395,6 +398,7 @@ export const schema: SchemaType = {
 			is_player: false,
 			address: "",
 			location: 0,
+			use_debug: false,
 		},
 		Dict: {
 			dict_key: 0,
