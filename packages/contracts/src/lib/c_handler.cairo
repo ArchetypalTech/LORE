@@ -23,12 +23,12 @@ pub fn handle_command(
     if sys_command {
         return system_command(command.clone(), world, player);
     }
-    let verbs = command.get_verbs(world, player);
+    let verbs = command.get_verbs();
     if verbs.len() == 0 {
         return Result::Err(Error::ActionFailed);
     }
     let mut executed: bool = false;
-    let mut nouns = command.get_nouns(world, player);
+    let mut nouns = command.get_nouns();
     for noun in nouns {
         let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
         match InspectableComponent::get_component(world, item.inst) {

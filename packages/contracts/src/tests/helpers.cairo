@@ -13,7 +13,8 @@ use lore::{
     components::{ //
         area::{m_Area}, // 
         inspectable::{m_Inspectable}, //
-        player::{m_Player, m_PlayerStory} //
+        player::{m_Player, m_PlayerStory}, //
+        exit::{m_Exit} //
     },
     constants::{errors::{}},
     lib::{
@@ -55,6 +56,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_Entity::TEST_CLASS_HASH),
             TestResource::Model(m_Inspectable::TEST_CLASS_HASH),
             TestResource::Model(m_Area::TEST_CLASS_HASH),
+            TestResource::Model(m_Exit::TEST_CLASS_HASH),
             TestResource::Model(m_ParentToChildren::TEST_CLASS_HASH),
             TestResource::Model(m_ChildToParent::TEST_CLASS_HASH),
             // TestResource::Event(),

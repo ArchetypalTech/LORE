@@ -1,8 +1,6 @@
 use core::array::{ArrayTrait, ArrayImpl, Array};
-use dojo::{world::WorldStorage};
 
-use lore::{components::{player::{Player, PlayerImpl}} //
-};
+use lore::{components::{player::{PlayerImpl}}};
 
 #[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
 pub enum TokenType {
