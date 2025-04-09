@@ -1,6 +1,6 @@
 import randomName from "@scaleway/random-name";
 import JSONbig from "json-bigint";
-import { type BigNumberish, byteArray, encode, hash } from "starknet";
+import { type BigNumberish, byteArray, hash, num } from "starknet";
 import {
 	ConfigSchema,
 	type ConfigSchemaType,
@@ -218,7 +218,7 @@ export const generateNumericUniqueId = (
 };
 
 export const randomKey = () => {
-	return encode.sanitizeHex(
+	return num.toHex64(
 		hash.keccakBn(generateNumericUniqueId()).toString(),
 	) as BigNumberish;
 };
