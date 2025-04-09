@@ -138,7 +138,7 @@ const createTree = () => {
 	const getNode = (inst: BigNumberish): TreeNode[] => {
 		const entity = EditorData().getEntity(inst);
 		if (entity === undefined || entity.Entity === undefined) return [];
-		if ("ParentToChildren" in entity) {
+		if ("ParentToChildren" in entity && entity.ParentToChildren !== undefined) {
 			const children = entity.ParentToChildren?.children.flatMap((child) => {
 				return getNode(child.toString());
 			});
@@ -176,7 +176,7 @@ export const HierarchyTree = () => {
 			<Button
 				variant={"hero"}
 				// className="w-full"
-				onClick={() => EditorData().newEntity({} as Entity)}
+				onClick={() => EditorData().newEntity()}
 			>
 				<HousePlus />
 				New Entity

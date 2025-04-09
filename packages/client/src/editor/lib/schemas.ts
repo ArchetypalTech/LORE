@@ -42,7 +42,7 @@ export const cleanCairoEnum = (
 	value: CairoCustomEnum | string | { None: boolean } | { Some: unknown },
 ) => {
 	if (typeof value !== "string") {
-		if ("None" in value) return "None";
+		if ("None" in value && value.None !== undefined) return "None";
 	}
 	return value;
 };
@@ -52,7 +52,7 @@ export const stringCairoEnum = <T>(
 	value: CairoCustomEnum | string | { None: boolean } | { Some: unknown },
 ) => {
 	if (typeof value !== "string") {
-		if ("None" in value) return "None";
+		if ("None" in value && value.None !== undefined) return "None";
 	}
 	return value as keyof T;
 };

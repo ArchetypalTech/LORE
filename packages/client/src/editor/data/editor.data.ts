@@ -5,8 +5,7 @@ import type {
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import JSONbig from "json-bigint";
 import { toast } from "sonner";
-import { type BigNumberish, encode } from "starknet";
-import { createRandomName, randomKey } from "../editor.utils";
+import { type BigNumberish, num } from "starknet";
 import { Notifications } from "../lib/notifications";
 import type {
 	AnyObject,
@@ -16,6 +15,7 @@ import type {
 import type { ChangeSet, EditorAction } from "../lib/types";
 import {
 	createDefaultChildToParentComponent,
+	createDefaultEntity,
 	createDefaultParentToChildrenComponent,
 } from "../lib/components";
 
@@ -37,9 +37,7 @@ const {
 });
 
 const getItem = (id: BigNumberish, syncPool = false) =>
-	get()[syncPool ? "syncPool" : "dataPool"].get(
-		encode.sanitizeHex(id.toString()),
-	);
+	get()[syncPool ? "syncPool" : "dataPool"].get(num.toHex64(id.toString()));
 
 const getEntity = (id: BigNumberish, syncPool = false) => {
 	const item = getItem(id, syncPool);
@@ -67,7 +65,7 @@ const resetChanges = () => {
 };
 
 const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
-	const inst = encode.sanitizeHex(id.toString());
+	const inst = num.toHex64(id.toString());
 	set((prev) => ({
 		...prev,
 		dataPool: new Map<BigNumberish, AnyObject>(get().dataPool).set(inst, obj),
@@ -110,9 +108,12 @@ const updateComponent = <T extends keyof EntityCollection>(
 	if (
 		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
 	) {
+		console.log(
+			get().changeSet.find((x) => x.inst === inst && componentName in x.object),
+		);
 		set({
 			changeSet: get().changeSet.filter(
-				(x) => x.inst === inst && componentName in x.object,
+				(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst,
 			),
 		});
 	}
@@ -129,6 +130,7 @@ const updateComponent = <T extends keyof EntityCollection>(
 	}
 	createAction("update", inst, { [componentName]: component });
 	syncItem(edited);
+	console.log(componentName, get().changeSet);
 	return edited as EntityCollection;
 };
 
@@ -147,7 +149,6 @@ const removeComponent = (
 	console.warn("removeComponent", edited, componentName);
 	const deleted = { ...edited[componentName] };
 	edited[componentName] = undefined;
-	delete edited[componentName];
 	if (
 		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
 	) {
@@ -168,59 +169,76 @@ const removeComponent = (
 };
 
 const addToParent = (child: EntityCollection, parent: EntityCollection) => {
-	const newChild = getEntity(child.Entity.inst)!;
-	if ("ChildToParent" in newChild) {
-		removeParent(getEntity(newChild.ChildToParent!.inst)!);
-	}
-	const childComponent = newChild.ChildToParent
-		? { ChildToParent: newChild.ChildToParent }
-		: createDefaultChildToParentComponent(newChild.Entity);
-	console.log(childComponent);
-	childComponent.ChildToParent.parent = parent.Entity.inst;
-	updateComponent(
-		newChild.Entity.inst,
-		"ChildToParent",
-		childComponent.ChildToParent,
-	);
+	const childId = child.Entity.inst;
+	const parentId = parent.Entity.inst;
+	const newChild = getEntity(childId)!;
 
-	const newParent = getEntity(parent.Entity.inst)!;
-	const parentComponent = newParent.ParentToChildren
-		? { ParentToChildren: newParent.ParentToChildren }
-		: createDefaultParentToChildrenComponent(newParent.Entity);
-	parentComponent.ParentToChildren.children.push(newChild.Entity.inst);
+	// Check if child already has a parent and remove it if necessary
+	if ("ChildToParent" in newChild && newChild.ChildToParent !== undefined) {
+		removeParent(getEntity(childId)!);
+	}
+
+	const childComponent = createDefaultChildToParentComponent(newChild.Entity);
+	childComponent.ChildToParent.parent = parentId;
+	console.log(child, childComponent, childId, parentId);
+	updateComponent(childId, "ChildToParent", childComponent.ChildToParent);
+	// Update the parent's children list
+	const newParent = getEntity(parentId)!;
+	const parentComponent =
+		newParent.ParentToChildren && newParent.ParentToChildren !== undefined
+			? { ParentToChildren: { ...newParent.ParentToChildren } }
+			: createDefaultParentToChildrenComponent(newParent.Entity);
+
+	// Add child to parent's children array if not already there
+	if (!parentComponent.ParentToChildren.children.includes(childId)) {
+		parentComponent.ParentToChildren.children.push(childId);
+	}
+
 	updateComponent(
-		newParent.Entity.inst,
+		parentId,
 		"ParentToChildren",
 		parentComponent.ParentToChildren,
 	);
 };
 
 const removeParent = (child: EntityCollection) => {
-	if ("ChildToParent" in child) {
-		const parent = getEntity(child.ChildToParent!.parent)!;
-		updateComponent(child.Entity.inst, "ChildToParent", undefined);
-		if (child.ChildToParent!.parent === parent.Entity.inst) {
-			parent.ParentToChildren!.children = parent.ParentToChildren!.children.filter(
-				(c) => c !== child.Entity.inst,
-			);
-			if (parent.ParentToChildren!.children.length === 0) {
-				updateComponent(parent.Entity.inst, "ParentToChildren", undefined);
-			} else {
-				updateComponent(
-					parent.Entity.inst,
-					"ParentToChildren",
-					parent.ParentToChildren,
+	if ("ChildToParent" in child && child.ChildToParent !== undefined) {
+		const childId = child.Entity.inst;
+		const parentId = child.ChildToParent.parent;
+
+		// Store the parent reference before modifying the child
+		const parent = getEntity(parentId);
+
+		// Remove the child's parent reference
+		updateComponent(childId, "ChildToParent", undefined);
+
+		if (parent && "Entity" in parent && parent.Entity.inst === parentId) {
+			if ("ParentToChildren" in parent && parent.ParentToChildren !== undefined) {
+				const newChildren = parent.ParentToChildren.children.filter(
+					(c) => c !== childId,
 				);
+
+				if (newChildren.length === 0) {
+					updateComponent(parentId, "ParentToChildren", undefined);
+				} else {
+					// Update with the new children list
+					const updatedParentComponent = {
+						...parent.ParentToChildren,
+						children: newChildren,
+					};
+					updateComponent(parentId, "ParentToChildren", updatedParentComponent);
+				}
+				EditorData().set({
+					isDirty: Date.now(),
+				});
+				return;
 			}
-			EditorData().set({
-				isDirty: Date.now(),
-			});
-			return;
 		}
+
 		EditorData().set({
 			isDirty: Date.now(),
 		});
-		throw new Error("Parent missing");
+		throw new Error("Parent missing or invalid");
 	}
 };
 
@@ -238,7 +256,7 @@ const removeEntity = (entity: EntityCollection) => {
 		set({ editedEntity: undefined });
 	}
 	// unparent all children
-	if ("ParentToChildren" in entity) {
+	if ("ParentToChildren" in entity && entity.ParentToChildren !== undefined) {
 		const children = (
 			entity.ParentToChildren as ParentToChildren
 		)?.children.flat();
@@ -246,7 +264,7 @@ const removeEntity = (entity: EntityCollection) => {
 			removeParent(getEntity(child)!);
 		});
 	}
-	if ("ChildToParent" in entity) {
+	if ("ChildToParent" in entity && entity.ChildToParent !== undefined) {
 		removeParent(getEntity(entity.ChildToParent!.inst)!);
 	}
 
@@ -294,8 +312,11 @@ const syncItem = (
 		}
 		let name = "";
 		// @dev: add Entity models to entities
-		if ("Entity" in (obj as { Entity: Entity })) {
-			name = obj.Entity!.name;
+		if (
+			"Entity" in (obj as { Entity: Entity }) &&
+			(obj as { Entity: Entity }).Entity !== undefined
+		) {
+			name = (obj as { Entity: Entity }).Entity.name;
 		}
 		// @dev: retrieve instance value
 		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
@@ -325,12 +346,15 @@ const syncItem = (
 				console.error("Existing object not found:", inst, obj);
 				return;
 			}
-			const merged = { ...existing, ...obj };
+
+			// Process object for component deletions and merging
+			const merged = processMergedObject(existing, obj);
+
 			const compare = JSONbig.stringify(merged).includes(
 				JSONbig.stringify(existing),
 			);
 			if (!compare) {
-				setItem({ ...merged } as AnyObject, inst, sync);
+				setItem(merged as AnyObject, inst, sync);
 			}
 		}
 
@@ -349,6 +373,48 @@ const syncItem = (
 	}
 };
 
+/**
+ * Helper function that properly processes component deletions during merging
+ * Handles removing undefined components and safely merging with existing data
+ */
+const processMergedObject = (
+	existing: AnyObject,
+	newObj: AnyObject,
+): AnyObject => {
+	// Create a new object to store the result
+	const result = {} as Record<string, unknown>;
+
+	// First copy all existing properties
+	Object.keys(existing).forEach((key) => {
+		// Use type assertion to ensure TypeScript accepts the indexing
+		result[key] = (existing as Record<string, unknown>)[key];
+	});
+
+	// Then process the new object's keys
+	Object.keys(newObj).forEach((key) => {
+		// Get the value with proper type safety
+		const value = (newObj as Record<string, unknown>)[key];
+
+		// If the value is undefined, delete the property
+		if (value === undefined) {
+			delete result[key];
+		} else {
+			// Otherwise, update the property
+			result[key] = value;
+		}
+	});
+
+	// Preserve special properties if needed
+	if (
+		"_actionRecord" in existing &&
+		(existing as Record<string, unknown>)._actionRecord !== undefined
+	) {
+		result._actionRecord = (existing as Record<string, unknown>)._actionRecord;
+	}
+
+	return result as AnyObject;
+};
+
 const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
 		const entity = getEntity(get().selectedEntity!);
@@ -365,31 +431,29 @@ const updateSelectedEntity = (entity: EntityCollection) => {
 	set({ selectedEntity });
 };
 
-const newEntity = (entity: Entity) => {
-	const inst = randomKey();
-	const newEntity: Entity = {
-		inst,
-		is_entity: true,
-		name: `${createRandomName()}`,
-		alt_names: [],
-	};
-	Object.assign(newEntity, entity);
-	syncItem({ Entity: newEntity });
-	updateComponent(newEntity.inst, "Entity", newEntity);
+const newEntity = () => {
+	const newEntity = createDefaultEntity();
+	syncItem(newEntity);
+	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
 	if (get().selectedEntity !== undefined) {
-		const e = getEntity(inst)!;
+		const e = getEntity(newEntity.Entity.inst)!;
 		const newParent = getEntity(get().selectedEntity!)!;
 		addToParent(e, newParent);
 	} else {
-		selectEntity(newEntity.inst);
+		selectEntity(newEntity.Entity.inst);
 	}
 	return newEntity;
 };
 
 const logPool = () => {
 	const poolArray = get().dataPool.values().toArray();
-	console.info("Pool");
+	const syncPoolArray = get().syncPool.values().toArray();
+	console.info("DataPool");
 	console.table(poolArray);
+	console.log("DataPool", get().dataPool);
+	console.info("SyncPool");
+	console.table(syncPoolArray);
+	console.log("SyncPool", get().syncPool);
 	console.info("ChangeSet", get().changeSet);
 	console.info("Entities", getEntities());
 	console.info("Selected", get().selectedEntity);

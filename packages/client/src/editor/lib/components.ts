@@ -9,7 +9,7 @@ import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
-import { randomKey } from "../editor.utils";
+import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 
 export const createDefaultEntity = (): WithStringEnums<
@@ -19,7 +19,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		...schema.lore.Entity,
 		inst: randomKey(),
 		is_entity: true,
-		name: randomName(),
+		name: createRandomName(),
 		alt_names: [],
 	},
 });

@@ -95,7 +95,7 @@ export const Editor = () => {
 									<NoEntity />
 									<Button
 										className="max-w-30 mx-auto"
-										onClick={() => EditorData().newEntity({} as Entity)}
+										onClick={() => EditorData().newEntity()}
 									>
 										<HousePlus /> New Entity
 									</Button>
