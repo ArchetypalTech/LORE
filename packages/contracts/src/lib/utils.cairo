@@ -68,7 +68,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         words
     }
 
-    fn end_with(self: ByteArray, suffix: ByteArray) -> bool {
+    fn ends_with(self: ByteArray, suffix: ByteArray) -> bool {
         let self_len = self.len();
         let suffix_len = suffix.len();
 
@@ -92,6 +92,32 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
 
         // Return the result stored in ends_with
         ends_with
+    }
+
+    fn starts_with(self: ByteArray, prefix: ByteArray) -> bool {
+        let self_len = self.len();
+        let prefix_len = prefix.len();
+
+        // If prefix is longer than self, it can’t be a prefix by definition,
+        // so we skip all further logic and immediately return false.
+        if prefix_len > self_len {
+            return false;
+        }
+
+        // Create a mutable variable that we assume is true.
+        // Change it to false only if we find a mismatch during the loop.
+        let mut starts_with = true;
+
+        // Compare each byte in prefix to the corresponding byte at the start of self
+        for i in 0..prefix_len {
+            if self.at(i).unwrap() != prefix.at(i).unwrap() {
+                starts_with = false;
+                break;
+            }
+        };
+
+        // Return the result stored in starts_with
+        starts_with
     }
 }
 
@@ -151,5 +177,34 @@ mod tests {
         assert(!w1.clone().equals(w2.clone()), 'w1 and w2 not similar');
         assert(w1.equals(word1), 'words[0] == "hello".into()');
         assert(w2.equals(word2), 'words[1] == b"world".into()');
+    }
+
+    #[test]
+    fn ByteArrayExt_ends_with() {
+        let input: ByteArray = "meeting";
+        let suffix: ByteArray = "ing";
+        let expected_result: bool = true;
+        let end_with: bool = input.ends_with(suffix);
+        assert_eq!(end_with, expected_result, "ending should be true");
+
+        let input: ByteArray = "cook";
+        let suffix: ByteArray = "ing";
+        let expected_result: bool = false;
+        let end_with: bool = input.ends_with(suffix);
+        assert_eq!(end_with, expected_result, "ending should be false");
+    }
+
+    fn ByteArrayExt_starts_with() {
+        let input: ByteArray = "reusable";
+        let prefix: ByteArray = "re";
+        let expected_result: bool = true;
+        let end_with: bool = input.starts_with(prefix);
+        assert_eq!(end_with, expected_result, "ending should be true");
+
+        let input: ByteArray = "cowork";
+        let prefix: ByteArray = "re";
+        let expected_result: bool = false;
+        let end_with: bool = input.starts_with(prefix);
+        assert_eq!(end_with, expected_result, "ending should be false");
     }
 }
