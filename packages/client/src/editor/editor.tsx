@@ -1,7 +1,6 @@
 import "@styles/editor.css";
 import Terminal from "@/client/terminal/Terminal";
 import { APP_EDITOR_SEO } from "@/data/app.data";
-import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { useDojoStore } from "@/lib/stores/dojo.store";
 import { useUserStore } from "@/lib/stores/user.store";
 import { cn } from "@/lib/utils/utils";

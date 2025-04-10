@@ -1,34 +1,26 @@
 {
-	"biome.requireConfiguration": false,
-	"biome.lspBin": "./biome-test/node_modules/@biomejs/biome/bin/biome",
 	"[typescriptreact]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[javascript]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[jsonc]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[json]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[css]": {
 		"editor.defaultFormatter": "bradlc.vscode-tailwindcss"
 	},
-	"[scss]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
 	"[typescript]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[javascriptreact]": {
-		"editor.defaultFormatter": "biomejs.biome"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[html]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"[solidity]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[cairo]": {
@@ -65,5 +57,8 @@
 	"cairo1.enableScarb": true,
 	"cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.9.2/bin/scarb",
 	"cairo1.preferScarbLanguageServer": false,
-	"typescript.tsdk": "node_modules/typescript/lib"
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"oxc.enable": true,
+	"oxc.configPath": "packages/client/.oxlintrc.json",
+	"biome.enabled": false
 }
