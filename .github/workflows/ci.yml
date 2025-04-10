@@ -57,5 +57,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - name: Client
-        run: cd packages/client && bun run lint
+        run: cd packages/client && bun i && bun run lint
         shell: bash
