@@ -22,7 +22,7 @@ jobs:
         with:
           scarb-version: ${{ env.SCARB_VERSION }}
       - name: Format
-        run: scarb fmt --check
+        run: cd packages/contracts && scarb fmt --check
         shell: bash
 
   build:
