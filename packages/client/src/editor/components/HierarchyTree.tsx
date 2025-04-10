@@ -26,22 +26,25 @@ export const HierarchyTreeItem = ({
 	containerStyle,
 	isDragging,
 	clone,
-	handleProps: { onPointerDown, ...handleProps },
+	handleProps,
 	isCollapsible,
 	onCollapse,
 	node,
 	childCount,
-}: RenderItemProps<TreeNode>) => {
+}: RenderItemProps<TreeNode["data"]>) => {
 	const entity = node.data?.entity as EntityCollection;
 	if (!entity) return null;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
 	const [timer, setTimer] = useState<NodeJS.Timer>();
 
+	// Extract onPointerDown from handleProps safely
+	const { onPointerDown, ...otherHandleProps } = handleProps || {};
+
 	const icons = useMemo(() => {
 		return Object.entries(componentData)
 			.filter(([key]) => {
-				return entity?.[key as keyof typeof entity] !== undefined;
+				return entity[key as keyof typeof entity] !== undefined;
 			})
 			.sort((a, b) => a[1].order - b[1].order)
 			.slice(0, 2);
@@ -72,21 +75,14 @@ export const HierarchyTreeItem = ({
 				>
 					{!isDragging && (
 						<>
-							{/* {isSelected && (
-								<button
-									{...handleProps}
-									className="cursor-move absolute top-0 left-0 w-full h-full"
-								/>
-							)} */}
-							{/* {!isSelected && ( */}
 							<button
-								{...handleProps}
+								{...otherHandleProps}
 								onPointerDown={(event) => {
 									event.stopPropagation();
 
 									EditorData().selectEntity(node.id.toString());
 									const t = setTimeout(() => {
-										onPointerDown(event);
+										onPointerDown?.(event);
 										clearTimeout(timer);
 										setTimer(undefined);
 									}, 300);
@@ -98,12 +94,11 @@ export const HierarchyTreeItem = ({
 								}}
 								className="cursor-pointer absolute top-0 left-0 w-full h-full"
 							/>
-							{/* )} */}
 							{isSelected && (
 								<div className="absolute top-0 -left-1 w-[calc(100%+.5rem)] h-[100%] bg-black/20 -z-1 rotate-[.26deg]" />
 							)}
 							{isCollapsible && (
-								<button className="cursor-pointer p-1" onClick={onCollapse}>
+								<button className="cursor-pointer p-1" onClick={onCollapse} type="button">
 									XX
 								</button>
 							)}
@@ -157,14 +152,14 @@ const createTree = () => {
 	// construct the tree
 	const tree = parents.flatMap((parent) =>
 		getNode(parent!.Entity.inst),
-	) as unknown as TreeItems<TreeNode>;
+	) as unknown as TreeItems<TreeNode["data"]>;
 
 	return { tree };
 };
 
 export const HierarchyTree = () => {
 	const { dataPool, isDirty } = useEditorData();
-	const [data, setData] = useState<TreeItems<TreeNode>>(createTree().tree);
+	const [data, setData] = useState(createTree().tree);
 
 	useEffect(() => {
 		dataPool;
