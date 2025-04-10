@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - feat/biome_ci
   pull_request:
 
 env:
@@ -14,7 +15,7 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
-    name: Check format
+    name: Contracts / Check format
     steps:
       - uses: actions/checkout@v4
       - uses: software-mansion/setup-scarb@v1
@@ -27,7 +28,7 @@ jobs:
   build:
     needs: check
     runs-on: ubuntu-latest
-    name: Build workspace
+    name: Contracts / Build workspace
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -38,7 +39,7 @@ jobs:
   lore:
     needs: [check, build]
     runs-on: ubuntu-latest
-    name: Test LORE
+    name: Contracts / Test LORE
     steps:
       - uses: actions/checkout@v4
       - uses: software-mansion/setup-scarb@v1
@@ -47,4 +48,14 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Test
         run: cd packages/contracts && sozo test
+        shell: bash
+
+  client:
+    runs-on: ubuntu-latest
+    name: Client / Lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Client
+        run: cd packages/client && bun run lint
         shell: bash
