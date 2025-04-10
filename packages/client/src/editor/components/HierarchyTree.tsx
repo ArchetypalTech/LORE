@@ -1,17 +1,17 @@
-import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { cn } from "@/lib/utils/utils";
+import {
+	type RenderItemProps,
+	SortableTree,
+	type TreeItems,
+} from "dnd-kit-tree";
 import { HousePlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { BigNumberish } from "starknet";
+import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
+import { cn } from "@/lib/utils/utils";
 import EditorData, { useEditorData } from "../data/editor.data";
-import { Button } from "./ui/Button";
-import {
-	SortableTree,
-	type RenderItemProps,
-	type TreeItems,
-} from "dnd-kit-tree";
-import type { EntityCollection } from "../lib/types";
 import { componentData } from "../lib/components";
+import type { EntityCollection } from "../lib/types";
+import { Button } from "./ui/Button";
 
 type TreeNode = {
 	id: BigNumberish;
@@ -33,7 +33,6 @@ export const HierarchyTreeItem = ({
 	childCount,
 }: RenderItemProps<TreeNode["data"]>) => {
 	const entity = node.data?.entity as EntityCollection;
-	if (!entity) return null;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
 	const [timer, setTimer] = useState<NodeJS.Timer>();
@@ -54,8 +53,8 @@ export const HierarchyTreeItem = ({
 		<div ref={wrapperRef}>
 			<div
 				className={cn(
-					"relative opacity-80 overflow-visible flex flex-row",
-					isSelected && " text-white opacity-100 font-bold",
+					"relative flex flex-row overflow-visible opacity-80",
+					isSelected && " font-bold text-white opacity-100",
 				)}
 				style={{
 					paddingLeft: `${depth * 1}rem`,
@@ -66,7 +65,7 @@ export const HierarchyTreeItem = ({
 					style={containerStyle}
 					className={
 						isDragging
-							? cn(["relative rounded-xs bg-gray-800/10 w-40 h-4"])
+							? cn(["relative h-4 w-40 rounded-xs bg-gray-800/10"])
 							: cn("relative", {
 									flex: !clone,
 									"inline-flex": clone,
@@ -92,18 +91,22 @@ export const HierarchyTreeItem = ({
 									clearTimeout(timer);
 									setTimer(undefined);
 								}}
-								className="cursor-pointer absolute top-0 left-0 w-full h-full"
+								className="absolute top-0 left-0 h-full w-full cursor-pointer"
 							/>
 							{isSelected && (
-								<div className="absolute top-0 -left-1 w-[calc(100%+.5rem)] h-[100%] bg-black/20 -z-1 rotate-[.26deg]" />
+								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg] bg-black/20" />
 							)}
 							{isCollapsible && (
-								<button className="cursor-pointer p-1" onClick={onCollapse} type="button">
+								<button
+									className="cursor-pointer p-1"
+									onClick={onCollapse}
+									type="button"
+								>
 									XX
 								</button>
 							)}
 							<div className="flex-grow-1">{entity.Entity.name} </div>
-							<div className="absolute left-[100%] opacity-50 hover:opacity-100 ml-2">
+							<div className="absolute left-[100%] ml-2 opacity-50 hover:opacity-100">
 								{icons.map(([key, value]) => {
 									if (value.icon) {
 										return (
@@ -115,7 +118,7 @@ export const HierarchyTreeItem = ({
 								})}
 							</div>
 							{clone && childCount > 0 && (
-								<div className="flex absolute items-center justify-center rounded-xs bg-black top-[-12px] right-[-12px] w-[25px] h-[25px] font-xs text-white rotate-[2deg]">
+								<div className="absolute top-[-12px] right-[-12px] flex h-[25px] w-[25px] rotate-[2deg] items-center justify-center rounded-xs bg-black font-xs text-white">
 									{childCount}
 								</div>
 							)}
@@ -168,7 +171,7 @@ export const HierarchyTree = () => {
 	}, [dataPool, isDirty]);
 
 	return (
-		<div className="use-editor-styles h-full items-start flex flex-col gap-4 justify-start">
+		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
 			<Button
 				variant={"hero"}
 				// className="w-full"

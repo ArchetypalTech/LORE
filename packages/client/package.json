@@ -4,7 +4,9 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"lint": "oxlint -c ./.oxlintrc.json --import-plugin",
+		"lint:oxlint": "bunx oxlint -c ./.oxlintrc.json --import-plugin",
+		"lint:biome": "biome check --write",
+		"lint": "bun run lint:oxlint && bun run lint:biome",
 		"dev": "bunx vite --mode development",
 		"dev:slot": "bunx vite dev --mode slot",
 		"build": "bunx vite build",
@@ -37,7 +39,6 @@
 		"immer": "^10.1.1",
 		"json-bigint": "^1.0.0",
 		"lucide-react": "^0.487.0",
-		"oxlint": "^0.16.5",
 		"pure-rand": "^7.0.1",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
@@ -57,6 +58,7 @@
 		"zustand": "^5.0.3"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.0.0-beta.1",
 		"@types/json-bigint": "^1.0.4",
 		"@types/react": "^18.3.18",
 		"@types/react-dom": "^18.3.5",
@@ -64,10 +66,15 @@
 		"ansicolor": "^2.0.3",
 		"bun": "^1.2.2",
 		"bun-types": "^1.2.2",
+		"oxlint": "^0.16.5",
 		"typescript": "^5.7.3",
 		"vite-plugin-mkcert": "^1.17.8"
 	},
-	"trustedDependencies": ["oxlint", "vite", "bun"],
+	"trustedDependencies": [
+		"oxlint",
+		"vite",
+		"bun"
+	],
 	"engines": {
 		"node": "22.x"
 	}

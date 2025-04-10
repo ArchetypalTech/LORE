@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
 import type { ChangeEvent, FocusEvent, KeyboardEvent } from "react";
+import { useRef, useState } from "react";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 
@@ -133,13 +133,13 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 				className={"bg-white"}
 				onChange={(e) => setInput(e.target.value)}
 			/>
-			<div className="flex flex-wrap mt-2">
+			<div className="mt-2 flex flex-wrap">
 				{value.map((tag, index) => {
 					if (tag === "") return null;
 					return (
 						<span
 							key={index}
-							className="tag inline-block bg-gray-200 pl-2 pr-1 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2 rounded-sm"
+							className="tag mr-2 mb-2 inline-block rounded-sm bg-gray-200 py-1 pr-1 pl-2 font-semibold text-gray-700 text-sm"
 						>
 							{tag}{" "}
 							<Button

@@ -1,0 +1,73 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.0.0-beta.1/schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"formatter": {
+		"enabled": true,
+		"indentWidth": 1,
+		"indentStyle": "tab"
+	},
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"style": {
+				"noNonNullAssertion": "off",
+				"useNumberNamespace": "off",
+				"noInferrableTypes": "off",
+				"noUnusedTemplateLiteral": "off",
+				"useLiteralEnumMembers": "error",
+				"noCommaOperator": "error",
+				"useNodejsImportProtocol": "error",
+				"useAsConstAssertion": "error",
+				"useNumericLiterals": "error",
+				"useEnumInitializers": "error",
+				"useSelfClosingElements": "error",
+				"useConst": "error",
+				"useSingleVarDeclarator": "error",
+				"useExponentiationOperator": "error",
+				"useTemplate": "error",
+				"noParameterAssign": "error",
+				"useDefaultParameterLast": "error",
+				"noArguments": "error",
+				"useImportType": "error",
+				"useExportType": "error",
+				"noUselessElse": "error",
+				"useShorthandFunctionType": "error"
+			},
+			"a11y": "off",
+			"complexity": {
+				"noForEach": "off",
+				"noExcessiveCognitiveComplexity": {
+					"level": "error",
+					"options": {
+						"maxAllowedComplexity": 15
+					}
+				}
+			},
+			"suspicious": {
+				"noShadowRestrictedNames": "off",
+				"noArrayIndexKey": "off"
+			},
+			"nursery": {
+				"useSortedClasses": {
+					"level": "error",
+					"fix": "safe",
+					"options": {
+						"attributes": ["className"],
+						"functions": ["cn"]
+					}
+				}
+			}
+		}
+	}
+}

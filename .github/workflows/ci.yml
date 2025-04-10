@@ -1,0 +1,51 @@
+name: LORE CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feat/biome_ci
+  pull_request:
+
+env:
+  DOJO_VERSION: v1.3.1
+  SCARB_VERSION: 2.9.2
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: Check format
+    steps:
+      - uses: actions/checkout@v4
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
+      - name: Format
+        run: scarb fmt --check
+        shell: bash
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    name: Build workspace
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build
+        run: cd packages/contracts && sozo build
+        shell: bash
+
+  lore:
+    needs: [check, build]
+    runs-on: ubuntu-latest
+    name: Test LORE
+    steps:
+      - uses: actions/checkout@v4
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
+      - uses: ./.github/actions/setup
+      - name: Test
+        run: cd packages/contracts && sozo test
+        shell: bash

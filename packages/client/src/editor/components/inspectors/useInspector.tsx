@@ -1,3 +1,6 @@
+import { Trash2 } from "lucide-react";
+import { type ChangeEvent, type FC, useCallback } from "react";
+import type { BigNumberish } from "starknet";
 import EditorData from "@/editor/data/editor.data";
 import { formatColorHash } from "@/editor/editor.utils";
 import { componentData } from "@/editor/lib/components";
@@ -6,9 +9,6 @@ import type {
 	EntityCollection,
 	WithStringEnums,
 } from "@/editor/lib/types";
-import { Trash2 } from "lucide-react";
-import { type ChangeEvent, type FC, useCallback } from "react";
-import type { BigNumberish } from "starknet";
 import { Button } from "../ui/Button";
 
 // Using a type union to handle different HTML element types
@@ -91,14 +91,14 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 	const Inspector = useCallback(
 		({ children }: React.PropsWithChildren) => {
 			return (
-				<div className="flex flex-col gap-2 border border-dotted border-black/20 p-2 rounded-md bg-black/1 shadow-xs animate-scale-in">
-					<div className="w-full text-right text-xs uppercase text-black/50 font-bold flex flex-row items-center justify-end gap-2">
+				<div className="flex animate-scale-in flex-col gap-2 rounded-md border border-black/20 border-dotted bg-black/1 p-2 shadow-xs">
+					<div className="flex w-full flex-row items-center justify-end gap-2 text-right font-bold text-black/50 text-xs uppercase">
 						<h6>
 							{`${componentData[componentName]?.icon || ""} `}
 							{componentName}
 						</h6>
 						<div
-							className="text-[7pt] text-black/20 hover:opacity-100 opacity-0"
+							className="text-[7pt] text-black/20 opacity-0 hover:opacity-100"
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: <hey, sometimes, you have to live dangerously!>
 							dangerouslySetInnerHTML={{
 								__html: formatColorHash(componentObject.inst),
@@ -110,7 +110,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 								variant={"ghost"}
 								size="sm"
 								onClick={() => handleRemove(componentName)}
-								className="w-2 opacity-50 h-2 hover:opacity-100"
+								className="h-2 w-2 opacity-50 hover:opacity-100"
 							>
 								<Trash2 />
 							</Button>

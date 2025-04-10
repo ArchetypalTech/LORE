@@ -1,7 +1,7 @@
-import { toCairoArray } from "@/editor/editor.utils";
 import { LORE_CONFIG } from "@lib/config";
 import JSONbig from "json-bigint";
-import { CallData, type RawArgsArray, byteArray } from "starknet";
+import { byteArray, CallData, type RawArgsArray } from "starknet";
+import { toCairoArray } from "@/editor/editor.utils";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
 
