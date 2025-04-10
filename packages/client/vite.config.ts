@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import { bgGreen, black } from "ansicolor";
 import { defineConfig, loadEnv } from "vite";
 import mkcert from "vite-plugin-mkcert";
+import oxlintPlugin from "vite-plugin-oxlint";
 import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 import { patchBindings } from "./scripts/vite-fix-bindings";
@@ -15,8 +16,6 @@ export default defineConfig(async ({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 	console.log(`\n🧾 LORE IN (${mode}) MODE`);
 	const isSlot = mode === "slot";
-	const isProd = mode === "production";
-	const isDev = mode === "development";
 	if (isSlot)
 		console.info(
 			black(
@@ -28,6 +27,7 @@ export default defineConfig(async ({ mode }) => {
 
 	return {
 		plugins: [
+			oxlintPlugin(),
 			isSlot &&
 				mkcert({
 					hosts: ["localhost"],

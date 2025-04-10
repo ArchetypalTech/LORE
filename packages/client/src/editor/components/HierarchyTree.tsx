@@ -32,7 +32,8 @@ export const HierarchyTreeItem = ({
 	node,
 	childCount,
 }: RenderItemProps<TreeNode>) => {
-	const entity = node.data?.entity! as EntityCollection;
+	const entity = node.data?.entity as EntityCollection;
+	if (!entity) return null;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
 	const [timer, setTimer] = useState<NodeJS.Timer>();
