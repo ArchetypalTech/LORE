@@ -3,6 +3,6 @@
 		"starkware.cairo1",
 		"formulahendry.auto-rename-tag",
 		"oven.bun-vscode",
-		"biomejs.biome"
+		"oxc.oxc-vscode"
 	]
 }
