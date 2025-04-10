@@ -175,9 +175,45 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
     }
 }
 
+#[generate_trait]
+pub impl ClousureTraitImp of ClousureTrait {
+    // #[inline(never)]
+    // fn filter<
+    //     T,
+    //     +Clone<T>,
+    //     +Drop<T>,
+    //     F,
+    //     +Drop<F>,
+    //     impl func: core::ops::Fn<F, (T,)>[Output: bool],
+    //     +Drop<func::Output>,
+    // >(
+    //     self: Array<T>, f: F,
+    // ) -> Array<T> {
+    //     let mut output: Array<T> = array![];
+    //     for elem in self {
+    //         if f(elem) {
+    //             output.append(elem);
+    //         }
+    //     };
+    //     output
+    // }
+
+    #[inline(never)]
+    fn map<T, +Drop<T>, F, +Drop<F>, impl func: core::ops::Fn<F, (T,)>, +Drop<func::Output>>(
+        self: Array<T>, f: F,
+    ) -> Array<func::Output> {
+        let mut output: Array<func::Output> = array![];
+        for elem in self {
+            output.append(f(elem));
+        };
+        output
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::ByteArrayTraitExt;
+    use super::ClousureTrait;
 
     #[test]
     fn ByteArrayExt_to_felt252_word() {
@@ -293,5 +329,33 @@ mod tests {
         let expected_result: ByteArray = "boom";
         let end_with: ByteArray = input.to_lowercase();
         assert_eq!(end_with, expected_result, "lowercase should be false");
+    }
+
+    #[test]
+    fn test_map() {
+        // Create a test Array with some values
+        let mut input_array: Array = ArrayTrait::new();
+        input_array.append(1);
+        input_array.append(2);
+        input_array.append(3);
+        input_array.append(4);
+        input_array.append(5);
+
+        // Define a closure that doubles each value
+        let closure = |x: i32| x * 2;
+
+        // Apply the map function
+        let output_array = input_array.map(closure);
+
+        // Expected output is a doubled array
+        let mut expected_output: Array = ArrayTrait::new();
+        expected_output.append(2);
+        expected_output.append(4);
+        expected_output.append(6);
+        expected_output.append(8);
+        expected_output.append(10);
+
+        // Assert that the result matches the expected output
+        assert_eq!(output_array, expected_output, "elements should be doubled");
     }
 }
