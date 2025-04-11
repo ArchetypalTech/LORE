@@ -4,15 +4,15 @@ import { Button } from "./ui/Button";
 
 export const EditorFooter = () => {
 	return (
-		<footer className="fixed bottom-0 gap-2 mt-4 mb-1 flex items-center py-4 not-dark:bg-transparent w-screen justify-center rounded-2xl px-4">
-			<div className="relative r-4 flex flex-row justify-between w-full gap-2 items-center max-w-[1200px] ">
+		<footer className="fixed bottom-0 mt-4 mb-1 flex w-screen items-center justify-center gap-2 rounded-2xl not-dark:bg-transparent px-4 py-4">
+			<div className="r-4 relative flex w-full max-w-[1200px] flex-row items-center justify-between gap-2 ">
 				<div className="flex grow" />
 				<div className="flex gap-2">
 					<a
 						href={`${LORE_CONFIG.endpoints.torii.http}/sql`}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="hover:underline text-xs textFreak"
+						className="textFreak text-xs hover:underline"
 					>
 						<Button variant="secondary">Torii SQL</Button>
 					</a>

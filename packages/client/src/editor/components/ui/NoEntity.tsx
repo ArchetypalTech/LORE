@@ -1,7 +1,7 @@
 export const NoEntity = () => {
 	return (
-		<div className="flex items-center w-full h-full justify-center select-none">
-			<img src="/images/no-entity.png" className="w-auto h-60" draggable={false} />
+		<div className="flex h-full w-full select-none items-center justify-center">
+			<img src="/images/no-entity.png" className="h-60 w-auto" draggable={false} />
 		</div>
 	);
 };

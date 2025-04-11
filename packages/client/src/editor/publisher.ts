@@ -1,17 +1,17 @@
+import { toast } from "sonner";
+import { byteArray, num } from "starknet";
 import {
 	type Area,
 	type ChildToParent,
+	direction,
 	type Entity,
 	type Exit,
-	type Inspectable,
-	type ParentToChildren,
-	direction,
 	exitActions,
+	type Inspectable,
 	inspectableActions,
+	type ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
-import { toast } from "sonner";
-import { byteArray, num } from "starknet";
 import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
 import EditorData from "./data/editor.data";
 import { Notifications } from "./lib/notifications";

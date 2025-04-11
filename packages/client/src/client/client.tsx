@@ -1,5 +1,5 @@
-import { APP_SEO } from "@/data/app.data";
 import { useHead } from "@unhead/react";
+import { APP_SEO } from "@/data/app.data";
 import Terminal from "./terminal/Terminal";
 
 export const Client = () => {
@@ -23,9 +23,9 @@ export const Client = () => {
 	return (
 		<div
 			id="client-root"
-			className="flex relative w-screen h-screen items-center justify-center "
+			className="relative flex h-screen w-screen items-center justify-center "
 		>
-			<div className="flex items-center justify-center w-full h-full max-h-[70%] crt buzzing">
+			<div className="crt buzzing flex h-full max-h-[70%] w-full items-center justify-center">
 				<Terminal />
 			</div>
 		</div>

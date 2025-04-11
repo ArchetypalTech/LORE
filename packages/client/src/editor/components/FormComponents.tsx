@@ -1,7 +1,7 @@
-import { cn } from "@/lib/utils/utils";
-import type { ChangeEvent } from "react";
 import React from "react";
+import type { ChangeEvent } from "react";
 import type { CairoCustomEnum } from "starknet";
+import { cn } from "@/lib/utils/utils";
 import { useCairoEnum } from "../lib/schemas";
 import type { OptionType } from "../lib/types";
 import { MultiTextArea } from "./MultiTextArea";
@@ -21,12 +21,12 @@ export const Header = ({
 	children?: React.ReactNode;
 }) => {
 	return (
-		<div className="flex justify-between flex-row gap-2 items-center">
+		<div className="flex flex-row items-center justify-between gap-2">
 			<div className="relative flex flex-col">
 				<div className="relative text-white">
 					<h2 className="">{title}</h2>
-					<div className="absolute top-0 -left-4.5 w-[calc(100%+1.35rem)] h-[100%] bg-black -z-1 pl-5 pr-4 rotate-[.26deg]" />
-					<div className="absolute top-0 -left-3.5 font-white">
+					<div className="-left-4.5 -z-1 absolute top-0 h-[100%] w-[calc(100%+1.35rem)] rotate-[.26deg] bg-black pr-4 pl-5" />
+					<div className="-left-3.5 absolute top-0 font-white">
 						<h2>{">"}</h2>
 					</div>
 				</div>
@@ -41,7 +41,10 @@ export const Header = ({
 export const DeleteButton = ({
 	onClick,
 	className,
-}: { onClick: () => void; className?: string }) => {
+}: {
+	onClick: () => void;
+	className?: string;
+}) => {
 	return (
 		<Button
 			size="icon"
@@ -57,7 +60,10 @@ export const DeleteButton = ({
 export const PublishButton = ({
 	onClick,
 	className,
-}: { onClick: () => void; className?: string }) => {
+}: {
+	onClick: () => void;
+	className?: string;
+}) => {
 	return (
 		<Button
 			size="icon"
@@ -118,7 +124,7 @@ export const TagInput = ({
 	return (
 		<div className="form-group">
 			<label htmlFor={id}>{id.replaceAll("_", " ")}</label>
-			<p className="mt-1 text-xs text-gray-500">{description}</p>
+			<p className="mt-1 text-gray-500 text-xs">{description}</p>
 			<Tags
 				id={id}
 				value={value.split(",")}

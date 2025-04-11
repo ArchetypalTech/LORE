@@ -1,8 +1,8 @@
-import EditorData from "@/editor/data/editor.data";
-import type { EntityCollection } from "@/editor/lib/types";
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 import type { InitDojo } from "@lib/dojo";
 import { num } from "starknet";
+import EditorData from "@/editor/data/editor.data";
+import type { EntityCollection } from "@/editor/lib/types";
 import { LORE_CONFIG } from "../config";
 // @dev Use the Dojo bindings, *avoid* recreating these where possible
 import type {

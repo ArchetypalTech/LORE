@@ -1,0 +1,60 @@
+name: LORE CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+env:
+  DOJO_VERSION: v1.3.1
+  SCARB_VERSION: 2.9.2
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: Contracts / Check format
+    steps:
+      - uses: actions/checkout@v4
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
+      - name: Format
+        run: cd packages/contracts && scarb fmt --check
+        shell: bash
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    name: Contracts / Build workspace
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build
+        run: cd packages/contracts && sozo build
+        shell: bash
+
+  lore:
+    needs: [check, build]
+    runs-on: ubuntu-latest
+    name: Contracts / Test LORE
+    steps:
+      - uses: actions/checkout@v4
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
+      - uses: ./.github/actions/setup
+      - name: Test
+        run: cd packages/contracts && sozo test
+        shell: bash
+
+  client:
+    runs-on: ubuntu-latest
+    name: Client / Lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Client
+        run: cd packages/client && bun i && bun run lint:ci
+        shell: bash
