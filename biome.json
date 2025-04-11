@@ -7,6 +7,9 @@
 			}
 		}
 	},
+	"files": {
+		"includes": ["!**/*.gen.*"]
+	},
 	"formatter": {
 		"enabled": true,
 		"indentWidth": 1,
