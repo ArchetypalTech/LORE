@@ -34,5 +34,8 @@
 		"esbuild",
 		"keccak",
 		"secp256k1"
-	]
+	],
+	"dependencies": {
+		"mri": "^1.2.0"
+	}
 }
