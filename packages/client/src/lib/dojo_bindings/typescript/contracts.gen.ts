@@ -1,15 +1,9 @@
-import type { DojoCall, DojoProvider } from "@dojoengine/core";
-import {
-	type Account,
-	type AccountInterface,
-	type BigNumberish,
-	type ByteArray,
-	CairoCustomEnum,
-	CairoOption,
-} from "starknet";
+import { DojoProvider, DojoCall } from "@dojoengine/core";
+import { Account, AccountInterface, BigNumberish, CairoOption, CairoCustomEnum, ByteArray } from "starknet";
 import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
+
 	const build_designer_createArea_calldata = (t: Array<Area>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -18,10 +12,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_createArea = async (
-		snAccount: Account | AccountInterface,
-		t: Array<Area>,
-	) => {
+	const designer_createArea = async (snAccount: Account | AccountInterface, t: Array<Area>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -34,9 +25,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_createChild_calldata = (
-		t: Array<ChildToParent>,
-	): DojoCall => {
+	const build_designer_createChild_calldata = (t: Array<ChildToParent>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "create_child",
@@ -44,10 +33,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_createChild = async (
-		snAccount: Account | AccountInterface,
-		t: Array<ChildToParent>,
-	) => {
+	const designer_createChild = async (snAccount: Account | AccountInterface, t: Array<ChildToParent>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -68,10 +54,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_createEntity = async (
-		snAccount: Account | AccountInterface,
-		t: Array<Entity>,
-	) => {
+	const designer_createEntity = async (snAccount: Account | AccountInterface, t: Array<Entity>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -92,10 +75,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_createExit = async (
-		snAccount: Account | AccountInterface,
-		t: Array<Exit>,
-	) => {
+	const designer_createExit = async (snAccount: Account | AccountInterface, t: Array<Exit>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -108,9 +88,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_createInspectable_calldata = (
-		t: Array<Inspectable>,
-	): DojoCall => {
+	const build_designer_createInspectable_calldata = (t: Array<Inspectable>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "create_inspectable",
@@ -118,10 +96,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_createInspectable = async (
-		snAccount: Account | AccountInterface,
-		t: Array<Inspectable>,
-	) => {
+	const designer_createInspectable = async (snAccount: Account | AccountInterface, t: Array<Inspectable>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -134,9 +109,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_createParent_calldata = (
-		t: Array<ParentToChildren>,
-	): DojoCall => {
+	const build_designer_createParent_calldata = (t: Array<ParentToChildren>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "create_parent",
@@ -144,10 +117,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_createParent = async (
-		snAccount: Account | AccountInterface,
-		t: Array<ParentToChildren>,
-	) => {
+	const designer_createParent = async (snAccount: Account | AccountInterface, t: Array<ParentToChildren>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -160,9 +130,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteArea_calldata = (
-		ids: Array<BigNumberish>,
-	): DojoCall => {
+	const build_designer_deleteArea_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "delete_area",
@@ -170,10 +138,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_deleteArea = async (
-		snAccount: Account | AccountInterface,
-		ids: Array<BigNumberish>,
-	) => {
+	const designer_deleteArea = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -186,9 +151,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteChild_calldata = (
-		ids: Array<BigNumberish>,
-	): DojoCall => {
+	const build_designer_deleteChild_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "delete_child",
@@ -196,10 +159,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_deleteChild = async (
-		snAccount: Account | AccountInterface,
-		ids: Array<BigNumberish>,
-	) => {
+	const designer_deleteChild = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -212,9 +172,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteEntity_calldata = (
-		ids: Array<BigNumberish>,
-	): DojoCall => {
+	const build_designer_deleteEntity_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "delete_entity",
@@ -222,10 +180,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_deleteEntity = async (
-		snAccount: Account | AccountInterface,
-		ids: Array<BigNumberish>,
-	) => {
+	const designer_deleteEntity = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -238,9 +193,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteExit_calldata = (
-		ids: Array<BigNumberish>,
-	): DojoCall => {
+	const build_designer_deleteExit_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "delete_exit",
@@ -248,10 +201,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_deleteExit = async (
-		snAccount: Account | AccountInterface,
-		ids: Array<BigNumberish>,
-	) => {
+	const designer_deleteExit = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -264,9 +214,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteInspectable_calldata = (
-		ids: Array<BigNumberish>,
-	): DojoCall => {
+	const build_designer_deleteInspectable_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "delete_inspectable",
@@ -274,10 +222,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_deleteInspectable = async (
-		snAccount: Account | AccountInterface,
-		ids: Array<BigNumberish>,
-	) => {
+	const designer_deleteInspectable = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -290,9 +235,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteParent_calldata = (
-		ids: Array<BigNumberish>,
-	): DojoCall => {
+	const build_designer_deleteParent_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "delete_parent",
@@ -300,10 +243,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const designer_deleteParent = async (
-		snAccount: Account | AccountInterface,
-		ids: Array<BigNumberish>,
-	) => {
+	const designer_deleteParent = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -324,10 +264,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const prompt_prompt = async (
-		snAccount: Account | AccountInterface,
-		cmd: ByteArray,
-	) => {
+	const prompt_prompt = async (snAccount: Account | AccountInterface, cmd: ByteArray) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -339,6 +276,8 @@ export function setupWorld(provider: DojoProvider) {
 			throw error;
 		}
 	};
+
+
 
 	return {
 		designer: {
