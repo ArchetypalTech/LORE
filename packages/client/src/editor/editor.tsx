@@ -1,13 +1,13 @@
 import "@styles/editor.css";
+import { useHead } from "@unhead/react";
+import { HousePlus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Toaster, toast } from "sonner";
 import Terminal from "@/client/terminal/Terminal";
 import { APP_EDITOR_SEO } from "@/data/app.data";
 import { useDojoStore } from "@/lib/stores/dojo.store";
 import { useUserStore } from "@/lib/stores/user.store";
 import { cn } from "@/lib/utils/utils";
-import { useHead } from "@unhead/react";
-import { HousePlus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Toaster, toast } from "sonner";
 import { EditorFooter } from "./components/EditorFooter";
 import { EditorHeader } from "./components/EditorHeader";
 import { EntityEditor } from "./components/EntityEditor";
@@ -76,8 +76,8 @@ export const Editor = () => {
 		switch (editorState) {
 			case "not connected":
 				return (
-					<div className="use-editor-styles relative w-full h-full flex items-center justify-center">
-						<div className="animate-spin mr-3">🥾</div>
+					<div className="use-editor-styles relative flex h-full w-full items-center justify-center">
+						<div className="mr-3 animate-spin">🥾</div>
 						No Dojo connection
 					</div>
 				);
@@ -90,10 +90,10 @@ export const Editor = () => {
 							{editorState !== "empty" ? (
 								<EntityEditor key={selectedEntity} inst={selectedEntity!} />
 							) : (
-								<div className="flex flex-col grow">
+								<div className="flex grow flex-col">
 									<NoEntity />
 									<Button
-										className="max-w-30 mx-auto"
+										className="mx-auto max-w-30"
 										onClick={() => EditorData().newEntity()}
 									>
 										<HousePlus /> New Entity
@@ -103,8 +103,8 @@ export const Editor = () => {
 						</div>
 						<div
 							className={cn(
-								!dark_mode && "invert contrast-120",
-								"relative col-span-2 h-screen max-h-[calc(100vh-10rem)] hover:opacity-100 opacity-50",
+								!dark_mode && "contrast-120 invert",
+								"relative col-span-2 h-screen max-h-[calc(100vh-10rem)] opacity-50 hover:opacity-100",
 							)}
 						>
 							<Terminal />
@@ -113,10 +113,10 @@ export const Editor = () => {
 				);
 			case "error":
 				return (
-					<div className="w-full h-full flex place-items-center place-content-center grow">
+					<div className="flex h-full w-full grow place-content-center place-items-center">
 						<div className="flex w-30 ">
-							<div className="flex flex-col grow text-center">
-								<h2 className="text-center mb-10 text-2xl">Error</h2>
+							<div className="flex grow flex-col text-center">
+								<h2 className="mb-10 text-center text-2xl">Error</h2>
 								Please check developer console log
 							</div>
 						</div>
@@ -130,11 +130,11 @@ export const Editor = () => {
 			<Toaster expand visibleToasts={4} position="top-left" />
 			<div
 				id="editor-root"
-				className="fixed max-h-screen h-screen w-full font-atkinson overflow-scroll px-4"
+				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-atkinson"
 			>
-				<div className="relative h-full max-w-[1200px] mx-auto">
+				<div className="relative mx-auto h-full max-w-[1200px]">
 					<EditorHeader />
-					<div className="relative lg:container mx-auto p-0 m-0">
+					<div className="relative m-0 mx-auto p-0 lg:container">
 						{editorContents}
 					</div>
 				</div>

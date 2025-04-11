@@ -1,11 +1,16 @@
+import JSONbig from "json-bigint";
+import { toast } from "sonner";
+import { type BigNumberish, num } from "starknet";
 import type {
 	Entity,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
-import JSONbig from "json-bigint";
-import { toast } from "sonner";
-import { type BigNumberish, num } from "starknet";
+import {
+	createDefaultChildToParentComponent,
+	createDefaultEntity,
+	createDefaultParentToChildrenComponent,
+} from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
 	AnyObject,
@@ -13,11 +18,6 @@ import type {
 	EntityCollection,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import {
-	createDefaultChildToParentComponent,
-	createDefaultEntity,
-	createDefaultParentToChildrenComponent,
-} from "../lib/components";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 

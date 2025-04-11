@@ -1,7 +1,7 @@
 import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_dev.json";
-import { url, cleanEnv, str } from "envalid";
+import { cleanEnv, str, url } from "envalid";
 import { Account, Contract, RpcProvider } from "starknet";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {

@@ -1,14 +1,19 @@
 {
 	"name": "@lore/client",
-	"private": true,
 	"version": "0.0.0",
+	"private": true,
 	"type": "module",
 	"scripts": {
-		"lint": "oxlint -c ./.oxlintrc.json --import-plugin",
-		"dev": "bunx vite --mode development",
-		"dev:slot": "bunx vite dev --mode slot",
 		"build": "bunx vite build",
 		"build:slot": "bunx vite build --mode slot",
+		"dev": "bunx vite --mode development",
+		"dev:slot": "bunx vite dev --mode slot",
+		"lint": "bun run lint:oxlint && bun run lint:biome",
+		"lint:biome": "biome check --write",
+		"lint:ci": "bun run lint:ci:oxlint && bun run lint:ci:biome",
+		"lint:ci:biome": "biome ci",
+		"lint:ci:oxlint": "bunx oxlint -c ./.oxlintrc.json --import-plugin",
+		"lint:oxlint": "bunx oxlint -c ./.oxlintrc.json --import-plugin --fix",
 		"preview": "bunx vite preview --port 8080",
 		"start": "bunx serve -s /dist --port 8080"
 	},
@@ -27,9 +32,7 @@
 		"@radix-ui/react-select": "^2.1.6",
 		"@radix-ui/react-slot": "^1.1.2",
 		"@scaleway/random-name": "^5.1.1",
-		"@tailwindcss/vite": "^4.0.3",
 		"@unhead/react": "^2.0.0-beta.2",
-		"@vitejs/plugin-react-swc": "^3.8.1",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"dnd-kit-tree": "^1.0.22",
@@ -37,7 +40,6 @@
 		"immer": "^10.1.1",
 		"json-bigint": "^1.0.0",
 		"lucide-react": "^0.487.0",
-		"oxlint": "^0.16.5",
 		"pure-rand": "^7.0.1",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
@@ -45,18 +47,14 @@
 		"starknet": "^6.23.1",
 		"tailwind-merge": "^3.0.1",
 		"tailwindcss": "^4.0.3",
-		"ts-debounce": "^4.0.0",
 		"tw-animate-css": "^1.2.5",
-		"uuid": "^11.1.0",
-		"vite": "^6.2.3",
-		"vite-plugin-oxlint": "^1.3.1",
-		"vite-plugin-top-level-await": "^1.5.0",
-		"vite-plugin-wasm": "^3.4.1",
 		"wouter": "^3.6.0",
 		"zod": "^3.24.2",
 		"zustand": "^5.0.3"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.0.0-beta.1",
+		"@tailwindcss/vite": "^4.1.3",
 		"@types/json-bigint": "^1.0.4",
 		"@types/react": "^18.3.18",
 		"@types/react-dom": "^18.3.5",
@@ -64,11 +62,20 @@
 		"ansicolor": "^2.0.3",
 		"bun": "^1.2.2",
 		"bun-types": "^1.2.2",
+		"oxlint": "^0.16.5",
 		"typescript": "^5.7.3",
-		"vite-plugin-mkcert": "^1.17.8"
+		"vite": "^6.2.3",
+		"vite-plugin-mkcert": "^1.17.8",
+		"vite-plugin-oxlint": "^1.3.1",
+		"vite-plugin-top-level-await": "^1.5.0",
+		"vite-plugin-wasm": "^3.4.1"
 	},
-	"trustedDependencies": ["oxlint", "vite", "bun"],
 	"engines": {
 		"node": "22.x"
-	}
+	},
+	"trustedDependencies": [
+		"oxlint",
+		"vite",
+		"bun"
+	]
 }
