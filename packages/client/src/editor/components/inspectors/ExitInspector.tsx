@@ -1,10 +1,10 @@
+import { type ChangeEvent, useMemo } from "react";
 import EditorData from "@/editor/data/editor.data";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
-	type Exit,
 	direction,
+	type Exit,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { type ChangeEvent, useMemo } from "react";
 import { CairoEnumSelect, Select, Toggle } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";

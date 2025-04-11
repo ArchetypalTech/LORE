@@ -1,14 +1,14 @@
+import type { BigNumberish } from "starknet";
 import type {
 	DirectionEnum,
+	direction,
 	Entity,
 	InspectableActionsEnum,
+	inspectableActions,
 	SchemaType,
 	TokenTypeEnum,
-	direction,
-	inspectableActions,
 	tokenType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import type { BigNumberish } from "starknet";
 
 export interface OptionType {
 	value: string;

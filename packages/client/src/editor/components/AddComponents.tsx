@@ -49,7 +49,7 @@ export const AddComponents = ({
 	};
 
 	return (
-		<div className="w-full flex flex-row gap-2 items-end">
+		<div className="flex w-full flex-row items-end gap-2">
 			<div className="flex grow items-center">
 				<Select
 					ref={selectRef}

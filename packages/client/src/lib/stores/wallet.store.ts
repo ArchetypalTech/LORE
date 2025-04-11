@@ -1,7 +1,7 @@
-import { APP_EDITOR_DATA } from "@/data/app.data";
 import Controller, { type ControllerOptions } from "@cartridge/controller";
 import { LORE_CONFIG } from "@lib/config";
 import type { WalletAccount } from "starknet";
+import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
 
 /**

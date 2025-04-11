@@ -4,8 +4,8 @@ import { type BigNumberish, byteArray, hash, num } from "starknet";
 import {
 	ConfigSchema,
 	type ConfigSchemaType,
-	type ValidationError,
 	transformWithSchema,
+	type ValidationError,
 } from "./lib/schemas";
 
 const convertIfString = (item: unknown) => {

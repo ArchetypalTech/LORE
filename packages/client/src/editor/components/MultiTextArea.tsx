@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils/utils";
 import type { ChangeEvent } from "react";
+import { cn } from "@/lib/utils/utils";
 import { DeleteButton } from "./FormComponents";
 import { Button } from "./ui/Button";
 import { Textarea } from "./ui/Textarea";
@@ -70,7 +70,7 @@ export const MultiTextArea = ({
 			<div className="flex flex-col gap-2">
 				{value.map((v, i) => {
 					return (
-						<div key={i} className="flex relative">
+						<div key={i} className="relative flex">
 							<Textarea
 								id={i.toString()}
 								defaultValue={v}
@@ -78,7 +78,7 @@ export const MultiTextArea = ({
 								rows={rows}
 								className={cn("flex w-full bg-white", className)}
 							/>
-							<div className="absolute top-0 right-0 scale-50 hover:grayscale-0 grayscale-100 opacity-50 hover:opacity-100">
+							<div className="absolute top-0 right-0 scale-50 opacity-50 grayscale-100 hover:opacity-100 hover:grayscale-0">
 								<DeleteButton onClick={() => handleRemoveArray(i)} />
 							</div>
 						</div>

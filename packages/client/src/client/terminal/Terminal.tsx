@@ -1,7 +1,7 @@
 import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
 import { nextItem, useTerminalStore } from "@lib/stores/terminal.store";
-import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import TerminalLine from "./TerminalLine";
 import Typewriter from "./Typewriter";
 import "./Terminal.css";
@@ -112,7 +112,7 @@ export default function Terminal() {
 	};
 
 	return (
-		<div className="flex items-center justify-center w-full h-full font-berkeley">
+		<div className="flex h-full w-full items-center justify-center font-berkeley">
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}
@@ -120,13 +120,13 @@ export default function Terminal() {
 				aria-label="Terminal"
 				role=""
 				id="terminal"
-				className="buzzing overflow-y-auto h-full bg-black text-green-500 border rounded-md p-4 w-full"
+				className="buzzing h-full w-full overflow-y-auto rounded-md border bg-black p-4 text-green-500"
 				style={{
 					borderColor:
 						status === "error" ? "var(--terminal-error)" : "var(--terminal-system)",
 				}}
 			>
-				<div id="scroller" className="flex items-end flex-col bottom-0 w-full">
+				<div id="scroller" className="bottom-0 flex w-full flex-col items-end">
 					{terminalContent.map((content, index) => (
 						<TerminalLine key={index} content={content} />
 					))}
@@ -134,11 +134,11 @@ export default function Terminal() {
 					<Typewriter />
 
 					{status === "inputEnabled" && (
-						<div id="scroller" className="w-full flex flex-row gap-2">
+						<div id="scroller" className="flex w-full flex-row gap-2">
 							<span>&#x3e;</span>
 							<input
 								id="terminal-input"
-								className="bg-transparent terminal-line system w-full border-0"
+								className="terminal-line system w-full border-0 bg-transparent"
 								type="text"
 								value={inputValue}
 								onChange={(e) => setInputValue(e.target.value)}

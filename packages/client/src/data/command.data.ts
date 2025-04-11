@@ -1,12 +1,12 @@
-import { APP_DATA } from "@/data/app.data";
-import { HELP_TEXTS } from "@/data/help.data";
-import DojoStore from "@/lib/stores/dojo.store";
 import { LORE_CONFIG } from "@lib/config";
 import {
 	addTerminalContent,
 	clearTerminalContent,
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
+import { APP_DATA } from "@/data/app.data";
+import { HELP_TEXTS } from "@/data/help.data";
+import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
 
 /**
