@@ -3,12 +3,10 @@ name = "lore"
 cairo-version = "=2.9.2"
 version = "0.1.0"
 edition = "2024_07"
+experimental-features = ["associated_item_constraints"]
 
 [cairo]
 sierra-replace-ids = true
-
-[tool.cairo]
-experimental-features = ["associated_item_constraints"]
 
 [scripts]
 migrate = "sozo build && sozo migrate apply"

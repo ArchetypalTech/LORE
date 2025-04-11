@@ -177,26 +177,26 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
 
 #[generate_trait]
 pub impl ClousureTraitImp of ClousureTrait {
-    // #[inline(never)]
-    // fn filter<
-    //     T,
-    //     +Clone<T>,
-    //     +Drop<T>,
-    //     F,
-    //     +Drop<F>,
-    //     impl func: core::ops::Fn<F, (T,)>[Output: bool],
-    //     +Drop<func::Output>,
-    // >(
-    //     self: Array<T>, f: F,
-    // ) -> Array<T> {
-    //     let mut output: Array<T> = array![];
-    //     for elem in self {
-    //         if f(elem) {
-    //             output.append(elem);
-    //         }
-    //     };
-    //     output
-    // }
+    #[inline(never)]
+    fn filter<
+        T,
+        +Copy<T>,
+        +Drop<T>,
+        F,
+        +Drop<F>,
+        impl func: core::ops::Fn<F, (T,)>[Output: bool],
+        +Drop<func::Output>,
+    >(
+        self: Array<T>, f: F,
+    ) -> Array<T> {
+        let mut output: Array<T> = array![];
+        for elem in self {
+            if f(elem) {
+                output.append(elem);
+            }
+        };
+        output
+    }
 
     #[inline(never)]
     fn map<T, +Drop<T>, F, +Drop<F>, impl func: core::ops::Fn<F, (T,)>, +Drop<func::Output>>(
