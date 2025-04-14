@@ -62,7 +62,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	const storyLines = playerStory.story.slice(oldLines.length);
 
 	// @dev: this is a hack for now - we only have array indices for the story, this might not be the best approach- we still want an immediate (frontend) prompt, but we also store the prompt in the story
-	if (isNewText && storyLines[0].startsWith("> ")) {
+	if (isNewText && storyLines[0]?.startsWith("> ")) {
 		storyLines.shift();
 	}
 	console.log(oldLines, storyLines);
