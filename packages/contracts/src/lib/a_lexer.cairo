@@ -144,7 +144,10 @@ pub mod lexer {
     use lore::{
         components::{player::{Player, PlayerImpl}}, //
         constants::errors::Error, //
-        lib::{utils::ByteArrayTraitExt, dictionary::{get_dict_entry, initialize_dictionary}},
+        lib::{
+            utils::{ByteArrayTraitExt, ClousureTraitImp},
+            dictionary::{get_dict_entry, initialize_dictionary},
+        },
     };
 
 
@@ -154,6 +157,7 @@ pub mod lexer {
         initialize_dictionary(world);
         let words = message.split_into_words();
         let lowercased = lowercase(words.clone());
+        println!("lowercased using map: {:?}", lowercased);
         let tokens = match_tokens(world, lowercased);
         let mut command = Command {
             command_id: world.dispatcher.uuid().try_into().unwrap(),
@@ -248,6 +252,12 @@ pub mod lexer {
             lowercased.append(word.to_lowercase());
         };
         lowercased
+        // CANNOT BE USED CURRENTLY //
+    // Using the map clousure function, we can apply the lowercase function to each element in
+    // the array
+    // let lowercased = self.map(|word| word.to_lowercase());
+    // // Return the lowercased array
+    // lowercased
     }
 }
 

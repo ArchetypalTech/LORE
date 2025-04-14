@@ -175,9 +175,46 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
     }
 }
 
+#[generate_trait]
+pub impl ClousureTraitImp of ClousureTrait {
+    #[inline(never)]
+    fn filter<
+        T,
+        +Clone<T>,
+        +Drop<T>,
+        F,
+        +Drop<F>,
+        impl func: core::ops::Fn<F, (T,)>[Output: bool],
+        +Drop<func::Output>,
+    >(
+        self: Array<T>, f: F,
+    ) -> Array<T> {
+        let mut output: Array<T> = array![];
+        for elem in self {
+            if f(elem.clone()) {
+                output.append(elem);
+            }
+        };
+        output
+    }
+
+    #[inline(never)]
+    fn map<T, +Drop<T>, F, +Drop<F>, impl func: core::ops::Fn<F, (T,)>, +Drop<func::Output>>(
+        self: Array<T>, f: F,
+    ) -> Array<func::Output> {
+        let mut output: Array<func::Output> = array![];
+        for elem in self {
+            output.append(f(elem));
+        };
+        output
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::ByteArrayTraitExt;
+    use super::ClousureTrait;
 
     #[test]
     fn ByteArrayExt_to_felt252_word() {
@@ -293,5 +330,61 @@ mod tests {
         let expected_result: ByteArray = "boom";
         let end_with: ByteArray = input.to_lowercase();
         assert_eq!(end_with, expected_result, "lowercase should be false");
+    }
+
+    #[test]
+    fn test_map() {
+        // Input: uppercase string as ByteArray
+        let w1: ByteArray = "HELLO";
+        let w2: ByteArray = "Teleport";
+        let w3: ByteArray = "DooM";
+
+        // Expected: lowercase version
+        let expected_w1: ByteArray = "hello";
+        let expected_w2: ByteArray = "teleport";
+        let expected_w3: ByteArray = "doom";
+
+        let mut words: Array<ByteArray> = ArrayTrait::new();
+        words.append(w1);
+        words.append(w2);
+        words.append(w3);
+
+        let mut expected_w: Array<ByteArray> = ArrayTrait::new();
+        expected_w.append(expected_w1);
+        expected_w.append(expected_w2);
+        expected_w.append(expected_w3);
+
+        // Apply map
+        let result_array = words.map(|word| word.to_lowercase());
+
+        // Assert the transformation worked
+        assert_eq!(result_array, expected_w, "should convert to lowercase");
+    }
+
+    #[test]
+    fn test_filter() {
+        // Input: array of ByteArray words
+        let w1: ByteArray = "hello";
+        let w2: ByteArray = "world";
+        let w3: ByteArray = "test";
+        let w4: ByteArray = "code";
+
+        let mut words: Array<ByteArray> = ArrayTrait::new();
+        words.append(w1);
+        words.append(w2);
+        words.append(w3.clone());
+        words.append(w4);
+
+        let letter: ByteArray = "t";
+
+        // Expected output: only words that contain 't'
+        let mut expected_filtered: Array<ByteArray> = ArrayTrait::new();
+        expected_filtered.append(w3);
+
+        // Apply filter
+        let result_array = words.filter(|word: ByteArray| word.contains(@letter));
+
+        // Assert the filtering worked
+        assert_eq!(result_array, expected_filtered, "should only include words with 'o'");
     }
 }
