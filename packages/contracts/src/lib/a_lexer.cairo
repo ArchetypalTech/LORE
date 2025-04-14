@@ -153,7 +153,8 @@ pub mod lexer {
     ) -> Result<Command, Error> {
         initialize_dictionary(world);
         let words = message.split_into_words();
-        let tokens = match_tokens(world, words.clone());
+        let lowercased = lowercase(words.clone());
+        let tokens = match_tokens(world, lowercased);
         let mut command = Command {
             command_id: world.dispatcher.uuid().try_into().unwrap(),
             text: message,
@@ -239,6 +240,14 @@ pub mod lexer {
         let targets = command.get_Targets();
         println!("PPC-targets: {:?}", targets);
         command
+    }
+
+    fn lowercase(self: Array<ByteArray>) -> Array<ByteArray> {
+        let mut lowercased: Array<ByteArray> = ArrayTrait::new();
+        for word in self {
+            lowercased.append(word.to_lowercase());
+        };
+        lowercased
     }
 }
 

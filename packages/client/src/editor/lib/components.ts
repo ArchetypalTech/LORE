@@ -38,11 +38,14 @@ export const createDefaultInspectableComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
 	Inspectable: {
-		...schema.lore.Inspectable,
-		inst: entity.inst,
-		is_inspectable: true,
-		description: [],
-		action_map: [],
+			...schema.lore.Inspectable,
+			inst: entity.inst,
+			is_inspectable: true,
+			description: [],
+			action_map:  [
+					{ action: "look", inst: 0, action_fn: "ReadRandomDescription" },
+					{ action: "stare", inst: 0, action_fn: "ReadRandomDescription" },
+			],
 	},
 });
 
