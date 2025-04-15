@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { byteArray, num } from "starknet";
 import {
 	type Area,
+	directionActionsMap,
 	type ChildToParent,
 	direction,
 	type Entity,
@@ -135,7 +136,16 @@ const publishArea = async (area: Area) => {
 	const areaData = [
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
+		area.is_enterable,
 		toEnumIndex(area.direction, direction),
+		num.toBigInt(area.leads_to.toString()),
+		area.action_map.length > 0
+			? area.action_map.map((x) => [
+					byteArray.byteArrayFromString(x.action),
+					0,
+					toEnumIndex(x.action_fn, directionActionsMap),
+				])
+			: 0,
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };

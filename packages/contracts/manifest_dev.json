@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x5d612fb41c66ec1cd7a69c792c57f4079d05069339084a0da4acaead8663305",
-      "class_hash": "0x381a1c6dde42c79fc80b1845c728a8b763d8425c01eede16d2072b8bdcc4859",
+      "address": "0x4f77c41b26a6a17e7f01d4e84a32bc2e1b14e9b8495d47dcaaac2221620249a",
+      "class_hash": "0x590fe46620d3d405e0583852a45fd4ec791ea4f1fe02db8abb2829a681ed364",
       "abi": [
         {
           "type": "impl",
@@ -1503,6 +1503,34 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::components::area::DirectionActionsMap",
+          "variants": [
+            {
+              "name": "UseDirection",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::area::DirectionMap",
+          "members": [
+            {
+              "name": "action",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action_fn",
+              "type": "lore::components::area::DirectionActionsMap"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "lore::components::area::Area",
           "members": [
@@ -1515,8 +1543,20 @@
               "type": "core::bool"
             },
             {
+              "name": "is_enterable",
+              "type": "core::bool"
+            },
+            {
+              "name": "leads_to",
+              "type": "core::felt252"
+            },
+            {
               "name": "direction",
               "type": "lore::constants::constants::Direction"
+            },
+            {
+              "name": "action_map",
+              "type": "core::array::Array::<lore::components::area::DirectionMap>"
             }
           ]
         },
@@ -1899,8 +1939,8 @@
       ]
     },
     {
-      "address": "0x5e945e03a7a2b8cc9c3f1f8bdd099f50aeee719257d36aef9d2013a3bb1df22",
-      "class_hash": "0x5c798c3acf0730d2490692447f79385bb3ee3391b55e0acefce4b853a06a363",
+      "address": "0x24f9596de6dc3404d749c61143b5305e3512c7e1c4f3c26a6d5b8b7d982fabf",
+      "class_hash": "0x572085e94bd95aeca4fc07d270d74b32ad278e524c473836cda33c9dfb15849",
       "abi": [
         {
           "type": "impl",
@@ -2103,7 +2143,7 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x2e8e7f7b571ca4eb2831094e7a107c158cb2753be31aaeaa023c738dabc5e37",
+      "class_hash": "0x7a1ff263abd8d7533be1d31955aa8f6559d7007baad95a43d6720ec2c41f5b3",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },
