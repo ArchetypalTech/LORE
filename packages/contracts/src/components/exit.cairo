@@ -67,7 +67,7 @@ pub impl ExitComponent of Component<Exit> {
         exit
             .action_map =
                 array![
-                    ActionMapExit { action: "go", inst: 0, action_fn: ExitActions::UseExit },
+                    //ActionMapExit { action: "go", inst: 0, action_fn: ExitActions::UseExit },
                     ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];

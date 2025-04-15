@@ -6,13 +6,26 @@ import { CairoCustomEnum, type BigNumberish } from 'starknet';
 export interface Area {
 	inst: BigNumberish;
 	is_area: boolean;
+	is_enterable: boolean;
+	leads_to: BigNumberish;
 	direction: DirectionEnum;
+	action_map: Array<DirectionMap>;
 }
 
 // Type definition for `lore::components::area::AreaValue` struct
 export interface AreaValue {
 	is_area: boolean;
+	is_enterable: boolean;
+	leads_to: BigNumberish;
 	direction: DirectionEnum;
+	action_map: Array<DirectionMap>;
+}
+
+// Type definition for `lore::components::area::DirectionMap` struct
+export interface DirectionMap {
+	action: string;
+	inst: BigNumberish;
+	action_fn: DirectionActionsMapEnum;
 }
 
 // Type definition for `lore::components::container::Container` struct
@@ -187,6 +200,13 @@ export interface ParentToChildrenValue {
 	children: Array<BigNumberish>;
 }
 
+// Type definition for `lore::components::area::DirectionActionsMap` enum
+export const directionActionsMap = [
+	'UseDirection',
+] as const;
+export type DirectionActionsMap = { [key in typeof directionActionsMap[number]]: string };
+export type DirectionActionsMapEnum = CairoCustomEnum;
+
 // Type definition for `lore::components::exit::ExitActions` enum
 export const exitActions = [
 	'UseExit',
@@ -237,6 +257,7 @@ export interface SchemaType extends ISchemaType {
 	lore: {
 		Area: Area,
 		AreaValue: AreaValue,
+		DirectionMap: DirectionMap,
 		Container: Container,
 		ContainerValue: ContainerValue,
 		ActionMapExit: ActionMapExit,
@@ -266,6 +287,8 @@ export const schema: SchemaType = {
 		Area: {
 			inst: 0,
 			is_area: false,
+			is_enterable: false,
+			leads_to: 0,
 		direction: new CairoCustomEnum({ 
 					None: "",
 				North: undefined,
@@ -274,9 +297,13 @@ export const schema: SchemaType = {
 				West: undefined,
 				Up: undefined,
 				Down: undefined, }),
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseDirection: "", }), }],
 		},
 		AreaValue: {
 			is_area: false,
+			is_enterable: false,
+			leads_to: 0,
 		direction: new CairoCustomEnum({ 
 					None: "",
 				North: undefined,
@@ -285,6 +312,14 @@ export const schema: SchemaType = {
 				West: undefined,
 				Up: undefined,
 				Down: undefined, }),
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseDirection: "", }), }],
+		},
+		DirectionMap: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseDirection: "", }),
 		},
 		Container: {
 			inst: 0,
@@ -467,6 +502,8 @@ export const schema: SchemaType = {
 export enum ModelsMapping {
 	Area = 'lore-Area',
 	AreaValue = 'lore-AreaValue',
+	DirectionActionsMap = 'lore-DirectionActionsMap',
+	DirectionMap = 'lore-DirectionMap',
 	Container = 'lore-Container',
 	ContainerValue = 'lore-ContainerValue',
 	ActionMapExit = 'lore-ActionMapExit',
