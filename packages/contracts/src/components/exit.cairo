@@ -1,8 +1,9 @@
+use super::super::lib::a_lexer::CommandTrait;
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 
 use lore::{
     constants::errors::Error,
-    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, TokenType}},
+    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, TokenType, CommandImpl}},
 };
 
 use lore::constants::constants::Direction;
@@ -96,35 +97,34 @@ pub impl ExitComponent of Component<Exit> {
     ) -> Result<(), Error> {
         println!("Exit execute_command");
         let (action, token) = get_action_token(@self, world, command).unwrap();
+        let directions_token = command.get_directions();
+        player.say(world, format!("Command: {:?}", command));
+        //player.say(world, format!("Action: {:?}", action));
+        player.say(world, format!("Token: {:?}", token));
+        player.say(world, format!("Directions: {:?}", directions_token));
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
                     player.say(world, format!("You go to {:?}", self));
                 }
+                // check if there is a direction token
+                if (directions_token.len() > 0) {
+                    player
+                        .say(
+                            world,
+                            format!("You are trying to go to: {:?}", directions_token[0].text),
+                        );
+                    println!("you are trying to go to: {:?}", directions_token[0]);
+                    return Result::Ok(());
+                    // Get exit components from the room entity and check if there is an exit with
+                // the direction
 
-                // match according to the token type
-                match token.token_type {
-                    TokenType::Noun => {
-                        // Default implementation
-                        player.clone().move_to_room(world, self.leads_to);
-                        let _ = player.describe_room(world);
-                        return Result::Ok(());
-                    },
-                    TokenType::Direction => {
-                        // WIP FOR NOW //
-                        println!("you are trying to go to the {:?}", token.text);
-                        player.say(world, format!("you are trying to go to the {:?}", token.text));
-                        // player.clone().move_to_room(world, self.leads_to);
-                        // let _ = player.describe_room(world);
-                        return Result::Ok(());
-                        // TO DO //
-                    // should check if the room where player is has exit component
-                    // if yes, check that the direction matches with the one from the token
-                    // if yes, move to the room
-
-                    },
-                    _ => { return Result::Err(Error::ActionFailed); },
-                };
+                } else {
+                    // Default implementation
+                    player.clone().move_to_room(world, self.leads_to);
+                    let _ = player.describe_room(world);
+                    return Result::Ok(());
+                }
             },
         }
         Result::Err(Error::ActionFailed)
