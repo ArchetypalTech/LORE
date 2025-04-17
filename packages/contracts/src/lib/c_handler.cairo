@@ -29,42 +29,49 @@ pub fn handle_command(
     }
     let mut executed: bool = false;
     let mut nouns = command.get_nouns();
-    for noun in nouns {
-        let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
-        match InspectableComponent::get_component(world, item.inst) {
-            Option::Some(c) => {
-                if c.clone().can_use_command(world, @player, @command) {
-                    if c.clone().execute_command(world, @player, @command).is_ok() {
-                        executed = true;
-                        break;
+    let mut directions = command.get_directions();
+    if nouns.len() > 0 {
+        for noun in nouns {
+            let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
+            match InspectableComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.clone().can_use_command(world, @player, @command) {
+                        if c.clone().execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
                     }
-                }
-            },
-            Option::None => {},
+                },
+                Option::None => {},
+            };
+            match AreaComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.can_use_command(world, @player, @command) {
+                        if c.execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
+                    }
+                },
+                Option::None => {},
+            }
+            match ExitComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.can_use_command(world, @player, @command) {
+                        if c.execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
+                    }
+                },
+                Option::None => {},
+            }
         };
-        match AreaComponent::get_component(world, item.inst) {
-            Option::Some(c) => {
-                if c.can_use_command(world, @player, @command) {
-                    if c.execute_command(world, @player, @command).is_ok() {
-                        executed = true;
-                        break;
-                    }
-                }
-            },
-            Option::None => {},
-        }
-        match ExitComponent::get_component(world, item.inst) {
-            Option::Some(c) => {
-                if c.can_use_command(world, @player, @command) {
-                    if c.execute_command(world, @player, @command).is_ok() {
-                        executed = true;
-                        break;
-                    }
-                }
-            },
-            Option::None => {},
-        }
-    };
+    }
+    if directions.len() > 0 {
+        executed = handle_direction_command(@command, @world, @player);
+    }
+
     if executed {
         return Result::Ok(command);
     }
@@ -80,6 +87,38 @@ pub fn handle_command(
         return Result::Ok(command);
     }
     Result::Err(Error::ActionFailed)
+}
+
+pub fn handle_direction_command(command: @Command, world: @WorldStorage, player: @Player) -> bool {
+    let mut executed: bool = false;
+    let mut directions = command.get_directions();
+    let room = player.get_room(world);
+    if room.is_none() {
+        return false;
+    }
+
+    let room_ung = room.unwrap();
+    for _direction in directions {
+        // println!("HDC-direction: {:?}", direction);
+        // println!("HDC-room_ung-inst: {:?}", room_ung.inst);
+        let item = EntityImpl::get_entity(world, @room_ung.inst).unwrap();
+        match ExitComponent::get_component(*world, item.inst) {
+            Option::Some(c) => {
+                if c.can_use_command(*world, player, command) {
+                    // player.say(*world, format!("[HANDLER] You are now going to try using exit"));
+                    if c.execute_command(*world, player, command).is_ok() {
+                        executed = true;
+                        break;
+                    }
+                }
+            },
+            Option::None => {
+                executed = false;
+                break;
+            },
+        }
+    };
+    executed
 }
 
 pub fn init_system_dictionary(world: WorldStorage) {
