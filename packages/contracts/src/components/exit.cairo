@@ -1,9 +1,14 @@
+use super::super::lib::utils::ByteArrayTrait;
 use super::super::lib::a_lexer::CommandTrait;
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 
 use lore::{
     constants::errors::Error,
-    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, TokenType, CommandImpl}},
+    lib::{
+        entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
+        utils::ByteArrayTraitExt,
+    },
+    components::area::{AreaComponent},
 };
 
 use lore::constants::constants::Direction;
@@ -96,12 +101,12 @@ pub impl ExitComponent of Component<Exit> {
         mut self: Exit, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         println!("Exit execute_command");
-        let (action, token) = get_action_token(@self, world, command).unwrap();
+        let (action, _token) = get_action_token(@self, world, command).unwrap();
         let directions_token = command.get_directions();
-        player.say(world, format!("Command: {:?}", command));
-        //player.say(world, format!("Action: {:?}", action));
-        player.say(world, format!("Token: {:?}", token));
-        player.say(world, format!("Directions: {:?}", directions_token));
+        // player.say(world, format!("Command: {:?}", command));
+        // player.say(world, format!("Action: {:?}", action));
+        // player.say(world, format!("Token: {:?}", token));
+        // player.say(world, format!("Directions: {:?}", directions_token));
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
@@ -109,19 +114,13 @@ pub impl ExitComponent of Component<Exit> {
                 }
                 // check if there is a direction token
                 if (directions_token.len() > 0) {
-                    player
-                        .say(
-                            world,
-                            format!("You are trying to go to: {:?}", directions_token[0].text),
-                        );
-                    println!("you are trying to go to: {:?}", directions_token[0]);
-                    return Result::Ok(());
-                    // Get exit components from the room entity and check if there is an exit with
-                // the direction
-
+                    // Check if the destination room entity area value is the same as the direction
+                    // token
+                    return go_destination_by_direction(@self, world, player, command);
                 } else {
                     // Default implementation
                     player.clone().move_to_room(world, self.leads_to);
+                    player.say(world, format!(" Else - You are going to {:?}", self.leads_to));
                     let _ = player.describe_room(world);
                     return Result::Ok(());
                 }
@@ -133,6 +132,49 @@ pub impl ExitComponent of Component<Exit> {
     fn store(self: @Exit, mut world: WorldStorage) {
         world.write_model(self);
     }
+}
+
+fn go_destination_by_direction(
+    self: @Exit, world: WorldStorage, player: @Player, command: @Command,
+) -> Result<(), Error> {
+    let directions_token = command.get_directions();
+    // player.say(world,format!("You are trying to go to: {:?}", directions_token[0].text));
+    // println!("you are trying to go to: {:?}", directions_token[0]);
+    let destination_room = EntityImpl::get_entity(@world, self.leads_to).unwrap();
+    match AreaComponent::get_component(world, destination_room.inst) {
+        Option::Some(area) => {
+            let area_dir = ByteArrayTraitExt::byte_array_from_direction(area.direction);
+            let dir_text = direction_one_letter(directions_token[0].text);
+            if (area_dir == dir_text) {
+                player.clone().move_to_room(world, *self.leads_to);
+                let _ = player.describe_room(world);
+                return Result::Ok(());
+            } else {
+                player.say(world, format!("You can't go that way"));
+                return Result::Err(Error::ActionFailed);
+            }
+        },
+        Option::None => {},
+    }
+    Result::Err(Error::ActionFailed)
+}
+
+fn direction_one_letter(direction: @ByteArray) -> ByteArray {
+    let mut text: ByteArray = "";
+    if (direction.starts_with(@"n")) {
+        text = "north";
+    } else if (direction.starts_with(@"s")) {
+        text = "south";
+    } else if (direction.starts_with(@"e")) {
+        text = "east";
+    } else if direction.starts_with(@"w") {
+        text = "west";
+    } else if direction.starts_with(@"u") {
+        text = "up";
+    } else if direction.starts_with(@"d") {
+        text = "down";
+    }
+    text
 }
 
 // @dev: wip how to access tokens
