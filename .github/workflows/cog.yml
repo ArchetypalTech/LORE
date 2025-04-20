@@ -1,9 +1,6 @@
 name: PR Conventional Commit Validation
 
 on:
-  push:
-    branches:
-      - feat/conventional-ci
   pull_request:
     types: [opened, synchronize, reopened, edited]
 
