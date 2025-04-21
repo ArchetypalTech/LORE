@@ -91,7 +91,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 	const Inspector = useCallback(
 		({ children }: React.PropsWithChildren) => {
 			return (
-				<div className="flex animate-scale-in flex-col gap-2 rounded-md border border-black/20 border-dotted bg-black/1 p-2 shadow-xs">
+				<div className="component-inspector">
 					<div className="flex w-full flex-row items-center justify-end gap-2 text-right font-bold text-black/50 text-xs uppercase">
 						<h6>
 							{`${componentData[componentName]?.icon || ""} `}

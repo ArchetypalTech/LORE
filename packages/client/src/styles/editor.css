@@ -139,6 +139,10 @@
 			@apply rounded flex flex-col gap-2;
 		}
 
+		.component-inspector {
+			@apply flex animate-scale-in flex-col gap-2 rounded-md border border-black/20 border-dotted bg-black/1 p-2 shadow-xs;
+		}
+
 		.btn.highlight::after {
 			content: "";
 			position: absolute;
