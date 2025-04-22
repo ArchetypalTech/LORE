@@ -92,7 +92,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 		({ children }: React.PropsWithChildren) => {
 			return (
 				<div className="component-inspector">
-					<div className="flex w-full flex-row items-center justify-end gap-2 text-right font-bold text-black/50 text-xs uppercase">
+					<div className="relative flex w-full flex-row items-center justify-end gap-2 text-right font-bold text-black/50 text-xs uppercase">
 						<h6>
 							{`${componentData[componentName]?.icon || ""} `}
 							{componentName}
@@ -107,6 +107,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 						<div className="flex grow" />
 						{componentName !== "Entity" && (
 							<Button
+								title={`Remove ${componentName} component`}
 								variant={"ghost"}
 								size="sm"
 								onClick={() => handleRemove(componentName)}

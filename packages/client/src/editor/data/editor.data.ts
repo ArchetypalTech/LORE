@@ -9,6 +9,7 @@ import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
 	createDefaultChildToParentComponent,
 	createDefaultEntity,
+	createDefaultInspectableComponent,
 	createDefaultParentToChildrenComponent,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
@@ -18,6 +19,7 @@ import type {
 	EntityCollection,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
+import { tick } from "@/lib/utils/utils";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -104,7 +106,6 @@ const updateComponent = <T extends keyof EntityCollection>(
 		throw new Error("Entity not found");
 	}
 	edited[componentName] = component;
-	console.log(edited, componentName, component);
 	if (
 		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
 	) {
@@ -130,7 +131,6 @@ const updateComponent = <T extends keyof EntityCollection>(
 	}
 	createAction("update", inst, { [componentName]: component });
 	syncItem(edited);
-	console.log(componentName, get().changeSet);
 	return edited as EntityCollection;
 };
 
@@ -431,17 +431,24 @@ const updateSelectedEntity = (entity: EntityCollection) => {
 	set({ selectedEntity });
 };
 
-const newEntity = () => {
+const newEntity = async () => {
 	const newEntity = createDefaultEntity();
 	syncItem(newEntity);
 	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
+	await tick();
 	if (get().selectedEntity !== undefined) {
-		const e = getEntity(newEntity.Entity.inst)!;
-		const newParent = getEntity(get().selectedEntity!)!;
-		addToParent(e, newParent);
+		const e = getEntity(get().selectedEntity!)!;
+		console.log(e);
+		if (e.ChildToParent !== undefined) {
+			const newParent = getEntity(e.ChildToParent.parent)!;
+			console.log(newParent);	
+			addToParent(getEntity(newEntity.Entity.inst)!, newParent);
+		}
 	} else {
 		selectEntity(newEntity.Entity.inst);
 	}
+	const inspectable = createDefaultInspectableComponent(newEntity.Entity);
+	updateComponent(newEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
 	return newEntity;
 };
 

@@ -49,6 +49,7 @@ export const DeleteButton = ({
 		<Button
 			size="icon"
 			variant="destructive"
+			title="Delete Entity"
 			className={cn(className)}
 			onClick={onClick}
 		>
@@ -68,6 +69,7 @@ export const PublishButton = ({
 		<Button
 			size="icon"
 			variant={"hero"}
+			title="Publish Entity"
 			className={cn(className)}
 			onClick={onClick}
 		>
