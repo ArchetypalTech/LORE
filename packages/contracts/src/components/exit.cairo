@@ -101,7 +101,8 @@ pub impl ExitComponent of Component<Exit> {
     ) -> Result<(), Error> {
         println!("Exit execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
-        let directions_token = command.get_directions();
+        let direction_tokens = command.get_directions();
+        let mut destination_inst: felt252 = 0;
         // player.say(world, format!("Command: {:?}", command));
         // player.say(world, format!("Action: {:?}", action));
         // player.say(world, format!("Token: {:?}", token));
@@ -111,18 +112,32 @@ pub impl ExitComponent of Component<Exit> {
                 if *player.use_debug {
                     player.say(world, format!("You go to {:?}", self));
                 }
-                // check if there is a direction token
-                if (directions_token.len() > 0) {
-                    // Check if the destination room entity area value is the same as the direction
-                    // token
-                    return go_destination_by_direction(@self, world, player, command);
+
+                // If there is a token direction we want to use the direction token
+                if (direction_tokens.len() > 0) {
+                    // Retrieve the direction token by checking if it matches the direction
+                    // Ex: go north. Should match the direction token "north" with the
+                    // direction_type of the exit component
+                    let mut direction_token = matches_direction(
+                        @self, world, player, @direction_tokens,
+                    );
+                    // check if there is a match we use that direction
+                    if direction_token.is_some() {
+                        destination_inst = direction_token.unwrap();
+                    } else {
+                        // If there is no match return an error
+                        //player.say(world, format!("You can't go that way"));
+                        return Result::Err(Error::ActionFailed);
+                    }
                 } else {
-                    // Default implementation
-                    player.clone().move_to_room(world, self.leads_to);
-                    player.say(world, format!(" Else - You are going to {:?}", self.leads_to));
-                    let _ = player.describe_room(world);
-                    return Result::Ok(());
+                    // If there is no token direction we want to use the leads_to from noun/target
+                    // Ex: go door. If door has exit component, it will use the leads_to from it.
+                    destination_inst = self.leads_to;
                 }
+                player.clone().move_to_room(world, destination_inst);
+                //player.say(world, format!(" Else - You are going to {:?}", destination_inst));
+                let _ = player.describe_room(world);
+                return Result::Ok(());
             },
         }
         Result::Err(Error::ActionFailed)
@@ -133,29 +148,21 @@ pub impl ExitComponent of Component<Exit> {
     }
 }
 
-fn go_destination_by_direction(
-    self: @Exit, world: WorldStorage, player: @Player, command: @Command,
-) -> Result<(), Error> {
-    let directions_token = command.get_directions();
-    // player.say(world,format!("You are trying to go to: {:?}", directions_token[0].text));
-    // println!("you are trying to go to: {:?}", directions_token[0]);
-    let destination_room = EntityImpl::get_entity(@world, self.leads_to).unwrap();
-    match AreaComponent::get_component(world, destination_room.inst) {
-        Option::Some(area) => {
-            let area_dir = ByteArrayTraitExt::byte_array_from_direction(area.direction);
-            let dir_text = constants::direction_one_letter(directions_token[0].text);
-            if (area_dir == dir_text) {
-                player.clone().move_to_room(world, *self.leads_to);
-                let _ = player.describe_room(world);
-                return Result::Ok(());
-            } else {
-                player.say(world, format!("You can't go that way"));
-                return Result::Err(Error::ActionFailed);
-            }
-        },
-        Option::None => {},
+fn matches_direction(
+    self: @Exit, world: WorldStorage, player: @Player, directions_token: @Array<Token>,
+) -> Option<felt252> {
+    if (directions_token.len() == 0) {
+        return Option::None;
     }
-    Result::Err(Error::ActionFailed)
+    let exit_dir = ByteArrayTraitExt::byte_array_from_direction(*self.direction_type);
+    let dir_text = constants::direction_one_letter(directions_token[0].text);
+    println!("area_dir: {:?}", directions_token[0]);
+    // player.say(world, format!("exit_dir is: {:?}", exit_dir));
+    // player.say(world, format!("dir_text is: {:?}", dir_text));
+    if (exit_dir == dir_text) {
+        return Option::Some(*self.leads_to);
+    }
+    Option::None
 }
 
 // @dev: wip how to access tokens
