@@ -1,9 +1,8 @@
-use super::super::lib::utils::ByteArrayTrait;
 use super::super::lib::a_lexer::CommandTrait;
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 
 use lore::{
-    constants::errors::Error,
+    constants::errors::Error, constants,
     lib::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
         utils::ByteArrayTraitExt,
@@ -144,7 +143,7 @@ fn go_destination_by_direction(
     match AreaComponent::get_component(world, destination_room.inst) {
         Option::Some(area) => {
             let area_dir = ByteArrayTraitExt::byte_array_from_direction(area.direction);
-            let dir_text = direction_one_letter(directions_token[0].text);
+            let dir_text = constants::direction_one_letter(directions_token[0].text);
             if (area_dir == dir_text) {
                 player.clone().move_to_room(world, *self.leads_to);
                 let _ = player.describe_room(world);
@@ -157,24 +156,6 @@ fn go_destination_by_direction(
         Option::None => {},
     }
     Result::Err(Error::ActionFailed)
-}
-
-fn direction_one_letter(direction: @ByteArray) -> ByteArray {
-    let mut text: ByteArray = "";
-    if (direction.starts_with(@"n")) {
-        text = "north";
-    } else if (direction.starts_with(@"s")) {
-        text = "south";
-    } else if (direction.starts_with(@"e")) {
-        text = "east";
-    } else if direction.starts_with(@"w") {
-        text = "west";
-    } else if direction.starts_with(@"u") {
-        text = "up";
-    } else if direction.starts_with(@"d") {
-        text = "down";
-    }
-    text
 }
 
 // @dev: wip how to access tokens
