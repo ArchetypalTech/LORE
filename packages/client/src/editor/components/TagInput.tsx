@@ -12,7 +12,6 @@ interface TagInputProps {
 }
 
 export const TagInput = ({ id, value, onChange }: TagInputProps) => {
-	console.log(value);
 	const [input, setInput] = useState("");
 	const [tags, setTags] = useState(value);
 	// Handles keyboard events and blur to add new tags
@@ -34,7 +33,6 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 		const values = tags.map((v) =>
 			v.replaceAll(",", "").replaceAll(" ", "").trim(),
 		);
-		console.log(cleanedInput, value);
 		// Don't add if empty or already exists
 		if (
 			cleanedInput === "" ||
@@ -84,6 +82,7 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 		} as unknown as ChangeEvent<HTMLInputElement>;
 
 		onChange(syntheticEvent);
+		setTags(newTags);
 	};
 
 	const handleBlur = () => {
@@ -131,7 +130,7 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 					handleInputEvent(e);
 					handleBlur();
 				}}
-				onKeyUp={handleInputEvent}
+				onKeyDown={handleInputEvent}
 				autoComplete="off"
 				value={input}
 				className={"bg-white"}
