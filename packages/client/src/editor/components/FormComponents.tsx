@@ -278,7 +278,8 @@ export const ActionMapEditor = <T extends CairoCustomEnum>({
 	cairoEnum: readonly string[];
 }) => {
 	return (
-		<div className="flex flex-col gap-1 bg-[#E5E7EB] p-1 rounded-md">
+		<div className="flex flex-col gap-1 bg-[#E5E7EB] p-1 rounded-md shadow-xs border-gray-300 border">
+			<div className="text-xs opacity-50 font-medium px-1">actions</div>
 			{value?.map((actionMap) => {
 				return (
 					<div key={actionMap.action} className="flex flex-row gap-1">
