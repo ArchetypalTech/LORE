@@ -3,7 +3,7 @@ import type { ChangeEvent } from "react";
 import type { CairoCustomEnum } from "starknet";
 import { cn } from "@/lib/utils/utils";
 import { useCairoEnum } from "../lib/schemas";
-import type { OptionType } from "../lib/types";
+import type { ActionMap, OptionType } from "../lib/types";
 import { MultiTextArea } from "./MultiTextArea";
 import { TagInput as Tags } from "./TagInput";
 import { Button } from "./ui/Button";
@@ -207,11 +207,12 @@ export const Select = React.forwardRef<
 		options: Array<{ value: string; label: string }> | OptionType[];
 		className?: string;
 		disabled?: boolean;
+		hideLabel?: boolean;
 	}
->(({ id, className, ...props }, ref) => {
+>(({ id, className, hideLabel = false, ...props }, ref) => {
 	return (
 		<div className={cn("form-group w-full", className)}>
-			<label htmlFor={id}>{id}</label>
+			{hideLabel ? null : <label htmlFor={id}>{id}</label>}
 			<SelectInput ref={ref} id={id} {...props} />
 		</div>
 	);
@@ -226,6 +227,7 @@ export const CairoEnumSelect = React.forwardRef<
 		disabled?: boolean;
 		value: CairoCustomEnum;
 		enum: unknown[] | readonly unknown[];
+		hideLabel?: boolean;
 	}
 >(({ value: original_value, enum: cairoEnum, ...props }, ref) => {
 	const { value, options } = useCairoEnum(original_value, cairoEnum);
@@ -258,6 +260,45 @@ export const Toggle = ({
 			<label htmlFor={id} className="ml-2 block text-xs ">
 				{id.replaceAll("_", " ")}
 			</label>
+		</div>
+	);
+};
+
+export const ActionMapEditor = <T extends CairoCustomEnum>({
+	id,
+	value,
+	onChange,
+	className,
+	cairoEnum,
+}: {
+	id: string;
+	value: ActionMap<T>[];
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	className?: string;
+	cairoEnum: readonly string[];
+}) => {
+	return (
+		<div className="flex flex-col gap-1 bg-[#E5E7EB] p-1 rounded-md">
+			{value?.map((actionMap) => {
+				return (
+					<div key={actionMap.action} className="flex flex-row gap-1">
+						<UIInput
+							id={actionMap.action}
+							value={actionMap.action}
+							onChange={onChange}
+							className="bg-white"
+						/>
+						<CairoEnumSelect
+							id={actionMap.action}
+							value={actionMap.action_fn}
+							onChange={onChange}
+							enum={cairoEnum}
+							className="bg-white rounded-md"
+							hideLabel={true}
+						/>
+					</div>
+				);
+			})}
 		</div>
 	);
 };

@@ -1,3 +1,4 @@
+import JSONbig from "json-bigint";
 import { Trash2 } from "lucide-react";
 import { type ChangeEvent, type FC, useCallback } from "react";
 import type { BigNumberish } from "starknet";
@@ -85,7 +86,10 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 		if (!editorObject) {
 			throw new Error("Editor object not found");
 		}
-		handleEdit(componentName, updatedObject);
+		// @dev: check if we have any changes- if not we don't blur the inputs; if we don't do this, we can't use tab to select different fields (as react updates whole entity inspector)
+		if (JSONbig.stringify(editorObject) !== JSONbig.stringify(entity)) {
+			handleEdit(componentName, updatedObject);
+		}
 	};
 
 	const Inspector = useCallback(

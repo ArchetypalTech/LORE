@@ -142,9 +142,8 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 					return (
 						<span
 							key={tag}
-							className="tag mr-2 mb-2 inline-block rounded-sm bg-gray-200 py-1 pr-1 pl-2 font-semibold text-gray-700 text-sm"
+							className="tag mr-2 mb-2 inline-block rounded-sm bg-gray-200 py-1 pl-1 pr-2 font-semibold text-gray-700 text-sm"
 						>
-							{tag}{" "}
 							<Button
 								variant="ghost"
 								size="none"
@@ -156,6 +155,7 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 							>
 								⨉
 							</Button>
+							{tag}{" "}
 						</span>
 					);
 				})}
