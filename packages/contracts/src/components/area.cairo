@@ -10,7 +10,6 @@ pub struct Area {
     pub inst: felt252,
     pub is_area: bool,
     //properties
-    pub direction: Direction,
 }
 
 pub impl AreaComponent of Component<Area> {

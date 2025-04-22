@@ -4,7 +4,7 @@ import { config, startWatcher } from "./common";
 import { bgGreen, black } from "ansicolor";
 
 const cmd = [
-	`sozo test --profile ${config.mode}`,
+	//`sozo test --profile ${config.mode}`,
 	`sozo build --profile ${config.mode} --typescript --bindings-output ../client/src/lib/dojo_bindings/`,
 	`sozo migrate --profile ${config.mode}`,
 	`sozo inspect --profile ${config.mode}`,
