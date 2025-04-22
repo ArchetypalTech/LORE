@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import { useMemo, type ChangeEvent } from "react";
 import { cn } from "@/lib/utils/utils";
 import { DeleteButton } from "./FormComponents";
 import { Button } from "./ui/Button";
@@ -65,10 +65,16 @@ export const MultiTextArea = ({
 		handleNewValue(newValue);
 	};
 
+	const textAreas = useMemo(() => {
+		if (value.length > 0)
+		return value
+		return [""];
+	}, [value]);
+
 	return (
 		<>
 			<div className="flex flex-col gap-2">
-				{value.map((v, i) => {
+				{textAreas.map((v, i) => {
 					return (
 						<div key={i} className="relative flex">
 							<Textarea

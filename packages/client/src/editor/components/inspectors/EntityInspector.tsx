@@ -15,9 +15,9 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 				updatedObject.name = e.target.value;
 			},
 			alt_names: (e, updatedObject) => {
-				updatedObject.alt_names = (e.target.value as unknown as string[]).filter(
-					(x) => x !== "",
-				);
+				updatedObject.alt_names = (
+					e.target.value as unknown as string[]
+				).filter((x) => x !== "");
 			},
 		},
 	});
@@ -26,7 +26,11 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 
 	return (
 		<Inspector>
-			<Input id="name" value={componentObject.name} onChange={handleInputChange} />
+			<Input
+				id="name"
+				value={componentObject.name}
+				onChange={handleInputChange}
+			/>
 			<TagInput
 				id="alt_names"
 				value={componentObject.alt_names?.join(",") || ""}

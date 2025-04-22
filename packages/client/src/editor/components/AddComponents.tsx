@@ -25,7 +25,7 @@ export const AddComponents = ({
           value.creator !== undefined
         );
       })
-      .map(([key]) => ({ value: key, label: key }));
+      .map(([key, value]) => ({ value: key, label: `${value.icon} ${key}` }));
     return o;
   }, [editedEntity]);
 
@@ -54,12 +54,13 @@ export const AddComponents = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-row">
+      <label>add component</label> 
+      <div className="flex flex-row gap-2">
         {options.map((option) => (
           <Button
             key={option.value}
-            variant="ghost"
-            className="shrink"
+            variant="outline"
+            className="shrink rounded-full"
 						title={`Add ${option.label} component`}
             onClick={() => {
               handleAddComponent(option.value as keyof EntityCollection);

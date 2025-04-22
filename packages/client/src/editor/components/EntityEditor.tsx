@@ -68,7 +68,8 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 				return {
 					key: key as keyof EntityCollection,
 					Inspector,
-					componentObject: component as EntityCollection[keyof EntityCollection],
+					componentObject:
+						component as EntityCollection[keyof EntityCollection],
 				};
 			})
 			.filter((x) => x !== undefined);
@@ -105,19 +106,21 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 					}}
 				/>
 			</Header>
-			{allComponents().map(({ key, Inspector, componentObject }) => {
-				if (!Inspector) return <div key={key}>{key}</div>;
-				if (componentObject === undefined) return null;
-				return (
-					<Inspector
-						key={key}
-						componentObject={componentObject}
-						componentName={key}
-						handleEdit={handleEditComponent}
-						handleRemove={handleRemoveComponent}
-					/>
-				);
-			})}
+			<div className="flex flex-col gap-0 rounded-md shadow-xs">
+				{allComponents().map(({ key, Inspector, componentObject }) => {
+					if (!Inspector) return <div key={key}>{key}</div>;
+					if (componentObject === undefined) return null;
+					return (
+						<Inspector
+							key={key}
+							componentObject={componentObject}
+							componentName={key}
+							handleEdit={handleEditComponent}
+							handleRemove={handleRemoveComponent}
+						/>
+					);
+				})}
+			</div>
 			<AddComponents
 				editedEntity={editedEntity}
 				handleEdit={handleEditComponent}
