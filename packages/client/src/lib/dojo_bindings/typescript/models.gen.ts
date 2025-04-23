@@ -17,21 +17,25 @@ export interface AreaValue {
 export interface Container {
 	inst: BigNumberish;
 	is_container: boolean;
+	childToParent: ChildToParent;
 	can_be_opened: boolean;
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
 	item_ids: Array<BigNumberish>;
+	action_map: Array<string>;
 }
 
 // Type definition for `lore::components::container::ContainerValue` struct
 export interface ContainerValue {
 	is_container: boolean;
+	childToParent: ChildToParent;
 	can_be_opened: boolean;
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
 	item_ids: Array<BigNumberish>;
+	action_map: Array<string>;
 }
 
 // Type definition for `lore::components::exit::ActionMapExit` struct
@@ -271,19 +275,23 @@ export const schema: SchemaType = {
 		Container: {
 			inst: 0,
 			is_container: false,
+		childToParent: { inst: 0, is_child: false, parent: 0, },
 			can_be_opened: false,
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
 			item_ids: [0],
+			action_map: [""],
 		},
 		ContainerValue: {
 			is_container: false,
+		childToParent: { inst: 0, is_child: false, parent: 0, },
 			can_be_opened: false,
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
 			item_ids: [0],
+			action_map: [""],
 		},
 		ActionMapExit: {
 		action: "",
