@@ -1,5 +1,6 @@
+import React from "react";
 import type { ChangeEvent, FocusEvent, KeyboardEvent } from "react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 
@@ -12,7 +13,7 @@ interface TagInputProps {
 
 export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 	const [input, setInput] = useState("");
-	const inputRef = useRef<HTMLInputElement>(null);
+	const [tags, setTags] = useState(value);
 	// Handles keyboard events and blur to add new tags
 	const handleInputEvent = (
 		event: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>,
@@ -29,10 +30,9 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 
 		// Clean the remaining comma in input
 		const cleanedInput = input.replaceAll(",", "").replaceAll(" ", "").trim();
-		const values = value.map((v) =>
+		const values = tags.map((v) =>
 			v.replaceAll(",", "").replaceAll(" ", "").trim(),
 		);
-		console.log(cleanedInput, value);
 		// Don't add if empty or already exists
 		if (
 			cleanedInput === "" ||
@@ -45,43 +45,8 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 
 		// Add the new tag
 		const newTags = [...values, cleanedInput];
-
-		// Need to create a synthetic event that follows the ChangeEvent interface
-		const syntheticEvent = {
-			target: {
-				id,
-				name: id,
-				value: newTags,
-				// Add other properties that might be accessed
-				type: "text",
-				checked: false,
-			},
-			currentTarget: {
-				id,
-				name: id,
-				value: newTags,
-				type: "text",
-				checked: false,
-			},
-			// Standard event properties
-			bubbles: true,
-			cancelable: true,
-			defaultPrevented: false,
-			preventDefault: () => {},
-			stopPropagation: () => {},
-			isPropagationStopped: () => false,
-			persist: () => {},
-			// Type info for TypeScript
-			nativeEvent: new Event("input"),
-			type: "change",
-		} as unknown as ChangeEvent<HTMLInputElement>;
-
-		// Pass the synthetic event to onChange
-		onChange(syntheticEvent);
+		setTags(newTags);
 		setInput("");
-		setTimeout(() => {
-			inputRef.current?.focus();
-		}, 250);
 	};
 
 	// Removes a tag at the specified index
@@ -117,31 +82,68 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 		} as unknown as ChangeEvent<HTMLInputElement>;
 
 		onChange(syntheticEvent);
+		setTags(newTags);
+	};
+
+	const handleBlur = () => {
+		const syntheticEvent = {
+			target: {
+				id,
+				name: id,
+				value: tags,
+				// Add other properties that might be accessed
+				type: "text",
+				checked: false,
+			},
+			currentTarget: {
+				id,
+				name: id,
+				value: tags,
+				type: "text",
+				checked: false,
+			},
+			// Standard event properties
+			bubbles: true,
+			cancelable: true,
+			defaultPrevented: false,
+			preventDefault: () => {},
+			stopPropagation: () => {},
+			isPropagationStopped: () => false,
+			persist: () => {},
+			// Type info for TypeScript
+			nativeEvent: new Event("input"),
+			type: "change",
+		} as unknown as ChangeEvent<HTMLInputElement>;
+
+		// Pass the synthetic event to onChange
+		onChange(syntheticEvent);
+		setInput("");
 	};
 
 	return (
-		<>
+		<React.Fragment key={id}>
 			<Input
 				key={id}
-				ref={inputRef}
 				id={id}
 				list="tag_suggestion"
-				onBlur={handleInputEvent}
-				onKeyUp={handleInputEvent}
+				onBlur={(e) => {
+					handleInputEvent(e);
+					handleBlur();
+				}}
+				onKeyDown={handleInputEvent}
 				autoComplete="off"
 				value={input}
 				className={"bg-white"}
 				onChange={(e) => setInput(e.target.value)}
 			/>
 			<div className="mt-2 flex flex-wrap">
-				{value.map((tag, index) => {
+				{tags.map((tag, index) => {
 					if (tag === "") return null;
 					return (
 						<span
-							key={index}
-							className="tag mr-2 mb-2 inline-block rounded-sm bg-gray-200 py-1 pr-1 pl-2 font-semibold text-gray-700 text-sm"
+							key={tag}
+							className="tag mr-2 mb-2 inline-block rounded-sm bg-gray-200 py-1 pl-1 pr-2 font-semibold text-gray-700 text-sm"
 						>
-							{tag}{" "}
 							<Button
 								variant="ghost"
 								size="none"
@@ -153,10 +155,11 @@ export const TagInput = ({ id, value, onChange }: TagInputProps) => {
 							>
 								⨉
 							</Button>
+							{tag}{" "}
 						</span>
 					);
 				})}
 			</div>
-		</>
+		</React.Fragment>
 	);
 };

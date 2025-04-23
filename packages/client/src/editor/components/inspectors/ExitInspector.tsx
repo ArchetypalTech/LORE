@@ -2,10 +2,17 @@ import { type ChangeEvent, useMemo } from "react";
 import EditorData from "@/editor/data/editor.data";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
+	type ActionMapExit,
 	direction,
 	type Exit,
+	exitActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { CairoEnumSelect, Select, Toggle } from "../FormComponents";
+import {
+	ActionMapEditor,
+	CairoEnumSelect,
+	Select,
+	Toggle,
+} from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 
@@ -20,7 +27,10 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			area_options: EditorData()
 				.getEntities()
 				.filter((e) => e.Area !== undefined)
-				.map((e) => ({ value: e.Entity!.inst.toString(), label: e.Entity.name })),
+				.map((e) => ({
+					value: e.Entity!.inst.toString(),
+					label: e.Entity.name,
+				})),
 		};
 	}, [componentObject]);
 
@@ -37,6 +47,10 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			},
 			direction_type: (e, updatedObject) => {
 				updatedObject.direction_type = stringCairoEnum(e.target.value);
+			},
+			action_map: (e, updatedObject) => {
+				const newActionMap = e.target.value as unknown as ActionMapExit[];
+				updatedObject.action_map = newActionMap;
 			},
 		},
 	});
@@ -62,12 +76,12 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 				value={componentObject.direction_type}
 				enum={direction}
 			/>
-			{componentObject.action_map?.map((action, index) => (
-				<div key={index}>
-					{action.action} {" -> "}
-					{action.action_fn}
-				</div>
-			))}
+			<ActionMapEditor
+				id="action_map"
+				value={componentObject.action_map}
+				onChange={handleInputChange}
+				cairoEnum={exitActions}
+			/>
 		</Inspector>
 	);
 };

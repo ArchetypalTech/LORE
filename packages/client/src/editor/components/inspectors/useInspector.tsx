@@ -1,3 +1,4 @@
+import JSONbig from "json-bigint";
 import { Trash2 } from "lucide-react";
 import { type ChangeEvent, type FC, useCallback } from "react";
 import type { BigNumberish } from "starknet";
@@ -85,14 +86,17 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 		if (!editorObject) {
 			throw new Error("Editor object not found");
 		}
-		handleEdit(componentName, updatedObject);
+		// @dev: check if we have any changes- if not we don't blur the inputs; if we don't do this, we can't use tab to select different fields (as react updates whole entity inspector)
+		if (JSONbig.stringify(editorObject) !== JSONbig.stringify(entity)) {
+			handleEdit(componentName, updatedObject);
+		}
 	};
 
 	const Inspector = useCallback(
 		({ children }: React.PropsWithChildren) => {
 			return (
-				<div className="flex animate-scale-in flex-col gap-2 rounded-md border border-black/20 border-dotted bg-black/1 p-2 shadow-xs">
-					<div className="flex w-full flex-row items-center justify-end gap-2 text-right font-bold text-black/50 text-xs uppercase">
+				<div className="component-inspector">
+					<div className="relative flex w-full flex-row items-center justify-end gap-2 text-right font-bold text-black/50 text-xs uppercase">
 						<h6>
 							{`${componentData[componentName]?.icon || ""} `}
 							{componentName}
@@ -107,6 +111,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 						<div className="flex grow" />
 						{componentName !== "Entity" && (
 							<Button
+								title={`Remove ${componentName} component`}
 								variant={"ghost"}
 								size="sm"
 								onClick={() => handleRemove(componentName)}

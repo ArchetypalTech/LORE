@@ -1,5 +1,9 @@
-import type { Inspectable } from "@/lib/dojo_bindings/typescript/models.gen";
-import { TextAreaArray, Toggle } from "../FormComponents";
+import {
+	type ActionMapInspectable,
+	type Inspectable,
+	inspectableActions,
+} from "@/lib/dojo_bindings/typescript/models.gen";
+import { ActionMapEditor, TextAreaArray, Toggle } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 
@@ -16,6 +20,11 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 			},
 			is_visible: (e, updatedObject) => {
 				updatedObject.is_visible = e.target.checked;
+			},
+			action_map: (e, updatedObject) => {
+				const newActionMap = e.target
+					.value as unknown as ActionMapInspectable[];
+				updatedObject.action_map = newActionMap;
 			},
 		},
 	});
@@ -35,12 +44,12 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 				value={componentObject.is_visible}
 				onChange={handleInputChange}
 			/>
-			{componentObject.action_map?.map((action, index) => (
-				<div key={index}>
-					{action.action} {" -> "}
-					{action.action_fn}
-				</div>
-			))}
+			<ActionMapEditor
+				id="action_map"
+				value={componentObject.action_map}
+				onChange={handleInputChange}
+				cairoEnum={inspectableActions}
+			/>
 		</Inspector>
 	);
 };

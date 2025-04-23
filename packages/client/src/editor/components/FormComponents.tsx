@@ -1,9 +1,10 @@
-import React from "react";
+import { Delete } from "lucide-react";
+import React, { useState } from "react";
 import type { ChangeEvent } from "react";
 import type { CairoCustomEnum } from "starknet";
 import { cn } from "@/lib/utils/utils";
 import { useCairoEnum } from "../lib/schemas";
-import type { OptionType } from "../lib/types";
+import type { ActionMap, OptionType } from "../lib/types";
 import { MultiTextArea } from "./MultiTextArea";
 import { TagInput as Tags } from "./TagInput";
 import { Button } from "./ui/Button";
@@ -49,6 +50,7 @@ export const DeleteButton = ({
 		<Button
 			size="icon"
 			variant="destructive"
+			title="Delete Entity"
 			className={cn(className)}
 			onClick={onClick}
 		>
@@ -68,6 +70,7 @@ export const PublishButton = ({
 		<Button
 			size="icon"
 			variant={"hero"}
+			title="Publish Entity"
 			className={cn(className)}
 			onClick={onClick}
 		>
@@ -205,11 +208,12 @@ export const Select = React.forwardRef<
 		options: Array<{ value: string; label: string }> | OptionType[];
 		className?: string;
 		disabled?: boolean;
+		hideLabel?: boolean;
 	}
->(({ id, className, ...props }, ref) => {
+>(({ id, className, hideLabel = false, ...props }, ref) => {
 	return (
 		<div className={cn("form-group w-full", className)}>
-			<label htmlFor={id}>{id}</label>
+			{hideLabel ? null : <label htmlFor={id}>{id}</label>}
 			<SelectInput ref={ref} id={id} {...props} />
 		</div>
 	);
@@ -224,6 +228,7 @@ export const CairoEnumSelect = React.forwardRef<
 		disabled?: boolean;
 		value: CairoCustomEnum;
 		enum: unknown[] | readonly unknown[];
+		hideLabel?: boolean;
 	}
 >(({ value: original_value, enum: cairoEnum, ...props }, ref) => {
 	const { value, options } = useCairoEnum(original_value, cairoEnum);
@@ -256,6 +261,173 @@ export const Toggle = ({
 			<label htmlFor={id} className="ml-2 block text-xs ">
 				{id.replaceAll("_", " ")}
 			</label>
+		</div>
+	);
+};
+
+export const ActionMapInput = <T extends CairoCustomEnum>({
+	actionMap,
+	handleChange,
+	cairoEnum,
+	idx,
+}: {
+	actionMap: ActionMap<T>;
+	handleChange: (a: ActionMap<T> | undefined, idx: number) => void;
+	cairoEnum: readonly string[];
+	idx: number;
+}) => {
+	const [input, setInput] = useState(actionMap.action);
+	const [enumValue, setEnumValue] = useState(
+		actionMap.action_fn as CairoCustomEnum,
+	);
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newValue = e.target.value;
+		const newActionMap = {
+			...actionMap,
+			action: newValue,
+		} as ActionMap<T>;
+		setInput(newValue);
+		return newActionMap;
+	};
+
+	const submit = (action: ActionMap<T>) => {
+		handleChange(
+			{
+				action: action.action.trim(),
+				inst: action.inst,
+				action_fn: action.action_fn,
+			},
+			idx,
+		);
+	};
+
+	const handleCairoEnumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const newValue = e.target.value as unknown as CairoCustomEnum;
+		const newActionMap = {
+			...actionMap,
+			action_fn: newValue,
+		} as ActionMap<T>;
+		setEnumValue(newValue);
+		return newActionMap;
+	};
+
+	return (
+		<div key={actionMap.action} className="grid grid-cols-3 gap-1">
+			<UIInput
+				id={actionMap.action}
+				value={input}
+				onBlur={(e) => {
+					let a = handleInputChange(e);
+					submit(a);
+				}}
+				onChange={handleInputChange}
+				className="bg-white col-span-1 border-solid"
+			/>
+			<div className="flex flex-row gap-1 col-span-2">
+				<CairoEnumSelect
+					id={actionMap.action}
+					value={enumValue}
+					onChange={(e) => {
+						let a = handleCairoEnumChange(e);
+						submit(a);
+					}}
+					enum={cairoEnum}
+					className="bg-white rounded-md flex grow"
+					hideLabel={true}
+				/>
+				<DeleteButton
+					className="text-xs"
+					onClick={() => handleChange(undefined, idx)}
+				/>
+			</div>
+		</div>
+	);
+};
+
+export const ActionMapEditor = <T extends CairoCustomEnum>({
+	id,
+	value,
+	onChange,
+	cairoEnum,
+}: {
+	id: string;
+	value: ActionMap<T>[];
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	className?: string;
+	cairoEnum: readonly string[];
+}) => {
+	const handleChange = (a: ActionMap<T> | undefined, idx: number) => {
+		const newActionMap = [...value];
+		if (a === undefined) {
+			newActionMap.splice(idx, 1);
+		} else {
+			newActionMap[idx] = a;
+		}
+		console.log(newActionMap, a);
+		sendEvent(newActionMap);
+	};
+
+	const sendEvent = (actionMaps: ActionMap<T>[]) => {
+		const syntheticEvent = {
+			target: {
+				id,
+				name: id,
+				value: actionMaps,
+				type: "text",
+				checked: false,
+			},
+			currentTarget: {
+				id,
+				name: id,
+				value: actionMaps,
+				type: "text",
+				checked: false,
+			},
+			bubbles: true,
+			cancelable: true,
+			defaultPrevented: false,
+			preventDefault: () => {},
+			stopPropagation: () => {},
+			isPropagationStopped: () => false,
+			persist: () => {},
+			nativeEvent: new Event("input"),
+			type: "change",
+		} as unknown as ChangeEvent<HTMLInputElement>;
+		onChange(syntheticEvent);
+	};
+
+	const addNewMap = () => {
+		const newActionMap = [...value];
+		newActionMap.push({
+			action: "",
+			inst: 0,
+			action_fn: cairoEnum[0],
+		});
+		sendEvent(newActionMap);
+	};
+
+	return (
+		<div
+			id={id}
+			className="flex flex-col gap-1 bg-[#E5E7EB] p-1 rounded-md shadow-xs border-gray-300 border"
+		>
+			<div className="text-xs opacity-50 font-medium px-1">actions</div>
+			{value?.map((actionMap, idx) => {
+				const id = idx.toString();
+				return (
+					<ActionMapInput
+						key={actionMap.action + id}
+						actionMap={actionMap}
+						handleChange={handleChange}
+						cairoEnum={cairoEnum}
+						idx={idx}
+					/>
+				);
+			})}
+			<Button variant="secondary" onClick={addNewMap}>
+				Add Action Map
+			</Button>
 		</div>
 	);
 };
