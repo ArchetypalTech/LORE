@@ -34,7 +34,6 @@ pub mod prompt {
             player.add_command_text(world, cmd.clone());
             match (lexer::parse(cmd, world, player)) {
                 Result::Ok(result) => {
-                    println!("result: {:?}", result);
                     let res = handle_command(result, world, player);
                     if !res.is_ok() {
                         player.say(world, random_text(world, random_error()));

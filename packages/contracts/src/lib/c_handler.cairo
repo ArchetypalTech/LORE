@@ -11,7 +11,7 @@ use lore::{ //
     }, //
     constants::errors::Error, //
     components::{
-        player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{ExitComponent}, Component,
+        player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{Exit, ExitComponent}, Component,
         inspectable::{Inspectable, InspectableImpl, InspectableComponent},
     } //
 };
@@ -29,42 +29,62 @@ pub fn handle_command(
     }
     let mut executed: bool = false;
     let mut nouns = command.get_nouns();
-    for noun in nouns {
-        let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
-        match InspectableComponent::get_component(world, item.inst) {
-            Option::Some(c) => {
-                if c.clone().can_use_command(world, @player, @command) {
-                    if c.clone().execute_command(world, @player, @command).is_ok() {
-                        executed = true;
-                        break;
+    let mut directions = command.get_directions();
+    if nouns.len() > 0 {
+        for noun in nouns {
+            let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
+            match InspectableComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.clone().can_use_command(world, @player, @command) {
+                        if c.clone().execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
                     }
-                }
-            },
-            Option::None => {},
+                },
+                Option::None => {},
+            };
+            match AreaComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.can_use_command(world, @player, @command) {
+                        if c.execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
+                    }
+                },
+                Option::None => {},
+            }
+            // @dev: guaranteed there's a noun
+            match ExitComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.can_use_command(world, @player, @command) {
+                        if c.execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
+                    }
+                },
+                Option::None => {},
+            }
         };
-        match AreaComponent::get_component(world, item.inst) {
-            Option::Some(c) => {
-                if c.can_use_command(world, @player, @command) {
-                    if c.execute_command(world, @player, @command).is_ok() {
+    } else if directions.len() > 0 {
+        let context = player.get_context(@world);
+        for item in context {
+            let exit: Option<Exit> = Component::get_component(world, item.inst);
+            // @dev: not guaranteed there's a noun
+            if exit.is_some() {
+                let exit = exit.unwrap();
+                if exit.can_use_command(world, @player, @command) {
+                    if exit.execute_command(world, @player, @command).is_ok() {
                         executed = true;
                         break;
                     }
                 }
-            },
-            Option::None => {},
-        }
-        match ExitComponent::get_component(world, item.inst) {
-            Option::Some(c) => {
-                if c.can_use_command(world, @player, @command) {
-                    if c.execute_command(world, @player, @command).is_ok() {
-                        executed = true;
-                        break;
-                    }
-                }
-            },
-            Option::None => {},
-        }
-    };
+            }
+        };
+    }
+
     if executed {
         return Result::Ok(command);
     }

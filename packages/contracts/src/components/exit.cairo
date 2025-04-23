@@ -1,7 +1,13 @@
+use super::super::lib::a_lexer::CommandTrait;
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 
 use lore::{
-    constants::errors::Error, lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token}},
+    constants::errors::Error, constants,
+    lib::{
+        entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
+        utils::ByteArrayTraitExt,
+    },
+    components::area::{AreaComponent},
 };
 
 use lore::constants::constants::Direction;
@@ -95,12 +101,40 @@ pub impl ExitComponent of Component<Exit> {
     ) -> Result<(), Error> {
         println!("Exit execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let direction_tokens = command.get_directions();
+
+        let mut destination_inst: felt252 = 0;
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
                     player.say(world, format!("You go to {:?}", self));
                 }
-                player.clone().move_to_room(world, self.leads_to);
+
+                let mut matchesName = false;
+                let nouns = command.get_nouns();
+                let names = self.entity(@world).get_names();
+                for noun in nouns {
+                    for name in names.clone() {
+                        if noun.text == name {
+                            matchesName = true;
+                            break;
+                        }
+                    }
+                };
+
+                let mut matchesDirection = false;
+                if (direction_tokens.len() > 0
+                    && matches_direction(@self, world, player, @direction_tokens).is_some()) {
+                    matchesDirection = true;
+                }
+
+                // we need to either match by name or by direction
+                if (!(matchesName || matchesDirection)) {
+                    return Result::Err(Error::ActionFailed);
+                }
+
+                destination_inst = self.leads_to;
+                player.clone().move_to_room(world, destination_inst);
                 let _ = player.describe_room(world);
                 return Result::Ok(());
             },
@@ -111,6 +145,21 @@ pub impl ExitComponent of Component<Exit> {
     fn store(self: @Exit, mut world: WorldStorage) {
         world.write_model(self);
     }
+}
+
+fn matches_direction(
+    self: @Exit, world: WorldStorage, player: @Player, directions_token: @Array<Token>,
+) -> Option<felt252> {
+    if (directions_token.len() == 0) {
+        return Option::None;
+    }
+    let exit_dir = ByteArrayTraitExt::byte_array_from_direction(*self.direction_type);
+    let dir_text = constants::direction_one_letter(directions_token[0].text);
+    println!("area_dir: {:?}", directions_token[0]);
+    if (exit_dir == dir_text) {
+        return Option::Some(*self.leads_to);
+    }
+    Option::None
 }
 
 // @dev: wip how to access tokens

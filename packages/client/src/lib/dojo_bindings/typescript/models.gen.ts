@@ -6,13 +6,11 @@ import { CairoCustomEnum, type BigNumberish } from 'starknet';
 export interface Area {
 	inst: BigNumberish;
 	is_area: boolean;
-	direction: DirectionEnum;
 }
 
 // Type definition for `lore::components::area::AreaValue` struct
 export interface AreaValue {
 	is_area: boolean;
-	direction: DirectionEnum;
 }
 
 // Type definition for `lore::components::container::Container` struct
@@ -266,25 +264,9 @@ export const schema: SchemaType = {
 		Area: {
 			inst: 0,
 			is_area: false,
-		direction: new CairoCustomEnum({ 
-					None: "",
-				North: undefined,
-				South: undefined,
-				East: undefined,
-				West: undefined,
-				Up: undefined,
-				Down: undefined, }),
 		},
 		AreaValue: {
 			is_area: false,
-		direction: new CairoCustomEnum({ 
-					None: "",
-				North: undefined,
-				South: undefined,
-				East: undefined,
-				West: undefined,
-				Up: undefined,
-				Down: undefined, }),
 		},
 		Container: {
 			inst: 0,

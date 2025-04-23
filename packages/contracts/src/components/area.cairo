@@ -1,5 +1,5 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
-use lore::{constants::{errors::Error, constants::Direction}};
+use lore::{constants::{errors::Error}};
 use lore::components::{Component, player::Player};
 use lore::lib::{entity::{EntityImpl}, a_lexer::{Command}};
 
@@ -10,7 +10,6 @@ pub struct Area {
     pub inst: felt252,
     pub is_area: bool,
     //properties
-    pub direction: Direction,
 }
 
 pub impl AreaComponent of Component<Area> {

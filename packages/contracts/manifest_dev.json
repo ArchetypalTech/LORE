@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x5d612fb41c66ec1cd7a69c792c57f4079d05069339084a0da4acaead8663305",
-      "class_hash": "0x381a1c6dde42c79fc80b1845c728a8b763d8425c01eede16d2072b8bdcc4859",
+      "address": "0x71fdc51063cbafa6eae1a5154057a769f1b6e2e9a30bbf847e000a885f427e1",
+      "class_hash": "0x487aef42da765575f97abd01baa443daa1f4490da84623e273f0b3d4c191649",
       "abi": [
         {
           "type": "impl",
@@ -1469,6 +1469,20 @@
           ]
         },
         {
+          "type": "struct",
+          "name": "lore::components::area::Area",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_area",
+              "type": "core::bool"
+            }
+          ]
+        },
+        {
           "type": "enum",
           "name": "lore::constants::constants::Direction",
           "variants": [
@@ -1499,24 +1513,6 @@
             {
               "name": "Down",
               "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lore::components::area::Area",
-          "members": [
-            {
-              "name": "inst",
-              "type": "core::felt252"
-            },
-            {
-              "name": "is_area",
-              "type": "core::bool"
-            },
-            {
-              "name": "direction",
-              "type": "lore::constants::constants::Direction"
             }
           ]
         },
@@ -1899,8 +1895,8 @@
       ]
     },
     {
-      "address": "0x5e945e03a7a2b8cc9c3f1f8bdd099f50aeee719257d36aef9d2013a3bb1df22",
-      "class_hash": "0x5c798c3acf0730d2490692447f79385bb3ee3391b55e0acefce4b853a06a363",
+      "address": "0x17850cd85366ed8f2a021427e4c4ca733742b0cb55c7ef3e2420e4001273125",
+      "class_hash": "0x5d8b84f7f8aa088be39f9f855d79898988593a624d287aee3a66945453d1d2c",
       "abi": [
         {
           "type": "impl",
@@ -2103,7 +2099,7 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x2e8e7f7b571ca4eb2831094e7a107c158cb2753be31aaeaa023c738dabc5e37",
+      "class_hash": "0x22523856679d5be3e8b4db810bb7801f13eaba73a07cf5b61c3d085d4826806",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },

@@ -130,6 +130,13 @@ pub impl CommandImpl of CommandTrait {
         };
         targets
     }
+
+    fn pretty_print(self: @Command) {
+        println!("Command: {:?}", self);
+        for token in self.tokens.clone() {
+            println!("{:?}: {:?}", token.text, token);
+        };
+    }
 }
 
 pub mod lexer {
@@ -157,7 +164,6 @@ pub mod lexer {
         initialize_dictionary(world);
         let words = message.split_into_words();
         let lowercased = lowercase(words.clone());
-        println!("lowercased using map: {:?}", lowercased);
         let tokens = match_tokens(world, lowercased);
         let mut command = Command {
             command_id: world.dispatcher.uuid().try_into().unwrap(),
@@ -169,6 +175,7 @@ pub mod lexer {
         };
         command = match_player_context(world, player, command);
         command = post_process_command(world, player, command);
+        command.pretty_print();
         Result::Ok(command)
     }
 
@@ -194,13 +201,8 @@ pub mod lexer {
                         token_value: dict_entry.n_value,
                         target: 0,
                     };
-            } else {
-                println!("[Lexer]: {:?} : NO match ", words[i]);
             }
             tokens.append(token);
-        };
-        for t in 0..tokens.len() {
-            println!("[Lexer]: {:?}", tokens[t]);
         };
         tokens
     }
@@ -226,7 +228,6 @@ pub mod lexer {
             newTokens.append(token);
         };
         command.tokens = newTokens;
-        // println!("tokens: {:?}", tokens);
         command
     }
 
@@ -234,15 +235,10 @@ pub mod lexer {
         // here we do fancy stuff
         // when there is a preposition, can we assume the next token is a noun? we know more about
         // the context now and what objects we recognize. Do we need to figure out adjectives.
-        println!("post_process_command: {:?}", command);
-        let verbs = command.get_verbs();
-        println!("PPC-verbs: {:?}", verbs);
-        let nouns = command.get_nouns();
-        println!("PPC-nouns: {:?}", nouns);
-        let directions = command.get_directions();
-        println!("PPC-directions: {:?}", directions);
-        let targets = command.get_Targets();
-        println!("PPC-targets: {:?}", targets);
+        let _verbs = command.get_verbs();
+        let _nouns = command.get_nouns();
+        let _directions = command.get_directions();
+        let _targets = command.get_Targets();
         command
     }
 
