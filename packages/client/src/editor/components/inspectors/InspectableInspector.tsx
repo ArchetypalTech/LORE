@@ -1,4 +1,5 @@
 import {
+	type ActionMapInspectable,
 	type Inspectable,
 	inspectableActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -19,6 +20,11 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 			},
 			is_visible: (e, updatedObject) => {
 				updatedObject.is_visible = e.target.checked;
+			},
+			action_map: (e, updatedObject) => {
+				const newActionMap = e.target
+					.value as unknown as ActionMapInspectable[];
+				updatedObject.action_map = newActionMap;
 			},
 		},
 	});

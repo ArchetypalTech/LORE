@@ -50,6 +50,9 @@ const notifications = {
 			id: "editor-dirty",
 			duration: Infinity,
 			position: "bottom-center",
+			actionButtonStyle: {
+				backgroundColor: "#0275FF",
+			},
 			action: {
 				label: "Publish",
 				onClick: () => publishConfigToContract(),
@@ -68,7 +71,7 @@ const notifications = {
 	startPublishing: async () => {
 		toast.loading("Publishing to the world...", {
 			richColors: true,
-			id: "publishing-world",
+			id: "publishing-world"
 		});
 		setNotification({
 			logs: [],

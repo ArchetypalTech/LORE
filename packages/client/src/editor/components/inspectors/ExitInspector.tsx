@@ -2,6 +2,7 @@ import { type ChangeEvent, useMemo } from "react";
 import EditorData from "@/editor/data/editor.data";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
+	type ActionMapExit,
 	direction,
 	type Exit,
 	exitActions,
@@ -46,6 +47,10 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			},
 			direction_type: (e, updatedObject) => {
 				updatedObject.direction_type = stringCairoEnum(e.target.value);
+			},
+			action_map: (e, updatedObject) => {
+				const newActionMap = e.target.value as unknown as ActionMapExit[];
+				updatedObject.action_map = newActionMap;
 			},
 		},
 	});
