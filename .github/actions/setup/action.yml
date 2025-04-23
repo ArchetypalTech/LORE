@@ -9,7 +9,6 @@ runs:
 
     - name: Install dojo
       run: |
-        source /root/.bashrc
         /root/.dojo/bin/dojoup install ${{ env.DOJO_VERSION }}
         sudo mv /root/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana /usr/local/bin/
         sudo mv /root/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/sozo /usr/local/bin/
