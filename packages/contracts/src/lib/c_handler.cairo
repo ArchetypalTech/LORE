@@ -11,7 +11,7 @@ use lore::{ //
     }, //
     constants::errors::Error, //
     components::{
-        player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{ExitComponent}, Component,
+        player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{Exit, ExitComponent}, Component,
         inspectable::{Inspectable, InspectableImpl, InspectableComponent},
     } //
 };
@@ -68,24 +68,17 @@ pub fn handle_command(
             }
         };
     } else if directions.len() > 0 {
-        let room = player.get_room(@world);
-        if room.is_none() {
-            return Result::Err(Error::ActionFailed);
-        }
-
-        let room_ung = room.unwrap();
-        for _direction in directions {
-            let item = EntityImpl::get_entity(@world, @room_ung.inst).unwrap();
-            match ExitComponent::get_component(world, item.inst) {
-                Option::Some(c) => {
-                    if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
-                            executed = true;
-                            break;
-                        }
+        let context = player.get_context(@world);
+        for item in context {
+            let exit: Option<Exit> = Component::get_component(world, item.inst);
+            if exit.is_some() {
+                let exit = exit.unwrap();
+                if exit.can_use_command(world, @player, @command) {
+                    if exit.execute_command(world, @player, @command).is_ok() {
+                        executed = true;
+                        break;
                     }
-                },
-                Option::None => {},
+                }
             }
         };
     }
