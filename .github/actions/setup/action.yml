@@ -8,11 +8,9 @@ runs:
       shell: bash
 
     - name: Install dojo
-      run: /home/runner/.config/.dojo/bin/dojoup --version ${{ env.DOJO_VERSION }}
-      shell: bash
-
-    - name: Move katana & sozo
       run: |
-        sudo mv /home/runner/.config/.dojo/bin/katana /usr/local/bin/
-        sudo mv /home/runner/.config/.dojo/bin/sozo /usr/local/bin/
+        source /root/.bashrc
+        /root/.dojo/bin/dojoup install ${{ env.DOJO_VERSION }}
+        sudo mv /root/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana /usr/local/bin/
+        sudo mv /root/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/sozo /usr/local/bin/
       shell: bash
