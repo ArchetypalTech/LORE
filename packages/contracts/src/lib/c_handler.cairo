@@ -55,6 +55,7 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
+            // @dev: guaranteed there's a noun
             match ExitComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
@@ -71,6 +72,7 @@ pub fn handle_command(
         let context = player.get_context(@world);
         for item in context {
             let exit: Option<Exit> = Component::get_component(world, item.inst);
+            // @dev: not guaranteed there's a noun
             if exit.is_some() {
                 let exit = exit.unwrap();
                 if exit.can_use_command(world, @player, @command) {

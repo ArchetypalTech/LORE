@@ -1,5 +1,5 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
-use lore::{constants::{errors::Error, constants::Direction}};
+use lore::{constants::{errors::Error}};
 use lore::components::{Component, player::Player};
 use lore::lib::{entity::{EntityImpl}, a_lexer::{Command}};
 
