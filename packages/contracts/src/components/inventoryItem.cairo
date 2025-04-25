@@ -103,10 +103,12 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         mut self: InventoryItem, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         println!("InventoryItem execute_command");
+        player.say(world, format!("You are executing inventory item"));
         let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let nouns = command.get_nouns();
         match action.action_fn {
             InventoryItemActions::UseItem => {
-                player.say(world, "You pick or drop the item");
+                player.say(world, format!("You are trying to pick or drop:{:?}", nouns[0]));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
                 return Result::Ok(());
