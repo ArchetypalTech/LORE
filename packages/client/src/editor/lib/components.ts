@@ -6,6 +6,7 @@ import {
 import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
+import { InventoryItemInspector } from "../components/inspectors/InventoryItemInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { createRandomName, randomKey } from "../editor.utils";
@@ -67,6 +68,23 @@ export const createDefaultExitComponent = (
 	},
 });
 
+export const createDefaultInventoryItemComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "InventoryItem">> => ({
+	InventoryItem: {
+		...schema.lore.InventoryItem,
+		inst: entity.inst,
+		is_inventory_item: true,
+		owner_id: 0,
+		can_be_picked_up: false,
+		can_go_in_container: false,
+		action_map: [
+			{ action: "pickup", inst: 0, action_fn: "UseItem" },
+			{ action: "drop", inst: 0, action_fn: "UseItem" },
+		],
+	},
+});
+
 export const createDefaultChildToParentComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "ChildToParent">> => ({
@@ -123,5 +141,11 @@ export const componentData: {
 		inspector: ExitInspector,
 		icon: "🚪",
 		creator: createDefaultExitComponent,
+	},
+	InventoryItem: {
+		order: 4,
+		inspector: InventoryItemInspector,
+		icon: "📦",
+		creator: createDefaultInventoryItemComponent,
 	},
 };

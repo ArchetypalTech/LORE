@@ -69,6 +69,7 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "use", TokenType::Verb, 1).unwrap();
     add_to_dictionary(world, "enter", TokenType::Verb, 1).unwrap();
     add_to_dictionary(world, "climb", TokenType::Verb, 1).unwrap();
+    add_to_dictionary(world, "pickup", TokenType::Verb, 1).unwrap();
 
     // directions
     add_to_dictionary(world, "north", TokenType::Direction, 1).unwrap();
@@ -159,6 +160,7 @@ pub fn init_dictionary(world: WorldStorage) {
     // nouns
     add_to_dictionary(world, "noun", TokenType::Noun, 1).unwrap();
     add_to_dictionary(world, "object", TokenType::Noun, 1).unwrap();
+    add_to_dictionary(world, "ball", TokenType::Noun, 1).unwrap();
     // interrogatives
     add_to_dictionary(world, "who", TokenType::Interrogative, 1).unwrap();
     add_to_dictionary(world, "what", TokenType::Interrogative, 2).unwrap();
