@@ -1895,8 +1895,8 @@
       ]
     },
     {
-      "address": "0x17850cd85366ed8f2a021427e4c4ca733742b0cb55c7ef3e2420e4001273125",
-      "class_hash": "0x5d8b84f7f8aa088be39f9f855d79898988593a624d287aee3a66945453d1d2c",
+      "address": "0x5a44b7d7e1afbf1073a9701bbf4110c212712fea9dbe04e96032c674a341505",
+      "class_hash": "0x5fca3c79a4213783b1d08cab2f09e36acc591ff0d61c385acef840d9ae34c3",
       "abi": [
         {
           "type": "impl",
@@ -2111,7 +2111,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6e0dc43043f988133beb22289af4a2e9d231bdd0848b949804be6764acfec68",
+      "class_hash": "0xbd2abf3a995b3f06e5517500675a59ac24ace2e98a5bfe34bb41457deae161",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
     },
@@ -2141,7 +2141,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x60d71a6bc97268525f5a9b1903babfffa702c98dde5bc10c9877042da2087a5",
+      "class_hash": "0x1006933725831fd238f590627ab295e4331f87efa827e9f53a037156a0df949",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },

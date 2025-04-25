@@ -88,6 +88,13 @@ export interface InspectableValue {
 	action_map: Array<ActionMapInspectable>;
 }
 
+// Type definition for `lore::components::inventoryItem::ActionMapInventoryItem` struct
+export interface ActionMapInventoryItem {
+	action: string;
+	inst: BigNumberish;
+	action_fn: InventoryItemActionsEnum;
+}
+
 // Type definition for `lore::components::inventoryItem::InventoryItem` struct
 export interface InventoryItem {
 	inst: BigNumberish;
@@ -95,6 +102,7 @@ export interface InventoryItem {
 	owner_id: BigNumberish;
 	can_be_picked_up: boolean;
 	can_go_in_container: boolean;
+	action_map: Array<ActionMapInventoryItem>;
 }
 
 // Type definition for `lore::components::inventoryItem::InventoryItemValue` struct
@@ -103,6 +111,7 @@ export interface InventoryItemValue {
 	owner_id: BigNumberish;
 	can_be_picked_up: boolean;
 	can_go_in_container: boolean;
+	action_map: Array<ActionMapInventoryItem>;
 }
 
 // Type definition for `lore::components::player::Player` struct
@@ -205,6 +214,13 @@ export const inspectableActions = [
 export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
 export type InspectableActionsEnum = CairoCustomEnum;
 
+// Type definition for `lore::components::inventoryItem::InventoryItemActions` enum
+export const inventoryItemActions = [
+	'UseItem',
+] as const;
+export type InventoryItemActions = { [key in typeof inventoryItemActions[number]]: string };
+export type InventoryItemActionsEnum = CairoCustomEnum;
+
 // Type definition for `lore::constants::constants::Direction` enum
 export const direction = [
 	'None',
@@ -247,6 +263,7 @@ export interface SchemaType extends ISchemaType {
 		ActionMapInspectable: ActionMapInspectable,
 		Inspectable: Inspectable,
 		InspectableValue: InspectableValue,
+		ActionMapInventoryItem: ActionMapInventoryItem,
 		InventoryItem: InventoryItem,
 		InventoryItemValue: InventoryItemValue,
 		Player: Player,
@@ -357,18 +374,28 @@ export const schema: SchemaType = {
 				ReadRandomDescription: undefined,
 				ReadFirstDescription: undefined, }), }],
 		},
+		ActionMapInventoryItem: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseItem: "", }),
+		},
 		InventoryItem: {
 			inst: 0,
 			is_inventory_item: false,
 			owner_id: 0,
 			can_be_picked_up: false,
 			can_go_in_container: false,
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseItem: "", }), }],
 		},
 		InventoryItemValue: {
 			is_inventory_item: false,
 			owner_id: 0,
 			can_be_picked_up: false,
 			can_go_in_container: false,
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseItem: "", }), }],
 		},
 		Player: {
 			inst: 0,
@@ -467,7 +494,9 @@ export enum ModelsMapping {
 	Inspectable = 'lore-Inspectable',
 	InspectableActions = 'lore-InspectableActions',
 	InspectableValue = 'lore-InspectableValue',
+	ActionMapInventoryItem = 'lore-ActionMapInventoryItem',
 	InventoryItem = 'lore-InventoryItem',
+	InventoryItemActions = 'lore-InventoryItemActions',
 	InventoryItemValue = 'lore-InventoryItemValue',
 	Player = 'lore-Player',
 	PlayerStory = 'lore-PlayerStory',
