@@ -30,7 +30,6 @@ export const createDefaultAreaComponent = (
 		...schema.lore.Area,
 		inst: entity.inst,
 		is_area: true,
-		direction: "None",
 	},
 });
 
