@@ -135,7 +135,6 @@ const publishArea = async (area: Area) => {
 	const areaData = [
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
-		toEnumIndex(area.direction, direction),
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };
