@@ -79,6 +79,9 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     ActionMapInventoryItem {
                         action: "drop", inst: 0, action_fn: InventoryItemActions::UseItem,
                     },
+                    ActionMapInventoryItem {
+                        action: "put", inst: 0, action_fn: InventoryItemActions::UseItem,
+                    },
                 ];
         inventory_item.store(world);
         inventory_item

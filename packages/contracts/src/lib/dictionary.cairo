@@ -161,6 +161,7 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "noun", TokenType::Noun, 1).unwrap();
     add_to_dictionary(world, "object", TokenType::Noun, 1).unwrap();
     add_to_dictionary(world, "ball", TokenType::Noun, 1).unwrap();
+    add_to_dictionary(world, "bag", TokenType::Noun, 1).unwrap();
     // interrogatives
     add_to_dictionary(world, "who", TokenType::Interrogative, 1).unwrap();
     add_to_dictionary(world, "what", TokenType::Interrogative, 2).unwrap();

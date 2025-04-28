@@ -1,6 +1,5 @@
-import { type ChangeEvent, useMemo } from "react";
+import { type ChangeEvent } from "react";
 import EditorData from "@/editor/data/editor.data";
-import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
 	type ActionMapInventoryItem,
 	type InventoryItem,
@@ -8,7 +7,6 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
 	ActionMapEditor,
-	CairoEnumSelect,
 	Select,
 	Toggle,
 } from "../FormComponents";

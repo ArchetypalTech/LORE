@@ -9,6 +9,7 @@ import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InventoryItemInspector } from "../components/inspectors/InventoryItemInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
+import { ContainerInspector } from "../components/inspectors/ContainerInspector";
 import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 
@@ -81,6 +82,26 @@ export const createDefaultInventoryItemComponent = (
 		action_map: [
 			{ action: "pickup", inst: 0, action_fn: "UseItem" },
 			{ action: "drop", inst: 0, action_fn: "UseItem" },
+			{ action: "put", inst: 0, action_fn: "UseItem" },
+		],
+	},
+});
+
+export const createDefaultContainerComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Container">> => ({
+	Container: {
+		...schema.lore.Container,
+		inst: entity.inst,
+		is_container: true,
+		can_be_opened: true,
+		can_receive_items: true,
+		is_open: true,
+		num_slots: 0,
+		item_ids: [],
+		action_map: [
+			{ action: "open", inst: 0, action_fn: "Open" },
+			{ action: "close", inst: 0, action_fn: "Close" },
 		],
 	},
 });
@@ -147,5 +168,11 @@ export const componentData: {
 		inspector: InventoryItemInspector,
 		icon: "📦",
 		creator: createDefaultInventoryItemComponent,
+	},
+	Container: {
+		order: 5,
+		inspector: ContainerInspector,
+		icon: "🎒",
+		creator: createDefaultContainerComponent,
 	},
 };

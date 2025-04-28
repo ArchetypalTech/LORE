@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x70673fa6d685db3c4ce7c9e511f2c48340e015948e62bc34c8deac86bc33ec1",
-      "class_hash": "0x5b63aceec358d53a704e109c1e46c254f049fa5dde30d8e4365855dddcd6a39",
+      "address": "0x625e2dfc6929b68d6b94c33044c5c9fce07a3bc61021d0b760333f10c975882",
+      "class_hash": "0x1ab253ef9c541f009801455f564fcc1a6b9b01d9623eaf17012390e339289c3",
       "abi": [
         {
           "type": "impl",
@@ -1633,6 +1633,76 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::components::container::ContainerActions",
+          "variants": [
+            {
+              "name": "Open",
+              "type": "()"
+            },
+            {
+              "name": "Close",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::container::ActionMapContainer",
+          "members": [
+            {
+              "name": "action",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action_fn",
+              "type": "lore::components::container::ContainerActions"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::container::Container",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_container",
+              "type": "core::bool"
+            },
+            {
+              "name": "can_be_opened",
+              "type": "core::bool"
+            },
+            {
+              "name": "can_receive_items",
+              "type": "core::bool"
+            },
+            {
+              "name": "is_open",
+              "type": "core::bool"
+            },
+            {
+              "name": "num_slots",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "item_ids",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "action_map",
+              "type": "core::array::Array::<lore::components::container::ActionMapContainer>"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "lore::lib::relations::ParentToChildren",
           "members": [
@@ -1734,6 +1804,18 @@
             },
             {
               "type": "function",
+              "name": "create_container",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::container::Container>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "create_parent",
               "inputs": [
                 {
@@ -1807,6 +1889,18 @@
             {
               "type": "function",
               "name": "delete_inventory_item",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_container",
               "inputs": [
                 {
                   "name": "ids",
@@ -1966,6 +2060,7 @@
         "create_area",
         "create_exit",
         "create_inventory_item",
+        "create_container",
         "create_parent",
         "create_child",
         "delete_entity",
@@ -1973,14 +2068,15 @@
         "delete_area",
         "delete_exit",
         "delete_inventory_item",
+        "delete_container",
         "delete_parent",
         "delete_child",
         "upgrade"
       ]
     },
     {
-      "address": "0x2dc6115198d4b3b2deb0433050920309881f453c42176982392a56e9102a041",
-      "class_hash": "0x30258a8ff39e4ecd5eb9a7a6166855706bd8aaae4d98a5f8e000c148af9ed6",
+      "address": "0x260ac18e552cdea81d9e8a77f284456efb27289e612f6974ba3321a7e12cacb",
+      "class_hash": "0x4fdea007019f018cc12760fc7473e577ef381e894e171231ff136a2d7b5eed6",
       "abi": [
         {
           "type": "impl",
@@ -2195,7 +2291,7 @@
     },
     {
       "members": [],
-      "class_hash": "0xbd2abf3a995b3f06e5517500675a59ac24ace2e98a5bfe34bb41457deae161",
+      "class_hash": "0x317f388617b86d9eb0f53023496bf0966a165e836c0f962dfba1f0d2870ff91",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
     },

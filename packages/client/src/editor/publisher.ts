@@ -11,6 +11,8 @@ import {
 	inspectableActions,
 	type InventoryItem,
 	inventoryItemActions,
+	type Container,
+	containerActions,
 	type ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
@@ -90,6 +92,9 @@ const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("InventoryItem" in collection && collection.InventoryItem !== undefined) {
 		await publishInventoryItem(collection.InventoryItem);
 	}
+	if ("Container" in collection && collection.Container !== undefined) {
+		await publishContainer(collection.Container);
+	}
 	if ("ChildToParent" in collection && collection.ChildToParent !== undefined) {
 		await publishChildToParent(collection.ChildToParent);
 	}
@@ -140,7 +145,6 @@ const publishArea = async (area: Area) => {
 	const areaData = [
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
-		toEnumIndex(area.direction, direction),
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };
@@ -179,6 +183,28 @@ const publishInventoryItem = async (inventoryItem: InventoryItem) => {
 			: 0,
 	];
 	await dispatchDesignerCall("create_inventory_item", [inventoryItemData]);
+};
+
+const publishContainer = async (container: Container) => {
+	const containerData = [
+		num.toBigInt(container.inst.toString()),
+		container.is_container,
+		container.can_be_opened,
+		container.can_receive_items,
+		container.is_open,
+		container.num_slots,
+		container.item_ids.length > 0
+			? container.item_ids.map((x) => num.toBigInt(x))
+			: 0,
+		container.action_map.length > 0
+			? container.action_map.map((x) => [
+					byteArray.byteArrayFromString(x.action),
+					0,
+					toEnumIndex(x.action_fn, containerActions),
+			  ])
+			: 0,
+	];
+	await dispatchDesignerCall("create_container", [containerData]);
 };
 
 const publishChildToParent = async (childToParent: ChildToParent) => {
@@ -221,6 +247,11 @@ const deleteCollection = async (model: EntityCollection) => {
 	if ("InventoryItem" in model && model.InventoryItem !== undefined) {
 		await dispatchDesignerCall("delete_inventory_item", [
 			num.toBigInt(model.InventoryItem!.inst),
+		]);
+	}
+	if("Container" in model && model.Container !== undefined) {
+		await dispatchDesignerCall("delete_container", [
+			num.toBigInt(model.Container!.inst),
 		]);
 	}
 	if ("ChildToParent" in model && model.ChildToParent !== undefined) {

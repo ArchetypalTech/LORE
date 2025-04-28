@@ -13,29 +13,34 @@ export interface AreaValue {
 	is_area: boolean;
 }
 
+// Type definition for `lore::components::container::ActionMapContainer` struct
+export interface ActionMapContainer {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ContainerActionsEnum;
+}
+
 // Type definition for `lore::components::container::Container` struct
 export interface Container {
 	inst: BigNumberish;
 	is_container: boolean;
-	childToParent: ChildToParent;
 	can_be_opened: boolean;
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
 	item_ids: Array<BigNumberish>;
-	action_map: Array<string>;
+	action_map: Array<ActionMapContainer>;
 }
 
 // Type definition for `lore::components::container::ContainerValue` struct
 export interface ContainerValue {
 	is_container: boolean;
-	childToParent: ChildToParent;
 	can_be_opened: boolean;
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
 	item_ids: Array<BigNumberish>;
-	action_map: Array<string>;
+	action_map: Array<ActionMapContainer>;
 }
 
 // Type definition for `lore::components::exit::ActionMapExit` struct
@@ -198,6 +203,14 @@ export interface ParentToChildrenValue {
 	children: Array<BigNumberish>;
 }
 
+// Type definition for `lore::components::container::ContainerActions` enum
+export const containerActions = [
+	'Open',
+	'Close',
+] as const;
+export type ContainerActions = { [key in typeof containerActions[number]]: string };
+export type ContainerActionsEnum = CairoCustomEnum;
+
 // Type definition for `lore::components::exit::ExitActions` enum
 export const exitActions = [
 	'UseExit',
@@ -255,6 +268,7 @@ export interface SchemaType extends ISchemaType {
 	lore: {
 		Area: Area,
 		AreaValue: AreaValue,
+		ActionMapContainer: ActionMapContainer,
 		Container: Container,
 		ContainerValue: ContainerValue,
 		ActionMapExit: ActionMapExit,
@@ -289,26 +303,35 @@ export const schema: SchemaType = {
 		AreaValue: {
 			is_area: false,
 		},
+		ActionMapContainer: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined, }),
+		},
 		Container: {
 			inst: 0,
 			is_container: false,
-		childToParent: { inst: 0, is_child: false, parent: 0, },
 			can_be_opened: false,
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
 			item_ids: [0],
-			action_map: [""],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined, }), }],
 		},
 		ContainerValue: {
 			is_container: false,
-		childToParent: { inst: 0, is_child: false, parent: 0, },
 			can_be_opened: false,
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
 			item_ids: [0],
-			action_map: [""],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined, }), }],
 		},
 		ActionMapExit: {
 		action: "",
@@ -484,7 +507,9 @@ export const schema: SchemaType = {
 export enum ModelsMapping {
 	Area = 'lore-Area',
 	AreaValue = 'lore-AreaValue',
+	ActionMapContainer = 'lore-ActionMapContainer',
 	Container = 'lore-Container',
+	ContainerActions = 'lore-ContainerActions',
 	ContainerValue = 'lore-ContainerValue',
 	ActionMapExit = 'lore-ActionMapExit',
 	Exit = 'lore-Exit',

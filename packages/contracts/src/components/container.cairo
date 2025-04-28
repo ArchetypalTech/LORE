@@ -33,7 +33,6 @@ pub struct ActionMapContainer {
 
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
 pub enum ContainerActions {
-    UseItem,
     Open,
     Close,
 }
@@ -167,9 +166,6 @@ pub impl ContainerComponent of Component<Container> {
             .action_map =
                 array![
                     ActionMapContainer {
-                        action: "use", inst: 0, action_fn: ContainerActions::UseItem,
-                    },
-                    ActionMapContainer {
                         action: "open", inst: 0, action_fn: ContainerActions::Open,
                     },
                     ActionMapContainer {
@@ -203,16 +199,6 @@ pub impl ContainerComponent of Component<Container> {
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {
-            ContainerActions::UseItem => {
-                player
-                    .say(
-                        world,
-                        format!("You are trying to use:{:?} that is in a container", nouns[0]),
-                    );
-                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
-                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
-                return Result::Ok(());
-            },
             ContainerActions::Open => {
                 player.say(world, format!("You are trying to open:{:?}", nouns[0]));
                 return Result::Ok(());

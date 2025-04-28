@@ -53,6 +53,7 @@ export type DesignerCall =
 	| "create_area"
 	| "create_exit"
 	| "create_inventory_item"
+	| "create_container"
 	| "create_parent"
 	| "create_child"
 	| "delete_entity"
@@ -60,6 +61,7 @@ export type DesignerCall =
 	| "delete_area"
 	| "delete_exit"
 	| "delete_inventory_item"
+	| "delete_container"
 	| "delete_parent"
 	| "delete_child";
 

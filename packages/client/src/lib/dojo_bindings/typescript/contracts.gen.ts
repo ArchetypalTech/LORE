@@ -46,6 +46,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_createContainer_calldata = (t: Array<Container>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_container",
+			calldata: [t],
+		};
+	};
+
+	const designer_createContainer = async (snAccount: Account | AccountInterface, t: Array<Container>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createContainer_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createEntity_calldata = (t: Array<Entity>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -193,6 +214,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deleteContainer_calldata = (ids: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_container",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteContainer = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteContainer_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteEntity_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -327,6 +369,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildCreateAreaCalldata: build_designer_createArea_calldata,
 			createChild: designer_createChild,
 			buildCreateChildCalldata: build_designer_createChild_calldata,
+			createContainer: designer_createContainer,
+			buildCreateContainerCalldata: build_designer_createContainer_calldata,
 			createEntity: designer_createEntity,
 			buildCreateEntityCalldata: build_designer_createEntity_calldata,
 			createExit: designer_createExit,
@@ -341,6 +385,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeleteAreaCalldata: build_designer_deleteArea_calldata,
 			deleteChild: designer_deleteChild,
 			buildDeleteChildCalldata: build_designer_deleteChild_calldata,
+			deleteContainer: designer_deleteContainer,
+			buildDeleteContainerCalldata: build_designer_deleteContainer_calldata,
 			deleteEntity: designer_deleteEntity,
 			buildDeleteEntityCalldata: build_designer_deleteEntity_calldata,
 			deleteExit: designer_deleteExit,
