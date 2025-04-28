@@ -1,8 +1,12 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
-    components::{inventoryItem::InventoryItem},
-    lib::{entity::{Entity, EntityImpl}, relations::{ChildToParent}},
+    constants::errors::Error, components::{inventoryItem::InventoryItem},
+    lib::{
+        entity::{Entity, EntityImpl}, relations::{ChildToParent},
+        a_lexer::{Command, Token, CommandImpl},
+    },
 };
+use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
 
 #[derive(Clone, Drop, Serde, Introspect)]
 #[dojo::model]
@@ -10,7 +14,6 @@ pub struct Container {
     #[key]
     pub inst: felt252,
     pub is_container: bool,
-    pub childToParent: ChildToParent,
     // properties
     pub can_be_opened: bool,
     pub can_receive_items: bool,
@@ -18,7 +21,21 @@ pub struct Container {
     pub num_slots: u32,
     pub item_ids: Array<felt252>,
     // pub accept_tags: Array<Tag>,
-    pub action_map: Array<ByteArray>,
+    pub action_map: Array<ActionMapContainer>,
+}
+
+#[derive(Clone, Drop, Serde, Introspect, Debug)]
+pub struct ActionMapContainer {
+    pub action: ByteArray,
+    pub inst: felt252,
+    pub action_fn: ContainerActions,
+}
+
+#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
+pub enum ContainerActions {
+    UseItem,
+    Open,
+    Close,
 }
 
 #[generate_trait]
@@ -84,6 +101,7 @@ pub impl ContainerImpl of ContainerTrait {
     fn put_item(self: Container, mut world: WorldStorage, item: InventoryItem) {
         // get container
         let mut container: Container = world.read_model(self.inst);
+        // get
         // get item entity
         let item_entity: Entity = world.read_model(item.inst);
         // check if container is full
@@ -94,11 +112,8 @@ pub impl ContainerImpl of ContainerTrait {
         if (!container.clone().can_put_item(world, item.clone())) {
             return;
         }
-        // add item to container by getting the parent of the container which can be the player or a
-        // chest, etc
-        let mut container_parent: Entity = world.read_model(container.childToParent.parent);
-        // set parent to be the container_parent
-        item_entity.set_parent(world, @container_parent);
+        // set parent to be the container's entity
+        item_entity.set_parent(world, @container.entity(@world));
         // add item to container
         container.item_ids.append(item.inst);
         // update container
@@ -122,3 +137,112 @@ pub impl ContainerImpl of ContainerTrait {
         already_inside
     }
 }
+
+pub impl ContainerComponent of Component<Container> {
+    type ComponentType = Container;
+
+    fn inst(self: @Container) -> @felt252 {
+        self.inst
+    }
+
+    fn entity(self: @Container, world: @WorldStorage) -> Entity {
+        EntityImpl::get_entity(world, self.inst).unwrap()
+    }
+
+    fn has_component(self: @Container, world: WorldStorage, inst: felt252) -> bool {
+        let container: Container = world.read_model(inst);
+        container.is_container
+    }
+
+    fn add_component(mut world: WorldStorage, inst: felt252) -> Container {
+        let mut container: Container = world.read_model(inst);
+        container.inst = inst;
+        container.is_container = true;
+        container.can_be_opened = true;
+        container.can_receive_items = true;
+        container.is_open = true;
+        container.num_slots = 0;
+        container.item_ids = array![];
+        container
+            .action_map =
+                array![
+                    ActionMapContainer {
+                        action: "use", inst: 0, action_fn: ContainerActions::UseItem,
+                    },
+                    ActionMapContainer {
+                        action: "open", inst: 0, action_fn: ContainerActions::Open,
+                    },
+                    ActionMapContainer {
+                        action: "close", inst: 0, action_fn: ContainerActions::Close,
+                    },
+                ];
+        container.store(world);
+        container
+    }
+
+    fn get_component(world: WorldStorage, inst: felt252) -> Option<Container> {
+        let container: Container = world.read_model(inst);
+        if (!container.has_component(world, inst)) {
+            return Option::None;
+        }
+        let container: Container = world.read_model(inst);
+        Option::Some(container)
+    }
+
+    fn can_use_command(
+        self: @Container, world: WorldStorage, player: @Player, command: @Command,
+    ) -> bool {
+        get_action_token(self, world, command).is_some()
+    }
+
+    fn execute_command(
+        mut self: Container, mut world: WorldStorage, player: @Player, command: @Command,
+    ) -> Result<(), Error> {
+        println!("Container execute_command");
+        player.say(world, format!("You are executing container"));
+        let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let nouns = command.get_nouns();
+        match action.action_fn {
+            ContainerActions::UseItem => {
+                player
+                    .say(
+                        world,
+                        format!("You are trying to use:{:?} that is in a container", nouns[0]),
+                    );
+                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
+                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                return Result::Ok(());
+            },
+            ContainerActions::Open => {
+                player.say(world, format!("You are trying to open:{:?}", nouns[0]));
+                return Result::Ok(());
+            },
+            ContainerActions::Close => {
+                player.say(world, format!("You are trying to close:{:?}", nouns[0]));
+                return Result::Ok(());
+            },
+        }
+        Result::Err(Error::ActionFailed)
+    }
+
+    fn store(self: @Container, mut world: WorldStorage) {
+        world.write_model(self);
+    }
+}
+
+// @dev: wip how to access tokens
+fn get_action_token(
+    self: @Container, world: WorldStorage, command: @Command,
+) -> Option<(ActionMapContainer, Token)> {
+    let mut action_token: Option<(ActionMapContainer, Token)> = Option::None;
+    for token in command.tokens.clone() {
+        for action in self.action_map.clone() {
+            if (token.text == action.action) {
+                action_token = Option::Some((action, token));
+                break;
+            }
+        }
+    };
+    action_token
+}
+
