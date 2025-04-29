@@ -95,9 +95,12 @@ pub impl PlayerImpl of PlayerTrait {
                 let children = room.get_children(world);
                 for child in children.clone() {
                     context.append(child.clone());
-                    let son = child.clone().get_children(world);
-                    for child_2 in son {
-                        context.append(child_2);
+                    // If child inst is equal to the one of the player, go over the children it has
+                    if (*self.inst == child.inst) {
+                        let children_2 = child.get_children(world);
+                        for child_2 in children_2 {
+                            context.append(child_2);
+                        }
                     }
                 };
                 context

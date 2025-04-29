@@ -158,7 +158,7 @@ pub impl ContainerImpl of ContainerTrait {
         if (!self.can_receive_items) {
             player.say(*world, ("It cannot receive items"));
         } else {
-            player.say(*world, ("Itcan receive items"));
+            player.say(*world, ("It can receive items"));
         }
         // check if container is empty
         if (self.clone().is_empty(world)) {
@@ -240,11 +240,29 @@ pub impl ContainerComponent of Component<Container> {
         let nouns = command.get_nouns();
         match action.action_fn {
             ContainerActions::Open => {
-                player.say(world, format!("You are trying to open:{:?}", nouns[0]));
+                if (self.is_open) {
+                    player
+                        .say(
+                            world,
+                            format!("The {} is already open.", self.clone().entity(@world).name),
+                        );
+                } else {
+                    player.say(world, format!("You open {}", self.clone().entity(@world).name));
+                    self.set_open(world, true);
+                }
                 return Result::Ok(());
             },
             ContainerActions::Close => {
-                player.say(world, format!("You are trying to close:{:?}", nouns[0]));
+                if (!self.is_open) {
+                    player
+                        .say(
+                            world,
+                            format!("The {} is already closed.", self.clone().entity(@world).name),
+                        );
+                } else {
+                    player.say(world, format!("You close {}", self.clone().entity(@world).name));
+                    self.set_open(world, false);
+                }
                 return Result::Ok(());
             },
             ContainerActions::Check => {

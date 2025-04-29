@@ -117,25 +117,25 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         let nouns = command.get_nouns();
         match action.action_fn {
             InventoryItemActions::UseItem => {
-                player.say(world, format!("You are trying to use:{:?}", nouns[0]));
+                player.say(world, format!("You are trying to use: {}", nouns[0].text));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
                 return Result::Ok(());
             },
             InventoryItemActions::PickupItem => {
-                player.say(world, format!("You are trying to pickup:{:?}", nouns[0]));
+                player.say(world, format!("You are trying to pickup: {}", nouns[0].text));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
                 return Result::Ok(());
             },
             InventoryItemActions::DropItem => {
-                player.say(world, format!("You are trying to drop:{:?}", nouns[0]));
+                player.say(world, format!("You are trying to drop: {}", nouns[0].text));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
                 return Result::Ok(());
             },
             InventoryItemActions::PutItem => {
-                player.say(world, format!("You are trying to put:{:?}", nouns[0]));
+                player.say(world, format!("You are trying to put: {}", nouns[0].text));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
                 return Result::Ok(());
