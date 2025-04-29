@@ -28,7 +28,6 @@ export interface Container {
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
-	item_ids: Array<BigNumberish>;
 	action_map: Array<ActionMapContainer>;
 }
 
@@ -39,7 +38,6 @@ export interface ContainerValue {
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
-	item_ids: Array<BigNumberish>;
 	action_map: Array<ActionMapContainer>;
 }
 
@@ -230,6 +228,9 @@ export type InspectableActionsEnum = CairoCustomEnum;
 // Type definition for `lore::components::inventoryItem::InventoryItemActions` enum
 export const inventoryItemActions = [
 	'UseItem',
+	'PickupItem',
+	'DropItem',
+	'PutItem',
 ] as const;
 export type InventoryItemActions = { [key in typeof inventoryItemActions[number]]: string };
 export type InventoryItemActionsEnum = CairoCustomEnum;
@@ -317,7 +318,6 @@ export const schema: SchemaType = {
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
-			item_ids: [0],
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					Open: "",
 				Close: undefined, }), }],
@@ -328,7 +328,6 @@ export const schema: SchemaType = {
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
-			item_ids: [0],
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					Open: "",
 				Close: undefined, }), }],
@@ -401,7 +400,10 @@ export const schema: SchemaType = {
 		action: "",
 			inst: 0,
 		action_fn: new CairoCustomEnum({ 
-					UseItem: "", }),
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined, }),
 		},
 		InventoryItem: {
 			inst: 0,
@@ -410,7 +412,10 @@ export const schema: SchemaType = {
 			can_be_picked_up: false,
 			can_go_in_container: false,
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					UseItem: "", }), }],
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined, }), }],
 		},
 		InventoryItemValue: {
 			is_inventory_item: false,
@@ -418,7 +423,10 @@ export const schema: SchemaType = {
 			can_be_picked_up: false,
 			can_go_in_container: false,
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					UseItem: "", }), }],
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined, }), }],
 		},
 		Player: {
 			inst: 0,

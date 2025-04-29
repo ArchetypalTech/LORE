@@ -1,10 +1,7 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     constants::errors::Error, components::{inventoryItem::InventoryItem},
-    lib::{
-        entity::{Entity, EntityImpl}, relations::{ChildToParent},
-        a_lexer::{Command, Token, CommandImpl},
-    },
+    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl}},
 };
 use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
 
@@ -19,7 +16,7 @@ pub struct Container {
     pub can_receive_items: bool,
     pub is_open: bool,
     pub num_slots: u32,
-    pub item_ids: Array<felt252>,
+    // item_ids: Array<felt252>,
     // pub accept_tags: Array<Tag>,
     pub action_map: Array<ActionMapContainer>,
 }
@@ -43,8 +40,13 @@ pub impl ContainerImpl of ContainerTrait {
         self.is_container
     }
 
-    fn get_item_ids(self: Container) -> Array<felt252> {
-        self.item_ids
+    fn get_item_ids(self: Container, world: @WorldStorage) -> Array<felt252> {
+        let mut item_ids: Array<felt252> = ArrayTrait::new();
+        let items = self.entity(world).get_children(world);
+        for item in items {
+            item_ids.append(item.inst);
+        };
+        item_ids
     }
 
     fn set_open(self: Container, mut world: WorldStorage, opened: bool) {
@@ -65,19 +67,19 @@ pub impl ContainerImpl of ContainerTrait {
         world.write_model(@model);
     }
 
-    fn is_full(self: Container) -> bool {
-        let itemAmount: u32 = self.item_ids.len().try_into().unwrap();
+    fn is_full(self: Container, world: @WorldStorage) -> bool {
+        let itemAmount: u32 = self.clone().get_item_ids(world).len().try_into().unwrap();
         return itemAmount >= self.num_slots;
     }
 
-    fn is_empty(self: Container) -> bool {
-        return self.item_ids.len() == 0;
+    fn is_empty(self: Container, world: @WorldStorage) -> bool {
+        return self.clone().get_item_ids(world).len() == 0;
     }
 
     fn can_put_item(self: Container, world: WorldStorage, item: InventoryItem) -> bool {
         let mut can_put_item = false;
         // check if container is full
-        if (self.clone().is_full()) {
+        if (self.clone().is_full(@world)) {
             return can_put_item;
         }
         // check if container can receive items
@@ -89,7 +91,7 @@ pub impl ContainerImpl of ContainerTrait {
             return can_put_item;
         }
         // check if item is already in the container
-        if (self.contains(item.inst)) {
+        if (self.contains(item.inst, @world)) {
             return can_put_item;
         }
         // if checks pass, container can receive item
@@ -100,21 +102,16 @@ pub impl ContainerImpl of ContainerTrait {
     fn put_item(self: Container, mut world: WorldStorage, item: InventoryItem) {
         // get container
         let mut container: Container = world.read_model(self.inst);
-        // get
+
         // get item entity
         let item_entity: Entity = world.read_model(item.inst);
-        // check if container is full
-        if (container.clone().is_full()) {
-            return;
-        }
+
         // check if item can be put in container
         if (!container.clone().can_put_item(world, item.clone())) {
             return;
         }
         // set parent to be the container's entity
         item_entity.set_parent(world, @container.entity(@world));
-        // add item to container
-        container.item_ids.append(item.inst);
         // update container
         world.write_model(@container);
     }
@@ -124,10 +121,10 @@ pub impl ContainerImpl of ContainerTrait {
         assert(true == false, 'take_item not yet implemented');
     }
 
-    fn contains(self: Container, itemID: felt252) -> bool {
+    fn contains(self: Container, itemID: felt252, world: @WorldStorage) -> bool {
         let mut already_inside = false;
         // check if item is already in container
-        for item_id in self.item_ids.clone() {
+        for item_id in self.clone().get_item_ids(world) {
             if (item_id == itemID) {
                 already_inside;
                 break;
@@ -161,7 +158,6 @@ pub impl ContainerComponent of Component<Container> {
         container.can_receive_items = true;
         container.is_open = true;
         container.num_slots = 0;
-        container.item_ids = array![];
         container
             .action_map =
                 array![

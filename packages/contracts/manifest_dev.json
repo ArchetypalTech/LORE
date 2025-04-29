@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x625e2dfc6929b68d6b94c33044c5c9fce07a3bc61021d0b760333f10c975882",
-      "class_hash": "0x1ab253ef9c541f009801455f564fcc1a6b9b01d9623eaf17012390e339289c3",
+      "address": "0x47e6c9a111ff3dd7e631687e5535f758fa20749d28d6063d9da35f261cacaed",
+      "class_hash": "0x41aa98721564a2319a8e7b1b305eaeb9e54746bddb1e6f93038e5bf2cec230c",
       "abi": [
         {
           "type": "impl",
@@ -1581,6 +1581,18 @@
             {
               "name": "UseItem",
               "type": "()"
+            },
+            {
+              "name": "PickupItem",
+              "type": "()"
+            },
+            {
+              "name": "DropItem",
+              "type": "()"
+            },
+            {
+              "name": "PutItem",
+              "type": "()"
             }
           ]
         },
@@ -1691,10 +1703,6 @@
             {
               "name": "num_slots",
               "type": "core::integer::u32"
-            },
-            {
-              "name": "item_ids",
-              "type": "core::array::Array::<core::felt252>"
             },
             {
               "name": "action_map",
@@ -2075,8 +2083,8 @@
       ]
     },
     {
-      "address": "0x260ac18e552cdea81d9e8a77f284456efb27289e612f6974ba3321a7e12cacb",
-      "class_hash": "0x4fdea007019f018cc12760fc7473e577ef381e894e171231ff136a2d7b5eed6",
+      "address": "0x5282b6c6b5724209ae9b67b48dd90d2ddc40e5245d84f6ce03a9e7ef3e52596",
+      "class_hash": "0x436d29b1d18080070ce7e3c013f672da6ece5316fdd963116474a6edea8014e",
       "abi": [
         {
           "type": "impl",
@@ -2291,7 +2299,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x317f388617b86d9eb0f53023496bf0966a165e836c0f962dfba1f0d2870ff91",
+      "class_hash": "0x2239f8798a4060e3deadedeee28131e7ec6811d9e5d87062e296d886b13a3bf",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
     },
@@ -2321,7 +2329,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x1006933725831fd238f590627ab295e4331f87efa827e9f53a037156a0df949",
+      "class_hash": "0xb1d5e47eaddad6330fb49b9842918c4db3a22d4c4e24ad832454ffbc57ee0f",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },

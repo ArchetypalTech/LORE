@@ -33,6 +33,9 @@ pub struct ActionMapInventoryItem {
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
 pub enum InventoryItemActions {
     UseItem,
+    PickupItem,
+    DropItem,
+    PutItem,
 }
 
 #[generate_trait]
@@ -74,13 +77,16 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             .action_map =
                 array![
                     ActionMapInventoryItem {
-                        action: "pickup", inst: 0, action_fn: InventoryItemActions::UseItem,
+                        action: "pickup", inst: 0, action_fn: InventoryItemActions::PickupItem,
                     },
                     ActionMapInventoryItem {
-                        action: "drop", inst: 0, action_fn: InventoryItemActions::UseItem,
+                        action: "drop", inst: 0, action_fn: InventoryItemActions::DropItem,
                     },
                     ActionMapInventoryItem {
-                        action: "put", inst: 0, action_fn: InventoryItemActions::UseItem,
+                        action: "put", inst: 0, action_fn: InventoryItemActions::PutItem,
+                    },
+                    ActionMapInventoryItem {
+                        action: "use", inst: 0, action_fn: InventoryItemActions::UseItem,
                     },
                 ];
         inventory_item.store(world);
@@ -111,7 +117,25 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         let nouns = command.get_nouns();
         match action.action_fn {
             InventoryItemActions::UseItem => {
-                player.say(world, format!("You are trying to pick or drop:{:?}", nouns[0]));
+                player.say(world, format!("You are trying to use:{:?}", nouns[0]));
+                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
+                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                return Result::Ok(());
+            },
+            InventoryItemActions::PickupItem => {
+                player.say(world, format!("You are trying to pickup:{:?}", nouns[0]));
+                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
+                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                return Result::Ok(());
+            },
+            InventoryItemActions::DropItem => {
+                player.say(world, format!("You are trying to drop:{:?}", nouns[0]));
+                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
+                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                return Result::Ok(());
+            },
+            InventoryItemActions::PutItem => {
+                player.say(world, format!("You are trying to put:{:?}", nouns[0]));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
                 return Result::Ok(());

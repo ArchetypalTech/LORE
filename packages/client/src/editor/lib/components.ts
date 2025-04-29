@@ -80,9 +80,10 @@ export const createDefaultInventoryItemComponent = (
 		can_be_picked_up: false,
 		can_go_in_container: false,
 		action_map: [
-			{ action: "pickup", inst: 0, action_fn: "UseItem" },
-			{ action: "drop", inst: 0, action_fn: "UseItem" },
-			{ action: "put", inst: 0, action_fn: "UseItem" },
+			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
+			{ action: "drop", inst: 0, action_fn: "DropItem" },
+			{ action: "put", inst: 0, action_fn: "PutItem" },
+			{ action: "use", inst: 0, action_fn: "UseItem" },
 		],
 	},
 });

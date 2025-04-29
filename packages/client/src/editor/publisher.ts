@@ -193,9 +193,6 @@ const publishContainer = async (container: Container) => {
 		container.can_receive_items,
 		container.is_open,
 		container.num_slots,
-		container.item_ids.length > 0
-			? container.item_ids.map((x) => num.toBigInt(x))
-			: 0,
 		container.action_map.length > 0
 			? container.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
