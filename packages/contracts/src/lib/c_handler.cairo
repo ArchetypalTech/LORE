@@ -45,7 +45,7 @@ pub fn handle_command(
                     }
                 },
                 Option::None => {},
-            };
+            }
             match AreaComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
@@ -56,7 +56,7 @@ pub fn handle_command(
                     }
                 },
                 Option::None => {},
-            };
+            }
             // @dev: guaranteed there's a noun
             match ExitComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
@@ -68,7 +68,7 @@ pub fn handle_command(
                     }
                 },
                 Option::None => {},
-            };
+            }
             match InventoryItemComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
@@ -79,7 +79,7 @@ pub fn handle_command(
                     }
                 },
                 Option::None => {},
-            };
+            }
             match ContainerComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {

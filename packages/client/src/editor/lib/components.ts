@@ -99,10 +99,10 @@ export const createDefaultContainerComponent = (
 		can_receive_items: true,
 		is_open: true,
 		num_slots: 0,
-		item_ids: [],
 		action_map: [
 			{ action: "open", inst: 0, action_fn: "Open" },
 			{ action: "close", inst: 0, action_fn: "Close" },
+			{ action: "check", inst: 0, action_fn: "Check" },
 		],
 	},
 });

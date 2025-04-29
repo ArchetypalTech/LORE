@@ -32,6 +32,7 @@ pub struct ActionMapContainer {
 pub enum ContainerActions {
     Open,
     Close,
+    Check,
 }
 
 #[generate_trait]
@@ -78,6 +79,10 @@ pub impl ContainerImpl of ContainerTrait {
 
     fn can_put_item(self: Container, world: WorldStorage, item: InventoryItem) -> bool {
         let mut can_put_item = false;
+        // chekc if container is open
+        if (!self.is_open) {
+            return can_put_item;
+        }
         // check if container is full
         if (self.clone().is_full(@world)) {
             return can_put_item;
@@ -132,6 +137,44 @@ pub impl ContainerImpl of ContainerTrait {
         };
         already_inside
     }
+
+    fn check_container(
+        self: Container, world: @WorldStorage, player: @Player, object: @ByteArray,
+    ) -> bool {
+        // check if container is open
+        if (!self.is_open) {
+            player.say(*world, format!("The {} is closed", object));
+            return true;
+        } else {
+            player.say(*world, format!("The {} is open.", object));
+        }
+        // check if container is full
+        if (self.clone().is_full(world)) {
+            player.say(*world, ("It is full."));
+        } else {
+            player.say(*world, ("It is not full."));
+        }
+        // check if container can receive items
+        if (!self.can_receive_items) {
+            player.say(*world, ("It cannot receive items"));
+        } else {
+            player.say(*world, ("Itcan receive items"));
+        }
+        // check if container is empty
+        if (self.clone().is_empty(world)) {
+            player.say(*world, ("It is empty."));
+        } else {
+            // Say what it contains
+            player.say(*world, format!("It contains:"));
+            let items_id = self.get_item_ids(world);
+            for item_id in items_id {
+                let item = EntityImpl::get_entity(world, @item_id).unwrap();
+                player.say(*world, format!("{}", item.name));
+            };
+        }
+
+        return true;
+    }
 }
 
 pub impl ContainerComponent of Component<Container> {
@@ -167,6 +210,9 @@ pub impl ContainerComponent of Component<Container> {
                     ActionMapContainer {
                         action: "close", inst: 0, action_fn: ContainerActions::Close,
                     },
+                    ActionMapContainer {
+                        action: "check", inst: 0, action_fn: ContainerActions::Check,
+                    },
                 ];
         container.store(world);
         container
@@ -177,7 +223,6 @@ pub impl ContainerComponent of Component<Container> {
         if (!container.has_component(world, inst)) {
             return Option::None;
         }
-        let container: Container = world.read_model(inst);
         Option::Some(container)
     }
 
@@ -191,7 +236,6 @@ pub impl ContainerComponent of Component<Container> {
         mut self: Container, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         println!("Container execute_command");
-        player.say(world, format!("You are executing container"));
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {
@@ -202,6 +246,13 @@ pub impl ContainerComponent of Component<Container> {
             ContainerActions::Close => {
                 player.say(world, format!("You are trying to close:{:?}", nouns[0]));
                 return Result::Ok(());
+            },
+            ContainerActions::Check => {
+                // Check container status
+                let doneChecking = self.check_container(@world, player, nouns[0].text);
+                if (doneChecking) {
+                    return Result::Ok(());
+                }
             },
         }
         Result::Err(Error::ActionFailed)

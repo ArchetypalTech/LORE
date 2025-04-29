@@ -205,6 +205,7 @@ export interface ParentToChildrenValue {
 export const containerActions = [
 	'Open',
 	'Close',
+	'Check',
 ] as const;
 export type ContainerActions = { [key in typeof containerActions[number]]: string };
 export type ContainerActionsEnum = CairoCustomEnum;
@@ -309,7 +310,8 @@ export const schema: SchemaType = {
 			inst: 0,
 		action_fn: new CairoCustomEnum({ 
 					Open: "",
-				Close: undefined, }),
+				Close: undefined,
+				Check: undefined, }),
 		},
 		Container: {
 			inst: 0,
@@ -320,7 +322,8 @@ export const schema: SchemaType = {
 			num_slots: 0,
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					Open: "",
-				Close: undefined, }), }],
+				Close: undefined,
+				Check: undefined, }), }],
 		},
 		ContainerValue: {
 			is_container: false,
@@ -330,7 +333,8 @@ export const schema: SchemaType = {
 			num_slots: 0,
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					Open: "",
-				Close: undefined, }), }],
+				Close: undefined,
+				Check: undefined, }), }],
 		},
 		ActionMapExit: {
 		action: "",

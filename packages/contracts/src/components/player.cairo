@@ -94,7 +94,11 @@ pub impl PlayerImpl of PlayerTrait {
                 context.append(room.clone());
                 let children = room.get_children(world);
                 for child in children.clone() {
-                    context.append(child);
+                    context.append(child.clone());
+                    let son = child.clone().get_children(world);
+                    for child_2 in son {
+                        context.append(child_2);
+                    }
                 };
                 context
             },
