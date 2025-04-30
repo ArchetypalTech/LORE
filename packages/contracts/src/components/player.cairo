@@ -44,6 +44,10 @@ pub impl PlayerImpl of PlayerTrait {
         }
         self.say(world, format!("{}", room.unwrap().name));
         for item in context {
+            // Don't add the player to the description
+            if (item.inst == *self.inst) {
+                continue;
+            }
             let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
             if inspectable.is_some() {
                 let description = inspectable.unwrap().get_random_description(world);
@@ -90,6 +94,7 @@ pub impl PlayerImpl of PlayerTrait {
         parent
     }
 
+    // Get the 1st level context of the room
     fn get_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
         match self.get_room(world) {
             Option::Some(room) => {
@@ -98,13 +103,47 @@ pub impl PlayerImpl of PlayerTrait {
                 let children = room.get_children(world);
                 for child in children.clone() {
                     context.append(child.clone());
-                    // If child inst is equal to the one of the player, go over the children it has
-                    if (*self.inst == child.inst) {
-                        let children_2 = child.get_children(world);
-                        for child_2 in children_2 {
-                            context.append(child_2);
+                };
+                context
+            },
+            Option::None => array![],
+        }
+    }
+
+    // Get the full context of the room
+    fn get_full_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
+        match self.get_room(world) {
+            Option::Some(room) => {
+                let mut context: Array<Entity> = array![];
+                context.append(room.clone());
+                let children = room.get_children(world);
+                for child in children.clone() {
+                    context.append(child.clone());
+                    // Go over 2nd level children
+                    let children_2 = child.get_children(world);
+                    for child_2 in children_2 {
+                        context.append(child_2.clone());
+                        // Go over 3rd level children
+                        let children_3 = child_2.get_children(world);
+                        for child_3 in children_3 {
+                            context.append(child_3);
                         }
-                    }
+                    };
+                    // // If child inst is equal to the one of the player, go over the children it
+                // has if (*self.inst == child.inst) {
+                //     let children_2 = child.get_children(world);
+                //     for child_2 in children_2 {
+                //         context.append(child_2.clone());
+                //         // If child_2 inst is equal to the one of the player, go over the
+                //         // children it has
+                //         if (*self.inst == child_2.inst) {
+                //             let children_3 = child_2.get_children(world);
+                //             for child_3 in children_3 {
+                //                 context.append(child_3);
+                //             }
+                //         }
+                //     }
+                // }
                 };
                 context
             },

@@ -155,9 +155,17 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // This is for a specific container
                 // Ex: "put the sword in the bag"
                 // Get the player's container
-                let player_container = get_player_container(@world, player, nouns);
+                let player_container = get_player_container(@world, player, nouns.clone());
                 if player_container.is_none() {
-                    return Result::Err(Error::ActionFailed);
+                    // if the player doesn't have a container, it means it is an entity container
+                    // that is on the room Ex: "put the sword in the box"
+                    let entity_container = get_entity_container(@world, player, nouns);
+                    if entity_container.is_none() {
+                        return Result::Err(Error::ActionFailed);
+                    }
+                    let container_component: Container = entity_container.unwrap();
+                    container_component.put_item(world, self.clone());
+                    return Result::Ok(());
                 }
                 let container_component: Container = player_container.unwrap();
                 container_component.put_item(world, self.clone());
@@ -210,4 +218,33 @@ fn get_player_container(
     // get container
     player_container = ContainerComponent::get_component(*world, container.unwrap().inst);
     return player_container;
+}
+
+// @dev: wip get entity's container
+// This can be the an entity container attached to the room
+fn get_entity_container(
+    world: @WorldStorage, player: @Player, nouns: Array<Token>,
+) -> Option<Container> {
+    // get room
+    let room = player.get_room(world);
+    if room.is_none() {
+        return Option::None;
+    }
+    let room_entity: Entity = EntityImpl::get_entity(world, @room.unwrap().inst).unwrap();
+    let room_children = room_entity.get_children(world);
+    let mut container: Option<Entity> = Option::None;
+    let mut room_container: Option<Container> = Option::None;
+    for child in room_children {
+        if (@child.name == nouns[1].text || child.clone().name_is(nouns[1].text.clone())) {
+            container = Option::Some(child);
+            break;
+        }
+    };
+    if container.is_none() {
+        player.say(*world, format!("There isn't a {} where you are.", nouns[1].text));
+        return Option::None;
+    }
+    // get container component
+    room_container = ContainerComponent::get_component(*world, container.unwrap().inst);
+    return room_container;
 }
