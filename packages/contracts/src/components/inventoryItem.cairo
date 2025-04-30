@@ -1,3 +1,4 @@
+use super::super::lib::entity::EntityTrait;
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     constants::errors::Error,
@@ -5,7 +6,7 @@ use lore::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
         utils::ByteArrayTraitExt,
     },
-    components::area::{AreaComponent},
+    components::{area::{AreaComponent}, container::{Container, ContainerComponent, ContainerImpl}},
 };
 use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
 
@@ -138,6 +139,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 player.say(world, format!("You are trying to put: {}", nouns[0].text));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                // Get the player's container
+                let player_container = get_player_container(@world, player, nouns);
+                if player_container.is_none() {
+                    return Result::Err(Error::ActionFailed);
+                }
+                let container_component: Container = player_container.unwrap();
+                container_component.put_item(world, self.clone());
                 return Result::Ok(());
             },
         }
@@ -163,4 +171,27 @@ fn get_action_token(
         }
     };
     action_token
+}
+
+// @dev: wip get player's container
+fn get_player_container(
+    world: @WorldStorage, player: @Player, nouns: Array<Token>,
+) -> Option<Container> {
+    let player_entity: Entity = EntityImpl::get_entity(world, player.inst).unwrap();
+    let player_children = player_entity.get_children(world);
+    let mut container: Option<Entity> = Option::None;
+    let mut player_container: Option<Container> = Option::None;
+    for child in player_children {
+        if (@child.name == nouns[1].text || child.clone().name_is(nouns[1].text.clone())) {
+            container = Option::Some(child);
+            break;
+        }
+    };
+    if container.is_none() {
+        player.say(*world, format!("You don't have a {}", nouns[1].text));
+        return Option::None;
+    }
+    // get container
+    player_container = ContainerComponent::get_component(*world, container.unwrap().inst);
+    return player_container;
 }
