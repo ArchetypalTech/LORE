@@ -120,25 +120,40 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             InventoryItemActions::UseItem => {
                 player.say(world, format!("You are trying to use: {}", nouns[0].text));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
-                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                // LIKE USE ITEM
                 return Result::Ok(());
             },
             InventoryItemActions::PickupItem => {
                 player.say(world, format!("You are trying to pickup: {}", nouns[0].text));
-                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
-                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                // This is for the player's personal inventory container
+                // Ex: "pickup the sword"
+                let personal_container = player.get_personal_container(@world);
+                if personal_container.is_none() {
+                    return Result::Err(Error::ActionFailed);
+                }
+                let container_component: Container = personal_container.unwrap();
+                player
+                    .say(
+                        world,
+                        format!(
+                            "Personal container is: {:?}",
+                            container_component.clone().entity(@world).name,
+                        ),
+                    );
+                container_component.put_item(world, self.clone());
+
                 return Result::Ok(());
             },
             InventoryItemActions::DropItem => {
                 player.say(world, format!("You are trying to drop: {}", nouns[0].text));
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
-                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                // LIKE DROP ITEM
                 return Result::Ok(());
             },
             InventoryItemActions::PutItem => {
                 player.say(world, format!("You are trying to put: {}", nouns[0].text));
-                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
-                // LIKE PUT ITEM IN CONTAINER, TAKE ITEM FROM CONTAINER, DROP ITEM, etc.
+                // This is for a specific container
+                // Ex: "put the sword in the bag"
                 // Get the player's container
                 let player_container = get_player_container(@world, player, nouns);
                 if player_container.is_none() {
@@ -174,6 +189,7 @@ fn get_action_token(
 }
 
 // @dev: wip get player's container
+// This can be the an entity container attached to the player
 fn get_player_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>,
 ) -> Option<Container> {

@@ -91,6 +91,10 @@ pub impl ContainerImpl of ContainerTrait {
         if (!self.can_receive_items) {
             return can_put_item;
         }
+        // check if item can be picked up
+        if (!item.can_be_picked_up) {
+            return can_put_item;
+        }
         // check if item can go into the container
         if (!item.can_go_in_container) {
             return can_put_item;
@@ -142,11 +146,21 @@ pub impl ContainerImpl of ContainerTrait {
         self: Container, world: @WorldStorage, player: @Player, object: @ByteArray,
     ) -> bool {
         // check if container is open
+        // we also check if the container is the player's personal inventory
         if (!self.is_open) {
-            player.say(*world, format!("The {} is closed", object));
-            return true;
+            if (self.inst == *player.inst) {
+                player.say(*world, format!("{} personal inventory is close", object));
+                return true;
+            } else {
+                player.say(*world, format!("The {} is closed", object));
+                return true;
+            }
         } else {
-            player.say(*world, format!("The {} is open.", object));
+            if (self.inst == *player.inst) {
+                player.say(*world, format!("{} personal inventory is open", object));
+            } else {
+                player.say(*world, format!("{} is open", object));
+            }
         }
         // check if container is full
         if (self.clone().is_full(world)) {

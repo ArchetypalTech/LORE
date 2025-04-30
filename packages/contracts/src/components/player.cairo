@@ -4,7 +4,10 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{
     constants::errors::Error, lib::{entity::{EntityImpl, Entity}, a_lexer::Command},
-    components::{Component, inspectable::{Inspectable, InspectableImpl}},
+    components::{
+        Component, inspectable::{Inspectable, InspectableImpl},
+        container::{Container, ContainerComponent},
+    },
 };
 
 pub struct EntityKey {
@@ -107,6 +110,19 @@ pub impl PlayerImpl of PlayerTrait {
             },
             Option::None => array![],
         }
+    }
+
+    // Get the player personal inventory container component
+    fn get_personal_container(self: @Player, world: @WorldStorage) -> Option<Container> {
+        let mut personal_container: Option<Container> = Option::None;
+        match ContainerComponent::get_component(*world, *self.inst) {
+            Option::Some(c) => { personal_container = Option::Some(c); },
+            Option::None => {
+                personal_container = Option::None;
+                self.say(*world, format!("You don't have a personal inventory container"));
+            },
+        }
+        personal_container
     }
 }
 
