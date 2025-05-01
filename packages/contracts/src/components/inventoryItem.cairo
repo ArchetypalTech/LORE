@@ -37,6 +37,7 @@ pub enum InventoryItemActions {
     PickupItem,
     DropItem,
     PutItem,
+    TakeOutItem,
 }
 
 #[generate_trait]
@@ -87,6 +88,9 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         action: "put", inst: 0, action_fn: InventoryItemActions::PutItem,
                     },
                     ActionMapInventoryItem {
+                        action: "take", inst: 0, action_fn: InventoryItemActions::TakeOutItem,
+                    },
+                    ActionMapInventoryItem {
                         action: "use", inst: 0, action_fn: InventoryItemActions::UseItem,
                     },
                 ];
@@ -113,7 +117,6 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         mut self: InventoryItem, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         println!("InventoryItem execute_command");
-        player.say(world, format!("You are executing inventory item"));
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {
@@ -124,7 +127,6 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 return Result::Ok(());
             },
             InventoryItemActions::PickupItem => {
-                player.say(world, format!("You are trying to pickup: {}", nouns[0].text));
                 // This is for the player's personal inventory container
                 // Ex: "pickup the sword"
                 let personal_container = player.get_personal_container(@world);
@@ -132,43 +134,57 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::ActionFailed);
                 }
                 let container_component: Container = personal_container.unwrap();
-                player
-                    .say(
-                        world,
-                        format!(
-                            "Personal container is: {:?}",
-                            container_component.clone().entity(@world).name,
-                        ),
-                    );
-                container_component.put_item(world, self.clone());
+                container_component.put_item_in(world, self.clone());
 
                 return Result::Ok(());
             },
             InventoryItemActions::DropItem => {
-                player.say(world, format!("You are trying to drop: {}", nouns[0].text));
-                // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
-                // LIKE DROP ITEM
+                // This is for taking an item from the player's personal inventory
+                // Ex:: "drop the sword"
+                let personal_container = player.get_personal_container(@world);
+                if personal_container.is_none() {
+                    return Result::Err(Error::ActionFailed);
+                }
+                let container_component: Container = personal_container.unwrap();
+                container_component.put_item_out(world, self.clone(), player);
                 return Result::Ok(());
             },
             InventoryItemActions::PutItem => {
-                player.say(world, format!("You are trying to put: {}", nouns[0].text));
                 // This is for a specific container
                 // Ex: "put the sword in the bag"
                 // Get the player's container
                 let player_container = get_player_container(@world, player, nouns.clone());
                 if player_container.is_none() {
-                    // if the player doesn't have a container, it means it is an entity container
+                    // if it is not in the player, it means it is in an entity container
                     // that is on the room Ex: "put the sword in the box"
                     let entity_container = get_entity_container(@world, player, nouns);
                     if entity_container.is_none() {
                         return Result::Err(Error::ActionFailed);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    container_component.put_item(world, self.clone());
+                    container_component.put_item_in(world, self.clone());
                     return Result::Ok(());
                 }
                 let container_component: Container = player_container.unwrap();
-                container_component.put_item(world, self.clone());
+                container_component.put_item_in(world, self.clone());
+                return Result::Ok(());
+            },
+            InventoryItemActions::TakeOutItem => {
+                // This is for taking an item from a specific container
+                // Ex: "take out the sword from the bag"
+                // Get the player's container
+                let player_container = get_player_container(@world, player, nouns.clone());
+                if player_container.is_none() {
+                    // if it is not in the player, it means it is in an entity container
+                    // that is on the room Ex: "take out the sword from the box"
+                    let entity_container = get_entity_container(@world, player, nouns);
+                    if entity_container.is_none() {
+                        return Result::Err(Error::ActionFailed);
+                    }
+                    let container_component: Container = entity_container.unwrap();
+                    container_component.put_item_out(world, self.clone(), player);
+                    return Result::Ok(());
+                }
                 return Result::Ok(());
             },
         }
@@ -198,6 +214,7 @@ fn get_action_token(
 
 // @dev: wip get player's container
 // This can be the an entity container attached to the player
+// Ex: a bag in the player's personalinventory
 fn get_player_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>,
 ) -> Option<Container> {
@@ -205,6 +222,7 @@ fn get_player_container(
     let player_children = player_entity.get_children(world);
     let mut container: Option<Entity> = Option::None;
     let mut player_container: Option<Container> = Option::None;
+    // match the noun wth the child name or alt_name
     for child in player_children {
         if (@child.name == nouns[1].text || child.clone().name_is(nouns[1].text.clone())) {
             container = Option::Some(child);
@@ -212,16 +230,16 @@ fn get_player_container(
         }
     };
     if container.is_none() {
-        player.say(*world, format!("You don't have a {}", nouns[1].text));
         return Option::None;
     }
-    // get container
+    // get container component
     player_container = ContainerComponent::get_component(*world, container.unwrap().inst);
     return player_container;
 }
 
 // @dev: wip get entity's container
 // This can be the an entity container attached to the room
+// Ex: a chest in the room
 fn get_entity_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>,
 ) -> Option<Container> {
@@ -234,6 +252,7 @@ fn get_entity_container(
     let room_children = room_entity.get_children(world);
     let mut container: Option<Entity> = Option::None;
     let mut room_container: Option<Container> = Option::None;
+    // match the noun wth the child name or alt_name
     for child in room_children {
         if (@child.name == nouns[1].text || child.clone().name_is(nouns[1].text.clone())) {
             container = Option::Some(child);
@@ -241,7 +260,6 @@ fn get_entity_container(
         }
     };
     if container.is_none() {
-        player.say(*world, format!("There isn't a {} where you are.", nouns[1].text));
         return Option::None;
     }
     // get container component

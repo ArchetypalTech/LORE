@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x523117319f70748d7bdd6cf0aa663f00f700bacf9df7c6a3b41ad86e4f63c6e",
-      "class_hash": "0x808d8a4f05704ce3223e18c4d46878860be317468d60df3d3cdcf92a447295",
+      "address": "0x640edf55a7ae5d0b5eeb8959bd21412962661a799bb34493c046488c73edc5e",
+      "class_hash": "0x2315b04aee805e08cff5572d22b8bee6834edf1666b6c65338a34b709e1b8b7",
       "abi": [
         {
           "type": "impl",
@@ -1592,6 +1592,10 @@
             },
             {
               "name": "PutItem",
+              "type": "()"
+            },
+            {
+              "name": "TakeOutItem",
               "type": "()"
             }
           ]
@@ -2087,8 +2091,8 @@
       ]
     },
     {
-      "address": "0x5382ca76683cdd15c635fb1f387842990c59b398f6fd6f93a896b01e2599d5b",
-      "class_hash": "0x7be4bca3fb2dcf53f966a5d49362e6e0d7a2cdd7620508cbdcf5c01e818f4ea",
+      "address": "0x515e7a4bdd5c617e5d0d42dad62310af20bea2ab2bacd4cc15d41a81b8f24da",
+      "class_hash": "0x5016cf61ae7621dc0f4672acc048e32ed81faac314ae626eeb769f19362f8a3",
       "abi": [
         {
           "type": "impl",
@@ -2333,7 +2337,7 @@
     },
     {
       "members": [],
-      "class_hash": "0xb1d5e47eaddad6330fb49b9842918c4db3a22d4c4e24ad832454ffbc57ee0f",
+      "class_hash": "0x13870d1f7668b288a91e45b6f7b534d7cffc36a73dae927673a57706fc43e6d",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },

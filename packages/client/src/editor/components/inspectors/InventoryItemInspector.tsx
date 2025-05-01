@@ -1,5 +1,4 @@
 import { type ChangeEvent } from "react";
-import EditorData from "@/editor/data/editor.data";
 import {
 	type ActionMapInventoryItem,
 	type InventoryItem,
@@ -7,7 +6,6 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
 	ActionMapEditor,
-	Select,
 	Toggle,
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
@@ -24,9 +22,6 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
       is_inventory_item: (e, updatedObject) => {
         const event = e as ChangeEvent<HTMLInputElement>;
         updatedObject.is_inventory_item = event.target.checked;
-      },
-      owner_id: (e, updatedObject) => {
-        updatedObject.owner_id = e.target.value;
       },
       can_be_picked_up: (e, updatedObject) => {
         updatedObject.can_be_picked_up = e.target.checked;
@@ -49,18 +44,6 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 				id="is_inventory_item"
 				value={componentObject.is_inventory_item}
 				onChange={handleInputChange}
-			/>
-			<Select
-				id="owner_id"
-				defaultValue={componentObject.owner_id.toString()}
-				onChange={handleInputChange}
-				options={EditorData()
-					.getEntities()
-					.filter((e) => e.Entity !== undefined)
-					.map((e) => ({
-						value: e.Entity!.inst.toString(),
-						label: e.Entity.name,
-					}))}
 			/>
 			<Toggle
 				id="can_be_picked_up"

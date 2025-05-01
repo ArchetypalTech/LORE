@@ -101,6 +101,7 @@ pub impl PlayerImpl of PlayerTrait {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
                 let children = room.get_children(world);
+                // Go over 1st level children
                 for child in children.clone() {
                     context.append(child.clone());
                 };
@@ -117,6 +118,7 @@ pub impl PlayerImpl of PlayerTrait {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
                 let children = room.get_children(world);
+                // Go over 1st level children
                 for child in children.clone() {
                     context.append(child.clone());
                     // Go over 2nd level children
@@ -129,21 +131,6 @@ pub impl PlayerImpl of PlayerTrait {
                             context.append(child_3);
                         }
                     };
-                    // // If child inst is equal to the one of the player, go over the children it
-                // has if (*self.inst == child.inst) {
-                //     let children_2 = child.get_children(world);
-                //     for child_2 in children_2 {
-                //         context.append(child_2.clone());
-                //         // If child_2 inst is equal to the one of the player, go over the
-                //         // children it has
-                //         if (*self.inst == child_2.inst) {
-                //             let children_3 = child_2.get_children(world);
-                //             for child_3 in children_3 {
-                //                 context.append(child_3);
-                //             }
-                //         }
-                //     }
-                // }
                 };
                 context
             },

@@ -1,3 +1,4 @@
+use super::super::lib::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     constants::errors::Error, components::{inventoryItem::InventoryItem},
@@ -79,7 +80,7 @@ pub impl ContainerImpl of ContainerTrait {
 
     fn can_put_item(self: Container, world: WorldStorage, item: InventoryItem) -> bool {
         let mut can_put_item = false;
-        // chekc if container is open
+        // check if container is open
         if (!self.is_open) {
             return can_put_item;
         }
@@ -108,7 +109,7 @@ pub impl ContainerImpl of ContainerTrait {
         can_put_item
     }
 
-    fn put_item(self: Container, mut world: WorldStorage, item: InventoryItem) {
+    fn put_item_in(self: Container, mut world: WorldStorage, item: InventoryItem) {
         // get container
         let mut container: Container = world.read_model(self.inst);
 
@@ -126,8 +127,26 @@ pub impl ContainerImpl of ContainerTrait {
     }
 
 
-    fn take_item(self: Container, world: WorldStorage, item: InventoryItem) {
-        assert(true == false, 'take_item not yet implemented');
+    fn put_item_out(
+        self: Container, mut world: WorldStorage, item: InventoryItem, player: @Player,
+    ) {
+        // get container
+        let mut container: Container = world.read_model(self.inst);
+        // get item entity
+        let item_entity: Entity = world.read_model(item.inst);
+        // get room
+        let room: Entity = player.get_room(@world).unwrap();
+
+        // check if the item is in the container
+        if (!container.clone().contains(item_entity.inst, @world)) {
+            return;
+        }
+        // remove item from container:
+        // set parent to be the room's entity
+        item_entity.set_parent(world, @room);
+        //item_entity.remove_from_parent(world, @container);
+        // update container
+        world.write_model(@container);
     }
 
     fn contains(self: Container, itemID: felt252, world: @WorldStorage) -> bool {
@@ -135,7 +154,7 @@ pub impl ContainerImpl of ContainerTrait {
         // check if item is already in container
         for item_id in self.clone().get_item_ids(world) {
             if (item_id == itemID) {
-                already_inside;
+                already_inside = true;
                 break;
             }
         };

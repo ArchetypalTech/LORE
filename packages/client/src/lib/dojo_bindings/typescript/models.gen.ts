@@ -232,6 +232,7 @@ export const inventoryItemActions = [
 	'PickupItem',
 	'DropItem',
 	'PutItem',
+	'TakeOutItem',
 ] as const;
 export type InventoryItemActions = { [key in typeof inventoryItemActions[number]]: string };
 export type InventoryItemActionsEnum = CairoCustomEnum;
@@ -407,7 +408,8 @@ export const schema: SchemaType = {
 					UseItem: "",
 				PickupItem: undefined,
 				DropItem: undefined,
-				PutItem: undefined, }),
+				PutItem: undefined,
+				TakeOutItem: undefined, }),
 		},
 		InventoryItem: {
 			inst: 0,
@@ -419,7 +421,8 @@ export const schema: SchemaType = {
 					UseItem: "",
 				PickupItem: undefined,
 				DropItem: undefined,
-				PutItem: undefined, }), }],
+				PutItem: undefined,
+				TakeOutItem: undefined, }), }],
 		},
 		InventoryItemValue: {
 			is_inventory_item: false,
@@ -430,7 +433,8 @@ export const schema: SchemaType = {
 					UseItem: "",
 				PickupItem: undefined,
 				DropItem: undefined,
-				PutItem: undefined, }), }],
+				PutItem: undefined,
+				TakeOutItem: undefined, }), }],
 		},
 		Player: {
 			inst: 0,
