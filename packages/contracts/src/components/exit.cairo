@@ -132,6 +132,10 @@ pub impl ExitComponent of Component<Exit> {
                 if (!(matchesName || matchesDirection)) {
                     return Result::Err(Error::ActionFailed);
                 }
+                // if the exit is not enterable, we can't go there
+                if (!self.clone().can_player_enter()) {
+                    return Result::Err(Error::ActionFailed);
+                }
 
                 destination_inst = self.leads_to;
                 player.clone().move_to_room(world, destination_inst);

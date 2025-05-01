@@ -6,8 +6,10 @@ import {
 import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
+import { InventoryItemInspector } from "../components/inspectors/InventoryItemInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
+import { ContainerInspector } from "../components/inspectors/ContainerInspector";
 import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 
@@ -62,6 +64,45 @@ export const createDefaultExitComponent = (
 			{ action: "go", inst: 0, action_fn: "UseExit" },
 			{ action: "enter", inst: 0, action_fn: "UseExit" },
 			{ action: "use", inst: 0, action_fn: "UseExit" },
+		],
+	},
+});
+
+export const createDefaultInventoryItemComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "InventoryItem">> => ({
+	InventoryItem: {
+		...schema.lore.InventoryItem,
+		inst: entity.inst,
+		is_inventory_item: true,
+		owner_id: 0,
+		can_be_picked_up: false,
+		can_go_in_container: false,
+		action_map: [
+			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
+			{ action: "drop", inst: 0, action_fn: "DropItem" },
+			{ action: "put", inst: 0, action_fn: "PutItem" },
+			{ action: "take", inst: 0, action_fn: "TakeOutItem" },
+			{ action: "use", inst: 0, action_fn: "UseItem" },
+		],
+	},
+});
+
+export const createDefaultContainerComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Container">> => ({
+	Container: {
+		...schema.lore.Container,
+		inst: entity.inst,
+		is_container: true,
+		can_be_opened: true,
+		can_receive_items: true,
+		is_open: true,
+		num_slots: 0,
+		action_map: [
+			{ action: "open", inst: 0, action_fn: "Open" },
+			{ action: "close", inst: 0, action_fn: "Close" },
+			{ action: "check", inst: 0, action_fn: "Check" },
 		],
 	},
 });
@@ -122,5 +163,17 @@ export const componentData: {
 		inspector: ExitInspector,
 		icon: "🚪",
 		creator: createDefaultExitComponent,
+	},
+	InventoryItem: {
+		order: 4,
+		inspector: InventoryItemInspector,
+		icon: "📦",
+		creator: createDefaultInventoryItemComponent,
+	},
+	Container: {
+		order: 5,
+		inspector: ContainerInspector,
+		icon: "🎒",
+		creator: createDefaultContainerComponent,
 	},
 };
