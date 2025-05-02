@@ -10,8 +10,10 @@ import { InventoryItemInspector } from "../components/inspectors/InventoryItemIn
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { ContainerInspector } from "../components/inspectors/ContainerInspector";
+import { PlayerInspector } from "../components/inspectors/PlayerInspector";
 import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
+import { WalletAccount } from "starknet";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -22,6 +24,29 @@ export const createDefaultEntity = (): WithStringEnums<
 		is_entity: true,
 		name: createRandomName(),
 		alt_names: [],
+	},
+});
+
+// @dev the address can later be adjusted to be the wallet address
+export const createDefaultPlayerComponent = (
+	entity: Entity,
+	//address: WalletAccount["address"],
+	address: string,
+): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => ({
+	Entity: {
+		...schema.lore.Entity,
+		inst: address,
+		is_entity: true,
+		name: "Player",
+		alt_names: [],
+	},
+	Player: {
+		...schema.lore.Player,
+		inst: entity.inst,
+		is_player: true,
+		address: address,
+		location: 0,
+		use_debug: false,
 	},
 });
 
@@ -144,7 +169,9 @@ export const componentData: {
 	},
 	Player: {
 		order: 1,
+		inspector: PlayerInspector,
 		icon: "👤",
+		creator: createDefaultPlayerComponent,
 	},
 	Area: {
 		order: 1,
