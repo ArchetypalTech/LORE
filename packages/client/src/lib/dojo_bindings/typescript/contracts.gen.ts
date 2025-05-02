@@ -172,6 +172,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_createPlayer_calldata = (t: Array<Player>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_player",
+			calldata: [t],
+		};
+	};
+
+	const designer_createPlayer = async (snAccount: Account | AccountInterface, t: Array<Player>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createPlayer_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteArea_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -340,6 +361,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deletePlayer_calldata = (ids: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_player",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deletePlayer = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deletePlayer_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_prompt_prompt_calldata = (cmd: ByteArray): DojoCall => {
 		return {
 			contractName: "prompt",
@@ -381,6 +423,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildCreateInventoryItemCalldata: build_designer_createInventoryItem_calldata,
 			createParent: designer_createParent,
 			buildCreateParentCalldata: build_designer_createParent_calldata,
+			createPlayer: designer_createPlayer,
+			buildCreatePlayerCalldata: build_designer_createPlayer_calldata,
 			deleteArea: designer_deleteArea,
 			buildDeleteAreaCalldata: build_designer_deleteArea_calldata,
 			deleteChild: designer_deleteChild,
@@ -397,6 +441,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeleteInventoryItemCalldata: build_designer_deleteInventoryItem_calldata,
 			deleteParent: designer_deleteParent,
 			buildDeleteParentCalldata: build_designer_deleteParent_calldata,
+			deletePlayer: designer_deletePlayer,
+			buildDeletePlayerCalldata: build_designer_deletePlayer_calldata,
 		},
 		prompt: {
 			prompt: prompt_prompt,

@@ -81,6 +81,9 @@ const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
+	if("Player" in collection && collection.Player !== undefined) {
+		await publishPlayer(collection.Player);
+	}
 	if ("Inspectable" in collection && collection.Inspectable !== undefined) {
 		await publishInspectable(collection.Inspectable);
 	}

@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x640edf55a7ae5d0b5eeb8959bd21412962661a799bb34493c046488c73edc5e",
-      "class_hash": "0x2315b04aee805e08cff5572d22b8bee6834edf1666b6c65338a34b709e1b8b7",
+      "address": "0x6eb1c79a52120381f389604474db8253a023228aa61d05a59c08bd59dd6616b",
+      "class_hash": "0x1d3639f94c30a75a3cf2c0b022fbffac6b2b57b40b68a5341efce8ba566ffaf",
       "abi": [
         {
           "type": "impl",
@@ -1381,6 +1381,32 @@
             {
               "name": "True",
               "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::player::Player",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_player",
+              "type": "core::bool"
+            },
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "location",
+              "type": "core::felt252"
+            },
+            {
+              "name": "use_debug",
+              "type": "core::bool"
             }
           ]
         },
@@ -1760,6 +1786,18 @@
           "items": [
             {
               "type": "function",
+              "name": "create_player",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::player::Player>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "create_entity",
               "inputs": [
                 {
@@ -1849,6 +1887,18 @@
                 {
                   "name": "t",
                   "type": "core::array::Array::<lore::lib::relations::ChildToParent>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_player",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
                 }
               ],
               "outputs": [],
@@ -2071,6 +2121,7 @@
       "tag": "lore-designer",
       "selector": "0x6bb9050b828ea0b021af28404cff2e5b2474da015aea553b72db688e12b9a80",
       "systems": [
+        "create_player",
         "create_entity",
         "create_inspectable",
         "create_area",
@@ -2079,6 +2130,7 @@
         "create_container",
         "create_parent",
         "create_child",
+        "delete_player",
         "delete_entity",
         "delete_inspectable",
         "delete_area",
@@ -2091,7 +2143,7 @@
       ]
     },
     {
-      "address": "0x515e7a4bdd5c617e5d0d42dad62310af20bea2ab2bacd4cc15d41a81b8f24da",
+      "address": "0xbf08194800771292a3d1625198108c504ec091c58c71615bec3201779b28d5",
       "class_hash": "0x5016cf61ae7621dc0f4672acc048e32ed81faac314ae626eeb769f19362f8a3",
       "abi": [
         {

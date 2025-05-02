@@ -32,7 +32,7 @@ pub mod designer {
     use super::IDesigner;
     use lore::components::{
         inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-        container::Container,
+        container::Container, player::Player,
     };
     use lore::lib::{entity::Entity, relations::{ParentToChildren, ChildToParent}};
     use dojo::{model::ModelStorage};
@@ -41,6 +41,13 @@ pub mod designer {
     pub impl DesignerImpl of IDesigner<ContractState> {
         // create
         fn create_entity(ref self: ContractState, t: Array<Entity>) {
+            let mut world = self.world(@"lore");
+            for o in t {
+                world.write_model(@o);
+            }
+        }
+
+        fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
             for o in t {
                 world.write_model(@o);
@@ -105,6 +112,14 @@ pub mod designer {
                 // delete_inspectable(world, model.Inspectable);
             // delete_area(world, model.Area);
             // delete_exit(world, model.Exit);
+            }
+        }
+
+        fn delete_player(ref self: ContractState, ids: Array<felt252>) {
+            let mut world = self.world(@"lore");
+            for inst in ids {
+                let model: Player = world.read_model(inst);
+                world.erase_model(@model);
             }
         }
 
