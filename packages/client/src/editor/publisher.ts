@@ -13,6 +13,7 @@ import {
 	inventoryItemActions,
 	type Container,
 	containerActions,
+	type Player,
 	type ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
@@ -118,6 +119,18 @@ const publishEntity = async (entity: Entity) => {
 			: 0,
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
+};
+
+// @wip: publish player
+const publishPlayer = async (player: Player) => {
+	const playerData = [
+		num.toBigInt(player.inst.toString()),
+		player.is_player,
+		byteArray.byteArrayFromString(player.address),
+		num.toBigInt(player.location.toString()),
+		player.use_debug,
+	];
+	await dispatchDesignerCall("create_player", [playerData]);
 };
 
 const publishInspectable = async (inspectable: Inspectable) => {
@@ -228,6 +241,11 @@ const deleteCollection = async (model: EntityCollection) => {
 	if ("Entity" in model && model.Entity !== undefined) {
 		await dispatchDesignerCall("delete_entity", [
 			num.toBigInt(model.Entity!.inst),
+		]);
+	}
+	if ("Player" in model && model.Player !== undefined) {
+		await dispatchDesignerCall("delete_player", [
+			num.toBigInt(model.Player!.inst),
 		]);
 	}
 	if ("Inspectable" in model && model.Inspectable !== undefined) {

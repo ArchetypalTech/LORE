@@ -1,11 +1,12 @@
 use lore::components::{
     inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-    container::Container,
+    container::Container, player::Player,
 };
 use lore::lib::{entity::Entity, relations::{ParentToChildren, ChildToParent}};
 
 #[starknet::interface]
 pub trait IDesigner<TContractState> {
+    fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
     fn create_inspectable(ref self: TContractState, t: Array<Inspectable>);
     fn create_area(ref self: TContractState, t: Array<Area>);
@@ -15,6 +16,7 @@ pub trait IDesigner<TContractState> {
     fn create_parent(ref self: TContractState, t: Array<ParentToChildren>);
     fn create_child(ref self: TContractState, t: Array<ChildToParent>);
     //
+    fn delete_player(ref self: TContractState, ids: Array<felt252>);
     fn delete_entity(ref self: TContractState, ids: Array<felt252>);
     fn delete_inspectable(ref self: TContractState, ids: Array<felt252>);
     fn delete_area(ref self: TContractState, ids: Array<felt252>);
