@@ -180,6 +180,14 @@ export const HierarchyTree = () => {
 				<HousePlus />
 				New Entity
 			</Button>
+			<Button
+				variant={"hero"}
+				// className="w-full"
+				onClick={() => EditorData().newPlayer()}
+			>
+				<HousePlus />
+				New Player
+			</Button>
 			<div className="flex flex-col gap-1.25">
 				<SortableTree
 					removable={false}

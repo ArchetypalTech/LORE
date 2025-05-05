@@ -13,7 +13,7 @@ import { ContainerInspector } from "../components/inspectors/ContainerInspector"
 import { PlayerInspector } from "../components/inspectors/PlayerInspector";
 import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
-import { WalletAccount } from "starknet";
+import { WalletAccount, AccountInterface } from "starknet";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -27,24 +27,22 @@ export const createDefaultEntity = (): WithStringEnums<
 	},
 });
 
-// @dev the address can later be adjusted to be the wallet address
-export const createDefaultPlayerComponent = (
-	entity: Entity,
+export const createPlayerEntity = (
 	//address: WalletAccount["address"],
-	address: string,
-): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => ({
+  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => ({
+		// Adding the Entity as we need to set the inst to be the address
 	Entity: {
 		...schema.lore.Entity,
-		inst: address,
+		inst: randomKey(), // TODO:  this is a hack to get the entity to work. Should be player address
 		is_entity: true,
-		name: "Player",
+		name: createRandomName(),
 		alt_names: [],
 	},
 	Player: {
 		...schema.lore.Player,
-		inst: entity.inst,
+		inst: 0, // TODO:  this is a hack to get the entity to work. Should be player address
 		is_player: true,
-		address: address,
+		address: "", // TODO:  this is a hack to get the entity to work. Should be player address
 		location: 0,
 		use_debug: false,
 	},
@@ -171,7 +169,7 @@ export const componentData: {
 		order: 1,
 		inspector: PlayerInspector,
 		icon: "👤",
-		creator: createDefaultPlayerComponent,
+		creator: createPlayerEntity,
 	},
 	Area: {
 		order: 1,
