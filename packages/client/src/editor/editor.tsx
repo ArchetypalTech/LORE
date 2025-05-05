@@ -1,6 +1,6 @@
 import "@styles/editor.css";
 import { useHead } from "@unhead/react";
-import { HousePlus } from "lucide-react";
+import { HousePlus, PersonStanding } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
 import Terminal from "@/client/terminal/Terminal";
@@ -97,6 +97,12 @@ export const Editor = () => {
 										onClick={() => EditorData().newEntity()}
 									>
 										<HousePlus /> New Entity
+									</Button>
+									<Button
+										className="mx-auto max-w-30"
+										onClick={() => EditorData().newPlayer()}
+									>
+										<PersonStanding /> New Player
 									</Button>
 								</div>
 							)}

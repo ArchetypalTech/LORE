@@ -9,6 +9,11 @@ import {
 	exitActions,
 	type Inspectable,
 	inspectableActions,
+	type InventoryItem,
+	inventoryItemActions,
+	type Container,
+	containerActions,
+	type Player,
 	type ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
@@ -76,6 +81,9 @@ const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
+	if("Player" in collection && collection.Player !== undefined) {
+		await publishPlayer(collection.Player);
+	}
 	if ("Inspectable" in collection && collection.Inspectable !== undefined) {
 		await publishInspectable(collection.Inspectable);
 	}
@@ -84,6 +92,12 @@ const publishEntityCollection = async (collection: EntityCollection) => {
 	}
 	if ("Exit" in collection && collection.Exit !== undefined) {
 		await publishExit(collection.Exit);
+	}
+	if ("InventoryItem" in collection && collection.InventoryItem !== undefined) {
+		await publishInventoryItem(collection.InventoryItem);
+	}
+	if ("Container" in collection && collection.Container !== undefined) {
+		await publishContainer(collection.Container);
 	}
 	if ("ChildToParent" in collection && collection.ChildToParent !== undefined) {
 		await publishChildToParent(collection.ChildToParent);
@@ -108,6 +122,18 @@ const publishEntity = async (entity: Entity) => {
 			: 0,
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
+};
+
+// @wip: publish player
+const publishPlayer = async (player: Player) => {
+	const playerData = [
+		num.toBigInt(player.inst.toString()),
+		player.is_player,
+		byteArray.byteArrayFromString(player.address),
+		num.toBigInt(player.location.toString()),
+		player.use_debug,
+	];
+	await dispatchDesignerCall("create_player", [playerData]);
 };
 
 const publishInspectable = async (inspectable: Inspectable) => {
@@ -157,6 +183,43 @@ const publishExit = async (exit: Exit) => {
 	await dispatchDesignerCall("create_exit", [exitData]);
 };
 
+const publishInventoryItem = async (inventoryItem: InventoryItem) => {
+	const inventoryItemData = [
+		num.toBigInt(inventoryItem.inst.toString()),
+		inventoryItem.is_inventory_item,
+		num.toBigInt(inventoryItem.owner_id),
+		inventoryItem.can_be_picked_up,
+		inventoryItem.can_go_in_container,
+		inventoryItem.action_map.length > 0
+			? inventoryItem.action_map.map((x) => [
+					byteArray.byteArrayFromString(x.action),
+					0,
+					toEnumIndex(x.action_fn, inventoryItemActions),
+			  ])
+			: 0,
+	];
+	await dispatchDesignerCall("create_inventory_item", [inventoryItemData]);
+};
+
+const publishContainer = async (container: Container) => {
+	const containerData = [
+		num.toBigInt(container.inst.toString()),
+		container.is_container,
+		container.can_be_opened,
+		container.can_receive_items,
+		container.is_open,
+		num.toBigInt(container.num_slots.toString()),
+		container.action_map.length > 0
+			? container.action_map.map((x) => [
+					byteArray.byteArrayFromString(x.action),
+					0,
+					toEnumIndex(x.action_fn, containerActions),
+			  ])
+			: 0,
+	];
+	await dispatchDesignerCall("create_container", [containerData]);
+};
+
 const publishChildToParent = async (childToParent: ChildToParent) => {
 	const childToParentData = [
 		num.toBigInt(childToParent.inst.toString()),
@@ -183,6 +246,11 @@ const deleteCollection = async (model: EntityCollection) => {
 			num.toBigInt(model.Entity!.inst),
 		]);
 	}
+	if ("Player" in model && model.Player !== undefined) {
+		await dispatchDesignerCall("delete_player", [
+			num.toBigInt(model.Player!.inst),
+		]);
+	}
 	if ("Inspectable" in model && model.Inspectable !== undefined) {
 		await dispatchDesignerCall("delete_inspectable", [
 			num.toBigInt(model.Inspectable!.inst),
@@ -193,6 +261,16 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 	if ("Exit" in model && model.Exit !== undefined) {
 		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Exit!.inst)]);
+	}
+	if ("InventoryItem" in model && model.InventoryItem !== undefined) {
+		await dispatchDesignerCall("delete_inventory_item", [
+			num.toBigInt(model.InventoryItem!.inst),
+		]);
+	}
+	if("Container" in model && model.Container !== undefined) {
+		await dispatchDesignerCall("delete_container", [
+			num.toBigInt(model.Container!.inst),
+		]);
 	}
 	if ("ChildToParent" in model && model.ChildToParent !== undefined) {
 		await dispatchDesignerCall("delete_child", [

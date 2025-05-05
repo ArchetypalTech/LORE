@@ -6,10 +6,14 @@ import {
 import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
+import { InventoryItemInspector } from "../components/inspectors/InventoryItemInspector";
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
+import { ContainerInspector } from "../components/inspectors/ContainerInspector";
+import { PlayerInspector } from "../components/inspectors/PlayerInspector";
 import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
+import { LORE_CONFIG } from "@/lib/config";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -20,6 +24,27 @@ export const createDefaultEntity = (): WithStringEnums<
 		is_entity: true,
 		name: createRandomName(),
 		alt_names: [],
+	},
+});
+
+export const createPlayerEntity = (
+	//address: WalletAccount["address"],
+  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => ({
+		// Adding the Entity as we need to set the inst to be the address
+	Entity: {
+		...schema.lore.Entity,
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		is_entity: true,
+		name: createRandomName(),
+		alt_names: [],
+	},
+	Player: {
+		...schema.lore.Player,
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		is_player: true,
+		address: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		location: 0,
+		use_debug: false,
 	},
 });
 
@@ -66,6 +91,45 @@ export const createDefaultExitComponent = (
 	},
 });
 
+export const createDefaultInventoryItemComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "InventoryItem">> => ({
+	InventoryItem: {
+		...schema.lore.InventoryItem,
+		inst: entity.inst,
+		is_inventory_item: true,
+		owner_id: 0,
+		can_be_picked_up: false,
+		can_go_in_container: false,
+		action_map: [
+			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
+			{ action: "drop", inst: 0, action_fn: "DropItem" },
+			{ action: "put", inst: 0, action_fn: "PutItem" },
+			{ action: "take", inst: 0, action_fn: "TakeOutItem" },
+			{ action: "use", inst: 0, action_fn: "UseItem" },
+		],
+	},
+});
+
+export const createDefaultContainerComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Container">> => ({
+	Container: {
+		...schema.lore.Container,
+		inst: entity.inst,
+		is_container: true,
+		can_be_opened: true,
+		can_receive_items: true,
+		is_open: true,
+		num_slots: 0,
+		action_map: [
+			{ action: "open", inst: 0, action_fn: "Open" },
+			{ action: "close", inst: 0, action_fn: "Close" },
+			{ action: "check", inst: 0, action_fn: "Check" },
+		],
+	},
+});
+
 export const createDefaultChildToParentComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "ChildToParent">> => ({
@@ -103,24 +167,38 @@ export const componentData: {
 	},
 	Player: {
 		order: 1,
+		inspector: PlayerInspector,
 		icon: "👤",
+		creator: createPlayerEntity,
 	},
 	Area: {
-		order: 1,
+		order: 2,
 		inspector: AreaInspector,
 		icon: "🥾",
 		creator: createDefaultAreaComponent,
 	},
 	Inspectable: {
-		order: 2,
+		order: 3,
 		inspector: InspectableInspector,
 		icon: "🔍",
 		creator: createDefaultInspectableComponent,
 	},
 	Exit: {
-		order: 3,
+		order: 4,
 		inspector: ExitInspector,
 		icon: "🚪",
 		creator: createDefaultExitComponent,
+	},
+	InventoryItem: {
+		order: 5,
+		inspector: InventoryItemInspector,
+		icon: "📦",
+		creator: createDefaultInventoryItemComponent,
+	},
+	Container: {
+		order: 6,
+		inspector: ContainerInspector,
+		icon: "🎒",
+		creator: createDefaultContainerComponent,
 	},
 };

@@ -3,7 +3,7 @@ import {
 	SortableTree,
 	type TreeItems,
 } from "dnd-kit-tree";
-import { HousePlus } from "lucide-react";
+import { HousePlus, PersonStanding } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -179,6 +179,14 @@ export const HierarchyTree = () => {
 			>
 				<HousePlus />
 				New Entity
+			</Button>
+			<Button
+				variant={"hero"}
+				// className="w-full"
+				onClick={() => EditorData().newPlayer()}
+			>
+				<PersonStanding />
+				New Player
 			</Button>
 			<div className="flex flex-col gap-1.25">
 				<SortableTree

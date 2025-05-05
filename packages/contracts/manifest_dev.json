@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x71fdc51063cbafa6eae1a5154057a769f1b6e2e9a30bbf847e000a885f427e1",
-      "class_hash": "0x487aef42da765575f97abd01baa443daa1f4490da84623e273f0b3d4c191649",
+      "address": "0x6eb1c79a52120381f389604474db8253a023228aa61d05a59c08bd59dd6616b",
+      "class_hash": "0x1d3639f94c30a75a3cf2c0b022fbffac6b2b57b40b68a5341efce8ba566ffaf",
       "abi": [
         {
           "type": "impl",
@@ -1381,6 +1381,32 @@
             {
               "name": "True",
               "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::player::Player",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_player",
+              "type": "core::bool"
+            },
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "location",
+              "type": "core::felt252"
+            },
+            {
+              "name": "use_debug",
+              "type": "core::bool"
             }
           ]
         },
@@ -1575,6 +1601,150 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::components::inventoryItem::InventoryItemActions",
+          "variants": [
+            {
+              "name": "UseItem",
+              "type": "()"
+            },
+            {
+              "name": "PickupItem",
+              "type": "()"
+            },
+            {
+              "name": "DropItem",
+              "type": "()"
+            },
+            {
+              "name": "PutItem",
+              "type": "()"
+            },
+            {
+              "name": "TakeOutItem",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::inventoryItem::ActionMapInventoryItem",
+          "members": [
+            {
+              "name": "action",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action_fn",
+              "type": "lore::components::inventoryItem::InventoryItemActions"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::inventoryItem::InventoryItem",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_inventory_item",
+              "type": "core::bool"
+            },
+            {
+              "name": "owner_id",
+              "type": "core::felt252"
+            },
+            {
+              "name": "can_be_picked_up",
+              "type": "core::bool"
+            },
+            {
+              "name": "can_go_in_container",
+              "type": "core::bool"
+            },
+            {
+              "name": "action_map",
+              "type": "core::array::Array::<lore::components::inventoryItem::ActionMapInventoryItem>"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "lore::components::container::ContainerActions",
+          "variants": [
+            {
+              "name": "Open",
+              "type": "()"
+            },
+            {
+              "name": "Close",
+              "type": "()"
+            },
+            {
+              "name": "Check",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::container::ActionMapContainer",
+          "members": [
+            {
+              "name": "action",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "action_fn",
+              "type": "lore::components::container::ContainerActions"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::components::container::Container",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "is_container",
+              "type": "core::bool"
+            },
+            {
+              "name": "can_be_opened",
+              "type": "core::bool"
+            },
+            {
+              "name": "can_receive_items",
+              "type": "core::bool"
+            },
+            {
+              "name": "is_open",
+              "type": "core::bool"
+            },
+            {
+              "name": "num_slots",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "action_map",
+              "type": "core::array::Array::<lore::components::container::ActionMapContainer>"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "lore::lib::relations::ParentToChildren",
           "members": [
@@ -1614,6 +1784,18 @@
           "type": "interface",
           "name": "lore::systems::designer::IDesigner",
           "items": [
+            {
+              "type": "function",
+              "name": "create_player",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::player::Player>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
             {
               "type": "function",
               "name": "create_entity",
@@ -1664,6 +1846,30 @@
             },
             {
               "type": "function",
+              "name": "create_inventory_item",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::inventoryItem::InventoryItem>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_container",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::components::container::Container>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "create_parent",
               "inputs": [
                 {
@@ -1681,6 +1887,18 @@
                 {
                   "name": "t",
                   "type": "core::array::Array::<lore::lib::relations::ChildToParent>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_player",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
                 }
               ],
               "outputs": [],
@@ -1725,6 +1943,30 @@
             {
               "type": "function",
               "name": "delete_exit",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_inventory_item",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_container",
               "inputs": [
                 {
                   "name": "ids",
@@ -1879,24 +2121,30 @@
       "tag": "lore-designer",
       "selector": "0x6bb9050b828ea0b021af28404cff2e5b2474da015aea553b72db688e12b9a80",
       "systems": [
+        "create_player",
         "create_entity",
         "create_inspectable",
         "create_area",
         "create_exit",
+        "create_inventory_item",
+        "create_container",
         "create_parent",
         "create_child",
+        "delete_player",
         "delete_entity",
         "delete_inspectable",
         "delete_area",
         "delete_exit",
+        "delete_inventory_item",
+        "delete_container",
         "delete_parent",
         "delete_child",
         "upgrade"
       ]
     },
     {
-      "address": "0x5a44b7d7e1afbf1073a9701bbf4110c212712fea9dbe04e96032c674a341505",
-      "class_hash": "0x5fca3c79a4213783b1d08cab2f09e36acc591ff0d61c385acef840d9ae34c3",
+      "address": "0xbf08194800771292a3d1625198108c504ec091c58c71615bec3201779b28d5",
+      "class_hash": "0x5016cf61ae7621dc0f4672acc048e32ed81faac314ae626eeb769f19362f8a3",
       "abi": [
         {
           "type": "impl",
@@ -2111,7 +2359,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6e0dc43043f988133beb22289af4a2e9d231bdd0848b949804be6764acfec68",
+      "class_hash": "0x284cba418a7c8300707e863894565e46595d2a28b1a9e8670d476002e9e489c",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
     },
@@ -2141,7 +2389,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x60d71a6bc97268525f5a9b1903babfffa702c98dde5bc10c9877042da2087a5",
+      "class_hash": "0x13870d1f7668b288a91e45b6f7b534d7cffc36a73dae927673a57706fc43e6d",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },

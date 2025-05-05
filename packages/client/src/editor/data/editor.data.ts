@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { type BigNumberish, num } from "starknet";
 import type {
 	Entity,
+	Player,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
@@ -11,6 +12,7 @@ import {
 	createDefaultEntity,
 	createDefaultInspectableComponent,
 	createDefaultParentToChildrenComponent,
+	createPlayerEntity
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -452,6 +454,27 @@ const newEntity = async () => {
 	return newEntity;
 };
 
+const newPlayer = async () => {
+	const newPlayer = createPlayerEntity();
+	syncItem(newPlayer);
+	updateComponent(newPlayer.Entity.inst, "Entity", newPlayer.Entity);
+	await tick();
+	if (get().selectedEntity !== undefined) {
+		const e = getEntity(get().selectedEntity!)!;
+		console.log(e);
+		if (e.ChildToParent !== undefined) {
+			const newParent = getEntity(e.ChildToParent.parent)!;
+			console.log(newParent);	
+			addToParent(getEntity(newPlayer.Entity.inst)!, newParent);
+		}
+	} else {
+		selectEntity(newPlayer.Entity.inst);
+	}
+	const inspectable = createDefaultInspectableComponent(newPlayer.Entity);
+	updateComponent(newPlayer.Entity.inst, "Inspectable", inspectable.Inspectable as any);
+	return newPlayer;
+};
+
 const logPool = () => {
 	const poolArray = get().dataPool.values().toArray();
 	const syncPoolArray = get().syncPool.values().toArray();
@@ -488,6 +511,7 @@ const EditorData = createFactory({
 	dojoSync,
 	addToParent,
 	removeParent,
+	newPlayer,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });
 
