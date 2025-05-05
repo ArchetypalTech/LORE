@@ -13,7 +13,7 @@ import { ContainerInspector } from "../components/inspectors/ContainerInspector"
 import { PlayerInspector } from "../components/inspectors/PlayerInspector";
 import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
-import { WalletAccount, AccountInterface } from "starknet";
+import { LORE_CONFIG } from "@/lib/config";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -33,16 +33,16 @@ export const createPlayerEntity = (
 		// Adding the Entity as we need to set the inst to be the address
 	Entity: {
 		...schema.lore.Entity,
-		inst: randomKey(), // TODO:  this is a hack to get the entity to work. Should be player address
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
 		is_entity: true,
 		name: createRandomName(),
 		alt_names: [],
 	},
 	Player: {
 		...schema.lore.Player,
-		inst: 0, // TODO:  this is a hack to get the entity to work. Should be player address
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
 		is_player: true,
-		address: "", // TODO:  this is a hack to get the entity to work. Should be player address
+		address: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
 		location: 0,
 		use_debug: false,
 	},
@@ -172,31 +172,31 @@ export const componentData: {
 		creator: createPlayerEntity,
 	},
 	Area: {
-		order: 1,
+		order: 2,
 		inspector: AreaInspector,
 		icon: "🥾",
 		creator: createDefaultAreaComponent,
 	},
 	Inspectable: {
-		order: 2,
+		order: 3,
 		inspector: InspectableInspector,
 		icon: "🔍",
 		creator: createDefaultInspectableComponent,
 	},
 	Exit: {
-		order: 3,
+		order: 4,
 		inspector: ExitInspector,
 		icon: "🚪",
 		creator: createDefaultExitComponent,
 	},
 	InventoryItem: {
-		order: 4,
+		order: 5,
 		inspector: InventoryItemInspector,
 		icon: "📦",
 		creator: createDefaultInventoryItemComponent,
 	},
 	Container: {
-		order: 5,
+		order: 6,
 		inspector: ContainerInspector,
 		icon: "🎒",
 		creator: createDefaultContainerComponent,

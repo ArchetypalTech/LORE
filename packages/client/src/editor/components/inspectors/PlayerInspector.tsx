@@ -63,7 +63,7 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				onChange={handleInputChange} />
 			<Select
 				id="location"
-				value={componentObject.location.toString()}
+				value={area_value}
 				onChange={handleInputChange}
 				options={area_options}
 			/>
