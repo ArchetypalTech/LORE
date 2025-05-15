@@ -55,7 +55,7 @@ export const AddComponents = ({
 	return (
 		<div className="flex flex-col gap-2">
 			<div className="text-xs opacity-50 font-medium">add component</div>
-			{options.length < 5 && (
+			{options.length < 6 && (
 				<div className="flex flex-row gap-2">
 					{options.map((option) => (
 						<div
@@ -84,7 +84,7 @@ export const AddComponents = ({
 				</div>
 			)}
 
-			{options.length > 5 && (
+			{options.length > 6 && (
 				<div className="flex w-full flex-row items-end gap-2">
 					<div className="flex grow items-center">
 						<Select

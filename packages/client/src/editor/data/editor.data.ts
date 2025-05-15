@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { type BigNumberish, num } from "starknet";
 import type {
 	Entity,
-	Player,
 	ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
@@ -11,6 +10,7 @@ import {
 	createDefaultChildToParentComponent,
 	createDefaultEntity,
 	createDefaultInspectableComponent,
+	createDefaultContainerComponent,
 	createDefaultParentToChildrenComponent,
 	createPlayerEntity
 } from "../lib/components";
@@ -455,9 +455,9 @@ const newEntity = async () => {
 };
 
 const newPlayer = async () => {
-	const newPlayer = createPlayerEntity();
-	syncItem(newPlayer);
-	updateComponent(newPlayer.Entity.inst, "Entity", newPlayer.Entity);
+	const playerEntity = createPlayerEntity();
+	syncItem(playerEntity);
+	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	await tick();
 	if (get().selectedEntity !== undefined) {
 		const e = getEntity(get().selectedEntity!)!;
@@ -465,14 +465,18 @@ const newPlayer = async () => {
 		if (e.ChildToParent !== undefined) {
 			const newParent = getEntity(e.ChildToParent.parent)!;
 			console.log(newParent);	
-			addToParent(getEntity(newPlayer.Entity.inst)!, newParent);
+			addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
 		}
 	} else {
-		selectEntity(newPlayer.Entity.inst);
+		selectEntity(playerEntity.Entity.inst);
 	}
-	const inspectable = createDefaultInspectableComponent(newPlayer.Entity);
-	updateComponent(newPlayer.Entity.inst, "Inspectable", inspectable.Inspectable as any);
-	return newPlayer;
+
+	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
+	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
+	const container = createDefaultContainerComponent(playerEntity.Entity);
+	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
+
+	return playerEntity
 };
 
 const logPool = () => {

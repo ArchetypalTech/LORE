@@ -130,7 +130,6 @@ const publishPlayer = async (player: Player) => {
 		num.toBigInt(player.inst.toString()),
 		player.is_player,
 		byteArray.byteArrayFromString(player.address),
-		num.toBigInt(player.location.toString()),
 		player.use_debug,
 	];
 	await dispatchDesignerCall("create_player", [playerData]);
@@ -281,8 +280,6 @@ const deleteCollection = async (model: EntityCollection) => {
 		await dispatchDesignerCall("delete_parent", [
 			num.toBigInt(model.ParentToChildren!.inst),
 		]);
-	}
-	if ("Player" in model) {
 	}
 };
 

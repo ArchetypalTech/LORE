@@ -1,29 +1,17 @@
-import { type ChangeEvent, useMemo } from "react";
-import EditorData from "@/editor/data/editor.data";
+import { type ChangeEvent} from "react";
 import {
 		type Player,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { Toggle, Input, Select } from "../FormComponents";
+import { Toggle, Input} from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
+import { stringCairoEnum } from "@/editor/lib/schemas";
 
 
 export const PlayerInspector: ComponentInspector<Player> = ({
 	componentObject,
 	...props
 }) => {
-	const {area_value, area_options} = useMemo(() => {
-		return {
-			area_value: componentObject.location.toString(),
-			area_options: EditorData()
-				.getEntities()
-				.filter((e) => e.Area !== undefined)
-				.map((e) => ({
-					value: e.Entity!.inst.toString(),
-					label: e.Entity.name,
-				})),
-		};
-	}, [componentObject]);
 
 	const { handleInputChange, Inspector } = useInspector<Player>({
 		componentObject,
@@ -37,9 +25,8 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				const event = e as ChangeEvent<HTMLInputElement>;
 				updatedObject.address = event.target.value;
 			},
-			location: (e, updatedObject) => {
-				const event = e as ChangeEvent<HTMLInputElement>;
-				updatedObject.location = event.target.value;
+			location: (e, updatedObject) => {	
+				updatedObject.location = e.target.value
 			},
 			use_debug: (e, updatedObject) => {
 				const event = e as ChangeEvent<HTMLInputElement>;
@@ -60,12 +47,14 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 			<Input 
 				id="address" 
 				value={componentObject.address} 
-				onChange={handleInputChange} />
-			<Select
+				onChange={handleInputChange} 
+				readOnly={true}
+			/>
+			<Input
 				id="location"
-				value={area_value}
+				value={componentObject.location.toString()}
 				onChange={handleInputChange}
-				options={area_options}
+				readOnly={true}
 			/>
 			<Toggle
 				id="use_debug"

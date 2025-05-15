@@ -28,7 +28,6 @@ export const createDefaultEntity = (): WithStringEnums<
 });
 
 export const createPlayerEntity = (
-	//address: WalletAccount["address"],
   ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => ({
 		// Adding the Entity as we need to set the inst to be the address
 	Entity: {
@@ -38,6 +37,19 @@ export const createPlayerEntity = (
 		name: createRandomName(),
 		alt_names: [],
 	},
+	Player: {
+		...schema.lore.Player,
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		is_player: true,
+		address: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		location: 0,
+		use_debug: false,
+	},
+});
+
+export const createPlayerComponent = (
+	_entity:Entity
+  ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => ({
 	Player: {
 		...schema.lore.Player,
 		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
@@ -169,7 +181,7 @@ export const componentData: {
 		order: 1,
 		inspector: PlayerInspector,
 		icon: "👤",
-		creator: createPlayerEntity,
+		creator: createPlayerComponent,
 	},
 	Area: {
 		order: 2,
@@ -190,13 +202,13 @@ export const componentData: {
 		creator: createDefaultExitComponent,
 	},
 	InventoryItem: {
-		order: 4,
+		order: 5,
 		inspector: InventoryItemInspector,
 		icon: "📦",
 		creator: createDefaultInventoryItemComponent,
 	},
 	Container: {
-		order: 5,
+		order: 6,
 		inspector: ContainerInspector,
 		icon: "🎒",
 		creator: createDefaultContainerComponent,
