@@ -69,39 +69,39 @@ pub impl ContainerImpl of ContainerTrait {
         world.write_model(@model);
     }
 
-    fn is_full(self: Container, world: @WorldStorage) -> bool {
+    fn is_full(self: @Container, world: @WorldStorage) -> bool {
         let itemAmount: u32 = self.clone().get_item_ids(world).len().try_into().unwrap();
-        return itemAmount >= self.num_slots;
+        return itemAmount >= *self.num_slots;
     }
 
     fn is_empty(self: Container, world: @WorldStorage) -> bool {
         return self.clone().get_item_ids(world).len() == 0;
     }
 
-    fn can_put_item(self: Container, world: WorldStorage, item: InventoryItem) -> bool {
+    fn can_put_item(self: @Container, world: @WorldStorage, item: @InventoryItem) -> bool {
         let mut can_put_item = false;
         // check if container is open
-        if (!self.is_open) {
+        if (!*self.is_open) {
             return can_put_item;
         }
         // check if container is full
-        if (self.clone().is_full(@world)) {
+        if (self.clone().is_full(world)) {
             return can_put_item;
         }
         // check if container can receive items
-        if (!self.can_receive_items) {
+        if (!*self.can_receive_items) {
             return can_put_item;
         }
         // check if item can be picked up
-        if (!item.can_be_picked_up) {
+        if (!*item.can_be_picked_up) {
             return can_put_item;
         }
         // check if item can go into the container
-        if (!item.can_go_in_container) {
+        if (!*item.can_go_in_container) {
             return can_put_item;
         }
         // check if item is already in the container
-        if (self.contains(item.inst, @world)) {
+        if (self.contains(*item.inst, world)) {
             return can_put_item;
         }
         // if checks pass, container can receive item
@@ -117,7 +117,7 @@ pub impl ContainerImpl of ContainerTrait {
         let item_entity: Entity = world.read_model(item.inst);
 
         // check if item can be put in container
-        if (!container.clone().can_put_item(world, item.clone())) {
+        if (!container.clone().can_put_item(@world, @item.clone())) {
             return;
         }
         // set parent to be the container's entity
@@ -149,7 +149,7 @@ pub impl ContainerImpl of ContainerTrait {
         world.write_model(@container);
     }
 
-    fn contains(self: Container, itemID: felt252, world: @WorldStorage) -> bool {
+    fn contains(self: @Container, itemID: felt252, world: @WorldStorage) -> bool {
         let mut already_inside = false;
         // check if item is already in container
         for item_id in self.clone().get_item_ids(world) {

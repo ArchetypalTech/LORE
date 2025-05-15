@@ -99,8 +99,8 @@ export const createDefaultInventoryItemComponent = (
 		inst: entity.inst,
 		is_inventory_item: true,
 		owner_id: 0,
-		can_be_picked_up: false,
-		can_go_in_container: false,
+		can_be_picked_up: true,
+		can_go_in_container: true,
 		action_map: [
 			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
 			{ action: "drop", inst: 0, action_fn: "DropItem" },
@@ -190,13 +190,13 @@ export const componentData: {
 		creator: createDefaultExitComponent,
 	},
 	InventoryItem: {
-		order: 5,
+		order: 4,
 		inspector: InventoryItemInspector,
 		icon: "📦",
 		creator: createDefaultInventoryItemComponent,
 	},
 	Container: {
-		order: 6,
+		order: 5,
 		inspector: ContainerInspector,
 		icon: "🎒",
 		creator: createDefaultContainerComponent,
