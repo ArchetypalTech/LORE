@@ -13,6 +13,13 @@ export interface AreaValue {
 	is_area: boolean;
 }
 
+// Type definition for `lore::components::container::ActionMapContainer` struct
+export interface ActionMapContainer {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ContainerActionsEnum;
+}
+
 // Type definition for `lore::components::container::Container` struct
 export interface Container {
 	inst: BigNumberish;
@@ -21,7 +28,7 @@ export interface Container {
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
-	item_ids: Array<BigNumberish>;
+	action_map: Array<ActionMapContainer>;
 }
 
 // Type definition for `lore::components::container::ContainerValue` struct
@@ -31,7 +38,7 @@ export interface ContainerValue {
 	can_receive_items: boolean;
 	is_open: boolean;
 	num_slots: BigNumberish;
-	item_ids: Array<BigNumberish>;
+	action_map: Array<ActionMapContainer>;
 }
 
 // Type definition for `lore::components::exit::ActionMapExit` struct
@@ -84,6 +91,13 @@ export interface InspectableValue {
 	action_map: Array<ActionMapInspectable>;
 }
 
+// Type definition for `lore::components::inventoryItem::ActionMapInventoryItem` struct
+export interface ActionMapInventoryItem {
+	action: string;
+	inst: BigNumberish;
+	action_fn: InventoryItemActionsEnum;
+}
+
 // Type definition for `lore::components::inventoryItem::InventoryItem` struct
 export interface InventoryItem {
 	inst: BigNumberish;
@@ -91,6 +105,7 @@ export interface InventoryItem {
 	owner_id: BigNumberish;
 	can_be_picked_up: boolean;
 	can_go_in_container: boolean;
+	action_map: Array<ActionMapInventoryItem>;
 }
 
 // Type definition for `lore::components::inventoryItem::InventoryItemValue` struct
@@ -99,6 +114,7 @@ export interface InventoryItemValue {
 	owner_id: BigNumberish;
 	can_be_picked_up: boolean;
 	can_go_in_container: boolean;
+	action_map: Array<ActionMapInventoryItem>;
 }
 
 // Type definition for `lore::components::player::Player` struct
@@ -185,6 +201,15 @@ export interface ParentToChildrenValue {
 	children: Array<BigNumberish>;
 }
 
+// Type definition for `lore::components::container::ContainerActions` enum
+export const containerActions = [
+	'Open',
+	'Close',
+	'Check',
+] as const;
+export type ContainerActions = { [key in typeof containerActions[number]]: string };
+export type ContainerActionsEnum = CairoCustomEnum;
+
 // Type definition for `lore::components::exit::ExitActions` enum
 export const exitActions = [
 	'UseExit',
@@ -200,6 +225,17 @@ export const inspectableActions = [
 ] as const;
 export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
 export type InspectableActionsEnum = CairoCustomEnum;
+
+// Type definition for `lore::components::inventoryItem::InventoryItemActions` enum
+export const inventoryItemActions = [
+	'UseItem',
+	'PickupItem',
+	'DropItem',
+	'PutItem',
+	'TakeOutItem',
+] as const;
+export type InventoryItemActions = { [key in typeof inventoryItemActions[number]]: string };
+export type InventoryItemActionsEnum = CairoCustomEnum;
 
 // Type definition for `lore::constants::constants::Direction` enum
 export const direction = [
@@ -235,6 +271,7 @@ export interface SchemaType extends ISchemaType {
 	lore: {
 		Area: Area,
 		AreaValue: AreaValue,
+		ActionMapContainer: ActionMapContainer,
 		Container: Container,
 		ContainerValue: ContainerValue,
 		ActionMapExit: ActionMapExit,
@@ -243,6 +280,7 @@ export interface SchemaType extends ISchemaType {
 		ActionMapInspectable: ActionMapInspectable,
 		Inspectable: Inspectable,
 		InspectableValue: InspectableValue,
+		ActionMapInventoryItem: ActionMapInventoryItem,
 		InventoryItem: InventoryItem,
 		InventoryItemValue: InventoryItemValue,
 		Player: Player,
@@ -268,6 +306,14 @@ export const schema: SchemaType = {
 		AreaValue: {
 			is_area: false,
 		},
+		ActionMapContainer: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined,
+				Check: undefined, }),
+		},
 		Container: {
 			inst: 0,
 			is_container: false,
@@ -275,7 +321,10 @@ export const schema: SchemaType = {
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
-			item_ids: [0],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined,
+				Check: undefined, }), }],
 		},
 		ContainerValue: {
 			is_container: false,
@@ -283,7 +332,10 @@ export const schema: SchemaType = {
 			can_receive_items: false,
 			is_open: false,
 			num_slots: 0,
-			item_ids: [0],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined,
+				Check: undefined, }), }],
 		},
 		ActionMapExit: {
 		action: "",
@@ -349,18 +401,40 @@ export const schema: SchemaType = {
 				ReadRandomDescription: undefined,
 				ReadFirstDescription: undefined, }), }],
 		},
+		ActionMapInventoryItem: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }),
+		},
 		InventoryItem: {
 			inst: 0,
 			is_inventory_item: false,
 			owner_id: 0,
 			can_be_picked_up: false,
 			can_go_in_container: false,
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }), }],
 		},
 		InventoryItemValue: {
 			is_inventory_item: false,
 			owner_id: 0,
 			can_be_picked_up: false,
 			can_go_in_container: false,
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }), }],
 		},
 		Player: {
 			inst: 0,
@@ -449,7 +523,9 @@ export const schema: SchemaType = {
 export enum ModelsMapping {
 	Area = 'lore-Area',
 	AreaValue = 'lore-AreaValue',
+	ActionMapContainer = 'lore-ActionMapContainer',
 	Container = 'lore-Container',
+	ContainerActions = 'lore-ContainerActions',
 	ContainerValue = 'lore-ContainerValue',
 	ActionMapExit = 'lore-ActionMapExit',
 	Exit = 'lore-Exit',
@@ -459,7 +535,9 @@ export enum ModelsMapping {
 	Inspectable = 'lore-Inspectable',
 	InspectableActions = 'lore-InspectableActions',
 	InspectableValue = 'lore-InspectableValue',
+	ActionMapInventoryItem = 'lore-ActionMapInventoryItem',
 	InventoryItem = 'lore-InventoryItem',
+	InventoryItemActions = 'lore-InventoryItemActions',
 	InventoryItemValue = 'lore-InventoryItemValue',
 	Player = 'lore-Player',
 	PlayerStory = 'lore-PlayerStory',

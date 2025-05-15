@@ -1,4 +1,3 @@
-import { Delete } from "lucide-react";
 import React, { useState } from "react";
 import type { ChangeEvent } from "react";
 import type { CairoCustomEnum } from "starknet";

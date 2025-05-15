@@ -209,7 +209,7 @@ pub mod lexer {
 
     fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
         // get player for their context (room + room objects + inventory)
-        let context = player.get_context(@world);
+        let context = player.get_full_context(@world);
         let mut newTokens: Array<Token> = array![];
         for i in 0..command.tokens.len() {
             let mut token = command.tokens.at(i).clone();

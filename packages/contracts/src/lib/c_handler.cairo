@@ -13,6 +13,7 @@ use lore::{ //
     components::{
         player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{Exit, ExitComponent}, Component,
         inspectable::{Inspectable, InspectableImpl, InspectableComponent},
+        inventoryItem::{InventoryItemComponent}, container::{ContainerComponent},
     } //
 };
 
@@ -33,6 +34,7 @@ pub fn handle_command(
     if nouns.len() > 0 {
         for noun in nouns {
             let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
+            player.say(world, format!("item: {:?}", item));
             match InspectableComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.clone().can_use_command(world, @player, @command) {
@@ -43,7 +45,7 @@ pub fn handle_command(
                     }
                 },
                 Option::None => {},
-            };
+            }
             match AreaComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
@@ -67,6 +69,28 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
+            match InventoryItemComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.can_use_command(world, @player, @command) {
+                        if c.execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
+                    }
+                },
+                Option::None => {},
+            }
+            match ContainerComponent::get_component(world, item.inst) {
+                Option::Some(c) => {
+                    if c.can_use_command(world, @player, @command) {
+                        if c.execute_command(world, @player, @command).is_ok() {
+                            executed = true;
+                            break;
+                        }
+                    }
+                },
+                Option::None => {},
+            };
         };
     } else if directions.len() > 0 {
         let context = player.get_context(@world);
