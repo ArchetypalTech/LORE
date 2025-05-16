@@ -10,7 +10,9 @@ import {
 	createDefaultChildToParentComponent,
 	createDefaultEntity,
 	createDefaultInspectableComponent,
+	createDefaultContainerComponent,
 	createDefaultParentToChildrenComponent,
+	createPlayerEntity
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -452,6 +454,31 @@ const newEntity = async () => {
 	return newEntity;
 };
 
+const newPlayer = async () => {
+	const playerEntity = createPlayerEntity();
+	syncItem(playerEntity);
+	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
+	await tick();
+	if (get().selectedEntity !== undefined) {
+		const e = getEntity(get().selectedEntity!)!;
+		console.log(e);
+		if (e.ChildToParent !== undefined) {
+			const newParent = getEntity(e.ChildToParent.parent)!;
+			console.log(newParent);	
+			addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
+		}
+	} else {
+		selectEntity(playerEntity.Entity.inst);
+	}
+
+	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
+	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
+	const container = createDefaultContainerComponent(playerEntity.Entity);
+	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
+
+	return playerEntity
+};
+
 const logPool = () => {
 	const poolArray = get().dataPool.values().toArray();
 	const syncPoolArray = get().syncPool.values().toArray();
@@ -488,6 +515,7 @@ const EditorData = createFactory({
 	dojoSync,
 	addToParent,
 	removeParent,
+	newPlayer,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });
 

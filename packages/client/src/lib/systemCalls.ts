@@ -48,6 +48,7 @@ async function execCommand(command: string): Promise<void> {
 }
 
 export type DesignerCall =
+	| "create_player"
 	| "create_entity"
 	| "create_inspectable"
 	| "create_area"
@@ -56,6 +57,7 @@ export type DesignerCall =
 	| "create_container"
 	| "create_parent"
 	| "create_child"
+	| "delete_player"
 	| "delete_entity"
 	| "delete_inspectable"
 	| "delete_area"

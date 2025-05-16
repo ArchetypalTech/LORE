@@ -13,6 +13,7 @@ import {
 	inventoryItemActions,
 	type Container,
 	containerActions,
+	type Player,
 	type ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
@@ -80,6 +81,9 @@ const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
+	if("Player" in collection && collection.Player !== undefined) {
+		await publishPlayer(collection.Player);
+	}
 	if ("Inspectable" in collection && collection.Inspectable !== undefined) {
 		await publishInspectable(collection.Inspectable);
 	}
@@ -118,6 +122,17 @@ const publishEntity = async (entity: Entity) => {
 			: 0,
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
+};
+
+// @wip: publish player
+const publishPlayer = async (player: Player) => {
+	const playerData = [
+		num.toBigInt(player.inst.toString()),
+		player.is_player,
+		byteArray.byteArrayFromString(player.address),
+		player.use_debug,
+	];
+	await dispatchDesignerCall("create_player", [playerData]);
 };
 
 const publishInspectable = async (inspectable: Inspectable) => {
@@ -230,6 +245,11 @@ const deleteCollection = async (model: EntityCollection) => {
 			num.toBigInt(model.Entity!.inst),
 		]);
 	}
+	if ("Player" in model && model.Player !== undefined) {
+		await dispatchDesignerCall("delete_player", [
+			num.toBigInt(model.Player!.inst),
+		]);
+	}
 	if ("Inspectable" in model && model.Inspectable !== undefined) {
 		await dispatchDesignerCall("delete_inspectable", [
 			num.toBigInt(model.Inspectable!.inst),
@@ -260,8 +280,6 @@ const deleteCollection = async (model: EntityCollection) => {
 		await dispatchDesignerCall("delete_parent", [
 			num.toBigInt(model.ParentToChildren!.inst),
 		]);
-	}
-	if ("Player" in model) {
 	}
 };
 

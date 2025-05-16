@@ -10,8 +10,10 @@ import { InventoryItemInspector } from "../components/inspectors/InventoryItemIn
 import { InspectableInspector } from "../components/inspectors/InspectableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { ContainerInspector } from "../components/inspectors/ContainerInspector";
+import { PlayerInspector } from "../components/inspectors/PlayerInspector";
 import { createRandomName, randomKey } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
+import { LORE_CONFIG } from "@/lib/config";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -22,6 +24,39 @@ export const createDefaultEntity = (): WithStringEnums<
 		is_entity: true,
 		name: createRandomName(),
 		alt_names: [],
+	},
+});
+
+export const createPlayerEntity = (
+  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => ({
+		// Adding the Entity as we need to set the inst to be the address
+	Entity: {
+		...schema.lore.Entity,
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		is_entity: true,
+		name: createRandomName(),
+		alt_names: [],
+	},
+	Player: {
+		...schema.lore.Player,
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		is_player: true,
+		address: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		location: 0,
+		use_debug: false,
+	},
+});
+
+export const createPlayerComponent = (
+	_entity:Entity
+  ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => ({
+	Player: {
+		...schema.lore.Player,
+		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		is_player: true,
+		address: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
+		location: 0,
+		use_debug: false,
 	},
 });
 
@@ -144,34 +179,36 @@ export const componentData: {
 	},
 	Player: {
 		order: 1,
+		inspector: PlayerInspector,
 		icon: "👤",
+		creator: createPlayerComponent,
 	},
 	Area: {
-		order: 1,
+		order: 2,
 		inspector: AreaInspector,
 		icon: "🥾",
 		creator: createDefaultAreaComponent,
 	},
 	Inspectable: {
-		order: 2,
+		order: 3,
 		inspector: InspectableInspector,
 		icon: "🔍",
 		creator: createDefaultInspectableComponent,
 	},
 	Exit: {
-		order: 3,
+		order: 4,
 		inspector: ExitInspector,
 		icon: "🚪",
 		creator: createDefaultExitComponent,
 	},
 	InventoryItem: {
-		order: 4,
+		order: 5,
 		inspector: InventoryItemInspector,
 		icon: "📦",
 		creator: createDefaultInventoryItemComponent,
 	},
 	Container: {
-		order: 5,
+		order: 6,
 		inspector: ContainerInspector,
 		icon: "🎒",
 		creator: createDefaultContainerComponent,
