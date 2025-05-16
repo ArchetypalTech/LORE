@@ -3,13 +3,43 @@ description: "Setup tooling"
 runs:
   using: "composite"
   steps:
-    - name: Install dojoup
-      run: curl -L https://install.dojoengine.org | bash
+    - name: Install and setup Dojo
       shell: bash
-
-    - name: Install dojo
       run: |
-        /home/runner/.config/.dojo/bin/dojoup install ${{ env.DOJO_VERSION }}
-        sudo mv /home/runner/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana /usr/local/bin/
-        sudo mv /home/runner/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/sozo /usr/local/bin/
-      shell: bash
+        set -e
+
+        # Install dojoup
+        curl -L https://install.dojoengine.org | bash
+
+        # Wait for env file to appear (max 10s)
+        for i in {1..10}; do
+          if [ -f "$HOME/.config/.dojo/env" ]; then
+            echo "✅ Dojo env file found."
+            break
+          fi
+          echo "⏳ Waiting for Dojo env file..."
+          sleep 1
+        done
+
+        if [ ! -f "$HOME/.config/.dojo/env" ]; then
+          echo "❌ ERROR: Dojo env file not found!"
+          exit 1
+        fi
+
+        # Source the environment and install toolchain
+        source "$HOME/.config/.dojo/env"
+        dojoup install ${{ env.DOJO_VERSION }}
+
+        # Optional: move binaries to system path
+        sudo mv "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana" /usr/local/bin/
+        sudo mv "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/sozo" /usr/local/bin/
+    # - name: Install dojoup
+    #   run: curl -L https://install.dojoengine.org | bash
+    #   shell: bash
+
+    # - name: Install dojo
+    #   run: |
+    #     /home/runner/.config/.dojo/bin/dojoup install ${{ env.DOJO_VERSION }}
+    #     sudo mv /home/runner/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana /usr/local/bin/
+    #     sudo mv /home/runner/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/sozo /usr/local/bin/
+    #   shell: bash
