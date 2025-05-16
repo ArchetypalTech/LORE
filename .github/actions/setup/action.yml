@@ -4,21 +4,35 @@ runs:
   using: "composite"
   steps:
     - name: Install and setup Dojo
+      shell: bash
       run: |
         set -e
-        curl -L https://install.dojoengine.org | bash
-        source "$HOME/.config/.dojo/env"
-        dojoup install ${{ env.DOJO_VERSION }}
 
-        if [ ! -f "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana" ]; then
-          echo "Katana not found after installation"
-          ls -al "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/"
+        # Install dojoup
+        curl -L https://install.dojoengine.org | bash
+
+        # Wait for env file to appear (max 10s)
+        for i in {1..10}; do
+          if [ -f "$HOME/.config/.dojo/env" ]; then
+            echo "✅ Dojo env file found."
+            break
+          fi
+          echo "⏳ Waiting for Dojo env file..."
+          sleep 1
+        done
+
+        if [ ! -f "$HOME/.config/.dojo/env" ]; then
+          echo "❌ ERROR: Dojo env file not found!"
           exit 1
         fi
 
+        # Source the environment and install toolchain
+        source "$HOME/.config/.dojo/env"
+        dojoup install ${{ env.DOJO_VERSION }}
+
+        # Optional: move binaries to system path
         sudo mv "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana" /usr/local/bin/
         sudo mv "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/sozo" /usr/local/bin/
-      shell: bash
     # - name: Install dojoup
     #   run: curl -L https://install.dojoengine.org | bash
     #   shell: bash
