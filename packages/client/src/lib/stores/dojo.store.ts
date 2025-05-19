@@ -161,7 +161,7 @@ const initializeConfig = async (
 		setStatus(status);
 		sendCommand(`_fatal_error ${status.error}`);
 		window.location.reload();
-	}, 5000);
+	}, 50000);
 
 	if (existingSubscription !== undefined) return;
 
