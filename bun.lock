@@ -23,10 +23,10 @@
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
-        "@dojoengine/core": "^1.3.1",
-        "@dojoengine/create-burner": "^1.3.1",
-        "@dojoengine/sdk": "^1.3.1",
-        "@dojoengine/utils": "^1.3.1",
+        "@dojoengine/core": "^1.5.6",
+        "@dojoengine/create-burner": "^1.5.6",
+        "@dojoengine/sdk": "^1.5.6",
+        "@dojoengine/utils": "^1.5.6",
         "@lore/contracts": "workspace:*",
         "@radix-ui/react-checkbox": "^1.1.4",
         "@radix-ui/react-context-menu": "^2.2.6",
@@ -187,19 +187,19 @@
 
     "@dnd-kit/utilities": ["@dnd-kit/utilities@3.2.2", "", { "dependencies": { "tslib": "^2.0.0" }, "peerDependencies": { "react": ">=16.8.0" } }, "sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg=="],
 
-    "@dojoengine/core": ["@dojoengine/core@1.3.1", "", { "dependencies": { "@dojoengine/recs": "2.0.13", "starknet": "6.23.1", "zod": "^3.23.8" }, "bin": { "create-components": "dist/bin/generateComponents.cjs" } }, "sha512-baFYS4teoazYVu4yltZfuE+Wz6+YMj2iRFJPm1eWpNKNIsgmy1JSeg8M0PszGQR0pTQZ5fRWjm/1pOcZl6REqg=="],
+    "@dojoengine/core": ["@dojoengine/core@1.5.6", "", { "dependencies": { "@dojoengine/recs": "2.0.13", "starknet": "6.23.1", "zod": "^3.23.8" } }, "sha512-MsgxAfQG6iQYd42Q84y1rEyR8d4U9U6HpjKzV+QRq9AlrQTFfdb/S4dBTzAgLh3RwN2L5Xlii+5QmOGI3qp55Q=="],
 
-    "@dojoengine/create-burner": ["@dojoengine/create-burner@1.3.1", "", { "dependencies": { "@dojoengine/core": "1.3.1", "@scure/bip32": "^1.5.0", "@starknet-react/core": "^3.6.2", "encoding": "^0.1.13", "get-starknet-core": "^4.0.0", "js-cookie": "^3.0.5" }, "peerDependencies": { "react": "^18.2.0", "react-dom": "^18.2.0", "starknet": "6.23.1" } }, "sha512-hr6+xjfMTCxdMGbmRb5xQIXd+ypvtGCYtonMB1fO0Z6qIDFUAUqlqNtEusupnCeYmwIaqCn78EOysGKDaC8FOQ=="],
+    "@dojoengine/create-burner": ["@dojoengine/create-burner@1.5.6", "", { "dependencies": { "@dojoengine/core": "1.5.6", "@scure/bip32": "^1.5.0", "@starknet-react/core": "^3.6.2", "encoding": "^0.1.13", "get-starknet-core": "^4.0.0", "js-cookie": "^3.0.5" }, "peerDependencies": { "react": "^18.2.0", "react-dom": "^18.2.0", "starknet": "6.23.1" } }, "sha512-C+DTMdOVq2bQJBRuepNEYGef6dy1Zc+cpddQzaHH2wpaIrw/MkzqGQ/xEvGojVlq7Ol/DbYKSx4/OIDA6TMOXg=="],
 
     "@dojoengine/recs": ["@dojoengine/recs@2.0.13", "", { "dependencies": { "@latticexyz/schema-type": "2.0.12", "@latticexyz/utils": "2.0.12", "mobx": "^6.7.0", "rxjs": "7.5.5" } }, "sha512-Cgz4Unlnk2FSDoFTYKrJexX/KiSYPMFMxftxQkC+9LUKS5yNGkgFQM7xu4/L1HvpDAenL7NjUmH6ynRAS7Iifw=="],
 
-    "@dojoengine/sdk": ["@dojoengine/sdk@1.3.1", "", { "dependencies": { "@dojoengine/core": "1.3.1", "@dojoengine/torii-client": "1.3.1", "@dojoengine/utils": "1.3.1", "immer": "^10.1.1", "zustand": "^4.5.6" }, "peerDependencies": { "@tanstack/react-query": "^5.62.16", "@types/react": "^18.3.1", "@types/react-dom": "^18.3.1", "react": "^18.3.1", "react-dom": "^18.3.1", "starknet": "6.23.1" } }, "sha512-rUISYmWsWAlr1x3ikpE0yTFzOGWD2cXSvfIgBNnBhh1Li2t6s4O1RGxA7KJGVGd3FiA9p6w8YVCGlfBrZi67Ng=="],
+    "@dojoengine/sdk": ["@dojoengine/sdk@1.5.6", "", { "dependencies": { "@dojoengine/core": "1.5.6", "@dojoengine/torii-client": "1.5.6", "@dojoengine/torii-wasm": "1.5.6", "@dojoengine/utils": "1.5.6", "@starknet-react/chains": "^3.1.0", "@starknet-react/core": "^3.6.2", "immer": "^10.1.1", "neverthrow": "^8.2.0", "zustand": "^4.5.6" }, "peerDependencies": { "@tanstack/react-query": "^5.62.16", "@types/react": "^18.3.1", "@types/react-dom": "^18.3.1", "react": "^18.3.1", "react-dom": "^18.3.1", "starknet": "6.23.1" } }, "sha512-UClLDvi7hF3oMwlFO0VkyZyJDF3jYYqUuKOrK62QiA1mDo76EogA7Ohyvx0j0x0+5wxWGCs7BM+AvOKRG2u0tA=="],
 
-    "@dojoengine/torii-client": ["@dojoengine/torii-client@1.3.1", "", { "dependencies": { "@dojoengine/torii-wasm": "1.3.1" } }, "sha512-5ZbqUtSdUnZl+I2D1Xk455htBYtMMmCg//4UxbSpUWNim0W21KGyfHbR8PFyLj+UbM6GHWUrMs2RVAlOa9svCg=="],
+    "@dojoengine/torii-client": ["@dojoengine/torii-client@1.5.6", "", { "dependencies": { "@dojoengine/torii-wasm": "1.5.6" } }, "sha512-rkBsLggyIvT0k3m93KCzwetmMmxS05fwvkVx41aUN39cVwKR8pEjtMOsIOcuYM7PCoKPOpFnk8pvgkPj8A01PQ=="],
 
-    "@dojoengine/torii-wasm": ["@dojoengine/torii-wasm@1.3.1", "", {}, "sha512-+oZ1HNmgFyXKi3KxhxUYttYXQtBwfdq20rmw4FrchZRsYcDybhxo/bT/2JgFqMOYRnTeLXjfnBK+6o0UfWWBxQ=="],
+    "@dojoengine/torii-wasm": ["@dojoengine/torii-wasm@1.5.6", "", {}, "sha512-Jx++UUbybulCp6oGhO1YFIQB68CExsIwPEODR9RKSBDOiXlSadwa3Cpex8jmfHsPYguHX1abE51NWVzSHBa97w=="],
 
-    "@dojoengine/utils": ["@dojoengine/utils@1.3.1", "", { "dependencies": { "@dojoengine/recs": "2.0.13", "@latticexyz/utils": "^2.2.8", "mathjs": "^12.4.3", "micro-starknet": "^0.2.3" }, "peerDependencies": { "starknet": "6.23.1" } }, "sha512-dFMK42LxuGNkY8x1Mq0s1rMMwhmZ+GwvJ4fJQUaRm2hOTiKMVZwwGuS9V3N4mQl3yRijrP9esaIGri7OopbOUA=="],
+    "@dojoengine/utils": ["@dojoengine/utils@1.5.6", "", { "dependencies": { "@dojoengine/recs": "2.0.13", "@latticexyz/utils": "^2.2.8", "mathjs": "^12.4.3", "micro-starknet": "^0.2.3" }, "peerDependencies": { "starknet": "6.23.1" } }, "sha512-socIYCuqTNNtKhwH7zeI/sIuh93L4dr2HYAcBvEryS7p1r2oT+SsjqOyLWZrgGvGCXNVk6R+2C90HS6pbhVh0g=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.1", "", { "os": "aix", "cpu": "ppc64" }, "sha512-kfYGy8IdzTGy+z0vFGvExZtxkFlA4zAxgKEahG9KE1ScBjpQnFsNOX8KTU5ojNru5ed5CVoJYXFtoxaq5nFbjQ=="],
 
@@ -776,6 +776,8 @@
     "ms": ["ms@2.1.3", "", {}, "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="],
 
     "nanoid": ["nanoid@3.3.9", "", { "bin": { "nanoid": "bin/nanoid.cjs" } }, "sha512-SppoicMGpZvbF1l3z4x7No3OlIjP7QJvC9XR7AhZr1kL133KHnKPztkKDc+Ir4aJ/1VhTySrtKhrsycmrMQfvg=="],
+
+    "neverthrow": ["neverthrow@8.2.0", "", { "optionalDependencies": { "@rollup/rollup-linux-x64-gnu": "^4.24.0" } }, "sha512-kOCT/1MCPAxY5iUV3wytNFUMUolzuwd/VF/1KCx7kf6CutrOsTie+84zTGTpgQycjvfLdBBdvBvFLqFD2c0wkQ=="],
 
     "node-fetch": ["node-fetch@2.7.0", "", { "dependencies": { "whatwg-url": "^5.0.0" }, "peerDependencies": { "encoding": "^0.1.0" }, "optionalPeers": ["encoding"] }, "sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A=="],
 

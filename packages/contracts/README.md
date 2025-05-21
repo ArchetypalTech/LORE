@@ -20,6 +20,10 @@ Deploy contracts to slot:
 ```bash
 bun run slot:deploy
 ```
+Optionally, you can specify the version of the Katana and Torii to deploy:
+```bash
+bun run slot:deploy --kv v1.5.1 --tv v1.5.4
+```
 
 Upgrade existing slot deployment:
 
@@ -33,7 +37,7 @@ Watch for contract changes:
 bun run slot:watch
 ```
 
-- Deploymentscripts will use variables in `dojo_slot.toml`, `Scarb.toml`. `dojo_slot.toml` requires `slot_name` to be set to target deployment.
+- Deployment scripts will use variables in `dojo_slot.toml`, `Scarb.toml`. `dojo_slot.toml` requires `slot_name` to be set to target deployment.
 
 ### 🪴 Product may include traces of
 
