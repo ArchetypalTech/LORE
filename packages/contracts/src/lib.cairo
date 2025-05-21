@@ -16,6 +16,7 @@ pub mod lib {
     pub mod relations;
     pub mod utils;
     pub mod level_test;
+    pub mod trigger;
 }
 
 #[cfg(test)]

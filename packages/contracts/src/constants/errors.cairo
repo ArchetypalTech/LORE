@@ -14,4 +14,9 @@ pub enum Error {
     // Dictionary
     NoDictionaryMatch,
     None,
+    // Triggers
+    TriggerNotFound,
+    NameTooLong,
+    FailedToUpdateTriggerIndex,
+    FailedToRemoveTriggerIndex,
 }
