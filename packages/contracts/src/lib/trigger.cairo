@@ -17,7 +17,7 @@ pub struct Trigger {
 
 #[derive(Clone, Drop, Serde)]
 #[dojo::model]
-struct TriggerIndex {
+pub struct TriggerIndex {
     #[key]
     trigger_type: TriggerType,
     trigger_id: Array<felt252>,
@@ -46,7 +46,7 @@ pub enum TriggerType {
 }
 
 #[generate_trait]
-impl TriggerImpl of TriggerTrait {
+pub impl TriggerImpl of TriggerTrait {
     fn register_trigger(mut world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
         // 1. Register trigger
         // Optional check: ensure name is short enough
@@ -108,5 +108,107 @@ impl TriggerImpl of TriggerTrait {
         // Disable trigger
         trigger.is_enabled = false;
         world.write_model(@trigger);
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dojo::{model::ModelStorage};
+    use lore::tests::helpers;
+    use lore::lib::{entity::{Entity, EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl}};
+
+    fn create_test_trigger(key: felt252, nameT: ByteArray, trigger_type: TriggerType, entity: Entity) -> Trigger {
+        Trigger {
+            key,
+            name: nameT,
+            trigger_type,
+            entity_attachedTo: entity,
+            parameters: array![],
+            is_enabled: false,
+        }
+    }
+
+    #[test]
+    fn test_trigger_register_and_index() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+
+        // Create entity
+        let mut player = EntityImpl::create_entity(world);
+        player.name = "player";
+        world.write_model(@player);
+
+        let trigger = create_test_trigger(1, "TestTrigger",TriggerType::PlayerEntersArea, player);
+
+        let result = TriggerImpl::register_trigger(world, trigger.clone());
+        assert(result.is_ok(), 'Trig not register successfully');
+
+        let stored: Trigger = world.read_model(trigger.key);
+        assert(stored.key == 1, 'Trigger key should match');
+        assert(stored.name == "TestTrigger", 'Trigger name should match');
+
+        let index: TriggerIndex = world.read_model(trigger.trigger_type);
+        assert(index.trigger_id.len() == 1, 'Trig index should have one ID');
+        assert(index.trigger_id[0] == @trigger.key, 'Idx should have the trigger key');
+    }
+
+    #[test]
+    fn test_trigger_name_too_long() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+        let long_name = "Aakldjflkajdflkjldafljaldfjldjsdfdfdf";
+
+        // Create entity
+        let mut player = EntityImpl::create_entity(world);
+        player.name = "player";
+        world.write_model(@player);
+
+        // Create trigger
+        let trigger = create_test_trigger(2, long_name, TriggerType::PlayerLeavesArea, player);
+        world.write_model(@trigger);
+
+        let result = TriggerImpl::register_trigger(world, trigger);
+        assert(result.is_err(), 'Trig name too long should fail');
+    }
+
+    #[test]
+    fn test_trigger_enable_disable() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+        // Create entity
+        let mut player = EntityImpl::create_entity(world);
+        player.name = "player";
+        world.write_model(@player);
+
+        // Create trigger
+        let trigger = create_test_trigger(3, "TestTrigger", TriggerType::PlayerLeavesArea, player);
+
+        world.write_model(@trigger);
+        TriggerImpl::enable_trigger(world, trigger.clone());
+        let enabled: Trigger = world.read_model(trigger.key);
+        assert(enabled.is_enabled, 'Trigger should be enabled');
+
+        TriggerImpl::disable_trigger(world, trigger.clone());
+        let disabled: Trigger = world.read_model(trigger.key);
+        assert(!disabled.is_enabled, 'Trigger should be disabled');
+    }
+
+    #[test]
+    fn test_trigger_index_append_multiple() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+        let id_1: felt252 = 10;
+        let id_2: felt252 = 11;
+
+        let result1 = TriggerImpl::update_triggerIndex(world, TriggerType::PlayerEntersArea, id_1);
+        // message: 1st trigger index insert didn't succeed
+        assert(result1.is_ok(), '1 trig idx insert nt succ');
+
+        let result2 = TriggerImpl::update_triggerIndex(world, TriggerType::PlayerEntersArea, id_2);
+        // message: 2nd trigger index insert didn't succeed
+        assert(result2.is_ok(), '2 trig idx insert nt succ');
+
+        let index: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
+        assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
+        assert(index.trigger_id[0] == @id_1, 'First ID should match');
+        assert(index.trigger_id[1] == @id_2, 'Second ID should match');
     }
 }

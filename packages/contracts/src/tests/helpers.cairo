@@ -22,7 +22,8 @@ use lore::{
         a_lexer::{TokenTypeFelt252}, //
         dictionary::{m_Dict, initialize_dictionary}, //
         utils::{ByteArrayTraitExt}, //
-        relations::{m_ParentToChildren, m_ChildToParent} //
+        relations::{m_ParentToChildren, m_ChildToParent},//
+        trigger::{m_Trigger, m_TriggerIndex} //
     },
 };
 
@@ -59,6 +60,8 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_Exit::TEST_CLASS_HASH),
             TestResource::Model(m_ParentToChildren::TEST_CLASS_HASH),
             TestResource::Model(m_ChildToParent::TEST_CLASS_HASH),
+            TestResource::Model(m_Trigger::TEST_CLASS_HASH),
+            TestResource::Model(m_TriggerIndex::TEST_CLASS_HASH),
             // TestResource::Event(),
             TestResource::Contract(prompt::TEST_CLASS_HASH),
             TestResource::Contract(designer::TEST_CLASS_HASH),
