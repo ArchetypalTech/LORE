@@ -1,7 +1,8 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{constants::{errors::Error}};
 use lore::components::{Component, player::Player};
-use lore::lib::{entity::{EntityImpl}, a_lexer::{Command}};
+use lore::lib::{entity::{EntityImpl}, a_lexer::{Command}, 
+variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait}};
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
 #[dojo::model]
@@ -30,6 +31,20 @@ pub impl AreaComponent of Component<Area> {
         area.is_area = true;
         // area.action_map = array![("look", InspectableActions::read_description)];
         world.write_model(@area);
+        // Register component properties
+        let mut props: Array<ComponentProperty> = ArrayTrait::new();
+        props.append(ComponentProperty {
+            name: "is_area",
+            property_type: PropertyType::Boolean,
+            access_flags: PropertyAccess::ReadOnly,
+        });
+        let registry = PropertyRegistry {
+            key: area.inst,
+            component_type: ComponentType::Area,
+            properties: props,
+        };
+        VariablePropertyTrait::register_component_properties(world, registry);
+        // Return the component
         area
     }
 

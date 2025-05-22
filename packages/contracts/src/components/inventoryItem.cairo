@@ -5,6 +5,7 @@ use lore::{
     lib::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
         utils::ByteArrayTraitExt,
+        variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait},
     },
     components::{area::{AreaComponent}, container::{Container, ContainerComponent, ContainerImpl}},
 };
@@ -95,6 +96,30 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     },
                 ];
         inventory_item.store(world);
+        // Register component properties
+        let mut props: Array<ComponentProperty> = ArrayTrait::new();
+        props.append(ComponentProperty {
+            name: "owner_id",
+            property_type: PropertyType::Felt252,
+            access_flags: PropertyAccess::ReadWrite,
+        });
+        props.append(ComponentProperty {
+            name: "can_be_picked_up",
+            property_type: PropertyType::Boolean,
+            access_flags: PropertyAccess::ReadWrite,
+        });
+        props.append(ComponentProperty {
+            name: "can_go_in_container",
+            property_type: PropertyType::Boolean,
+            access_flags: PropertyAccess::ReadWrite,
+        });
+        let registry = PropertyRegistry {
+            key: inventory_item.inst,
+            component_type: ComponentType::InventoryItem,
+            properties: props,
+        };
+        VariablePropertyTrait::register_component_properties(world, registry);
+        // Return the component
         inventory_item
     }
 

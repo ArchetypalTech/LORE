@@ -4,15 +4,15 @@ use lore::{
     lib::{
         entity::{EntityImpl},
         trigger::{TriggerContext, TriggerImpl},
+        utils::ByteArrayTraitExt,
     },
-    components::{
-        Component, 
-        inspectable::{Inspectable,InspectableComponent},
-        area::{Area, AreaComponent},
-        exit::{Exit, ExitComponent},
-        inventoryItem::{InventoryItem,InventoryItemComponent},
-        container::{Container,ContainerComponent},
-        player::{Player, PlayerComponent},
+    components::{ 
+        inspectable::{InspectableComponent},
+        area::{AreaComponent},
+        exit::{ExitComponent},
+        inventoryItem::{InventoryItemComponent},
+        container::{ContainerComponent},
+        player::{PlayerComponent},
     },
 };
 
@@ -63,13 +63,15 @@ pub impl ConditionImpl of ConditionTrait {
                 let container = OptionTrait::unwrap(container_opt);
 
                 return true;
+                // let is_open = word("is_open");
+                // let can_be_opened = word("is_open");
 
                 // match self.property {
-                //     "is_open" => {
+                //     is_open => {
                 //         let field_value = container.is_open.into();
                 //         return self.compare(field_value);
                 //     },
-                //     'can_be_opened' => {
+                //     can_be_opened => {
                 //         let field_value = container.can_be_opened.into();
                 //         return self.compare(field_value);
                 //     },
@@ -108,4 +110,8 @@ pub impl ConditionImpl of ConditionTrait {
             }},
         }
     }
+}
+
+fn word(s: ByteArray) -> felt252 {
+    ByteArrayTraitExt::to_felt252_word(@s).unwrap()
 }

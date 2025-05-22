@@ -2,7 +2,8 @@ use super::super::lib::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     constants::errors::Error, components::{inventoryItem::InventoryItem},
-    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl}},
+    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
+    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait}},
 };
 use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
 
@@ -248,6 +249,40 @@ pub impl ContainerComponent of Component<Container> {
                     },
                 ];
         container.store(world);
+        // Register component properties
+        let mut props: Array<ComponentProperty> = ArrayTrait::new();
+        props.append(ComponentProperty {
+            name: "is_container",
+            property_type: PropertyType::Boolean,
+            access_flags: PropertyAccess::ReadOnly,
+        });
+        props.append(ComponentProperty {
+            name: "can_be_opened",
+            property_type: PropertyType::Boolean,
+            access_flags: PropertyAccess::ReadWrite,
+        });
+        props.append(ComponentProperty {
+            name: "can_receive_items",
+            property_type: PropertyType::Boolean,
+            access_flags: PropertyAccess::ReadWrite,
+        });
+        props.append(ComponentProperty {
+            name: "is_open",
+            property_type: PropertyType::Boolean,
+            access_flags: PropertyAccess::ReadWrite,
+        });
+        props.append(ComponentProperty {
+            name: "num_slots",
+            property_type: PropertyType::Integer,
+            access_flags: PropertyAccess::ReadWrite,
+        });
+        let registry = PropertyRegistry {
+            key: container.inst,
+            component_type: ComponentType::Container,
+            properties: props,
+        };
+        VariablePropertyTrait::register_component_properties(world, registry);
+        // Return the component
         container
     }
 
