@@ -23,8 +23,15 @@ export const InitDojo = async () => {
 	const manifest = LORE_CONFIG.manifest.default;
 	const rpcUrl = LORE_CONFIG.endpoints.katana;
 	const dojoConfig = createDojoConfig({
-		manifest,
-	});
+			manifest,
+			rpcUrl,
+			toriiUrl: LORE_CONFIG.endpoints.torii.http,
+			relayUrl: "/ip4/127.0.0.1/tcp/9090/tcp/80",
+			masterAddress: LORE_CONFIG.wallet.address,
+			masterPrivateKey: LORE_CONFIG.wallet.private_key,
+			accountClassHash: LORE_CONFIG.manifest.world.class_hash,
+			feeTokenAddress: LORE_CONFIG.manifest.world.fee_token_address,
+		});
 
 	const sdkConfig = {
 		client: {
@@ -67,6 +74,8 @@ export const InitDojo = async () => {
 			callback,
 		});
 	};
+
+	console.log( {sdk, dojoConfig, provider, query, sub})
 
 	return { sdk, dojoConfig, provider, query, sub };
 };
