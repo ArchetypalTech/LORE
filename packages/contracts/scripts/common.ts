@@ -20,8 +20,12 @@ import { LORE_ICONS } from "@lore/client/src/data/app.icons";
 
 const argv = process.argv.slice(2);
 const parsed = mri(argv, {
-	string: ["mode"],
-	alias: { mode: "m" },
+  string: ["mode", "katana_version", "torii_version"],
+	alias: {
+		mode: "m",
+		katana_version: "kv",
+		torii_version: "tv"
+	},
 	default: { mode: "dev" },
 });
 
@@ -58,6 +62,8 @@ export type Config = ParsedConfig & {
 		};
 	};
 	mode: string;
+	katana_version?: string;
+	torii_version?: string;
 };
 
 export type ParsedConfig = {
@@ -75,6 +81,8 @@ export const config = {
 		Promise.resolve({} as ParsedConfig),
 	)),
 	mode: parsed.mode,
+	katana_version: parsed.katana_version,
+	torii_version: parsed.torii_version,
 } as Config;
 
 // spawns and runs a child process
