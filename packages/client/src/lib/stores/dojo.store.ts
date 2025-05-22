@@ -170,6 +170,7 @@ const initializeConfig = async (
 		if (!LORE_CONFIG.EDITOR_MODE) {
 			sendCommand("_intro");
 		}
+		console.log({initialEntities});
 		// Commented this out as it is causing issues with deployment
 		// for (const responseData of initialEntities || []) {
 		// 	if (responseData.models?.lore) {

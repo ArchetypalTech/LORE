@@ -18,7 +18,7 @@
 		"start": "bunx serve -s /dist --port 8080"
 	},
 	"dependencies": {
-		"@cartridge/controller": "^0.7.4",
+		"@cartridge/controller": "^0.7.13",
 		"@dnd-kit/core": "^6.3.1",
 		"@dnd-kit/sortable": "^10.0.0",
 		"@dnd-kit/utilities": "^3.2.2",
