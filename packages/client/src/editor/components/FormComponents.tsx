@@ -312,7 +312,7 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 	};
 
 	return (
-		<div key={actionMap.action} className="grid grid-cols-3 gap-1">
+		<div key={actionMap.action} className="grid md:grid-cols-[1fr_2fr_auto] grid-rows-3 md:grid-rows-none items-center gap-1">
 			<UIInput
 				id={actionMap.action}
 				value={input}
@@ -323,7 +323,7 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 				onChange={handleInputChange}
 				className="bg-white col-span-1 border-solid"
 			/>
-			<div className="flex flex-row gap-1 col-span-2">
+			<div className="flex flex-row gap-1">
 				<CairoEnumSelect
 					id={actionMap.action}
 					value={enumValue}
@@ -335,11 +335,11 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 					className="bg-white rounded-md flex grow"
 					hideLabel={true}
 				/>
+			</div>
 				<DeleteButton
 					className="text-xs"
 					onClick={() => handleChange(undefined, idx)}
 				/>
-			</div>
 		</div>
 	);
 };

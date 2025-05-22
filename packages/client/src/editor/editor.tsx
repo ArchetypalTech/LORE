@@ -136,7 +136,7 @@ export const Editor = () => {
 			<Toaster expand visibleToasts={4} position="top-left" />
 			<div
 				id="editor-root"
-				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-atkinson"
+				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"
 			>
 				<div className="relative mx-auto h-full max-w-[1200px]">
 					<EditorHeader />
