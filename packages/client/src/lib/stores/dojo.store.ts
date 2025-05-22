@@ -115,7 +115,7 @@ const onReponseData = (
 	});
 };
 
-/* 
+/*
 	onSubscription is a callback function that is passed to the sub function in the config object.
 	It is called whenever a new entity is created or updated.
 	The function is responsible for updating the playerStory and editor data.
@@ -170,11 +170,12 @@ const initializeConfig = async (
 		if (!LORE_CONFIG.EDITOR_MODE) {
 			sendCommand("_intro");
 		}
-		for (const responseData of initialEntities || []) {
-			if (responseData.models?.lore) {
-				onReponseData(responseData.models.lore);
-			}
-		}
+		// Commented this out as it is causing issues with deployment
+		// for (const responseData of initialEntities || []) {
+		// 	if (responseData.models?.lore) {
+		// 		onReponseData(responseData.models.lore);
+		// 	}
+		// }
 		clearTimeout(connectionTimeout);
 
 		setStatus({
