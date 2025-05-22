@@ -51,39 +51,75 @@ const setupController = async () => {
 			description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
 			methods: [
 				{
-					entrypoint: "create_objects",
+					entrypoint: "create_player",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "create_actions",
+					entrypoint: "create_entity",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "create_rooms",
+					entrypoint: "create_inspectable",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "create_txts",
+					entrypoint: "create_area",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "create_txt",
+					entrypoint: "create_exit",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "delete_objects",
+					entrypoint: "create_inventory_item",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "delete_actions",
+					entrypoint: "create_container",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "delete_rooms",
+					entrypoint: "create_parent",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "delete_txts",
+					entrypoint: "create_child",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_player",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_entity",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_inspectable",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_area",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_exit",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_inventory_item",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_container",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_parent",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_child",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 			],
