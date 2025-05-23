@@ -23,7 +23,9 @@ use lore::{
         dictionary::{m_Dict, initialize_dictionary}, //
         utils::{ByteArrayTraitExt}, //
         relations::{m_ParentToChildren, m_ChildToParent},//
-        trigger::{m_Trigger, m_TriggerIndex} //
+        trigger::{m_Trigger, m_TriggerIndex}, //
+        condition::{m_Condition}, //
+        variable_property::{m_PropertyRegistry} //
     },
 };
 
@@ -62,6 +64,8 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_ChildToParent::TEST_CLASS_HASH),
             TestResource::Model(m_Trigger::TEST_CLASS_HASH),
             TestResource::Model(m_TriggerIndex::TEST_CLASS_HASH),
+            TestResource::Model(m_Condition::TEST_CLASS_HASH),
+            TestResource::Model(m_PropertyRegistry::TEST_CLASS_HASH),
             // TestResource::Event(),
             TestResource::Contract(prompt::TEST_CLASS_HASH),
             TestResource::Contract(designer::TEST_CLASS_HASH),

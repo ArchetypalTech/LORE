@@ -41,7 +41,7 @@ pub enum Operator {
 pub impl ConditionImpl of ConditionTrait {
     fn evaluate_condition(
         self: @Condition,
-        world: WorldStorage,
+        world: @WorldStorage,
         context: TriggerContext
     ) -> bool {
         let target = *self.target;
@@ -50,52 +50,52 @@ pub impl ConditionImpl of ConditionTrait {
 
         match self.component {
             Components::Area => {
-                let container_opt = AreaComponent::get_component(world, target);
+                let container_opt = AreaComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
             },
             Components::Exit => {
-                let container_opt = ExitComponent::get_component(world, target);
+                let container_opt = ExitComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
             },
             Components::Inspectable => {
-                let inspectable_opt = InspectableComponent::get_component(world, target);
+                let inspectable_opt = InspectableComponent::get_component(*world, target);
                 if inspectable_opt.is_none() {
                     return false;
                 }
                 let inspectable = OptionTrait::unwrap(inspectable_opt);
-                component_value = VariablePropertyTrait::get_property(world, inspectable.inst, self.property);
+                component_value = VariablePropertyTrait::get_property(world, @inspectable.inst, self.property);
             },
             Components::InventoryItem => {
-                let container_opt = InventoryItemComponent::get_component(world, target);
+                let container_opt = InventoryItemComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
             },
             Components::Container => {
-                let container_opt = ContainerComponent::get_component(world, target);
+                let container_opt = ContainerComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
             },
             Components::Player => {
-                let container_opt = PlayerComponent::get_component(world, target);
+                let container_opt = PlayerComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
             },            
             _ => { 
                 // Return false if no match
@@ -130,5 +130,79 @@ pub impl ConditionImpl of ConditionTrait {
                 }
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dojo::{model::ModelStorage};
+    use lore::tests::helpers;
+    use lore::lib::{
+        entity::{EntityImpl},
+        condition::Condition,
+    };
+    use lore::components::{Component, Components,inspectable::{Inspectable, InspectableComponent, ActionMapInspectable, InspectableActions}};
+
+    fn create_test_condition(key: felt252, target: felt252, component: Components, property: ByteArray, operator: Operator, value: felt252) -> Condition {
+        Condition {
+            key,
+            target,
+            component,
+            property,
+            operator,
+            value,
+        }
+    }
+    
+    #[test]
+    fn Condition_test_evaluate_condition() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+        let mut door = EntityImpl::create_entity(world);
+        door.name = "door";
+        world.write_model(@door);
+        let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        inspectable.is_inspectable = true;
+        inspectable.is_visible = true;
+        inspectable.description = array!["A door"];
+        inspectable.action_map = array![
+                ActionMapInspectable {
+                    action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
+                },
+                ActionMapInspectable {
+                    action: "look", inst: 0, action_fn: InspectableActions::ReadRandomDescription,
+                },
+            ];
+        inspectable.store(world);
+        
+        // Test description property (length == 1)
+        let mut condition = create_test_condition(door.inst, door.inst, Components::Inspectable, "description", Operator::Equals, 1);
+        world.write_model(@condition);
+        assert(condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'condition should be true');
+        // Test description property (length == 1) — should fail
+        condition = create_test_condition(door.inst, door.inst, Components::Inspectable, "description", Operator::Equals, 2);
+        world.write_model(@condition);
+        assert(!condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'condition should be false');
+
+        // Test is_inspectable == true (1)
+        condition = create_test_condition(door.inst + 1, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, 1);
+        world.write_model(@condition);
+        assert(condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_inspectable should be true');
+
+        // Test is_inspectable == false (0) — should fail
+        condition = create_test_condition(door.inst + 2, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, 0);
+        world.write_model(@condition);
+        assert(!condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_inspectable should be false');
+
+        // Test is_visible == true (1)
+        condition = create_test_condition(door.inst + 3, door.inst, Components::Inspectable, "is_visible", Operator::Equals, 1);
+        world.write_model(@condition);
+        assert(condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_visible should be true');
+
+        // Test is_visible == false (0) — should fail
+        condition = create_test_condition(door.inst + 4, door.inst, Components::Inspectable, "is_visible", Operator::Equals, 0);
+        world.write_model(@condition);
+        assert(!condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_visible should be false');
+
     }
 }
