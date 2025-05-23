@@ -5,6 +5,7 @@ use lore::{
         entity::{EntityImpl},
         trigger::{TriggerContext, TriggerImpl},
         utils::ByteArrayTraitExt,
+        variable_property::VariablePropertyTrait,
     },
     components::{ 
         inspectable::{InspectableComponent},
@@ -13,6 +14,7 @@ use lore::{
         inventoryItem::{InventoryItemComponent},
         container::{ContainerComponent},
         player::{PlayerComponent},
+        Components,
     },
 };
 
@@ -22,8 +24,8 @@ pub struct Condition {
     #[key]
     pub key: felt252,        // Unique identifier
     pub target: felt252,     // Entity to check (can be optional for global conditions)
-    pub component: ComponentType,  // Which component to check
-    pub property: felt252,   // Which property of the component to check
+    pub component: Components,  // Which component to check
+    pub property: ByteArray,   // Which property of the component to check
     pub operator: Operator,  // How to compare the values
     pub value: felt252,      // Value to compare against
 }
@@ -31,18 +33,8 @@ pub struct Condition {
 #[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
 pub enum Operator {
     Equals,
-    // Implement rest later
-}
-
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
-pub enum ComponentType {
-    Area,
-    Exit,
-    Container,
-    Inspectable,
-    InventoryItem,
-    Player,
-    //etc
+    NotEquals,
+    // Implement more operators later
 }
 
 #[generate_trait]
@@ -52,66 +44,91 @@ pub impl ConditionImpl of ConditionTrait {
         world: WorldStorage,
         context: TriggerContext
     ) -> bool {
-       let target = *self.target;
+        let target = *self.target;
+        let mut component_value: Option<felt252> = Option::None;
+        let mut eval_result: bool = false;
 
         match self.component {
-            ComponentType::Container => {
-                let container_opt = ContainerComponent::get_component(world, target);
+            Components::Area => {
+                let container_opt = AreaComponent::get_component(world, target);
                 if container_opt.is_none() {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-
-                return true;
-                // let is_open = word("is_open");
-                // let can_be_opened = word("is_open");
-
-                // match self.property {
-                //     is_open => {
-                //         let field_value = container.is_open.into();
-                //         return self.compare(field_value);
-                //     },
-                //     can_be_opened => {
-                //         let field_value = container.can_be_opened.into();
-                //         return self.compare(field_value);
-                //     },
-                //     _ => { return false; },
-                // }
+                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
             },
-            ComponentType::Inspectable => {
+            Components::Exit => {
+                let container_opt = ExitComponent::get_component(world, target);
+                if container_opt.is_none() {
+                    return false;
+                }
+                let container = OptionTrait::unwrap(container_opt);
+                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+            },
+            Components::Inspectable => {
                 let inspectable_opt = InspectableComponent::get_component(world, target);
                 if inspectable_opt.is_none() {
                     return false;
                 }
                 let inspectable = OptionTrait::unwrap(inspectable_opt);
-
-                return true;
-
-                // match self.property {
-                //     'is_visible' => {
-                //         let field_value = inspectable.is_visible.into();
-                //         return self.compare(field_value);
-                //     },
-                //     _ => {return false; },
-                // }
+                component_value = VariablePropertyTrait::get_property(world, inspectable.inst, self.property);
             },
-            // Add other components if needed later
-            _ => { return false; },
+            Components::InventoryItem => {
+                let container_opt = InventoryItemComponent::get_component(world, target);
+                if container_opt.is_none() {
+                    return false;
+                }
+                let container = OptionTrait::unwrap(container_opt);
+                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+            },
+            Components::Container => {
+                let container_opt = ContainerComponent::get_component(world, target);
+                if container_opt.is_none() {
+                    return false;
+                }
+                let container = OptionTrait::unwrap(container_opt);
+                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+            },
+            Components::Player => {
+                let container_opt = PlayerComponent::get_component(world, target);
+                if container_opt.is_none() {
+                    return false;
+                }
+                let container = OptionTrait::unwrap(container_opt);
+                component_value = VariablePropertyTrait::get_property(world, container.inst, self.property);
+            },            
+            _ => { 
+                // Return false if no match
+                return false;
+            },
         }
+
+        // Check if the component value is none
+        if component_value.is_none() {
+            return false;
+        }
+
+        // Compare values using the operator
+        eval_result = self.compare(component_value.unwrap());
+        return eval_result;
     }
 
     fn compare(self: @Condition, component_value: felt252) -> bool {
         match self.operator {
-            Operator::Equals => 
-            { if component_value == *self.value {
-                return true;
-            } else {
-                return false;
-            }},
+            Operator::Equals => {
+                if component_value == *self.value {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            Operator::NotEquals => {
+                if component_value != *self.value {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
         }
     }
-}
-
-fn word(s: ByteArray) -> felt252 {
-    ByteArrayTraitExt::to_felt252_word(@s).unwrap()
 }

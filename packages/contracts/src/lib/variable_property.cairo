@@ -7,8 +7,9 @@ use lore::{
         inventoryItem::{InventoryItem,InventoryItemComponent},
         container::{Container, ContainerComponent},
         player::{Player, PlayerComponent},
+        Components,
     },
-    lib::utils::ByteArrayTraitExt,
+    lib::{ utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait}
 };
 
 // ========== VARIABLE PROXY MODEL ==========
@@ -18,7 +19,7 @@ use lore::{
 pub struct ComponentVariable {
     #[key]
     pub key: felt252,
-    pub component_type: ComponentType,
+    pub component_type: Components,
     pub entity_id: felt252,
     pub property_name: ByteArray,
     pub value: felt252,
@@ -31,7 +32,7 @@ pub struct ComponentVariable {
 pub struct PropertyRegistry {
     #[key]
     pub key: felt252,
-    pub component_type: ComponentType,
+    pub component_type: Components,
     pub properties: Array<ComponentProperty>,
 }
 
@@ -80,54 +81,55 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         world.write_model(@registry);
     }
 
-   fn get_property(
+    fn get_property(
         world: WorldStorage,
         key: felt252,
-        property_name: ByteArray
-    ) -> felt252 {        
+        property_name: @ByteArray
+    ) -> Option<felt252> {
         
         let property_registry: PropertyRegistry = world.read_model(key);
         let none_value: felt252 = 999;
-        let mut property_value: felt252 = none_value;
+        let mut property_value: felt252 = 0;
 
-        match property_registry.component_type {
-            ComponentType::Area => {
+        match property_registry.component_type.clone() {
+            Components::Area => {
+                let component: Area = world.read_model(key);
+                let prop_text = property_name.clone();
+                property_value = VariablePropertyHelperTrait::get_area_property(component, prop_text, property_registry);
+            },
+            Components::Exit => {
                 let component: Exit = world.read_model(key);
                 let prop_text = property_name.clone();
-                property_value = Self::get_exit_property(component, prop_text, property_registry);
+                property_value = VariablePropertyHelperTrait::get_exit_property(component, prop_text, property_registry);
+            },
+            Components::Inspectable => {
+                let component: Inspectable = world.read_model(key);
+                let prop_text = property_name.clone();
+                property_value = VariablePropertyHelperTrait::get_inspectable_property(component, prop_text, property_registry);
+            },
+            Components::InventoryItem => {
+                let component: InventoryItem = world.read_model(key);
+                let prop_text = property_name.clone();
+                property_value = VariablePropertyHelperTrait::get_inventory_item_property(component, prop_text, property_registry);
+            },
+            Components::Container => {
+                let component: Container = world.read_model(key);
+                let prop_text = property_name.clone();
+                property_value = VariablePropertyHelperTrait::get_container_property(component, prop_text, property_registry);
+            },
+            Components::Player => {
+                let component: Player = world.read_model(key);
+                let prop_text = property_name.clone();
+                property_value = VariablePropertyHelperTrait::get_player_property(component, prop_text, property_registry);
             },
             _ => {
-                // let component: Exit = world.read_model(key);
-                // property_value = Self::get_exit_property(component, property_name, property_registry);
+                // Do nothing
             }
- 
         }
-        return property_value;
-    }
-
-    fn get_exit_property(component: Exit, name: ByteArray, property: PropertyRegistry) -> felt252 {
-        let is_exit: ByteArray = "is_exit";
-        let is_enterable: ByteArray = "is_enterable";
-        let leads_to: ByteArray = "leads_to";        
-        let direction_type: ByteArray = "direction_type";
-        let mut property_value: felt252 = 0;
-        let not_property_value: felt252 = 999;
-
-        for property in property.properties {
-            if property.name == name {
-                //property_value = property.value;
-                break;
-            }
-        };
-
-        return property_value;
-
-        // match name {
-        //     name = is_exit => (component.is_exit.into()),
-        //     is_enterable =>(component.is_enterable.into()),
-        //     leads_to => (component.leads_to),
-        //     direction_type => (ByteArrayTraitExt::to_felt252_word(@ByteArrayTraitExt::byte_array_from_direction(component.direction_type)).into()),
-        //     _ => 999,
-        // }
+        if property_value == none_value {
+            return Option::None;
+        } else {
+            return Option::Some(property_value);
+        }
     }
 }

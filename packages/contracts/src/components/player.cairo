@@ -5,9 +5,10 @@ use starknet::ContractAddress;
 use lore::{
     constants::errors::Error, 
     lib::{entity::{EntityImpl, Entity}, a_lexer::Command,
-    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait}},
+    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait}},
     components::{
-        Component, inspectable::{Inspectable, InspectableImpl},
+        Component, Components,
+        inspectable::{Inspectable, InspectableImpl},
         container::{Container, ContainerComponent},
     },
 };
@@ -175,23 +176,13 @@ pub impl PlayerComponent of Component<Player> {
         // Register component properties
         let mut props: Array<ComponentProperty> = ArrayTrait::new();
         props.append(ComponentProperty {
-            name: "address",
-            property_type: PropertyType::ContractAddress,
-            access_flags: PropertyAccess::ReadOnly,
-        });
-        props.append(ComponentProperty {
             name: "location",
             property_type: PropertyType::Felt252,
             access_flags: PropertyAccess::ReadWrite,
         });
-        props.append(ComponentProperty {
-            name: "use_debug",
-            property_type: PropertyType::Boolean,
-            access_flags: PropertyAccess::ReadWrite,
-        });
         let registry = PropertyRegistry {
             key: player.inst,
-            component_type: ComponentType::Player,
+            component_type: Components::Player,
             properties: props,
         };
         VariablePropertyTrait::register_component_properties(world, registry);

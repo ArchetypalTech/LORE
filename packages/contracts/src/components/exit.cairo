@@ -6,9 +6,9 @@ use lore::{
     lib::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
         utils::ByteArrayTraitExt,
-        variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait},
+        variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait},
     },
-    components::area::{AreaComponent},
+    components::{Components, area::{AreaComponent}},
 };
 
 use lore::constants::constants::Direction;
@@ -98,7 +98,7 @@ pub impl ExitComponent of Component<Exit> {
         });
         let registry = PropertyRegistry {
             key: exit.inst,
-            component_type: ComponentType::Exit,
+            component_type: Components::Exit,
             properties: props,
         };
         VariablePropertyTrait::register_component_properties(world, registry);

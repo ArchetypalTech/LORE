@@ -19,6 +19,7 @@ pub mod lib {
     pub mod trigger;
     pub mod condition;
     pub mod variable_property;
+    pub mod variable_property_helper;
 }
 
 #[cfg(test)]

@@ -3,10 +3,10 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 use lore::{
     constants::errors::Error,
     lib::{entity::{Entity, EntityImpl}, random, a_lexer::{Command, Token},
-    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait}},
+    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait}},
 };
 
-use super::{Component, player::{Player, PlayerImpl}};
+use super::{Component, Components, player::{Player, PlayerImpl}};
 
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
 pub enum InspectableActions {
@@ -116,7 +116,7 @@ pub impl InspectableComponent of Component<Inspectable> {
         });
         let registry = PropertyRegistry {
             key: inspectable.inst,
-            component_type: ComponentType::Inspectable,
+            component_type: Components::Inspectable,
             properties: props,
         };
         VariablePropertyTrait::register_component_properties(world, registry);

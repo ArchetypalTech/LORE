@@ -5,11 +5,11 @@ use lore::{
     lib::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
         utils::ByteArrayTraitExt,
-        variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait},
+        variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait},
     },
     components::{area::{AreaComponent}, container::{Container, ContainerComponent, ContainerImpl}},
 };
-use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
+use super::{Component, Components, player::{Player, PlayerImpl, PlayerTrait}};
 
 
 #[derive(Clone, Drop, Serde)]
@@ -115,7 +115,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         });
         let registry = PropertyRegistry {
             key: inventory_item.inst,
-            component_type: ComponentType::InventoryItem,
+            component_type: Components::InventoryItem,
             properties: props,
         };
         VariablePropertyTrait::register_component_properties(world, registry);

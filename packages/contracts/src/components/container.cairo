@@ -3,9 +3,9 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     constants::errors::Error, components::{inventoryItem::InventoryItem},
     lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
-    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait}},
+    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait}},
 };
-use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
+use super::{Component, Components,player::{Player, PlayerImpl, PlayerTrait}};
 
 #[derive(Clone, Drop, Serde, Introspect)]
 #[dojo::model]
@@ -278,7 +278,7 @@ pub impl ContainerComponent of Component<Container> {
         });
         let registry = PropertyRegistry {
             key: container.inst,
-            component_type: ComponentType::Container,
+            component_type: Components::Container,
             properties: props,
         };
         VariablePropertyTrait::register_component_properties(world, registry);

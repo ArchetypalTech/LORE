@@ -1,8 +1,8 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{constants::{errors::Error}};
-use lore::components::{Component, player::Player};
+use lore::components::{Component, Components, player::Player};
 use lore::lib::{entity::{EntityImpl}, a_lexer::{Command}, 
-variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, ComponentType, VariablePropertyTrait}};
+variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait}};
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
 #[dojo::model]
@@ -40,7 +40,7 @@ pub impl AreaComponent of Component<Area> {
         });
         let registry = PropertyRegistry {
             key: area.inst,
-            component_type: ComponentType::Area,
+            component_type: Components::Area,
             properties: props,
         };
         VariablePropertyTrait::register_component_properties(world, registry);
