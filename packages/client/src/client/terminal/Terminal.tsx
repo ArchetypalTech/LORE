@@ -15,6 +15,7 @@ export default function Terminal() {
 
 	const terminalFormRef = useRef<HTMLFormElement>(null);
 	const terminalInputRef = useRef<HTMLInputElement>(null);
+	const textAnchorRef = useRef<HTMLInputElement>(null);
 
 	const {
 		status: { status },
@@ -24,7 +25,7 @@ export default function Terminal() {
 	useEffect(() => {
 		// Focus input on mount
 		if (terminalInputRef.current) {
-			// terminalInputRef.current.focus();
+			terminalInputRef.current.focus();
 		}
 		// Set timeout for connection status
 		const timeout = setTimeout(() => {
@@ -96,8 +97,11 @@ export default function Terminal() {
 
 		setInputValue("");
 		setInputHistory([...inputHistory, command]);
+		
+		if(textAnchorRef.current) textAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-		await sendCommand(command);
+		setTimeout(async () => await sendCommand(command), 1000)
+
 
 		if (terminalInputRef.current) {
 			terminalInputRef.current.disabled = false;
@@ -107,38 +111,50 @@ export default function Terminal() {
 
 	const focusInput = () => {
 		if (terminalInputRef.current) {
-			// terminalInputRef.current.focus();
+			terminalInputRef.current.focus();
 		}
 	};
 
 	return (
-		<div className="flex h-full w-full items-center justify-center font-berkeley">
-			<form
-				ref={terminalFormRef}
-				onSubmit={handleSubmit}
-				onClick={focusInput}
-				aria-label="Terminal"
-				role=""
-				id="terminal"
-				className="buzzing h-full w-full overflow-y-auto rounded-md border bg-black p-4 text-green-500"
-				style={{
-					borderColor:
-						status === "error" ? "var(--terminal-error)" : "var(--terminal-system)",
-				}}
-			>
-				<div id="scroller" className="bottom-0 flex w-full flex-col items-end">
-					{terminalContent.map((content, index) => (
-						<TerminalLine key={index} content={content} />
-					))}
+		<div className="flex h-full w-full items-center justify-center font-primary">
+			
+				<form
+					ref={terminalFormRef}
+					onSubmit={handleSubmit}
+					onClick={focusInput}
+					aria-label="Terminal"
+					role=""
+					id="terminal"
+					className="buzzing h-full w-full rounded-md overflow-y-auto border bg-black text-green-500"
+					style={{
+						borderColor:
+							status === "error" ? "var(--terminal-error)" : "var(--terminal-system)",
+					}}
+				>
+					<div className="screen relative">
+						<div id="scroller" className="flex w-full flex-col items-end p-4">
+							{terminalContent.map((content, index) => (
+								<TerminalLine key={index} content={content} />
+							))}
 
-					<Typewriter />
+							<Typewriter />
 
-					{status === "inputEnabled" && (
-						<div id="scroller" className="flex w-full flex-row gap-2">
+							{status === "inputEnabled" && (
+								<div id="scroller" className="flex w-full flex-row gap-2">
+									<div
+										ref={textAnchorRef}
+										id="input-anchor"
+										className="font-secondary"
+										/>
+								</div>
+							)}
+						</div>
+						<div className="sticky text-[1rem] bottom-12 h-0.5 w-full backdrop-blur-lg"></div>
+						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background">
 							<span>&#x3e;</span>
 							<input
 								id="terminal-input"
-								className="terminal-line system w-full border-0 bg-transparent"
+								className="terminal-line system w-full border-0 bg-transparent px-2"
 								type="text"
 								value={inputValue}
 								onChange={(e) => setInputValue(e.target.value)}
@@ -148,14 +164,10 @@ export default function Terminal() {
 								autoComplete="off"
 								autoCorrect="off"
 							/>
-							<div
-								id="input-anchor"
-								style={{ overflowAnchor: "auto", height: "1px" }}
-							/>
 						</div>
-					)}
-				</div>
-			</form>
+					</div>
+				</form>
+
 		</div>
 	);
 }

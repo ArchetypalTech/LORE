@@ -9,7 +9,7 @@ body,
 #root {
 	@apply relative w-screen h-screen;
 	text-rendering: optimizeLegibility;
-	@apply font-sans antialiased;
+	@apply font-primary antialiased;
 }
 
 #client-root {
@@ -19,5 +19,12 @@ body,
 #terminal {
 	@apply bg-black/90;
 }
+.theme-primary-background {
+	@apply bg-black;
+}	
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+input {
+	@apply font-secondary;
+}
