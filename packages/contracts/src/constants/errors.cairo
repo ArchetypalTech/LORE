@@ -19,4 +19,7 @@ pub enum Error {
     NameTooLong,
     FailedToUpdateTriggerIndex,
     FailedToRemoveTriggerIndex,
+    // Effects
+    EffectFailed,
+    EffectNotFound,
 }

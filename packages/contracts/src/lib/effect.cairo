@@ -17,7 +17,7 @@ use lore::{
     },
 };
 
-#[derive(Clone, Drop, Serde, Debug)]
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
 #[dojo::model]
 pub struct Effect {
     #[key]
@@ -28,19 +28,90 @@ pub struct Effect {
     pub value: felt252,            // New value to set
 }
 
+// A registry-style effect template
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
+pub struct EffectTemplate {
+    #[key]
+    pub key: felt252,
+    pub name: ByteArray,
+    pub effect_type: EffectType,
+    pub required_parameters: Array<ParameterDefinition>,
+    pub optional_parameters: Array<ParameterDefinition>,
+}
+
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
+pub struct ParameterDefinition {
+    pub name: ByteArray,
+    pub param_type: ParameterType,
+    pub description: ByteArray,
+}
+
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
+pub enum ParameterType {
+    Boolean,
+    Integer,
+    Felt252,
+    Direction,
+    ContractAddress,
+    String,
+    ByteArray,
+    Enum,
+    EntityReference,
+}
+
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
+pub enum EffectType {
+    ModifyComponent,
+    TriggerEvent,
+    CustomLogic,
+}
+
+
+// Runtime tracking for debugging
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
+#[dojo::model]
+pub struct EffectExecution {
+    #[key]
+    pub key: felt252,
+    pub effect_key: felt252,
+    pub timestamp: u64,
+    pub parameters: Array<EffectParameter>,
+    pub status: ExecutionStatus,
+    pub error_message: ByteArray,
+}
+
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
+pub enum ExecutionStatus {
+    Success,
+    Failure,
+}
+
+#[derive(Clone, Drop, Serde, Debug, Introspect)]
+pub struct EffectParameter {
+    pub name: ByteArray,
+    pub value: felt252,
+}
+
 #[generate_trait]
 pub impl EffectImpl of EffectTrait {
     fn apply_effect(
         self: @Effect,
         mut world: WorldStorage,
-        context: TriggerContext
+        context: TriggerContext,
     ) -> bool {
-        let target = *self.target;
+        let zero: felt252 = 0;
+        // Resolve target: use explicit target, fallback to context
+        let actual_target = if self.target == @zero {
+            @context.target1
+        } else {
+            self.target
+        };
+
         let mut success = false;
 
         match self.component {
             Components::Area => {
-                let area_opt = AreaComponent::get_component(world, target);
+                let area_opt = AreaComponent::get_component(world, *actual_target);
                 if area_opt.is_none() {
                     return false;
                 }
@@ -51,10 +122,11 @@ pub impl EffectImpl of EffectTrait {
                     self.component.clone(),
                     self.property.clone(),
                     *self.value,
+                    context
                 );
             },
             Components::Exit => {
-                let exit_opt = ExitComponent::get_component(world, target);
+                let exit_opt = ExitComponent::get_component(world, *actual_target);
                 if exit_opt.is_none() {
                     return false;
                 }
@@ -65,10 +137,11 @@ pub impl EffectImpl of EffectTrait {
                     self.component.clone(),
                     self.property.clone(),
                     *self.value,
+                    context
                 );
             },
             Components::Inspectable => {
-                let inspect_opt = InspectableComponent::get_component(world, target);
+                let inspect_opt = InspectableComponent::get_component(world, *actual_target);
                 if inspect_opt.is_none() {
                     return false;
                 }
@@ -79,10 +152,11 @@ pub impl EffectImpl of EffectTrait {
                     self.component.clone(),
                     self.property.clone(),
                     *self.value,
+                    context
                 );
             },
             Components::InventoryItem => {
-                let item_opt = InventoryItemComponent::get_component(world, target);
+                let item_opt = InventoryItemComponent::get_component(world, *actual_target);
                 if item_opt.is_none() {
                     return false;
                 }
@@ -93,10 +167,11 @@ pub impl EffectImpl of EffectTrait {
                     self.component.clone(),
                     self.property.clone(),
                     *self.value,
+                    context
                 );
             },
             Components::Container => {
-                let cont_opt = ContainerComponent::get_component(world, target);
+                let cont_opt = ContainerComponent::get_component(world, *actual_target);
                 if cont_opt.is_none() {
                     return false;
                 }
@@ -107,10 +182,11 @@ pub impl EffectImpl of EffectTrait {
                     self.component.clone(),
                     self.property.clone(),
                     *self.value,
+                    context
                 );
             },
             Components::Player => {
-                let player_opt = PlayerComponent::get_component(world, target);
+                let player_opt = PlayerComponent::get_component(world, *actual_target);
                 if player_opt.is_none() {
                     return false;
                 }
@@ -121,24 +197,28 @@ pub impl EffectImpl of EffectTrait {
                     self.component.clone(),
                     self.property.clone(),
                     *self.value,
+                    context
                 );
             },
-            _ => { return false; },
+            _ => {
+                return false;
+            },
         }
 
         success
     }
 
     fn update_property(
-        mut world: WorldStorage,
-        key: @felt252,
-        component_type: Components,
-        property: ByteArray,
-        value: felt252
+    mut world: WorldStorage,
+    key: @felt252,
+    component_type: Components,
+    property: ByteArray,
+    value: felt252,
+    context: TriggerContext
     ) -> bool {
-        let (_current_value_opt, access_opt) = VariablePropertyTrait::get_property(@world, key, @property);
+        let (_current_value_opt, access_opt) =
+            VariablePropertyTrait::get_property(@world, key, @property);
 
-        // If we cannot access or it's write-only, block it
         if access_opt.is_none() {
             return false;
         }
@@ -146,21 +226,21 @@ pub impl EffectImpl of EffectTrait {
         let access = access_opt.unwrap();
         match access {
             PropertyAccess::WriteOnly | PropertyAccess::ReadWrite => {
-                // Use the ComponentVariable proxy model (if needed)
                 let comp_var = ComponentVariable {
                     key: key.clone(),
                     component_type,
                     entity_id: *key,
                     property_name: property.clone(),
                     value,
-                    last_updated: 0, // TODO: add proper timestamp logic if needed
+                    last_updated: 0, // TODO: set timestamp using context later
                 };
 
-                // Write to model (simulates side effect on property)
                 world.write_model(@comp_var);
                 return true;
             },
-            PropertyAccess::ReadOnly => { return false; },
+            PropertyAccess::ReadOnly => {
+                return false;
+            },
         }
     }
 }

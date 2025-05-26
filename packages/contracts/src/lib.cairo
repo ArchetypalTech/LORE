@@ -21,6 +21,7 @@ pub mod lib {
     pub mod variable_property;
     pub mod variable_property_helper;
     pub mod effect;
+    pub mod actions;
 }
 
 #[cfg(test)]
