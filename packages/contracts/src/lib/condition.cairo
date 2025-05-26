@@ -5,7 +5,7 @@ use lore::{
         entity::{EntityImpl},
         trigger::{TriggerContext, TriggerImpl},
         utils::ByteArrayTraitExt,
-        variable_property::VariablePropertyTrait,
+        variable_property::{VariablePropertyTrait, PropertyAccess},
     },
     components::{ 
         inspectable::{InspectableComponent},
@@ -54,16 +54,18 @@ pub impl ConditionImpl of ConditionTrait {
                 if container_opt.is_none() {
                     return false;
                 }
-                let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
+                let area = OptionTrait::unwrap(container_opt);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @area.inst, self.property);
+                component_value = b_component_value;
             },
             Components::Exit => {
                 let container_opt = ExitComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
-                let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
+                let exit = OptionTrait::unwrap(container_opt);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @exit.inst, self.property);
+                component_value = b_component_value;
             },
             Components::Inspectable => {
                 let inspectable_opt = InspectableComponent::get_component(*world, target);
@@ -71,15 +73,17 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let inspectable = OptionTrait::unwrap(inspectable_opt);
-                component_value = VariablePropertyTrait::get_property(world, @inspectable.inst, self.property);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @inspectable.inst, self.property);
+                component_value = b_component_value;
             },
             Components::InventoryItem => {
                 let container_opt = InventoryItemComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
-                let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
+                let inventoryItem = OptionTrait::unwrap(container_opt);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @inventoryItem.inst, self.property);
+                component_value = b_component_value;
             },
             Components::Container => {
                 let container_opt = ContainerComponent::get_component(*world, target);
@@ -87,15 +91,17 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @container.inst, self.property);
+                component_value = b_component_value;
             },
             Components::Player => {
                 let container_opt = PlayerComponent::get_component(*world, target);
                 if container_opt.is_none() {
                     return false;
                 }
-                let container = OptionTrait::unwrap(container_opt);
-                component_value = VariablePropertyTrait::get_property(world, @container.inst, self.property);
+                let player = OptionTrait::unwrap(container_opt);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @player.inst, self.property);
+                component_value = b_component_value;
             },            
             _ => { 
                 // Return false if no match
