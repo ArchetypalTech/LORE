@@ -1,3 +1,4 @@
+use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     components::{ 
         area::{Area, AreaComponent},
@@ -9,9 +10,11 @@ use lore::{
     },
     lib::{ utils::ByteArrayTraitExt, variable_property::{PropertyRegistry, PropertyAccess} },
 };
+use core::traits::{Into};
 
 #[generate_trait]
 pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
+    // GET PROPERTIES
     fn get_area_property(component: Area, name: @ByteArray, property: @PropertyRegistry) -> (Option<felt252>, Option<PropertyAccess>) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
@@ -158,5 +161,171 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
             }
         };
         return (value, access);
+    }
+
+    // SET PROPERTIES
+    fn set_area_property(mut component: Area, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> bool {
+        // Define expected property names
+        let is_area: ByteArray = "is_area";
+        let mut success: bool = false;
+
+        for prop in property.properties.clone() {
+            if prop.name == name.clone() {
+                if name == @is_area {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.is_area = new_var_value;
+                    success = true;
+                }
+            }
+            world.write_model(@component);
+            break;
+        };
+        return success;
+    }
+
+    fn set_exit_property(mut component: Exit, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> bool {
+        // Define expected property names
+        let is_exit: ByteArray = "is_exit";
+        let is_enterable: ByteArray = "is_enterable";
+        let leads_to: ByteArray = "leads_to";        
+        let direction_type: ByteArray = "direction_type";
+        let mut success: bool = false;
+
+        for prop in property.properties.clone() {
+            if prop.name == name.clone() {
+                if name == @is_exit {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.is_exit = new_var_value;
+                    success = true;
+                } else if name == @is_enterable {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.is_enterable = new_var_value;
+                    success = true;
+                } else if name == @leads_to {
+                    component.leads_to = *new_value;
+                    success = true;
+                } else if name == @direction_type {
+                    let new_dir = ByteArrayTraitExt::direction_from_felt252(*new_value);
+                    component.direction_type = new_dir;
+                    success = true;
+                }
+                world.write_model(@component);
+                break;
+            }
+        };
+        return success;
+    }
+
+    fn set_inspectable_property(mut component: Inspectable, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> bool {
+        // Define expected property names
+        let is_visible: ByteArray = "is_visible";
+        let is_inspectable: ByteArray = "is_inspectable";
+        let description: ByteArray = "description";
+        let mut success: bool = false;
+
+        for prop in property.properties.clone() {
+            if prop.name == name.clone() {
+                if name == @is_visible {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.is_visible = new_var_value;
+                    success = true;
+                } else if name == @is_inspectable {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.is_inspectable = new_var_value;
+                    success = true;
+                } else if name == @description {
+                    component.description.append(ByteArrayTraitExt::byte_array_from_felt252(*new_value));
+                    success = true;
+                }
+                world.write_model(@component);
+                break;
+            }
+        };
+        return success;
+    }
+
+    fn set_inventory_item_property(mut component: InventoryItem, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> bool {
+        // Define expected property names
+        let owner_id: ByteArray = "owner_id";
+        let can_be_picked_up: ByteArray = "can_be_picked_up";
+        let can_go_in_container: ByteArray = "can_go_in_container";
+        let mut success: bool = false;
+
+        for prop in property.properties.clone() {
+            if prop.name == name.clone() {
+                if name == @owner_id {
+                    component.owner_id = *new_value;
+                    success = true;
+                } else if name == @can_be_picked_up {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.can_be_picked_up = new_var_value;
+                    success = true;
+                } else if name == @can_go_in_container {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.can_go_in_container = new_var_value;
+                    success = true;
+                }
+                world.write_model(@component);
+                break;
+            }
+        };
+        return success;
+    }
+
+    fn set_container_property(mut component: Container, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> bool {
+        // Define expected property names
+        let is_container: ByteArray = "is_container";
+        let can_be_opened: ByteArray = "can_be_opened";
+        let can_receive_items: ByteArray = "can_receive_items";
+        let is_open: ByteArray = "is_open";
+        let num_slots: ByteArray = "num_slots";
+        let mut success: bool = false;
+
+        for prop in property.properties.clone() {
+            if prop.name == name.clone() {
+                if name == @is_container {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.is_container = new_var_value;
+                    success = true;
+                } else if name == @can_be_opened {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.can_be_opened = new_var_value;
+                    success = true;
+                } else if name == @can_receive_items {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.can_receive_items = new_var_value;
+                    success = true;
+                } else if name == @is_open {
+                    let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                    component.is_open = new_var_value;
+                    success = true;
+                } else if name == @num_slots {
+                    let new_var_value = ByteArrayTraitExt::u32_from_felt252(*new_value);
+                    component.num_slots = new_var_value;
+                    success = true;
+                }
+                world.write_model(@component);
+                break;
+            }
+        };
+        return success;
+    }
+
+    fn set_player_property(mut component: Player, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> bool {
+        // Define expected property names
+        let location: ByteArray = "location";
+        let mut success: bool = false;
+
+        for prop in property.properties.clone() {
+            if prop.name == name.clone() {
+                if name == @location {
+                    component.location = *new_value;
+                    success = true;
+                }
+                world.write_model(@component);
+                break;
+            }
+        };
+        return success;
     }
 }

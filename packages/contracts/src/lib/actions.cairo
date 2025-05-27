@@ -8,11 +8,10 @@ use lore::{
         inventoryItem::{InventoryItemComponent},
         container::{ContainerComponent},
         player::{PlayerComponent},
-        Components,
     },
     lib::{
         utils::ByteArrayTraitExt,
-        variable_property::{VariablePropertyTrait, PropertyAccess, ComponentVariable, VariablePropertyImp},
+        variable_property::{VariablePropertyImp},
         trigger::{Trigger,TriggerContext, TriggerImpl},
         condition::{Condition, ConditionImpl},
         effect::{Effect, EffectImpl},

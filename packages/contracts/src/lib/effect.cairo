@@ -12,7 +12,7 @@ use lore::{
     },
     lib::{
         utils::ByteArrayTraitExt,
-        variable_property::{VariablePropertyTrait, PropertyAccess, ComponentVariable},
+        variable_property::{VariablePropertyImp, PropertyAccess, ComponentVariable},
         trigger::TriggerContext
     },
 };
@@ -116,14 +116,15 @@ pub impl EffectImpl of EffectTrait {
                     return false;
                 }
                 let mut area = area_opt.unwrap();
-                success = Self::update_property(
-                    world,
-                    @area.inst,
-                    self.component.clone(),
-                    self.property.clone(),
-                    *self.value,
-                    context
-                );
+                success = VariablePropertyImp::set_property(@world, @area.inst, self.property, self.value);
+                // success = Self::update_property(
+                //     world,
+                //     @area.inst,
+                //     self.component.clone(),
+                //     self.property.clone(),
+                //     *self.value,
+                //     context
+                // );
             },
             Components::Exit => {
                 let exit_opt = ExitComponent::get_component(world, *actual_target);
@@ -131,14 +132,15 @@ pub impl EffectImpl of EffectTrait {
                     return false;
                 }
                 let mut exit = exit_opt.unwrap();
-                success = Self::update_property(
-                    world,
-                    @exit.inst,
-                    self.component.clone(),
-                    self.property.clone(),
-                    *self.value,
-                    context
-                );
+                success = VariablePropertyImp::set_property(@world, @exit.inst, self.property, self.value);
+                // success = Self::update_property(
+                //     world,
+                //     @exit.inst,
+                //     self.component.clone(),
+                //     self.property.clone(),
+                //     *self.value,
+                //     context
+                // );
             },
             Components::Inspectable => {
                 let inspect_opt = InspectableComponent::get_component(world, *actual_target);
@@ -146,14 +148,15 @@ pub impl EffectImpl of EffectTrait {
                     return false;
                 }
                 let mut inspectable = inspect_opt.unwrap();
-                success = Self::update_property(
-                    world,
-                    @inspectable.inst,
-                    self.component.clone(),
-                    self.property.clone(),
-                    *self.value,
-                    context
-                );
+                success = VariablePropertyImp::set_property(@world, @inspectable.inst, self.property, self.value);
+                // success = Self::update_property(
+                //     world,
+                //     @inspectable.inst,
+                //     self.component.clone(),
+                //     self.property.clone(),
+                //     *self.value,
+                //     context
+                // );
             },
             Components::InventoryItem => {
                 let item_opt = InventoryItemComponent::get_component(world, *actual_target);
@@ -161,14 +164,15 @@ pub impl EffectImpl of EffectTrait {
                     return false;
                 }
                 let mut item = item_opt.unwrap();
-                success = Self::update_property(
-                    world,
-                    @item.inst,
-                    self.component.clone(),
-                    self.property.clone(),
-                    *self.value,
-                    context
-                );
+                success = VariablePropertyImp::set_property(@world, @item.inst, self.property, self.value);
+                // success = Self::update_property(
+                //     world,
+                //     @item.inst,
+                //     self.component.clone(),
+                //     self.property.clone(),
+                //     *self.value,
+                //     context
+                // );
             },
             Components::Container => {
                 let cont_opt = ContainerComponent::get_component(world, *actual_target);
@@ -176,14 +180,15 @@ pub impl EffectImpl of EffectTrait {
                     return false;
                 }
                 let mut container = cont_opt.unwrap();
-                success = Self::update_property(
-                    world,
-                    @container.inst,
-                    self.component.clone(),
-                    self.property.clone(),
-                    *self.value,
-                    context
-                );
+                success = VariablePropertyImp::set_property(@world, @container.inst, self.property, self.value);
+                // success = Self::update_property(
+                //     world,
+                //     @container.inst,
+                //     self.component.clone(),
+                //     self.property.clone(),
+                //     *self.value,
+                //     context
+                // );
             },
             Components::Player => {
                 let player_opt = PlayerComponent::get_component(world, *actual_target);
@@ -191,14 +196,15 @@ pub impl EffectImpl of EffectTrait {
                     return false;
                 }
                 let mut player = player_opt.unwrap();
-                success = Self::update_property(
-                    world,
-                    @player.inst,
-                    self.component.clone(),
-                    self.property.clone(),
-                    *self.value,
-                    context
-                );
+                success = VariablePropertyImp::set_property(@world, @player.inst, self.property, self.value);
+                // success = Self::update_property(
+                //     world,
+                //     @player.inst,
+                //     self.component.clone(),
+                //     self.property.clone(),
+                //     *self.value,
+                //     context
+                // );
             },
             _ => {
                 return false;
@@ -217,7 +223,7 @@ pub impl EffectImpl of EffectTrait {
     context: TriggerContext
     ) -> bool {
         let (_current_value_opt, access_opt) =
-            VariablePropertyTrait::get_property(@world, key, @property);
+            VariablePropertyImp::get_property(@world, key, @property);
 
         if access_opt.is_none() {
             return false;

@@ -5,7 +5,7 @@ use lore::{
         entity::{EntityImpl},
         trigger::{TriggerContext, TriggerImpl},
         utils::ByteArrayTraitExt,
-        variable_property::{VariablePropertyTrait, PropertyAccess},
+        variable_property::{VariablePropertyTrait},
     },
     components::{ 
         inspectable::{InspectableComponent},

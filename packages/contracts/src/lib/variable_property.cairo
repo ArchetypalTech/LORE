@@ -95,49 +95,98 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
             Components::Area => {
                 let component: Area = world.read_model(*key);
                 let prop_text = property_name.clone();
-                let (b_property_value, b_access) = VariablePropertyHelperTrait::get_area_property(component, @prop_text, @property_registry);
-                property_value = b_property_value;
-                access = b_access;
+                let (property_value_opt, access_opt) = VariablePropertyHelperTrait::get_area_property(component, @prop_text, @property_registry);
+                property_value = property_value_opt;
+                access = access_opt;
             }, 
             Components::Exit => {
                 let component: Exit = world.read_model(*key);
                 let prop_text = property_name.clone();
-                let (b_property_value, b_access) = VariablePropertyHelperTrait::get_exit_property(component, @prop_text, @property_registry);
-                property_value = b_property_value;
-                access = b_access;
+                let (property_value_opt, access_opt) = VariablePropertyHelperTrait::get_exit_property(component, @prop_text, @property_registry);
+                property_value = property_value_opt;
+                access = access_opt;
             },
             Components::Inspectable => {
                 let component: Inspectable = world.read_model(*key);
                 let prop_text = property_name.clone();
-                let (b_property_value, b_access) = VariablePropertyHelperTrait::get_inspectable_property(component, @prop_text, @property_registry);
-                property_value = b_property_value;
-                access = b_access;
+                let (property_value_opt, access_opt) = VariablePropertyHelperTrait::get_inspectable_property(component, @prop_text, @property_registry);
+                property_value = property_value_opt;
+                access = access_opt;
             },
             Components::InventoryItem => {
                 let component: InventoryItem = world.read_model(*key);
                 let prop_text = property_name.clone();
-                let (b_property_value, b_access) = VariablePropertyHelperTrait::get_inventory_item_property(component, @prop_text, @property_registry);
-                property_value = b_property_value;
-                access = b_access;
+                let (property_value_opt, access_opt) = VariablePropertyHelperTrait::get_inventory_item_property(component, @prop_text, @property_registry);
+                property_value = property_value_opt;
+                access = access_opt;
             },
             Components::Container => {
                 let component: Container = world.read_model(*key);
                 let prop_text = property_name.clone();
-                let (b_property_value, b_access) = VariablePropertyHelperTrait::get_container_property(component, @prop_text, @property_registry);
-                property_value = b_property_value;
-                access = b_access;
+                let (property_value_opt, access_opt) = VariablePropertyHelperTrait::get_container_property(component, @prop_text, @property_registry);
+                property_value = property_value_opt;
+                access = access_opt;
             },
             Components::Player => {
                 let component: Player = world.read_model(*key);
                 let prop_text = property_name.clone();
-                let (b_property_value, b_access) = VariablePropertyHelperTrait::get_player_property(component, @prop_text, @property_registry);
-                property_value = b_property_value;
-                access = b_access;
+                let (property_value_opt, access_opt) = VariablePropertyHelperTrait::get_player_property(component, @prop_text, @property_registry);
+                property_value = property_value_opt;
+                access = access_opt;
             },
             _ => {
                 // Do nothing
             }
         }
         return (property_value, access);
+    }
+
+    fn set_property(
+        mut world: @WorldStorage,
+        key: @felt252,
+        property_name: @ByteArray,
+        new_value: @felt252,
+        
+    ) -> bool {
+        let mut property_registry: PropertyRegistry = world.read_model(*key);
+        let mut success: bool = false;
+
+        match property_registry.component_type.clone() {
+            Components::Area => {
+                let component: Area = world.read_model(*key);
+                let prop_text = property_name.clone();
+                success = VariablePropertyHelperTrait::set_area_property(component, *world, @prop_text, @property_registry, new_value);
+                
+            },
+            Components::Exit => {
+                let component: Exit = world.read_model(*key);
+                let prop_text = property_name.clone();
+                success = VariablePropertyHelperTrait::set_exit_property(component, *world, @prop_text, @property_registry, new_value);
+            },
+            Components::Inspectable => {
+                let component: Inspectable = world.read_model(*key);
+                let prop_text = property_name.clone();
+                success = VariablePropertyHelperTrait::set_inspectable_property(component, *world, @prop_text, @property_registry, new_value);
+            },
+            Components::InventoryItem => {
+                let component: InventoryItem = world.read_model(*key);
+                let prop_text = property_name.clone();
+                success = VariablePropertyHelperTrait::set_inventory_item_property(component, *world, @prop_text, @property_registry, new_value);
+            },
+            Components::Container => {
+                let component: Container = world.read_model(*key);
+                let prop_text = property_name.clone();
+                success = VariablePropertyHelperTrait::set_container_property(component, *world, @prop_text, @property_registry, new_value);
+            },
+            Components::Player => {
+                let component: Player = world.read_model(*key);
+                let prop_text = property_name.clone();
+                success = VariablePropertyHelperTrait::set_player_property(component, *world, @prop_text, @property_registry, new_value);
+            },
+            _ => { 
+                // Do nothing 
+            }
+        }
+        return success;
     }
 }
