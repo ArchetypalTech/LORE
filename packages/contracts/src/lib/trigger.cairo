@@ -1,6 +1,17 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 
-use lore::{constants::errors::Error, lib::{entity::{Entity, EntityImpl}}};
+use lore::{
+    components::{
+        area::{AreaComponent},
+        exit::{ExitComponent},
+        inspectable::{InspectableComponent},
+        inventoryItem::{InventoryItemComponent},
+        container::{ContainerComponent},
+        player::{PlayerComponent},
+    },
+    constants::errors::Error, 
+    lib::{entity::{Entity, EntityImpl}}
+};
 
 #[derive(Clone, Drop, Serde, Debug)]
 #[dojo::model]
@@ -10,7 +21,6 @@ pub struct Trigger {
     pub name: ByteArray, // Human-readable name
     // properties
     pub trigger_type: TriggerType, // The type of trigger
-    pub entity_attachedTo: Entity, // Entity this trigger is attached to
     pub parameters: Array<TriggerParameter>, // Trigger parameters
     pub is_enabled: bool, // Whether the trigger is enabled
 }
@@ -109,6 +119,73 @@ pub impl TriggerImpl of TriggerTrait {
         trigger.is_enabled = false;
         world.write_model(@trigger);
     }
+
+    fn evaluate_trigger(mut world: WorldStorage, trigger: @Trigger) -> Result<(), Error> {
+        let mut resutl: Result::<(), Error> = Result::Ok(());
+        // Evaluate trigger
+        trigger.is_enabled;
+
+        match trigger.trigger_type {
+            TriggerType::PlayerEntersArea => {
+                // Get entity that trigger is attached to
+                let ent_opt = EntityImpl::get_entity(@world, trigger.key);
+                if ent_opt.is_none() {
+                    return Result::Err(Error::EntityNotFound);
+                }
+                // Check if entity has an area component
+                let ent = ent_opt.unwrap();
+                let area_opt = AreaComponent::get_component(world, ent.inst);
+                if area_opt.is_none() {
+                    return Result::Err(Error::NoAreaComponent);
+                }
+                // Check if entity has player as a child
+                let children = ent.get_children(@world);
+                let mut player_found = false;
+                for child in children {
+                    let child_player = PlayerComponent::get_component(world, child.inst);
+                    if child_player.is_some() {
+                        player_found = true;
+                        break;
+                    }
+                    continue;
+                };
+                if !player_found {
+                    return Result::Err(Error::NoPlayerComponent);
+                }
+                return resutl;
+            },
+            TriggerType::PlayerLeavesArea => {
+                // Get entity that trigger is attached to
+                let ent_opt = EntityImpl::get_entity(@world, trigger.key);
+                if ent_opt.is_none() {
+                    return Result::Err(Error::EntityNotFound);
+                }
+                // Check if entity has an area component
+                let ent = ent_opt.unwrap();
+                let area_opt = AreaComponent::get_component(world, ent.inst);
+                if area_opt.is_none() {
+                    return Result::Err(Error::NoAreaComponent);
+                }
+                // Check if the entity does not have a player as a child
+                let children = ent.get_children(@world);
+                let mut player_found = false;
+                for child in children {
+                    let child_player = PlayerComponent::get_component(world, child.inst);
+                    if child_player.is_some() {
+                        player_found = true;
+                        break;
+                    }
+                    continue;
+                };
+                if player_found {
+                    return Result::Err(Error::TriggerNotMeetConditions);
+                }
+                return resutl;
+            },
+        }
+
+        resutl
+    }
 }
 
 
@@ -117,14 +194,16 @@ mod tests {
     use super::*;
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
-    use lore::lib::{entity::{Entity, EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl}};
+    use lore::{lib::{entity::{EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl}},
+        components::{area::{AreaComponent}, exit::{ExitComponent}, player::{Player, PlayerComponent, caller_as_player, PlayerImpl}}
+    };
+    use lore::constants::constants::Direction;
 
-    fn create_test_trigger(key: felt252, nameT: ByteArray, trigger_type: TriggerType, entity: Entity) -> Trigger {
+    fn create_test_trigger(key: felt252, nameT: ByteArray, trigger_type: TriggerType) -> Trigger {
         Trigger {
             key,
             name: nameT,
             trigger_type,
-            entity_attachedTo: entity,
             parameters: array![],
             is_enabled: false,
         }
@@ -134,12 +213,7 @@ mod tests {
     fn test_trigger_register_and_index() {
         let (mut world, _, _, _, _) = helpers::setup_core();
 
-        // Create entity
-        let mut player = EntityImpl::create_entity(world);
-        player.name = "player";
-        world.write_model(@player);
-
-        let trigger = create_test_trigger(1, "TestTrigger",TriggerType::PlayerEntersArea, player);
+        let trigger = create_test_trigger(1, "TestTrigger",TriggerType::PlayerEntersArea );
 
         let result = TriggerImpl::register_trigger(world, trigger.clone());
         assert(result.is_ok(), 'Trig not register successfully');
@@ -164,7 +238,7 @@ mod tests {
         world.write_model(@player);
 
         // Create trigger
-        let trigger = create_test_trigger(2, long_name, TriggerType::PlayerLeavesArea, player);
+        let trigger = create_test_trigger(2, long_name, TriggerType::PlayerLeavesArea);
         world.write_model(@trigger);
 
         let result = TriggerImpl::register_trigger(world, trigger);
@@ -174,13 +248,9 @@ mod tests {
     #[test]
     fn test_trigger_enable_disable() {
         let (mut world, _, _, _, _) = helpers::setup_core();
-        // Create entity
-        let mut player = EntityImpl::create_entity(world);
-        player.name = "player";
-        world.write_model(@player);
 
         // Create trigger
-        let trigger = create_test_trigger(3, "TestTrigger", TriggerType::PlayerLeavesArea, player);
+        let trigger = create_test_trigger(3, "TestTrigger", TriggerType::PlayerLeavesArea);
 
         world.write_model(@trigger);
         TriggerImpl::enable_trigger(world, trigger.clone());
@@ -210,5 +280,62 @@ mod tests {
         assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
         assert(index.trigger_id[0] == @id_1, 'First ID should match');
         assert(index.trigger_id[1] == @id_2, 'Second ID should match');
+    }
+
+    #[test]
+    fn test_evaluate_trigger() {
+        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        // create room entity 1
+        let mut room_entity_1 = EntityImpl::create_entity(world);
+        // create room entity 2
+        let mut room_entity_2 = EntityImpl::create_entity(world);
+        
+        // add area component to room entity 1
+        let mut _area_component = AreaComponent::add_component(world, room_entity_1.inst);
+        // add exit component to room entity 1
+        let mut exit_component_1 = ExitComponent::add_component(world, room_entity_1.inst);
+        // update exit component
+        exit_component_1.leads_to = room_entity_2.inst;
+        exit_component_1.direction_type = Direction::North;
+        world.write_model(@exit_component_1);
+        
+        // add area component to room entity 2
+        let mut _area_component = AreaComponent::add_component(world, room_entity_2.inst);
+        // add exit component to room entity 2
+        let mut exit_component_2 = ExitComponent::add_component(world, room_entity_2.inst);
+        // update exit component
+        exit_component_2.leads_to = room_entity_1.inst;
+        exit_component_2.direction_type = Direction::South;
+        world.write_model(@exit_component_2);
+
+        let mut player: Player = caller_as_player(world, player_1);
+        player.location = room_entity_2.inst;
+        world.write_model(@player);
+
+        let mut player_entity: Entity = EntityImpl::get_entity(@world, @player.inst).unwrap();
+        // add player to room entity 2
+        player_entity.set_parent(world, @room_entity_2);
+        
+        // set trigger to room entity 1
+        let mut trigger = create_test_trigger(room_entity_1.inst, "TestTrigger", TriggerType::PlayerEntersArea);
+        world.write_model(@trigger);
+
+        // move player to room entity 1
+        player.move_to_room(world, room_entity_1.inst);
+
+        let result = TriggerImpl::evaluate_trigger(world, @trigger);
+        if result.is_ok() {
+            println!("Trigger jumps successfully");
+        };
+        assert(result.is_ok(), 'Trigger should jump');
+
+        // move player to room entity 2
+        player.move_to_room(world, room_entity_2.inst);
+
+        let result = TriggerImpl::evaluate_trigger(world, @trigger);
+        if result.is_err() {
+            println!("Trigger does not jump");
+        };
+        assert(result.is_err(), 'Trigger should not jump');
     }
 }

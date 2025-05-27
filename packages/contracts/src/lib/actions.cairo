@@ -45,17 +45,20 @@ impl ActionImpl of ActionTrait {
         mut world: WorldStorage,
         context: TriggerContext
     ) -> (Result<(), Error>, Result<(), Error>, Result<(), Error>) {
-        // for returning, ok or error
         // Trigger
         let mut result_t: Result<(), Error> = Result::Ok(());
         //Conditions
         let mut result_c: Result<(), Error> = Result::Ok(());
         //Effects
         let mut result_e: Result<(), Error> = Result::Ok(());
-        // First check if the trigger matches
-        // if !self.trigger.matches(context) {
-        //     result_t = Result::Ok(());
-        // }
+        // First check if the trigger/s are valid
+        for trigger in self.trigger.clone() {
+            let result_opt = TriggerImpl::evaluate_trigger(world, @trigger);
+            if result_opt.is_err() {
+                result_t = result_opt;
+                break;
+            }
+        };
 
         // Then evaluate all conditions
         for condition in self.conditions.clone() {
