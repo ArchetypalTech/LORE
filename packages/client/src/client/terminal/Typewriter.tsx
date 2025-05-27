@@ -1,5 +1,5 @@
 import type { TerminalContentItem } from "@lib/stores/terminal.store";
-import { nextItem, useTerminalStore } from "@lib/stores/terminal.store";
+import { nextItem, useTerminalStore, printingStatus } from "@lib/stores/terminal.store";
 import UserStore from "@lib/stores/user.store";
 import { useEffect, useState } from "react";
 import TerminalLine from "./TerminalLine";
@@ -67,5 +67,5 @@ export default function Typewriter() {
 		return null;
 	}
 
-	return <TerminalLine content={displayContent} />;
+	return <TerminalLine content={displayContent} />
 }
