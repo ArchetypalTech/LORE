@@ -1,7 +1,6 @@
 import type { HTMLAttributes } from "react";
 import { StoreBuilder } from "../utils/storebuilder";
 import { decodeDojoText } from "../utils/utils";
-import { bool } from "envalid";
 
 /**
  * Types of formatting that can be applied to terminal content.
