@@ -67,8 +67,8 @@ impl ActionImpl of ActionTrait {
         // Finally execute all effects
         for effect in self.effects.clone() {
             let result_pos = effect.apply_effect(world, context);
-            if !result_pos {
-                result_e = Result::Err(Error::EffectFailed);
+            if result_pos.is_err() {
+                result_e = result_pos;
             }
         };
 

@@ -1,4 +1,4 @@
-#[derive(Copy, Drop, Debug)]
+#[derive(Copy, Drop, Debug, PartialEq)]
 pub enum Error {
     // Utils
     Unimplemented,
@@ -22,4 +22,15 @@ pub enum Error {
     // Effects
     EffectFailed,
     EffectNotFound,
+    ReadOnlyVariable,
+    // PropertyResgistry
+    NoPropertyRegistry,
+    // Componets
+    NoComponent,
+    NoAreaComponent,
+    NoExitComponent,
+    NoInspectableComponent,
+    NoInventoryItemComponent,
+    NoContainerComponent,
+    NoPlayerComponent,
 }

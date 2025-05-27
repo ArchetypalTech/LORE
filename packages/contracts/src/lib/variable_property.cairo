@@ -9,7 +9,8 @@ use lore::{
         player::{Player, PlayerComponent},
         Components,
     },
-    lib::{ utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait}
+    lib::{ utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait},
+    constants::errors::Error, 
 };
 
 // ========== VARIABLE PROXY MODEL ==========
@@ -147,46 +148,58 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         property_name: @ByteArray,
         new_value: @felt252,
         
-    ) -> bool {
+    ) -> Result<(), Error> {
         let mut property_registry: PropertyRegistry = world.read_model(*key);
         let mut success: bool = false;
+        let mut result: Result::<(), Error> = Result::Err((Error::EffectFailed));
 
         match property_registry.component_type.clone() {
             Components::Area => {
                 let component: Area = world.read_model(*key);
                 let prop_text = property_name.clone();
-                success = VariablePropertyHelperTrait::set_area_property(component, *world, @prop_text, @property_registry, new_value);
-                
+                let (result_p, success_p) = VariablePropertyHelperTrait::set_area_property(component, *world, @prop_text, @property_registry, new_value);
+                result = result_p;
+                success = success_p;                
             },
             Components::Exit => {
                 let component: Exit = world.read_model(*key);
                 let prop_text = property_name.clone();
-                success = VariablePropertyHelperTrait::set_exit_property(component, *world, @prop_text, @property_registry, new_value);
+                let (result_p, success_p) = VariablePropertyHelperTrait::set_exit_property(component, *world, @prop_text, @property_registry, new_value);
+                result = result_p;
+                success = success_p;
             },
             Components::Inspectable => {
                 let component: Inspectable = world.read_model(*key);
                 let prop_text = property_name.clone();
-                success = VariablePropertyHelperTrait::set_inspectable_property(component, *world, @prop_text, @property_registry, new_value);
+                let (result_p, success_p) = VariablePropertyHelperTrait::set_inspectable_property(component, *world, @prop_text, @property_registry, new_value);
+                result = result_p;
+                success = success_p;
             },
             Components::InventoryItem => {
                 let component: InventoryItem = world.read_model(*key);
                 let prop_text = property_name.clone();
-                success = VariablePropertyHelperTrait::set_inventory_item_property(component, *world, @prop_text, @property_registry, new_value);
+                let (result_p, success_p) = VariablePropertyHelperTrait::set_inventory_item_property(component, *world, @prop_text, @property_registry, new_value);
+                result = result_p;
+                success = success_p;
             },
             Components::Container => {
                 let component: Container = world.read_model(*key);
                 let prop_text = property_name.clone();
-                success = VariablePropertyHelperTrait::set_container_property(component, *world, @prop_text, @property_registry, new_value);
+                let (result_p, success_p) = VariablePropertyHelperTrait::set_container_property(component, *world, @prop_text, @property_registry, new_value);
+                result = result_p;
+                success = success_p;
             },
             Components::Player => {
                 let component: Player = world.read_model(*key);
                 let prop_text = property_name.clone();
-                success = VariablePropertyHelperTrait::set_player_property(component, *world, @prop_text, @property_registry, new_value);
+                let (result_p, success_p) = VariablePropertyHelperTrait::set_player_property(component, *world, @prop_text, @property_registry, new_value);
+                result = result_p;
+                success = success_p;
             },
             _ => { 
                 // Do nothing 
             }
         }
-        return success;
+        return result;
     }
 }

@@ -13,8 +13,9 @@ use lore::{
     lib::{
         utils::ByteArrayTraitExt,
         variable_property::{VariablePropertyImp, PropertyAccess, ComponentVariable},
-        trigger::TriggerContext
+        trigger::TriggerContext, 
     },
+    constants::errors::Error,
 };
 
 #[derive(Clone, Drop, Serde, Debug, Introspect)]
@@ -98,8 +99,9 @@ pub impl EffectImpl of EffectTrait {
         self: @Effect,
         mut world: WorldStorage,
         context: TriggerContext,
-    ) -> bool {
+    ) -> Result<(), Error> {
         let zero: felt252 = 0;
+        let mut result: Result::<(), Error> = Result::Err(Error::EffectFailed);
         // Resolve target: use explicit target, fallback to context
         let actual_target = if self.target == @zero {
             @context.target1
@@ -107,16 +109,16 @@ pub impl EffectImpl of EffectTrait {
             self.target
         };
 
-        let mut success = false;
-
         match self.component {
             Components::Area => {
                 let area_opt = AreaComponent::get_component(world, *actual_target);
                 if area_opt.is_none() {
-                    return false;
+                    result = Result::Err(Error::NoAreaComponent);
                 }
                 let mut area = area_opt.unwrap();
-                success = VariablePropertyImp::set_property(@world, @area.inst, self.property, self.value);
+                // Direct modification to component
+                result = VariablePropertyImp::set_property(@world, @area.inst, self.property, self.value);
+                // THIS WOULD BE FOR THE COMPONENT VARIABLE TO UPDATE CHANGES ON THE COMPONENT WHEN changed?
                 // success = Self::update_property(
                 //     world,
                 //     @area.inst,
@@ -129,10 +131,10 @@ pub impl EffectImpl of EffectTrait {
             Components::Exit => {
                 let exit_opt = ExitComponent::get_component(world, *actual_target);
                 if exit_opt.is_none() {
-                    return false;
+                    result = Result::Err(Error::NoExitComponent);
                 }
                 let mut exit = exit_opt.unwrap();
-                success = VariablePropertyImp::set_property(@world, @exit.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @exit.inst, self.property, self.value);
                 // success = Self::update_property(
                 //     world,
                 //     @exit.inst,
@@ -145,10 +147,10 @@ pub impl EffectImpl of EffectTrait {
             Components::Inspectable => {
                 let inspect_opt = InspectableComponent::get_component(world, *actual_target);
                 if inspect_opt.is_none() {
-                    return false;
+                    result = Result::Err(Error::NoInspectableComponent);
                 }
                 let mut inspectable = inspect_opt.unwrap();
-                success = VariablePropertyImp::set_property(@world, @inspectable.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @inspectable.inst, self.property, self.value);
                 // success = Self::update_property(
                 //     world,
                 //     @inspectable.inst,
@@ -161,10 +163,10 @@ pub impl EffectImpl of EffectTrait {
             Components::InventoryItem => {
                 let item_opt = InventoryItemComponent::get_component(world, *actual_target);
                 if item_opt.is_none() {
-                    return false;
+                    result = Result::Err(Error::NoInventoryItemComponent);
                 }
                 let mut item = item_opt.unwrap();
-                success = VariablePropertyImp::set_property(@world, @item.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @item.inst, self.property, self.value);
                 // success = Self::update_property(
                 //     world,
                 //     @item.inst,
@@ -177,10 +179,10 @@ pub impl EffectImpl of EffectTrait {
             Components::Container => {
                 let cont_opt = ContainerComponent::get_component(world, *actual_target);
                 if cont_opt.is_none() {
-                    return false;
+                    result = Result::Err(Error::NoContainerComponent);
                 }
                 let mut container = cont_opt.unwrap();
-                success = VariablePropertyImp::set_property(@world, @container.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @container.inst, self.property, self.value);
                 // success = Self::update_property(
                 //     world,
                 //     @container.inst,
@@ -193,10 +195,10 @@ pub impl EffectImpl of EffectTrait {
             Components::Player => {
                 let player_opt = PlayerComponent::get_component(world, *actual_target);
                 if player_opt.is_none() {
-                    return false;
+                    result = Result::Err(Error::NoPlayerComponent);
                 }
                 let mut player = player_opt.unwrap();
-                success = VariablePropertyImp::set_property(@world, @player.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @player.inst, self.property, self.value);
                 // success = Self::update_property(
                 //     world,
                 //     @player.inst,
@@ -207,11 +209,11 @@ pub impl EffectImpl of EffectTrait {
                 // );
             },
             _ => {
-                return false;
+                result = Result::Err(Error::NoComponent);
             },
         }
 
-        success
+        result
     }
 
     fn update_property(
