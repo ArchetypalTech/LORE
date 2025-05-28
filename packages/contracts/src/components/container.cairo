@@ -110,7 +110,7 @@ pub impl ContainerImpl of ContainerTrait {
         can_put_item
     }
 
-    fn put_item_in(self: Container, mut world: WorldStorage, item: InventoryItem) {
+    fn put_item_in(self: Container, mut world: WorldStorage, mut item: InventoryItem) {
         // get container
         let mut container: Container = world.read_model(self.inst);
 
@@ -123,13 +123,16 @@ pub impl ContainerImpl of ContainerTrait {
         }
         // set parent to be the container's entity
         item_entity.set_parent(world, @container.entity(@world));
+        item.owner_id = container.inst;
         // update container
         world.write_model(@container);
+        // update item
+        world.write_model(@item);
     }
 
 
     fn put_item_out(
-        self: Container, mut world: WorldStorage, item: InventoryItem, player: @Player,
+        self: Container, mut world: WorldStorage, mut item: InventoryItem, player: @Player,
     ) {
         // get container
         let mut container: Container = world.read_model(self.inst);
@@ -145,9 +148,12 @@ pub impl ContainerImpl of ContainerTrait {
         // remove item from container:
         // set parent to be the room's entity
         item_entity.set_parent(world, @room);
+        item.owner_id = room.inst;
         //item_entity.remove_from_parent(world, @container);
         // update container
         world.write_model(@container);
+        // update item
+        world.write_model(@item);
     }
 
     fn contains(self: @Container, itemID: felt252, world: @WorldStorage) -> bool {

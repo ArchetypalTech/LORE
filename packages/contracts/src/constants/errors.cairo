@@ -20,6 +20,8 @@ pub enum Error {
     FailedToUpdateTriggerIndex,
     FailedToRemoveTriggerIndex,
     TriggerNotMeetConditions,
+    // Conditions
+    ConditionFailed,
     // Effects
     EffectFailed,
     EffectNotFound,
