@@ -8,7 +8,7 @@ use lore::{ //
         a_lexer::{Command, CommandImpl, TokenType},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level},//
-        trigger::{Trigger, TriggerIndex, TriggerType, TriggerImpl}, //
+        trigger::{Trigger, TriggerIndex, TriggerType, TriggerImpl, TriggerHelperImpl}, //
     }, //
     constants::errors::Error, //
     components::{
@@ -108,8 +108,8 @@ pub fn handle_command(
                     }
                     // THIS IS FOR TESTING ONLY
                      // get trigger index
-                    let trigger_index_enters: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
-                    let trigger_index_leaves: TriggerIndex = world.read_model(TriggerType::PlayerLeavesArea);
+                    let trigger_index_enters: TriggerIndex = world.read_model(TriggerHelperImpl::trigger_type_to_felt252(TriggerType::PlayerEntersArea));
+                    let trigger_index_leaves: TriggerIndex = world.read_model(TriggerHelperImpl::trigger_type_to_felt252(TriggerType::PlayerLeavesArea));
                     // check triggers
                     if trigger_index_enters.trigger_id.len() == 0 {
                         //println!("no triggers for enter");

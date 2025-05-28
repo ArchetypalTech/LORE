@@ -14,7 +14,9 @@ use lore::{
         area::{m_Area}, // 
         inspectable::{m_Inspectable}, //
         player::{m_Player, m_PlayerStory}, //
-        exit::{m_Exit} //
+        exit::{m_Exit}, //
+        container::{m_Container}, //
+        inventoryItem::{m_InventoryItem}, //
     },
     constants::{errors::{}},
     lib::{
@@ -62,6 +64,8 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_Inspectable::TEST_CLASS_HASH),
             TestResource::Model(m_Area::TEST_CLASS_HASH),
             TestResource::Model(m_Exit::TEST_CLASS_HASH),
+            TestResource::Model(m_Container::TEST_CLASS_HASH),
+            TestResource::Model(m_InventoryItem::TEST_CLASS_HASH),
             TestResource::Model(m_ParentToChildren::TEST_CLASS_HASH),
             TestResource::Model(m_ChildToParent::TEST_CLASS_HASH),
             TestResource::Model(m_Trigger::TEST_CLASS_HASH),

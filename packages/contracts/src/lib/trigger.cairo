@@ -17,7 +17,7 @@ use lore::{
 #[dojo::model]
 pub struct Trigger {
     #[key]
-    pub key: felt252, // Unique identifier
+    pub key: felt252, // Unique identifier, should be the entity is attached to
     pub name: ByteArray, // Human-readable name
     // properties
     pub trigger_type: TriggerType, // The type of trigger
@@ -25,15 +25,16 @@ pub struct Trigger {
     pub is_enabled: bool, // Whether the trigger is enabled
 }
 
-#[derive(Clone, Drop, Serde)]
+#[derive(Clone, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct TriggerIndex {
     #[key]
+    pub key: felt252,
     pub trigger_type: TriggerType,
     pub trigger_id: Array<felt252>,
 }
 
-#[derive(Copy, Drop, Serde)]
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
 pub struct TriggerContext {
     pub doer: felt252, // The entity that triggered the action (usually the player)    
     pub target1: felt252, // Primary target of the action (e.g., item being picked up, area being entered)    
@@ -47,7 +48,7 @@ pub struct TriggerParameter {
     pub value: felt252,
 }
 
-#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
 pub enum TriggerType {
     // Player Triggers //
     PlayerEntersArea,
@@ -76,7 +77,8 @@ pub impl TriggerImpl of TriggerTrait {
     }
 
     fn get_triggerIndex(world: @WorldStorage, trigger_type: @TriggerType) -> Option<TriggerIndex> {
-        let trigger_index: TriggerIndex = world.read_model(*trigger_type);
+        let key: felt252 = TriggerHelperImpl::trigger_type_to_felt252(trigger_type.clone());
+        let trigger_index: TriggerIndex = world.read_model(key);
         if trigger_index.trigger_id.len() == 0 {
             return Option::None;
         }
@@ -95,7 +97,8 @@ pub impl TriggerImpl of TriggerTrait {
                 let mut trigger_ids = ArrayTrait::<felt252>::new();
                 trigger_ids.append(key);
 
-                let trigger_index = TriggerIndex { trigger_type, trigger_id: trigger_ids };
+                let key_f: felt252 = TriggerHelperImpl::trigger_type_to_felt252(trigger_type.clone());
+                let trigger_index = TriggerIndex { key: key_f, trigger_type:trigger_type, trigger_id: trigger_ids };
                 world.write_model(@trigger_index);
                 Result::Ok(())
             },
@@ -121,9 +124,11 @@ pub impl TriggerImpl of TriggerTrait {
     }
 
     fn evaluate_trigger(mut world: WorldStorage, trigger: @Trigger) -> Result<(), Error> {
-        let mut resutl: Result::<(), Error> = Result::Ok(());
+        let mut result: Result::<(), Error> = Result::Ok(());
         // Evaluate trigger
-        trigger.is_enabled;
+        if !*trigger.is_enabled {
+            return result; // If not enable is not an error.
+        }
 
         match trigger.trigger_type {
             TriggerType::PlayerEntersArea => {
@@ -147,12 +152,12 @@ pub impl TriggerImpl of TriggerTrait {
                         player_found = true;
                         break;
                     }
-                    continue;
                 };
                 if !player_found {
-                    return Result::Err(Error::NoPlayerComponent);
+                    result = Result::Err(Error::TriggerNotMeetConditions);
+                    return result;
                 }
-                return resutl;
+                return result;
             },
             TriggerType::PlayerLeavesArea => {
                 // Get entity that trigger is attached to
@@ -175,26 +180,34 @@ pub impl TriggerImpl of TriggerTrait {
                         player_found = true;
                         break;
                     }
-                    continue;
                 };
                 if player_found {
                     return Result::Err(Error::TriggerNotMeetConditions);
                 }
-                return resutl;
+                return result;
             },
         }
 
-        resutl
+        result
     }
 }
 
+#[generate_trait]
+pub impl TriggerHelperImpl of TriggerTraitHelper {
+    fn trigger_type_to_felt252(trigger_type: TriggerType) -> felt252 {
+        match trigger_type {
+            TriggerType::PlayerEntersArea => 1,
+            TriggerType::PlayerLeavesArea => 2,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
-    use lore::{lib::{entity::{EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl, TriggerParameter}},
+    use lore::{lib::{entity::{EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl, TriggerParameter, TriggerHelperImpl}},
         components::{area::{AreaComponent}, exit::{ExitComponent}, player::{Player, PlayerComponent, caller_as_player, PlayerImpl}}
     };
     use lore::constants::constants::Direction;
@@ -209,7 +222,7 @@ mod tests {
             parameters: array![
                 TriggerParameter { name: "area", value: key },
             ],
-            is_enabled: false,
+            is_enabled: true,
         }
     }
 
@@ -226,7 +239,8 @@ mod tests {
         assert(stored.key == 1, 'Trigger key should match');
         assert(stored.name == "TestTrigger", 'Trigger name should match');
 
-        let index: TriggerIndex = world.read_model(trigger.trigger_type);
+        let key: felt252 = TriggerHelperImpl::trigger_type_to_felt252(trigger.trigger_type.clone());
+        let index: TriggerIndex = world.read_model(key);
         assert(index.trigger_id.len() == 1, 'Trig index should have one ID');
         assert(index.trigger_id[0] == @trigger.key, 'Idx should have the trigger key');
     }
@@ -280,7 +294,9 @@ mod tests {
         // message: 2nd trigger index insert didn't succeed
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
-        let index: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
+
+        let key: felt252 = TriggerHelperImpl::trigger_type_to_felt252(TriggerType::PlayerEntersArea);
+        let index: TriggerIndex = world.read_model(key);
         assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
         assert(index.trigger_id[0] == @id_1, 'First ID should match');
         assert(index.trigger_id[1] == @id_2, 'Second ID should match');
@@ -295,7 +311,8 @@ mod tests {
         let mut room_entity_2 = EntityImpl::create_entity(world);
         
         // add area component to room entity 1
-        let mut _area_component = AreaComponent::add_component(world, room_entity_1.inst);
+        let mut area_component_1 = AreaComponent::add_component(world, room_entity_1.inst);
+        world.write_model(@area_component_1);
         // add exit component to room entity 1
         let mut exit_component_1 = ExitComponent::add_component(world, room_entity_1.inst);
         // update exit component
@@ -304,7 +321,8 @@ mod tests {
         world.write_model(@exit_component_1);
         
         // add area component to room entity 2
-        let mut _area_component = AreaComponent::add_component(world, room_entity_2.inst);
+        let mut area_component_2 = AreaComponent::add_component(world, room_entity_2.inst);
+        world.write_model(@area_component_2);
         // add exit component to room entity 2
         let mut exit_component_2 = ExitComponent::add_component(world, room_entity_2.inst);
         // update exit component
@@ -325,7 +343,8 @@ mod tests {
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // move player to room entity 1
-        player.move_to_room(world, room_entity_1.inst);
+        let mut playerR1: Player = world.read_model(player.inst);
+        playerR1.move_to_room(world, room_entity_1.inst);
 
         let result = TriggerImpl::evaluate_trigger(world, @trigger);
         if result.is_ok() {
@@ -335,12 +354,14 @@ mod tests {
 
         // move player to room entity 2
         player.move_to_room(world, room_entity_2.inst);
+        player_entity.set_parent(world, @room_entity_2);
 
-        let result = TriggerImpl::evaluate_trigger(world, @trigger);
-        if result.is_err() {
+        let result2 = TriggerImpl::evaluate_trigger(world, @trigger);
+        println!("result2: {:?}", result2);
+        if result2.is_err() {
             println!("Trigger does not jump");
         };
-        assert(result.is_err(), 'Trigger should not jump');
+        assert(result2.is_err(), 'Trigger should not jump');
     }
 
     #[test]
