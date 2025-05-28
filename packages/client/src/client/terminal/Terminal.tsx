@@ -1,9 +1,10 @@
 import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
-import { nextItem, useTerminalStore } from "@lib/stores/terminal.store";
+import { nextItem, useTerminalStore, printingStatus } from "@lib/stores/terminal.store";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import TerminalLine from "./TerminalLine";
 import Typewriter from "./Typewriter";
+import LoadingMessage from "./loader"
 import "./Terminal.css";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 
@@ -97,6 +98,7 @@ export default function Terminal() {
 
 		setInputValue("");
 		setInputHistory([...inputHistory, command]);
+		printingStatus(true);
 		
 		if(textAnchorRef.current) textAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
@@ -150,8 +152,9 @@ export default function Terminal() {
 							)}
 						</div>
 						<div className="sticky text-[1rem] bottom-12 h-0.5 w-full backdrop-blur-lg"></div>
-						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background">
-							<span>&#x3e;</span>
+						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background items-center">
+							{useTerminalStore().isPrinting && <LoadingMessage />}
+							{!useTerminalStore().isPrinting && <span className="text-2xl">&#x3e;</span>}
 							<input
 								id="terminal-input"
 								className="terminal-line system w-full border-0 bg-transparent px-2"
