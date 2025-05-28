@@ -29,8 +29,8 @@ pub struct Trigger {
 #[dojo::model]
 pub struct TriggerIndex {
     #[key]
-    trigger_type: TriggerType,
-    trigger_id: Array<felt252>,
+    pub trigger_type: TriggerType,
+    pub trigger_id: Array<felt252>,
 }
 
 #[derive(Copy, Drop, Serde)]
@@ -194,17 +194,21 @@ mod tests {
     use super::*;
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
-    use lore::{lib::{entity::{EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl}},
+    use lore::{lib::{entity::{EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl, TriggerParameter}},
         components::{area::{AreaComponent}, exit::{ExitComponent}, player::{Player, PlayerComponent, caller_as_player, PlayerImpl}}
     };
     use lore::constants::constants::Direction;
+    use lore::lib::a_lexer::{Token, TokenType, Command};
+    use lore::lib::c_handler::handle_command;
 
     fn create_test_trigger(key: felt252, nameT: ByteArray, trigger_type: TriggerType) -> Trigger {
         Trigger {
             key,
             name: nameT,
             trigger_type,
-            parameters: array![],
+            parameters: array![
+                TriggerParameter { name: "area", value: key },
+            ],
             is_enabled: false,
         }
     }
@@ -318,7 +322,7 @@ mod tests {
         
         // set trigger to room entity 1
         let mut trigger = create_test_trigger(room_entity_1.inst, "TestTrigger", TriggerType::PlayerEntersArea);
-        world.write_model(@trigger);
+        let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // move player to room entity 1
         player.move_to_room(world, room_entity_1.inst);
@@ -337,5 +341,81 @@ mod tests {
             println!("Trigger does not jump");
         };
         assert(result.is_err(), 'Trigger should not jump');
+    }
+
+    #[test]
+    fn test_trigger_with_command() {
+        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        // create room entity 1
+        let mut room_entity_1 = EntityImpl::create_entity(world);
+        // create room entity 2
+        let mut room_entity_2 = EntityImpl::create_entity(world);
+        
+        // add area component to room entity 1
+        let mut _area_component = AreaComponent::add_component(world, room_entity_1.inst);
+        // add exit component to room entity 1
+        let mut exit_component_1 = ExitComponent::add_component(world, room_entity_1.inst);
+        // update exit component
+        exit_component_1.leads_to = room_entity_2.inst;
+        exit_component_1.direction_type = Direction::North;
+        world.write_model(@exit_component_1);
+        
+        // add area component to room entity 2
+        let mut _area_component = AreaComponent::add_component(world, room_entity_2.inst);
+        // add exit component to room entity 2
+        let mut exit_component_2 = ExitComponent::add_component(world, room_entity_2.inst);
+        // update exit component
+        exit_component_2.is_enterable = true;
+        exit_component_2.leads_to = room_entity_1.inst;
+        exit_component_2.direction_type = Direction::South;
+        world.write_model(@exit_component_2);
+
+        let mut player: Player = caller_as_player(world, player_1);
+        player.location = room_entity_2.inst;
+        world.write_model(@player);
+
+        let mut player_entity: Entity = EntityImpl::get_entity(@world, @player.inst).unwrap();
+        // add player to room entity 2
+        player_entity.set_parent(world, @room_entity_2);
+        
+        // set trigger to room entity 1
+        let mut trigger = create_test_trigger(room_entity_1.inst, "TestTrigger", TriggerType::PlayerEntersArea);
+        let _result = TriggerImpl::register_trigger(world, trigger.clone());
+
+        // set trigger to room entity 2
+        let mut trigger = create_test_trigger(room_entity_2.inst, "TestTrigger", TriggerType::PlayerLeavesArea);
+        let _result = TriggerImpl::register_trigger(world, trigger.clone());
+
+        // set command
+        let mut command = Command {
+            command_id: 1,
+            text: "go south",
+            words: array!["go", "south"],
+            token_count: 2,
+            action_type: 0,
+            tokens: array![
+                Token {
+                    position: 0,
+                    text: "go",
+                    token_type: TokenType::Verb,
+                    token_value: 1,
+                    target: 0,
+                },
+                Token {
+                    position: 1,
+                    text: "south",
+                    token_type: TokenType::Direction,
+                    token_value: 2,
+                    target: 0,
+                },
+            ],
+        };
+
+        // execute command
+        let result = handle_command(command.clone(), world, player.clone());
+        if result.is_ok() {
+            println!("Command + trigger jumps successfully");
+        };
+        assert_eq!(result.is_ok(), true, "CMD + trig should jump");
     }
 }

@@ -146,7 +146,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         mut world: @WorldStorage,
         key: @felt252,
         property_name: @ByteArray,
-        new_value: @felt252,
+        new_value: @Array<felt252>,
         
     ) -> Result<(), Error> {
         let mut property_registry: PropertyRegistry = world.read_model(*key);

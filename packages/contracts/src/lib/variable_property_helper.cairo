@@ -165,7 +165,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     // SET PROPERTIES
-    fn set_area_property(mut component: Area, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> (Result::<(), Error>, bool) {
+    fn set_area_property(mut component: Area, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @Array<felt252>) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
         let mut success: bool = false;
@@ -179,7 +179,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::WriteOnly | PropertyAccess::ReadWrite => {
                         if name == @is_area {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.is_area = new_var_value;
                             success = true;
                         }
@@ -193,7 +193,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (result, success);
     }
 
-    fn set_exit_property(mut component: Exit, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> (Result::<(), Error>, bool) {
+    fn set_exit_property(mut component: Exit, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @Array<felt252>) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_exit: ByteArray = "is_exit";
         let is_enterable: ByteArray = "is_enterable";
@@ -210,18 +210,18 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::WriteOnly | PropertyAccess::ReadWrite => {
                         if name == @is_exit {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.is_exit = new_var_value;
                             success = true;
                         } else if name == @is_enterable {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.is_enterable = new_var_value;
                             success = true;
                         } else if name == @leads_to {
-                            component.leads_to = *new_value;
+                            component.leads_to = *new_value[0];
                             success = true;
                         } else if name == @direction_type {
-                            let new_dir = ByteArrayTraitExt::direction_from_felt252(*new_value);
+                            let new_dir = ByteArrayTraitExt::direction_from_felt252(*new_value[0]);
                             component.direction_type = new_dir;
                             success = true;
                         }
@@ -234,7 +234,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (result, success);
     }
 
-    fn set_inspectable_property(mut component: Inspectable, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> (Result::<(), Error>, bool) {
+    fn set_inspectable_property(mut component: Inspectable, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @Array<felt252>) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
         let is_inspectable: ByteArray = "is_inspectable";
@@ -250,15 +250,26 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::WriteOnly | PropertyAccess::ReadWrite => {
                         if name == @is_visible {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.is_visible = new_var_value;
                             success = true;
                         } else if name == @is_inspectable {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.is_inspectable = new_var_value;
                             success = true;
                         } else if name == @description {
-                            component.description.append(ByteArrayTraitExt::byte_array_from_felt252(*new_value));
+                            // FOR NOW REPLACES THE WHOLE ARRAY,
+                            // TODO: implement a way that supports updating/replacing/removing at certain indices
+                            // Build a temporary mutable copy of description
+                            let mut new_description: Array<ByteArray> = ArrayTrait::new();
+
+                            // Copy the original description
+                            for item in new_value.clone() {
+                                let new_byte = ByteArrayTraitExt::byte_array_from_felt252(item);
+                                new_description.append(new_byte);
+                            };
+
+                            component.description = new_description;
                             success = true;
                         }
                     },
@@ -270,7 +281,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (result, success);
     }
 
-    fn set_inventory_item_property(mut component: InventoryItem, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> (Result::<(), Error>, bool) {
+    fn set_inventory_item_property(mut component: InventoryItem, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @Array<felt252>) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
@@ -286,14 +297,14 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::WriteOnly | PropertyAccess::ReadWrite => {
                         if name == @owner_id {
-                            component.owner_id = *new_value;
+                            component.owner_id = *new_value[0];
                             success = true;
                         } else if name == @can_be_picked_up {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.can_be_picked_up = new_var_value;
                             success = true;
                         } else if name == @can_go_in_container {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.can_go_in_container = new_var_value;
                             success = true;
                         }
@@ -306,7 +317,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (result, success);
     }
 
-    fn set_container_property(mut component: Container, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> (Result::<(), Error>, bool) {
+    fn set_container_property(mut component: Container, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @Array<felt252>) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_container: ByteArray = "is_container";
         let can_be_opened: ByteArray = "can_be_opened";
@@ -324,23 +335,23 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::WriteOnly | PropertyAccess::ReadWrite => {
                         if name == @is_container {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.is_container = new_var_value;
                             success = true;
                         } else if name == @can_be_opened {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.can_be_opened = new_var_value;
                             success = true;
                         } else if name == @can_receive_items {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.can_receive_items = new_var_value;
                             success = true;
                         } else if name == @is_open {
-                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::bool_from_felt252(*new_value[0]);
                             component.is_open = new_var_value;
                             success = true;
                         } else if name == @num_slots {
-                            let new_var_value = ByteArrayTraitExt::u32_from_felt252(*new_value);
+                            let new_var_value = ByteArrayTraitExt::u32_from_felt252(*new_value[0]);
                             component.num_slots = new_var_value;
                             success = true;
                         }
@@ -353,7 +364,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (result, success);
     }
 
-    fn set_player_property(mut component: Player, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @felt252) -> (Result::<(), Error>, bool) {
+    fn set_player_property(mut component: Player, mut world: WorldStorage, name: @ByteArray, property: @PropertyRegistry, new_value: @Array<felt252>) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let location: ByteArray = "location";
         let mut success: bool = false;
@@ -367,7 +378,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::WriteOnly | PropertyAccess::ReadWrite => {
                         if name == @location {
-                            component.location = *new_value;
+                            component.location = *new_value[0];
                             success = true;
                         }
                     },  

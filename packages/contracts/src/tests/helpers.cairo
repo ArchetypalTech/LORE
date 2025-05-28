@@ -25,7 +25,9 @@ use lore::{
         relations::{m_ParentToChildren, m_ChildToParent},//
         trigger::{m_Trigger, m_TriggerIndex}, //
         condition::{m_Condition}, //
-        variable_property::{m_PropertyRegistry} //
+        variable_property::{m_PropertyRegistry},//
+        effect::{m_Effect}, //
+        actions::{m_Action}, //
     },
 };
 
@@ -66,6 +68,8 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_TriggerIndex::TEST_CLASS_HASH),
             TestResource::Model(m_Condition::TEST_CLASS_HASH),
             TestResource::Model(m_PropertyRegistry::TEST_CLASS_HASH),
+            TestResource::Model(m_Effect::TEST_CLASS_HASH),
+            TestResource::Model(m_Action::TEST_CLASS_HASH),
             // TestResource::Event(),
             TestResource::Contract(prompt::TEST_CLASS_HASH),
             TestResource::Contract(designer::TEST_CLASS_HASH),

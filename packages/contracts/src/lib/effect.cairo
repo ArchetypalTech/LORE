@@ -26,7 +26,7 @@ pub struct Effect {
     pub target: felt252,           // Target entity
     pub component: Components,     // Component to affect
     pub property: ByteArray,       // Property to modify
-    pub value: felt252,            // New value to set
+    pub value: Array<felt252>,     // New value to set, needs to be array for multiple values such as description.
 }
 
 // A registry-style effect template
@@ -240,7 +240,7 @@ pub impl EffectImpl of EffectTrait {
                     entity_id: *key,
                     property_name: property.clone(),
                     value,
-                    last_updated: 0, // TODO: set timestamp using context later
+                    last_updated: 0, // TODO: set timestamp using context later?
                 };
 
                 world.write_model(@comp_var);
@@ -252,3 +252,78 @@ pub impl EffectImpl of EffectTrait {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dojo::{model::ModelStorage};
+    use lore::tests::helpers;
+    use lore::{lib::{entity::{EntityImpl}, trigger::{TriggerImpl}},
+        components::{area::{AreaComponent}, 
+        inspectable::{Inspectable, InspectableComponent, ActionMapInspectable, InspectableActions},
+        player::{Player, PlayerComponent, caller_as_player, PlayerImpl},
+        Component, Components,},
+    };
+
+    fn create_test_effect(key: felt252, target: felt252, component: Components, property: ByteArray, value: Array<felt252>) -> Effect {
+        Effect {
+            key,
+            target,
+            component,
+            property,
+            value,
+        }
+    }
+
+    fn create_trigger_context(doer: felt252, target1: felt252, target2: felt252, inventory_object: felt252) -> TriggerContext {
+        TriggerContext {
+            doer,
+            target1,
+            target2,
+            inventory_object,
+        }
+    }
+    
+    #[test]
+    fn Effect_test_apply_effect() {
+        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        // create door entity
+        let mut door = EntityImpl::create_entity(world);
+        door.name = "door";
+        world.write_model(@door);
+        let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        inspectable.is_inspectable = true;
+        inspectable.is_visible = true;
+        inspectable.description = array!["A door"];
+        inspectable.action_map = array![
+                ActionMapInspectable {
+                    action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
+                },
+                ActionMapInspectable {
+                    action: "look", inst: 0, action_fn: InspectableActions::ReadRandomDescription,
+                },
+            ];
+        inspectable.store(world);
+
+        // Create player
+        let mut player: Player = caller_as_player(world, player_1);        
+        world.write_model(@player);
+
+        // Create trigger context
+        let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
+        
+        // Test description new value
+        let new_value: Array<felt252> = array!['A door that is open', 'Looks that it leads somewhere'];
+        let new_text = ByteArrayTraitExt::byte_array_from_felt252(*new_value.at(1));
+        let mut effect = create_test_effect(door.inst, door.inst, Components::Inspectable, "description", new_value);
+        world.write_model(@effect);
+        let result = effect.apply_effect(world, context);
+
+        let new_inspectable: Inspectable = world.read_model(door.inst);
+
+        assert_ne!(inspectable.description[0], new_inspectable.description[0], "Effect should update description");
+        assert_eq!(new_inspectable.description[1], @new_text.clone(), "Effect should update description");
+        assert_eq!(result.is_ok(), true, "Effect should apply successfully");
+    }
+}
+

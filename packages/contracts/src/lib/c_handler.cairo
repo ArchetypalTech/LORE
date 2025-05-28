@@ -1,13 +1,14 @@
 use super::a_lexer::CommandTrait;
 use super::super::components::player::PlayerTrait;
-use dojo::{world::WorldStorage};
+use dojo::{world::WorldStorage, model::ModelStorage};
 
 use lore::{ //
     lib::{ //
         entity::{EntityImpl}, //
         a_lexer::{Command, CommandImpl, TokenType},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
-        level_test::{create_test_level} //
+        level_test::{create_test_level},//
+        trigger::{Trigger, TriggerIndex, TriggerType, TriggerImpl}, //
     }, //
     constants::errors::Error, //
     components::{
@@ -96,19 +97,59 @@ pub fn handle_command(
         let context = player.get_context(@world);
         for item in context {
             let exit: Option<Exit> = Component::get_component(world, item.inst);
+
             // @dev: not guaranteed there's a noun
             if exit.is_some() {
                 let exit = exit.unwrap();
                 if exit.can_use_command(world, @player, @command) {
                     if exit.execute_command(world, @player, @command).is_ok() {
-                        executed = true;
+                        executed = true; 
+                        //break;                      
+                    }
+                    // THIS IS FOR TESTING ONLY
+                     // get trigger index
+                    let trigger_index_enters: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
+                    let trigger_index_leaves: TriggerIndex = world.read_model(TriggerType::PlayerLeavesArea);
+                    // check triggers
+                    if trigger_index_enters.trigger_id.len() == 0 {
+                        //println!("no triggers for enter");
                         break;
+                    } else{
+                        let mut trig_res_enter: bool = true;
+                        for trigger in trigger_index_enters.trigger_id.clone() {
+                            let trigger_enter: Trigger = world.read_model(trigger);
+                            let result_enter = TriggerImpl::evaluate_trigger(world, @trigger_enter);
+                            if result_enter.is_err() {
+                                trig_res_enter = false;
+                                break;
+                            }
+                            //println!("trig idx: {:?}, res_enter: {:?}", trigger , trig_res_enter);
+                            continue;
+                        };
+                    }
+                        
+                    if trigger_index_leaves.trigger_id.len() == 0 {
+                        //println!("no triggers for enter");
+                        break;
+                    } else{
+                        let mut trig_res_leave: bool = true;
+                        for trigger in trigger_index_leaves.trigger_id.clone() {
+                            let trigger_leave: Trigger = world.read_model(trigger);
+                            let result_leave = TriggerImpl::evaluate_trigger(world, @trigger_leave);
+                            if result_leave.is_err() {
+                                trig_res_leave = false;
+                                break;
+                            }
+                            //println!("trig idx: {:?}, res_leave: {:?}", trigger , trig_res_leave);
+                            continue;
+                        };
                     }
                 }
             }
         };
     }
 
+    println!("executed: {:?}", executed);
     if executed {
         return Result::Ok(command);
     }
