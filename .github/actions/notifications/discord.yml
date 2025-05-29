@@ -1,0 +1,17 @@
+name: Notify Discord on PR Created
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          MESSAGE="A new PR was created by $GITHUB_ACTOR: ${{ github.event.pull_request.html_url }}"
+          PAYLOAD="{\"content\": \"$MESSAGE\"}"
+          curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"
