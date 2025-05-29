@@ -3,6 +3,24 @@ input {
 	outline: none;
 }
 
+textarea {
+		flex-grow: 1;
+		padding: 0.625rem;
+		border: none;
+		border-radius: 12px;
+		resize: none;
+		font-family: inherit;
+		font-size: 1.0625rem;
+		line-height: 1.4;
+		background-color: transparent;
+		min-height: 20px; /* Lower start height */
+		max-height: 120px;
+		outline: none;
+		width: calc(100% - 50px); /* Make room for the send button */
+		transition: color 0.2s;
+		overflow: hidden; /* Hide scrollbar */
+	}
+
 #terminal {
 	@apply flex-col-reverse overflow-y-scroll flex w-[500px] max-w-[500px];
 	scrollbar-width: none;
