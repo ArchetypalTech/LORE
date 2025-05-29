@@ -4,9 +4,9 @@ import { APP_RANDOM_ICON } from "./app.icons";
 const SLOT_INDICATOR = `<text y='.1em' font-size='90' transform='translate(45, 30) scale(0.5,0.5)'>${LORE_CONFIG.useController ? "✨" : "🎬"}</text>`;
 
 export const APP_DATA = {
-	title: ">LORE",
+	title: ">ORUG",
 	icon: `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y='.9em' font-size='90' transform='translate(110, 5) scale(-.975,.975)'>🚪</text>${SLOT_INDICATOR}</svg>`,
-	intro: ["\n", "> LORE", "\n", "Welcome", "\n\n\n\n\n\n\n\n\n\n"].join("\n"),
+	intro: ["\n", "The O'Ruggin Trail", "\n", "A text based adventure", "\n\n\n\n\n\n\n\n\n\n"].join("\n"),
 	description: "",
 	keywords: [],
 	image: "",
@@ -14,7 +14,7 @@ export const APP_DATA = {
 };
 
 export const APP_EDITOR_DATA = {
-	title: ">LORED",
+	title: ">ORUG",
 	icon: () =>
 		`data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y='.9em' font-size='90' transform='translate(110, 5) scale(-.975,.975)'>${APP_RANDOM_ICON()}</text>${SLOT_INDICATOR}</svg>`,
 	description: "",
