@@ -1,9 +1,10 @@
 import DojoStore, { useDojoStore } from "@lib/stores/dojo.store";
-import { nextItem, useTerminalStore } from "@lib/stores/terminal.store";
+import { nextItem, useTerminalStore, printingStatus } from "@lib/stores/terminal.store";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import TerminalLine from "./TerminalLine";
 import Typewriter from "./Typewriter";
+import LoadingMessage from "./loader"
 import "./Terminal.css";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 
@@ -14,7 +15,7 @@ export default function Terminal() {
 	const [inputHistoryIndex, setInputHistoryIndex] = useState(0);
 
 	const terminalFormRef = useRef<HTMLFormElement>(null);
-	const terminalInputRef = useRef<HTMLInputElement>(null);
+	const terminalInputRef = useRef<HTMLTextAreaElement>(null);
 	const textAnchorRef = useRef<HTMLInputElement>(null);
 
 	const {
@@ -41,7 +42,7 @@ export default function Terminal() {
 	}, [status]);
 
 	// Split handleKeyDown to reduce complexity
-	const handleUpArrow = (e: KeyboardEvent<HTMLInputElement>) => {
+	const handleUpArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
 		console.log(e, inputHistoryIndex, inputHistory);
 		e.preventDefault();
 		if (inputHistoryIndex === 0) {
@@ -53,7 +54,7 @@ export default function Terminal() {
 		}
 	};
 
-	const handleDownArrow = (e: KeyboardEvent<HTMLInputElement>) => {
+	const handleDownArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
 		console.log(e, inputHistoryIndex);
 		e.preventDefault();
 		if (inputHistoryIndex > 0) {
@@ -66,9 +67,13 @@ export default function Terminal() {
 		}
 	};
 
-	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
 		focusInput();
 		switch (e.key) {
+			case "Enter":
+        e.preventDefault();
+				handleSubmit(e);
+				break;
 			case "ArrowUp":
 				handleUpArrow(e);
 				break;
@@ -97,6 +102,7 @@ export default function Terminal() {
 
 		setInputValue("");
 		setInputHistory([...inputHistory, command]);
+		printingStatus(true);
 		
 		if(textAnchorRef.current) textAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
@@ -123,15 +129,14 @@ export default function Terminal() {
 					onSubmit={handleSubmit}
 					onClick={focusInput}
 					aria-label="Terminal"
-					role=""
 					id="terminal"
-					className="buzzing h-full w-full rounded-md overflow-y-auto border bg-black text-green-500"
+					className="shadow-2xl shadow-emerald-950 buzzing h-full w-full rounded-md overflow-y-auto border bg-black text-green-500"
 					style={{
 						borderColor:
 							status === "error" ? "var(--terminal-error)" : "var(--terminal-system)",
 					}}
 				>
-					<div className="screen relative">
+					<div className="screen relative ">
 						<div id="scroller" className="flex w-full flex-col items-end p-4">
 							{terminalContent.map((content, index) => (
 								<TerminalLine key={index} content={content} />
@@ -149,25 +154,22 @@ export default function Terminal() {
 								</div>
 							)}
 						</div>
-						<div className="sticky text-[1rem] bottom-12 h-0.5 w-full backdrop-blur-lg"></div>
-						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background">
-							<span>&#x3e;</span>
-							<input
-								id="terminal-input"
-								className="terminal-line system w-full border-0 bg-transparent px-2"
-								type="text"
-								value={inputValue}
-								onChange={(e) => setInputValue(e.target.value)}
-								ref={terminalInputRef}
-								onKeyDown={handleKeyDown}
-								style={{ outline: "none" }}
-								autoComplete="off"
-								autoCorrect="off"
-							/>
+						<div className="sticky text-[1rem] bottom-16 h-1 w-full backdrop-blur-lg"></div>
+						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background items-center" style={{ display: status === "inputEnabled" ? 'flex' : 'none'}}>
+							{useTerminalStore().isPrinting && <LoadingMessage />}
+							{!useTerminalStore().isPrinting && <span className="text-2xl">&#x3e;</span>}
+							<textarea
+									rows={1}
+									id="terminal-input"
+									className="terminal-line system w-full border-0 bg-transparent px-2"
+									value={inputValue}
+									onChange={(e) => setInputValue(e.target.value)}
+									ref={terminalInputRef}
+									onKeyDown={handleKeyDown}
+							></textarea>
 						</div>
 					</div>
 				</form>
-
 		</div>
 	);
 }

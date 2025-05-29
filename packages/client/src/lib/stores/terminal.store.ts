@@ -14,6 +14,7 @@ export type TerminalContentItem = {
 	useTypewriter?: boolean;
 	speed?: number;
 	style?: HTMLAttributes<HTMLDivElement>["style"];
+	isPrinting: boolean;
 };
 
 const {
@@ -22,6 +23,7 @@ const {
 	useStore: useTerminalStore,
 	createFactory,
 } = StoreBuilder({
+	isPrinting: false as boolean,
 	terminalContent: [] as TerminalContentItem[],
 	activeTypewriterLine: null as TerminalContentItem | null,
 	contentQueue: [] as TerminalContentItem[],
@@ -39,8 +41,15 @@ export function addTerminalContent(item: TerminalContentItem) {
 	});
 
 	if (get().activeTypewriterLine === null) {
+		printingStatus(false);
 		nextItem(null);
 	}
+}
+
+export function printingStatus(state: boolean) {
+	set({
+		isPrinting: state
+	});
 }
 
 /**
