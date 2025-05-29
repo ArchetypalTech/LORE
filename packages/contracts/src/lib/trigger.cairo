@@ -29,8 +29,8 @@ pub struct Trigger {
 #[dojo::model]
 pub struct TriggerIndex {
     #[key]
-    pub key: felt252,
     pub trigger_type: TriggerType,
+    //pub key: felt252,    
     pub trigger_id: Array<felt252>,
 }
 
@@ -48,7 +48,7 @@ pub struct TriggerParameter {
     pub value: felt252,
 }
 
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum TriggerType {
     // Player Triggers //
     PlayerEntersArea,
@@ -77,7 +77,7 @@ pub impl TriggerImpl of TriggerTrait {
     }
 
     fn get_triggerIndex(world: @WorldStorage, trigger_type: @TriggerType) -> Option<TriggerIndex> {
-        let key: felt252 = TriggerHelperImpl::trigger_type_to_felt252(trigger_type.clone());
+        let key: felt252 = trigger_type.clone().into();
         let trigger_index: TriggerIndex = world.read_model(key);
         if trigger_index.trigger_id.len() == 0 {
             return Option::None;
@@ -97,8 +97,8 @@ pub impl TriggerImpl of TriggerTrait {
                 let mut trigger_ids = ArrayTrait::<felt252>::new();
                 trigger_ids.append(key);
 
-                let key_f: felt252 = TriggerHelperImpl::trigger_type_to_felt252(trigger_type.clone());
-                let trigger_index = TriggerIndex { key: key_f, trigger_type:trigger_type, trigger_id: trigger_ids };
+                let _key_f: felt252 = trigger_type.clone().into();
+                let trigger_index = TriggerIndex { trigger_type:trigger_type, trigger_id: trigger_ids };
                 world.write_model(@trigger_index);
                 Result::Ok(())
             },
@@ -192,12 +192,12 @@ pub impl TriggerImpl of TriggerTrait {
     }
 }
 
-#[generate_trait]
-pub impl TriggerHelperImpl of TriggerTraitHelper {
-    fn trigger_type_to_felt252(trigger_type: TriggerType) -> felt252 {
-        match trigger_type {
-            TriggerType::PlayerEntersArea => 1,
-            TriggerType::PlayerLeavesArea => 2,
+pub impl TriggerTypeToFelt252 of Into<TriggerType, felt252> {
+    #[inline]
+    fn into(self : TriggerType) -> felt252 {
+        match self {
+            TriggerType::PlayerEntersArea => 0,
+            TriggerType::PlayerLeavesArea => 1,
         }
     }
 }
@@ -207,7 +207,7 @@ mod tests {
     use super::*;
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
-    use lore::{lib::{entity::{EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl, TriggerParameter, TriggerHelperImpl}},
+    use lore::{lib::{entity::{EntityImpl}, trigger::{Trigger,TriggerType, TriggerImpl, TriggerParameter}},
         components::{area::{AreaComponent}, exit::{ExitComponent}, player::{Player, PlayerComponent, caller_as_player, PlayerImpl}}
     };
     use lore::constants::constants::Direction;
@@ -239,8 +239,8 @@ mod tests {
         assert(stored.key == 1, 'Trigger key should match');
         assert(stored.name == "TestTrigger", 'Trigger name should match');
 
-        let key: felt252 = TriggerHelperImpl::trigger_type_to_felt252(trigger.trigger_type.clone());
-        let index: TriggerIndex = world.read_model(key);
+        let _key: felt252 = trigger.trigger_type.clone().into();
+        let index: TriggerIndex = world.read_model(trigger.trigger_type);
         assert(index.trigger_id.len() == 1, 'Trig index should have one ID');
         assert(index.trigger_id[0] == @trigger.key, 'Idx should have the trigger key');
     }
@@ -295,8 +295,8 @@ mod tests {
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
 
-        let key: felt252 = TriggerHelperImpl::trigger_type_to_felt252(TriggerType::PlayerEntersArea);
-        let index: TriggerIndex = world.read_model(key);
+        let _key: felt252 = TriggerType::PlayerEntersArea.clone().into();
+        let index: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
         assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
         assert(index.trigger_id[0] == @id_1, 'First ID should match');
         assert(index.trigger_id[1] == @id_2, 'Second ID should match');

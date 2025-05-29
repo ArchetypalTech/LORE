@@ -77,7 +77,7 @@ pub trait Component<T, +Model<T>> {
 //     }
 // }
 
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum Components {
     Area,
     Container,

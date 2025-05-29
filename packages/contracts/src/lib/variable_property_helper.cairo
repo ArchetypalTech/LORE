@@ -1,4 +1,4 @@
-use dojo::{world::{WorldStorage}, model::ModelStorage};
+use dojo::{world::{WorldStorage}};
 use lore::{
     components::{ 
         area::{Area, AreaComponent},
@@ -103,7 +103,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
                 if name == @owner_id {
-                    value = Option::Some(component.owner_id.into());
+                    value = Option::Some(component.owner_id);
                     access = Option::Some(prop.access_flags);
                 } else if name == @can_be_picked_up {
                     value = Option::Some(component.can_be_picked_up.into());
@@ -187,7 +187,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 }
                 
             }
-            world.write_model(@component);
+            component.store(world);
             break;
         };
         return (result, success);
@@ -227,7 +227,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                world.write_model(@component);
+                component.store(world);
                 break;
             }
         };
@@ -241,7 +241,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let description: ByteArray = "description";
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Ok(());
-
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
                 match prop.access_flags {
@@ -261,20 +260,19 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             // FOR NOW REPLACES THE WHOLE ARRAY,
                             // TODO: implement a way that supports updating/replacing/removing at certain indices
                             // Build a temporary mutable copy of description
-                            let mut new_description: Array<ByteArray> = ArrayTrait::new();
+                            let mut new_description = array![];
 
                             // Copy the original description
                             for item in new_value.clone() {
                                 let new_byte = ByteArrayTraitExt::byte_array_from_felt252(item);
-                                new_description.append(new_byte);
+                                new_description.append(new_byte.clone());
                             };
-
                             component.description = new_description;
                             success = true;
                         }
                     },
                 }
-                world.write_model(@component);
+                component.store(world);
                 break;
             }
         };
@@ -310,7 +308,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                world.write_model(@component);
+                component.store(world);
                 break;
             }
         };
@@ -357,7 +355,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },                    
                 }
-                world.write_model(@component);
+                component.store(world);
                 break;
             }
         };
@@ -383,7 +381,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },  
                 }
-                world.write_model(@component);
+                component.store(world);
                 break;
             }
         };

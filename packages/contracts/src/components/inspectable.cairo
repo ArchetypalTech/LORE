@@ -111,7 +111,7 @@ pub impl InspectableComponent of Component<Inspectable> {
         });
         props.append(ComponentProperty {
             name: "description",
-            property_type: PropertyType::String,
+            property_type: PropertyType::ByteArray,
             access_flags: PropertyAccess::ReadWrite,
         });
         let registry = PropertyRegistry {

@@ -30,7 +30,7 @@ pub struct Condition {
     pub value: felt252,      // Value to compare against
 }
 
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum Operator {
     Equals,
     NotEquals,
@@ -55,7 +55,7 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let area = OptionTrait::unwrap(container_opt);
-                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @area.inst, self.property);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @area.inst, self.property, *self.component);
                 component_value = b_component_value;
             },
             Components::Exit => {
@@ -64,7 +64,7 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let exit = OptionTrait::unwrap(container_opt);
-                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @exit.inst, self.property);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @exit.inst, self.property, *self.component);
                 component_value = b_component_value;
             },
             Components::Inspectable => {
@@ -73,16 +73,16 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let inspectable = OptionTrait::unwrap(inspectable_opt);
-                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @inspectable.inst, self.property);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @inspectable.inst, self.property, *self.component);
                 component_value = b_component_value;
             },
             Components::InventoryItem => {
-                let container_opt = InventoryItemComponent::get_component(*world, target);
-                if container_opt.is_none() {
+                let inventoryItem_opt = InventoryItemComponent::get_component(*world, target);
+                if inventoryItem_opt.is_none() {
                     return false;
                 }
-                let inventoryItem = OptionTrait::unwrap(container_opt);
-                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @inventoryItem.inst, self.property);
+                let inventoryItem = OptionTrait::unwrap(inventoryItem_opt);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @inventoryItem.inst, self.property, *self.component);
                 component_value = b_component_value;
             },
             Components::Container => {
@@ -91,7 +91,7 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @container.inst, self.property);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @container.inst, self.property, *self.component);
                 component_value = b_component_value;
             },
             Components::Player => {
@@ -100,17 +100,18 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let player = OptionTrait::unwrap(container_opt);
-                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @player.inst, self.property);
+                let(b_component_value, _) = VariablePropertyTrait::get_property(world, @player.inst, self.property, *self.component);
                 component_value = b_component_value;
-            },            
+            },
             _ => { 
                 // Return false if no match
                 return false;
             },
-        }
+        };
 
         // Check if the component value is none
         if component_value.is_none() {
+            println!("component value is none");
             return false;
         }
 
@@ -120,22 +121,20 @@ pub impl ConditionImpl of ConditionTrait {
     }
 
     fn compare(self: @Condition, component_value: felt252) -> bool {
+        let mut result = false;
         match self.operator {
             Operator::Equals => {
                 if component_value == *self.value {
-                    return true;
-                } else {
-                    return false;
-                }
+                    result = true;
+                } 
             },
             Operator::NotEquals => {
                 if component_value != *self.value {
-                    return true;
-                } else {
-                    return false;
+                    result = true;
                 }
             },
         }
+        result
     }
 }
 

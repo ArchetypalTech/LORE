@@ -47,7 +47,7 @@ pub struct ParameterDefinition {
     pub description: ByteArray,
 }
 
-#[derive(Clone, Drop, Serde, Debug, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum ParameterType {
     Boolean,
     Integer,
@@ -60,7 +60,7 @@ pub enum ParameterType {
     EntityReference,
 }
 
-#[derive(Clone, Drop, Serde, Debug, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum EffectType {
     ModifyComponent,
     TriggerEvent,
@@ -81,7 +81,7 @@ pub struct EffectExecution {
     pub error_message: ByteArray,
 }
 
-#[derive(Clone, Drop, Serde, Debug, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq,Introspect)]
 pub enum ExecutionStatus {
     Success,
     Failure,
@@ -108,7 +108,7 @@ pub impl EffectImpl of EffectTrait {
         } else {
             self.target
         };
-
+        
         match self.component {
             Components::Area => {
                 let area_opt = AreaComponent::get_component(world, *actual_target);
@@ -117,7 +117,7 @@ pub impl EffectImpl of EffectTrait {
                 }
                 let mut area = area_opt.unwrap();
                 // Direct modification to component
-                result = VariablePropertyImp::set_property(@world, @area.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @area.inst, self.property, self.value, self.component.clone());
                 // THIS WOULD BE FOR THE COMPONENT VARIABLE TO UPDATE CHANGES ON THE COMPONENT WHEN changed?
                 // success = Self::update_property(
                 //     world,
@@ -134,7 +134,7 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoExitComponent);
                 }
                 let mut exit = exit_opt.unwrap();
-                result = VariablePropertyImp::set_property(@world, @exit.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @exit.inst, self.property, self.value, self.component.clone());
                 // success = Self::update_property(
                 //     world,
                 //     @exit.inst,
@@ -150,7 +150,7 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoInspectableComponent);
                 }
                 let mut inspectable = inspect_opt.unwrap();
-                result = VariablePropertyImp::set_property(@world, @inspectable.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @inspectable.inst, self.property, self.value, self.component.clone());
                 // success = Self::update_property(
                 //     world,
                 //     @inspectable.inst,
@@ -166,7 +166,7 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoInventoryItemComponent);
                 }
                 let mut item = item_opt.unwrap();
-                result = VariablePropertyImp::set_property(@world, @item.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @item.inst, self.property, self.value, self.component.clone());
                 // success = Self::update_property(
                 //     world,
                 //     @item.inst,
@@ -182,7 +182,7 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoContainerComponent);
                 }
                 let mut container = cont_opt.unwrap();
-                result = VariablePropertyImp::set_property(@world, @container.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @container.inst, self.property, self.value, self.component.clone());
                 // success = Self::update_property(
                 //     world,
                 //     @container.inst,
@@ -198,7 +198,7 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoPlayerComponent);
                 }
                 let mut player = player_opt.unwrap();
-                result = VariablePropertyImp::set_property(@world, @player.inst, self.property, self.value);
+                result = VariablePropertyImp::set_property(@world, @player.inst, self.property, self.value, self.component.clone());
                 // success = Self::update_property(
                 //     world,
                 //     @player.inst,
@@ -225,7 +225,7 @@ pub impl EffectImpl of EffectTrait {
     context: TriggerContext
     ) -> bool {
         let (_current_value_opt, access_opt) =
-            VariablePropertyImp::get_property(@world, key, @property);
+            VariablePropertyImp::get_property(@world, key, @property, component_type);
 
         if access_opt.is_none() {
             return false;

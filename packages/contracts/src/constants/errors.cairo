@@ -1,4 +1,4 @@
-#[derive(Copy, Drop, Debug, PartialEq)]
+#[derive(Serde, Clone, Drop, Debug, PartialEq, Introspect)]
 pub enum Error {
     // Utils
     Unimplemented,

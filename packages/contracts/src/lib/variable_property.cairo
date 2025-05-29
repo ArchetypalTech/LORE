@@ -28,16 +28,17 @@ pub struct ComponentVariable {
 }
 
 // ========== REGISTRY STRUCTS ==========
-#[derive(Clone, Drop, Serde, Introspect)]
+#[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
 #[dojo::model]
 pub struct PropertyRegistry {
     #[key]
     pub key: felt252,
+    #[key]
     pub component_type: Components,
     pub properties: Array<ComponentProperty>,
 }
 
-#[derive(Clone, Drop, Serde, Introspect)]
+#[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
 pub struct ComponentProperty {
     pub name: ByteArray,
     pub property_type: PropertyType,
@@ -45,7 +46,7 @@ pub struct ComponentProperty {
 }
 
 // ========== ENUMS & TRAITS ==========
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum PropertyType {
     Boolean,
     Integer,
@@ -57,14 +58,14 @@ pub enum PropertyType {
     Enum,
 }
 
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum PropertyAccess {
     ReadOnly,
     WriteOnly,
     ReadWrite,
 }
 
-#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum ComponentType {
     Area,
     Exit,
@@ -85,10 +86,10 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
     fn get_property(
         world: @WorldStorage,
         key: @felt252,
-        property_name: @ByteArray
+        property_name: @ByteArray,
+        component_type: Components
     ) ->(Option<felt252>, Option<PropertyAccess>) {
-        
-        let property_registry: PropertyRegistry = world.read_model(*key);
+        let property_registry: PropertyRegistry = world.read_model((*key, component_type));
         let mut property_value: Option<felt252> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
@@ -147,13 +148,12 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         key: @felt252,
         property_name: @ByteArray,
         new_value: @Array<felt252>,
-        
+        component_type: Components
     ) -> Result<(), Error> {
-        let mut property_registry: PropertyRegistry = world.read_model(*key);
+        let mut property_registry: PropertyRegistry = world.read_model((*key, component_type));
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Err((Error::EffectFailed));
-
-        match property_registry.component_type.clone() {
+        match component_type.clone() {
             Components::Area => {
                 let component: Area = world.read_model(*key);
                 let prop_text = property_name.clone();
