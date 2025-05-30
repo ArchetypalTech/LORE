@@ -18,7 +18,7 @@ use lore::{
     constants::errors::Error,
 };
 
-#[derive(Clone, Drop, Serde, Debug, Introspect)]
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct Effect {
     #[key]

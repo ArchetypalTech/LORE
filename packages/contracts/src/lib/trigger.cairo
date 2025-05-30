@@ -13,7 +13,7 @@ use lore::{
     lib::{entity::{Entity, EntityImpl}}
 };
 
-#[derive(Clone, Drop, Serde, Debug)]
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct Trigger {
     #[key]
@@ -123,7 +123,7 @@ pub impl TriggerImpl of TriggerTrait {
         world.write_model(@trigger);
     }
 
-    fn evaluate_trigger(mut world: WorldStorage, trigger: @Trigger) -> Result<(), Error> {
+    fn evaluate_trigger(world: @WorldStorage, trigger: @Trigger) -> Result<(), Error> {
         let mut result: Result::<(), Error> = Result::Ok(());
         // Evaluate trigger
         if !*trigger.is_enabled {
@@ -133,21 +133,21 @@ pub impl TriggerImpl of TriggerTrait {
         match trigger.trigger_type {
             TriggerType::PlayerEntersArea => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, trigger.key);
+                let ent_opt = EntityImpl::get_entity(world, trigger.key);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(world, ent.inst);
+                let area_opt = AreaComponent::get_component(*world, ent.inst);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if entity has player as a child
-                let children = ent.get_children(@world);
+                let children = ent.get_children(world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(world, child.inst);
+                    let child_player = PlayerComponent::get_component(*world, child.inst);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -161,21 +161,21 @@ pub impl TriggerImpl of TriggerTrait {
             },
             TriggerType::PlayerLeavesArea => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, trigger.key);
+                let ent_opt = EntityImpl::get_entity(world, trigger.key);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(world, ent.inst);
+                let area_opt = AreaComponent::get_component(*world, ent.inst);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if the entity does not have a player as a child
-                let children = ent.get_children(@world);
+                let children = ent.get_children(world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(world, child.inst);
+                    let child_player = PlayerComponent::get_component(*world, child.inst);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -346,7 +346,7 @@ mod tests {
         let mut playerR1: Player = world.read_model(player.inst);
         playerR1.move_to_room(world, room_entity_1.inst);
 
-        let result = TriggerImpl::evaluate_trigger(world, @trigger);
+        let result = TriggerImpl::evaluate_trigger(@world, @trigger);
         if result.is_ok() {
             println!("Trigger jumps successfully");
         };
@@ -356,7 +356,7 @@ mod tests {
         player.move_to_room(world, room_entity_2.inst);
         player_entity.set_parent(world, @room_entity_2);
 
-        let result2 = TriggerImpl::evaluate_trigger(world, @trigger);
+        let result2 = TriggerImpl::evaluate_trigger(@world, @trigger);
         println!("result2: {:?}", result2);
         if result2.is_err() {
             println!("Trigger does not jump");

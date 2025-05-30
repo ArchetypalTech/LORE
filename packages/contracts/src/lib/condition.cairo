@@ -18,7 +18,7 @@ use lore::{
     },
 };
 
-#[derive(Clone, Drop, Serde, Debug)]
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct Condition {
     #[key]

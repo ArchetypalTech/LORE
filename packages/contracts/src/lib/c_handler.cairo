@@ -120,7 +120,7 @@ pub fn handle_command(
                         let mut trig_res_enter: bool = true;
                         for trigger in trigger_index_enters.trigger_id.clone() {
                             let trigger_enter: Trigger = world.read_model(trigger);
-                            let result_enter = TriggerImpl::evaluate_trigger(world, @trigger_enter);
+                            let result_enter = TriggerImpl::evaluate_trigger(@world, @trigger_enter);
                             if result_enter.is_err() {
                                 trig_res_enter = false;
                                 break;
@@ -137,7 +137,7 @@ pub fn handle_command(
                         let mut trig_res_leave: bool = true;
                         for trigger in trigger_index_leaves.trigger_id.clone() {
                             let trigger_leave: Trigger = world.read_model(trigger);
-                            let result_leave = TriggerImpl::evaluate_trigger(world, @trigger_leave);
+                            let result_leave = TriggerImpl::evaluate_trigger(@world, @trigger_leave);
                             if result_leave.is_err() {
                                 trig_res_leave = false;
                                 break;
