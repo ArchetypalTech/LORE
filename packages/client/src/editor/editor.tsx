@@ -72,6 +72,10 @@ export const Editor = () => {
 		setEditorState("empty");
 	}, [status, dataPool]);
 
+	useEffect(() => {
+		(async () => await EditorData().syncEntities())();
+	}, []);
+
 	const editorContents = useMemo(() => {
 		switch (editorState) {
 			case "not connected":

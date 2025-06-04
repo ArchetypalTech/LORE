@@ -28,9 +28,13 @@ export const EditorFooter = () => {
 					</Button>
 					<Button
 						variant="secondary"
-						onClick={() => {
-							EditorData().logPool();
-						}}
+						onClick={async () => {
+													try {
+														await EditorData().syncEntities();
+													} catch (error) {
+														console.error("Failed to fetch data from Torii:", error);
+													}
+												}}
 					>
 						Console Log DataPool
 					</Button>

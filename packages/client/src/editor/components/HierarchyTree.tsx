@@ -133,10 +133,27 @@ export const HierarchyTreeItem = ({
 const createTree = () => {
 	const entities = EditorData().getEntities();
 	const parents = entities.filter((e) => !e!.ChildToParent);
+
+	// Track unique entities by ID
+	const uniqueEntities = new Map<string, EntityCollection>();
+	const processedIds = new Set<string>();
+
 	//recursively build tree
 	const getNode = (inst: BigNumberish): TreeNode[] => {
+		const instStr = inst.toString();
+
+		// Skip if we've already processed this ID
+		if (processedIds.has(instStr)) {
+			return [];
+		}
+		processedIds.add(instStr);
+
 		const entity = EditorData().getEntity(inst);
 		if (entity === undefined || entity.Entity === undefined) return [];
+
+		// Store unique entity
+		uniqueEntities.set(instStr, entity);
+
 		if ("ParentToChildren" in entity && entity.ParentToChildren !== undefined) {
 			const children = entity.ParentToChildren?.children.flatMap((child) => {
 				return getNode(child.toString());
@@ -188,7 +205,7 @@ export const HierarchyTree = () => {
 				<PersonStanding />
 				New Player
 			</Button>
-			<div className="flex flex-col gap-1.25">
+			<div className="flex h-full max-h-[500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}
 					collapsible={false}

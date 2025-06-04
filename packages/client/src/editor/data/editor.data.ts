@@ -22,6 +22,7 @@ import type {
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
 import { tick } from "@/lib/utils/utils";
+import { InitDojo } from "@/lib/dojo";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -55,6 +56,7 @@ const getEntities = () =>
 		.toArray()
 		.map((x) => x.Entity && getEntity(x?.Entity?.inst)!)
 		.filter((x) => x !== undefined)
+		// Dev Note: we should try to order by created time instead of name
 		.sort((a, b) =>
 			a.Entity.name.toString().localeCompare(b.Entity.name.toString()),
 		);
@@ -443,12 +445,11 @@ const newEntity = async () => {
 		console.log(e);
 		if (e.ChildToParent !== undefined) {
 			const newParent = getEntity(e.ChildToParent.parent)!;
-			console.log(newParent);	
+			console.log(newParent);
 			addToParent(getEntity(newEntity.Entity.inst)!, newParent);
 		}
-	} else {
-		selectEntity(newEntity.Entity.inst);
 	}
+	selectEntity(newEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(newEntity.Entity);
 	updateComponent(newEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
 	return newEntity;
@@ -464,19 +465,16 @@ const newPlayer = async () => {
 		console.log(e);
 		if (e.ChildToParent !== undefined) {
 			const newParent = getEntity(e.ChildToParent.parent)!;
-			console.log(newParent);	
+			console.log(newParent);
 			addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
 		}
-	} else {
-		selectEntity(playerEntity.Entity.inst);
 	}
-
+	selectEntity(playerEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
-
-	return playerEntity
+	return playerEntity;
 };
 
 const logPool = () => {
@@ -501,6 +499,34 @@ const dojoSync = (
 	syncItem(obj, { verbose, sync: true });
 };
 
+const syncEntities = async () => {
+	try {
+		const { sdk, query } = await InitDojo();
+		const result = await sdk.getEntities({ query: query() });
+
+		if (result && Array.isArray(result.getItems())) {
+			// Clear existing pools
+			set({
+				syncPool: new Map<BigNumberish, AnyObject>(),
+				dataPool: new Map<BigNumberish, AnyObject>(),
+			});
+
+			// Update pools with fetched data
+			result.getItems().forEach((item) => {
+				if (item.models?.lore) {
+					const entity = item.models.lore;
+					if (entity.Entity?.inst) {
+						setItem(entity as AnyObject, entity.Entity.inst, true);
+					}
+				}
+			});
+		}
+	} catch (error) {
+		console.error("Error fetching from Torii:", error);
+		throw error;
+	}
+};
+
 const EditorData = createFactory({
 	getEntities,
 	getEntity,
@@ -516,6 +542,7 @@ const EditorData = createFactory({
 	addToParent,
 	removeParent,
 	newPlayer,
+	syncEntities,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });
 
