@@ -260,7 +260,7 @@ mod tests {
     use super::*;
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
-    use lore::{lib::{entity::{EntityImpl}, trigger::{TriggerImpl}},
+    use lore::{lib::{entity::{EntityImpl}, trigger::{TriggerImpl}, variable_property::{VariablePropertyImp}},
         components::{area::{AreaComponent}, 
         inspectable::{Inspectable, InspectableComponent, ActionMapInspectable, InspectableActions},
         player::{Player, PlayerComponent, caller_as_player, PlayerImpl},
@@ -314,6 +314,9 @@ mod tests {
 
         // Create trigger context
         let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
+
+        // register variable properties
+        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
         
         // Test description new value
         let new_value: Array<ByteArray> = array!["A door that is open", "Looks that it leads somewhere"];

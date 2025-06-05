@@ -8,7 +8,7 @@ use lore::{ //
         a_lexer::{Command, CommandImpl, TokenType},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level},//
-        trigger::{Trigger, TriggerIndex, TriggerType, TriggerContext,TriggerImpl}, //
+        trigger::{ TriggerContext}, //
         actions::{Action, ActionImpl}, //
     }, //
     constants::errors::Error, //
@@ -107,44 +107,6 @@ pub fn handle_command(
                         executed = true; 
                         break;                      
                     }
-                //     // THIS IS FOR TESTING ONLY
-                //     // get trigger index
-                //     let trigger_index_enters: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
-                //     let trigger_index_leaves: TriggerIndex = world.read_model(TriggerType::PlayerLeavesArea);
-                //     // check triggers
-                //     if trigger_index_enters.trigger_id.len() == 0 {
-                //         // println!("no triggers for enter");
-                //         break;
-                //     } else{
-                //         let mut trig_res_enter: bool = true;
-                //         for trigger in trigger_index_enters.trigger_id.clone() {
-                //             let trigger_enter: Trigger = world.read_model(trigger);
-                //             let result_enter = TriggerImpl::evaluate_trigger(@world, @trigger_enter);
-                //             if result_enter.is_err() {
-                //                 trig_res_enter = false;
-                //                 break;
-                //             }
-                //             println!("trig idx: {:?}, res_enter: {:?}", trigger_enter , trig_res_enter);
-                //             continue;
-                //         };
-                //     }
-                        
-                //     if trigger_index_leaves.trigger_id.len() == 0 {
-                //         //println!("no triggers for enter");
-                //         break;
-                //     } else{
-                //         let mut trig_res_leave: bool = true;
-                //         for trigger in trigger_index_leaves.trigger_id.clone() {
-                //             let trigger_leave: Trigger = world.read_model(trigger);
-                //             let result_leave = TriggerImpl::evaluate_trigger(@world, @trigger_leave);
-                //             if result_leave.is_err() {
-                //                 trig_res_leave = false;
-                //                 break;
-                //             }
-                //             //println!("trig idx: {:?}, res_leave: {:?}", trigger , trig_res_leave);
-                //             continue;
-                //         };
-                //     }
                 }
             }
         };

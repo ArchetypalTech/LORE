@@ -157,9 +157,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
-            println!("VPH-InventoryItem-Property name is {:?}", prop.name);
-            println!("VPH-InvItem name is {:?}", name);
-            println!("VPH-InvItem name.clone is {:?}", name.clone());
             if prop.name == name.clone() {
                 if name == @owner_id {
                     value = Option::Some(component.owner_id);
@@ -176,7 +173,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 }
             }
         };
-        println!("VPH-InventoryItem-Property value is {:?}", value);
         return (value, access);
     }
 
