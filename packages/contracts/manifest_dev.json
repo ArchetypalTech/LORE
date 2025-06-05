@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x3779affd45c12232f2fd8afa33cfdea3c5be52ce40999f9907f1b5338b1fd86",
-      "class_hash": "0x7f88fc539978cdb4637b10d91c7449f91753092c63cb07d6551946db29c8791",
+      "address": "0x2af9ec016fbae08d53af50372830253a59852719c99de1430069f2c237c7fce",
+      "class_hash": "0x17e525db91ef9a1dd75875dc1e80a8782eecc5bab61b919cb04f384ce0e257c",
       "abi": [
         {
           "type": "impl",
@@ -1445,6 +1445,10 @@
             {
               "name": "alt_names",
               "type": "core::array::Array::<core::byte_array::ByteArray>"
+            },
+            {
+              "name": "actions_keys",
+              "type": "core::array::Array::<core::felt252>"
             }
           ]
         },
@@ -1761,6 +1765,222 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::lib::trigger::TriggerType",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "PlayerEntersArea",
+              "type": "()"
+            },
+            {
+              "name": "PlayerLeavesArea",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::trigger::TriggerParameter",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "value",
+              "type": "core::felt252"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::trigger::Trigger",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "key",
+              "type": "core::felt252"
+            },
+            {
+              "name": "name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "trigger_type",
+              "type": "lore::lib::trigger::TriggerType"
+            },
+            {
+              "name": "parameters",
+              "type": "core::array::Array::<lore::lib::trigger::TriggerParameter>"
+            },
+            {
+              "name": "is_enabled",
+              "type": "core::bool"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "lore::components::Components",
+          "variants": [
+            {
+              "name": "Area",
+              "type": "()"
+            },
+            {
+              "name": "Container",
+              "type": "()"
+            },
+            {
+              "name": "Entity",
+              "type": "()"
+            },
+            {
+              "name": "Exit",
+              "type": "()"
+            },
+            {
+              "name": "Inspectable",
+              "type": "()"
+            },
+            {
+              "name": "InventoryItem",
+              "type": "()"
+            },
+            {
+              "name": "Player",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "lore::lib::condition::Operator",
+          "variants": [
+            {
+              "name": "Equals",
+              "type": "()"
+            },
+            {
+              "name": "NotEquals",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::condition::Condition",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "key",
+              "type": "core::felt252"
+            },
+            {
+              "name": "target",
+              "type": "core::felt252"
+            },
+            {
+              "name": "component",
+              "type": "lore::components::Components"
+            },
+            {
+              "name": "property",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "operator",
+              "type": "lore::lib::condition::Operator"
+            },
+            {
+              "name": "value",
+              "type": "core::felt252"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::effect::Effect",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "key",
+              "type": "core::felt252"
+            },
+            {
+              "name": "target",
+              "type": "core::felt252"
+            },
+            {
+              "name": "component",
+              "type": "lore::components::Components"
+            },
+            {
+              "name": "property",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "value",
+              "type": "core::array::Array::<core::byte_array::ByteArray>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::lib::actions::Action",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "key",
+              "type": "core::felt252"
+            },
+            {
+              "name": "name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "description",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "is_enabled",
+              "type": "core::bool"
+            },
+            {
+              "name": "trigger",
+              "type": "core::array::Array::<(core::felt252, core::felt252)>"
+            },
+            {
+              "name": "conditions",
+              "type": "core::array::Array::<(core::felt252, core::felt252)>"
+            },
+            {
+              "name": "effects",
+              "type": "core::array::Array::<(core::felt252, core::felt252)>"
+            },
+            {
+              "name": "tags",
+              "type": "core::array::Array::<core::byte_array::ByteArray>"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "lore::lib::relations::ParentToChildren",
           "members": [
@@ -1886,6 +2106,54 @@
             },
             {
               "type": "function",
+              "name": "create_trigger",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::trigger::Trigger>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_condition",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::condition::Condition>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_effect",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::effect::Effect>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_action",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::lib::actions::Action>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "create_parent",
               "inputs": [
                 {
@@ -1987,6 +2255,54 @@
                 {
                   "name": "ids",
                   "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_trigger",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<(core::felt252, core::felt252)>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_condition",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<(core::felt252, core::felt252)>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_effect",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<(core::felt252, core::felt252)>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_action",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<(core::felt252, core::felt252)>"
                 }
               ],
               "outputs": [],
@@ -2144,6 +2460,10 @@
         "create_exit",
         "create_inventory_item",
         "create_container",
+        "create_trigger",
+        "create_condition",
+        "create_effect",
+        "create_action",
         "create_parent",
         "create_child",
         "delete_player",
@@ -2153,14 +2473,18 @@
         "delete_exit",
         "delete_inventory_item",
         "delete_container",
+        "delete_trigger",
+        "delete_condition",
+        "delete_effect",
+        "delete_action",
         "delete_parent",
         "delete_child",
         "upgrade"
       ]
     },
     {
-      "address": "0x4d4ffee1e6d1179858cc51bdd663bed5a7d8bcd9ef326cbad4256a1850b7190",
-      "class_hash": "0x3e30c09ac39fa6a80fd84d4cd792e2e42d1ac36a468317c94cbd43c1be31db1",
+      "address": "0x229126c7b2e4cb95869eaec57f70f5fdc423edd1aa41d440e8b3a4aaa4938b4",
+      "class_hash": "0x3e1e7520f64d0c24d16bde9e5e5846231240cd3ccc497bf939c7072fffaeafa",
       "abi": [
         {
           "type": "impl",
@@ -2363,6 +2687,12 @@
   "models": [
     {
       "members": [],
+      "class_hash": "0x3857dc551d04d6cdb9f93d3a26126ecedcdfd80a3a4e57bb3245d95de3c012a",
+      "tag": "lore-Action",
+      "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
+    },
+    {
+      "members": [],
       "class_hash": "0x3a3a43c04844c3b537c3f90d82e6fbc633038d63942c3e12eb854678f11b201",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
@@ -2372,6 +2702,18 @@
       "class_hash": "0x2bf734f4b3cf7681a839fc565677becf877524a5a1e04bf16a96de6da3b1931",
       "tag": "lore-ChildToParent",
       "selector": "0x6c2a358df76ae2ca942ea3cc2f59ade04e5f5ba87ee162b41a10ad5a5755287"
+    },
+    {
+      "members": [],
+      "class_hash": "0x7c217202bb561a7e2e56f979e671213631be3faa86f4b8bfcf18734ece6c577",
+      "tag": "lore-ComponentVariable",
+      "selector": "0x7ce96a78c69170fe31cf5c816ec24414fd4c354324f8b9537e6830c9177cfe4"
+    },
+    {
+      "members": [],
+      "class_hash": "0x1aa5e082dacea0aa8681ddec6053261db50a6946ab45a842d3057e6caaeb4c9",
+      "tag": "lore-Condition",
+      "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
     {
       "members": [],
@@ -2387,7 +2729,19 @@
     },
     {
       "members": [],
-      "class_hash": "0x238d8ced00e402388e56e30749d6b9367f1055edcc0bb300224b7e4946a699a",
+      "class_hash": "0x30b5b29ea96bbf75f794287a03734d0b93c02574eea41bb78f6a085e66e246c",
+      "tag": "lore-Effect",
+      "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
+    },
+    {
+      "members": [],
+      "class_hash": "0x46595900b8e4e7beec2f291b577afdba400ed56978858102a3f912519900990",
+      "tag": "lore-EffectExecution",
+      "selector": "0x698a995d9da4025df54271e22829b96485465b52623ccd9c33509af48e20ba8"
+    },
+    {
+      "members": [],
+      "class_hash": "0x4eb566b0b8218becc004a11da62d8f8db400d4cf9fa1031aa41f50c8867176d",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
@@ -2426,6 +2780,24 @@
       "class_hash": "0x746ed669c8da81a12c82275a4316e71ac37e5d1fdae797a3c675386247a375e",
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
+    },
+    {
+      "members": [],
+      "class_hash": "0x784376b270f7927fda8990cb052993b59c2ecf14249214fed3ed653a69719a1",
+      "tag": "lore-PropertyRegistry",
+      "selector": "0x54d238bab1b146fbb42252f5fba933d9fb90048459d848a6fff3a2528615b59"
+    },
+    {
+      "members": [],
+      "class_hash": "0x6a49a421e63421e78d7b43dd2a030e3f5cfad9cbf19c71f93afd6917a522a41",
+      "tag": "lore-Trigger",
+      "selector": "0x8f76987efdbfa10b4f5f6a6ed5450ecc5241301beabc41a889d84c40f87cfa"
+    },
+    {
+      "members": [],
+      "class_hash": "0x437ec8fe3e346cb7e5399e16e53a1eb9182838e31c6b96145a8e3cdd6841611",
+      "tag": "lore-TriggerIndex",
+      "selector": "0x472f592295e556e032f9ea3d00faf9cbd2729afe3a6fc168cf6034c65b7dc6"
     }
   ],
   "events": [],
