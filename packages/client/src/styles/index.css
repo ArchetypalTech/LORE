@@ -21,10 +21,18 @@ body,
 }
 .theme-primary-background {
 	@apply bg-black;
-}	
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 input {
 	@apply font-secondary;
+}
+
+.scrollbar-hide {
+	scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+	display: none;
 }

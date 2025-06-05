@@ -18,6 +18,7 @@ import { ActionInspector } from "../components/inspectors/ActionInspector";
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
+import WalletStore from "@/lib/stores/wallet.store"
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -32,37 +33,45 @@ export const createDefaultEntity = (): WithStringEnums<
 });
 
 export const createPlayerEntity = (
-  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => ({
+	address?: string
+  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
+	const playerAddress = address || getPlayerAddress();
+	return {
 		// Adding the Entity as we need to set the inst to be the address
-	Entity: {
-		...schema.lore.Entity,
-		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
-		is_entity: true,
-		name: createRandomName(),
-		alt_names: [],
-	},
-	Player: {
-		...schema.lore.Player,
-		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
-		is_player: true,
-		address: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
-		location: 0,
-		use_debug: false,
-	},
-});
+		Entity: {
+			...schema.lore.Entity,
+			inst: playerAddress,
+			is_entity: true,
+			name: createRandomName(),
+			alt_names: [],
+		},
+		Player: {
+			...schema.lore.Player,
+			inst: playerAddress,
+			is_player: true,
+			address: playerAddress,
+			location: 0,
+			use_debug: false,
+		},
+	};
+};
 
 export const createPlayerComponent = (
-	_entity:Entity
-  ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => ({
-	Player: {
-		...schema.lore.Player,
-		inst: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
-		is_player: true,
-		address: LORE_CONFIG.wallet.address, // TODO:  this is a hack to get the entity to work. Should be player address
-		location: 0,
-		use_debug: false,
-	},
-});
+	_entity: Entity,
+	address?: string
+  ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
+	const playerAddress = address || getPlayerAddress();
+	return {
+		Player: {
+			...schema.lore.Player,
+			inst: playerAddress,
+			is_player: true,
+			address: playerAddress,
+			location: 0,
+			use_debug: false,
+		},
+	};
+};
 
 export const createDefaultAreaComponent = (
 	entity: Entity,
@@ -302,4 +311,14 @@ export const componentData: {
 		icon: "📝",
 		creator: createDefaultActionComponent,
 	},
+};
+
+const getPlayerAddress = (): string => {
+	if (LORE_CONFIG.useController) {
+		const controllerAddress = WalletStore().controller?.account?.address;
+		if (controllerAddress) {
+			return controllerAddress;
+		}
+	}
+	return LORE_CONFIG.wallet.address;
 };
