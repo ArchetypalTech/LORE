@@ -7,7 +7,7 @@ procs:
     shell: bun run dev
   torii:
     cwd: packages/contracts
-    shell: wait-port 5050 && torii --world "0x3ea2fa8bf5649c0e6fdec0482a23bdf760ec1add97c464c518b4e4bd9ab9f08" --http.cors_origins "*"
+    shell: wait-port 5050 && torii --world "0xfea62706381254891e4e1a685a1c5b7c91ce4dddcd1390fd229691654019c4" --http.cors_origins "*"
   katana:
     cwd: packages/contracts
     shell: katana --dev --dev.no-fee --http.cors_origins "*"
