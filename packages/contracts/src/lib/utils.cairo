@@ -229,7 +229,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
     }
 
     fn byte_array_from_felt252(mut value: felt252) -> ByteArray {
-        let mut remaining:u256 = value.try_into().unwrap();
+        let mut remaining: u256 = value.try_into().unwrap();
         let mut result: ByteArray = "";
 
         loop {
@@ -484,7 +484,7 @@ mod tests {
         // convert to felt252
         let felt252_1: felt252 = original_str1.clone().to_felt252_word().unwrap();
         // convert felt252 to byte array
-        let byte_array_1: ByteArray = ByteArrayTraitExt::byte_array_from_felt252(felt252_1);  
+        let byte_array_1: ByteArray = ByteArrayTraitExt::byte_array_from_felt252(felt252_1);
         assert_eq!(byte_array_1, original_str1, "results should be equal");
     }
 }

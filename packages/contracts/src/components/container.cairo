@@ -2,10 +2,9 @@ use super::super::lib::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     constants::errors::Error, components::{inventoryItem::InventoryItem},
-    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
-    },
+    lib::{entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl}},
 };
-use super::{Component,player::{Player, PlayerImpl, PlayerTrait}};
+use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
 
 #[derive(Clone, Drop, Serde, Introspect)]
 #[dojo::model]

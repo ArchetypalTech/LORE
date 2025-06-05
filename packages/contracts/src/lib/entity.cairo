@@ -16,7 +16,9 @@ pub struct Entity {
     pub name: ByteArray,
     pub alt_names: Array<ByteArray>,
     // hidden property
-    pub actions_keys: Array<felt252>, // This is for storing the keys of the actions that are attached to this entity
+    pub actions_keys: Array<
+        felt252,
+    > // This is for storing the keys of the actions that are attached to this entity
 }
 
 #[generate_trait]

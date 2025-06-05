@@ -16,7 +16,7 @@ use lore::{
         player::{m_Player, m_PlayerStory}, //
         exit::{m_Exit}, //
         container::{m_Container}, //
-        inventoryItem::{m_InventoryItem}, //
+        inventoryItem::{m_InventoryItem} //
     },
     constants::{errors::{}},
     lib::{
@@ -24,12 +24,12 @@ use lore::{
         a_lexer::{TokenTypeFelt252}, //
         dictionary::{m_Dict, initialize_dictionary}, //
         utils::{ByteArrayTraitExt}, //
-        relations::{m_ParentToChildren, m_ChildToParent},//
+        relations::{m_ParentToChildren, m_ChildToParent}, //
         trigger::{m_Trigger, m_TriggerIndex}, //
         condition::{m_Condition}, //
-        variable_property::{m_PropertyRegistry},//
+        variable_property::{m_PropertyRegistry}, //
         effect::{m_Effect}, //
-        actions::{m_Action}, //
+        actions::{m_Action} //
     },
 };
 

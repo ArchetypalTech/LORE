@@ -7,9 +7,9 @@ use lore::{ //
         entity::{EntityImpl}, //
         a_lexer::{Command, CommandImpl, TokenType},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
-        level_test::{create_test_level},//
-        trigger::{ TriggerContext}, //
-        actions::{Action, ActionImpl}, //
+        level_test::{create_test_level}, //
+        trigger::{TriggerContext}, //
+        actions::{Action, ActionImpl} //
     }, //
     constants::errors::Error, //
     components::{
@@ -104,8 +104,8 @@ pub fn handle_command(
                 let exit = exit.unwrap();
                 if exit.can_use_command(world, @player, @command) {
                     if exit.execute_command(world, @player, @command).is_ok() {
-                        executed = true; 
-                        break;                      
+                        executed = true;
+                        break;
                     }
                 }
             }
@@ -126,21 +126,23 @@ pub fn handle_command(
             // execute actions
             for action in actions {
                 // context is not being used inside evaluations or processing.
-                let context =  TriggerContext {
+                let context = TriggerContext {
                     doer: player.inst,
                     target1: room.inst, // would be the room that the player moved to
                     target2: 0,
                     inventory_object: 0,
                 };
 
-                let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action, @world, @context);
+                let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
+                    @action, @world, @context,
+                );
                 if trig_res.is_err() {
                     println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
                 }
                 if !cond_res {
                     println!("Condition are not met");
                 }
-                if  eff_res.is_err() {
+                if eff_res.is_err() {
                     println!("Effects failed: {:?}", eff_res.unwrap_err());
                 }
             };

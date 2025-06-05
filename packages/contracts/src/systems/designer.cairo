@@ -2,8 +2,9 @@ use lore::components::{
     inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
     container::Container, player::Player,
 };
-use lore::lib::{entity::Entity, relations::{ParentToChildren, ChildToParent},
-    trigger::Trigger, condition::Condition, actions::Action, effect::Effect,
+use lore::lib::{
+    entity::Entity, relations::{ParentToChildren, ChildToParent}, trigger::Trigger,
+    condition::Condition, actions::Action, effect::Effect,
 };
 
 #[starknet::interface]
@@ -42,11 +43,12 @@ pub mod designer {
     use super::IDesigner;
     use lore::components::{
         inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-        container::Container, player::Player, Component, Components
+        container::Container, player::Player, Component, Components,
     };
-    use lore::lib::{entity::{Entity, EntityImpl}, relations::{ParentToChildren, ChildToParent},
-        trigger::{Trigger, TriggerImpl}, condition::Condition, actions::{Action, ActionImpl}, effect::Effect,
-        variable_property::{VariablePropertyImp},
+    use lore::lib::{
+        entity::{Entity, EntityImpl}, relations::{ParentToChildren, ChildToParent},
+        trigger::{Trigger, TriggerImpl}, condition::Condition, actions::{Action, ActionImpl},
+        effect::Effect, variable_property::{VariablePropertyImp},
     };
     use dojo::{model::ModelStorage, world::WorldStorage};
 
@@ -119,7 +121,9 @@ pub mod designer {
             for o in t {
                 let result = TriggerImpl::register_trigger(world, o.clone());
                 if result.is_err() {
-                    println!("Trigger: {:?} failed to register with error: {:?}", o, result.unwrap_err());
+                    println!(
+                        "Trigger: {:?} failed to register with error: {:?}", o, result.unwrap_err(),
+                    );
                 }
             }
         }
@@ -143,7 +147,9 @@ pub mod designer {
             for o in t {
                 let result = ActionImpl::register_action(world, o.clone());
                 if result.is_err() {
-                    println!("Action: {:?} failed to register with error: {:?}", o, result.unwrap_err());
+                    println!(
+                        "Action: {:?} failed to register with error: {:?}", o, result.unwrap_err(),
+                    );
                 }
             }
         }
@@ -228,7 +234,11 @@ pub mod designer {
                 let model: Trigger = world.read_model(inst);
                 let result = TriggerImpl::unregister_trigger(world, model.clone());
                 if result.is_err() {
-                    println!("Trigger: {:?} failed to unregister with error: {:?}", model, result.unwrap_err());
+                    println!(
+                        "Trigger: {:?} failed to unregister with error: {:?}",
+                        model,
+                        result.unwrap_err(),
+                    );
                 }
             }
         }
@@ -255,7 +265,11 @@ pub mod designer {
                 let model: Action = world.read_model(inst);
                 let result = ActionImpl::unregister_action(world, model.clone());
                 if result.is_err() {
-                    println!("Action: {:?} failed to unregister with error: {:?}", model, result.unwrap_err());
+                    println!(
+                        "Action: {:?} failed to unregister with error: {:?}",
+                        model,
+                        result.unwrap_err(),
+                    );
                 }
             }
         }

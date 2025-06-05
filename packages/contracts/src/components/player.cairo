@@ -3,11 +3,9 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 
 use starknet::ContractAddress;
 use lore::{
-    constants::errors::Error, 
-    lib::{entity::{EntityImpl, Entity}, a_lexer::Command,},
+    constants::errors::Error, lib::{entity::{EntityImpl, Entity}, a_lexer::Command},
     components::{
-        Component,
-        inspectable::{Inspectable, InspectableImpl},
+        Component, inspectable::{Inspectable, InspectableImpl},
         container::{Container, ContainerComponent},
     },
 };
