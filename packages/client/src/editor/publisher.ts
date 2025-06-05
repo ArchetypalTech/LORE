@@ -30,7 +30,6 @@ import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
 import type { EntityCollection } from "./lib/types";
 import type { ChangeSet } from "./lib/types";
-import { BigNumberish } from "starknet";
 
 /**
  * Publishes a game configuration to the contract
@@ -277,9 +276,6 @@ const publishEffect = async (effect: Effect) => {
     byteArray.byteArrayFromString(effect.property),
     effect.value.map((v) => byteArray.byteArrayFromString(v.toString())),
   ];
-
-  console.log( "Effect", effectData);
-
   await dispatchDesignerCall("create_effect", [effectData]);
 }
 

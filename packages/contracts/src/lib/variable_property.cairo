@@ -32,8 +32,6 @@ pub struct ComponentVariable {
 #[dojo::model]
 pub struct PropertyRegistry {
     #[key]
-    pub key: felt252,
-    #[key]
     pub component_type: Components,
     pub properties: Array<ComponentProperty>,
 }
@@ -78,9 +76,8 @@ pub enum ComponentType {
 
 #[generate_trait]
 pub impl VariablePropertyImp of VariablePropertyTrait {
-    fn register_component_properties(mut world: WorldStorage, registry: PropertyRegistry) {
-        // Save the variable property registry in storage
-        world.write_model(@registry);
+    fn register_component_properties(world: WorldStorage, component: Components) {
+        VariablePropertyHelperTrait::register_properties(world, component);
     }
 
     fn get_property(
@@ -89,7 +86,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         property_name: @ByteArray,
         component_type: Components
     ) ->(Option<felt252>, Option<PropertyAccess>) {
-        let property_registry: PropertyRegistry = world.read_model((*key, component_type));
+        let property_registry: PropertyRegistry = world.read_model((component_type));
         let mut property_value: Option<felt252> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
@@ -150,7 +147,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         new_value: @Array<ByteArray>,
         component_type: Components
     ) -> Result<(), Error> {
-        let mut property_registry: PropertyRegistry = world.read_model((*key, component_type));
+        let property_registry: PropertyRegistry = world.read_model((component_type));
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Err((Error::EffectFailed));
         match component_type.clone() {
@@ -203,3 +200,4 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         return result;
     }
 }
+

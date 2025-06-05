@@ -49,7 +49,6 @@ pub impl ConditionImpl of ConditionTrait {
         let target = *self.target;
         let mut component_value: Option<felt252> = Option::None;
         let mut eval_result: bool = false;
-
         match self.component {
             Components::Area => {
                 let container_opt = AreaComponent::get_component(*world, target);
@@ -113,7 +112,7 @@ pub impl ConditionImpl of ConditionTrait {
 
         // Check if the component value is none
         if component_value.is_none() {
-            println!("component value is none");
+            // println!("component value is none");
             return false;
         }
 

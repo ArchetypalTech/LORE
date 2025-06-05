@@ -1,4 +1,4 @@
-use dojo::{world::{WorldStorage}};
+use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     components::{ 
         area::{Area, AreaComponent},
@@ -7,14 +7,70 @@ use lore::{
         inventoryItem::{InventoryItem,InventoryItemComponent},
         container::{Container, ContainerComponent},
         player::{Player, PlayerComponent},
+        Components,
     },
-    lib::{ utils::ByteArrayTraitExt, variable_property::{PropertyRegistry, PropertyAccess} },
+    lib::{ utils::ByteArrayTraitExt, variable_property::{PropertyRegistry, PropertyAccess, ComponentProperty, PropertyType} },
     constants::errors::Error, 
 };
 use core::traits::{Into};
 
 #[generate_trait]
 pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
+    // Register Component Properties
+    fn register_properties(mut world: WorldStorage, component: Components) {
+        let pos_property_registry: PropertyRegistry = world.read_model(component);
+        if pos_property_registry.properties.len() > 0 {
+            // println!("Registry for component {:?} already exists, skipping", component);
+            return;  // Registry already exists, skip
+        }
+
+        let props = match component {
+            Components::Area => array![
+                ComponentProperty {
+                    name: "is_area",
+                    property_type: PropertyType::Boolean,
+                    access_flags: PropertyAccess::ReadOnly,
+                }
+            ],
+            Components::Inspectable => array![
+                ComponentProperty { name: "is_inspectable", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadOnly },
+                ComponentProperty { name: "is_visible", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadOnly },
+                ComponentProperty { name: "description", property_type: PropertyType::String, access_flags: PropertyAccess::ReadWrite },
+            ],
+            Components::Exit => array![
+                ComponentProperty { name: "is_exit", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadOnly },
+                ComponentProperty { name: "is_enterable", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadWrite },
+                ComponentProperty { name: "leads_to", property_type: PropertyType::Felt252, access_flags: PropertyAccess::ReadWrite },
+                ComponentProperty { name: "direction_type", property_type: PropertyType::Direction, access_flags: PropertyAccess::ReadWrite },
+            ],
+            Components::InventoryItem => array![
+                ComponentProperty { name: "owner_id", property_type: PropertyType::Felt252, access_flags: PropertyAccess::ReadWrite },
+                ComponentProperty { name: "can_be_picked_up", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadWrite },
+                ComponentProperty { name: "can_go_in_container", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadWrite },
+            ],
+            Components::Container => array![
+                ComponentProperty { name: "is_container", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadOnly },
+                ComponentProperty { name: "can_be_opened", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadWrite },
+                ComponentProperty { name: "can_receive_items", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadWrite },
+                ComponentProperty { name: "is_open", property_type: PropertyType::Boolean, access_flags: PropertyAccess::ReadWrite },
+                ComponentProperty { name: "num_slots", property_type: PropertyType::Integer, access_flags: PropertyAccess::ReadWrite },
+            ],
+            Components::Player => array![
+                ComponentProperty { name: "location", property_type: PropertyType::Felt252, access_flags: PropertyAccess::ReadWrite },
+            ],
+            _ => array![],
+        };
+
+        if props.len() > 0 {
+            let mut registry = PropertyRegistry {
+                component_type: component,
+                properties: props,
+            };
+            world.write_model(@registry);
+        }
+    }
+    
+
     // GET PROPERTIES
     fn get_area_property(component: Area, name: @ByteArray, property: @PropertyRegistry) -> (Option<felt252>, Option<PropertyAccess>) {
         // Define expected property names
@@ -101,20 +157,26 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
+            println!("VPH-InventoryItem-Property name is {:?}", prop.name);
+            println!("VPH-InvItem name is {:?}", name);
+            println!("VPH-InvItem name.clone is {:?}", name.clone());
             if prop.name == name.clone() {
                 if name == @owner_id {
                     value = Option::Some(component.owner_id);
                     access = Option::Some(prop.access_flags);
+                    break;
                 } else if name == @can_be_picked_up {
                     value = Option::Some(component.can_be_picked_up.into());
                     access = Option::Some(prop.access_flags);
+                    break;
                 } else if name == @can_go_in_container {
                     value = Option::Some(component.can_go_in_container.into());
                     access = Option::Some(prop.access_flags);
+                    break;
                 }
-                break;
             }
         };
+        println!("VPH-InventoryItem-Property value is {:?}", value);
         return (value, access);
     }
 

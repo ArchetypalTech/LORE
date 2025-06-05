@@ -178,7 +178,7 @@ pub fn handle_command(
                 if !cond_res {
                     println!("Condition are not met");
                 }
-                if !eff_res.is_err() {
+                if  eff_res.is_err() {
                     println!("Effects failed: {:?}", eff_res.unwrap_err());
                 }
             };

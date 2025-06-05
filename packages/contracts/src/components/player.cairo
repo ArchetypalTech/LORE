@@ -4,10 +4,9 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{
     constants::errors::Error, 
-    lib::{entity::{EntityImpl, Entity}, a_lexer::Command,
-    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait}},
+    lib::{entity::{EntityImpl, Entity}, a_lexer::Command,},
     components::{
-        Component, Components,
+        Component,
         inspectable::{Inspectable, InspectableImpl},
         container::{Container, ContainerComponent},
     },
@@ -173,19 +172,6 @@ pub impl PlayerComponent of Component<Player> {
         player.is_player = true;
         // player.action_map = array![("look", InspectableActions::read_description)];
         player.store(world);
-        // Register component properties
-        let mut props: Array<ComponentProperty> = ArrayTrait::new();
-        props.append(ComponentProperty {
-            name: "location",
-            property_type: PropertyType::Felt252,
-            access_flags: PropertyAccess::ReadWrite,
-        });
-        let registry = PropertyRegistry {
-            key: player.inst,
-            component_type: Components::Player,
-            properties: props,
-        };
-        VariablePropertyTrait::register_component_properties(world, registry);
         // Return the component
         player
     }

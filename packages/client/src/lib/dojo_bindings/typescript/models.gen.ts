@@ -353,7 +353,6 @@ export interface ComponentVariableValue {
 
 // Type definition for `lore::lib::variable_property::PropertyRegistry` struct
 export interface PropertyRegistry {
-	key: BigNumberish;
 	component_type: ComponentsEnum;
 	properties: Array<ComponentProperty>;
 }
@@ -947,7 +946,6 @@ export const schema: SchemaType = {
 			last_updated: 0,
 		},
 		PropertyRegistry: {
-			key: 0,
 		component_type: new CairoCustomEnum({ 
 					Area: "",
 				Container: undefined,

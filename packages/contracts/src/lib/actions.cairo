@@ -149,6 +149,7 @@ mod tests {
         condition::{Condition, Operator},
         effect::{Effect, EffectImpl},
         actions::{Action, ActionImpl},
+        variable_property::VariablePropertyImp,
         utils::ByteArrayTraitExt,
         },
 
@@ -342,6 +343,18 @@ mod tests {
         }
     }
 
+    fn register_variable_properties(world: WorldStorage) {
+        VariablePropertyImp::register_component_properties(world, Components::Area);
+        VariablePropertyImp::register_component_properties(world, Components::Exit);
+        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+        VariablePropertyImp::register_component_properties(world, Components::InventoryItem);
+        VariablePropertyImp::register_component_properties(world, Components::Container);
+        VariablePropertyImp::register_component_properties(world, Components::Player);
+        VariablePropertyImp::register_component_properties(world, Components::Area);
+        VariablePropertyImp::register_component_properties(world, Components::Container);
+        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+    }
+
     #[test]
     // Trigger: player1 enters room 2
     // Condition: player1 has item
@@ -365,6 +378,9 @@ mod tests {
         // create player
         let mut player1 = caller_as_player(world, player_1);
         world.write_model(@player1);
+
+        // Register variable properties
+        register_variable_properties(world);
 
         // TRIGGER that jumps when an action is executed
         let t_key: felt252 = 1;
@@ -488,6 +504,9 @@ mod tests {
         player_container.is_open = true;
         player_container.num_slots = 2;
         player_container.store(world);
+
+        // Register variable properties
+        register_variable_properties(world);
 
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2

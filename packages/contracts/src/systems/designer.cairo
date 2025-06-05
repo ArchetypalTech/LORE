@@ -42,10 +42,11 @@ pub mod designer {
     use super::IDesigner;
     use lore::components::{
         inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-        container::Container, player::Player,
+        container::Container, player::Player, Component, Components
     };
-    use lore::lib::{entity::Entity, relations::{ParentToChildren, ChildToParent},
+    use lore::lib::{entity::{Entity, EntityImpl}, relations::{ParentToChildren, ChildToParent},
         trigger::{Trigger, TriggerImpl}, condition::Condition, actions::{Action, ActionImpl}, effect::Effect,
+        variable_property::{VariablePropertyImp},
     };
     use dojo::{model::ModelStorage, world::WorldStorage};
 
@@ -61,6 +62,8 @@ pub mod designer {
 
         fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
+            let mut worldSt: WorldStorage = self.world(@"lore");
+            VariablePropertyImp::register_component_properties(worldSt, Components::Player);
             for o in t {
                 world.write_model(@o);
             }
@@ -68,6 +71,8 @@ pub mod designer {
 
         fn create_inspectable(ref self: ContractState, t: Array<Inspectable>) {
             let mut world = self.world(@"lore");
+            let mut worldSt: WorldStorage = self.world(@"lore");
+            VariablePropertyImp::register_component_properties(worldSt, Components::Inspectable);
             for o in t {
                 world.write_model(@o);
             }
@@ -75,6 +80,8 @@ pub mod designer {
 
         fn create_area(ref self: ContractState, t: Array<Area>) {
             let mut world = self.world(@"lore");
+            let mut worldSt: WorldStorage = self.world(@"lore");
+            VariablePropertyImp::register_component_properties(worldSt, Components::Area);
             for o in t {
                 world.write_model(@o);
             }
@@ -82,6 +89,8 @@ pub mod designer {
 
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
             let mut world = self.world(@"lore");
+            let mut worldSt: WorldStorage = self.world(@"lore");
+            VariablePropertyImp::register_component_properties(worldSt, Components::Exit);
             for o in t {
                 world.write_model(@o);
             }
@@ -89,6 +98,8 @@ pub mod designer {
 
         fn create_inventory_item(ref self: ContractState, t: Array<InventoryItem>) {
             let mut world = self.world(@"lore");
+            let mut worldSt: WorldStorage = self.world(@"lore");
+            VariablePropertyImp::register_component_properties(worldSt, Components::InventoryItem);
             for o in t {
                 world.write_model(@o);
             }
@@ -96,6 +107,8 @@ pub mod designer {
 
         fn create_container(ref self: ContractState, t: Array<Container>) {
             let mut world = self.world(@"lore");
+            let mut worldSt: WorldStorage = self.world(@"lore");
+            VariablePropertyImp::register_component_properties(worldSt, Components::Container);
             for o in t {
                 world.write_model(@o);
             }

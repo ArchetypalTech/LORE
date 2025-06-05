@@ -7,6 +7,7 @@ import {
 import {
 	ActionMapEditor,
 	Toggle,
+	Input,
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
@@ -54,6 +55,12 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 				id="can_go_in_container"
 				value={componentObject.can_go_in_container}
 				onChange={handleInputChange}
+			/>
+			<Input
+				id="owner_id"
+				value={componentObject.owner_id.toString()}
+				onChange={handleInputChange}
+				readOnly={true}
 			/>
 			<ActionMapEditor
 				id="action_map"

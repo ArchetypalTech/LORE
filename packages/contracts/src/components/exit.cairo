@@ -6,9 +6,8 @@ use lore::{
     lib::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
         utils::ByteArrayTraitExt,
-        variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait},
     },
-    components::{Components, area::{AreaComponent}},
+    components::{area::{AreaComponent}},
 };
 
 use lore::constants::constants::Direction;
@@ -79,29 +78,6 @@ pub impl ExitComponent of Component<Exit> {
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];
         exit.store(world);
-        // Register component properties
-        let mut props: Array<ComponentProperty> = ArrayTrait::new();
-        props.append(ComponentProperty {
-            name: "is_exit",
-            property_type: PropertyType::Boolean,
-            access_flags: PropertyAccess::ReadOnly,
-        });
-        props.append(ComponentProperty {
-            name: "is_enterable",
-            property_type: PropertyType::Boolean,
-            access_flags: PropertyAccess::ReadWrite,
-        });
-        props.append(ComponentProperty {
-            name: "direction_type",
-            property_type: PropertyType::Direction,
-            access_flags: PropertyAccess::ReadWrite,
-        });
-        let registry = PropertyRegistry {
-            key: exit.inst,
-            component_type: Components::Exit,
-            properties: props,
-        };
-        VariablePropertyTrait::register_component_properties(world, registry);
         // Return the component
         exit
     }

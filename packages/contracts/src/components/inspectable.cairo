@@ -2,11 +2,10 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
 use lore::{
     constants::errors::Error,
-    lib::{entity::{Entity, EntityImpl}, random, a_lexer::{Command, Token},
-    variable_property::{PropertyRegistry, ComponentProperty, PropertyType, PropertyAccess, VariablePropertyTrait}},
+    lib::{entity::{Entity, EntityImpl}, random, a_lexer::{Command, Token}},
 };
 
-use super::{Component, Components, player::{Player, PlayerImpl}};
+use super::{Component, player::{Player, PlayerImpl}};
 
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
 pub enum InspectableActions {
@@ -97,29 +96,6 @@ pub impl InspectableComponent of Component<Inspectable> {
                     },
                 ];
         inspectable.store(world);
-        // Register component properties
-        let mut props: Array<ComponentProperty> = ArrayTrait::new();
-        props.append(ComponentProperty {
-            name: "is_inspectable",
-            property_type: PropertyType::Boolean,
-            access_flags: PropertyAccess::ReadOnly,
-        });
-        props.append(ComponentProperty {
-            name: "is_visible",
-            property_type: PropertyType::Boolean,
-            access_flags: PropertyAccess::ReadWrite,
-        });
-        props.append(ComponentProperty {
-            name: "description",
-            property_type: PropertyType::ByteArray,
-            access_flags: PropertyAccess::ReadWrite,
-        });
-        let registry = PropertyRegistry {
-            key: inspectable.inst,
-            component_type: Components::Inspectable,
-            properties: props,
-        };
-        VariablePropertyTrait::register_component_properties(world, registry);
         inspectable
     }
 
