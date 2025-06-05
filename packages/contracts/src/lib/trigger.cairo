@@ -157,7 +157,7 @@ pub impl TriggerImpl of TriggerTrait {
         }
 
         match trigger.trigger_type {
-            TriggerType::None => {// Do nothing
+            TriggerType::None => { // Do nothing
             },
             TriggerType::PlayerEntersArea => {
                 // Get entity that trigger is attached to

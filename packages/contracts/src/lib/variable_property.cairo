@@ -145,7 +145,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 property_value = property_value_opt;
                 access = access_opt;
             },
-            _ => {// Do nothing
+            _ => { // Do nothing
             },
         }
         return (property_value, access);
@@ -217,7 +217,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 result = result_p;
                 success = success_p;
             },
-            _ => {// Do nothing
+            _ => { // Do nothing
             },
         }
         return result;
