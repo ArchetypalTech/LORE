@@ -22,8 +22,10 @@ use lore::{
 #[dojo::model]
 pub struct Condition {
     #[key]
-    pub key: felt252,        // Unique identifier
-    pub target: felt252,     // Entity to check (can be optional for global conditions)
+    pub inst: felt252,        // Unique identifier attached to the entity
+    #[key]
+    pub key: felt252,        // Unique identifier of the condition
+    pub target: felt252,     // First is the target inst and second is the targetkey
     pub component: Components,  // Which component to check
     pub property: ByteArray,   // Which property of the component to check
     pub operator: Operator,  // How to compare the values
@@ -149,8 +151,9 @@ mod tests {
     };
     use lore::components::{Component, Components,inspectable::{Inspectable, InspectableComponent, ActionMapInspectable, InspectableActions}};
 
-    fn create_test_condition(key: felt252, target: felt252, component: Components, property: ByteArray, operator: Operator, value: felt252) -> Condition {
+    fn create_test_condition(inst: felt252, key: felt252, target: felt252, component: Components, property: ByteArray, operator: Operator, value: felt252) -> Condition {
         Condition {
+            inst,
             key,
             target,
             component,
@@ -181,31 +184,36 @@ mod tests {
         inspectable.store(world);
         
         // Test description property (length == 1)
-        let mut condition = create_test_condition(door.inst, door.inst, Components::Inspectable, "description", Operator::Equals, 1);
+        let key: felt252 = 1;
+        let mut condition = create_test_condition(door.inst, key, door.inst, Components::Inspectable, "description", Operator::Equals, 1);
         world.write_model(@condition);
         assert(condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'condition should be true');
         // Test description property (length == 1) — should fail
-        condition = create_test_condition(door.inst, door.inst, Components::Inspectable, "description", Operator::Equals, 2);
+        condition = create_test_condition(door.inst, key, door.inst, Components::Inspectable, "description", Operator::Equals, 2);
         world.write_model(@condition);
         assert(!condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'condition should be false');
 
         // Test is_inspectable == true (1)
-        condition = create_test_condition(door.inst + 1, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, 1);
+        let key2: felt252 = 2;
+        condition = create_test_condition(door.inst, key2, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, 1);
         world.write_model(@condition);
         assert(condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_inspectable should be true');
 
         // Test is_inspectable == false (0) — should fail
-        condition = create_test_condition(door.inst + 2, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, 0);
+        let key3: felt252 = 3;
+        condition = create_test_condition(door.inst, key3, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, 0);
         world.write_model(@condition);
         assert(!condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_inspectable should be false');
 
         // Test is_visible == true (1)
-        condition = create_test_condition(door.inst + 3, door.inst, Components::Inspectable, "is_visible", Operator::Equals, 1);
+        let key4: felt252 = 4;
+        condition = create_test_condition(door.inst, key4, door.inst, Components::Inspectable, "is_visible", Operator::Equals, 1);
         world.write_model(@condition);
         assert(condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_visible should be true');
 
         // Test is_visible == false (0) — should fail
-        condition = create_test_condition(door.inst + 4, door.inst, Components::Inspectable, "is_visible", Operator::Equals, 0);
+        let key5: felt252 = 5;
+        condition = create_test_condition(door.inst, key5, door.inst, Components::Inspectable, "is_visible", Operator::Equals, 0);
         world.write_model(@condition);
         assert(!condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }), 'is_visible should be false');
 

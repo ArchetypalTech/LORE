@@ -10,6 +10,7 @@ use lore::{
         player::{PlayerComponent},
     },
     lib::{
+        entity::{Entity, EntityImpl},
         utils::ByteArrayTraitExt,
         variable_property::{VariablePropertyImp},
         trigger::{Trigger,TriggerContext, TriggerImpl},
@@ -23,25 +24,64 @@ use lore::{
 #[dojo::model]
 pub struct Action {
     #[key]
-    pub key: felt252,        // Unique identifier
+    pub inst: felt252,        // Unique identifier attached to the entity
+    #[key]
+    pub key: felt252,        // Unique identifier of the action
     pub name: ByteArray,     // Human-readable name for the editor
     pub description: ByteArray, // Optional description
     pub is_enabled: bool,    // For toggling the entire action
-    pub trigger: Array<felt252>,    // When this action can occur, the id's of the triggers
-    pub conditions: Array<felt252>, // What must be true, the id's of the conditions
-    pub effects: Array<felt252>, // What happens when triggered, the id's of the effects
+    pub trigger: Array<(felt252, felt252)>,    // When this action can occur, the id's of the triggers. Key is (trigger.inst, trigger.key)
+    pub conditions: Array<(felt252, felt252)>, // What must be true, the id's of the conditions. Key is (condition.inst, condition.key)
+    pub effects: Array<(felt252, felt252)>, // What happens when triggered, the id's of the effects. Key is (effect.inst, effect.key)
     pub tags: Array<ByteArray>,  // For searching/filtering
 }
 
 // Implementation for processing actions
 #[generate_trait]
 pub impl ActionImpl of ActionTrait {
+    fn register_action(mut world: WorldStorage, action: Action) -> Result<(), Error> {
+        // 0. Check if action is already in the entity array
+        let maybe_entity = EntityImpl::get_entity(@world, @action.inst);
+        match maybe_entity {
+            Option::Some(mut entity) => {
+                // Check if action is already registered
+                let mut found = false;
+                for pos_action in entity.actions_keys.clone() {
+                    if (action.key == pos_action) {
+                        found = true;
+                        break;
+                    }
+                };
+                if found {
+                    // If found just update the action
+                    println!("Action already registered, updating");
+                    world.write_model(@action);
+                    return Result::Ok(());
+                }
+            },
+            Option::None => {},
+        }
+        // 1. Register action key in the entity
+        let mut entity: Entity = EntityImpl::get_entity(@world, @action.inst).unwrap();
+        entity.actions_keys.append(action.key);
+        // 2. Update the entity
+        world.write_model(@entity);
+        // 3. Write the action
+        world.write_model(@action);
+        Result::Ok(())
+    }
+
+    fn unregister_action(mut world: WorldStorage, action: Action) -> Result<(), Error> {
+        // 1. Remove the action
+        world.erase_model(@action);
+        Result::Ok(())
+    }
+
     fn process_action(
-        action_key: @felt252,
+        action: @Action,
         world: @WorldStorage,
         context: @TriggerContext,
     ) -> (Result<(), Error>, bool, Result<(), Error>) {
-        let mut action: Action = world.read_model(*action_key);
         // Trigger
         let mut result_t: Result<(), Error> = Result::Ok(());
         //Conditions
@@ -243,20 +283,22 @@ mod tests {
         item
     }
 
-    fn create_test_trigger(key: felt252, nameT: ByteArray, trigger_type: TriggerType) -> Trigger {
+    fn create_test_trigger(inst: felt252, key: felt252, nameT: ByteArray, trigger_type: TriggerType) -> Trigger {
         Trigger {
+            inst,
             key,
             name: nameT,
             trigger_type,
             parameters: array![
-                TriggerParameter { name: "area", value: key },
+                TriggerParameter { name: "area", value: inst },
             ],
             is_enabled: true,
         }
     }
 
-    fn create_test_condition(key: felt252, target: felt252, component: Components, property: ByteArray, operator: Operator, value: felt252) -> Condition {
+    fn create_test_condition(inst: felt252, key: felt252, target: felt252, component: Components, property: ByteArray, operator: Operator, value: felt252) -> Condition {
         Condition {
+            inst,
             key,
             target,
             component,
@@ -266,8 +308,9 @@ mod tests {
         }
     }
 
-    fn create_test_effect(key: felt252, target: felt252, component: Components, property: ByteArray, value: Array<felt252>) -> Effect {
+    fn create_test_effect(inst: felt252, key: felt252, target: felt252, component: Components, property: ByteArray, value: Array<ByteArray>) -> Effect {
         Effect {
+            inst,
             key,
             target,
             component,
@@ -276,8 +319,9 @@ mod tests {
         }
     }
 
-    fn create_test_action(key: felt252, name: ByteArray, description: ByteArray, is_enabled: bool, trigger: Array<felt252>, conditions: Array<felt252>, effects: Array<felt252>, tags: Array<ByteArray>) -> Action {
+    fn create_test_action(inst: felt252, key: felt252, name: ByteArray, description: ByteArray, is_enabled: bool, trigger: Array<(felt252, felt252)>, conditions: Array<(felt252, felt252)>, effects: Array<(felt252, felt252)>, tags: Array<ByteArray>) -> Action {
         Action {
+            inst,
             key,
             name,
             description,
@@ -323,14 +367,16 @@ mod tests {
         world.write_model(@player1);
 
         // TRIGGER that jumps when an action is executed
+        let t_key: felt252 = 1;
         // create trigger for when entering room 2
-        let mut trigger = create_test_trigger(room_2.inst, "TestTrigger", TriggerType::PlayerEntersArea);
+        let mut trigger = create_test_trigger(room_2.inst, t_key, "TestTrigger", TriggerType::PlayerEntersArea);
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
+        let c_key: felt252 = 1;
         // create condition for when player has item
-        let mut condition =  create_test_condition(1, item.inst, Components::InventoryItem, property, Operator::Equals, player1.inst);
+        let mut condition =  create_test_condition(room_2.inst, c_key, item.inst, Components::InventoryItem, property, Operator::Equals, player1.inst);
         world.write_model(@condition);
 
         // EFFECT TO APPLY WHEN PLAYER1 HAS ITEM
@@ -338,41 +384,42 @@ mod tests {
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
         let new_txt2: ByteArray = "Looks that it leads somewhere";
-        // 2. Transform description to felt252
-        let tx1: felt252 = new_txt1.to_felt252_word().unwrap();
-        let tx2: felt252 = new_txt2.to_felt252_word().unwrap();
-        // 3. Create array of the new description
-        let new_description: Array<felt252> = array![tx1, tx2];
+        // 2. Create array of the new description
+        let new_description: Array<ByteArray> = array![new_txt1, new_txt2];
         
         // New is_enterable -> Exit
-        // 1. New value as felt252
-        let enterable: felt252 = true.into();
+        // 1. New value as bytearray
+        let enterable: ByteArray = "true";
         // 2. Create array of the new value
-        let new_enterable: Array<felt252> = array![enterable];
+        let new_enterable: Array<ByteArray> = array![enterable];
 
         // Properties as bytearray
         let property: ByteArray = "description";
         let property2: ByteArray = "is_enterable";
 
+        let e_key: felt252 = 1;
+        let e_key2: felt252 = 2;
+
         // Create effects
-        let mut effect = create_test_effect(1, door.inst, Components::Inspectable, property, new_description.clone());
-        let mut effect2 = create_test_effect(2, door.inst, Components::Exit, property2, new_enterable);
+        let mut effect = create_test_effect(door.inst, e_key, door.inst, Components::Inspectable, property, new_description.clone());
+        let mut effect2 = create_test_effect(door.inst, e_key2, door.inst, Components::Exit, property2, new_enterable);
         world.write_model(@effect);
         world.write_model(@effect2);
 
         // TODO: create action
-        let key: felt252 = 90529;
+        let inst: felt252 = 90529;
+        let a_key: felt252 = 90527;
         let act_name: ByteArray = "TestAction";
         let act_desc: ByteArray = "TestActionDesc";
-        let mut triggers: Array<felt252> = ArrayTrait::new();
-        let mut conditions: Array<felt252> = ArrayTrait::new();
-        let mut effects: Array<felt252> = ArrayTrait::new();
-        triggers.append(trigger.key);
-        conditions.append(condition.key);
-        effects.append(effect.key);
-        effects.append(effect2.key);
+        let mut triggers: Array<(felt252, felt252)> = ArrayTrait::new();
+        let mut conditions: Array<(felt252, felt252)> = ArrayTrait::new();
+        let mut effects: Array<(felt252, felt252)> = ArrayTrait::new();
+        triggers.append((trigger.inst, trigger.key));
+        conditions.append((condition.inst, condition.key));
+        effects.append((effect.inst, effect.key));
+        effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
-        let mut action = create_test_action(key, act_name, act_desc, true ,triggers, conditions, effects, tags);
+        let mut action = create_test_action(inst, a_key, act_name, act_desc, true ,triggers, conditions, effects, tags);
         world.write_model(@action);
 
         // create trigger context
@@ -382,7 +429,7 @@ mod tests {
         // 1. move player to room 2
         player1.move_to_room(world, room_2.inst);
         // 2. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action.key, @world, @context);
+        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action, @world, @context);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
@@ -402,9 +449,9 @@ mod tests {
         // 3. Effects should not be update        
         let upd_door: Inspectable = world.read_model(door.inst);
         let upd_door_exit: Exit = world.read_model(door.inst);
-        let new_text1 = ByteArrayTraitExt::byte_array_from_felt252(*new_description.at(0));
-        let _new_text2 = ByteArrayTraitExt::byte_array_from_felt252(*new_description.at(1));
-        assert_ne!(upd_door.description[0].clone(), new_text1, "Description1 should not be updated");
+        let new_text1 = new_description.at(0);
+        let _new_text2 = new_description.at(1);
+        assert_ne!(upd_door.description[0].clone(), new_text1.clone(), "Description1 should not be updated");
         // This one fails as there is no index 1 in the array
         //assert_ne!(upd_door.description[1].clone(), new_text2, "Description2 should not be updated");
         assert(upd_door_exit.is_enterable == false, 'Exit should not be updated');
@@ -444,13 +491,13 @@ mod tests {
 
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2
-        let mut trigger = create_test_trigger(room_2.inst, "TestTrigger", TriggerType::PlayerEntersArea);
+        let mut trigger = create_test_trigger(room_2.inst, 1, "TestTrigger", TriggerType::PlayerEntersArea);
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
         // create condition for when player has item
-        let mut condition =  create_test_condition(1, item.inst, Components::InventoryItem, property, Operator::Equals, player1.inst);
+        let mut condition =  create_test_condition(room_2.inst, 1, item.inst, Components::InventoryItem, property, Operator::Equals, player1.inst);
         world.write_model(@condition);
 
         // EFFECT TO APPLY WHEN PLAYER1 HAS ITEM
@@ -458,41 +505,38 @@ mod tests {
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
         let new_txt2: ByteArray = "Looks that it leads somewhere";
-        // 2. Transform description to felt252
-        let tx1: felt252 = new_txt1.to_felt252_word().unwrap();
-        let tx2: felt252 = new_txt2.to_felt252_word().unwrap();
-        // 3. Create array of the new description
-        let new_description: Array<felt252> = array![tx1, tx2];
+        // 2. Create array of the new description
+        let new_description: Array<ByteArray> = array![new_txt1, new_txt2];
         
         // New is_enterable -> Exit
-        // 1. New value as felt252
-        let enterable: felt252 = true.into();
+        // 1. New value as ByteArray
+        let enterable: ByteArray = "true";
         // 2. Create array of the new value
-        let new_enterable: Array<felt252> = array![enterable];
+        let new_enterable: Array<ByteArray> = array![enterable];
 
         // Properties as bytearray
         let property: ByteArray = "description";
         let property2: ByteArray = "is_enterable";
 
         // Create effects
-        let mut effect = create_test_effect(1, door.inst, Components::Inspectable, property, new_description.clone());
-        let mut effect2 = create_test_effect(2, door.inst, Components::Exit, property2, new_enterable.clone());
+        let mut effect = create_test_effect(door.inst, 1, door.inst, Components::Inspectable, property, new_description.clone());
+        let mut effect2 = create_test_effect(door.inst, 2, door.inst, Components::Exit, property2, new_enterable.clone());
         world.write_model(@effect);
         world.write_model(@effect2);
 
         // TODO: create action
-        let key: felt252 = 90529;
+        let inst: felt252 = 90529;
         let act_name: ByteArray = "TestAction";
         let act_desc: ByteArray = "TestActionDesc";
-        let mut triggers: Array<felt252> = ArrayTrait::new();
-        let mut conditions: Array<felt252> = ArrayTrait::new();
-        let mut effects: Array<felt252> = ArrayTrait::new();
-        triggers.append(trigger.key);
-        conditions.append(condition.key);
-        effects.append(effect.key);
-        effects.append(effect2.key);
+        let mut triggers: Array<(felt252, felt252)> = ArrayTrait::new();
+        let mut conditions: Array<(felt252, felt252)> = ArrayTrait::new();
+        let mut effects: Array<(felt252, felt252)> = ArrayTrait::new();
+        triggers.append((trigger.inst, trigger.key));
+        conditions.append((condition.inst, condition.key));
+        effects.append((effect.inst, effect.key));
+        effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
-        let mut action = create_test_action(key, act_name, act_desc, true ,triggers, conditions, effects, tags);
+        let mut action = create_test_action(inst, 1, act_name, act_desc, true ,triggers, conditions, effects, tags);
         world.write_model(@action);
 
         // create trigger context
@@ -516,7 +560,7 @@ mod tests {
         // 4. Move player to room 2
         player1.move_to_room(world, room_2.inst);
         // 5. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action.key, @world, @context);
+        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action, @world, @context);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
@@ -536,10 +580,10 @@ mod tests {
         // 3. Effects should be update        
         let upd_door: Inspectable = world.read_model(door.inst);
         let upd_door_exit: Exit = world.read_model(door.inst);
-        let new_text1 = ByteArrayTraitExt::byte_array_from_felt252(*new_description.at(0));
-        let new_text2 = ByteArrayTraitExt::byte_array_from_felt252(*new_description.at(1));
-        assert_eq!(upd_door.description[0].clone(), new_text1, "Description1 should be updated");
-        assert_eq!(upd_door.description[1].clone(), new_text2, "Description2 should be updated");
+        let new_text1 = new_description.at(0);
+        let new_text2 = new_description.at(1);
+        assert_eq!(upd_door.description[0].clone(), new_text1.clone(), "Description1 should be updated");
+        assert_eq!(upd_door.description[1].clone(), new_text2.clone(), "Description2 should be updated");
         assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
         println!("Old description: {:?}", old_inspectable.description);
         println!("New description: {:?}", array![new_text1, new_text2]);

@@ -22,11 +22,13 @@ use lore::{
 #[dojo::model]
 pub struct Effect {
     #[key]
-    pub key: felt252,              // Unique identifier
+    pub inst: felt252,              // Unique identifier of the entity it is attached to
+    #[key]
+    pub key: felt252,              // Unique identifier of this effect
     pub target: felt252,           // Target entity
     pub component: Components,     // Component to affect
     pub property: ByteArray,       // Property to modify
-    pub value: Array<felt252>,     // New value to set, needs to be array for multiple values such as description.
+    pub value: Array<ByteArray>,   // New value to set, needs to be array for multiple values such as description.
 }
 
 // A registry-style effect template
@@ -221,7 +223,7 @@ pub impl EffectImpl of EffectTrait {
     key: @felt252,
     component_type: Components,
     property: ByteArray,
-    value: felt252,
+    value: ByteArray,
     context: TriggerContext
     ) -> bool {
         let (_current_value_opt, access_opt) =
@@ -265,8 +267,9 @@ mod tests {
         Component, Components,},
     };
 
-    fn create_test_effect(key: felt252, target: felt252, component: Components, property: ByteArray, value: Array<felt252>) -> Effect {
+    fn create_test_effect(inst: felt252, key: felt252, target: felt252, component: Components, property: ByteArray, value: Array<ByteArray>) -> Effect {
         Effect {
+            inst,
             key,
             target,
             component,
@@ -313,16 +316,16 @@ mod tests {
         let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
         
         // Test description new value
-        let new_value: Array<felt252> = array!['A door that is open', 'Looks that it leads somewhere'];
-        let new_text = ByteArrayTraitExt::byte_array_from_felt252(*new_value.at(1));
-        let mut effect = create_test_effect(door.inst, door.inst, Components::Inspectable, "description", new_value);
+        let new_value: Array<ByteArray> = array!["A door that is open", "Looks that it leads somewhere"];
+        let key: felt252 = 1;
+        let mut effect = create_test_effect(door.inst, key, door.inst, Components::Inspectable, "description", new_value.clone());
         world.write_model(@effect);
         let result = effect.apply_effect(world, context);
 
         let new_inspectable: Inspectable = world.read_model(door.inst);
 
         assert_ne!(inspectable.description[0], new_inspectable.description[0], "Effect should update description");
-        assert_eq!(new_inspectable.description[1], @new_text.clone(), "Effect should update description");
+        assert_eq!(new_inspectable.description[1], new_value.at(1), "Effect should update description");
         assert_eq!(result.is_ok(), true, "Effect should apply successfully");
     }
 }
