@@ -145,6 +145,50 @@ export interface PlayerValue {
 	use_debug: boolean;
 }
 
+// Type definition for `lore::lib::actions::Action` struct
+export interface Action {
+	inst: BigNumberish;
+	key: BigNumberish;
+	name: string;
+	description: string;
+	is_enabled: boolean;
+	trigger: Array<[BigNumberish, BigNumberish]>;
+	conditions: Array<[BigNumberish, BigNumberish]>;
+	effects: Array<[BigNumberish, BigNumberish]>;
+	tags: Array<string>;
+}
+
+// Type definition for `lore::lib::actions::ActionValue` struct
+export interface ActionValue {
+	name: string;
+	description: string;
+	is_enabled: boolean;
+	trigger: Array<[BigNumberish, BigNumberish]>;
+	conditions: Array<[BigNumberish, BigNumberish]>;
+	effects: Array<[BigNumberish, BigNumberish]>;
+	tags: Array<string>;
+}
+
+// Type definition for `lore::lib::condition::Condition` struct
+export interface Condition {
+	inst: BigNumberish;
+	key: BigNumberish;
+	target: BigNumberish;
+	component: ComponentsEnum;
+	property: string;
+	operator: OperatorEnum;
+	value: BigNumberish;
+}
+
+// Type definition for `lore::lib::condition::ConditionValue` struct
+export interface ConditionValue {
+	target: BigNumberish;
+	component: ComponentsEnum;
+	property: string;
+	operator: OperatorEnum;
+	value: BigNumberish;
+}
+
 // Type definition for `lore::lib::dictionary::Dict` struct
 export interface Dict {
 	dict_key: BigNumberish;
@@ -160,12 +204,56 @@ export interface DictValue {
 	n_value: BigNumberish;
 }
 
+// Type definition for `lore::lib::effect::Effect` struct
+export interface Effect {
+	inst: BigNumberish;
+	key: BigNumberish;
+	target: BigNumberish;
+	component: ComponentsEnum;
+	property: string;
+	value: Array<string>;
+}
+
+// Type definition for `lore::lib::effect::EffectExecution` struct
+export interface EffectExecution {
+	key: BigNumberish;
+	effect_key: BigNumberish;
+	timestamp: BigNumberish;
+	parameters: Array<EffectParameter>;
+	status: ExecutionStatusEnum;
+	error_message: string;
+}
+
+// Type definition for `lore::lib::effect::EffectExecutionValue` struct
+export interface EffectExecutionValue {
+	effect_key: BigNumberish;
+	timestamp: BigNumberish;
+	parameters: Array<EffectParameter>;
+	status: ExecutionStatusEnum;
+	error_message: string;
+}
+
+// Type definition for `lore::lib::effect::EffectParameter` struct
+export interface EffectParameter {
+	name: string;
+	value: BigNumberish;
+}
+
+// Type definition for `lore::lib::effect::EffectValue` struct
+export interface EffectValue {
+	target: BigNumberish;
+	component: ComponentsEnum;
+	property: string;
+	value: Array<string>;
+}
+
 // Type definition for `lore::lib::entity::Entity` struct
 export interface Entity {
 	inst: BigNumberish;
 	is_entity: boolean;
 	name: string;
 	alt_names: Array<string>;
+	actions_keys: Array<BigNumberish>;
 }
 
 // Type definition for `lore::lib::entity::EntityValue` struct
@@ -173,6 +261,7 @@ export interface EntityValue {
 	is_entity: boolean;
 	name: string;
 	alt_names: Array<string>;
+	actions_keys: Array<BigNumberish>;
 }
 
 // Type definition for `lore::lib::relations::ChildToParent` struct
@@ -200,6 +289,92 @@ export interface ParentToChildrenValue {
 	is_parent: boolean;
 	children: Array<BigNumberish>;
 }
+
+// Type definition for `lore::lib::trigger::Trigger` struct
+export interface Trigger {
+	inst: BigNumberish;
+	key: BigNumberish;
+	name: string;
+	trigger_type: TriggerTypeEnum;
+	parameters: Array<TriggerParameter>;
+	is_enabled: boolean;
+}
+
+// Type definition for `lore::lib::trigger::TriggerIndex` struct
+export interface TriggerIndex {
+	trigger_type: TriggerTypeEnum;
+	trigger_id: Array<[BigNumberish, BigNumberish]>;
+}
+
+// Type definition for `lore::lib::trigger::TriggerIndexValue` struct
+export interface TriggerIndexValue {
+	trigger_id: Array<[BigNumberish, BigNumberish]>;
+}
+
+// Type definition for `lore::lib::trigger::TriggerParameter` struct
+export interface TriggerParameter {
+	name: string;
+	value: BigNumberish;
+}
+
+// Type definition for `lore::lib::trigger::TriggerValue` struct
+export interface TriggerValue {
+	name: string;
+	trigger_type: TriggerTypeEnum;
+	parameters: Array<TriggerParameter>;
+	is_enabled: boolean;
+}
+
+// Type definition for `lore::lib::variable_property::ComponentProperty` struct
+export interface ComponentProperty {
+	name: string;
+	property_type: PropertyTypeEnum;
+	access_flags: PropertyAccessEnum;
+}
+
+// Type definition for `lore::lib::variable_property::ComponentVariable` struct
+export interface ComponentVariable {
+	key: BigNumberish;
+	component_type: ComponentsEnum;
+	entity_id: BigNumberish;
+	property_name: string;
+	value: string;
+	last_updated: BigNumberish;
+}
+
+// Type definition for `lore::lib::variable_property::ComponentVariableValue` struct
+export interface ComponentVariableValue {
+	component_type: ComponentsEnum;
+	entity_id: BigNumberish;
+	property_name: string;
+	value: string;
+	last_updated: BigNumberish;
+}
+
+// Type definition for `lore::lib::variable_property::PropertyRegistry` struct
+export interface PropertyRegistry {
+	key: BigNumberish;
+	component_type: ComponentsEnum;
+	properties: Array<ComponentProperty>;
+}
+
+// Type definition for `lore::lib::variable_property::PropertyRegistryValue` struct
+export interface PropertyRegistryValue {
+	properties: Array<ComponentProperty>;
+}
+
+// Type definition for `lore::components::Components` enum
+export const components = [
+	'Area',
+	'Container',
+	'Entity',
+	'Exit',
+	'Inspectable',
+	'InventoryItem',
+	'Player',
+] as const;
+export type Components = { [key in typeof components[number]]: string };
+export type ComponentsEnum = CairoCustomEnum;
 
 // Type definition for `lore::components::container::ContainerActions` enum
 export const containerActions = [
@@ -267,6 +442,54 @@ export const tokenType = [
 export type TokenType = { [key in typeof tokenType[number]]: string };
 export type TokenTypeEnum = CairoCustomEnum;
 
+// Type definition for `lore::lib::condition::Operator` enum
+export const operator = [
+	'Equals',
+	'NotEquals',
+] as const;
+export type Operator = { [key in typeof operator[number]]: string };
+export type OperatorEnum = CairoCustomEnum;
+
+// Type definition for `lore::lib::effect::ExecutionStatus` enum
+export const executionStatus = [
+	'Success',
+	'Failure',
+] as const;
+export type ExecutionStatus = { [key in typeof executionStatus[number]]: string };
+export type ExecutionStatusEnum = CairoCustomEnum;
+
+// Type definition for `lore::lib::trigger::TriggerType` enum
+export const triggerType = [
+	'None',
+	'PlayerEntersArea',
+	'PlayerLeavesArea',
+] as const;
+export type TriggerType = { [key in typeof triggerType[number]]: string };
+export type TriggerTypeEnum = CairoCustomEnum;
+
+// Type definition for `lore::lib::variable_property::PropertyAccess` enum
+export const propertyAccess = [
+	'ReadOnly',
+	'WriteOnly',
+	'ReadWrite',
+] as const;
+export type PropertyAccess = { [key in typeof propertyAccess[number]]: string };
+export type PropertyAccessEnum = CairoCustomEnum;
+
+// Type definition for `lore::lib::variable_property::PropertyType` enum
+export const propertyType = [
+	'Boolean',
+	'Integer',
+	'Felt252',
+	'Direction',
+	'ContractAddress',
+	'String',
+	'ByteArray',
+	'Enum',
+] as const;
+export type PropertyType = { [key in typeof propertyType[number]]: string };
+export type PropertyTypeEnum = CairoCustomEnum;
+
 export interface SchemaType extends ISchemaType {
 	lore: {
 		Area: Area,
@@ -287,14 +510,33 @@ export interface SchemaType extends ISchemaType {
 		PlayerStory: PlayerStory,
 		PlayerStoryValue: PlayerStoryValue,
 		PlayerValue: PlayerValue,
+		Action: Action,
+		ActionValue: ActionValue,
+		Condition: Condition,
+		ConditionValue: ConditionValue,
 		Dict: Dict,
 		DictValue: DictValue,
+		Effect: Effect,
+		EffectExecution: EffectExecution,
+		EffectExecutionValue: EffectExecutionValue,
+		EffectParameter: EffectParameter,
+		EffectValue: EffectValue,
 		Entity: Entity,
 		EntityValue: EntityValue,
 		ChildToParent: ChildToParent,
 		ChildToParentValue: ChildToParentValue,
 		ParentToChildren: ParentToChildren,
 		ParentToChildrenValue: ParentToChildrenValue,
+		Trigger: Trigger,
+		TriggerIndex: TriggerIndex,
+		TriggerIndexValue: TriggerIndexValue,
+		TriggerParameter: TriggerParameter,
+		TriggerValue: TriggerValue,
+		ComponentProperty: ComponentProperty,
+		ComponentVariable: ComponentVariable,
+		ComponentVariableValue: ComponentVariableValue,
+		PropertyRegistry: PropertyRegistry,
+		PropertyRegistryValue: PropertyRegistryValue,
 	},
 }
 export const schema: SchemaType = {
@@ -456,6 +698,60 @@ export const schema: SchemaType = {
 			location: 0,
 			use_debug: false,
 		},
+		Action: {
+			inst: 0,
+			key: 0,
+		name: "",
+		description: "",
+			is_enabled: false,
+			trigger: [[0, 0]],
+			conditions: [[0, 0]],
+			effects: [[0, 0]],
+			tags: [""],
+		},
+		ActionValue: {
+		name: "",
+		description: "",
+			is_enabled: false,
+			trigger: [[0, 0]],
+			conditions: [[0, 0]],
+			effects: [[0, 0]],
+			tags: [""],
+		},
+		Condition: {
+			inst: 0,
+			key: 0,
+			target: 0,
+		component: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+		property: "",
+		operator: new CairoCustomEnum({ 
+					Equals: "",
+				NotEquals: undefined, }),
+			value: 0,
+		},
+		ConditionValue: {
+			target: 0,
+		component: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+		property: "",
+		operator: new CairoCustomEnum({ 
+					Equals: "",
+				NotEquals: undefined, }),
+			value: 0,
+		},
 		Dict: {
 			dict_key: 0,
 		word: "",
@@ -489,16 +785,69 @@ export const schema: SchemaType = {
 				System: undefined, }),
 			n_value: 0,
 		},
+		Effect: {
+			inst: 0,
+			key: 0,
+			target: 0,
+		component: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+		property: "",
+			value: [""],
+		},
+		EffectExecution: {
+			key: 0,
+			effect_key: 0,
+			timestamp: 0,
+			parameters: [{ name: "", value: 0, }],
+		status: new CairoCustomEnum({ 
+					Success: "",
+				Failure: undefined, }),
+		error_message: "",
+		},
+		EffectExecutionValue: {
+			effect_key: 0,
+			timestamp: 0,
+			parameters: [{ name: "", value: 0, }],
+		status: new CairoCustomEnum({ 
+					Success: "",
+				Failure: undefined, }),
+		error_message: "",
+		},
+		EffectParameter: {
+		name: "",
+			value: 0,
+		},
+		EffectValue: {
+			target: 0,
+		component: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+		property: "",
+			value: [""],
+		},
 		Entity: {
 			inst: 0,
 			is_entity: false,
 		name: "",
 			alt_names: [""],
+			actions_keys: [0],
 		},
 		EntityValue: {
 			is_entity: false,
 		name: "",
 			alt_names: [""],
+			actions_keys: [0],
 		},
 		ChildToParent: {
 			inst: 0,
@@ -518,9 +867,126 @@ export const schema: SchemaType = {
 			is_parent: false,
 			children: [0],
 		},
+		Trigger: {
+			inst: 0,
+			key: 0,
+		name: "",
+		trigger_type: new CairoCustomEnum({ 
+					None: "",
+				PlayerEntersArea: undefined,
+				PlayerLeavesArea: undefined, }),
+			parameters: [{ name: "", value: 0, }],
+			is_enabled: false,
+		},
+		TriggerIndex: {
+		trigger_type: new CairoCustomEnum({ 
+					None: "",
+				PlayerEntersArea: undefined,
+				PlayerLeavesArea: undefined, }),
+			trigger_id: [[0, 0]],
+		},
+		TriggerIndexValue: {
+			trigger_id: [[0, 0]],
+		},
+		TriggerParameter: {
+		name: "",
+			value: 0,
+		},
+		TriggerValue: {
+		name: "",
+		trigger_type: new CairoCustomEnum({ 
+					None: "",
+				PlayerEntersArea: undefined,
+				PlayerLeavesArea: undefined, }),
+			parameters: [{ name: "", value: 0, }],
+			is_enabled: false,
+		},
+		ComponentProperty: {
+		name: "",
+		property_type: new CairoCustomEnum({ 
+					Boolean: "",
+				Integer: undefined,
+				Felt252: undefined,
+				Direction: undefined,
+				ContractAddress: undefined,
+				String: undefined,
+				ByteArray: undefined,
+				Enum: undefined, }),
+		access_flags: new CairoCustomEnum({ 
+					ReadOnly: "",
+				WriteOnly: undefined,
+				ReadWrite: undefined, }),
+		},
+		ComponentVariable: {
+			key: 0,
+		component_type: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+			entity_id: 0,
+		property_name: "",
+		value: "",
+			last_updated: 0,
+		},
+		ComponentVariableValue: {
+		component_type: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+			entity_id: 0,
+		property_name: "",
+		value: "",
+			last_updated: 0,
+		},
+		PropertyRegistry: {
+			key: 0,
+		component_type: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+			properties: [{ name: "", property_type: new CairoCustomEnum({ 
+					Boolean: "",
+				Integer: undefined,
+				Felt252: undefined,
+				Direction: undefined,
+				ContractAddress: undefined,
+				String: undefined,
+				ByteArray: undefined,
+				Enum: undefined, }), access_flags: new CairoCustomEnum({ 
+					ReadOnly: "",
+				WriteOnly: undefined,
+				ReadWrite: undefined, }), }],
+		},
+		PropertyRegistryValue: {
+			properties: [{ name: "", property_type: new CairoCustomEnum({ 
+					Boolean: "",
+				Integer: undefined,
+				Felt252: undefined,
+				Direction: undefined,
+				ContractAddress: undefined,
+				String: undefined,
+				ByteArray: undefined,
+				Enum: undefined, }), access_flags: new CairoCustomEnum({ 
+					ReadOnly: "",
+				WriteOnly: undefined,
+				ReadWrite: undefined, }), }],
+		},
 	},
 };
 export enum ModelsMapping {
+	Components = 'lore-Components',
 	Area = 'lore-Area',
 	AreaValue = 'lore-AreaValue',
 	ActionMapContainer = 'lore-ActionMapContainer',
@@ -545,12 +1011,36 @@ export enum ModelsMapping {
 	PlayerValue = 'lore-PlayerValue',
 	Direction = 'lore-Direction',
 	TokenType = 'lore-TokenType',
+	Action = 'lore-Action',
+	ActionValue = 'lore-ActionValue',
+	Condition = 'lore-Condition',
+	ConditionValue = 'lore-ConditionValue',
+	Operator = 'lore-Operator',
 	Dict = 'lore-Dict',
 	DictValue = 'lore-DictValue',
+	Effect = 'lore-Effect',
+	EffectExecution = 'lore-EffectExecution',
+	EffectExecutionValue = 'lore-EffectExecutionValue',
+	EffectParameter = 'lore-EffectParameter',
+	EffectValue = 'lore-EffectValue',
+	ExecutionStatus = 'lore-ExecutionStatus',
 	Entity = 'lore-Entity',
 	EntityValue = 'lore-EntityValue',
 	ChildToParent = 'lore-ChildToParent',
 	ChildToParentValue = 'lore-ChildToParentValue',
 	ParentToChildren = 'lore-ParentToChildren',
 	ParentToChildrenValue = 'lore-ParentToChildrenValue',
+	Trigger = 'lore-Trigger',
+	TriggerIndex = 'lore-TriggerIndex',
+	TriggerIndexValue = 'lore-TriggerIndexValue',
+	TriggerParameter = 'lore-TriggerParameter',
+	TriggerType = 'lore-TriggerType',
+	TriggerValue = 'lore-TriggerValue',
+	ComponentProperty = 'lore-ComponentProperty',
+	ComponentVariable = 'lore-ComponentVariable',
+	ComponentVariableValue = 'lore-ComponentVariableValue',
+	PropertyAccess = 'lore-PropertyAccess',
+	PropertyRegistry = 'lore-PropertyRegistry',
+	PropertyRegistryValue = 'lore-PropertyRegistryValue',
+	PropertyType = 'lore-PropertyType',
 }

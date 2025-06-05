@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { ChangeEvent } from "react";
 import type { CairoCustomEnum } from "starknet";
+import { num, BigNumberish } from "starknet";
 import { cn } from "@/lib/utils/utils";
 import { useCairoEnum } from "../lib/schemas";
 import type { ActionMap, OptionType } from "../lib/types";
@@ -174,13 +175,15 @@ export const TextAreaArray = ({
 	className,
 	children,
 	onChange,
+	readOnly,
 }: {
 	id: string;
 	value: string[];
-	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 	rows: number;
 	className?: string;
 	children?: React.ReactNode;
+	readOnly?: boolean;
 }) => {
 	return (
 		<div className="form-group">
@@ -191,6 +194,7 @@ export const TextAreaArray = ({
 				rows={rows}
 				className={className}
 				onChange={onChange}
+				readOnly={readOnly}
 			/>
 			{children}
 		</div>
@@ -429,4 +433,11 @@ export const ActionMapEditor = <T extends CairoCustomEnum>({
 			</Button>
 		</div>
 	);
+};
+
+
+export const formatKeyAsDecimal = (key: string | BigNumberish): string => {
+  const bigIntKey = num.toBigInt(key); // this handles strings, numbers, BigInt, etc.
+  const decimalStr = bigIntKey.toString();
+  return decimalStr.padStart(16, "0");
 };

@@ -8,6 +8,12 @@ import type {
 	SchemaType,
 	TokenTypeEnum,
 	tokenType,
+	triggerType,
+	TriggerTypeEnum,
+	OperatorEnum,
+	operator,
+	ComponentsEnum,
+	components,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 
 export interface OptionType {
@@ -32,6 +38,10 @@ export type AnyObject = WithStringEnums<
 		| "InventoryItem"
 		| "PlayerStory"
 		| "Player"
+		| "Trigger"
+		| "Condition"
+		| "Effect"
+		| "Action"
 		| "Dict"
 		| "Entity"
 		| "ChildToParent"
@@ -42,10 +52,18 @@ export type AnyObject = WithStringEnums<
 
 export type OneOf<Obj> = Obj[keyof Obj];
 
-export type EntityCollection = { Entity: Entity } & Partial<SchemaType["lore"]>;
+type MultiKeys = "Effect" | "Trigger"; // expand as needed
+
+type MultiInstanceWrapped<T> = {
+  [K in keyof T]: K extends MultiKeys ? T[K] : T[K];
+};
+
+export type EntityCollection = {
+  Entity: Entity;
+} & Partial<MultiInstanceWrapped<SchemaType["lore"]>>;
 
 export type EditorCollection = {
-	[K in keyof EntityCollection]?: WithStringEnums<Partial<SchemaType["lore"]>>;
+  [K in keyof EntityCollection]?: WithStringEnums<EntityCollection[K]>;
 };
 
 /**
@@ -56,19 +74,30 @@ export type EditorCollection = {
 export type WithStringEnums<T> = {
 	[K in keyof T]: T[K] extends DirectionEnum
 		? (typeof direction)[number]
-		: T[K] extends InspectableActionsEnum
-			? (typeof inspectableActions)[number]
-			: T[K] extends TokenTypeEnum
-				? (typeof tokenType)[number]
-				: T[K] extends Array<infer U>
-					? Array<WithStringEnums<U>>
-					: T[K] extends object
-						? WithStringEnums<T[K]>
-						: T[K];
+			: T[K] extends ComponentsEnum
+				? (typeof components)[number]
+				: T[K] extends TriggerTypeEnum
+					? (typeof triggerType)[number]
+						: T[K] extends OperatorEnum
+							? (typeof operator)[number]
+							: T[K] extends InspectableActionsEnum
+								? (typeof inspectableActions)[number]
+								: T[K] extends TokenTypeEnum
+									? (typeof tokenType)[number]
+									: T[K] extends Array<infer U>
+										? Array<WithStringEnums<U>>
+										: T[K] extends object
+											? WithStringEnums<T[K]>
+											: T[K];
 };
 
 export interface ActionMap<T> {
 	action: string;
 	inst: BigNumberish;
 	action_fn: T;
+}
+
+export interface TriggerParameter {
+	name: string;
+	value: BigNumberish;
 }

@@ -11,7 +11,11 @@ import { InspectableInspector } from "../components/inspectors/InspectableInspec
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { ContainerInspector } from "../components/inspectors/ContainerInspector";
 import { PlayerInspector } from "../components/inspectors/PlayerInspector";
-import { createRandomName, randomKey } from "../editor.utils";
+import { TriggerInspector } from "../components/inspectors/TriggerInspector";
+import { ConditionInspector } from "../components/inspectors/ConditionInspector";
+import { EffectInspector } from "../components/inspectors/EffectInspector";
+import { ActionInspector } from "../components/inspectors/ActionInspector";
+import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
 
@@ -78,7 +82,7 @@ export const createDefaultInspectableComponent = (
 		inst: entity.inst,
 		is_inspectable: true,
 		is_visible: true,
-		description: [],
+		description: [entity.name],
 		action_map: [
 			{ action: "look", inst: 0, action_fn: "ReadRandomDescription" },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription" },
@@ -141,6 +145,67 @@ export const createDefaultContainerComponent = (
 		],
 	},
 });
+
+export const createDefaultTrigger = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Trigger">> => ({
+	Trigger: {
+		...schema.lore.Trigger,
+		inst: entity.inst,
+		key: generateNumericUniqueId(),
+		name: "",
+		trigger_type:"None",
+		parameters: [{ name: schema.lore.Trigger.name, value: schema.lore.Trigger.inst }],
+		is_enabled: true,
+	},
+});
+
+export const createDefaultCondition = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Condition">> => ({
+	Condition: {
+		...schema.lore.Condition,
+		inst: entity.inst,
+		key: generateNumericUniqueId(),
+		target: 0,
+		component: "Area",
+		property: "",
+		operator: "Equals",
+		value: 0,
+	},
+});
+
+export const createDefaultEffectComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Effect">> => ({
+	Effect: {
+		...schema.lore.Effect,
+		inst: entity.inst,
+		key: generateNumericUniqueId(),
+		target: 0,
+		component: "Inspectable",
+		property: "is_visible",
+		value: [],
+	},
+});
+
+export const createDefaultActionComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Action">> => ({
+	Action: {
+		...schema.lore.Action,
+		inst: entity.inst,
+		key: generateNumericUniqueId(),
+		name: "",
+		description: "",
+		is_enabled: true,
+		trigger: [],
+		conditions: [],
+		effects: [],
+		tags: [],
+	},
+});
+
 
 export const createDefaultChildToParentComponent = (
 	entity: Entity,
@@ -212,5 +277,29 @@ export const componentData: {
 		inspector: ContainerInspector,
 		icon: "🎒",
 		creator: createDefaultContainerComponent,
+	},
+	Trigger: {
+		order: 7,
+		inspector: TriggerInspector,
+		icon: "🛎️",
+		creator: createDefaultTrigger,
+	},
+	Condition: {
+		order: 8,
+		inspector: ConditionInspector,
+		icon: "⚖️",
+		creator: createDefaultCondition,
+	},
+	Effect: {
+		order: 9,
+		inspector: EffectInspector,
+		icon: "✨",
+		creator: createDefaultEffectComponent,
+	},
+	Action: {
+		order: 10,
+		inspector: ActionInspector,
+		icon: "📝",
+		creator: createDefaultActionComponent,
 	},
 };

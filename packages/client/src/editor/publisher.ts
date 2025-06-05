@@ -14,6 +14,13 @@ import {
 	type Container,
 	containerActions,
 	type Player,
+	type Trigger,
+	triggerType,
+	type Condition,
+	operator,
+	components,
+	type Effect,
+	type Action,
 	type ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
@@ -23,6 +30,7 @@ import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
 import type { EntityCollection } from "./lib/types";
 import type { ChangeSet } from "./lib/types";
+import { BigNumberish } from "starknet";
 
 /**
  * Publishes a game configuration to the contract
@@ -99,6 +107,18 @@ const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Container" in collection && collection.Container !== undefined) {
 		await publishContainer(collection.Container);
 	}
+	if ("Trigger" in collection && collection.Trigger !== undefined) {
+		await publishTrigger(collection.Trigger);
+	}
+	if ("Condition" in collection && collection.Condition !== undefined) {
+		await publishCondition(collection.Condition);
+	}
+	if ("Effect" in collection && collection.Effect !== undefined) {
+		await publishEffect(collection.Effect);
+	}
+	if ("Action" in collection && collection.Action !== undefined) {
+		await publishAction(collection.Action);
+	}
 	if ("ChildToParent" in collection && collection.ChildToParent !== undefined) {
 		await publishChildToParent(collection.ChildToParent);
 	}
@@ -120,6 +140,7 @@ const publishEntity = async (entity: Entity) => {
 					.filter((x) => x.length > 0)
 					.map((x) => byteArray.byteArrayFromString(x))
 			: 0,
+		num.toBigInt(entity.actions_keys.toString()),
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -219,6 +240,65 @@ const publishContainer = async (container: Container) => {
 	await dispatchDesignerCall("create_container", [containerData]);
 };
 
+const publishTrigger = async (trigger: Trigger) => {
+	const triggerData = [
+		num.toBigInt(trigger.inst.toString()),
+		num.toBigInt(trigger.key.toString()),
+		byteArray.byteArrayFromString(trigger.name),
+		toEnumIndex(trigger.trigger_type, triggerType),
+		trigger.parameters.map((x) => [
+			byteArray.byteArrayFromString(x.name),
+			num.toBigInt(x.value),
+		]),
+		trigger.is_enabled,
+	];
+	await dispatchDesignerCall("create_trigger", [triggerData]);
+};
+
+const publishCondition = async (condition: Condition) => {
+	const conditionData = [
+		num.toBigInt(condition.inst.toString()),
+		num.toBigInt(condition.key),
+		num.toBigInt(condition.target),
+		toEnumIndex(condition.component, components),
+		byteArray.byteArrayFromString(condition.property),
+		toEnumIndex(condition.operator, operator),
+		num.toBigInt(condition.value),
+	];
+	await dispatchDesignerCall("create_condition", [conditionData]);
+};
+
+const publishEffect = async (effect: Effect) => {
+  const effectData = [
+    num.toBigInt(effect.inst.toString()),
+    num.toBigInt(effect.key.toString()),
+    num.toBigInt(effect.target.toString()),
+    toEnumIndex(effect.component, components),
+    byteArray.byteArrayFromString(effect.property),
+    effect.value.map((v) => byteArray.byteArrayFromString(v.toString())),
+  ];
+
+  console.log( "Effect", effectData);
+
+  await dispatchDesignerCall("create_effect", [effectData]);
+}
+
+const publishAction = async (action: Action) => {
+	const actionData = [
+		num.toBigInt(action.inst.toString()),
+		num.toBigInt(action.key),
+		byteArray.byteArrayFromString(action.name),
+		byteArray.byteArrayFromString(action.description),
+		action.is_enabled,
+		action.trigger.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
+		action.conditions.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
+		action.effects.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
+		action.tags.map((x) => byteArray.byteArrayFromString(x)),
+	];
+
+	await dispatchDesignerCall("create_action", [actionData]);
+};
+
 const publishChildToParent = async (childToParent: ChildToParent) => {
 	const childToParentData = [
 		num.toBigInt(childToParent.inst.toString()),
@@ -266,9 +346,29 @@ const deleteCollection = async (model: EntityCollection) => {
 			num.toBigInt(model.InventoryItem!.inst),
 		]);
 	}
-	if("Container" in model && model.Container !== undefined) {
+	if ("Container" in model && model.Container !== undefined) {
 		await dispatchDesignerCall("delete_container", [
 			num.toBigInt(model.Container!.inst),
+		]);
+	}
+	if ("Trigger" in model && model.Trigger !== undefined) {
+		await dispatchDesignerCall("delete_trigger", [
+			[num.toBigInt(model.Trigger!.inst), num.toBigInt(model.Trigger!.key)],
+		]);
+	}
+	if ("Condition" in model && model.Condition !== undefined) {
+		await dispatchDesignerCall("delete_condition", [
+			[num.toBigInt(model.Condition!.inst), num.toBigInt(model.Condition!.key)],
+		]);
+	}
+	if ("Effect" in model && model.Effect !== undefined) {
+		await dispatchDesignerCall("delete_effect", [
+			[num.toBigInt(model.Effect!.inst), num.toBigInt(model.Effect!.key)],
+		]);
+	}
+	if ("Action" in model && model.Action !== undefined) {
+		await dispatchDesignerCall("delete_action", [
+			[num.toBigInt(model.Action!.inst), num.toBigInt(model.Action!.key)],
 		]);
 	}
 	if ("ChildToParent" in model && model.ChildToParent !== undefined) {

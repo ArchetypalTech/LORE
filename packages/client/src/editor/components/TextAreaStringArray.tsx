@@ -1,11 +1,44 @@
-import { useMemo } from "react";
-import { cn } from "@/lib/utils/utils";
-import { DeleteButton } from "./FormComponents";
-import { Button } from "./ui/Button";
 import { Textarea } from "./ui/Textarea";
+import { Button } from "./ui/Button";
+import { DeleteButton } from "./FormComponents";
+import { cn } from "@/lib/utils/utils";
+import { useMemo } from "react";
 
-export const MultiTextArea = ({
-	id,
+export const TextAreaStringArray = ({
+  id,
+  value,
+  rows,
+  className,
+  children,
+  onChange,
+  readOnly,
+  }: {
+  id: string;
+  value: string[];
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  rows: number;
+  className?: string;
+  children?: React.ReactNode;
+  readOnly?: boolean;
+}) => {
+  return (
+    <div className="form-group">
+      <label htmlFor={id}>{id}</label>
+      <MultiTextStringArea
+        id={id}
+        value={value}
+        rows={rows}
+        className={className}
+        onChange={onChange}
+        readOnly={readOnly}
+      />
+      {children}
+    </div>
+  );
+};
+
+export const MultiTextStringArea = ({
+  id,
 	value,
 	onChange,
 	rows,
