@@ -12,7 +12,7 @@ pub fn create_test_level(mut world: WorldStorage) {
 
 fn room_start(mut world: WorldStorage) {
     let obj = Entity {
-        inst: 2826, is_entity: true, name: "The Bang", alt_names: array!["bang", "explosion"],
+        inst: 2826, is_entity: true, name: "The Bang", alt_names: array!["bang", "explosion"], actions_keys: array![],
     };
     world.write_model(@obj);
     let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
@@ -29,7 +29,7 @@ fn room_start(mut world: WorldStorage) {
 
 fn object_room_one(mut world: WorldStorage, parent: Entity) {
     let obj = Entity {
-        inst: 9999, is_entity: true, name: "a portal", alt_names: array!["portal", "door"],
+        inst: 9999, is_entity: true, name: "a portal", alt_names: array!["portal", "door"], actions_keys: array![],
     };
     world.write_model(@obj);
     let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
