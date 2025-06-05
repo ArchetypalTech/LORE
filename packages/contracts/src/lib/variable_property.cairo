@@ -23,7 +23,7 @@ pub struct ComponentVariable {
     pub component_type: Components,
     pub entity_id: felt252,
     pub property_name: ByteArray,
-    pub value: felt252,
+    pub value: ByteArray,
     pub last_updated: u64,
 }
 
@@ -147,7 +147,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         mut world: @WorldStorage,
         key: @felt252,
         property_name: @ByteArray,
-        new_value: @Array<felt252>,
+        new_value: @Array<ByteArray>,
         component_type: Components
     ) -> Result<(), Error> {
         let mut property_registry: PropertyRegistry = world.read_model((*key, component_type));

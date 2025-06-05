@@ -208,8 +208,24 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         }
     }
 
+    fn bool_from_byte_array(value: ByteArray) -> bool {
+        let true_byte: ByteArray = "true";
+        let false_byte: ByteArray = "false";
+        if value.equals(@true_byte) {
+            true
+        } else if value.equals(@false_byte) {
+            false
+        } else {
+            false
+        }
+    }
+
     fn u32_from_felt252(value: felt252) -> u32 {
         value.try_into().unwrap()
+    }
+
+    fn u32_from_byte_array(value: ByteArray) -> u32 {
+        value.to_felt252_word().unwrap().try_into().unwrap()
     }
 
     fn byte_array_from_felt252(mut value: felt252) -> ByteArray {
