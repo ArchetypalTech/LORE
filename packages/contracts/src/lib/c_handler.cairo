@@ -8,7 +8,8 @@ use lore::{ //
         a_lexer::{Command, CommandImpl, TokenType},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level},//
-        trigger::{Trigger, TriggerIndex, TriggerType, TriggerImpl}, //
+        trigger::{Trigger, TriggerIndex, TriggerType, TriggerContext,TriggerImpl}, //
+        actions::{Action, ActionImpl}, //
     }, //
     constants::errors::Error, //
     components::{
@@ -104,51 +105,84 @@ pub fn handle_command(
                 if exit.can_use_command(world, @player, @command) {
                     if exit.execute_command(world, @player, @command).is_ok() {
                         executed = true; 
-                        //break;                      
+                        break;                      
                     }
-                    // THIS IS FOR TESTING ONLY
-                    // get trigger index
-                    let _key1: felt252 = TriggerType::PlayerEntersArea.clone().into();
-                    let _key2: felt252 = TriggerType::PlayerLeavesArea.clone().into();
-                    let trigger_index_enters: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
-                    let trigger_index_leaves: TriggerIndex = world.read_model(TriggerType::PlayerLeavesArea);
-                    // check triggers
-                    if trigger_index_enters.trigger_id.len() == 0 {
-                        //println!("no triggers for enter");
-                        break;
-                    } else{
-                        let mut trig_res_enter: bool = true;
-                        for trigger in trigger_index_enters.trigger_id.clone() {
-                            let trigger_enter: Trigger = world.read_model(trigger);
-                            let result_enter = TriggerImpl::evaluate_trigger(@world, @trigger_enter);
-                            if result_enter.is_err() {
-                                trig_res_enter = false;
-                                break;
-                            }
-                            //println!("trig idx: {:?}, res_enter: {:?}", trigger , trig_res_enter);
-                            continue;
-                        };
-                    }
+                //     // THIS IS FOR TESTING ONLY
+                //     // get trigger index
+                //     let trigger_index_enters: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
+                //     let trigger_index_leaves: TriggerIndex = world.read_model(TriggerType::PlayerLeavesArea);
+                //     // check triggers
+                //     if trigger_index_enters.trigger_id.len() == 0 {
+                //         // println!("no triggers for enter");
+                //         break;
+                //     } else{
+                //         let mut trig_res_enter: bool = true;
+                //         for trigger in trigger_index_enters.trigger_id.clone() {
+                //             let trigger_enter: Trigger = world.read_model(trigger);
+                //             let result_enter = TriggerImpl::evaluate_trigger(@world, @trigger_enter);
+                //             if result_enter.is_err() {
+                //                 trig_res_enter = false;
+                //                 break;
+                //             }
+                //             println!("trig idx: {:?}, res_enter: {:?}", trigger_enter , trig_res_enter);
+                //             continue;
+                //         };
+                //     }
                         
-                    if trigger_index_leaves.trigger_id.len() == 0 {
-                        //println!("no triggers for enter");
-                        break;
-                    } else{
-                        let mut trig_res_leave: bool = true;
-                        for trigger in trigger_index_leaves.trigger_id.clone() {
-                            let trigger_leave: Trigger = world.read_model(trigger);
-                            let result_leave = TriggerImpl::evaluate_trigger(@world, @trigger_leave);
-                            if result_leave.is_err() {
-                                trig_res_leave = false;
-                                break;
-                            }
-                            //println!("trig idx: {:?}, res_leave: {:?}", trigger , trig_res_leave);
-                            continue;
-                        };
-                    }
+                //     if trigger_index_leaves.trigger_id.len() == 0 {
+                //         //println!("no triggers for enter");
+                //         break;
+                //     } else{
+                //         let mut trig_res_leave: bool = true;
+                //         for trigger in trigger_index_leaves.trigger_id.clone() {
+                //             let trigger_leave: Trigger = world.read_model(trigger);
+                //             let result_leave = TriggerImpl::evaluate_trigger(@world, @trigger_leave);
+                //             if result_leave.is_err() {
+                //                 trig_res_leave = false;
+                //                 break;
+                //             }
+                //             //println!("trig idx: {:?}, res_leave: {:?}", trigger , trig_res_leave);
+                //             continue;
+                //         };
+                //     }
                 }
             }
         };
+        // wip: will need to be adjusted but this is a start
+        // Check if there's an action in the entity (should be the room)
+        if executed {
+            let room = player.get_room(@world);
+            if room.is_none() {
+                return Result::Err(Error::ActionFailed);
+            }
+            let room = room.unwrap();
+            let mut actions: Array<Action> = ArrayTrait::new();
+            for key in room.actions_keys.clone() {
+                let read_action: Action = world.read_model((room.inst, key));
+                actions.append(read_action);
+            };
+            // execute actions
+            for action in actions {
+                // context is not being used inside evaluations or processing.
+                let context =  TriggerContext {
+                    doer: player.inst,
+                    target1: room.inst, // would be the room that the player moved to
+                    target2: 0,
+                    inventory_object: 0,
+                };
+
+                let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action, @world, @context);
+                if trig_res.is_err() {
+                    println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
+                }
+                if !cond_res {
+                    println!("Condition are not met");
+                }
+                if !eff_res.is_err() {
+                    println!("Effects failed: {:?}", eff_res.unwrap_err());
+                }
+            };
+        }
     }
 
     println!("executed: {:?}", executed);
