@@ -32,6 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
       - name: Build
         run: cd packages/contracts && sozo build
         shell: bash
