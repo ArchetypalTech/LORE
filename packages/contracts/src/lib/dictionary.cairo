@@ -190,8 +190,8 @@ mod tests {
         let (world, _, _, _, _) = helpers::setup_core();
         let entry_1 = get_dict_entry(world, "look").unwrap();
         let entry_2 = get_dict_entry(world, "beautiful").unwrap();
-        println!("entry_1: {:?}", entry_1);
-        println!("entry_2: {:?}", entry_2);
+        // println!("entry_1: {:?}", entry_1);
+        // println!("entry_2: {:?}", entry_2);
         assert(entry_1.tokenType == TokenType::Verb, 'look is verb');
         assert(entry_2.tokenType == TokenType::Adjective, 'beautiful is adjective');
     }

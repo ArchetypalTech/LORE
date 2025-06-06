@@ -9,7 +9,6 @@ pub struct Area {
     #[key]
     pub inst: felt252,
     pub is_area: bool,
-    //properties
 }
 
 pub impl AreaComponent of Component<Area> {

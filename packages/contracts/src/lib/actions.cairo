@@ -17,23 +17,26 @@ use lore::{
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct Action {
+    /// Unique identifier attached to the entity
     #[key]
-    pub inst: felt252, // Unique identifier attached to the entity
+    pub inst: felt252,
+    /// Unique identifier of the action
     #[key]
-    pub key: felt252, // Unique identifier of the action
-    pub name: ByteArray, // Human-readable name for the editor
-    pub description: ByteArray, // Optional description
-    pub is_enabled: bool, // For toggling the entire action
-    pub trigger: Array<
-        (felt252, felt252),
-    >, // When this action can occur, the id's of the triggers. Key is (trigger.inst, trigger.key)
-    pub conditions: Array<
-        (felt252, felt252),
-    >, // What must be true, the id's of the conditions. Key is (condition.inst, condition.key)
-    pub effects: Array<
-        (felt252, felt252),
-    >, // What happens when triggered, the id's of the effects. Key is (effect.inst, effect.key)
-    pub tags: Array<ByteArray> // For searching/filtering
+    pub key: felt252,
+    /// Human-readable name for the editor
+    pub name: ByteArray,
+    /// Optional description
+    pub description: ByteArray,
+    /// For toggling the entire action
+    pub is_enabled: bool,
+    /// When this action can occur, the id's of the triggers. Key is (trigger.inst, trigger.key)
+    pub trigger: Array<(felt252, felt252)>,
+    /// What must be true, the id's of the conditions. Key is (condition.inst, condition.key)
+    pub conditions: Array<(felt252, felt252)>,
+    /// What happens when triggered, the id's of the effects. Key is (effect.inst, effect.key)
+    pub effects: Array<(felt252, felt252)>,
+    /// For searching/filtering
+    pub tags: Array<ByteArray>,
 }
 
 // Implementation for processing actions
@@ -54,7 +57,6 @@ pub impl ActionImpl of ActionTrait {
                 };
                 if found {
                     // If found just update the action
-                    println!("Action already registered, updating");
                     world.write_model(@action);
                     return Result::Ok(());
                 }
@@ -82,7 +84,7 @@ pub impl ActionImpl of ActionTrait {
     ) -> (Result<(), Error>, bool, Result<(), Error>) {
         // Trigger
         let mut result_t: Result<(), Error> = Result::Ok(());
-        //Conditions
+        //Conditions. We want to have the bool value as true in case there is no condition
         let mut result: bool = true;
         let mut result_c: Result<(), Error> = Result::Ok(());
         //Effects
@@ -653,9 +655,9 @@ mod tests {
             upd_door.description[1].clone(), new_text2.clone(), "Description2 should be updated",
         );
         assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
-        println!("Old description: {:?}", old_inspectable.description);
-        println!("New description: {:?}", array![new_text1, new_text2]);
-        println!("Old is_enterable: {:?}", old_exit.is_enterable);
-        println!("New is_enterable: {:?}", new_enterable);
+        // println!("Old description: {:?}", old_inspectable.description);
+        // println!("New description: {:?}", array![new_text1, new_text2]);
+        // println!("Old is_enterable: {:?}", old_exit.is_enterable);
+        // println!("New is_enterable: {:?}", new_enterable);
     }
 }

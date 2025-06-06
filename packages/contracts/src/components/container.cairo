@@ -12,12 +12,11 @@ pub struct Container {
     #[key]
     pub inst: felt252,
     pub is_container: bool,
-    // properties
+    /// Properties
     pub can_be_opened: bool,
     pub can_receive_items: bool,
     pub is_open: bool,
     pub num_slots: u32,
-    // item_ids: Array<felt252>,
     // pub accept_tags: Array<Tag>,
     pub action_map: Array<ActionMapContainer>,
 }
@@ -275,7 +274,7 @@ pub impl ContainerComponent of Component<Container> {
     fn execute_command(
         mut self: Container, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("Container execute_command");
+        // println!("Container execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {

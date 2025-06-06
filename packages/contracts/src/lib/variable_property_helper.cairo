@@ -20,8 +20,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     fn register_properties(mut world: WorldStorage, component: Components) {
         let pos_property_registry: PropertyRegistry = world.read_model(component);
         if pos_property_registry.properties.len() > 0 {
-            // println!("Registry for component {:?} already exists, skipping", component);
-            return; // Registry already exists, skip
+            // Registry already exists, skip
+            return;
         }
 
         let props = match component {

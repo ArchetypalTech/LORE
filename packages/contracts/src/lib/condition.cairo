@@ -15,15 +15,22 @@ use lore::{
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct Condition {
+    /// Unique identifier attached to the entity
     #[key]
-    pub inst: felt252, // Unique identifier attached to the entity
+    pub inst: felt252,
+    /// Unique identifier of the condition
     #[key]
-    pub key: felt252, // Unique identifier of the condition
-    pub target: felt252, // First is the target inst and second is the targetkey
-    pub component: Components, // Which component to check
-    pub property: ByteArray, // Which property of the component to check
-    pub operator: Operator, // How to compare the values
-    pub value: felt252 // Value to compare against
+    pub key: felt252,
+    /// The target inst.
+    pub target: felt252,
+    /// Which component to check
+    pub component: Components,
+    /// Which property of the component to check
+    pub property: ByteArray,
+    /// How to compare the values
+    pub operator: Operator,
+    /// Value to compare against
+    pub value: felt252,
 }
 
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]

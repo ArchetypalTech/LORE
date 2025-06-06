@@ -12,15 +12,20 @@ use lore::{
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct Trigger {
+    /// Unique identifier from the entity that is attached to
     #[key]
-    pub inst: felt252, // Unique identifier, should be the entity is attached to
+    pub inst: felt252,
+    /// Unique identifier of the trigger
     #[key]
-    pub key: felt252, // Unique identifier of the trigger
-    pub name: ByteArray, // Human-readable name
-    // properties
-    pub trigger_type: TriggerType, // The type of trigger
-    pub parameters: Array<TriggerParameter>, // Trigger parameters
-    pub is_enabled: bool // Whether the trigger is enabled
+    pub key: felt252,
+    /// Human-readable name
+    pub name: ByteArray,
+    /// The type of trigger
+    pub trigger_type: TriggerType,
+    /// Trigger parameters
+    pub parameters: Array<TriggerParameter>,
+    /// Whether the trigger is enabled
+    pub is_enabled: bool,
 }
 
 #[derive(Clone, Drop, Serde, Debug)]
@@ -28,16 +33,19 @@ pub struct Trigger {
 pub struct TriggerIndex {
     #[key]
     pub trigger_type: TriggerType,
-    //pub key: felt252,
     pub trigger_id: Array<(felt252, felt252)> // (inst, key)
 }
 
 #[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
 pub struct TriggerContext {
-    pub doer: felt252, // The entity that triggered the action (usually the player)    
-    pub target1: felt252, // Primary target of the action (e.g., item being picked up, area being entered)    
-    pub target2: felt252, // Secondary target (e.g., container being opened, item being used on)    
-    pub inventory_object: felt252 // Inventory object involved (e.g., item being moved to/from inventory)
+    /// The entity that triggered the action (usually the player)
+    pub doer: felt252,
+    /// Primary target of the action (e.g., item being picked up, area being entered)
+    pub target1: felt252,
+    /// Secondary target (e.g., container being opened, item being used on)
+    pub target2: felt252,
+    /// Inventory object involved (e.g., item being moved to/from inventory)
+    pub inventory_object: felt252,
 }
 
 #[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
@@ -404,7 +412,7 @@ mod tests {
 
         let result = TriggerImpl::evaluate_trigger(@world, @trigger);
         if result.is_ok() {
-            println!("Trigger jumps successfully");
+            // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
 
@@ -413,9 +421,8 @@ mod tests {
         player_entity.set_parent(world, @room_entity_2);
 
         let result2 = TriggerImpl::evaluate_trigger(@world, @trigger);
-        println!("result2: {:?}", result2);
         if result2.is_err() {
-            println!("Trigger does not jump");
+            // println!("Trigger does not jump");
         };
         assert(result2.is_err(), 'Trigger should not jump');
     }

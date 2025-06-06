@@ -137,13 +137,13 @@ pub fn handle_command(
                     @action, @world, @context,
                 );
                 if trig_res.is_err() {
-                    println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
+                    // println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
                 }
                 if !cond_res {
-                    println!("Condition are not met");
+                    // println!("Condition are not met");
                 }
                 if eff_res.is_err() {
-                    println!("Effects failed: {:?}", eff_res.unwrap_err());
+                    // println!("Effects failed: {:?}", eff_res.unwrap_err());
                 }
             };
         }
@@ -190,7 +190,7 @@ fn system_command(
         }
     };
     if system_command != "" {
-        println!("not zero: {:?}", system_command);
+        // println!("not zero: {:?}", system_command);
         if (system_command == "g_error") {
             return Result::Err(Error::TestError);
         }
@@ -206,7 +206,7 @@ fn system_command(
             return Result::Ok(command);
         }
         if (system_command == "g_command") {
-            println!("g_command: {:?}", system_command);
+            // println!("g_command: {:?}", system_command);
             player.say(world, format!("+sys+{:?}", command));
             return Result::Ok(command);
         }

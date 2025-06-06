@@ -17,16 +17,20 @@ use lore::{
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct Effect {
+    /// Unique identifier attached to the entity
     #[key]
-    pub inst: felt252, // Unique identifier of the entity it is attached to
+    pub inst: felt252,
+    /// Unique identifier of the effect
     #[key]
-    pub key: felt252, // Unique identifier of this effect
-    pub target: felt252, // Target entity
-    pub component: Components, // Component to affect
-    pub property: ByteArray, // Property to modify
-    pub value: Array<
-        ByteArray,
-    > // New value to set, needs to be array for multiple values such as description.
+    pub key: felt252,
+    /// Target entity
+    pub target: felt252,
+    /// Component to affect
+    pub component: Components,
+    /// Property to modify
+    pub property: ByteArray,
+    /// New value to set, needs to be array for multiple values such as description.
+    pub value: Array<ByteArray>,
 }
 
 // A registry-style effect template

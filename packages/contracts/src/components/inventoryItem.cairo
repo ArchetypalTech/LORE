@@ -17,7 +17,7 @@ pub struct InventoryItem {
     #[key]
     pub inst: felt252,
     pub is_inventory_item: bool,
-    // properties
+    /// Properties
     pub owner_id: felt252,
     pub can_be_picked_up: bool,
     pub can_go_in_container: bool,
