@@ -33,11 +33,11 @@ pub struct Condition {
     pub value: felt252,
 }
 
+/// TODO: Implement more operators later
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum Operator {
     Equals,
     NotEquals,
-    // Implement more operators later
 }
 
 #[generate_trait]

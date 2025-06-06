@@ -22,6 +22,7 @@ export default function Terminal() {
 		status: { status },
 	} = useDojoStore();
 	const { terminalContent, activeTypewriterLine } = useTerminalStore();
+	const { originalStoryLength } = useDojoStore();
 
 	useEffect(() => {
 		// Focus input on mount
@@ -103,7 +104,7 @@ export default function Terminal() {
 		setInputValue("");
 		setInputHistory([...inputHistory, command]);
 		printingStatus(true);
-		
+
 		if(textAnchorRef.current) textAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
 		setTimeout(async () => await sendCommand(command), 1000)
@@ -123,7 +124,6 @@ export default function Terminal() {
 
 	return (
 		<div className="flex h-full w-full items-center justify-center font-primary">
-			
 				<form
 					ref={terminalFormRef}
 					onSubmit={handleSubmit}

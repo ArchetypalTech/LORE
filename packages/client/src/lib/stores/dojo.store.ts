@@ -14,6 +14,9 @@ import { StoreBuilder } from "../utils/storebuilder";
 import { decodeDojoText, processWhitespaceTags } from "../utils/utils";
 import { addTerminalContent } from "./terminal.store";
 import WalletStore from "./wallet.store";
+import type { Subscription } from "rxjs";
+import type { DojoStatus } from "./types";
+import type { TerminalContentItem } from "./terminal.store";
 
 /**
  * Represents the current status of the Dojo system.
@@ -35,13 +38,14 @@ const {
 	createFactory,
 } = StoreBuilder({
 	status: {
-		status: "loading",
+		status: "initialized",
 		error: null,
 	} as DojoStatus,
 	playerStory: undefined as PlayerStory | undefined,
 	config: undefined as Awaited<ReturnType<typeof InitDojo>> | undefined,
 	lastProcessedText: "",
-	existingSubscription: undefined as unknown | undefined,
+	originalStoryLength: 0,
+	existingSubscription: undefined as Subscription | undefined,
 });
 
 const setStatus = (status: DojoStatus) => set({ status });
@@ -56,9 +60,15 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	const isNewText = oldLines.length > 0;
 
 	if (playerStory === undefined) {
-		return;
-	}
-	// remove lines we already have
+			return;
+		}
+
+		// If this is the first time setting the story, store its length
+		if (get().originalStoryLength === 0) {
+			set({ originalStoryLength: playerStory.story.length });
+		}
+
+		// remove lines we already have
 	const storyLines = playerStory.story.slice(oldLines.length);
 
 	// @dev: this is a hack for now - we only have array indices for the story, this might not be the best approach- we still want an immediate (frontend) prompt, but we also store the prompt in the story
@@ -107,8 +117,17 @@ const onReponseData = (
 	responseData: ParsedEntity<SchemaType>["models"]["lore"],
 ) => {
 	// console.log("[DOJO] onReponseData", responseData);
-	if (responseData.PlayerStory) {
-		onPlayerStory(responseData.PlayerStory);
+	if (responseData.PlayerStory && responseData.PlayerStory.story) {
+		// Store original length on first response
+		if (get().originalStoryLength === 0) {
+			set({ originalStoryLength: responseData.PlayerStory.story.length });
+		}
+		// Slice the story array to only include new content
+		const slicedStory = {
+			...responseData.PlayerStory,
+			story: responseData.PlayerStory.story.slice(get().originalStoryLength)
+		};
+		onPlayerStory(slicedStory);
 	}
 	EditorData().dojoSync(responseData as EntityCollection, {
 		verbose: true,

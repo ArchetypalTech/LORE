@@ -83,6 +83,10 @@ const setupController = async () => {
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
+					entrypoint: "create_condition",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
 					entrypoint: "create_effect",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
@@ -116,6 +120,10 @@ const setupController = async () => {
 				},
 				{
 					entrypoint: "delete_exit",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_condition",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{

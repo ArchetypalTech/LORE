@@ -37,15 +37,15 @@ import type { ChangeSet } from "./lib/types";
  * @returns A promise that resolves when the publishing is complete
  */
 export const publishConfigToContract = async (changes?: ChangeSet[]) => {
-	// Then process each room in the config
-	// Create entity
-
 	try {
 		await Notifications().startPublishing();
 		await publishChangeset(changes);
 		Notifications().finalizePublishing();
+		// Wait for transaction to be processed
 		await tick();
-		console.log(EditorData().dataPool);
+		// Sync data from contract after publishing
+		await EditorData().syncEntities();
+		console.log("Data pool after sync:", EditorData().dataPool);
 		return true;
 	} catch (error) {
 		const errorMsg = error instanceof Error ? error.message : String(error);
