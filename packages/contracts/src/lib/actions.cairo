@@ -656,8 +656,8 @@ mod tests {
         );
         assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
         // println!("Old description: {:?}", old_inspectable.description);
-        // println!("New description: {:?}", array![new_text1, new_text2]);
-        // println!("Old is_enterable: {:?}", old_exit.is_enterable);
-        // println!("New is_enterable: {:?}", new_enterable);
+    // println!("New description: {:?}", array![new_text1, new_text2]);
+    // println!("Old is_enterable: {:?}", old_exit.is_enterable);
+    // println!("New is_enterable: {:?}", new_enterable);
     }
 }

@@ -277,7 +277,7 @@ mod tests {
         player.move_to_room(world, 2826);
         let command = lexer::parse(promptText, world, player);
         // println!("command: {:?}", command);
-        // TODO: finish writing test
+    // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
     // assert(command.tokens[1].token_value == prepositionToken, 'token value is 4');
     }
