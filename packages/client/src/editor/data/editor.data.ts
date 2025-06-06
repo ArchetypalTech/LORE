@@ -520,18 +520,18 @@ export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promi
 			return query;
 		};
 		const result = await sdk.getEntities({ query: queryProperties() });
-		console.log("resuelt asycn", result);
+		// console.log("resuelt asycn", result);
 
 		result.getItems().forEach((item) => {
 			const registry = item.models?.lore?.PropertyRegistry;
 			if (registry?.component_type === componentType) {
-				console.log("Matched registry:", registry);
+				// console.log("Matched registry:", registry);
 				properties_array = registry?.properties!.map((x) => x.name);
-				console.log("properties_array", properties_array);
+				// console.log("properties_array", properties_array);
 			}
 		});		
 	} catch (error) {
-		console.error("Error fetching from Torii:", error);
+		console.error("Error fetching properties from Torii:", error);
 		throw error;
 	}
 	return properties_array;
