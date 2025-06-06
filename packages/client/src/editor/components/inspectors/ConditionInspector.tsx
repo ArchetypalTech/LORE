@@ -100,4 +100,3 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
     </Inspector>
   );
 }
-
