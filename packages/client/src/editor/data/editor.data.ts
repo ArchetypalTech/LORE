@@ -9,6 +9,7 @@ import type {
 	Condition,
 	Exit,
 	Action,
+	ComponentsEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -17,7 +18,7 @@ import {
 	createDefaultInspectableComponent,
 	createDefaultContainerComponent,
 	createDefaultParentToChildrenComponent,
-	createPlayerEntity
+	createPlayerEntity,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -28,6 +29,8 @@ import type {
 import type { ChangeSet, EditorAction } from "../lib/types";
 import { tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
+import { ToriiQueryBuilder} from "@dojoengine/sdk";
+import {type SchemaType} from "@lib/dojo_bindings/typescript/models.gen";
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
@@ -377,6 +380,7 @@ const syncItem = (
 				get(),
 			);
 		set({ isDirty: Date.now() });
+
 	} catch (e) {
 		console.error("data-sync error:", e, "object: ", obj);
 	}
@@ -502,6 +506,40 @@ const dojoSync = (
 	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
 	syncItem(obj, { verbose, sync: true });
+};
+
+/**
+ * This handles fetching the property registry for a given component type
+ * @param componentType 
+ * @returns the property names for the given component type
+ */
+export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promise<string[]> => {
+	let properties_array: string[] = [];
+	try {
+		const { sdk } = await InitDojo();
+		const queryProperties = () => {
+			const builder = new ToriiQueryBuilder<SchemaType>();
+			// const query = builder.withOffset(0).withLimit(1000);
+		
+			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-PropertyRegistry"]);
+			return query;
+		};
+		const result = await sdk.getEntities({ query: queryProperties() });
+		// console.log("resuelt asycn", result);
+
+		result.getItems().forEach((item) => {
+			const registry = item.models?.lore?.PropertyRegistry;
+			if (registry?.component_type === componentType) {
+				// console.log("Matched registry:", registry);
+				properties_array = registry?.properties!.map((x) => x.name);
+				// console.log("properties_array", properties_array);
+			}
+		});		
+	} catch (error) {
+		console.error("Error fetching properties from Torii:", error);
+		throw error;
+	}
+	return properties_array;
 };
 
 const syncEntities = async () => {

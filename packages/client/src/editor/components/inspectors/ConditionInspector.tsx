@@ -1,3 +1,4 @@
+import { useMemo, useEffect, useState } from "react";
 import {
   type Condition,
   operator,
@@ -7,10 +8,12 @@ import {
   Input,
   CairoEnumSelect,
   formatKeyAsDecimal,
+  Select,
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
+import { syncPropertyRegistry } from "../../data/editor.data"; 
 
 export const ConditionInspector: ComponentInspector<Condition> = ({
   componentObject,
@@ -38,6 +41,28 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
     },
   });
 
+  const [propertyNames, setPropertyNames] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      if (!componentObject?.component) return;
+      try {
+        const properties = await syncPropertyRegistry(componentObject.component);
+        setPropertyNames(properties);
+      } catch (error) {
+        console.error("Failed to sync property registry:", error);
+      }
+    };
+
+    fetchProperties();
+  }, [componentObject?.component]);
+
+  // Property options for dropdown
+  const propertyOptions = propertyNames.map((name) => ({
+    value: name,
+    label: name,
+  }));
+
   if (!componentObject) return <div>Condition not found</div>;
 
   return (
@@ -55,10 +80,11 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         value={componentObject.component}
         enum={components}
       />
-      <Input
+      <Select
         id="property"
-        value={componentObject.property}
+        value={componentObject.property.toString()}
         onChange={handleInputChange}
+        options={propertyOptions}
       />
       <CairoEnumSelect
         id="operator"
