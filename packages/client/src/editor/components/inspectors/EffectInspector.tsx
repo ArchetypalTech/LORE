@@ -14,7 +14,7 @@ import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import { syncPropertyRegistry } from "../../data/editor.data"; 
-
+        
 export const EffectInspector: ComponentInspector<Effect> = ({
   componentObject,
   ...props
