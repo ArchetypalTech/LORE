@@ -83,6 +83,18 @@ const setupController = async () => {
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
+					entrypoint: "create_effect",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "create_action",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "create_trigger",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
 					entrypoint: "create_child",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
@@ -108,6 +120,18 @@ const setupController = async () => {
 				},
 				{
 					entrypoint: "delete_inventory_item",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_trigger",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_effect",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_action",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
