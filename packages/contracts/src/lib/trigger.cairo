@@ -411,7 +411,7 @@ mod tests {
         playerR1.move_to_room(world, room_entity_1.inst);
 
         let result = TriggerImpl::evaluate_trigger(@world, @trigger);
-        if result.is_ok() {// println!("Trigger jumps successfully");
+        if result.is_ok() { // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
 
@@ -420,7 +420,7 @@ mod tests {
         player_entity.set_parent(world, @room_entity_2);
 
         let result2 = TriggerImpl::evaluate_trigger(@world, @trigger);
-        if result2.is_err() {// println!("Trigger does not jump");
+        if result2.is_err() { // println!("Trigger does not jump");
         };
         assert(result2.is_err(), 'Trigger should not jump');
     }

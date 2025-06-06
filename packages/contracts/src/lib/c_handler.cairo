@@ -136,11 +136,12 @@ pub fn handle_command(
                 let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
                     @action, @world, @context,
                 );
-                if trig_res.is_err() {// println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
+                if trig_res
+                    .is_err() { // println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
                 }
-                if !cond_res {// println!("Condition are not met");
+                if !cond_res { // println!("Condition are not met");
                 }
-                if eff_res.is_err() {// println!("Effects failed: {:?}", eff_res.unwrap_err());
+                if eff_res.is_err() { // println!("Effects failed: {:?}", eff_res.unwrap_err());
                 }
             };
         }
