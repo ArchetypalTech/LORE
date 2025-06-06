@@ -55,6 +55,10 @@ export type DesignerCall =
 	| "create_exit"
 	| "create_inventory_item"
 	| "create_container"
+	| "create_trigger"
+	| "create_condition"
+	| "create_effect"
+	| "create_action"
 	| "create_parent"
 	| "create_child"
 	| "delete_player"
@@ -64,6 +68,10 @@ export type DesignerCall =
 	| "delete_exit"
 	| "delete_inventory_item"
 	| "delete_container"
+	| "delete_trigger"
+	| "delete_effect"
+	| "delete_action"
+	| "delete_condition"
 	| "delete_parent"
 	| "delete_child";
 

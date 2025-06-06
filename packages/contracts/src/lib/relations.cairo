@@ -4,7 +4,7 @@ pub struct ParentToChildren {
     #[key]
     pub inst: felt252,
     pub is_parent: bool,
-    // properties
+    /// properties
     pub children: Array<felt252>,
 }
 
@@ -14,7 +14,7 @@ pub struct ChildToParent {
     #[key]
     pub inst: felt252,
     pub is_child: bool,
-    // properties
+    /// properties
     pub parent: felt252,
 }
 

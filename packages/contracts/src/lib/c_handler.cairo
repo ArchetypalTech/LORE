@@ -1,13 +1,15 @@
 use super::a_lexer::CommandTrait;
 use super::super::components::player::PlayerTrait;
-use dojo::{world::WorldStorage};
+use dojo::{world::WorldStorage, model::ModelStorage};
 
 use lore::{ //
     lib::{ //
         entity::{EntityImpl}, //
         a_lexer::{Command, CommandImpl, TokenType},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
-        level_test::{create_test_level} //
+        level_test::{create_test_level}, //
+        trigger::{TriggerContext}, //
+        actions::{Action, ActionImpl} //
     }, //
     constants::errors::Error, //
     components::{
@@ -96,6 +98,7 @@ pub fn handle_command(
         let context = player.get_context(@world);
         for item in context {
             let exit: Option<Exit> = Component::get_component(world, item.inst);
+
             // @dev: not guaranteed there's a noun
             if exit.is_some() {
                 let exit = exit.unwrap();
@@ -107,8 +110,44 @@ pub fn handle_command(
                 }
             }
         };
+        // wip: will need to be adjusted but this is a start
+        // Check if there's an action in the entity (should be the room)
+        if executed {
+            let room = player.get_room(@world);
+            if room.is_none() {
+                return Result::Err(Error::ActionFailed);
+            }
+            let room = room.unwrap();
+            let mut actions: Array<Action> = ArrayTrait::new();
+            for key in room.actions_keys.clone() {
+                let read_action: Action = world.read_model((room.inst, key));
+                actions.append(read_action);
+            };
+            // execute actions
+            for action in actions {
+                // context is not being used inside evaluations or processing.
+                let context = TriggerContext {
+                    doer: player.inst,
+                    target1: room.inst, // would be the room that the player moved to
+                    target2: 0,
+                    inventory_object: 0,
+                };
+
+                let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
+                    @action, @world, @context,
+                );
+                if trig_res
+                    .is_err() { // println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
+                }
+                if !cond_res { // println!("Condition are not met");
+                }
+                if eff_res.is_err() { // println!("Effects failed: {:?}", eff_res.unwrap_err());
+                }
+            };
+        }
     }
 
+    println!("executed: {:?}", executed);
     if executed {
         return Result::Ok(command);
     }
@@ -149,7 +188,7 @@ fn system_command(
         }
     };
     if system_command != "" {
-        println!("not zero: {:?}", system_command);
+        // println!("not zero: {:?}", system_command);
         if (system_command == "g_error") {
             return Result::Err(Error::TestError);
         }
@@ -165,7 +204,7 @@ fn system_command(
             return Result::Ok(command);
         }
         if (system_command == "g_command") {
-            println!("g_command: {:?}", system_command);
+            // println!("g_command: {:?}", system_command);
             player.say(world, format!("+sys+{:?}", command));
             return Result::Ok(command);
         }

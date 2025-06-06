@@ -1,4 +1,4 @@
-use core::traits::{TryInto, Into};
+use core::traits::{TryInto, Into, DivRem};
 use core::result::{Result};
 use lore::constants::constants::Direction;
 
@@ -186,6 +186,66 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
             Direction::Down => "down",
         }
     }
+
+    fn direction_from_felt252(direction: felt252) -> Direction {
+        match direction {
+            0 => Direction::None,
+            1 => Direction::North,
+            2 => Direction::South,
+            3 => Direction::East,
+            4 => Direction::West,
+            5 => Direction::Up,
+            6 => Direction::Down,
+            _ => Direction::None,
+        }
+    }
+
+    fn bool_from_felt252(value: felt252) -> bool {
+        if value == 1 {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn bool_from_byte_array(value: ByteArray) -> bool {
+        let true_byte: ByteArray = "true";
+        let false_byte: ByteArray = "false";
+        if value.equals(@true_byte) {
+            true
+        } else if value.equals(@false_byte) {
+            false
+        } else {
+            false
+        }
+    }
+
+    fn u32_from_felt252(value: felt252) -> u32 {
+        value.try_into().unwrap()
+    }
+
+    fn u32_from_byte_array(value: ByteArray) -> u32 {
+        value.to_felt252_word().unwrap().try_into().unwrap()
+    }
+
+    fn byte_array_from_felt252(mut value: felt252) -> ByteArray {
+        let mut remaining: u256 = value.try_into().unwrap();
+        let mut result: ByteArray = "";
+
+        loop {
+            if remaining == 0 {
+                break;
+            }
+
+            let (quotient, remainder) = DivRem::div_rem(remaining, 256);
+            let byte: u8 = remainder.try_into().unwrap();
+            result.append_byte(byte);
+
+            remaining = quotient;
+        };
+
+        return result.rev();
+    }
 }
 
 #[generate_trait]
@@ -228,6 +288,7 @@ pub impl ClousureTraitImp of ClousureTrait {
 mod tests {
     use super::ByteArrayTraitExt;
     use super::ClousureTrait;
+    use lore::constants::constants::Direction;
 
     #[test]
     fn ByteArrayExt_to_felt252_word() {
@@ -400,4 +461,31 @@ mod tests {
         // Assert the filtering worked
         assert_eq!(result_array, expected_filtered, "should only include words with 'o'");
     }
+
+    #[test]
+    fn test_direction_from_felt252() {
+        let direction: Direction = Direction::North;
+        let felt252: felt252 = 1;
+        let result: Direction = ByteArrayTraitExt::direction_from_felt252(felt252);
+        assert_eq!(result, direction, "results should be equal");
+    }
+
+    #[test]
+    fn test_u32_from_felt252() {
+        let u32: u32 = 42;
+        let felt252: felt252 = u32.into();
+        let result: u32 = ByteArrayTraitExt::u32_from_felt252(felt252);
+        assert_eq!(result, u32, "results should be equal");
+    }
+
+    #[test]
+    fn test_byte_array_from_felt252() {
+        let original_str1: ByteArray = "The door is locked";
+        // convert to felt252
+        let felt252_1: felt252 = original_str1.clone().to_felt252_word().unwrap();
+        // convert felt252 to byte array
+        let byte_array_1: ByteArray = ByteArrayTraitExt::byte_array_from_felt252(felt252_1);
+        assert_eq!(byte_array_1, original_str1, "results should be equal");
+    }
 }
+

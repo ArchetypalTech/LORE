@@ -1,5 +1,6 @@
 {
 	"[cairo]": {
+		"editor.formatOnSave": false,
 		"editor.defaultFormatter": "StarkWare.cairo1"
 	},
 	"[css]": {

@@ -220,7 +220,7 @@ pub mod lexer {
                         token.target = item.inst;
                         token.token_type = TokenType::Noun;
                         token.token_value = i.into();
-                        println!("MATCH: {} : {:?}", name, token);
+                        // println!("MATCH: {} : {:?}", name, token);
                         break;
                     }
                 }
@@ -271,13 +271,13 @@ mod tests {
     fn Lexer_test_prompt() {
         let (world, _, _, player_1, _) = helpers::setup_core();
         let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
-        println!("promptText: {:?}", promptText);
+        // println!("promptText: {:?}", promptText);
         create_test_level(world);
         let player = caller_as_player(world, player_1);
         player.move_to_room(world, 2826);
         let command = lexer::parse(promptText, world, player);
-        println!("command: {:?}", command);
-        // TODO: finish writing test
+        // println!("command: {:?}", command);
+    // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
     // assert(command.tokens[1].token_value == prepositionToken, 'token value is 4');
     }
@@ -299,7 +299,7 @@ mod tests {
         let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
         let verbs = command.get_verbs();
-        println!("Verbs: {:?}", verbs);
+        // println!("Verbs: {:?}", verbs);
         // Check the number of verbs found
         assert_eq!(verbs.len(), 1, "There should be exactly one verb");
         // Check if the first verb matches the expected verb ("look")
@@ -324,7 +324,7 @@ mod tests {
         let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
         let nouns = command.get_nouns();
-        println!("Nouns: {:?}", nouns);
+        // println!("Nouns: {:?}", nouns);
         // Check the number of verbs found
         assert_eq!(nouns.len(), 1, "There should be exactly one noun");
         // Check if the first verb matches the expected verb ("look")

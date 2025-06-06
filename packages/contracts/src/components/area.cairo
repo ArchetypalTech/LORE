@@ -9,7 +9,6 @@ pub struct Area {
     #[key]
     pub inst: felt252,
     pub is_area: bool,
-    //properties
 }
 
 pub impl AreaComponent of Component<Area> {
@@ -30,6 +29,7 @@ pub impl AreaComponent of Component<Area> {
         area.is_area = true;
         // area.action_map = array![("look", InspectableActions::read_description)];
         world.write_model(@area);
+        // Return the component
         area
     }
 

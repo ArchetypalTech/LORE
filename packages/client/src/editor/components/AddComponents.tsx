@@ -5,6 +5,8 @@ import { Select } from "./FormComponents";
 import { Button } from "./ui/Button";
 import type { SelectInputRef } from "./ui/Select";
 
+const ALWAYS_INCLUDE = ["Trigger", "Effect", "Condition"] as const;
+
 export const AddComponents = ({
 	editedEntity,
 	handleEdit,
@@ -20,6 +22,10 @@ export const AddComponents = ({
 	const options = useMemo(() => {
 		const o = Object.entries(componentData)
 			.filter(([key, value]) => {
+				 // Always include if key is in ALWAYS_INCLUDE
+				if (ALWAYS_INCLUDE.includes(key as typeof ALWAYS_INCLUDE[number])) {
+					return true;
+				}
 				return (
 					editedEntity[key as keyof typeof editedEntity] === undefined &&
 					value.creator !== undefined
@@ -55,8 +61,8 @@ export const AddComponents = ({
 	return (
 		<div className="flex flex-col gap-2">
 			<div className="text-xs opacity-50 font-medium">add component</div>
-			{options.length < 6 && (
-				<div className="flex flex-row gap-2">
+			{options.length < 12 && (
+				<div className="grid grid-cols-5 gap-5">
 					{options.map((option) => (
 						<div
 							key={option.value}
@@ -84,7 +90,7 @@ export const AddComponents = ({
 				</div>
 			)}
 
-			{options.length > 6 && (
+			{options.length > 12 && (
 				<div className="flex w-full flex-row items-end gap-2">
 					<div className="flex grow items-center">
 						<Select

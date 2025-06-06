@@ -12,12 +12,11 @@ pub struct Container {
     #[key]
     pub inst: felt252,
     pub is_container: bool,
-    // properties
+    /// Properties
     pub can_be_opened: bool,
     pub can_receive_items: bool,
     pub is_open: bool,
     pub num_slots: u32,
-    // item_ids: Array<felt252>,
     // pub accept_tags: Array<Tag>,
     pub action_map: Array<ActionMapContainer>,
 }
@@ -109,7 +108,7 @@ pub impl ContainerImpl of ContainerTrait {
         can_put_item
     }
 
-    fn put_item_in(self: Container, mut world: WorldStorage, item: InventoryItem) {
+    fn put_item_in(self: Container, mut world: WorldStorage, mut item: InventoryItem) {
         // get container
         let mut container: Container = world.read_model(self.inst);
 
@@ -122,13 +121,16 @@ pub impl ContainerImpl of ContainerTrait {
         }
         // set parent to be the container's entity
         item_entity.set_parent(world, @container.entity(@world));
+        item.owner_id = container.inst;
         // update container
         world.write_model(@container);
+        // update item
+        world.write_model(@item);
     }
 
 
     fn put_item_out(
-        self: Container, mut world: WorldStorage, item: InventoryItem, player: @Player,
+        self: Container, mut world: WorldStorage, mut item: InventoryItem, player: @Player,
     ) {
         // get container
         let mut container: Container = world.read_model(self.inst);
@@ -144,9 +146,12 @@ pub impl ContainerImpl of ContainerTrait {
         // remove item from container:
         // set parent to be the room's entity
         item_entity.set_parent(world, @room);
+        item.owner_id = room.inst;
         //item_entity.remove_from_parent(world, @container);
         // update container
         world.write_model(@container);
+        // update item
+        world.write_model(@item);
     }
 
     fn contains(self: @Container, itemID: felt252, world: @WorldStorage) -> bool {
@@ -248,6 +253,7 @@ pub impl ContainerComponent of Component<Container> {
                     },
                 ];
         container.store(world);
+        // Return the component
         container
     }
 
@@ -268,7 +274,7 @@ pub impl ContainerComponent of Component<Container> {
     fn execute_command(
         mut self: Container, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("Container execute_command");
+        // println!("Container execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {

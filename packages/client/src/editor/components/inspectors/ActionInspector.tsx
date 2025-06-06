@@ -1,0 +1,114 @@
+import { type ChangeEvent } from "react";
+import {
+  type Action,
+} from "@/lib/dojo_bindings/typescript/models.gen";
+import {
+  Input,
+  TagInput,
+  Toggle,
+  formatKeyAsDecimal,
+} from "../FormComponents";
+import type { ComponentInspector } from "./useInspector";
+import { useInspector } from "./useInspector";
+import { MultiNumberArray } from "../MultiNumberArray";
+import { BigNumberish, num } from "starknet";
+
+export const ActionInspector: ComponentInspector<Action> = ({
+  componentObject,
+  ...props
+}) => {
+  const { handleInputChange, Inspector } = useInspector<Action>({
+    componentObject,
+    ...props,
+    inputHandlers: {
+      name: (e, updatedObject) => {
+        updatedObject.name = e.target.value;
+      },
+      description: (e, updatedObject) => {
+        updatedObject.description = e.target.value;
+      },
+      is_enabled: (e, updatedObject) => {
+        const event = e as ChangeEvent<HTMLInputElement>;
+        updatedObject.is_enabled = event.target.checked;
+      },
+      trigger: (e, updatedObject) => {
+        const val = e.target.value as unknown as Array<[string, string]>;
+        updatedObject.trigger = val.map(
+          ([a, b]) => [(a), num.toBigInt(b)]
+        ) as [BigNumberish, BigNumberish][];
+      },
+      conditions: (e, updatedObject) => {
+        const val = e.target.value as unknown as Array<[string, string]>;
+        updatedObject.conditions = val.map(
+          ([a, b]) => [(a), num.toBigInt(b)]
+        ) as [BigNumberish, BigNumberish][];
+      },
+      effects: (e, updatedObject) => {
+        const val = e.target.value as unknown as Array<[string, string]>;
+        updatedObject.effects = val.map(
+          ([a, b]) => [(a), num.toBigInt(b)]
+        ) as [BigNumberish, BigNumberish][];
+      },
+      tags: (e, updatedObject) => {
+        const val = e.target.value;
+        let entries: string[];
+
+        if (Array.isArray(val)) {
+          entries = val.map((line) => line.trim()).filter((line) => line !== "");
+        } else if (typeof val === "string") {
+          entries = val
+            .split("\n")
+            .map((line) => line.trim())
+            .filter((line) => line !== "");
+        } else {
+          entries = [];
+        }
+
+        updatedObject.tags = entries;
+      },
+    },
+  });
+  if (!componentObject) return <div>Action not found</div>;
+
+  return (
+    <Inspector>
+      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
+      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
+      <Input
+        id="name"
+        value={componentObject.name}
+        onChange={handleInputChange}
+      />
+      <Input
+        id="description"
+        value={componentObject.description}
+        onChange={handleInputChange}
+      />
+      <Toggle
+        id="is_enabled"
+        value={componentObject.is_enabled}
+        onChange={handleInputChange}
+      />
+      <MultiNumberArray
+        id="trigger"
+        value={componentObject.trigger.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+        onChange={handleInputChange}
+      />
+      <MultiNumberArray
+        id="conditions"
+        value={componentObject.conditions.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+        onChange={handleInputChange}
+      />
+      <MultiNumberArray
+        id="effects"
+        value={componentObject.effects.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+        onChange={handleInputChange}
+      />
+      <TagInput
+        id="tags"
+        value={componentObject.tags?.join(",") || ""}
+        onChange={handleInputChange}
+      />
+    </Inspector>
+  );
+}

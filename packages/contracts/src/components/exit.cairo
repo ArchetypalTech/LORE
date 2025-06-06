@@ -7,7 +7,7 @@ use lore::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
         utils::ByteArrayTraitExt,
     },
-    components::area::{AreaComponent},
+    components::{area::{AreaComponent}},
 };
 
 use lore::constants::constants::Direction;
@@ -25,7 +25,7 @@ pub struct Exit {
     #[key]
     pub inst: felt252,
     pub is_exit: bool,
-    // properties
+    /// Properties
     pub is_enterable: bool,
     pub leads_to: felt252,
     pub direction_type: Direction,
@@ -78,6 +78,7 @@ pub impl ExitComponent of Component<Exit> {
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];
         exit.store(world);
+        // Return the component
         exit
     }
 
@@ -159,7 +160,7 @@ fn matches_direction(
     }
     let exit_dir = ByteArrayTraitExt::byte_array_from_direction(*self.direction_type);
     let dir_text = constants::direction_one_letter(directions_token[0].text);
-    println!("area_dir: {:?}", directions_token[0]);
+    // println!("area_dir: {:?}", directions_token[0]);
     if (exit_dir == dir_text) {
         return Option::Some(*self.leads_to);
     }

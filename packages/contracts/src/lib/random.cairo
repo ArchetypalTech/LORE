@@ -40,7 +40,7 @@ mod tests {
             let result: u8 = random_u8(seed);
             num.append(result);
         };
-        println!("rnd_u8: {:?}", num);
+        // println!("rnd_u8: {:?}", num);
     }
 
     #[test]
@@ -52,6 +52,6 @@ mod tests {
             let result: u16 = random_u16(seed);
             num.append(result);
         };
-        println!("rnd_u16: {:?}", num);
+        // println!("rnd_u16: {:?}", num);
     }
 }

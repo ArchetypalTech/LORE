@@ -1,4 +1,4 @@
-#[derive(Copy, Drop, Debug)]
+#[derive(Serde, Clone, Drop, Debug, PartialEq, Introspect)]
 pub enum Error {
     // Utils
     Unimplemented,
@@ -14,4 +14,26 @@ pub enum Error {
     // Dictionary
     NoDictionaryMatch,
     None,
+    // Triggers
+    TriggerNotFound,
+    NameTooLong,
+    FailedToUpdateTriggerIndex,
+    FailedToRemoveTriggerIndex,
+    TriggerNotMeetConditions,
+    // Conditions
+    ConditionFailed,
+    // Effects
+    EffectFailed,
+    EffectNotFound,
+    ReadOnlyVariable,
+    // PropertyResgistry
+    NoPropertyRegistry,
+    // Componets
+    NoComponent,
+    NoAreaComponent,
+    NoExitComponent,
+    NoInspectableComponent,
+    NoInventoryItemComponent,
+    NoContainerComponent,
+    NoPlayerComponent,
 }

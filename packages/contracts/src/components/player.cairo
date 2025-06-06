@@ -20,7 +20,7 @@ pub struct Player {
     #[key]
     pub inst: felt252,
     pub is_player: bool,
-    // properties
+    /// Properties
     pub address: ContractAddress,
     pub location: felt252,
     pub use_debug: bool,
@@ -170,6 +170,7 @@ pub impl PlayerComponent of Component<Player> {
         player.is_player = true;
         // player.action_map = array![("look", InspectableActions::read_description)];
         player.store(world);
+        // Return the component
         player
     }
 
@@ -243,7 +244,7 @@ mod tests {
 
         player.say(world, "hello");
         let story: PlayerStory = world.read_model(player.inst);
-        println!("story: {:?}", story);
+        // ("story: {:?}", story);
         assert(story.story.len() == 2, 'story has two entries'); // first entry is intro text
         let test_text: ByteArray = "hello";
         assert(story.story.at(story.story.len() - 1) == @test_text, 'story has "hello"');

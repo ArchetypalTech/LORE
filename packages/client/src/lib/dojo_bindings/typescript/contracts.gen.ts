@@ -4,6 +4,27 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
+	const build_designer_createAction_calldata = (t: Array<Action>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_action",
+			calldata: [t],
+		};
+	};
+
+	const designer_createAction = async (snAccount: Account | AccountInterface, t: Array<Action>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createAction_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createArea_calldata = (t: Array<Area>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -46,6 +67,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_createCondition_calldata = (t: Array<Condition>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_condition",
+			calldata: [t],
+		};
+	};
+
+	const designer_createCondition = async (snAccount: Account | AccountInterface, t: Array<Condition>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createCondition_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createContainer_calldata = (t: Array<Container>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -59,6 +101,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_createContainer_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_createEffect_calldata = (t: Array<Effect>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_effect",
+			calldata: [t],
+		};
+	};
+
+	const designer_createEffect = async (snAccount: Account | AccountInterface, t: Array<Effect>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createEffect_calldata(t),
 				"lore",
 			);
 		} catch (error) {
@@ -193,6 +256,48 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_createTrigger_calldata = (t: Array<Trigger>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_trigger",
+			calldata: [t],
+		};
+	};
+
+	const designer_createTrigger = async (snAccount: Account | AccountInterface, t: Array<Trigger>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createTrigger_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_deleteAction_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_action",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteAction = async (snAccount: Account | AccountInterface, ids: Array<[BigNumberish, BigNumberish]>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteAction_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteArea_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -235,6 +340,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deleteCondition_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_condition",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteCondition = async (snAccount: Account | AccountInterface, ids: Array<[BigNumberish, BigNumberish]>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteCondition_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteContainer_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -248,6 +374,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_deleteContainer_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_deleteEffect_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_effect",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteEffect = async (snAccount: Account | AccountInterface, ids: Array<[BigNumberish, BigNumberish]>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteEffect_calldata(ids),
 				"lore",
 			);
 		} catch (error) {
@@ -382,6 +529,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deleteTrigger_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_trigger",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteTrigger = async (snAccount: Account | AccountInterface, ids: Array<[BigNumberish, BigNumberish]>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteTrigger_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_prompt_prompt_calldata = (cmd: ByteArray): DojoCall => {
 		return {
 			contractName: "prompt",
@@ -407,12 +575,18 @@ export function setupWorld(provider: DojoProvider) {
 
 	return {
 		designer: {
+			createAction: designer_createAction,
+			buildCreateActionCalldata: build_designer_createAction_calldata,
 			createArea: designer_createArea,
 			buildCreateAreaCalldata: build_designer_createArea_calldata,
 			createChild: designer_createChild,
 			buildCreateChildCalldata: build_designer_createChild_calldata,
+			createCondition: designer_createCondition,
+			buildCreateConditionCalldata: build_designer_createCondition_calldata,
 			createContainer: designer_createContainer,
 			buildCreateContainerCalldata: build_designer_createContainer_calldata,
+			createEffect: designer_createEffect,
+			buildCreateEffectCalldata: build_designer_createEffect_calldata,
 			createEntity: designer_createEntity,
 			buildCreateEntityCalldata: build_designer_createEntity_calldata,
 			createExit: designer_createExit,
@@ -425,12 +599,20 @@ export function setupWorld(provider: DojoProvider) {
 			buildCreateParentCalldata: build_designer_createParent_calldata,
 			createPlayer: designer_createPlayer,
 			buildCreatePlayerCalldata: build_designer_createPlayer_calldata,
+			createTrigger: designer_createTrigger,
+			buildCreateTriggerCalldata: build_designer_createTrigger_calldata,
+			deleteAction: designer_deleteAction,
+			buildDeleteActionCalldata: build_designer_deleteAction_calldata,
 			deleteArea: designer_deleteArea,
 			buildDeleteAreaCalldata: build_designer_deleteArea_calldata,
 			deleteChild: designer_deleteChild,
 			buildDeleteChildCalldata: build_designer_deleteChild_calldata,
+			deleteCondition: designer_deleteCondition,
+			buildDeleteConditionCalldata: build_designer_deleteCondition_calldata,
 			deleteContainer: designer_deleteContainer,
 			buildDeleteContainerCalldata: build_designer_deleteContainer_calldata,
+			deleteEffect: designer_deleteEffect,
+			buildDeleteEffectCalldata: build_designer_deleteEffect_calldata,
 			deleteEntity: designer_deleteEntity,
 			buildDeleteEntityCalldata: build_designer_deleteEntity_calldata,
 			deleteExit: designer_deleteExit,
@@ -443,6 +625,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeleteParentCalldata: build_designer_deleteParent_calldata,
 			deletePlayer: designer_deletePlayer,
 			buildDeletePlayerCalldata: build_designer_deletePlayer_calldata,
+			deleteTrigger: designer_deleteTrigger,
+			buildDeleteTriggerCalldata: build_designer_deleteTrigger_calldata,
 		},
 		prompt: {
 			prompt: prompt_prompt,

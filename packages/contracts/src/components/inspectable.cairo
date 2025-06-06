@@ -14,14 +14,13 @@ pub enum InspectableActions {
     ReadFirstDescription,
 }
 
-// Inspectable component
 #[derive(Clone, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct Inspectable {
     #[key]
     pub inst: felt252,
     pub is_inspectable: bool,
-    // properties
+    /// Properties
     pub is_visible: bool,
     pub description: Array<ByteArray>,
     pub action_map: Array<ActionMapInspectable>,
@@ -198,13 +197,13 @@ mod tests {
     fn Inspectable_test_create_inspectable() {
         let (prefab, world, _, _) = Inspectable_create_prefab();
         let read_inspectable: Inspectable = Component::get_component(world, prefab.inst).unwrap();
-        println!("read_inspectable: {:?}", read_inspectable);
+        // println!("read_inspectable: {:?}", read_inspectable);
         assert(read_inspectable.is_inspectable, 'inspectable is inspectable');
         let mut res = array![];
         for _ in 0..10_u8 {
             res.append(read_inspectable.clone().get_random_description(world));
         };
-        println!("inspectable: {:?}", res);
+        // println!("inspectable: {:?}", res);
     }
 
     #[test]
