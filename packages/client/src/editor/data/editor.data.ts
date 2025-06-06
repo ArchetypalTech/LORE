@@ -4,6 +4,11 @@ import { type BigNumberish, num } from "starknet";
 import type {
 	Entity,
 	ParentToChildren,
+	Trigger,
+	Effect,
+	Condition,
+	Exit,
+	Action,
 	ComponentsEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
@@ -553,8 +558,45 @@ const syncEntities = async () => {
 			result.getItems().forEach((item) => {
 				if (item.models?.lore) {
 					const entity = item.models.lore;
+					// Handle all component types
 					if (entity.Entity?.inst) {
+						// For Entity components, set the full entity
 						setItem(entity as AnyObject, entity.Entity.inst, true);
+					} else if (entity.Trigger?.inst) {
+						// For Trigger components, find parent entity and merge
+						const parentEntity = getEntity(entity.Trigger.inst, true);
+						if (parentEntity && entity.Trigger) {
+							parentEntity.Trigger = entity.Trigger as Trigger;
+							setItem(parentEntity as AnyObject, entity.Trigger.inst, true);
+						}
+					} else if (entity.Effect?.inst) {
+						// For Effect components, find parent entity and merge
+						const parentEntity = getEntity(entity.Effect.inst, true);
+						if (parentEntity && entity.Effect) {
+							parentEntity.Effect = entity.Effect as Effect;
+							setItem(parentEntity as AnyObject, entity.Effect.inst, true);
+						}
+					} else if (entity.Condition?.inst) {
+						// For Condition components, find parent entity and merge
+						const parentEntity = getEntity(entity.Condition.inst, true);
+						if (parentEntity && entity.Condition) {
+							parentEntity.Condition = entity.Condition as Condition;
+							setItem(parentEntity as AnyObject, entity.Condition.inst, true);
+						}
+					} else if (entity.Exit?.inst) {
+						// For Exit components, find parent entity and merge
+						const parentEntity = getEntity(entity.Exit.inst, true);
+						if (parentEntity && entity.Exit) {
+							parentEntity.Exit = entity.Exit as Exit;
+							setItem(parentEntity as AnyObject, entity.Exit.inst, true);
+						}
+					} else if (entity.Action?.inst) {
+						// For Action components, find parent entity and merge
+						const parentEntity = getEntity(entity.Action.inst, true);
+						if (parentEntity && entity.Action) {
+							parentEntity.Action = entity.Action as Action;
+							setItem(parentEntity as AnyObject, entity.Action.inst, true);
+						}
 					}
 				}
 			});
