@@ -282,6 +282,7 @@ mod tests {
             area::{AreaComponent}, exit::{ExitComponent},
             player::{Player, PlayerComponent, caller_as_player, PlayerImpl},
         },
+        constants::constants::Direction,
     };
 
     fn create_test_trigger(
