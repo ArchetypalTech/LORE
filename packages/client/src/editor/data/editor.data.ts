@@ -513,8 +513,8 @@ const dojoSync = (
  * @param componentType 
  * @returns the property names for the given component type
  */
-export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promise<string[]> => {
-	let properties_array: string[] = [];
+export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promise<string[] | undefined> => {
+	let properties_array: string[] | undefined;
 	try {
 		const { sdk } = await InitDojo();
 		const queryProperties = () => {
@@ -531,7 +531,7 @@ export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promi
 			const registry = item.models?.lore?.PropertyRegistry;
 			if (registry?.component_type === componentType) {
 				// console.log("Matched registry:", registry);
-				properties_array = registry?.properties!.map((x) => x.name);
+				properties_array = registry?.properties?.map((x) => x.name);
 				// console.log("properties_array", properties_array);
 			}
 		});		

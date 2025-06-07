@@ -563,17 +563,19 @@ mod tests {
 
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2
+        let t_key: felt252 = 1;
         let mut trigger = create_test_trigger(
-            room_2.inst, 1, "TestTrigger", TriggerType::PlayerEntersArea,
+            room_2.inst, t_key, "TestTrigger", TriggerType::PlayerEntersArea,
         );
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
+        let c_key: felt252 = 1;
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
-            1,
+            c_key,
             item.inst,
             Components::InventoryItem,
             property,
@@ -600,17 +602,21 @@ mod tests {
         let property: ByteArray = "description";
         let property2: ByteArray = "is_enterable";
 
+        let e_key: felt252 = 1;
+        let e_key2: felt252 = 2;
+
         // Create effects
         let mut effect = create_test_effect(
-            door.inst, 1, door.inst, Components::Inspectable, property, new_description.clone(),
+            door.inst, e_key, door.inst, Components::Inspectable, property, new_description.clone(),
         );
         let mut effect2 = create_test_effect(
-            door.inst, 2, door.inst, Components::Exit, property2, new_enterable.clone(),
+            door.inst, e_key2, door.inst, Components::Exit, property2, new_enterable.clone(),
         );
         world.write_model(@effect);
         world.write_model(@effect2);
 
         // TODO: create action
+        let a_key: felt252 = 90527;
         let act_name: ByteArray = "TestAction";
         let act_desc: ByteArray = "TestActionDesc";
         let mut triggers: Array<(felt252, felt252)> = ArrayTrait::new();
@@ -622,7 +628,8 @@ mod tests {
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
         let mut action = create_test_action(
-            room_2.inst, 1, act_name, act_desc, true, triggers, conditions, effects, tags, true,
+            room_1.inst, a_key, act_name, act_desc, true, triggers, conditions, effects, tags,
+            false,
         );
         // Register the action
         let _result = ActionImpl::register_action(world, action.clone());
