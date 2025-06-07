@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useCallback, useEffect } from "react";
 import type { BigNumberish } from "starknet";
 import EditorData, { useEditorData } from "../data/editor.data";
@@ -12,6 +13,17 @@ import { NoEntity } from "./ui/NoEntity";
 
 export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	const { editedEntity, isDirty } = useEditorData();
+
+	 // State to track open/closed status per component key
+  const [openComponents, setOpenComponents] = useState<Record<string, boolean>>({});
+
+  // Toggle function for a single component
+  const toggleComponent = (key: string) => {
+    setOpenComponents((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
 	useEffect(() => {
 		if (editedEntity === undefined && inst !== undefined) {
@@ -106,25 +118,48 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 					}}
 				/>
 			</Header>
-			<div className="flex flex-col gap-0 rounded-md shadow-xs">
-				{allComponents().map(({ key, Inspector, componentObject }) => {
-					if (!Inspector) return <div key={key}>{key}</div>;
-					if (componentObject === undefined) return null;
-					return (
-						<Inspector
-							key={key}
-							componentObject={componentObject}
-							componentName={key}
-							handleEdit={handleEditComponent}
-							handleRemove={handleRemoveComponent}
-						/>
-					);
-				})}
-			</div>
-			<AddComponents
-				editedEntity={editedEntity}
-				handleEdit={handleEditComponent}
-			/>
-		</div>
-	);
+			  <div className="flex flex-col gap-0 rounded-md shadow-xs">
+        {allComponents().map(({ key, Inspector, componentObject }) => {
+          if (!Inspector) return <div key={key}>{key}</div>;
+          if (componentObject === undefined) return null;
+
+          const isOpen = openComponents[key as string] ?? true; // default open
+
+          return (
+            <div key={key} className="border-b border-gray-300">
+              {/* Header with toggle button */}
+              <div
+								className="flex items-center justify-between bg-gray-100 px-2 py-1 cursor-pointer select-none"
+								onClick={() => toggleComponent(key as string)}
+								aria-expanded={isOpen}
+								role="button"
+								tabIndex={0}
+								onKeyDown={(e) => {
+									if (e.key === "Tab" || e.key === " ") {
+										e.preventDefault();
+										toggleComponent(key as string);
+									}
+								}}
+							>
+								<span className="font-semibold">{key}</span>
+								<span className="text-xs">{isOpen ? "▼" : "▶"}</span>
+							</div>
+
+              {/* Conditionally render the inspector */}
+              {isOpen && (
+                <Inspector
+                  componentObject={componentObject}
+                  componentName={key}
+                  handleEdit={handleEditComponent}
+                  handleRemove={handleRemoveComponent}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <AddComponents editedEntity={editedEntity} handleEdit={handleEditComponent} />
+    </div>
+  );
 };
