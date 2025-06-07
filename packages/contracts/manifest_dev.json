@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x2af9ec016fbae08d53af50372830253a59852719c99de1430069f2c237c7fce",
-      "class_hash": "0x17e525db91ef9a1dd75875dc1e80a8782eecc5bab61b919cb04f384ce0e257c",
+      "address": "0x7358057a1606c52a5005891140a24c3d49fe6bb5dcb844aaae03ddfe206f913",
+      "class_hash": "0x20ffb36082f470c8fa4d19d80ae280bd85e7d4c5ab35c9d54d815e5d458cfd4",
       "abi": [
         {
           "type": "impl",
@@ -1691,6 +1691,14 @@
             {
               "name": "action_map",
               "type": "core::array::Array::<lore::components::inventoryItem::ActionMapInventoryItem>"
+            },
+            {
+              "name": "already_used",
+              "type": "core::bool"
+            },
+            {
+              "name": "multiple_use",
+              "type": "core::bool"
             }
           ]
         },
@@ -1778,6 +1786,10 @@
             },
             {
               "name": "PlayerLeavesArea",
+              "type": "()"
+            },
+            {
+              "name": "NotUsedItem",
               "type": "()"
             }
           ]
@@ -1977,6 +1989,10 @@
             {
               "name": "tags",
               "type": "core::array::Array::<core::byte_array::ByteArray>"
+            },
+            {
+              "name": "executed",
+              "type": "core::bool"
             }
           ]
         },
@@ -2483,8 +2499,8 @@
       ]
     },
     {
-      "address": "0x229126c7b2e4cb95869eaec57f70f5fdc423edd1aa41d440e8b3a4aaa4938b4",
-      "class_hash": "0x3e1e7520f64d0c24d16bde9e5e5846231240cd3ccc497bf939c7072fffaeafa",
+      "address": "0x164ee225762e8a7dfcc6f2873883ece2a1c365ef3ad4b567ffef55d478f6dde",
+      "class_hash": "0x1f5dbb2c1d841552e1b2664698e459af95401ca172a5bf235899905cf6e1ee3",
       "abi": [
         {
           "type": "impl",
@@ -2687,7 +2703,7 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x3857dc551d04d6cdb9f93d3a26126ecedcdfd80a3a4e57bb3245d95de3c012a",
+      "class_hash": "0x7623d3af634d4179ff7bbef4ca8f3bb4f3a11a7c20f954a976a176aee7374c8",
       "tag": "lore-Action",
       "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
     },
@@ -2759,7 +2775,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x624f4b66c6d7815e7e7bcc10ef271c8ae2b56e282f7ec9893a9bf4dd9496993",
+      "class_hash": "0x31c4db33bd8800480087322ccf2ffe71436fd0687e1ed7111330fb069d04c30",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },
@@ -2789,13 +2805,13 @@
     },
     {
       "members": [],
-      "class_hash": "0x6a49a421e63421e78d7b43dd2a030e3f5cfad9cbf19c71f93afd6917a522a41",
+      "class_hash": "0x6e74a646250df78d238f8cd95739aaa6aa3a236ae1a4a40d33983054003a329",
       "tag": "lore-Trigger",
       "selector": "0x8f76987efdbfa10b4f5f6a6ed5450ecc5241301beabc41a889d84c40f87cfa"
     },
     {
       "members": [],
-      "class_hash": "0x437ec8fe3e346cb7e5399e16e53a1eb9182838e31c6b96145a8e3cdd6841611",
+      "class_hash": "0x6db5005ec0983a06f1b02e97a12d35d1ff69b4c8e128d91f92b2a27a05cbf81",
       "tag": "lore-TriggerIndex",
       "selector": "0x472f592295e556e032f9ea3d00faf9cbd2729afe3a6fc168cf6034c65b7dc6"
     }
