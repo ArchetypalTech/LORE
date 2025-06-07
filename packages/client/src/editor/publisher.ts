@@ -172,6 +172,7 @@ const publishInspectable = async (inspectable: Inspectable) => {
 					byteArray.byteArrayFromString(x.action),
 					0,
 					toEnumIndex(x.action_fn, inspectableActions),
+					num.toBigInt(x.entrypoint.toString()),
 				])
 			: 0,
 	];

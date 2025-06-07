@@ -282,10 +282,11 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 	cairoEnum: readonly string[];
 	idx: number;
 }) => {
-	const [input, setInput] = useState(actionMap.action);
+	const [input, setInput] = useState(actionMap.action as string);
 	const [enumValue, setEnumValue] = useState(
 		actionMap.action_fn as CairoCustomEnum,
 	);
+	const [entrypoint, setEntrypoint] = useState(actionMap.entrypoint as BigNumberish);
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const newValue = e.target.value;
@@ -303,6 +304,7 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 				action: action.action.trim(),
 				inst: action.inst,
 				action_fn: action.action_fn,
+				entrypoint: action.entrypoint,
 			},
 			idx,
 		);
@@ -315,6 +317,16 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 			action_fn: newValue,
 		} as ActionMap<T>;
 		setEnumValue(newValue);
+		return newActionMap;
+	};
+
+	const handleEntrypointChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newValue = e.target.value;
+		const newActionMap = {
+			...actionMap,
+			entrypoint: newValue,
+		} as ActionMap<T>;
+		setEntrypoint(newValue);
 		return newActionMap;
 	};
 
@@ -339,8 +351,17 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 						submit(a);
 					}}
 					enum={cairoEnum}
-					className="bg-white rounded-md flex grow"
+					className="bg-white rounded-md flex-[0.3] min-w-[12rem]"
 					hideLabel={true}
+				/>
+				<UIInput
+					id={actionMap.entrypoint}
+					value={entrypoint}
+					onChange={(e) => {
+						let a = handleEntrypointChange(e);
+						submit(a);
+					}}
+					className="bg-white col-span-1 border-solid flex-1"
 				/>
 			</div>
 				<DeleteButton
@@ -409,6 +430,7 @@ export const ActionMapEditor = <T extends CairoCustomEnum>({
 			action: "",
 			inst: 0,
 			action_fn: cairoEnum[0],
+			entrypoint: 0,
 		});
 		sendEvent(newActionMap);
 	};

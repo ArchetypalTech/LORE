@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x7358057a1606c52a5005891140a24c3d49fe6bb5dcb844aaae03ddfe206f913",
-      "class_hash": "0x20ffb36082f470c8fa4d19d80ae280bd85e7d4c5ab35c9d54d815e5d458cfd4",
+      "address": "0x63e9c45621cc56faa4c479bf41687d205b8c85c0e1c5d622e8a39cb865023f2",
+      "class_hash": "0x145022b8349f3c7402eb70dee6603edb396d52f4e59edea4dfabfcdc3c029fb",
       "abi": [
         {
           "type": "impl",
@@ -1467,6 +1467,10 @@
             {
               "name": "ReadFirstDescription",
               "type": "()"
+            },
+            {
+              "name": "ReadSpecificDescription",
+              "type": "()"
             }
           ]
         },
@@ -1485,6 +1489,10 @@
             {
               "name": "action_fn",
               "type": "lore::components::inspectable::InspectableActions"
+            },
+            {
+              "name": "entrypoint",
+              "type": "core::integer::u32"
             }
           ]
         },
@@ -2499,8 +2507,8 @@
       ]
     },
     {
-      "address": "0x164ee225762e8a7dfcc6f2873883ece2a1c365ef3ad4b567ffef55d478f6dde",
-      "class_hash": "0x1f5dbb2c1d841552e1b2664698e459af95401ca172a5bf235899905cf6e1ee3",
+      "address": "0x4f4faad4c59194993bd6ba27358f973015daca7db503dd4ead710215eaa5bad",
+      "class_hash": "0x64772911a701b8808d62b748795e944f4f6bc2210634676fa4bfe0b46096062",
       "abi": [
         {
           "type": "impl",
@@ -2769,7 +2777,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x716e3efb30fdfbb7ba1e9203eca6cb5411e1618b707f4f465f0a2a2168fadc3",
+      "class_hash": "0x534e52be1607c679c80ed54c93220fbd334a6dc227edd212406be21131621e0",
       "tag": "lore-Inspectable",
       "selector": "0x761c792e623173857f21316868bd06f19050cfc26238d33476231e335cf59c9"
     },

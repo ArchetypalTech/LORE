@@ -94,8 +94,8 @@ export const createDefaultInspectableComponent = (
 		is_visible: true,
 		description: [entity.name],
 		action_map: [
-			{ action: "look", inst: 0, action_fn: "ReadRandomDescription" },
-			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription" },
+			{ action: "look", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
+			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
 		],
 	},
 });
