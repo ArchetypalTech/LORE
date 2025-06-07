@@ -72,6 +72,7 @@ export interface ActionMapInspectable {
 	action: string;
 	inst: BigNumberish;
 	action_fn: InspectableActionsEnum;
+	entrypoint: BigNumberish;
 }
 
 // Type definition for `lore::components::inspectable::Inspectable` struct
@@ -402,6 +403,7 @@ export const inspectableActions = [
 	'SetVisible',
 	'ReadRandomDescription',
 	'ReadFirstDescription',
+	'ReadSpecificDescription',
 ] as const;
 export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
 export type InspectableActionsEnum = CairoCustomEnum;
@@ -628,7 +630,9 @@ export const schema: SchemaType = {
 		action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
 				ReadRandomDescription: undefined,
-				ReadFirstDescription: undefined, }),
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }),
+			entrypoint: 0,
 		},
 		Inspectable: {
 			inst: 0,
@@ -638,7 +642,8 @@ export const schema: SchemaType = {
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
 				ReadRandomDescription: undefined,
-				ReadFirstDescription: undefined, }), }],
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
 		},
 		InspectableValue: {
 			is_inspectable: false,
@@ -647,7 +652,8 @@ export const schema: SchemaType = {
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
 				ReadRandomDescription: undefined,
-				ReadFirstDescription: undefined, }), }],
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
 		},
 		ActionMapInventoryItem: {
 		action: "",

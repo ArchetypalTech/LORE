@@ -326,12 +326,16 @@ mod tests {
             .action_map =
                 array![
                     ActionMapInspectable {
-                        action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
+                        action: "show",
+                        inst: 0,
+                        action_fn: InspectableActions::SetVisible,
+                        entrypoint: 0,
                     },
                     ActionMapInspectable {
                         action: "look",
                         inst: 0,
                         action_fn: InspectableActions::ReadRandomDescription,
+                        entrypoint: 1,
                     },
                 ];
         inspectable.store(world);
