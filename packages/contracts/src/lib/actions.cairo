@@ -628,7 +628,15 @@ mod tests {
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
         let mut action = create_test_action(
-            room_1.inst, a_key, act_name, act_desc, true, triggers, conditions, effects, tags,
+            room_1.inst,
+            a_key,
+            act_name,
+            act_desc,
+            true,
+            triggers,
+            conditions,
+            effects,
+            tags,
             false,
         );
         // Register the action
