@@ -20,6 +20,7 @@ pub enum Error {
     FailedToUpdateTriggerIndex,
     FailedToRemoveTriggerIndex,
     TriggerNotMeetConditions,
+    OnceUseOnly,
     // Conditions
     ConditionFailed,
     // Effects
@@ -36,4 +37,6 @@ pub enum Error {
     NoInventoryItemComponent,
     NoContainerComponent,
     NoPlayerComponent,
+    // Entity
+    NoTargetEntity,
 }

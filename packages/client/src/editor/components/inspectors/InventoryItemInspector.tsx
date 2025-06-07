@@ -34,6 +34,12 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
         const newActionMap = e.target.value as unknown as ActionMapInventoryItem[];
         updatedObject.action_map = newActionMap;
       },
+			alread_used: (e, updatedObject) => {
+				updatedObject.already_used = e.target.checked;
+			},
+			multiple_use: (e, updatedObject) => {
+				updatedObject.multiple_use = e.target.checked;
+			},
     },
 	});
 
@@ -67,6 +73,16 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 				value={componentObject.action_map}
 				onChange={handleInputChange}
 				cairoEnum={inventoryItemActions}
+			/>
+			<Toggle
+				id="alread_used"
+				value={componentObject.already_used}
+				onChange={handleInputChange}
+			/>
+			<Toggle
+				id="multiple_use"
+				value={componentObject.multiple_use}
+				onChange={handleInputChange}
 			/>
 		</Inspector>
 	);

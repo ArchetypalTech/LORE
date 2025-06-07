@@ -176,6 +176,7 @@ export const TextAreaArray = ({
 	children,
 	onChange,
 	readOnly,
+	disabled,
 }: {
 	id: string;
 	value: string[];
@@ -184,6 +185,7 @@ export const TextAreaArray = ({
 	className?: string;
 	children?: React.ReactNode;
 	readOnly?: boolean;
+	disabled?: boolean;
 }) => {
 	return (
 		<div className="form-group">
@@ -195,6 +197,7 @@ export const TextAreaArray = ({
 				className={className}
 				onChange={onChange}
 				readOnly={readOnly}
+				disabled={disabled}
 			/>
 			{children}
 		</div>

@@ -106,6 +106,8 @@ export interface InventoryItem {
 	can_be_picked_up: boolean;
 	can_go_in_container: boolean;
 	action_map: Array<ActionMapInventoryItem>;
+	already_used: boolean;
+	multiple_use: boolean;
 }
 
 // Type definition for `lore::components::inventoryItem::InventoryItemValue` struct
@@ -115,6 +117,8 @@ export interface InventoryItemValue {
 	can_be_picked_up: boolean;
 	can_go_in_container: boolean;
 	action_map: Array<ActionMapInventoryItem>;
+	already_used: boolean;
+	multiple_use: boolean;
 }
 
 // Type definition for `lore::components::player::Player` struct
@@ -156,6 +160,7 @@ export interface Action {
 	conditions: Array<[BigNumberish, BigNumberish]>;
 	effects: Array<[BigNumberish, BigNumberish]>;
 	tags: Array<string>;
+	executed: boolean;
 }
 
 // Type definition for `lore::lib::actions::ActionValue` struct
@@ -167,6 +172,7 @@ export interface ActionValue {
 	conditions: Array<[BigNumberish, BigNumberish]>;
 	effects: Array<[BigNumberish, BigNumberish]>;
 	tags: Array<string>;
+	executed: boolean;
 }
 
 // Type definition for `lore::lib::condition::Condition` struct
@@ -462,6 +468,7 @@ export const triggerType = [
 	'None',
 	'PlayerEntersArea',
 	'PlayerLeavesArea',
+	'NotUsedItem',
 ] as const;
 export type TriggerType = { [key in typeof triggerType[number]]: string };
 export type TriggerTypeEnum = CairoCustomEnum;
@@ -664,6 +671,8 @@ export const schema: SchemaType = {
 				DropItem: undefined,
 				PutItem: undefined,
 				TakeOutItem: undefined, }), }],
+			already_used: false,
+			multiple_use: false,
 		},
 		InventoryItemValue: {
 			is_inventory_item: false,
@@ -676,6 +685,8 @@ export const schema: SchemaType = {
 				DropItem: undefined,
 				PutItem: undefined,
 				TakeOutItem: undefined, }), }],
+			already_used: false,
+			multiple_use: false,
 		},
 		Player: {
 			inst: 0,
@@ -707,6 +718,7 @@ export const schema: SchemaType = {
 			conditions: [[0, 0]],
 			effects: [[0, 0]],
 			tags: [""],
+			executed: false,
 		},
 		ActionValue: {
 		name: "",
@@ -716,6 +728,7 @@ export const schema: SchemaType = {
 			conditions: [[0, 0]],
 			effects: [[0, 0]],
 			tags: [""],
+			executed: false,
 		},
 		Condition: {
 			inst: 0,
@@ -873,7 +886,8 @@ export const schema: SchemaType = {
 		trigger_type: new CairoCustomEnum({ 
 					None: "",
 				PlayerEntersArea: undefined,
-				PlayerLeavesArea: undefined, }),
+				PlayerLeavesArea: undefined,
+				NotUsedItem: undefined, }),
 			parameters: [{ name: "", value: 0, }],
 			is_enabled: false,
 		},
@@ -881,7 +895,8 @@ export const schema: SchemaType = {
 		trigger_type: new CairoCustomEnum({ 
 					None: "",
 				PlayerEntersArea: undefined,
-				PlayerLeavesArea: undefined, }),
+				PlayerLeavesArea: undefined,
+				NotUsedItem: undefined, }),
 			trigger_id: [[0, 0]],
 		},
 		TriggerIndexValue: {
@@ -896,7 +911,8 @@ export const schema: SchemaType = {
 		trigger_type: new CairoCustomEnum({ 
 					None: "",
 				PlayerEntersArea: undefined,
-				PlayerLeavesArea: undefined, }),
+				PlayerLeavesArea: undefined,
+				NotUsedItem: undefined, }),
 			parameters: [{ name: "", value: 0, }],
 			is_enabled: false,
 		},

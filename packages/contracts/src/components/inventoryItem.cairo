@@ -4,14 +4,14 @@ use lore::{
     constants::errors::Error,
     lib::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
-        utils::ByteArrayTraitExt,
+        utils::ByteArrayTraitExt, actions::{Action, ActionImpl}, trigger::TriggerContext,
     },
     components::{area::{AreaComponent}, container::{Container, ContainerComponent, ContainerImpl}},
 };
 use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
 
 
-#[derive(Clone, Drop, Serde)]
+#[derive(Clone, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct InventoryItem {
     #[key]
@@ -22,6 +22,8 @@ pub struct InventoryItem {
     pub can_be_picked_up: bool,
     pub can_go_in_container: bool,
     pub action_map: Array<ActionMapInventoryItem>,
+    pub already_used: bool,
+    pub multiple_use: bool,
 }
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
@@ -94,6 +96,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         action: "use", inst: 0, action_fn: InventoryItemActions::UseItem,
                     },
                 ];
+        inventory_item.already_used = false;
         inventory_item.store(world);
         // Return the component
         inventory_item
@@ -123,9 +126,56 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         match action.action_fn {
             InventoryItemActions::UseItem => {
                 player.say(world, format!("You are trying to use: {}", nouns[0].text));
+                let mut resultUse: Result<(), Error> = Result::Ok(());
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE USE ITEM
-                return Result::Ok(());
+                // Ex: "use the key on the door"
+                // V: Use, N1: key, N2: door (target)
+                // Get target entity to get the actions and execute it
+                println!("noun1: {:?}", nouns[1]);
+
+                let target_entity = EntityImpl::get_entity(@world, nouns[1].target);
+                if target_entity.is_none() {
+                    return Result::Err(Error::NoTargetEntity);
+                }
+                let target_entity = target_entity.unwrap();
+                let target_actions = target_entity.actions_keys;
+                if target_actions.len() == 0 {
+                    // No actions found, just return
+                    return Result::Ok(());
+                }
+                let mut actions: Array<Action> = ArrayTrait::new();
+                // For each action, execute it
+                for key in target_actions {
+                    let mut action: Action = world.read_model((target_entity.inst, key));
+                    actions.append(action);
+                };
+                if actions.len() == 0 {
+                    // No actions found, just return
+                    return Result::Ok(());
+                }
+                // execute actions
+                for action in actions {
+                    // context is not being used inside evaluations or processing.
+                    let context = TriggerContext {
+                        doer: *player.inst,
+                        target1: target_entity.inst,
+                        target2: 0,
+                        inventory_object: self.inst,
+                    };
+
+                    let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
+                        action, world, @context,
+                    );
+                    // If all are ok, set used to true
+                    if trig_res.is_ok() && cond_res && eff_res.is_ok() {
+                        self.already_used = true;
+                        world.write_model(@self);
+                        resultUse = Result::Ok(());
+                        break;
+                    }
+                };
+                return resultUse;
             },
             InventoryItemActions::PickupItem => {
                 // This is for the player's personal inventory container

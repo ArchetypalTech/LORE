@@ -139,7 +139,9 @@ const publishEntity = async (entity: Entity) => {
 					.filter((x) => x.length > 0)
 					.map((x) => byteArray.byteArrayFromString(x))
 			: 0,
-		num.toBigInt(entity.actions_keys.toString()),
+			entity.actions_keys.length > 0
+				? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
+				: 0,
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -216,6 +218,8 @@ const publishInventoryItem = async (inventoryItem: InventoryItem) => {
 					toEnumIndex(x.action_fn, inventoryItemActions),
 			  ])
 			: 0,
+		inventoryItem.already_used,
+		inventoryItem.multiple_use,
 	];
 	await dispatchDesignerCall("create_inventory_item", [inventoryItemData]);
 };
@@ -290,6 +294,7 @@ const publishAction = async (action: Action) => {
 		action.conditions.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
 		action.effects.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
 		action.tags.map((x) => byteArray.byteArrayFromString(x)),
+		action.executed,
 	];
 
 	await dispatchDesignerCall("create_action", [actionData]);

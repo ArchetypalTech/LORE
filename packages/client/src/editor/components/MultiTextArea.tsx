@@ -11,6 +11,7 @@ export const MultiTextArea = ({
 	rows,
 	className,
 	readOnly,
+	disabled,
 }: {
 	id: string;
 	value: string[];
@@ -18,6 +19,7 @@ export const MultiTextArea = ({
 	rows: number;
 	className?: string;
 	readOnly?: boolean;
+	disabled?: boolean;
 }) => {
 	const handleNewValue = async (arrays: string[]) => {
 		const syntheticEvent = {
@@ -29,6 +31,7 @@ export const MultiTextArea = ({
 				type: "array",
 				checked: false,
 				readOnly: false,
+				disabled: false,
 			},
 			currentTarget: {
 				id,
@@ -37,6 +40,7 @@ export const MultiTextArea = ({
 				type: "array",
 				checked: false,
 				readOnly: false,
+				disabled: false,
 			},
 			// Standard event properties
 			bubbles: true,
@@ -87,6 +91,7 @@ export const MultiTextArea = ({
 								onBlur={handleChange}
 								rows={rows}
 								readOnly={readOnly}
+								disabled={disabled}
 								className={cn("flex w-full bg-white", className)}
 							/>
 							<div className="absolute top-0 right-0 scale-50 opacity-50 grayscale-100 hover:opacity-100 hover:grayscale-0">
@@ -95,9 +100,6 @@ export const MultiTextArea = ({
 						</div>
 					);
 				})}
-				<Button variant="secondary" onClick={handleAddArray}>
-					Add {id}
-				</Button>
 			</div>
 		</>
 	);

@@ -29,6 +29,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		is_entity: true,
 		name: createRandomName(),
 		alt_names: [],
+		actions_keys: [],
 	},
 });
 
@@ -133,6 +134,8 @@ export const createDefaultInventoryItemComponent = (
 			{ action: "take", inst: 0, action_fn: "TakeOutItem" },
 			{ action: "use", inst: 0, action_fn: "UseItem" },
 		],
+		already_used: false,
+		multiple_use: false,
 	},
 });
 
@@ -212,6 +215,7 @@ export const createDefaultActionComponent = (
 		conditions: [],
 		effects: [],
 		tags: [],
+		executed: false,
 	},
 });
 

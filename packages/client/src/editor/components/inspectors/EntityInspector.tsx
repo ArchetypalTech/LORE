@@ -2,6 +2,7 @@ import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { Input, TagInput, TextAreaArray, formatKeyAsDecimal, } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
+import { num } from "starknet";
 
 export const EntityInspector: ComponentInspector<Entity> = ({
 	componentObject,
@@ -25,7 +26,7 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 			actions_keys: (e, updatedObject) => {
 				updatedObject.actions_keys = (
 					e.target.value as unknown as string[]
-				).map((x) => BigInt(x));
+				).filter((x) => x !== "");
 			},
 		},
 	});
@@ -52,8 +53,9 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 			/>
 			<TextAreaArray
 				id="actions_keys"
+				disabled={true}
 				rows={1}
-				value={componentObject.actions_keys.map((v) => formatKeyAsDecimal(v))}
+				value={componentObject.actions_keys.filter((v) => v !== num.toBigInt(0)).map((v) => formatKeyAsDecimal(v))}
 				onChange={handleInputChange}
 				readOnly={true}
 			/>
