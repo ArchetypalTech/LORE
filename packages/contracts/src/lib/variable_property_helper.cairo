@@ -87,6 +87,16 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     property_type: PropertyType::Boolean,
                     access_flags: PropertyAccess::ReadWrite,
                 },
+                ComponentProperty {
+                    name: "already_used",
+                    property_type: PropertyType::Boolean,
+                    access_flags: PropertyAccess::ReadWrite,
+                },
+                ComponentProperty {
+                    name: "multiple_use",
+                    property_type: PropertyType::Boolean,
+                    access_flags: PropertyAccess::ReadWrite,
+                },
             ],
             Components::Container => array![
                 ComponentProperty {
@@ -228,6 +238,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
         let can_go_in_container: ByteArray = "can_go_in_container";
+        let already_used: ByteArray = "already_used";
+        let multiple_use: ByteArray = "multiple_use";
         let mut value: Option<felt252> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
@@ -243,6 +255,14 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     break;
                 } else if name == @can_go_in_container {
                     value = Option::Some(component.can_go_in_container.into());
+                    access = Option::Some(prop.access_flags);
+                    break;
+                } else if name == @already_used {
+                    value = Option::Some(component.already_used.into());
+                    access = Option::Some(prop.access_flags);
+                    break;
+                } else if name == @multiple_use {
+                    value = Option::Some(component.multiple_use.into());
                     access = Option::Some(prop.access_flags);
                     break;
                 }
@@ -473,6 +493,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
         let can_go_in_container: ByteArray = "can_go_in_container";
+        let already_used: ByteArray = "already_used";
+        let multiple_use: ByteArray = "multiple_use";
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Ok(());
 
@@ -496,6 +518,18 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 new_value[0].clone(),
                             );
                             component.can_go_in_container = new_var_value;
+                            success = true;
+                        } else if name == @already_used {
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
+                                new_value[0].clone(),
+                            );
+                            component.already_used = new_var_value;
+                            success = true;
+                        } else if name == @multiple_use {
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
+                                new_value[0].clone(),
+                            );
+                            component.multiple_use = new_var_value;
                             success = true;
                         }
                     },

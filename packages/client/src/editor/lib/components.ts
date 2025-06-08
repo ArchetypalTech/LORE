@@ -29,6 +29,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		is_entity: true,
 		name: createRandomName(),
 		alt_names: [],
+		actions_keys: [],
 	},
 });
 
@@ -93,8 +94,8 @@ export const createDefaultInspectableComponent = (
 		is_visible: true,
 		description: [entity.name],
 		action_map: [
-			{ action: "look", inst: 0, action_fn: "ReadRandomDescription" },
-			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription" },
+			{ action: "look", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
+			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
 		],
 	},
 });
@@ -133,6 +134,8 @@ export const createDefaultInventoryItemComponent = (
 			{ action: "take", inst: 0, action_fn: "TakeOutItem" },
 			{ action: "use", inst: 0, action_fn: "UseItem" },
 		],
+		already_used: false,
+		multiple_use: false,
 	},
 });
 
@@ -212,6 +215,7 @@ export const createDefaultActionComponent = (
 		conditions: [],
 		effects: [],
 		tags: [],
+		executed: false,
 	},
 });
 
@@ -313,7 +317,7 @@ export const componentData: {
 	},
 };
 
-const getPlayerAddress = (): string => {
+export const getPlayerAddress = (): string => {
 	if (LORE_CONFIG.useController) {
 		const controllerAddress = WalletStore().controller?.account?.address;
 		if (controllerAddress) {

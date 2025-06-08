@@ -37,6 +37,8 @@ pub struct Action {
     pub effects: Array<(felt252, felt252)>,
     /// For searching/filtering
     pub tags: Array<ByteArray>,
+    /// Whether the action has been executed
+    pub executed: bool,
 }
 
 // Implementation for processing actions
@@ -80,20 +82,24 @@ pub impl ActionImpl of ActionTrait {
     }
 
     fn process_action(
-        action: @Action, world: @WorldStorage, context: @TriggerContext,
+        mut action: Action, mut world: WorldStorage, context: @TriggerContext,
     ) -> (Result<(), Error>, bool, Result<(), Error>) {
+        if action.executed {
+            // Action has already been executed, don't do anything
+            // return condition as false.
+            return (Result::Ok(()), false, Result::Ok(()));
+        }
         // Trigger
         let mut result_t: Result<(), Error> = Result::Ok(());
         //Conditions. We want to have the bool value as true in case there is no condition
         let mut result: bool = true;
-        let mut result_c: Result<(), Error> = Result::Ok(());
         //Effects
         let mut result_e: Result<(), Error> = Result::Ok(());
 
         // First check if the trigger/s are valid
         for trigger_key in action.trigger.clone() {
             let trigger: Trigger = world.read_model(trigger_key);
-            let result_opt = TriggerImpl::evaluate_trigger(world, @trigger);
+            let result_opt = TriggerImpl::evaluate_trigger(@world, @trigger);
             if result_opt.is_err() {
                 result_t = result_opt;
                 break;
@@ -103,9 +109,9 @@ pub impl ActionImpl of ActionTrait {
         // Then evaluate all conditions
         for condition_key in action.conditions.clone() {
             let condition: Condition = world.read_model(condition_key);
-            result = condition.evaluate_condition(world, context.clone());
+            result = condition.evaluate_condition(@world, context.clone());
             if !result {
-                result_c = Result::Ok(()); // Conditions not met, but not an error
+                break; // If a single condition fails, break out of the loop
             }
         };
 
@@ -113,7 +119,7 @@ pub impl ActionImpl of ActionTrait {
         if result {
             for effect_key in action.effects.clone() {
                 let effect: Effect = world.read_model(effect_key);
-                let result_pos = effect.apply_effect(*world, *context);
+                let result_pos = effect.apply_effect(world, *context);
                 if result_pos.is_err() {
                     result_e = result_pos;
                 }
@@ -124,7 +130,11 @@ pub impl ActionImpl of ActionTrait {
         // println!("result_effect: {:?}, but effect is not applied as condition failed",
         // result_e);
         }
-
+        // If all conditions are met, mark action as executed
+        if (result_t.is_ok() && result && result_e.is_ok()) {
+            action.executed = true;
+            world.write_model(@action);
+        }
         (result_t, result, result_e)
     }
 
@@ -210,12 +220,16 @@ mod tests {
             .action_map =
                 array![
                     ActionMapInspectable {
-                        action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
+                        action: "show",
+                        inst: 0,
+                        action_fn: InspectableActions::SetVisible,
+                        entrypoint: 0,
                     },
                     ActionMapInspectable {
                         action: "look",
                         inst: 0,
                         action_fn: InspectableActions::ReadRandomDescription,
+                        entrypoint: 1,
                     },
                 ];
         inspectable.store(world);
@@ -253,12 +267,16 @@ mod tests {
             .action_map =
                 array![
                     ActionMapInspectable {
-                        action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
+                        action: "show",
+                        inst: 0,
+                        action_fn: InspectableActions::SetVisible,
+                        entrypoint: 0,
                     },
                     ActionMapInspectable {
                         action: "look",
                         inst: 0,
                         action_fn: InspectableActions::ReadRandomDescription,
+                        entrypoint: 1,
                     },
                 ];
         inspectable.store(world);
@@ -287,6 +305,8 @@ mod tests {
                         action: "use", inst: 0, action_fn: InventoryItemActions::UseItem,
                     },
                 ];
+        inventory_item.already_used = false;
+        inventory_item.multiple_use = true;
         inventory_item.store(world);
 
         // return item entity
@@ -339,8 +359,11 @@ mod tests {
         conditions: Array<(felt252, felt252)>,
         effects: Array<(felt252, felt252)>,
         tags: Array<ByteArray>,
+        executed: bool,
     ) -> Action {
-        Action { inst, key, name, description, is_enabled, trigger, conditions, effects, tags }
+        Action {
+            inst, key, name, description, is_enabled, trigger, conditions, effects, tags, executed,
+        }
     }
 
     fn create_test_trigger_context(
@@ -443,7 +466,6 @@ mod tests {
         world.write_model(@effect2);
 
         // TODO: create action
-        let inst: felt252 = 90529;
         let a_key: felt252 = 90527;
         let act_name: ByteArray = "TestAction";
         let act_desc: ByteArray = "TestActionDesc";
@@ -456,9 +478,19 @@ mod tests {
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
         let mut action = create_test_action(
-            inst, a_key, act_name, act_desc, true, triggers, conditions, effects, tags,
+            room_2.inst,
+            a_key,
+            act_name,
+            act_desc,
+            true,
+            triggers,
+            conditions,
+            effects,
+            tags,
+            false,
         );
-        world.write_model(@action);
+        // Register the action
+        let _res = ActionImpl::register_action(world, action.clone());
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -469,7 +501,7 @@ mod tests {
         // 1. move player to room 2
         player1.move_to_room(world, room_2.inst);
         // 2. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action, @world, @context);
+        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
@@ -539,17 +571,19 @@ mod tests {
 
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2
+        let t_key: felt252 = 1;
         let mut trigger = create_test_trigger(
-            room_2.inst, 1, "TestTrigger", TriggerType::PlayerEntersArea,
+            room_2.inst, t_key, "TestTrigger", TriggerType::PlayerEntersArea,
         );
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
+        let c_key: felt252 = 1;
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
-            1,
+            c_key,
             item.inst,
             Components::InventoryItem,
             property,
@@ -576,18 +610,21 @@ mod tests {
         let property: ByteArray = "description";
         let property2: ByteArray = "is_enterable";
 
+        let e_key: felt252 = 1;
+        let e_key2: felt252 = 2;
+
         // Create effects
         let mut effect = create_test_effect(
-            door.inst, 1, door.inst, Components::Inspectable, property, new_description.clone(),
+            door.inst, e_key, door.inst, Components::Inspectable, property, new_description.clone(),
         );
         let mut effect2 = create_test_effect(
-            door.inst, 2, door.inst, Components::Exit, property2, new_enterable.clone(),
+            door.inst, e_key2, door.inst, Components::Exit, property2, new_enterable.clone(),
         );
         world.write_model(@effect);
         world.write_model(@effect2);
 
         // TODO: create action
-        let inst: felt252 = 90529;
+        let a_key: felt252 = 90527;
         let act_name: ByteArray = "TestAction";
         let act_desc: ByteArray = "TestActionDesc";
         let mut triggers: Array<(felt252, felt252)> = ArrayTrait::new();
@@ -599,9 +636,19 @@ mod tests {
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
         let mut action = create_test_action(
-            inst, 1, act_name, act_desc, true, triggers, conditions, effects, tags,
+            room_1.inst,
+            a_key,
+            act_name,
+            act_desc,
+            true,
+            triggers,
+            conditions,
+            effects,
+            tags,
+            false,
         );
-        world.write_model(@action);
+        // Register the action
+        let _result = ActionImpl::register_action(world, action.clone());
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -626,7 +673,7 @@ mod tests {
         // 4. Move player to room 2
         player1.move_to_room(world, room_2.inst);
         // 5. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(@action, @world, @context);
+        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);

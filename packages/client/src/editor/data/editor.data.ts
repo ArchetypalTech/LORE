@@ -219,38 +219,38 @@ const removeParent = (child: EntityCollection) => {
 		const parentId = child.ChildToParent.parent;
 
 		// Store the parent reference before modifying the child
-		const parent = getEntity(parentId);
+  const parent = getEntity(parentId);
 
 		// Remove the child's parent reference
-		updateComponent(childId, "ChildToParent", undefined);
+  updateComponent(childId, "ChildToParent", undefined);
 
 		if (parent && "Entity" in parent && parent.Entity.inst === parentId) {
 			if ("ParentToChildren" in parent && parent.ParentToChildren !== undefined) {
-				const newChildren = parent.ParentToChildren.children.filter(
-					(c) => c !== childId,
-				);
+      const newChildren = parent.ParentToChildren.children.filter(
+        (c) => c !== childId,
+      );
 
-				if (newChildren.length === 0) {
-					updateComponent(parentId, "ParentToChildren", undefined);
-				} else {
+      if (newChildren.length === 0) {
+        updateComponent(parentId, "ParentToChildren", undefined);
+      } else {
 					// Update with the new children list
 					const updatedParentComponent = {
-						...parent.ParentToChildren,
-						children: newChildren,
+          ...parent.ParentToChildren,
+          children: newChildren,
 					};
 					updateComponent(parentId, "ParentToChildren", updatedParentComponent);
-				}
+      }
 				EditorData().set({
 					isDirty: Date.now(),
 				});
-				return;
-			}
-		}
+      return;
+    }
+  }
 
 		EditorData().set({
 			isDirty: Date.now(),
 		});
-		throw new Error("Parent missing or invalid");
+  throw new Error("Parent missing or invalid");
 	}
 };
 
@@ -513,8 +513,8 @@ const dojoSync = (
  * @param componentType 
  * @returns the property names for the given component type
  */
-export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promise<string[]> => {
-	let properties_array: string[] = [];
+export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promise<string[] | undefined> => {
+	let properties_array: string[] | undefined;
 	try {
 		const { sdk } = await InitDojo();
 		const queryProperties = () => {
@@ -531,7 +531,7 @@ export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promi
 			const registry = item.models?.lore?.PropertyRegistry;
 			if (registry?.component_type === componentType) {
 				// console.log("Matched registry:", registry);
-				properties_array = registry?.properties!.map((x) => x.name);
+				properties_array = registry?.properties?.map((x) => x.name);
 				// console.log("properties_array", properties_array);
 			}
 		});		
@@ -608,6 +608,7 @@ const syncEntities = async () => {
 };
 
 const EditorData = createFactory({
+	get,
 	getEntities,
 	getEntity,
 	newEntity,

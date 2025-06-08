@@ -40,13 +40,13 @@ export const ActionInspector: ComponentInspector<Action> = ({
       conditions: (e, updatedObject) => {
         const val = e.target.value as unknown as Array<[string, string]>;
         updatedObject.conditions = val.map(
-          ([a, b]) => [(a), num.toBigInt(b)]
+          ([a, b]) => [(a), (b)]
         ) as [BigNumberish, BigNumberish][];
       },
       effects: (e, updatedObject) => {
         const val = e.target.value as unknown as Array<[string, string]>;
         updatedObject.effects = val.map(
-          ([a, b]) => [(a), num.toBigInt(b)]
+          ([a, b]) => [(a), (b)]
         ) as [BigNumberish, BigNumberish][];
       },
       tags: (e, updatedObject) => {
@@ -65,6 +65,9 @@ export const ActionInspector: ComponentInspector<Action> = ({
         }
 
         updatedObject.tags = entries;
+      },
+      executed: (e, updatedObject) => {
+        updatedObject.executed = e.target.checked;
       },
     },
   });
@@ -107,6 +110,11 @@ export const ActionInspector: ComponentInspector<Action> = ({
       <TagInput
         id="tags"
         value={componentObject.tags?.join(",") || ""}
+        onChange={handleInputChange}
+      />
+      <Toggle
+        id="executed"
+        value={componentObject.executed}
         onChange={handleInputChange}
       />
     </Inspector>

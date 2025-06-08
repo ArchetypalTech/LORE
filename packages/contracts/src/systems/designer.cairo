@@ -49,6 +49,8 @@ pub mod designer {
         entity::{Entity, EntityImpl}, relations::{ParentToChildren, ChildToParent},
         trigger::{Trigger, TriggerImpl}, condition::Condition, actions::{Action, ActionImpl},
         effect::Effect, variable_property::{VariablePropertyImp},
+        dictionary::{add_to_dictionary, get_dict_entry}, a_lexer::{TokenType},
+        utils::{ByteArrayTraitExt},
     };
     use dojo::{model::ModelStorage, world::WorldStorage};
 
@@ -57,7 +59,26 @@ pub mod designer {
         // create
         fn create_entity(ref self: ContractState, t: Array<Entity>) {
             let mut world = self.world(@"lore");
+            let mut worldSt: WorldStorage = self.world(@"lore");
             for o in t {
+                for alt_name in o.alt_names.clone() {
+                    let pos_entry = get_dict_entry(worldSt, alt_name.clone());
+                    if pos_entry.is_none() {
+                        add_to_dictionary(worldSt, alt_name.clone(), TokenType::Noun, 1).unwrap();
+                    }
+                };
+                // TODO LATER ON
+                // if o.name.len() > 0 {
+                //     let words = ByteArrayTraitExt::split_into_words(@o.name);
+                //     for word in words {
+                //         let lowercased = ByteArrayTraitExt::to_lowercase(word.clone());
+                //         let pos_entry = get_dict_entry(worldSt, lowercased.clone());
+                //         if pos_entry.is_none() {
+                //             add_to_dictionary(worldSt, lowercased.clone(), TokenType::Noun,
+                //             1).unwrap();
+                //         }
+                //     };
+                // }
                 world.write_model(@o);
             }
         }

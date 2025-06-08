@@ -5,7 +5,7 @@ use lore::{
     constants::errors::Error, constants,
     lib::{
         entity::{Entity, EntityImpl}, a_lexer::{Command, Token, CommandImpl},
-        utils::ByteArrayTraitExt,
+        utils::ByteArrayTraitExt, actions::{Action, ActionImpl}, trigger::TriggerContext,
     },
     components::{area::{AreaComponent}},
 };
@@ -137,9 +137,45 @@ pub impl ExitComponent of Component<Exit> {
                 if (!self.clone().can_player_enter()) {
                     return Result::Err(Error::ActionFailed);
                 }
-
+                // Move player to room
                 destination_inst = self.leads_to;
                 player.clone().move_to_room(world, destination_inst);
+
+                // Do action
+                // Check if the entity of the exit has an action
+                let pos_entity = EntityImpl::get_entity(@world, @self.inst);
+                if pos_entity.is_none() {
+                    return Result::Err(Error::NoTargetEntity);
+                }
+                let pos_entity = pos_entity.unwrap();
+                let pos_actions = pos_entity.actions_keys;
+                if pos_actions.len() > 0 {
+                    let mut actions: Array<Action> = ArrayTrait::new();
+                    // For each action, execute it
+                    for key in pos_actions {
+                        let mut action: Action = world.read_model((pos_entity.inst, key));
+                        actions.append(action);
+                    };
+                    if actions.len() == 0 {
+                        // No actions found, just return
+                        return Result::Ok(());
+                    }
+                    // execute actions
+                    for action in actions {
+                        // context is not being used inside evaluations or processing.
+                        let context = TriggerContext {
+                            doer: *player.inst,
+                            target1: self.leads_to, // would be the room that the player moved to
+                            target2: 0,
+                            inventory_object: 0,
+                        };
+
+                        let (_trig_res, _cond_res, _eff_res) = ActionImpl::process_action(
+                            action, world, @context,
+                        );
+                    };
+                }
+                // Describe room
                 let _ = player.describe_room(world);
                 return Result::Ok(());
             },

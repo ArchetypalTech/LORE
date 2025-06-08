@@ -95,6 +95,7 @@ export interface ActionMap<T> {
 	action: string;
 	inst: BigNumberish;
 	action_fn: T;
+	entrypoint: BigNumberish;
 }
 
 export interface TriggerParameter {

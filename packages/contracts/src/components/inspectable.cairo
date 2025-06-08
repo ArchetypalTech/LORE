@@ -12,6 +12,7 @@ pub enum InspectableActions {
     SetVisible,
     ReadRandomDescription,
     ReadFirstDescription,
+    ReadSpecificDescription,
 }
 
 #[derive(Clone, Drop, Serde, Debug)]
@@ -31,6 +32,7 @@ pub struct ActionMapInspectable {
     pub action: ByteArray,
     pub inst: felt252,
     pub action_fn: InspectableActions,
+    pub entrypoint: u32,
 }
 
 #[generate_trait]
@@ -55,6 +57,14 @@ pub impl InspectableImpl of InspectableTrait {
             return "";
         }
         let description = self.description.at(0).clone();
+        description
+    }
+
+    fn get_specific_description(inspectabe: @Inspectable, index: u32) -> ByteArray {
+        if inspectabe.description.len() == 0 {
+            return "";
+        }
+        let description = inspectabe.description.at(index).clone();
         description
     }
 }
@@ -87,11 +97,19 @@ pub impl InspectableComponent of Component<Inspectable> {
                         action: "look",
                         inst: 0,
                         action_fn: InspectableActions::ReadRandomDescription,
+                        entrypoint: 0,
                     },
                     ActionMapInspectable {
                         action: "stare",
                         inst: 0,
-                        action_fn: InspectableActions::ReadRandomDescription,
+                        action_fn: InspectableActions::ReadFirstDescription,
+                        entrypoint: 1,
+                    },
+                    ActionMapInspectable {
+                        action: "read",
+                        inst: 0,
+                        action_fn: InspectableActions::ReadSpecificDescription,
+                        entrypoint: 2,
                     },
                 ];
         inspectable.store(world);
@@ -132,6 +150,13 @@ pub impl InspectableComponent of Component<Inspectable> {
                 player.say(world, self.get_first_description(world));
                 return Result::Ok(());
             },
+            InspectableActions::ReadSpecificDescription => {
+                // Get idx from the action map entrypoint
+                let idx: u32 = action.entrypoint.try_into().unwrap();
+                // Say the description
+                player.say(world, InspectableImpl::get_specific_description(@self, idx));
+                return Result::Ok(());
+            },
         }
         Result::Err(Error::ActionFailed)
     }
@@ -164,6 +189,7 @@ mod tests {
     use dojo::{world::WorldStorage, model::ModelStorage};
     use super::*;
     use lore::tests::helpers;
+    use lore::components::inspectable::InspectableImpl;
 
     fn Inspectable_create_prefab() -> (
         Inspectable, WorldStorage, ContractAddress, ContractAddress,
@@ -179,13 +205,26 @@ mod tests {
                 "how big is a rock",
                 "what's up with the rock",
                 "let's talk about the rock",
+                "the rock is from the moon",
             ],
             action_map: array![
                 ActionMapInspectable {
-                    action: "show", inst: 0, action_fn: InspectableActions::SetVisible,
+                    action: "show",
+                    inst: 0,
+                    action_fn: InspectableActions::SetVisible,
+                    entrypoint: 0,
                 },
                 ActionMapInspectable {
-                    action: "look", inst: 0, action_fn: InspectableActions::ReadRandomDescription,
+                    action: "look",
+                    inst: 0,
+                    action_fn: InspectableActions::ReadRandomDescription,
+                    entrypoint: 1,
+                },
+                ActionMapInspectable {
+                    action: "read",
+                    inst: 0,
+                    action_fn: InspectableActions::ReadSpecificDescription,
+                    entrypoint: 5,
                 },
             ],
         };
@@ -211,5 +250,14 @@ mod tests {
         let (prefab, world, _, _) = Inspectable_create_prefab();
         let i: Inspectable = Component::get_component(world, prefab.inst).unwrap();
         assert(i.is_inspectable, 'inspectable is inspectable');
+    }
+
+    #[test]
+    fn Inspectable_test_read_specific_description() {
+        let (prefab, world, _, _) = Inspectable_create_prefab();
+        let i: Inspectable = Component::get_component(world, prefab.inst).unwrap();
+        let idx: u32 = 5;
+        let res = InspectableImpl::get_specific_description(@i, idx);
+        assert(res == "the rock is from the moon", 'description should be the moon');
     }
 }

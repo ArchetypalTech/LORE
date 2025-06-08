@@ -30,6 +30,7 @@ import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
 import type { EntityCollection } from "./lib/types";
 import type { ChangeSet } from "./lib/types";
+import { getPlayerAddress } from "./lib/components";
 
 /**
  * Publishes a game configuration to the contract
@@ -139,7 +140,9 @@ const publishEntity = async (entity: Entity) => {
 					.filter((x) => x.length > 0)
 					.map((x) => byteArray.byteArrayFromString(x))
 			: 0,
-		num.toBigInt(entity.actions_keys.toString()),
+			entity.actions_keys.length > 0
+				? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
+				: 0,
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -147,10 +150,11 @@ const publishEntity = async (entity: Entity) => {
 // @wip: publish player
 const publishPlayer = async (player: Player) => {
 	const playerData = [
-		num.toBigInt(player.inst.toString()),
-		player.is_player,
-		byteArray.byteArrayFromString(player.address),
-		player.use_debug,
+		num.toBigInt((player.inst ?? getPlayerAddress()).toString()),
+		player.is_player ?? true,
+		player.address ? num.toBigInt(player.address.toString()) : num.toBigInt(getPlayerAddress().toString()) ,
+		num.toBigInt((player.location ?? 0).toString()),
+		player.use_debug ?? false,
 	];
 	await dispatchDesignerCall("create_player", [playerData]);
 };
@@ -168,8 +172,9 @@ const publishInspectable = async (inspectable: Inspectable) => {
 		inspectable.action_map.length > 0
 			? inspectable.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
-					0,
+					num.toBigInt(x.inst ?? "0"),
 					toEnumIndex(x.action_fn, inspectableActions),
+					x.entrypoint ? num.toBigInt(x.entrypoint.toString()) : num.toBigInt("0"),
 				])
 			: 0,
 	];
@@ -194,7 +199,7 @@ const publishExit = async (exit: Exit) => {
 		exit.action_map.length > 0
 			? exit.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
-					0,
+					num.toBigInt((x.inst ?? 0).toString()),
 					toEnumIndex(x.action_fn, exitActions),
 				])
 			: 0,
@@ -206,16 +211,18 @@ const publishInventoryItem = async (inventoryItem: InventoryItem) => {
 	const inventoryItemData = [
 		num.toBigInt(inventoryItem.inst.toString()),
 		inventoryItem.is_inventory_item,
-		num.toBigInt(inventoryItem.owner_id),
+		inventoryItem.owner_id ? num.toBigInt(inventoryItem.owner_id.toString()) : num.toBigInt("0"),
 		inventoryItem.can_be_picked_up,
 		inventoryItem.can_go_in_container,
 		inventoryItem.action_map.length > 0
 			? inventoryItem.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
-					0,
+					num.toBigInt((x.inst ?? "0").toString()),
 					toEnumIndex(x.action_fn, inventoryItemActions),
 			  ])
 			: 0,
+		inventoryItem.already_used,
+		inventoryItem.multiple_use,
 	];
 	await dispatchDesignerCall("create_inventory_item", [inventoryItemData]);
 };
@@ -227,11 +234,11 @@ const publishContainer = async (container: Container) => {
 		container.can_be_opened,
 		container.can_receive_items,
 		container.is_open,
-		num.toBigInt(container.num_slots.toString()),
+		num.toBigInt(container.num_slots.toString() ?? 0),
 		container.action_map.length > 0
 			? container.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
-					0,
+					num.toBigInt((x.inst ?? 0).toString()),
 					toEnumIndex(x.action_fn, containerActions),
 			  ])
 			: 0,
@@ -243,11 +250,11 @@ const publishTrigger = async (trigger: Trigger) => {
 	const triggerData = [
 		num.toBigInt(trigger.inst.toString()),
 		num.toBigInt(trigger.key.toString()),
-		byteArray.byteArrayFromString(trigger.name),
+		byteArray.byteArrayFromString(trigger.name ?? ""),
 		toEnumIndex(trigger.trigger_type, triggerType),
 		trigger.parameters.map((x) => [
-			byteArray.byteArrayFromString(x.name),
-			num.toBigInt(x.value),
+			byteArray.byteArrayFromString(x.name ?? ""),
+			num.toBigInt((x.value ?? 0).toString()),
 		]),
 		trigger.is_enabled,
 	];
@@ -262,7 +269,7 @@ const publishCondition = async (condition: Condition) => {
 		toEnumIndex(condition.component, components),
 		byteArray.byteArrayFromString(condition.property),
 		toEnumIndex(condition.operator, operator),
-		num.toBigInt(condition.value),
+		num.toBigInt((condition.value ?? 0).toString()),
 	];
 	await dispatchDesignerCall("create_condition", [conditionData]);
 };
@@ -274,7 +281,7 @@ const publishEffect = async (effect: Effect) => {
     num.toBigInt(effect.target.toString()),
     toEnumIndex(effect.component, components),
     byteArray.byteArrayFromString(effect.property),
-    effect.value.map((v) => byteArray.byteArrayFromString(v.toString())),
+    effect.value.map((v) => byteArray.byteArrayFromString(v.toString() ?? "")),
   ];
   await dispatchDesignerCall("create_effect", [effectData]);
 }
@@ -283,13 +290,14 @@ const publishAction = async (action: Action) => {
 	const actionData = [
 		num.toBigInt(action.inst.toString()),
 		num.toBigInt(action.key),
-		byteArray.byteArrayFromString(action.name),
-		byteArray.byteArrayFromString(action.description),
+		byteArray.byteArrayFromString(action.name ?? ""),
+		byteArray.byteArrayFromString(action.description ?? ""),
 		action.is_enabled,
 		action.trigger.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
 		action.conditions.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
 		action.effects.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
 		action.tags.map((x) => byteArray.byteArrayFromString(x)),
+		action.executed ?? false,
 	];
 
 	await dispatchDesignerCall("create_action", [actionData]);

@@ -1,6 +1,6 @@
 use super::a_lexer::CommandTrait;
 use super::super::components::player::PlayerTrait;
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage};
 
 use lore::{ //
     lib::{ //
@@ -8,8 +8,7 @@ use lore::{ //
         a_lexer::{Command, CommandImpl, TokenType},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level}, //
-        trigger::{TriggerContext}, //
-        actions::{Action, ActionImpl} //
+        actions::{ActionImpl} //
     }, //
     constants::errors::Error, //
     components::{
@@ -110,41 +109,6 @@ pub fn handle_command(
                 }
             }
         };
-        // wip: will need to be adjusted but this is a start
-        // Check if there's an action in the entity (should be the room)
-        if executed {
-            let room = player.get_room(@world);
-            if room.is_none() {
-                return Result::Err(Error::ActionFailed);
-            }
-            let room = room.unwrap();
-            let mut actions: Array<Action> = ArrayTrait::new();
-            for key in room.actions_keys.clone() {
-                let read_action: Action = world.read_model((room.inst, key));
-                actions.append(read_action);
-            };
-            // execute actions
-            for action in actions {
-                // context is not being used inside evaluations or processing.
-                let context = TriggerContext {
-                    doer: player.inst,
-                    target1: room.inst, // would be the room that the player moved to
-                    target2: 0,
-                    inventory_object: 0,
-                };
-
-                let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
-                    @action, @world, @context,
-                );
-                if trig_res
-                    .is_err() { // println!("Trigger evaluation failed: {:?}", trig_res.unwrap_err());
-                }
-                if !cond_res { // println!("Condition are not met");
-                }
-                if eff_res.is_err() { // println!("Effects failed: {:?}", eff_res.unwrap_err());
-                }
-            };
-        }
     }
 
     println!("executed: {:?}", executed);

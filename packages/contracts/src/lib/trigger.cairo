@@ -60,7 +60,8 @@ pub enum TriggerType {
     // Player Triggers //
     PlayerEntersArea,
     PlayerLeavesArea,
-    // EXPAND LATER//
+    // UseItem Inventory Item //
+    NotUsedItem,
 }
 
 #[generate_trait]
@@ -222,6 +223,33 @@ pub impl TriggerImpl of TriggerTrait {
                 }
                 return result;
             },
+            TriggerType::NotUsedItem => {
+                // Get entity that trigger is attached to
+                let ent_opt = EntityImpl::get_entity(world, trigger.inst);
+                if ent_opt.is_none() {
+                    return Result::Err(Error::EntityNotFound);
+                }
+                // Check if entity has an inventory item component
+                let ent = ent_opt.unwrap();
+                let inventory_item_opt = InventoryItemComponent::get_component(*world, ent.inst);
+                if inventory_item_opt.is_none() {
+                    return Result::Err(Error::NoInventoryItemComponent);
+                }
+                let inventory_item = inventory_item_opt.unwrap();
+                // Check that item has not been used
+                if inventory_item.already_used {
+                    // If used check if multiple use is allowed
+                    if inventory_item.multiple_use {
+                        // If allowed, return ok
+                        return Result::Ok(());
+                    }
+                    return Result::Err(Error::OnceUseOnly);
+                }
+                // If not used, return ok
+                return Result::Ok(());
+            },
+            _ => { // Do nothing
+            },
         }
 
         result
@@ -235,6 +263,7 @@ pub impl TriggerTypeToFelt252 of Into<TriggerType, felt252> {
             TriggerType::None => 0,
             TriggerType::PlayerEntersArea => 1,
             TriggerType::PlayerLeavesArea => 2,
+            TriggerType::NotUsedItem => 3,
         }
     }
 }
@@ -253,10 +282,8 @@ mod tests {
             area::{AreaComponent}, exit::{ExitComponent},
             player::{Player, PlayerComponent, caller_as_player, PlayerImpl},
         },
+        constants::constants::Direction,
     };
-    use lore::constants::constants::Direction;
-    use lore::lib::a_lexer::{Token, TokenType, Command};
-    use lore::lib::c_handler::handle_command;
 
     fn create_test_trigger(
         inst: felt252, key: felt252, nameT: ByteArray, trigger_type: TriggerType,
