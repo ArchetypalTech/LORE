@@ -14,15 +14,17 @@ Clone the repository, then install dependencies with [Bun](https://bun.sh)
 bun install
 ```
 
-## 💕 Quickstart installer:
+## 💕 ~~Quickstart installer:~~
 
-Automated installer for installing [scarb](https://github.com/software-mansion/scarb) and [dojo](https://book.dojoengine.org/getting-started#install-using-asdf) using [asdf](https://asdf-vm.com/) and [homebrew](https://brew.sh/).
+Since Dojo 1.5 Katana and Torii have been seperated and this quickstart won't work, we'll be updateing this soon.
 
-🚸 Update your `$PATH` [getting started with ASDF](https://asdf-vm.com/guide/getting-started.html) variables to make sure `katana` works.
+~~Automated installer for installing [scarb](https://github.com/software-mansion/scarb) and [dojo](https://book.dojoengine.org/getting-started#install-using-asdf) using [asdf](https://asdf-vm.com/) and [homebrew](https://brew.sh/).~~
+
+~~🚸 Update your `$PATH` [getting started with ASDF](https://asdf-vm.com/guide/getting-started.html) variables to make sure `katana` works.~~
 
 ```bash
-bun run quickstart
-```
+~~bun run quickstart~~
+```~
 <hr/>
 
 ## 🕹️ Development:
