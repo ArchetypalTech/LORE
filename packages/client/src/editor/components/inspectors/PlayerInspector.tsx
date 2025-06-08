@@ -54,7 +54,7 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				id="location"
 				value={componentObject.location.toString()}
 				onChange={handleInputChange}
-				readOnly={true}
+				//readOnly={true}
 			/>
 			<Toggle
 				id="use_debug"

@@ -317,7 +317,7 @@ export const componentData: {
 	},
 };
 
-const getPlayerAddress = (): string => {
+export const getPlayerAddress = (): string => {
 	if (LORE_CONFIG.useController) {
 		const controllerAddress = WalletStore().controller?.account?.address;
 		if (controllerAddress) {

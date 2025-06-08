@@ -13,8 +13,85 @@ import {
 	type ConfigSchemaType,
 	transformWithSchema,
 } from "./schemas";
+import { BigNumberish } from "starknet";
 
 const { get, set, createFactory } = StoreBuilder({});
+
+/**
+ * Recursively sync nested components/entities into the store
+ */
+const deepSync = (obj: any) => {
+	EditorData().dojoSync(obj);
+	const nestedKeys = ["children", "parent", "Components", "subEntities", "Trigger", "Condition", "Effect", "Action"];
+	for (const key of nestedKeys) {
+		if (obj[key] && Array.isArray(obj[key])) {
+			for (const child of obj[key]) {
+				deepSync(child);
+			}
+		}
+	}
+};
+
+/**
+ * Recursively register parent-child relationships
+ */
+const registerParentChildLinks = (obj: any, parentInst?: BigNumberish) => {
+  const inst = obj?.Entity?.inst || obj.inst;
+  if (inst && parentInst !== undefined) {
+    const { get, set } = EditorData();
+    let parents = get().parents || [];
+
+    // Find if the parent already exists in the array
+    let parentEntry = parents.find(p => p.inst === parentInst);
+
+    if (!parentEntry) {
+      // Create a new ParentToChildren entry if none exists
+      parentEntry = {
+        inst: parentInst,
+        is_parent: true,
+        children: [],
+      };
+      parents.push(parentEntry);
+    }
+
+    // Add child if not already included
+    if (!parentEntry.children.includes(inst)) {
+      parentEntry.children.push(inst);
+    }
+
+    set({ parents });
+  }
+
+  const nestedKeys = ["children", "Components", "subEntities", "Trigger", "Condition", "Effect", "Action"];
+  for (const key of nestedKeys) {
+    if (Array.isArray(obj[key])) {
+      for (const child of obj[key]) {
+        registerParentChildLinks(child, inst);
+      }
+    }
+  }
+};
+
+/**
+ * Recursively build a flat changeSet from all entities/components
+ */
+const buildChangeSet = (obj: any): any[] => {
+	const inst = obj?.Entity?.inst || obj.inst;
+	const set: any[] = inst
+		? [{ type: "update" as const, inst, object: obj }]
+		: [];
+
+	const nestedKeys = ["children", "parent", "Components", "subEntities", "Action", "Condition", "Effect", "Trigger"];
+	for (const key of nestedKeys) {
+		if (obj[key] && Array.isArray(obj[key])) {
+			for (const child of obj[key]) {
+				set.push(...buildChangeSet(child));
+			}
+		}
+	}
+
+	return set;
+}
 
 const config = {
 	/**
@@ -24,27 +101,39 @@ const config = {
 		console.log("[LORE]: > Hi.");
 	},
 
-	/**
+/**
 	 * Load a config into the editor
 	 */
 	loadConfig: async (config: ConfigSchemaType) => {
 		console.log("Loading config into editor:", config);
-		// Validate the config using our Zod schema
+
 		const { result, errors } = await Config().validateConfig(config);
 		if (errors.length === 0) {
 			try {
+				let fullChangeSet: any[] = [];
+
 				for (const obj of result.dataPool) {
-					EditorData().dojoSync(obj);
+					deepSync(obj);
+					registerParentChildLinks(obj);
+					fullChangeSet.push(...buildChangeSet(obj));
 				}
+
+				EditorData().set({
+					changeSet: fullChangeSet,
+				});
+
 				// Force UI refresh
 				setTimeout(() => {
 					set({ ...get() });
 				}, 100);
+
 				Notifications().showSuccess("Config loaded successfully");
 			} catch (error) {
 				console.error("Error loading config:", error);
 				Notifications().showError(
-					`Error loading config: ${error instanceof Error ? error.message : String(error)}`,
+					`Error loading config: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
 				);
 			}
 		}
@@ -87,7 +176,7 @@ const config = {
 		try {
 			const config = await loadConfigFile(file);
 			const configClone = JSONbig.parse(JSONbig.stringify(config));
-			Config().loadConfig(configClone);
+			await Config().loadConfig(configClone);
 			toast.dismiss("loading-config");
 			toast.success("Config loaded successfully");
 			return config;
