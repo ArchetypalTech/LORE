@@ -93,9 +93,6 @@ export default function Terminal() {
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
-		if (terminalInputRef.current) {
-			terminalInputRef.current.disabled = true;
-		}
 		const command = inputValue;
 		setInputHistoryIndex(0);
 
@@ -108,12 +105,6 @@ export default function Terminal() {
 		if(textAnchorRef.current) textAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
 		setTimeout(async () => await sendCommand(command), 1000)
-
-
-		if (terminalInputRef.current) {
-			terminalInputRef.current.disabled = false;
-			// terminalInputRef.current.focus();
-		}
 	};
 
 	const focusInput = () => {
@@ -155,7 +146,7 @@ export default function Terminal() {
 							)}
 						</div>
 						<div className="sticky text-[1rem] bottom-16 h-1 w-full backdrop-blur-lg"></div>
-						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background items-center" style={{ display: status === "inputEnabled" ? 'flex' : 'none'}}>
+						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background items-center">
 							{useTerminalStore().isPrinting && <LoadingMessage />}
 							{!useTerminalStore().isPrinting && <span className="text-2xl">&#x3e;</span>}
 							<textarea
