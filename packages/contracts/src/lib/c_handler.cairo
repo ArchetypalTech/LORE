@@ -35,7 +35,9 @@ pub fn handle_command(
     if nouns.len() > 0 {
         for noun in nouns {
             let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
-            player.say(world, format!("item: {:?}", item));
+            if player.use_debug {
+                player.say(world, format!("item: {:?}", item));
+            }
             match InspectableComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.clone().can_use_command(world, @player, @command) {

@@ -4,7 +4,7 @@ use lore::{
     components::{
         area::{AreaComponent}, exit::{ExitComponent}, inspectable::{InspectableComponent},
         inventoryItem::{InventoryItemComponent}, container::{ContainerComponent},
-        player::{PlayerComponent},
+        player::{PlayerComponent, PlayerImpl, Player, PlayerTrait},
     },
     lib::{
         entity::{Entity, EntityImpl}, utils::ByteArrayTraitExt,
@@ -39,6 +39,10 @@ pub struct Action {
     pub tags: Array<ByteArray>,
     /// Whether the action has been executed
     pub executed: bool,
+    /// In case action fails, need a response
+    pub failing_response: Array<ByteArray>,
+    /// In case action succeeds, need a response
+    pub success_response: Array<ByteArray>,
 }
 
 // Implementation for processing actions
@@ -84,9 +88,14 @@ pub impl ActionImpl of ActionTrait {
     fn process_action(
         mut action: Action, mut world: WorldStorage, context: @TriggerContext,
     ) -> (Result<(), Error>, bool, Result<(), Error>) {
+        let player_inst: felt252 = *context.doer;
+        let player: Player = world.read_model(player_inst);
         if action.executed {
             // Action has already been executed, don't do anything
             // return condition as false.
+            if player.use_debug {
+                player.say(world, format!("Action has already been executed"));
+            }
             return (Result::Ok(()), false, Result::Ok(()));
         }
         // Trigger
@@ -100,6 +109,9 @@ pub impl ActionImpl of ActionTrait {
         for trigger_key in action.trigger.clone() {
             let trigger: Trigger = world.read_model(trigger_key);
             let result_opt = TriggerImpl::evaluate_trigger(@world, @trigger);
+            if player.use_debug {
+                player.say(world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
+            }
             if result_opt.is_err() {
                 result_t = result_opt;
                 break;
@@ -110,6 +122,9 @@ pub impl ActionImpl of ActionTrait {
         for condition_key in action.conditions.clone() {
             let condition: Condition = world.read_model(condition_key);
             result = condition.evaluate_condition(@world, context.clone());
+            if player.use_debug {
+                player.say(world, format!("Result for condition: {:?}, is: {:?}", condition, result));
+            }
             if !result {
                 break; // If a single condition fails, break out of the loop
             }
@@ -120,6 +135,9 @@ pub impl ActionImpl of ActionTrait {
             for effect_key in action.effects.clone() {
                 let effect: Effect = world.read_model(effect_key);
                 let result_pos = effect.apply_effect(world, *context);
+                if player.use_debug {
+                    player.say(world, format!("Result for effect: {:?}, is: {:?}", effect, result_pos));
+                }
                 if result_pos.is_err() {
                     result_e = result_pos;
                 }
@@ -134,6 +152,13 @@ pub impl ActionImpl of ActionTrait {
         if (result_t.is_ok() && result && result_e.is_ok()) {
             action.executed = true;
             world.write_model(@action);
+            for response in action.success_response.clone() {
+                player.say(world, response);
+            }
+        } else {
+            for response in action.failing_response.clone() {
+                player.say(world, response);
+            }
         }
         (result_t, result, result_e)
     }
@@ -360,9 +385,11 @@ mod tests {
         effects: Array<(felt252, felt252)>,
         tags: Array<ByteArray>,
         executed: bool,
+        failing_response: Array<ByteArray>,
+        success_response: Array<ByteArray>,
     ) -> Action {
         Action {
-            inst, key, name, description, is_enabled, trigger, conditions, effects, tags, executed,
+            inst, key, name, description, is_enabled, trigger, conditions, effects, tags, executed, failing_response, success_response,
         }
     }
 
@@ -477,6 +504,8 @@ mod tests {
         effects.append((effect.inst, effect.key));
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
+        let mut failing_response: Array<ByteArray> = array!["Testing failure response", "Testing failure response 2"];
+        let mut success_response: Array<ByteArray> = array!["Testing success response", "Testing success response 2"];
         let mut action = create_test_action(
             room_2.inst,
             a_key,
@@ -488,6 +517,8 @@ mod tests {
             effects,
             tags,
             false,
+            failing_response,
+            success_response,
         );
         // Register the action
         let _res = ActionImpl::register_action(world, action.clone());
@@ -635,6 +666,8 @@ mod tests {
         effects.append((effect.inst, effect.key));
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
+        let mut failing_response: Array<ByteArray> = array!["Testing failure response", "Testing failure response 2"];
+        let mut success_response: Array<ByteArray> = array!["Testing success response", "Testing success response 2"];
         let mut action = create_test_action(
             room_1.inst,
             a_key,
@@ -646,6 +679,8 @@ mod tests {
             effects,
             tags,
             false,
+            failing_response,
+            success_response,
         );
         // Register the action
         let _result = ActionImpl::register_action(world, action.clone());

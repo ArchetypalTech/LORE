@@ -50,8 +50,15 @@ pub impl PlayerImpl of PlayerTrait {
             }
             let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
             if inspectable.is_some() {
-                let description = inspectable.unwrap().get_random_description(world);
-                self.say(world, format!("{}", description));
+                let mut inspectable = inspectable.unwrap();
+                if inspectable.already_shown {
+                    self.say(world, format!("{}", inspectable.new_entry));
+                } else {
+                    let description = inspectable.get_first_description(world);
+                    self.say(world, format!("{}", description));
+                    inspectable.already_shown = true;
+                    inspectable.store(world);
+                }
             }
         };
         Result::Ok(())

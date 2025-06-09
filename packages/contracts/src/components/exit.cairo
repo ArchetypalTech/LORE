@@ -135,6 +135,7 @@ pub impl ExitComponent of Component<Exit> {
                 }
                 // if the exit is not enterable, we can't go there
                 if (!self.clone().can_player_enter()) {
+                    player.say(world, format!("You can't go there yet."));
                     return Result::Err(Error::ActionFailed);
                 }
                 // Move player to room

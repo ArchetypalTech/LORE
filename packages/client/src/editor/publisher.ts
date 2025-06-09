@@ -177,6 +177,8 @@ const publishInspectable = async (inspectable: Inspectable) => {
 					x.entrypoint ? num.toBigInt(x.entrypoint.toString()) : num.toBigInt("0"),
 				])
 			: 0,
+		inspectable.already_shown,
+		byteArray.byteArrayFromString(inspectable.new_entry.toString() ?? ""),
 	];
 	await dispatchDesignerCall("create_inspectable", [inspectableData]);
 };
@@ -298,6 +300,16 @@ const publishAction = async (action: Action) => {
 		action.effects.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
 		action.tags.map((x) => byteArray.byteArrayFromString(x)),
 		action.executed ?? false,
+		action.failing_response.length > 0
+			? action.failing_response
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
+			: 0,
+		action.success_response.length > 0
+			? action.success_response
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
+			: 0,
 	];
 
 	await dispatchDesignerCall("create_action", [actionData]);

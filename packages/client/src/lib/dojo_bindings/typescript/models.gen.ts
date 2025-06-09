@@ -82,6 +82,8 @@ export interface Inspectable {
 	is_visible: boolean;
 	description: Array<string>;
 	action_map: Array<ActionMapInspectable>;
+	already_shown: boolean;
+	new_entry: string;
 }
 
 // Type definition for `lore::components::inspectable::InspectableValue` struct
@@ -90,6 +92,8 @@ export interface InspectableValue {
 	is_visible: boolean;
 	description: Array<string>;
 	action_map: Array<ActionMapInspectable>;
+	already_shown: boolean;
+	new_entry: string;
 }
 
 // Type definition for `lore::components::inventoryItem::ActionMapInventoryItem` struct
@@ -162,6 +166,8 @@ export interface Action {
 	effects: Array<[BigNumberish, BigNumberish]>;
 	tags: Array<string>;
 	executed: boolean;
+	failing_response: Array<string>;
+	success_response: Array<string>;
 }
 
 // Type definition for `lore::lib::actions::ActionValue` struct
@@ -174,6 +180,8 @@ export interface ActionValue {
 	effects: Array<[BigNumberish, BigNumberish]>;
 	tags: Array<string>;
 	executed: boolean;
+	failing_response: Array<string>;
+	success_response: Array<string>;
 }
 
 // Type definition for `lore::lib::condition::Condition` struct
@@ -644,6 +652,8 @@ export const schema: SchemaType = {
 				ReadRandomDescription: undefined,
 				ReadFirstDescription: undefined,
 				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
+			already_shown: false,
+		new_entry: "",
 		},
 		InspectableValue: {
 			is_inspectable: false,
@@ -654,6 +664,8 @@ export const schema: SchemaType = {
 				ReadRandomDescription: undefined,
 				ReadFirstDescription: undefined,
 				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
+			already_shown: false,
+		new_entry: "",
 		},
 		ActionMapInventoryItem: {
 		action: "",
@@ -725,6 +737,8 @@ export const schema: SchemaType = {
 			effects: [[0, 0]],
 			tags: [""],
 			executed: false,
+			failing_response: [""],
+			success_response: [""],
 		},
 		ActionValue: {
 		name: "",
@@ -735,6 +749,8 @@ export const schema: SchemaType = {
 			effects: [[0, 0]],
 			tags: [""],
 			executed: false,
+			failing_response: [""],
+			success_response: [""],
 		},
 		Condition: {
 			inst: 0,

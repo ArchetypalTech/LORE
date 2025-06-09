@@ -6,6 +6,7 @@ import {
   Input,
   TagInput,
   Toggle,
+  TextAreaArray,
   formatKeyAsDecimal,
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
@@ -69,6 +70,14 @@ export const ActionInspector: ComponentInspector<Action> = ({
       executed: (e, updatedObject) => {
         updatedObject.executed = e.target.checked;
       },
+      failing_response: (e, updatedObject) => {
+        const val = e.target.value as unknown as string[];
+        updatedObject.failing_response = val;
+      },
+      success_response: (e, updatedObject) => {
+        const val = e.target.value as unknown as string[];
+        updatedObject.success_response = val;
+      },
     },
   });
   if (!componentObject) return <div>Action not found</div>;
@@ -106,6 +115,18 @@ export const ActionInspector: ComponentInspector<Action> = ({
         id="effects"
         value={componentObject.effects.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
         onChange={handleInputChange}
+      />
+      <TextAreaArray
+        id="failing_response"
+        value={componentObject.failing_response}
+        onChange={handleInputChange}
+        rows={1}
+      />
+      <TextAreaArray
+        id="success_response"
+        value={componentObject.success_response}
+        onChange={handleInputChange}
+        rows={1}
       />
       <TagInput
         id="tags"

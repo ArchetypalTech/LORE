@@ -25,6 +25,9 @@ pub struct Inspectable {
     pub is_visible: bool,
     pub description: Array<ByteArray>,
     pub action_map: Array<ActionMapInspectable>,
+    /// For the first description, if we want to show a different one
+    pub already_shown: bool,
+    pub new_entry: ByteArray,
 }
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
@@ -112,6 +115,8 @@ pub impl InspectableComponent of Component<Inspectable> {
                         entrypoint: 2,
                     },
                 ];
+        inspectable.already_shown = false;
+        inspectable.new_entry = "";
         inspectable.store(world);
         inspectable
     }
@@ -227,6 +232,8 @@ mod tests {
                     entrypoint: 5,
                 },
             ],
+            already_shown: false,
+            new_entry: "",
         };
         world.write_model(@prefab);
         (prefab, world, player_1, player_2)
