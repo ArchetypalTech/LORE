@@ -110,7 +110,8 @@ pub impl ActionImpl of ActionTrait {
             let trigger: Trigger = world.read_model(trigger_key);
             let result_opt = TriggerImpl::evaluate_trigger(@world, @trigger);
             if player.use_debug {
-                player.say(world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
+                player
+                    .say(world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
             }
             if result_opt.is_err() {
                 result_t = result_opt;
@@ -123,7 +124,8 @@ pub impl ActionImpl of ActionTrait {
             let condition: Condition = world.read_model(condition_key);
             result = condition.evaluate_condition(@world, context.clone());
             if player.use_debug {
-                player.say(world, format!("Result for condition: {:?}, is: {:?}", condition, result));
+                player
+                    .say(world, format!("Result for condition: {:?}, is: {:?}", condition, result));
             }
             if !result {
                 break; // If a single condition fails, break out of the loop
@@ -136,7 +138,10 @@ pub impl ActionImpl of ActionTrait {
                 let effect: Effect = world.read_model(effect_key);
                 let result_pos = effect.apply_effect(world, *context);
                 if player.use_debug {
-                    player.say(world, format!("Result for effect: {:?}, is: {:?}", effect, result_pos));
+                    player
+                        .say(
+                            world, format!("Result for effect: {:?}, is: {:?}", effect, result_pos),
+                        );
                 }
                 if result_pos.is_err() {
                     result_e = result_pos;
@@ -389,7 +394,18 @@ mod tests {
         success_response: Array<ByteArray>,
     ) -> Action {
         Action {
-            inst, key, name, description, is_enabled, trigger, conditions, effects, tags, executed, failing_response, success_response,
+            inst,
+            key,
+            name,
+            description,
+            is_enabled,
+            trigger,
+            conditions,
+            effects,
+            tags,
+            executed,
+            failing_response,
+            success_response,
         }
     }
 
@@ -504,8 +520,12 @@ mod tests {
         effects.append((effect.inst, effect.key));
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
-        let mut failing_response: Array<ByteArray> = array!["Testing failure response", "Testing failure response 2"];
-        let mut success_response: Array<ByteArray> = array!["Testing success response", "Testing success response 2"];
+        let mut failing_response: Array<ByteArray> = array![
+            "Testing failure response", "Testing failure response 2",
+        ];
+        let mut success_response: Array<ByteArray> = array![
+            "Testing success response", "Testing success response 2",
+        ];
         let mut action = create_test_action(
             room_2.inst,
             a_key,
@@ -666,8 +686,12 @@ mod tests {
         effects.append((effect.inst, effect.key));
         effects.append((effect2.inst, effect2.key));
         let tags: Array<ByteArray> = array!["TestAction"];
-        let mut failing_response: Array<ByteArray> = array!["Testing failure response", "Testing failure response 2"];
-        let mut success_response: Array<ByteArray> = array!["Testing success response", "Testing success response 2"];
+        let mut failing_response: Array<ByteArray> = array![
+            "Testing failure response", "Testing failure response 2",
+        ];
+        let mut success_response: Array<ByteArray> = array![
+            "Testing success response", "Testing success response 2",
+        ];
         let mut action = create_test_action(
             room_1.inst,
             a_key,
