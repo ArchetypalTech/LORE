@@ -348,6 +348,8 @@ mod tests {
             trigger_type,
             parameters: array![TriggerParameter { name: "area", value: inst }],
             is_enabled: true,
+            is_once:false,
+            was_triggered: false,
         }
     }
 
@@ -358,7 +360,7 @@ mod tests {
         component: Components,
         property: ByteArray,
         operator: Operator,
-        value: felt252,
+        value: Array<felt252>,
     ) -> Condition {
         Condition { inst, key, target, component, property, operator, value }
     }
@@ -449,6 +451,8 @@ mod tests {
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
         let c_key: felt252 = 1;
+        let mut array: Array<felt252> = ArrayTrait::new();
+        array.append(player1.inst);
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
@@ -457,7 +461,7 @@ mod tests {
             Components::InventoryItem,
             property,
             Operator::Equals,
-            player1.inst,
+            array,
         );
         world.write_model(@condition);
 
@@ -611,6 +615,8 @@ mod tests {
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
         let c_key: felt252 = 1;
+        let mut array: Array<felt252> = ArrayTrait::new();
+        array.append(player1.inst);
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
@@ -619,7 +625,7 @@ mod tests {
             Components::InventoryItem,
             property,
             Operator::Equals,
-            player1.inst,
+            array,
         );
         world.write_model(@condition);
 

@@ -460,6 +460,48 @@ export const ActionMapEditor = <T extends CairoCustomEnum>({
 	);
 };
 
+export function encodeToFelt(value: string): BigNumberish {
+    if (value === "true") return 1n;
+    if (value === "false") return 0n;
+    if (!isNaN(Number(value))) return BigInt(value);
+    const truncated = value.slice(0, 31);
+    return [...truncated]
+      .map((char) => char.charCodeAt(0))
+      .reduce((acc, curr) => (acc << 8n) + BigInt(curr), 0n);
+}
+
+export function decodeFromFelt(felt: BigNumberish): string {
+ if (typeof felt === "string" && felt.startsWith("0x")) {
+    // Input is already a hex string, keep as-is
+    return felt;
+  }
+
+  const num = BigInt(felt);
+
+  if (num === 0n) return "false";
+  if (num === 1n) return "true";
+
+  // Convert to hex string
+  let hex = num.toString(16);
+  if (hex.length % 2 !== 0) hex = "0" + hex;
+
+  // Convert hex to bytes array
+  const bytes = [];
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes.push(parseInt(hex.slice(i, i + 2), 16));
+  }
+
+  // Check if all bytes are printable ASCII (32 - 126 inclusive)
+  const isPrintable = bytes.every(b => b >= 32 && b <= 126);
+
+  if (!isPrintable) {
+    // Contains non-printable bytes → treat as raw hex and return prefixed hex string
+    return "0x" + hex;
+  }
+
+  // All printable → decode to string
+  return String.fromCharCode(...bytes);
+}
 
 export const formatKeyAsDecimal = (key: string | BigNumberish): string => {
   const bigIntKey = num.toBigInt(key); // this handles strings, numbers, BigInt, etc.

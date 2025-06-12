@@ -310,6 +310,8 @@ mod tests {
             trigger_type,
             parameters: array![TriggerParameter { name: "area", value: inst }],
             is_enabled: true,
+            is_once:false,
+            was_triggered: false,
         }
     }
 
@@ -452,7 +454,7 @@ mod tests {
         let mut playerR1: Player = world.read_model(player.inst);
         playerR1.move_to_room(world, room_entity_1.inst);
 
-        let result = TriggerImpl::evaluate_trigger(@world, @trigger);
+        let result = TriggerImpl::evaluate_trigger(world, trigger.clone());
         if result.is_ok() { // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
@@ -461,7 +463,7 @@ mod tests {
         player.move_to_room(world, room_entity_2.inst);
         player_entity.set_parent(world, @room_entity_2);
 
-        let result2 = TriggerImpl::evaluate_trigger(@world, @trigger);
+        let result2 = TriggerImpl::evaluate_trigger(world, trigger);
         if result2.is_err() { // println!("Trigger does not jump");
         };
         assert(result2.is_err(), 'Trigger should not jump');

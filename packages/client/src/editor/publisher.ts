@@ -273,7 +273,7 @@ const publishCondition = async (condition: Condition) => {
 		toEnumIndex(condition.component, components),
 		byteArray.byteArrayFromString(condition.property),
 		toEnumIndex(condition.operator, operator),
-		num.toBigInt((condition.value ?? 0).toString()),
+		condition.value.map((v) => num.toBigInt(v ?? "0"))
 	];
 	await dispatchDesignerCall("create_condition", [conditionData]);
 };

@@ -97,6 +97,8 @@ export const createDefaultInspectableComponent = (
 			{ action: "look", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
 		],
+		already_shown: false,
+		new_entry: "",
 	},
 });
 
@@ -185,7 +187,7 @@ export const createDefaultCondition = (
 		component: "Area",
 		property: "",
 		operator: "Equals",
-		value: 0,
+		value: [],
 	},
 });
 
