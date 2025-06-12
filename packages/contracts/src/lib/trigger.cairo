@@ -175,7 +175,7 @@ pub impl TriggerImpl of TriggerTrait {
             if trigger.was_triggered.clone() {
                 return Result::Err(Error::OnceUseOnly);
             }
-        }   
+        }
 
         match trigger.trigger_type {
             TriggerType::None => { // Do nothing
@@ -310,7 +310,7 @@ mod tests {
             trigger_type,
             parameters: array![TriggerParameter { name: "area", value: inst }],
             is_enabled: true,
-            is_once:false,
+            is_once: false,
             was_triggered: false,
         }
     }

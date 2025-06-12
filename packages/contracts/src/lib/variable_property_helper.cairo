@@ -155,18 +155,20 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     // GET PROPERTIES
     fn get_area_property(
         component: Area, name: @ByteArray, property: @PropertyRegistry,
-    ) -> (Option<felt252>, Option<PropertyAccess>) {
+    ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
-        let mut value: Option<felt252> = Option::None;
+        let mut value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
+                let mut arr: Array<felt252> = ArrayTrait::new();
                 if name == @is_area {
-                    value = Option::Some(component.is_area.into());
-                    access = Option::Some(prop.access_flags);
+                    arr.append(component.is_area.into());
                 }
+                value = Option::Some(arr);
+                access = Option::Some(prop.access_flags);
                 break;
             }
         };
@@ -175,29 +177,27 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
     fn get_exit_property(
         component: Exit, name: @ByteArray, property: @PropertyRegistry,
-    ) -> (Option<felt252>, Option<PropertyAccess>) {
+    ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_exit: ByteArray = "is_exit";
         let is_enterable: ByteArray = "is_enterable";
         let leads_to: ByteArray = "leads_to";
         let direction_type: ByteArray = "direction_type";
-        let mut value: Option<felt252> = Option::None;
+        let mut value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
+                let mut arr: Array<felt252> = ArrayTrait::new();
                 if name == @is_exit {
-                    value = Option::Some(component.is_exit.into());
-                    access = Option::Some(prop.access_flags);
+                    arr.append(component.is_exit.into());
                 } else if name == @is_enterable {
-                    value = Option::Some(component.is_enterable.into());
-                    access = Option::Some(prop.access_flags);
+                    arr.append(component.is_enterable.into());
                 } else if name == @leads_to {
-                    value = Option::Some(component.leads_to);
-                    access = Option::Some(prop.access_flags);
+                    arr.append(component.leads_to);
                 } else if name == @direction_type {
-                    value =
-                        Option::Some(
+                    arr
+                        .append(
                             ByteArrayTraitExt::to_felt252_word(
                                 @ByteArrayTraitExt::byte_array_from_direction(
                                     component.direction_type,
@@ -205,8 +205,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             )
                                 .unwrap(),
                         );
-                    access = Option::Some(prop.access_flags);
                 }
+                value = Option::Some(arr);
+                access = Option::Some(prop.access_flags);
                 break;
             }
         };
@@ -215,26 +216,31 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
     fn get_inspectable_property(
         component: Inspectable, name: @ByteArray, property: @PropertyRegistry,
-    ) -> (Option<felt252>, Option<PropertyAccess>) {
+    ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
         let is_inspectable: ByteArray = "is_inspectable";
         let description: ByteArray = "description";
-        let mut value: Option<felt252> = Option::None;
+        let mut value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
+                let mut arr: Array<felt252> = ArrayTrait::new();
                 if name == @is_visible {
-                    value = Option::Some(component.is_visible.into());
-                    access = Option::Some(prop.access_flags);
+                    arr.append(component.is_visible.into());
                 } else if name == @is_inspectable {
-                    value = Option::Some(component.is_inspectable.into());
-                    access = Option::Some(prop.access_flags);
+                    arr.append(component.is_inspectable.into());
                 } else if name == @description {
-                    value = Option::Some(component.description.len().into());
-                    access = Option::Some(prop.access_flags);
+                    let desc = component.description;
+                    for i in 0..desc.len() {
+                        let part: ByteArray = desc.at(i).clone();
+                        let felt = ByteArrayTraitExt::to_felt252_word(@part).unwrap();
+                        arr.append(felt);
+                    }
                 }
+                value = Option::Some(arr);
+                access = Option::Some(prop.access_flags);
                 break;
             }
         };
@@ -243,39 +249,33 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
     fn get_inventory_item_property(
         component: InventoryItem, name: @ByteArray, property: @PropertyRegistry,
-    ) -> (Option<felt252>, Option<PropertyAccess>) {
+    ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
         let can_go_in_container: ByteArray = "can_go_in_container";
         let already_used: ByteArray = "already_used";
         let multiple_use: ByteArray = "multiple_use";
-        let mut value: Option<felt252> = Option::None;
+        let mut value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
+                let mut arr: Array<felt252> = ArrayTrait::new();
                 if name == @owner_id {
-                    value = Option::Some(component.owner_id);
-                    access = Option::Some(prop.access_flags);
-                    break;
+                    arr.append(component.owner_id);
                 } else if name == @can_be_picked_up {
-                    value = Option::Some(component.can_be_picked_up.into());
-                    access = Option::Some(prop.access_flags);
-                    break;
+                    arr.append(component.can_be_picked_up.into());
                 } else if name == @can_go_in_container {
-                    value = Option::Some(component.can_go_in_container.into());
-                    access = Option::Some(prop.access_flags);
-                    break;
+                    arr.append(component.can_go_in_container.into());
                 } else if name == @already_used {
-                    value = Option::Some(component.already_used.into());
-                    access = Option::Some(prop.access_flags);
-                    break;
+                    arr.append(component.already_used.into());
                 } else if name == @multiple_use {
-                    value = Option::Some(component.multiple_use.into());
-                    access = Option::Some(prop.access_flags);
-                    break;
+                    arr.append(component.multiple_use.into());
                 }
+                value = Option::Some(arr);
+                access = Option::Some(prop.access_flags);
+                break;
             }
         };
         return (value, access);
@@ -283,62 +283,54 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
     fn get_container_property(
         component: Container, name: @ByteArray, property: @PropertyRegistry,
-    ) -> (Option<felt252>, Option<PropertyAccess>) {
+    ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_container: ByteArray = "is_container";
         let can_be_opened: ByteArray = "can_be_opened";
         let can_receive_items: ByteArray = "can_receive_items";
         let is_open: ByteArray = "is_open";
         let num_slots: ByteArray = "num_slots";
-        let mut value: (Option<felt252>, Option<PropertyAccess>) = (Option::None, Option::None);
-
-        for prop in property.properties.clone() {
-            if prop.name == name.clone() {
-                if name == @is_container {
-                    value =
-                        (
-                            Option::Some(component.is_container.into()),
-                            Option::Some(prop.access_flags),
-                        );
-                } else if name == @can_be_opened {
-                    value =
-                        (
-                            Option::Some(component.can_be_opened.into()),
-                            Option::Some(prop.access_flags),
-                        );
-                } else if name == @can_receive_items {
-                    value =
-                        (
-                            Option::Some(component.can_receive_items.into()),
-                            Option::Some(prop.access_flags),
-                        );
-                } else if name == @is_open {
-                    value =
-                        (Option::Some(component.is_open.into()), Option::Some(prop.access_flags));
-                } else if name == @num_slots {
-                    value =
-                        (Option::Some(component.num_slots.into()), Option::Some(prop.access_flags));
-                }
-                break;
-            }
-        };
-        return value;
-    }
-
-    fn get_player_property(
-        component: Player, name: @ByteArray, property: @PropertyRegistry,
-    ) -> (Option<felt252>, Option<PropertyAccess>) {
-        // Define expected property names
-        let location: ByteArray = "location";
-        let mut value: Option<felt252> = Option::None;
+        let mut value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
-                if name == @location {
-                    value = Option::Some(component.location.into());
-                    access = Option::Some(prop.access_flags);
+                let mut arr: Array<felt252> = ArrayTrait::new();
+                if name == @is_container {
+                    arr.append(component.is_container.into());
+                } else if name == @can_be_opened {
+                    arr.append(component.can_be_opened.into());
+                } else if name == @can_receive_items {
+                    arr.append(component.can_receive_items.into());
+                } else if name == @is_open {
+                    arr.append(component.is_open.into());
+                } else if name == @num_slots {
+                    arr.append(component.num_slots.into());
                 }
+                value = Option::Some(arr);
+                access = Option::Some(prop.access_flags);
+                break;
+            }
+        };
+        return (value, access);
+    }
+
+    fn get_player_property(
+        component: Player, name: @ByteArray, property: @PropertyRegistry,
+    ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
+        // Define expected property names
+        let location: ByteArray = "location";
+        let mut value: Option<Array<felt252>> = Option::None;
+        let mut access: Option<PropertyAccess> = Option::None;
+
+        for prop in property.properties.clone() {
+            if prop.name == name.clone() {
+                let mut arr: Array<felt252> = ArrayTrait::new();
+                if name == @location {
+                    arr.append(component.location.into());
+                }
+                value = Option::Some(arr);
+                access = Option::Some(prop.access_flags);
                 break;
             }
         };

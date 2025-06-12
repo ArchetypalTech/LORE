@@ -192,7 +192,7 @@ export interface Condition {
 	component: ComponentsEnum;
 	property: string;
 	operator: OperatorEnum;
-	value: BigNumberish;
+	value: Array<BigNumberish>;
 }
 
 // Type definition for `lore::lib::condition::ConditionValue` struct
@@ -201,7 +201,7 @@ export interface ConditionValue {
 	component: ComponentsEnum;
 	property: string;
 	operator: OperatorEnum;
-	value: BigNumberish;
+	value: Array<BigNumberish>;
 }
 
 // Type definition for `lore::lib::dictionary::Dict` struct
@@ -772,7 +772,7 @@ export const schema: SchemaType = {
 		operator: new CairoCustomEnum({ 
 					Equals: "",
 				NotEquals: undefined, }),
-			value: 0,
+			value: [0],
 		},
 		ConditionValue: {
 			target: 0,
@@ -788,7 +788,7 @@ export const schema: SchemaType = {
 		operator: new CairoCustomEnum({ 
 					Equals: "",
 				NotEquals: undefined, }),
-			value: 0,
+			value: [0],
 		},
 		Dict: {
 			dict_key: 0,

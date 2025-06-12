@@ -65,9 +65,15 @@ pub mod designer {
                 if d {
                     VariablePropertyImp::register_component_properties(world, Components::Area);
                     VariablePropertyImp::register_component_properties(world, Components::Exit);
-                    VariablePropertyImp::register_component_properties(world, Components::Inspectable);
-                    VariablePropertyImp::register_component_properties(world, Components::InventoryItem);
-                    VariablePropertyImp::register_component_properties(world, Components::Container);
+                    VariablePropertyImp::register_component_properties(
+                        world, Components::Inspectable,
+                    );
+                    VariablePropertyImp::register_component_properties(
+                        world, Components::InventoryItem,
+                    );
+                    VariablePropertyImp::register_component_properties(
+                        world, Components::Container,
+                    );
                     VariablePropertyImp::register_component_properties(world, Components::Player);
                 }
             }

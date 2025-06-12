@@ -155,7 +155,6 @@ pub impl ConditionImpl of ConditionTrait {
                 // If we get here, all elements matched, so return true.
                 return result;
             },
-
             Operator::NotEquals => {
                 // If the lengths are different, arrays are not equal,
                 // so return true for NotEquals.
@@ -219,20 +218,22 @@ mod tests {
         inspectable.already_shown = false;
         inspectable.description = array!["A door"];
         inspectable.new_entry = new_entry;
-        inspectable.action_map = array![
-            ActionMapInspectable {
-                action: "show",
-                inst: 0,
-                action_fn: InspectableActions::SetVisible,
-                entrypoint: 0,
-            },
-            ActionMapInspectable {
-                action: "look",
-                inst: 0,
-                action_fn: InspectableActions::ReadRandomDescription,
-                entrypoint: 1,
-            },
-        ];
+        inspectable
+            .action_map =
+                array![
+                    ActionMapInspectable {
+                        action: "show",
+                        inst: 0,
+                        action_fn: InspectableActions::SetVisible,
+                        entrypoint: 0,
+                    },
+                    ActionMapInspectable {
+                        action: "look",
+                        inst: 0,
+                        action_fn: InspectableActions::ReadRandomDescription,
+                        entrypoint: 1,
+                    },
+                ];
         inspectable.store(world);
 
         // Register component variable properties
@@ -243,11 +244,20 @@ mod tests {
         let mut array_true = ArrayTrait::new();
         array_true.append(1);
         let mut condition = create_test_condition(
-            door.inst, key2, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, array_true,
+            door.inst,
+            key2,
+            door.inst,
+            Components::Inspectable,
+            "is_inspectable",
+            Operator::Equals,
+            array_true,
         );
         world.write_model(@condition);
         assert(
-            condition.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }),
+            condition
+                .evaluate_condition(
+                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                ),
             'is_inspectable should be true',
         );
 
@@ -256,11 +266,20 @@ mod tests {
         let mut array_false = ArrayTrait::new();
         array_false.append(0);
         let mut condition2 = create_test_condition(
-            door.inst, key3, door.inst, Components::Inspectable, "is_inspectable", Operator::Equals, array_false,
+            door.inst,
+            key3,
+            door.inst,
+            Components::Inspectable,
+            "is_inspectable",
+            Operator::Equals,
+            array_false,
         );
         world.write_model(@condition2);
         assert(
-            !condition2.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }),
+            !condition2
+                .evaluate_condition(
+                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                ),
             'is_inspectable should be false',
         );
 
@@ -269,11 +288,20 @@ mod tests {
         let mut array3 = ArrayTrait::new();
         array3.append(1);
         let mut condition3 = create_test_condition(
-            door.inst, key4, door.inst, Components::Inspectable, "is_visible", Operator::Equals, array3,
+            door.inst,
+            key4,
+            door.inst,
+            Components::Inspectable,
+            "is_visible",
+            Operator::Equals,
+            array3,
         );
         world.write_model(@condition3);
         assert(
-            condition3.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }),
+            condition3
+                .evaluate_condition(
+                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                ),
             'is_visible should be true',
         );
 
@@ -282,11 +310,20 @@ mod tests {
         let mut array4 = ArrayTrait::new();
         array4.append(0);
         let mut condition4 = create_test_condition(
-            door.inst, key5, door.inst, Components::Inspectable, "is_visible", Operator::Equals, array4,
+            door.inst,
+            key5,
+            door.inst,
+            Components::Inspectable,
+            "is_visible",
+            Operator::Equals,
+            array4,
         );
         world.write_model(@condition4);
         assert(
-            !condition4.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }),
+            !condition4
+                .evaluate_condition(
+                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                ),
             'is_visible should be false',
         );
 
@@ -295,11 +332,20 @@ mod tests {
         let mut not_eq_array = ArrayTrait::new();
         not_eq_array.append(0);
         let mut condition5 = create_test_condition(
-            door.inst, key6, door.inst, Components::Inspectable, "is_visible", Operator::NotEquals, not_eq_array,
+            door.inst,
+            key6,
+            door.inst,
+            Components::Inspectable,
+            "is_visible",
+            Operator::NotEquals,
+            not_eq_array,
         );
         world.write_model(@condition5);
         assert(
-            condition5.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }),
+            condition5
+                .evaluate_condition(
+                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                ),
             'should not be equal',
         );
 
@@ -308,11 +354,20 @@ mod tests {
         let mut not_eq_array2 = ArrayTrait::new();
         not_eq_array2.append(1);
         let mut condition6 = create_test_condition(
-            door.inst, key7, door.inst, Components::Inspectable, "is_visible", Operator::NotEquals, not_eq_array2,
+            door.inst,
+            key7,
+            door.inst,
+            Components::Inspectable,
+            "is_visible",
+            Operator::NotEquals,
+            not_eq_array2,
         );
         world.write_model(@condition6);
         assert(
-            !condition6.evaluate_condition(@world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 }),
+            !condition6
+                .evaluate_condition(
+                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                ),
             'should not be false',
         );
     }
