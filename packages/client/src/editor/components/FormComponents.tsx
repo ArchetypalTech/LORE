@@ -471,36 +471,30 @@ export function encodeToFelt(value: string): BigNumberish {
 }
 
 export function decodeFromFelt(felt: BigNumberish): string {
- if (typeof felt === "string" && felt.startsWith("0x")) {
-    // Input is already a hex string, keep as-is
+  if (typeof felt === "string" && felt.startsWith("0x")) {
     return felt;
   }
 
   const num = BigInt(felt);
 
-  if (num === 0n) return "false";
   if (num === 1n) return "true";
+  if (num === 0n) return "false";
 
-  // Convert to hex string
-  let hex = num.toString(16);
-  if (hex.length % 2 !== 0) hex = "0" + hex;
-
-  // Convert hex to bytes array
-  const bytes = [];
+  const hex = num.toString(16).padStart(2, "0");
+  const bytes: number[] = [];
   for (let i = 0; i < hex.length; i += 2) {
     bytes.push(parseInt(hex.slice(i, i + 2), 16));
   }
 
-  // Check if all bytes are printable ASCII (32 - 126 inclusive)
-  const isPrintable = bytes.every(b => b >= 32 && b <= 126);
+  const isPrintable = bytes.every((b) => b >= 32 && b <= 126);
 
-  if (!isPrintable) {
-    // Contains non-printable bytes → treat as raw hex and return prefixed hex string
-    return "0x" + hex;
+  // Heuristic: decode only if it’s likely a packed string (e.g., at least 2 printable chars)
+  if (isPrintable && bytes.length >= 2) {
+    return String.fromCharCode(...bytes);
   }
 
-  // All printable → decode to string
-  return String.fromCharCode(...bytes);
+  // If not printable or too short, return number string
+  return "0x" + num.toString(16);
 }
 
 export const formatKeyAsDecimal = (key: string | BigNumberish): string => {
