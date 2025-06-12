@@ -259,6 +259,8 @@ const publishTrigger = async (trigger: Trigger) => {
 			num.toBigInt((x.value ?? 0).toString()),
 		]),
 		trigger.is_enabled,
+		trigger.is_once,
+		trigger.was_triggered,
 	];
 	await dispatchDesignerCall("create_trigger", [triggerData]);
 };

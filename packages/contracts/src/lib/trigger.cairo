@@ -26,6 +26,10 @@ pub struct Trigger {
     pub parameters: Array<TriggerParameter>,
     /// Whether the trigger is enabled
     pub is_enabled: bool,
+    /// Whether the trigger only triggers once
+    pub is_once: bool,
+    /// Whether the trigger has already been triggered
+    pub was_triggered: bool,
 }
 
 #[derive(Clone, Drop, Serde, Debug)]
@@ -61,7 +65,7 @@ pub enum TriggerType {
     PlayerEntersArea,
     PlayerLeavesArea,
     // UseItem Inventory Item //
-    NotUsedItem,
+    UseItem,
 }
 
 #[generate_trait]
@@ -158,33 +162,41 @@ pub impl TriggerImpl of TriggerTrait {
         world.write_model(@trigger);
     }
 
-    fn evaluate_trigger(world: @WorldStorage, trigger: @Trigger) -> Result<(), Error> {
+    fn evaluate_trigger(mut world: WorldStorage, mut trigger: Trigger) -> Result<(), Error> {
         let mut result: Result::<(), Error> = Result::Ok(());
         // Evaluate trigger
-        if !*trigger.is_enabled {
+        if !trigger.is_enabled {
             return result; // If not enable is not an error.
         }
+
+        // Check if trigger is only triggered once
+        if trigger.is_once.clone() {
+            // Check if it has already been triggered
+            if trigger.was_triggered.clone() {
+                return Result::Err(Error::OnceUseOnly);
+            }
+        }   
 
         match trigger.trigger_type {
             TriggerType::None => { // Do nothing
             },
             TriggerType::PlayerEntersArea => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(world, trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(*world, ent.inst);
+                let area_opt = AreaComponent::get_component(world, ent.inst);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if entity has player as a child
-                let children = ent.get_children(world);
+                let children = ent.get_children(@world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(*world, child.inst);
+                    let child_player = PlayerComponent::get_component(world, child.inst);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -198,21 +210,21 @@ pub impl TriggerImpl of TriggerTrait {
             },
             TriggerType::PlayerLeavesArea => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(world, trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(*world, ent.inst);
+                let area_opt = AreaComponent::get_component(world, ent.inst);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if the entity does not have a player as a child
-                let children = ent.get_children(world);
+                let children = ent.get_children(@world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(*world, child.inst);
+                    let child_player = PlayerComponent::get_component(world, child.inst);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -223,15 +235,15 @@ pub impl TriggerImpl of TriggerTrait {
                 }
                 return result;
             },
-            TriggerType::NotUsedItem => {
+            TriggerType::UseItem => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(world, trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an inventory item component
                 let ent = ent_opt.unwrap();
-                let inventory_item_opt = InventoryItemComponent::get_component(*world, ent.inst);
+                let inventory_item_opt = InventoryItemComponent::get_component(world, ent.inst);
                 if inventory_item_opt.is_none() {
                     return Result::Err(Error::NoInventoryItemComponent);
                 }
@@ -251,7 +263,10 @@ pub impl TriggerImpl of TriggerTrait {
             _ => { // Do nothing
             },
         }
-
+        // Set trigger as triggered
+        trigger.was_triggered = true;
+        world.write_model(@trigger);
+        // Return result
         result
     }
 }
@@ -263,7 +278,7 @@ pub impl TriggerTypeToFelt252 of Into<TriggerType, felt252> {
             TriggerType::None => 0,
             TriggerType::PlayerEntersArea => 1,
             TriggerType::PlayerLeavesArea => 2,
-            TriggerType::NotUsedItem => 3,
+            TriggerType::UseItem => 3,
         }
     }
 }

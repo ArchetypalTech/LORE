@@ -108,7 +108,7 @@ pub impl ActionImpl of ActionTrait {
         // First check if the trigger/s are valid
         for trigger_key in action.trigger.clone() {
             let trigger: Trigger = world.read_model(trigger_key);
-            let result_opt = TriggerImpl::evaluate_trigger(@world, @trigger);
+            let result_opt = TriggerImpl::evaluate_trigger(world, trigger.clone());
             if player.use_debug {
                 player.say(world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
             }
