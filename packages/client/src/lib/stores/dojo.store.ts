@@ -16,7 +16,6 @@ import { addTerminalContent } from "./terminal.store";
 import WalletStore from "./wallet.store";
 import type { Subscription } from "rxjs";
 import type { DojoStatus } from "./types";
-import type { TerminalContentItem } from "./terminal.store";
 
 /**
  * Represents the current status of the Dojo system.

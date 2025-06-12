@@ -5,8 +5,6 @@ import {
 import { Toggle, Input} from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { stringCairoEnum } from "@/editor/lib/schemas";
-
 
 export const PlayerInspector: ComponentInspector<Player> = ({
 	componentObject,

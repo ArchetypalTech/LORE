@@ -45,7 +45,7 @@ pub mod designer {
     use super::IDesigner;
     use lore::components::{
         inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-        container::Container, player::Player, Component, Components,
+        container::Container, player::Player, Components,
     };
     use lore::lib::{
         entity::{Entity, EntityImpl}, relations::{ParentToChildren, ChildToParent},

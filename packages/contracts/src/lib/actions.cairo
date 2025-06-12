@@ -602,8 +602,8 @@ mod tests {
         // create door entity in room 2 that leads to room 1 via south
         let mut door = create_door(world, room_1.inst, Direction::South);
         door.set_parent(world, @room_2);
-        let old_inspectable: Inspectable = world.read_model(door.inst);
-        let old_exit: Exit = world.read_model(door.inst);
+        let _old_inspectable: Inspectable = world.read_model(door.inst);
+        let _old_exit: Exit = world.read_model(door.inst);
 
         // create item that is in room 1
         let mut item = create_item(world, room_1.inst);
