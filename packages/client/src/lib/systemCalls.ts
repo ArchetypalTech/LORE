@@ -48,6 +48,7 @@ async function execCommand(command: string): Promise<void> {
 }
 
 export type DesignerCall =
+	| "register_property_registry"
 	| "create_player"
 	| "create_entity"
 	| "create_inspectable"

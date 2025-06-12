@@ -41,10 +41,20 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 ComponentProperty {
                     name: "is_visible",
                     property_type: PropertyType::Boolean,
-                    access_flags: PropertyAccess::ReadOnly,
+                    access_flags: PropertyAccess::ReadWrite,
                 },
                 ComponentProperty {
                     name: "description",
+                    property_type: PropertyType::String,
+                    access_flags: PropertyAccess::ReadWrite,
+                },
+                ComponentProperty {
+                    name: "already_shown",
+                    property_type: PropertyType::Boolean,
+                    access_flags: PropertyAccess::ReadWrite,
+                },
+                ComponentProperty {
+                    name: "new_entry",
                     property_type: PropertyType::String,
                     access_flags: PropertyAccess::ReadWrite,
                 },

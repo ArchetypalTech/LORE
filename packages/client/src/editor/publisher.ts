@@ -401,6 +401,31 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 };
 
+export const registerPropertyRegistry = async () => {
+	try {
+		await Notifications().startPublishing();
+		await publishRegisterPropertyRegistry();
+		Notifications().finalizePublishing();
+		// Wait for transaction to be processed
+		await tick();
+		console.log("Properties of components have been registered");
+		return true;
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : String(error);
+		Notifications().showError(`Error publishing to contract: ${errorMsg}`);
+		return false;
+	}
+};
+
+export let alreadyDone = false;
+const publishRegisterPropertyRegistry = async () => {
+	if (alreadyDone == false) {
+		let done = true;
+		await dispatchDesignerCall("register_property_registry", [done]);
+		alreadyDone = true;
+	}
+};
+
 /**
  * Helper function to send designer call
  * @param call The designer call type

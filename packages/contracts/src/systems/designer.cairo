@@ -36,6 +36,8 @@ pub trait IDesigner<TContractState> {
     fn delete_action(ref self: TContractState, ids: Array<(felt252, felt252)>);
     fn delete_parent(ref self: TContractState, ids: Array<felt252>);
     fn delete_child(ref self: TContractState, ids: Array<felt252>);
+    //
+    fn register_property_registry(ref self: TContractState, done: Array<bool>);
 }
 
 #[dojo::contract]
@@ -56,6 +58,21 @@ pub mod designer {
 
     #[abi(embed_v0)]
     pub impl DesignerImpl of IDesigner<ContractState> {
+        // register
+        fn register_property_registry(ref self: ContractState, done: Array<bool>) {
+            let world: WorldStorage = self.world(@"lore");
+            for d in done {
+                if d {
+                    VariablePropertyImp::register_component_properties(world, Components::Area);
+                    VariablePropertyImp::register_component_properties(world, Components::Exit);
+                    VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+                    VariablePropertyImp::register_component_properties(world, Components::InventoryItem);
+                    VariablePropertyImp::register_component_properties(world, Components::Container);
+                    VariablePropertyImp::register_component_properties(world, Components::Player);
+                }
+            }
+        }
+
         // create
         fn create_entity(ref self: ContractState, t: Array<Entity>) {
             let mut world = self.world(@"lore");
