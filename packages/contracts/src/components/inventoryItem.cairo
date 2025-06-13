@@ -132,7 +132,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // Ex: "use the key on the door"
                 // V: Use, N1: key, N2: door (target)
                 // Get target entity to get the actions and execute it
-                if *player.use_debug{
+                if *player.use_debug {
                     player.say(world, format!("Your target is: {}", nouns[1].text));
                 }
 
@@ -165,14 +165,29 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         target2: 0,
                         inventory_object: self.inst,
                     };
-                    player.say(world, format!("Using {} trigger's something at {}", nouns[0].text, nouns[1].text));
-                    if *player.use_debug{
-                        player.say(world, format!("Using: {:?} trigger's the action: {:?} at: {:?} as the target", nouns[0].text, action, nouns[1].text));
+                    player
+                        .say(
+                            world,
+                            format!(
+                                "Using {} trigger's something at {}", nouns[0].text, nouns[1].text,
+                            ),
+                        );
+                    if *player.use_debug {
+                        player
+                            .say(
+                                world,
+                                format!(
+                                    "Using: {:?} trigger's the action: {:?} at: {:?} as the target",
+                                    nouns[0].text,
+                                    action,
+                                    nouns[1].text,
+                                ),
+                            );
                     }
                     let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
                         action, world, @context,
                     );
-                    if *player.use_debug{
+                    if *player.use_debug {
                         player.say(world, format!("Trigger result: {:?}", trig_res));
                         player.say(world, format!("Condition result: {:?}", cond_res));
                         player.say(world, format!("Effect result: {:?}", eff_res));
