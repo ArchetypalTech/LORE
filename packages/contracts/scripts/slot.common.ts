@@ -17,12 +17,12 @@ if (!slotName) {
 
 const defaultVersion = config.scarb.dependencies.dojo.tag;
 
-const katanaVersion = config.katana_version || defaultVersion;
-const toriiVersion = config.torii_version || defaultVersion;
+// const katanaVersion = config.katana_version || defaultVersion;
+// const toriiVersion = config.torii_version || defaultVersion;
 
 export const cmd_deploy_slot = [
-	`slot deployments create ${slotName} katana --version ${katanaVersion}`,
-	`slot deployments create ${slotName} torii --version ${toriiVersion} --world ${worldAddress} --rpc ${rpcUrl}`,
+	`slot deployments create ${slotName} katana`,
+	`slot deployments create ${slotName} torii --world ${worldAddress} --rpc ${rpcUrl}`,
 	`slot deployments list`,
 ];
 export const cmd_view_slot = [`slot deployments list`];
