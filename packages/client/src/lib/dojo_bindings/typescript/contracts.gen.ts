@@ -550,6 +550,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_registerPropertyRegistry_calldata = (done: Array<boolean>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "register_property_registry",
+			calldata: [done],
+		};
+	};
+
+	const designer_registerPropertyRegistry = async (snAccount: Account | AccountInterface, done: Array<boolean>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_registerPropertyRegistry_calldata(done),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_prompt_prompt_calldata = (cmd: ByteArray): DojoCall => {
 		return {
 			contractName: "prompt",
@@ -627,6 +648,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeletePlayerCalldata: build_designer_deletePlayer_calldata,
 			deleteTrigger: designer_deleteTrigger,
 			buildDeleteTriggerCalldata: build_designer_deleteTrigger_calldata,
+			registerPropertyRegistry: designer_registerPropertyRegistry,
+			buildRegisterPropertyRegistryCalldata: build_designer_registerPropertyRegistry_calldata,
 		},
 		prompt: {
 			prompt: prompt_prompt,

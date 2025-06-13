@@ -460,6 +460,42 @@ export const ActionMapEditor = <T extends CairoCustomEnum>({
 	);
 };
 
+export function encodeToFelt(value: string): BigNumberish {
+    if (value === "true") return 1n;
+    if (value === "false") return 0n;
+    if (!isNaN(Number(value))) return BigInt(value);
+    const truncated = value.slice(0, 31);
+    return [...truncated]
+      .map((char) => char.charCodeAt(0))
+      .reduce((acc, curr) => (acc << 8n) + BigInt(curr), 0n);
+}
+
+export function decodeFromFelt(felt: BigNumberish): string {
+  if (typeof felt === "string" && felt.startsWith("0x")) {
+    return felt;
+  }
+
+  const num = BigInt(felt);
+
+  if (num === 1n) return "true";
+  if (num === 0n) return "false";
+
+  const hex = num.toString(16).padStart(2, "0");
+  const bytes: number[] = [];
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes.push(parseInt(hex.slice(i, i + 2), 16));
+  }
+
+  const isPrintable = bytes.every((b) => b >= 32 && b <= 126);
+
+  // Heuristic: decode only if it’s likely a packed string (e.g., at least 2 printable chars)
+  if (isPrintable && bytes.length >= 2) {
+    return String.fromCharCode(...bytes);
+  }
+
+  // If not printable or too short, return number string
+  return "0x" + num.toString(16);
+}
 
 export const formatKeyAsDecimal = (key: string | BigNumberish): string => {
   const bigIntKey = num.toBigInt(key); // this handles strings, numbers, BigInt, etc.

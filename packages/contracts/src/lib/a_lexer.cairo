@@ -275,7 +275,7 @@ mod tests {
         create_test_level(world);
         let player = caller_as_player(world, player_1);
         player.move_to_room(world, 2826);
-        let command = lexer::parse(promptText, world, player);
+        let _command = lexer::parse(promptText, world, player);
         // println!("command: {:?}", command);
     // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();

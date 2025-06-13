@@ -108,7 +108,7 @@ pub impl ActionImpl of ActionTrait {
         // First check if the trigger/s are valid
         for trigger_key in action.trigger.clone() {
             let trigger: Trigger = world.read_model(trigger_key);
-            let result_opt = TriggerImpl::evaluate_trigger(@world, @trigger);
+            let result_opt = TriggerImpl::evaluate_trigger(world, trigger.clone());
             if player.use_debug {
                 player
                     .say(world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
@@ -353,6 +353,8 @@ mod tests {
             trigger_type,
             parameters: array![TriggerParameter { name: "area", value: inst }],
             is_enabled: true,
+            is_once: false,
+            was_triggered: false,
         }
     }
 
@@ -363,7 +365,7 @@ mod tests {
         component: Components,
         property: ByteArray,
         operator: Operator,
-        value: felt252,
+        value: Array<felt252>,
     ) -> Condition {
         Condition { inst, key, target, component, property, operator, value }
     }
@@ -465,6 +467,8 @@ mod tests {
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
         let c_key: felt252 = 1;
+        let mut array: Array<felt252> = ArrayTrait::new();
+        array.append(player1.inst);
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
@@ -473,7 +477,7 @@ mod tests {
             Components::InventoryItem,
             property,
             Operator::Equals,
-            player1.inst,
+            array,
         );
         world.write_model(@condition);
 
@@ -598,8 +602,8 @@ mod tests {
         // create door entity in room 2 that leads to room 1 via south
         let mut door = create_door(world, room_1.inst, Direction::South);
         door.set_parent(world, @room_2);
-        let old_inspectable: Inspectable = world.read_model(door.inst);
-        let old_exit: Exit = world.read_model(door.inst);
+        let _old_inspectable: Inspectable = world.read_model(door.inst);
+        let _old_exit: Exit = world.read_model(door.inst);
 
         // create item that is in room 1
         let mut item = create_item(world, room_1.inst);
@@ -631,6 +635,8 @@ mod tests {
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
         let c_key: felt252 = 1;
+        let mut array: Array<felt252> = ArrayTrait::new();
+        array.append(player1.inst);
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
@@ -639,7 +645,7 @@ mod tests {
             Components::InventoryItem,
             property,
             Operator::Equals,
-            player1.inst,
+            array,
         );
         world.write_model(@condition);
 

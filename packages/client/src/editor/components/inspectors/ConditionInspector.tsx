@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type Condition,
   operator,
@@ -9,7 +9,10 @@ import {
   CairoEnumSelect,
   formatKeyAsDecimal,
   Select,
+  encodeToFelt,
+  decodeFromFelt,
 } from "../FormComponents";
+import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
@@ -36,8 +39,10 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         updatedObject.operator = stringCairoEnum(e.target.value);
       },
       value: (e, updatedObject) => {
-        updatedObject.value = e.target.value;
-      },
+        let value = e.target.value as unknown as string[];
+        let encodedValues = value.map((v) => encodeToFelt(v));
+        updatedObject.value = encodedValues;
+      }
     },
   });
 
@@ -92,11 +97,14 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         value={componentObject.operator}
         enum={operator}
       />
-      <Input
+      <TextAreaStringArray
         id="value"
-        value={componentObject.value.toString()}
+        value={componentObject.value.map((v) => decodeFromFelt(v.toString()))}
         onChange={handleInputChange}
+        rows={1}
       />
     </Inspector>
   );
 }
+
+

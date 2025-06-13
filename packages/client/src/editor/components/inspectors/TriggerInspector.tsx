@@ -31,6 +31,14 @@ export const TriggerInspector: ComponentInspector<Trigger> = ({
         const event = e as ChangeEvent<HTMLInputElement>;
         updatedObject.is_enabled = event.target.checked;
       },
+      is_once: (e, updatedObject) => {
+        const event = e as ChangeEvent<HTMLInputElement>;
+        updatedObject.is_once = event.target.checked;
+      },
+      was_triggered: (e, updatedObject) => {
+        const event = e as ChangeEvent<HTMLInputElement>;
+        updatedObject.was_triggered = event.target.checked;
+      },
     },
 	});
 
@@ -56,6 +64,16 @@ export const TriggerInspector: ComponentInspector<Trigger> = ({
 				value={componentObject.trigger_type}
 				enum={triggerType}
 			/>
+      <Toggle
+        id="is_once"
+        value={componentObject.is_once}
+        onChange={handleInputChange}
+      />
+      <Toggle
+        id="was_triggered"
+        value={componentObject.was_triggered}
+        onChange={handleInputChange}
+      />
 		</Inspector>
 	);
 }

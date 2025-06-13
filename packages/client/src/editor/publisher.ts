@@ -259,6 +259,8 @@ const publishTrigger = async (trigger: Trigger) => {
 			num.toBigInt((x.value ?? 0).toString()),
 		]),
 		trigger.is_enabled,
+		trigger.is_once,
+		trigger.was_triggered,
 	];
 	await dispatchDesignerCall("create_trigger", [triggerData]);
 };
@@ -271,7 +273,7 @@ const publishCondition = async (condition: Condition) => {
 		toEnumIndex(condition.component, components),
 		byteArray.byteArrayFromString(condition.property),
 		toEnumIndex(condition.operator, operator),
-		num.toBigInt((condition.value ?? 0).toString()),
+		condition.value.map((v) => num.toBigInt(v ?? "0"))
 	];
 	await dispatchDesignerCall("create_condition", [conditionData]);
 };
@@ -396,6 +398,31 @@ const deleteCollection = async (model: EntityCollection) => {
 		await dispatchDesignerCall("delete_parent", [
 			num.toBigInt(model.ParentToChildren!.inst),
 		]);
+	}
+};
+
+export const registerPropertyRegistry = async () => {
+	try {
+		await Notifications().startPublishing();
+		await publishRegisterPropertyRegistry();
+		Notifications().finalizePublishing();
+		// Wait for transaction to be processed
+		await tick();
+		console.log("Properties of components have been registered");
+		return true;
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : String(error);
+		Notifications().showError(`Error publishing to contract: ${errorMsg}`);
+		return false;
+	}
+};
+
+export let alreadyDone = false;
+const publishRegisterPropertyRegistry = async () => {
+	if (alreadyDone == false) {
+		let done = true;
+		await dispatchDesignerCall("register_property_registry", [done]);
+		alreadyDone = true;
 	}
 };
 

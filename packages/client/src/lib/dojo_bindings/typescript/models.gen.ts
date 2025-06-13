@@ -192,7 +192,7 @@ export interface Condition {
 	component: ComponentsEnum;
 	property: string;
 	operator: OperatorEnum;
-	value: BigNumberish;
+	value: Array<BigNumberish>;
 }
 
 // Type definition for `lore::lib::condition::ConditionValue` struct
@@ -201,7 +201,7 @@ export interface ConditionValue {
 	component: ComponentsEnum;
 	property: string;
 	operator: OperatorEnum;
-	value: BigNumberish;
+	value: Array<BigNumberish>;
 }
 
 // Type definition for `lore::lib::dictionary::Dict` struct
@@ -313,6 +313,8 @@ export interface Trigger {
 	trigger_type: TriggerTypeEnum;
 	parameters: Array<TriggerParameter>;
 	is_enabled: boolean;
+	is_once: boolean;
+	was_triggered: boolean;
 }
 
 // Type definition for `lore::lib::trigger::TriggerIndex` struct
@@ -338,6 +340,8 @@ export interface TriggerValue {
 	trigger_type: TriggerTypeEnum;
 	parameters: Array<TriggerParameter>;
 	is_enabled: boolean;
+	is_once: boolean;
+	was_triggered: boolean;
 }
 
 // Type definition for `lore::lib::variable_property::ComponentProperty` struct
@@ -478,7 +482,7 @@ export const triggerType = [
 	'None',
 	'PlayerEntersArea',
 	'PlayerLeavesArea',
-	'NotUsedItem',
+	'UseItem',
 ] as const;
 export type TriggerType = { [key in typeof triggerType[number]]: string };
 export type TriggerTypeEnum = CairoCustomEnum;
@@ -768,7 +772,7 @@ export const schema: SchemaType = {
 		operator: new CairoCustomEnum({ 
 					Equals: "",
 				NotEquals: undefined, }),
-			value: 0,
+			value: [0],
 		},
 		ConditionValue: {
 			target: 0,
@@ -784,7 +788,7 @@ export const schema: SchemaType = {
 		operator: new CairoCustomEnum({ 
 					Equals: "",
 				NotEquals: undefined, }),
-			value: 0,
+			value: [0],
 		},
 		Dict: {
 			dict_key: 0,
@@ -909,16 +913,18 @@ export const schema: SchemaType = {
 					None: "",
 				PlayerEntersArea: undefined,
 				PlayerLeavesArea: undefined,
-				NotUsedItem: undefined, }),
+				UseItem: undefined, }),
 			parameters: [{ name: "", value: 0, }],
 			is_enabled: false,
+			is_once: false,
+			was_triggered: false,
 		},
 		TriggerIndex: {
 		trigger_type: new CairoCustomEnum({ 
 					None: "",
 				PlayerEntersArea: undefined,
 				PlayerLeavesArea: undefined,
-				NotUsedItem: undefined, }),
+				UseItem: undefined, }),
 			trigger_id: [[0, 0]],
 		},
 		TriggerIndexValue: {
@@ -934,9 +940,11 @@ export const schema: SchemaType = {
 					None: "",
 				PlayerEntersArea: undefined,
 				PlayerLeavesArea: undefined,
-				NotUsedItem: undefined, }),
+				UseItem: undefined, }),
 			parameters: [{ name: "", value: 0, }],
 			is_enabled: false,
+			is_once: false,
+			was_triggered: false,
 		},
 		ComponentProperty: {
 		name: "",

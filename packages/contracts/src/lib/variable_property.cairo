@@ -79,9 +79,9 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
 
     fn get_property(
         world: @WorldStorage, key: @felt252, property_name: @ByteArray, component_type: Components,
-    ) -> (Option<felt252>, Option<PropertyAccess>) {
+    ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         let property_registry: PropertyRegistry = world.read_model((component_type));
-        let mut property_value: Option<felt252> = Option::None;
+        let mut property_value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
         match property_registry.component_type.clone() {
