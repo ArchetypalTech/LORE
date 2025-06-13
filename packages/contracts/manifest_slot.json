@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x63e9c45621cc56faa4c479bf41687d205b8c85c0e1c5d622e8a39cb865023f2",
-      "class_hash": "0x145022b8349f3c7402eb70dee6603edb396d52f4e59edea4dfabfcdc3c029fb",
+      "address": "0x3b92380e6718134e6b56c9cc48011945120a03ad02eb00b93b994f1d3f21277",
+      "class_hash": "0xaab12df8596a7d3e1a224e5d4feda382d354e4dfdd77b611cc0e1cfe1fd52c",
       "abi": [
         {
           "type": "impl",
@@ -1519,6 +1519,14 @@
             {
               "name": "action_map",
               "type": "core::array::Array::<lore::components::inspectable::ActionMapInspectable>"
+            },
+            {
+              "name": "already_shown",
+              "type": "core::bool"
+            },
+            {
+              "name": "new_entry",
+              "type": "core::byte_array::ByteArray"
             }
           ]
         },
@@ -2001,6 +2009,14 @@
             {
               "name": "executed",
               "type": "core::bool"
+            },
+            {
+              "name": "failing_response",
+              "type": "core::array::Array::<core::byte_array::ByteArray>"
+            },
+            {
+              "name": "success_response",
+              "type": "core::array::Array::<core::byte_array::ByteArray>"
             }
           ]
         },
@@ -2507,8 +2523,8 @@
       ]
     },
     {
-      "address": "0x179f145080c7d410830648203b71d4ccf594cc1c72c85e67c085dea554b35d7",
-      "class_hash": "0x229f2a9f7210c66bf51e89f39a73118fad0f4ac291c163fe5221c0eb4c03d9d",
+      "address": "0x7dc14a88d737e713f626e0bdcfc20c8a3487c8ac33596c4a8d535335dadcf9c",
+      "class_hash": "0x65b93233f5284af7262c16a19cf6a74a3c8be47736ea44bb8903fcb4a364cb0",
       "abi": [
         {
           "type": "impl",
@@ -2711,7 +2727,7 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x7623d3af634d4179ff7bbef4ca8f3bb4f3a11a7c20f954a976a176aee7374c8",
+      "class_hash": "0x526e7e9fd44c1487a0410c7e077287e7535615b41f3f4d22899556ec13d1112",
       "tag": "lore-Action",
       "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
     },
@@ -2777,7 +2793,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x534e52be1607c679c80ed54c93220fbd334a6dc227edd212406be21131621e0",
+      "class_hash": "0x6caadfae8d4c947e2c11bf07ea3752211c8131f3fe3fd4e8e79859cd9a850b1",
       "tag": "lore-Inspectable",
       "selector": "0x761c792e623173857f21316868bd06f19050cfc26238d33476231e335cf59c9"
     },
