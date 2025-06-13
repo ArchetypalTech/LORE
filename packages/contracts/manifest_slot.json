@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x3b92380e6718134e6b56c9cc48011945120a03ad02eb00b93b994f1d3f21277",
-      "class_hash": "0xaab12df8596a7d3e1a224e5d4feda382d354e4dfdd77b611cc0e1cfe1fd52c",
+      "address": "0x28e2ada553fe239e54187aec95f9a31f788563b35c2c9cec2149057689258cf",
+      "class_hash": "0x49c7ca5ddde2baaf8f4800567d8092665f163db5d3d1a30d35bf3c4ccad3770",
       "abi": [
         {
           "type": "impl",
@@ -1805,7 +1805,7 @@
               "type": "()"
             },
             {
-              "name": "NotUsedItem",
+              "name": "UseItem",
               "type": "()"
             }
           ]
@@ -1850,6 +1850,14 @@
             },
             {
               "name": "is_enabled",
+              "type": "core::bool"
+            },
+            {
+              "name": "is_once",
+              "type": "core::bool"
+            },
+            {
+              "name": "was_triggered",
               "type": "core::bool"
             }
           ]
@@ -1932,7 +1940,7 @@
             },
             {
               "name": "value",
-              "type": "core::felt252"
+              "type": "core::array::Array::<core::felt252>"
             }
           ]
         },
@@ -2371,6 +2379,18 @@
               ],
               "outputs": [],
               "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "register_property_registry",
+              "inputs": [
+                {
+                  "name": "done",
+                  "type": "core::array::Array::<core::bool>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
             }
           ]
         },
@@ -2519,12 +2539,13 @@
         "delete_action",
         "delete_parent",
         "delete_child",
+        "register_property_registry",
         "upgrade"
       ]
     },
     {
-      "address": "0x7dc14a88d737e713f626e0bdcfc20c8a3487c8ac33596c4a8d535335dadcf9c",
-      "class_hash": "0x65b93233f5284af7262c16a19cf6a74a3c8be47736ea44bb8903fcb4a364cb0",
+      "address": "0x5aee9278e87825e6932697ff7065f053264a56affa34651371ae3b78a0817bd",
+      "class_hash": "0x7c237e566404999884a43497340f96ff2973f0d2c5a93f462812951d65b1851",
       "abi": [
         {
           "type": "impl",
@@ -2751,7 +2772,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x1aa5e082dacea0aa8681ddec6053261db50a6946ab45a842d3057e6caaeb4c9",
+      "class_hash": "0x7a55e6993b61f266faac73fb6a382535bfadccc100cbbc6eea05beb2ce370e7",
       "tag": "lore-Condition",
       "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
@@ -2829,13 +2850,13 @@
     },
     {
       "members": [],
-      "class_hash": "0x6e74a646250df78d238f8cd95739aaa6aa3a236ae1a4a40d33983054003a329",
+      "class_hash": "0x4144c14ef0ac63c28832a15f9a274897de8311789515e0371883311bbc7656b",
       "tag": "lore-Trigger",
       "selector": "0x8f76987efdbfa10b4f5f6a6ed5450ecc5241301beabc41a889d84c40f87cfa"
     },
     {
       "members": [],
-      "class_hash": "0x6db5005ec0983a06f1b02e97a12d35d1ff69b4c8e128d91f92b2a27a05cbf81",
+      "class_hash": "0x15143642c0242196ec72433fa5cf9488c5ec11b3b1e471fb7fe4f37d12da8bc",
       "tag": "lore-TriggerIndex",
       "selector": "0x472f592295e556e032f9ea3d00faf9cbd2729afe3a6fc168cf6034c65b7dc6"
     }
