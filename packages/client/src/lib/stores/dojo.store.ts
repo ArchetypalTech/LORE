@@ -187,6 +187,7 @@ const initializeConfig = async (
 		const [initialEntities, subscription] = await config.sub(onSubscription);
 		if (!LORE_CONFIG.EDITOR_MODE) {
 			sendCommand("_intro");
+			sendCommand("_description");
 		}
 		const entities = Array.isArray(initialEntities) ? initialEntities : [initialEntities];
 				for (const responseData of entities) {

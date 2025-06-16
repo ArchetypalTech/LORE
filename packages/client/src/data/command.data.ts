@@ -87,6 +87,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			style: { textAlign: "center" },
 		});
 	},
+	_description: () => {
+		addTerminalContent({
+			text: APP_DATA.description,
+			format: "system",
+			useTypewriter: true,
+			speed: 4,
+			style: { textAlign: "center" },
+		});
+	},
 	_hint: () => {
 		addTerminalContent({
 			text: 'type [command] [target], or type "help"',
