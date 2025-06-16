@@ -5,7 +5,7 @@ import {
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
-import { HELP_TEXTS } from "@/data/help.data";
+import { HELP_TEXTS, HELP_EXITS, HELP_INSPECT, HELP_CONTAINER, HELP_INVENTORY } from "@/data/help.data";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
 
@@ -175,11 +175,54 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, true);
 	},
-	help: () => {
+	help:() => {
+		const header = "Objects may have the following components that can be used:";
 		// Handle help command
 		addTerminalContent({
-			text: `available commands:\n\n${Object.entries(HELP_TEXTS)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}`)
+			text: header + "\n\n" + Object.entries(HELP_TEXTS)
+				.map(([cmd, content]) => 
+					`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`
+				)
+				.join("\n\n"),
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	help_inspect: () => {
+		// Handle help inspect command
+		addTerminalContent({
+			text: `available commands:\n\n${Object.entries(HELP_INSPECT)
+				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.join("\n\n")}`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	help_exits: () => {
+		// Handle help inspect command
+		addTerminalContent({
+			text: `available commands:\n\n${Object.entries(HELP_EXITS)
+				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.join("\n\n")}`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	help_container: () => {
+		// Handle help inspect command
+		addTerminalContent({
+			text: `available commands:\n\n${Object.entries(HELP_CONTAINER)
+				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.join("\n\n")}`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	help_inventory: () => {
+		// Handle help inspect command
+		addTerminalContent({
+			text: `available commands:\n\n${Object.entries(HELP_INVENTORY)
+				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
