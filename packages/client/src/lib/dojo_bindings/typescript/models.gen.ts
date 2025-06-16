@@ -6,11 +6,13 @@ import { CairoCustomEnum, type BigNumberish } from 'starknet';
 export interface Area {
 	inst: BigNumberish;
 	is_area: boolean;
+	is_spawn_point: boolean;
 }
 
 // Type definition for `lore::components::area::AreaValue` struct
 export interface AreaValue {
 	is_area: boolean;
+	is_spawn_point: boolean;
 }
 
 // Type definition for `lore::components::container::ActionMapContainer` struct
@@ -564,9 +566,11 @@ export const schema: SchemaType = {
 		Area: {
 			inst: 0,
 			is_area: false,
+			is_spawn_point: false,
 		},
 		AreaValue: {
 			is_area: false,
+			is_spawn_point: false,
 		},
 		ActionMapContainer: {
 		action: "",

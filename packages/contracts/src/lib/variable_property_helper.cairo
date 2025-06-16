@@ -31,6 +31,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     property_type: PropertyType::Boolean,
                     access_flags: PropertyAccess::ReadOnly,
                 },
+                ComponentProperty {
+                    name: "is_spawn_point",
+                    property_type: PropertyType::Boolean,
+                    access_flags: PropertyAccess::ReadWrite,
+                },
             ],
             Components::Inspectable => array![
                 ComponentProperty {
@@ -158,6 +163,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
+        let is_spawn_point: ByteArray = "is_spawn_point";
         let mut value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
@@ -166,6 +172,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 let mut arr: Array<felt252> = ArrayTrait::new();
                 if name == @is_area {
                     arr.append(component.is_area.into());
+                } else if name == @is_spawn_point {
+                    arr.append(component.is_spawn_point.into());
                 }
                 value = Option::Some(arr);
                 access = Option::Some(prop.access_flags);
@@ -347,20 +355,25 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
+        let is_spawn_point: ByteArray = "is_spawn_point";
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
                 match prop.access_flags {
-                    PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
+                    PropertyAccess::ReadOnly => { 
+                        if name == @is_area {
+                            result = Result::Err(Error::ReadOnlyVariable);
+                        }
+                    },
                     PropertyAccess::WriteOnly |
                     PropertyAccess::ReadWrite => {
-                        if name == @is_area {
+                        if name == @is_spawn_point {
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
                                 new_value[0].clone(),
                             );
-                            component.is_area = new_var_value;
+                            component.is_spawn_point = new_var_value;
                             success = true;
                         }
                     },

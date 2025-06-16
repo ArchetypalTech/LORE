@@ -19,6 +19,7 @@ import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
 import WalletStore from "@/lib/stores/wallet.store"
+import { BigNumberish } from "starknet";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -34,9 +35,9 @@ export const createDefaultEntity = (): WithStringEnums<
 });
 
 export const createPlayerEntity = (
-	address?: string
+	spawn_location?: BigNumberish
   ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
-	const playerAddress = address || getPlayerAddress();
+	const playerAddress =  getPlayerAddress();
 	return {
 		// Adding the Entity as we need to set the inst to be the address
 		Entity: {
@@ -51,7 +52,7 @@ export const createPlayerEntity = (
 			inst: playerAddress,
 			is_player: true,
 			address: playerAddress,
-			location: 0,
+			location: spawn_location?.toString() || 0,
 			use_debug: false,
 		},
 	};
@@ -81,6 +82,7 @@ export const createDefaultAreaComponent = (
 		...schema.lore.Area,
 		inst: entity.inst,
 		is_area: true,
+		is_spawn_point: false,
 	},
 });
 
@@ -151,7 +153,7 @@ export const createDefaultContainerComponent = (
 		can_be_opened: true,
 		can_receive_items: true,
 		is_open: true,
-		num_slots: 0,
+		num_slots: 3,
 		action_map: [
 			{ action: "open", inst: 0, action_fn: "Open" },
 			{ action: "close", inst: 0, action_fn: "Close" },

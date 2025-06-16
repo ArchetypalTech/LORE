@@ -187,6 +187,7 @@ const publishArea = async (area: Area) => {
 	const areaData = [
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
+		area.is_spawn_point,
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };

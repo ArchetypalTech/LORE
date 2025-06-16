@@ -465,19 +465,28 @@ const newEntity = async () => {
 };
 
 const newPlayer = async () => {
-	const playerEntity = createPlayerEntity();
+	const spawnPoint = await getSpawnPoint();
+	if (spawnPoint === undefined) {
+		console.error("No spawn point found");
+		return;
+	}
+	console.log("Spawn point:", spawnPoint);
+	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	await tick();
-	if (get().selectedEntity !== undefined) {
-		const e = getEntity(get().selectedEntity!)!;
-		console.log(e);
-		if (e.ChildToParent !== undefined) {
-			const newParent = getEntity(e.ChildToParent.parent)!;
-			console.log(newParent);
-			addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
-		}
-	}
+	// if (get().selectedEntity !== undefined) {
+	// 	const e = getEntity(get().selectedEntity!)!;
+	// 	console.log(e);
+	// 	if (e.ChildToParent !== undefined) {
+	// 		const newParent = getEntity(e.ChildToParent.parent)!;
+	// 		console.log(newParent);
+	// 		addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
+	// 	}
+	// }
+	// parent will be the spawn point
+	const newParent = getEntity(spawnPoint.toString(), false)!;
+	addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
 	selectEntity(playerEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
@@ -541,6 +550,34 @@ export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promi
 	}
 	return properties_array;
 };
+
+export const getSpawnPoint = async(): Promise<BigNumberish> => {
+	let areaInst: BigNumberish;
+	try {
+		const { sdk } = await InitDojo();
+		const querySpawnPoint = () => {
+			const builder = new ToriiQueryBuilder<SchemaType>();
+			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-Area"]);
+			return query;
+		};
+		const result = await sdk.getEntities({ query: querySpawnPoint() });
+		result.getItems().forEach((item) => {
+			// Get models with type area
+			const area = item.models?.lore?.Area;
+			// Check if area is a spawn point
+			if (area?.is_spawn_point) {
+				// Return the spawn point entity inst
+				// This will only work if there is only one spawn point
+				// If there are multiple spawn points, this will return the first one
+				areaInst = area.inst.toString();
+			}
+		});
+	} catch (error) {
+		console.error("Error fetching spawn point from Torii:", error);
+		throw error;
+	}
+	return areaInst;
+}
 
 const syncEntities = async () => {
 	try {
