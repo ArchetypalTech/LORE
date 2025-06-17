@@ -18,8 +18,9 @@ import { ActionInspector } from "../components/inspectors/ActionInspector";
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
-import WalletStore from "@/lib/stores/wallet.store"
+import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store"
 import { BigNumberish } from "starknet";
+import randomName from "@scaleway/random-name";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -38,13 +39,14 @@ export const createPlayerEntity = (
 	spawn_location?: BigNumberish
   ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
 	const playerAddress =  getPlayerAddress();
+	const playerName = getPlayerName();
 	return {
 		// Adding the Entity as we need to set the inst to be the address
 		Entity: {
 			...schema.lore.Entity,
 			inst: playerAddress,
 			is_entity: true,
-			name: createRandomName(),
+			name: playerName,
 			alt_names: [],
 		},
 		Player: {
@@ -332,3 +334,14 @@ export const getPlayerAddress = (): string => {
 	}
 	return LORE_CONFIG.wallet.address;
 };
+
+export const getPlayerName = (): string => {
+	if (LORE_CONFIG.useController) {
+		const {username} = useWalletStore();
+		console.log("controllerName", username);
+		if (username) {
+			return username;
+		}
+	}
+	return randomName();
+}

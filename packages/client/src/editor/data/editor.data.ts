@@ -32,6 +32,10 @@ import { InitDojo } from "@/lib/dojo";
 import { ToriiQueryBuilder} from "@dojoengine/sdk";
 import {type SchemaType} from "@lib/dojo_bindings/typescript/models.gen";
 
+import { getPlayerAddress } from "@/editor/lib/components";
+import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
+
+
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
 
 const {
@@ -464,7 +468,7 @@ const newEntity = async () => {
 	return newEntity;
 };
 
-const newPlayer = async () => {
+export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	const spawnPoint = await getSpawnPoint();
 	if (spawnPoint === undefined) {
 		console.error("No spawn point found");
@@ -475,15 +479,6 @@ const newPlayer = async () => {
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	await tick();
-	// if (get().selectedEntity !== undefined) {
-	// 	const e = getEntity(get().selectedEntity!)!;
-	// 	console.log(e);
-	// 	if (e.ChildToParent !== undefined) {
-	// 		const newParent = getEntity(e.ChildToParent.parent)!;
-	// 		console.log(newParent);
-	// 		addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
-	// 	}
-	// }
 	// parent will be the spawn point
 	const newParent = getEntity(spawnPoint.toString(), false)!;
 	addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
@@ -577,6 +572,57 @@ export const getSpawnPoint = async(): Promise<BigNumberish> => {
 		throw error;
 	}
 	return areaInst;
+}
+
+export const getPlayer = async (account: string): Promise<boolean> => {
+	let playerFound = false;	
+	try {
+		const { sdk } = await InitDojo();
+		const queryPlayer = () => {
+			const builder = new ToriiQueryBuilder<SchemaType>();
+			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-Player"]);
+			return query;
+		};
+		const result = await sdk.getEntities({ query: queryPlayer() });
+		result.getItems().forEach((item) => {
+			// Get models with type Player
+			const player = item.models?.lore?.Player;
+			// Check the player model inst matches the account
+			if (player?.inst === account) {
+				playerFound = true;
+			}
+		});
+		return playerFound;
+		// if (!playerFound) {
+		// 	// If player was not found, create it
+		// 	const playerEntity = await newPlayer()
+		// 	if (!playerEntity) return;
+		// 	// publish the player
+		// 	await publishEntityCollection(playerEntity);
+		// }
+	} catch (error) {
+		console.error("Error fetching player from Torii:", error);
+		throw error;
+	}
+}
+
+export let playerFound = false;
+export let playerExists = false;
+
+export const checkForPlayer = async () => {
+	if (!playerExists) {
+		playerFound = await getPlayer(getPlayerAddress());
+		if (playerFound) {
+			playerExists = true;
+		} else {
+			const player = await newPlayer();
+			if (player) {
+				await publishEntityCollection(player);
+				await publishConfigToContract();
+				playerExists = true;
+			}
+		}
+	}
 }
 
 const syncEntities = async () => {

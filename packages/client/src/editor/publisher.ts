@@ -85,7 +85,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 	}
 };
 
-const publishEntityCollection = async (collection: EntityCollection) => {
+export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}

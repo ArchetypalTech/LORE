@@ -8,6 +8,7 @@ import { APP_DATA } from "@/data/app.data";
 import { HELP_TEXTS, HELP_EXITS, HELP_INSPECT, HELP_CONTAINER, HELP_INVENTORY } from "@/data/help.data";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
+import { checkForPlayer } from "@/editor/data/editor.data";
 
 /**
  * Context object passed to each terminal command handler
@@ -153,6 +154,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				useTypewriter: true,
 			});
 		}
+		// Call the check for player
+		await checkForPlayer();
 	},
 	disconnect: async () => {
 		if (!WalletStore().isConnected) {
