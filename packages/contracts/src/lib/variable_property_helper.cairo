@@ -362,7 +362,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
                 match prop.access_flags {
-                    PropertyAccess::ReadOnly => { 
+                    PropertyAccess::ReadOnly => {
                         if name == @is_area {
                             result = Result::Err(Error::ReadOnlyVariable);
                         }

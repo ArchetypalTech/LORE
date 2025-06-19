@@ -14,7 +14,8 @@ use lore::{ //
     components::{
         player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{Exit, ExitComponent}, Component,
         inspectable::{Inspectable, InspectableImpl, InspectableComponent},
-        inventoryItem::{InventoryItemComponent}, container::{Container, ContainerImpl,ContainerComponent},
+        inventoryItem::{InventoryItemComponent},
+        container::{Container, ContainerImpl, ContainerComponent},
     } //
 };
 
@@ -120,7 +121,7 @@ pub fn handle_command(
 
     // We haven't found any targets that have a verb mapped to the action
     // Are there any default actions we can do?
-    // if command is just one token, 
+    // if command is just one token,
     if command.tokens.len() == 1 {
         let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
         if initialVerb == 'look' {

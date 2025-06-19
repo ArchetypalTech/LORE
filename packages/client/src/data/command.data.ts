@@ -179,7 +179,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		sendCommand(command, true);
 	},
 	help:() => {
-		const header = "Objects may have the following components that can be used:";
+		const header = "Entities/Objects might have the following properties that can be that allow you to interact with them:";
 		// Handle help command
 		addTerminalContent({
 			text: header + "\n\n" + Object.entries(HELP_TEXTS)
