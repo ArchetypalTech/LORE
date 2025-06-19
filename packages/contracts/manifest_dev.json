@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x28e2ada553fe239e54187aec95f9a31f788563b35c2c9cec2149057689258cf",
-      "class_hash": "0x49c7ca5ddde2baaf8f4800567d8092665f163db5d3d1a30d35bf3c4ccad3770",
+      "address": "0x1f7c2ac67b86c07d3c90d4175d32dbe022ac0ed9135a926e8f2912746ea24f6",
+      "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
       "abi": [
         {
           "type": "impl",
@@ -1540,6 +1540,10 @@
             },
             {
               "name": "is_area",
+              "type": "core::bool"
+            },
+            {
+              "name": "is_spawn_point",
               "type": "core::bool"
             }
           ]
@@ -2544,8 +2548,8 @@
       ]
     },
     {
-      "address": "0x5aee9278e87825e6932697ff7065f053264a56affa34651371ae3b78a0817bd",
-      "class_hash": "0x7c237e566404999884a43497340f96ff2973f0d2c5a93f462812951d65b1851",
+      "address": "0x277f7d98473fbd898794377ad6c5b2ccd48d79b2a4e49c385592fc3dd9745b",
+      "class_hash": "0x11e124e2db24040ad75809fff9d09ece207c66f37e4b1db27baffd15ccc20b",
       "abi": [
         {
           "type": "impl",
@@ -2754,7 +2758,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x3a3a43c04844c3b537c3f90d82e6fbc633038d63942c3e12eb854678f11b201",
+      "class_hash": "0x7e7cfcf4d8bf55d02275a114a38a223d5b0f5f163429873993aa8dc2ec86d13",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },

@@ -9,6 +9,8 @@ pub struct Area {
     #[key]
     pub inst: felt252,
     pub is_area: bool,
+    /// If the area is a spawn point for players
+    pub is_spawn_point: bool,
 }
 
 pub impl AreaComponent of Component<Area> {

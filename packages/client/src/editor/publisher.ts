@@ -85,7 +85,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 	}
 };
 
-const publishEntityCollection = async (collection: EntityCollection) => {
+export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
@@ -187,6 +187,7 @@ const publishArea = async (area: Area) => {
 	const areaData = [
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
+		area.is_spawn_point,
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };

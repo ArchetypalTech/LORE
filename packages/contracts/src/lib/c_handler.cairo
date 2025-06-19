@@ -5,7 +5,7 @@ use dojo::{world::WorldStorage};
 use lore::{ //
     lib::{ //
         entity::{EntityImpl}, //
-        a_lexer::{Command, CommandImpl, TokenType},
+        a_lexer::{Command, CommandImpl, TokenType, Token},
         utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level}, //
         actions::{ActionImpl} //
@@ -14,7 +14,8 @@ use lore::{ //
     components::{
         player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{Exit, ExitComponent}, Component,
         inspectable::{Inspectable, InspectableImpl, InspectableComponent},
-        inventoryItem::{InventoryItemComponent}, container::{ContainerComponent},
+        inventoryItem::{InventoryItemComponent},
+        container::{Container, ContainerImpl, ContainerComponent},
     } //
 };
 
@@ -120,13 +121,50 @@ pub fn handle_command(
 
     // We haven't found any targets that have a verb mapped to the action
     // Are there any default actions we can do?
-    let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
-    if initialVerb == 'look' {
-        let res = player.describe_room(world);
-        if res.is_err() {
+    // if command is just one token,
+    if command.tokens.len() == 1 {
+        let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
+        if initialVerb == 'look' {
+            let res = player.describe_room(world);
+            if res.is_err() {
+                return Result::Err(Error::ActionFailed);
+            };
+            return Result::Ok(command);
+        }
+        if initialVerb == 'inventory' {
+            let personal_container = player.get_personal_container(@world);
+            if personal_container.is_none() {
+                return Result::Err(Error::ActionFailed);
+            }
+            let container_component: Container = personal_container.unwrap();
+            let noun: ByteArray = "Your";
+            let done = container_component.check_container(@world, @player, @noun);
+            if !done {
+                return Result::Err(Error::ActionFailed);
+            }
+            return Result::Ok(command);
+        }
+    } else {
+        if command.tokens.len() == 2 {
+            let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
+            let secondToken: Token = command.tokens.at(1).clone();
+            if initialVerb == 'look' {
+                let around: ByteArray = "around";
+                if secondToken.text == around {
+                    let res = player.describe_room(world);
+                    if res.is_err() {
+                        return Result::Err(Error::ActionFailed);
+                    };
+                    return Result::Ok(command);
+                }
+            }
+            // if initial verb is not look
+            // return error
             return Result::Err(Error::ActionFailed);
-        };
-        return Result::Ok(command);
+        }
+        // if command is more than one token and haven't been handled yet
+        // return error
+        return Result::Err(Error::ActionFailed);
     }
     Result::Err(Error::ActionFailed)
 }
