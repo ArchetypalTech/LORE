@@ -339,7 +339,6 @@ export const getPlayerName = (): string => {
 	if (LORE_CONFIG.useController) {
 		const { username } = WalletStore();
 		console.log("Controller username:", username);
-
 		if (username) {
 			return username;
 		}
