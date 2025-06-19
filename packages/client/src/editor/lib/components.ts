@@ -337,8 +337,8 @@ export const getPlayerAddress = (): string => {
 
 export const getPlayerName = (): string => {
 	if (LORE_CONFIG.useController) {
-		const {username} = useWalletStore();
-		console.log("controllerName", username);
+		const { username } = WalletStore();
+		console.log("Controller username:", username);
 		if (username) {
 			return username;
 		}
