@@ -17,6 +17,7 @@ export default function Terminal() {
 	const terminalFormRef = useRef<HTMLFormElement>(null);
 	const terminalInputRef = useRef<HTMLTextAreaElement>(null);
 	const textAnchorRef = useRef<HTMLInputElement>(null);
+	const scroller = useRef<HTMLElement>(null);
 
 	const {
 		status: { status },
@@ -101,9 +102,8 @@ export default function Terminal() {
 		setInputValue("");
 		setInputHistory([...inputHistory, command]);
 		printingStatus(true);
-
-		if(textAnchorRef.current) textAnchorRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-
+		
+		if(textAnchorRef.current && terminalFormRef.current) terminalFormRef.current.scrollTo({ top: scroller.current?.clientHeight, left: 0, behavior: "smooth"});
 		setTimeout(async () => await sendCommand(command), 1000)
 	};
 
@@ -128,7 +128,7 @@ export default function Terminal() {
 					}}
 				>
 					<div className="screen relative ">
-						<div id="scroller" className="flex w-full flex-col items-end p-4">
+						<div id="scroller" className="flex w-full flex-col items-end p-4" ref={scroller}>
 							{terminalContent.map((content, index) => (
 								<TerminalLine key={index} content={content} />
 							))}
