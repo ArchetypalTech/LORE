@@ -1,6 +1,6 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { CairoCustomEnum, type BigNumberish } from 'starknet';
+import { CairoCustomEnum, BigNumberish } from 'starknet';
 
 // Type definition for `lore::components::area::Area` struct
 export interface Area {
