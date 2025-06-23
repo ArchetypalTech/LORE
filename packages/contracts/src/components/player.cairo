@@ -75,14 +75,8 @@ pub impl PlayerImpl of PlayerTrait {
         }
     }
 
+    // TODO: improve name and better description
     fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        // let mut playerStory: PlayerStory = world.read_model(*self.inst);
-        // let mut storyLine = playerStory.story.clone();
-        // if (storyLine.len() > 20) {
-        //     let _ = storyLine.pop_front();
-        // }
-        // storyLine.append(text);
-        // world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
         const MAX_LENGTH_LIMIT: usize = 2000;
         let new_text_len = text.len();
         let mut total_len = 0;
@@ -95,8 +89,11 @@ pub impl PlayerImpl of PlayerTrait {
             for line in storyLine.clone() {
                 total_len += line.len();
             };
-            println!("total_len: {:?}", total_len);
-            println!("new_text_len: {:?}", new_text_len);
+
+            if self.use_debug {
+                self.clone().say(world, format!("Total length: {:?}", total_len));
+                self.clone().say(world, format!("New text length: {:?}", new_text_len));
+            }
 
             if total_len + new_text_len <= MAX_LENGTH_LIMIT {
                 storyLine.append(text);
@@ -111,7 +108,10 @@ pub impl PlayerImpl of PlayerTrait {
 
             let removed = storyLine.pop_front();
             total_len -= removed.unwrap().len();
-            println!("total_len after pop: {:?}", total_len);
+            if self.use_debug {
+                println!("total_len after pop: {:?}", total_len);
+            }
+
             world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
         }
     }
