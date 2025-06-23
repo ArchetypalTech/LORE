@@ -90,7 +90,7 @@ pub impl PlayerImpl of PlayerTrait {
                 total_len += line.len();
             };
 
-            if self.use_debug {
+            if *self.use_debug {
                 self.clone().say(world, format!("Total length: {:?}", total_len));
                 self.clone().say(world, format!("New text length: {:?}", new_text_len));
             }
@@ -108,8 +108,8 @@ pub impl PlayerImpl of PlayerTrait {
 
             let removed = storyLine.pop_front();
             total_len -= removed.unwrap().len();
-            if self.use_debug {
-                println!("total_len after pop: {:?}", total_len);
+            if *self.use_debug {
+                self.clone().say(world, format!("Total length after pop: {:?}", total_len));
             }
 
             world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
