@@ -2548,8 +2548,8 @@
       ]
     },
     {
-      "address": "0x1becccbcc2f5a55a71a2ca70a1dc2f23a689addb822fdd44ab43e07b8e9f4be",
-      "class_hash": "0x11e124e2db24040ad75809fff9d09ece207c66f37e4b1db27baffd15ccc20b",
+      "address": "0x1c9cc72972b876f6da9cd7221be6825de9f2403ff25cbc1f0e697d12d22bdfb",
+      "class_hash": "0x21f442f22fa11165645a89106de80c2c1999dd317462201ca74e1e606748b73",
       "abi": [
         {
           "type": "impl",
