@@ -475,7 +475,6 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 		return;
 	}
 	console.log("Spawn point:", spawnPoint);
-	const newParent = getEntity(spawnPoint)!;
 
 	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
@@ -483,8 +482,11 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	await tick();
 
 	// parent will be the spawn point
-	const children = getEntity(playerEntity.Entity.inst)!;
-	await tick();
+	const newParent = getEntity(spawnPoint, true)!;
+	const children = playerEntity;
+	console.log("newParent", newParent);
+	console.log("children", children);
+	//const children2 = getEntity(playerEntity.Entity.inst)!;
 	if (!newParent || !children) {
 		console.error("Failed to retrieve parent or child entity after tick.", {
 			childId: playerEntity.Entity.inst,
