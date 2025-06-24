@@ -599,11 +599,11 @@ export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection
 				.withCursor("")
 				.withLimit(1000)
 				.includeHashedKeys()
-				.withEntityModels(["entities"]);
+				.withEntityModels(["lore-Entity"]);
 		};
 
 		const result = await sdk.getEntities({ query: queryEntity() });
-		const targetId = num.toHex(id.toString()); // Normalize ID
+		const targetId = id;
 
 		for (const item of result.getItems()) {
 			const entity = item.models?.lore?.Entity;
