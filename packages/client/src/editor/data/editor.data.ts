@@ -476,15 +476,16 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	}
 	console.log("Spawn point:", spawnPoint);
 
+	const newParent = getEntity(spawnPoint, true);
+	console.log("newParent", newParent);
+	await tick();
 	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	await tick();
 
-	// parent will be the spawn point
-	const newParent = getEntity(spawnPoint, true)!;
+	// parent will be the spawn point	
 	const children = playerEntity;
-	console.log("newParent", newParent);
 	console.log("children", children);
 	//const children2 = getEntity(playerEntity.Entity.inst)!;
 	if (!newParent || !children) {
