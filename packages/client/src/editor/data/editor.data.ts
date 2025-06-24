@@ -476,7 +476,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	}
 	console.log("Spawn point:", spawnPoint);
 
-	syncEntities();
+	await syncEntities();
 
 	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
