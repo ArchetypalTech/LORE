@@ -17,7 +17,6 @@ pnpm-lock.*
 local.*
 mprocs.log
 .cursor
-CLAUDE.md
 
 # dojo
 target
