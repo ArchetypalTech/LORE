@@ -503,7 +503,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 const waitForEntity = async (id: string, timeout = 2000): Promise<any | undefined> => {
 	const start = Date.now();
 	while (Date.now() - start < timeout) {
-		const entity = getEntity(id);
+		const entity = getEntity(id, true);
 		if (entity) return entity;
 		await new Promise(res => setTimeout(res, 50));
 	}
