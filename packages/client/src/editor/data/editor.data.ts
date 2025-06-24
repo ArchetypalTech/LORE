@@ -475,12 +475,14 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 		return;
 	}
 	console.log("Spawn point:", spawnPoint);
+	const newParent = getEntity(spawnPoint)!;
+
 	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	await tick();
+
 	// parent will be the spawn point
-	const newParent = await waitForEntity(spawnPoint.toString(), 2000);
 	const children = await waitForEntity(playerEntity.Entity.inst.toString(), 2000);
 	if (!newParent || !children) {
 		console.error("Failed to retrieve parent or child entity after tick.", {
@@ -503,7 +505,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 const waitForEntity = async (id: string, timeout = 2000): Promise<any | undefined> => {
 	const start = Date.now();
 	while (Date.now() - start < timeout) {
-		const entity = getEntity(id, true);
+		const entity = getEntity(id);
 		if (entity) return entity;
 		await new Promise(res => setTimeout(res, 50));
 	}
