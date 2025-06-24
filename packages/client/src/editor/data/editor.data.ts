@@ -480,8 +480,18 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	await tick();
 	// parent will be the spawn point
-	const newParent = getEntity(spawnPoint.toString(), false)!;
-	addToParent(getEntity(playerEntity.Entity.inst)!, newParent);
+	const newParent = await waitForEntity(spawnPoint.toString(), 2000);
+	const children = await waitForEntity(playerEntity.Entity.inst.toString(), 2000);
+	if (!newParent || !children) {
+		console.error("Failed to retrieve parent or child entity after tick.", {
+			childId: playerEntity.Entity.inst,
+			parentId: spawnPoint.toString(),
+			newParent,
+			children,
+		});
+		return;
+	}
+	addToParent(children, newParent);
 	selectEntity(playerEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
@@ -489,6 +499,16 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
 	return playerEntity;
 };
+
+const waitForEntity = async (id: string, timeout = 2000): Promise<any | undefined> => {
+	const start = Date.now();
+	while (Date.now() - start < timeout) {
+		const entity = getEntity(id);
+		if (entity) return entity;
+		await new Promise(res => setTimeout(res, 50));
+	}
+	return undefined;
+}
 
 const logPool = () => {
 	const poolArray = get().dataPool.values().toArray();
