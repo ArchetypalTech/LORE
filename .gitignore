@@ -13,7 +13,7 @@ pnpm-lock.*
 .env*.local
 .env
 
-# local 
+# local
 local.*
 mprocs.log
 .cursor
@@ -28,3 +28,4 @@ torii_local_db
 # asdf
 .tool-versions
 
+excalidraw.log

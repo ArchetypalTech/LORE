@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sozo test:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "WebFetch(domain:dojoengine.org)",
+      "WebFetch(domain:book.dojoengine.org)",
+      "Bash(sozo build:*)",
+      "mcp__sensei__dojo_sensei",
+      "mcp__sensei__dojo_model",
+      "mcp__sensei__dojo_logic",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "WebFetch(domain:book.cairo-lang.org)",
+      "Bash(timeout 30s sozo test:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}
