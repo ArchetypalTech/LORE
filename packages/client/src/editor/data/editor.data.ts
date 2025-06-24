@@ -484,8 +484,6 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	// parent will be the spawn point	
 	const newParent = await getEntityAsync(spawnPoint);
 	console.log("newParent", newParent);
-	syncItem(newParent);
-	console.log("newParent synced", newParent);
 	const children = playerEntity;
 	console.log("children", children);
 	await tick();
