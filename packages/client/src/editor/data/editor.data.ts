@@ -604,7 +604,6 @@ export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection
 				.withCursor("")
 				.withLimit(1000)
 				.includeHashedKeys()
-				.withEntityModels(["lore-Entity"]);
 		};
 
 		const result = await sdk.getEntities({ query: queryEntity() });
