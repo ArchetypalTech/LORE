@@ -591,6 +591,7 @@ export const getSpawnPoint = async(): Promise<BigNumberish> => {
 }
 
 export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection | undefined> => {
+	let entity: EntityCollection | undefined;
 	try {
 		const { sdk } = await InitDojo();
 		const queryEntity = () => {
@@ -605,20 +606,20 @@ export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection
 		const result = await sdk.getEntities({ query: queryEntity() });
 		const targetId = id;
 
-		for (const item of result.getItems()) {
-			const entity = item.models?.lore?.Entity;
-			if (entity?.inst === targetId) {
+		result.getItems().forEach((item) => {
+			const posEntity = item.models?.lore?.Entity;
+			if (posEntity?.inst === targetId) {
 				console.log("Found entity:", entity);
-				return item.models?.lore as EntityCollection;
+				entity = item.models?.lore as EntityCollection;
 			}
-		}
+		});
 
-		console.warn(`Entity with ID ${targetId} not found in query.`);
-		return undefined;
 	} catch (error) {
 		console.error("Error fetching entity from Torii:", error);
 		throw error;
 	}
+	if (!entity) console.warn(`Entity with ID ${id} not found in query.`);
+	return entity;
 };
 
 export const getPlayer = async (account: string): Promise<boolean> => {
