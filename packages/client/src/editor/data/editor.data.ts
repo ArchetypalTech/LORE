@@ -469,25 +469,31 @@ const newEntity = async () => {
 };
 
 export const newPlayer = async (): Promise<EntityCollection | undefined> => {
-	const spawnPoint = await getSpawnPoint();
+	const [spawnPoint, areaEntity] = await getSpawnPoint();
 	if (spawnPoint === undefined) {
 		console.error("No spawn point found");
 		return;
 	}
 	console.log("Spawn point:", spawnPoint);
+	console.log("Area entity:", areaEntity);
 
-	const newParent = await getEntityAsync(spawnPoint);
-	console.log("newParent", newParent);
-	await tick();
 	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	await tick();
 
 	// parent will be the spawn point	
+	const newParent = await getEntityAsync(spawnPoint);
+	console.log("newParent", newParent);
+	syncItem(newParent);
 	const children = playerEntity;
 	console.log("children", children);
+	await tick();
 	//const children2 = getEntity(playerEntity.Entity.inst)!;
+	if (!newParent?.ParentToChildren) {
+		console.error("newParent is missing ParentToChildren component:", newParent);
+		return;
+	}
 	if (!newParent || !children) {
 		console.error("Failed to retrieve parent or child entity after tick.", {
 			childId: playerEntity.Entity.inst,
@@ -562,8 +568,9 @@ export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promi
 	return properties_array;
 };
 
-export const getSpawnPoint = async(): Promise<BigNumberish> => {
+export const getSpawnPoint = async(): Promise<[BigNumberish, EntityCollection]> => {
 	let areaInst: BigNumberish;
+	let entity: EntityCollection;
 	try {
 		const { sdk } = await InitDojo();
 		const querySpawnPoint = () => {
@@ -581,17 +588,18 @@ export const getSpawnPoint = async(): Promise<BigNumberish> => {
 				// This will only work if there is only one spawn point
 				// If there are multiple spawn points, this will return the first one
 				areaInst = area.inst.toString();
+				entity = item.models?.lore as EntityCollection;
 			}
 		});
 	} catch (error) {
 		console.error("Error fetching spawn point from Torii:", error);
 		throw error;
 	}
-	return areaInst;
+	return [areaInst, entity];
 }
 
-export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection | undefined> => {
-	let entity: EntityCollection | undefined;
+export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection> => {
+	let entity: EntityCollection;
 	try {
 		const { sdk } = await InitDojo();
 		const queryEntity = () => {
@@ -609,8 +617,8 @@ export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection
 		result.getItems().forEach((item) => {
 			const posEntity = item.models?.lore?.Entity;
 			if (posEntity?.inst === targetId) {
-				console.log("Found entity:", entity);
 				entity = item.models?.lore as EntityCollection;
+				console.log("Found entity:", entity);
 			}
 		});
 
