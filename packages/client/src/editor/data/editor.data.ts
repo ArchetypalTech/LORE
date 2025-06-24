@@ -187,7 +187,7 @@ const removeComponent = (
 const addToParent = (child: EntityCollection, parent: EntityCollection) => {
 	const childId = child.Entity.inst;
 	const parentId = parent.Entity.inst;
-	const newChild = getEntity(childId)!;
+	const newChild = child!;
 
 	// Check if child already has a parent and remove it if necessary
 	if ("ChildToParent" in newChild && newChild.ChildToParent !== undefined) {
@@ -199,7 +199,7 @@ const addToParent = (child: EntityCollection, parent: EntityCollection) => {
 	console.log(child, childComponent, childId, parentId);
 	updateComponent(childId, "ChildToParent", childComponent.ChildToParent);
 	// Update the parent's children list
-	const newParent = getEntity(parentId)!;
+	const newParent = parent!;
 	const parentComponent =
 		newParent.ParentToChildren && newParent.ParentToChildren !== undefined
 			? { ParentToChildren: { ...newParent.ParentToChildren } }
