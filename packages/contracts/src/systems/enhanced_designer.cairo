@@ -261,7 +261,7 @@ pub mod enhanced_designer {
                             caller
                         );
                         
-                        if (relationship_result.is_ok()) {
+                        if (_relationship_result.is_ok()) {
                             relationships_created += 1;
                         }
                     }
