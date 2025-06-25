@@ -7,6 +7,11 @@ pub mod components;
 
 pub mod constants;
 
+// Shinigami Architecture Layers
+pub mod helpers;    // Layer 1: Pure utility functions
+pub mod services;   // Layer 2: Business logic & world state integration
+pub mod types;      // Layer 3: Entry points & routing
+
 pub mod lib {
     pub mod a_lexer;
     pub mod dictionary;

@@ -16,7 +16,8 @@
       "Bash(find:*)",
       "Bash(rg:*)",
       "WebFetch(domain:book.cairo-lang.org)",
-      "Bash(timeout 30s sozo test:*)"
+      "Bash(timeout 30s sozo test:*)",
+      "Bash(mkdir:*)"
     ]
   },
   "enableAllProjectMcpServers": true

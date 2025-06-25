@@ -1052,12 +1052,12 @@ struct InspectionResult {
 **Critical Preserved Interface:**
 ```cairo
 #[external(v0)]
-fn prompt(ref world: IWorldDispatcher, cmd: ByteArray) -> ByteArray
+fn prompt(ref self: ContractState, cmd: ByteArray)
 ```
 
 **Implementation Strategy:**
 ```cairo
-fn prompt(ref world: IWorldDispatcher, cmd: ByteArray) -> ByteArray {
+fn prompt(ref self: ContractState, cmd: ByteArray) {
     // 1. Get caller's player instance
     let player_inst = get_player_instance(get_caller_address());
     
@@ -1067,15 +1067,15 @@ fn prompt(ref world: IWorldDispatcher, cmd: ByteArray) -> ByteArray {
     // 3. Handle action triggers
     handle_triggered_actions(result.triggered_actions);
     
-    // 4. Return formatted response (exact same format as original)
-    format_game_response(result)
+    // 4. Update game state and emit events (maintaining exact same behavior as original)
+    update_game_state_and_emit_events(result);
 }
 ```
 
 **Internal Functions:**
 ```cairo
 fn get_player_instance(address: ContractAddress) -> u32
-fn format_game_response(result: CommandResult) -> ByteArray
+fn update_game_state_and_emit_events(result: CommandResult)
 fn handle_triggered_actions(actions: Array<u32>)
 fn validate_game_state(player_inst: u32) -> bool
 ```
@@ -1091,22 +1091,25 @@ fn validate_game_state(player_inst: u32) -> bool
 **Critical Preserved Interfaces:**
 ```cairo
 #[external(v0)]
-fn add_component(ref world: IWorldDispatcher, entity_inst: u32, component_type: ComponentType, ...) -> bool
+fn create_player(ref self: ContractState, t: Array<Player>)
 
 #[external(v0)]
-fn remove_component(ref world: IWorldDispatcher, entity_inst: u32, component_type: ComponentType) -> bool
+fn create_entity(ref self: ContractState, t: Array<Entity>)
+
+#[external(v0)]
+fn create_area(ref self: ContractState, t: Array<Area>)
 
 // ... (20+ other designer functions with exact signatures preserved)
 ```
 
 **Implementation Strategy:**
 ```cairo
-fn add_component(ref world: IWorldDispatcher, entity_inst: u32, component_type: ComponentType, ...) -> bool {
+fn create_entity(ref self: ContractState, t: Array<Entity>) {
     // Route through new entity_manager component
-    let result = entity_manager::add_component_to_entity(entity_inst, component_type, component_data);
-    
-    // Return boolean exactly as original interface
-    result.is_ok()
+    for entity in t {
+        let result = entity_manager::create_entity(entity.entity_type, entity.name, entity.properties);
+        // Handle any errors internally, maintain void return
+    }
 }
 ```
 
@@ -1157,6 +1160,85 @@ fn create_world_template(template_data: WorldTemplate) -> Result<u32, EditorErro
 fn save_world_state(world_inst: u32) -> Result<ByteArray, EditorError>
 fn load_world_state(world_data: ByteArray) -> Result<u32, EditorError>
 ```
+
+---
+
+## Response Communication Strategy
+
+### Maintaining Frontend Compatibility Without Return Values
+
+Since external interfaces must remain void returns to preserve frontend compatibility, game responses are communicated through the existing Dojo event and state update mechanisms that the frontend already subscribes to.
+
+### Event-Based Response System
+
+**Player Response Events:**
+```cairo
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct PlayerResponse {
+    #[key]
+    pub player: ContractAddress,
+    pub message: ByteArray,
+    pub response_type: ResponseType,
+    pub timestamp: u64
+}
+
+#[derive(Copy, Drop, Serde)]
+enum ResponseType {
+    GameMessage,
+    ErrorMessage,
+    SystemMessage,
+    DebugMessage
+}
+```
+
+**State Update Pattern:**
+```cairo
+fn update_game_state_and_emit_events(result: CommandResult) {
+    // 1. Update player's story log model
+    player.add_story_entry(world, result.message);
+    
+    // 2. Apply state changes to relevant models
+    for state_change in result.state_changes {
+        apply_state_change(world, state_change);
+    }
+    
+    // 3. Emit response event for immediate frontend feedback
+    world.emit_event(@PlayerResponse {
+        player: get_caller_address(),
+        message: result.message,
+        response_type: if result.success { ResponseType::GameMessage } else { ResponseType::ErrorMessage },
+        timestamp: get_block_timestamp()
+    });
+    
+    // 4. Trigger any follow-up actions
+    for action_id in result.triggered_actions {
+        action_system::execute_action(world, action_id);
+    }
+}
+```
+
+### Frontend Integration
+
+The frontend already subscribes to Dojo events and model updates through Torii:
+
+**Current Frontend Pattern (No Changes Required):**
+```typescript
+// Frontend already handles responses through:
+// 1. Event subscriptions (Torii WebSocket)
+// 2. Model state updates (reactive UI)
+// 3. Story log updates (terminal display)
+
+// This pattern is preserved - no frontend changes needed
+```
+
+### Benefits of Event-Based Approach
+
+1. **Zero Breaking Changes:** Frontend interface remains identical
+2. **Real-time Updates:** Events provide immediate feedback
+3. **Persistent State:** Story log maintains conversation history
+4. **Scalable:** Multiple players can receive updates simultaneously
+5. **Debuggable:** All game actions are logged as events
 
 ---
 
@@ -1425,15 +1507,18 @@ fn test_game_engine_prompt() {
 // Verify exact interface compatibility
 #[test]
 fn test_prompt_interface_compatibility() {
-    // Call new game_engine::prompt
-    // Compare result to expected original behavior
-    // Must be byte-for-byte identical
+    // Call new game_engine::prompt with void return
+    // Verify same events are emitted as original
+    // Verify same state changes occur as original
+    // Must maintain exact same external behavior
 }
 
 #[test]
 fn test_designer_interface_compatibility() {
-    // Test all 20+ designer functions
-    // Verify exact same return values and side effects
+    // Test all 20+ designer functions with void returns
+    // Verify exact same model updates occur as original
+    // Verify exact same side effects occur as original
+    // All external behavior must be identical
 }
 ```
 
@@ -1459,12 +1544,15 @@ fn benchmark_command_processing() {
 4. **Performance benchmarks meet requirements** (≤5% regression)
 
 ### Manual Validation Checklist
-- [ ] All game features work identically to original
-- [ ] Frontend team confirms no changes needed
+- [ ] All game features work identically to original (same events, same state changes)
+- [ ] Frontend team confirms zero interface changes needed
+- [ ] All external function signatures remain exactly the same (void returns preserved)
+- [ ] Event-based response system works seamlessly with existing frontend
 - [ ] New developer can understand architecture quickly
 - [ ] Code review confirms Shinigami pattern compliance
 - [ ] Error handling is comprehensive and user-friendly
 - [ ] Performance is equal or better than original
+- [ ] All Dojo bindings remain unchanged (no regeneration needed)
 
 ---
 

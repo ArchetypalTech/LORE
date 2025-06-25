@@ -28,3 +28,4 @@ torii_local_db
 .tool-versions
 
 excalidraw.log
+packages/contracts/AI_DOCS/*
