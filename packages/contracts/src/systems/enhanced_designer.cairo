@@ -286,7 +286,7 @@ pub mod enhanced_designer {
             while i < relationships.len() {
                 let (source, target, relation_type) = *relationships.at(i);
                 
-                let relationship_result = create_relationship(
+                let _relationship_result = create_relationship(
                     world,
                     source,
                     target,
@@ -301,7 +301,7 @@ pub mod enhanced_designer {
         }
 
         fn optimize_world_state(ref self: ContractState, enable_caching: bool) {
-            let mut world: WorldStorage = self.world(@"lore");
+            let _world: WorldStorage = self.world(@"lore");
             
             if (enable_caching) {
                 // Cache optimization would go here
