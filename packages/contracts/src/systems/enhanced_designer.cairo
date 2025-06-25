@@ -315,7 +315,7 @@ pub mod enhanced_designer {
         }
 
         fn get_world_performance_metrics(ref self: ContractState) -> WorldPerformanceMetrics {
-            let world: WorldStorage = self.world(@"lore");
+            let _world: WorldStorage = self.world(@"lore");
             
             // In a real implementation, this would collect actual metrics
             // from various Shinigami components
