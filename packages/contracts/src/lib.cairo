@@ -11,6 +11,7 @@ pub mod constants;
 pub mod helpers;    // Layer 1: Pure utility functions
 pub mod services;   // Layer 2: Business logic & world state integration
 pub mod types;      // Layer 3: Entry points & routing
+pub mod models;     // Layer 4: Enhanced entity & component modeling
 
 pub mod lib {
     pub mod a_lexer;

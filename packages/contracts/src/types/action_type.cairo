@@ -8,56 +8,56 @@ use core::option::OptionTrait;
 /// Trigger types that can activate actions (based on LORE's existing trigger system)
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum TriggerType {
-    OnEnter,      // When player enters an area
-    OnExit,       // When player exits an area
-    OnInteract,   // When player interacts with an entity
-    OnInspect,    // When player inspects/examines an entity
-    OnUse,        // When player uses an item
-    OnTake,       // When player takes an item
-    OnDrop,       // When player drops an item
-    OnTimer,      // Time-based trigger
-    OnCondition,  // When a condition becomes true
-    OnCommand,    // When a specific command is executed
+    OnEnter,
+    OnExit,
+    OnInteract,
+    OnInspect,
+    OnUse,
+    OnTake,
+    OnDrop,
+    OnTimer,
+    OnCondition,
+    OnCommand,
 }
 
 /// Condition types for logical evaluation (based on LORE's condition system)
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum ConditionType {
-    HasItem,           // Player has specific item
-    InLocation,        // Player is in specific location
-    PropertyEquals,    // Entity property equals value
-    PropertyGreater,   // Entity property greater than value
-    PropertyLess,      // Entity property less than value
-    ItemInContainer,   // Item is in specific container
-    TimeRange,         // Current time in range
-    RandomChance,      // Random probability check
-    EntityExists,      // Entity exists in world
-    Custom,            // Custom condition logic
+    HasItem,
+    InLocation,
+    PropertyEquals,
+    PropertyGreater,
+    PropertyLess,
+    ItemInContainer,
+    TimeRange,
+    RandomChance,
+    EntityExists,
+    Custom,
 }
 
 /// Effect types that modify game state (based on LORE's effect system)
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum EffectType {
-    ModifyProperty,    // Change entity property value
-    AddItem,           // Add item to container/inventory
-    RemoveItem,        // Remove item from container/inventory
-    MoveEntity,        // Move entity to new location
-    SendMessage,       // Send message to player
-    TriggerAction,     // Trigger another action
-    CreateEntity,      // Create new entity
-    DestroyEntity,     // Remove entity from world
-    ChangeDescription, // Modify entity description
-    EnableAction,      // Enable/disable another action
+    ModifyProperty,
+    AddItem,
+    RemoveItem,
+    MoveEntity,
+    SendMessage,
+    TriggerAction,
+    CreateEntity,
+    DestroyEntity,
+    ChangeDescription,
+    EnableAction,
 }
 
 /// Action execution status
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum ActionStatus {
-    Pending,     // Not yet executed
-    InProgress,  // Currently executing
-    Completed,   // Successfully completed
-    Failed,      // Failed to execute
-    Disabled,    // Action is disabled
+    Pending,
+    InProgress,
+    Completed,
+    Failed,
+    Disabled,
 }
 
 /// Trigger context information for action evaluation
