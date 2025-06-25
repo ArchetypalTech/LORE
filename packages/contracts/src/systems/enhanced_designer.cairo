@@ -108,7 +108,7 @@ pub mod enhanced_designer {
             
             if (enable_shinigami) {
                 let config = default_shinigami_config();
-                let created_entities = enhanced_entity_creation(world, entities, caller, config);
+                let _created_entities = enhanced_entity_creation(world, entities, caller, config);
                 
                 // Log creation results for debugging
                 // In a real implementation, this would use proper logging
@@ -148,12 +148,12 @@ pub mod enhanced_designer {
                 
                 if (enable_shinigami) {
                     // Add lifecycle tracking
-                    let lifecycle_result = create_entity_lifecycle(world, player.inst, caller);
+                    let _lifecycle_result = create_entity_lifecycle(world, *player.inst, caller);
                     
                     // Create initial player-world relationship
-                    let relationship_result = create_relationship(
+                    let _relationship_result = create_relationship(
                         world,
-                        player.inst,
+                        *player.inst,
                         0, // World entity (placeholder)
                         RelationType::Contains,
                         100,
@@ -161,9 +161,9 @@ pub mod enhanced_designer {
                     );
                     
                     // Register player component
-                    let component_result = register_component(
+                    let _component_result = register_component(
                         world,
-                        player.inst.try_into().unwrap_or(0),
+                        (*player.inst).try_into().unwrap_or(0),
                         Components::Player,
                         "Player Character",
                         "A player character in the game world",
@@ -191,12 +191,12 @@ pub mod enhanced_designer {
                 
                 if (enable_shinigami) {
                     // Add lifecycle tracking
-                    let lifecycle_result = create_entity_lifecycle(world, *area.inst, caller);
+                    let _lifecycle_result = create_entity_lifecycle(world, *area.inst, caller);
                     
                     // Register area component
-                    let component_result = register_component(
+                    let _component_result = register_component(
                         world,
-                        area.inst.try_into().unwrap_or(0),
+                        (*area.inst).try_into().unwrap_or(0),
                         Components::Area,
                         "Game Area",
                         "A location or room in the game world",
@@ -204,7 +204,7 @@ pub mod enhanced_designer {
                     );
                     
                     // Cache area for quick lookups
-                    let cache_result = cached_entity_lookup(world, area.inst);
+                    let _cache_result = cached_entity_lookup(world, *area.inst);
                 }
                 
                 i += 1;
@@ -217,7 +217,7 @@ pub mod enhanced_designer {
             items: Array<InventoryItem>,
             config: ShinigamiConfig
         ) {
-            let start_time = starknet::get_block_timestamp();
+            let _start_time = starknet::get_block_timestamp();
             let mut world: WorldStorage = self.world(@"lore");
             let caller = get_caller_address();
             
@@ -237,7 +237,7 @@ pub mod enhanced_designer {
                     let area = areas.at(i);
                     world.write_model(area);
                     
-                    let lifecycle_result = create_entity_lifecycle(world, *area.inst, caller);
+                    let _lifecycle_result = create_entity_lifecycle(world, *area.inst, caller);
                     total_created += 1;
                     i += 1;
                 };
@@ -252,7 +252,7 @@ pub mod enhanced_designer {
                     
                     if (config.enable_relationship_tracking) {
                         // Create item-world relationship
-                        let relationship_result = create_relationship(
+                        let _relationship_result = create_relationship(
                             world,
                             *item.inst,
                             0, // World entity
@@ -271,7 +271,7 @@ pub mod enhanced_designer {
                 };
             }
             
-            let end_time = starknet::get_block_timestamp();
+            let _end_time = starknet::get_block_timestamp();
             
             // In a real implementation, this would emit an event or store metrics
         }
