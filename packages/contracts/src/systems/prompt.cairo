@@ -3,6 +3,7 @@ use core::option::{OptionTraitImpl};
 #[starknet::interface]
 pub trait IPrompt<T> {
     fn prompt(ref self: T, cmd: ByteArray);
+    fn enhanced_prompt(ref self: T, cmd: ByteArray, enable_shinigami: bool);
 }
 
 #[dojo::contract]
@@ -13,6 +14,9 @@ pub mod prompt {
     use lore::components::{player::{PlayerImpl, caller_as_player}};
     use lore::lib::{a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command} //
     // dictionary::{init_dictionary},
+    };
+    use lore::systems::shinigami_integration::{
+        enhanced_prompt_processing, default_shinigami_config, EnhancedCommandResult
     };
 
     #[constructor]
@@ -40,6 +44,30 @@ pub mod prompt {
                     }
                 },
                 Result::Err(_r) => { player.say(world, random_text(world, random_error())); },
+            }
+        }
+
+        fn enhanced_prompt(ref self: ContractState, cmd: ByteArray, enable_shinigami: bool) {
+            let mut world: WorldStorage = self.world(@"lore");
+            let player = caller_as_player(world, get_caller_address());
+
+            if (enable_shinigami) {
+                // Use enhanced Shinigami processing
+                let config = default_shinigami_config();
+                let result = enhanced_prompt_processing(world, player, cmd, config);
+                
+                // Log performance metrics (in a real implementation, this would be stored)
+                if (player.use_debug) {
+                    player.say(world, format!(
+                        "[Shinigami] Processed in {}ms, {} cache hits, {} state changes",
+                        result.processing_time_ms,
+                        result.cache_hits,
+                        result.state_transitions
+                    ));
+                }
+            } else {
+                // Fall back to original processing
+                self.prompt(cmd);
             }
         }
     }

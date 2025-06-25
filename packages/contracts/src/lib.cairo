@@ -1,6 +1,8 @@
 pub mod systems {
     pub mod designer;
     pub mod prompt;
+    pub mod shinigami_integration;  // Enhanced systems with Shinigami integration
+    pub mod enhanced_designer;      // Enhanced designer with Shinigami features
 }
 
 pub mod components;
