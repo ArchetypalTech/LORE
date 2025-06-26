@@ -11,9 +11,9 @@ import {
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { MultiNumberArray } from "../MultiNumberArray";
 import { TriggerSelector } from "../TriggerSelector";
 import { ConditionSelector } from "../ConditionSelector";
+import { EffectSelector } from "../EffectsSelector";
 import { BigNumberish } from "starknet";
 import { useEditorData } from "../../data/editor.data";
 
@@ -52,8 +52,10 @@ export const ActionInspector: ComponentInspector<Action> = ({
         ) as [BigNumberish, BigNumberish][];
       },
       effects: (e, updatedObject) => {
-        const val = e.target.value as unknown as Array<[string, string]>;
-        updatedObject.effects = val.map(
+        const val = e.target.value as unknown as Array<[string, BigNumberish]>;
+        updatedObject.effects = val
+        .filter(([a, b]) => a !== "__placeholder__" && b !== "__placeholder__")
+        .map(
           ([a, b]) => [(a), (b)]
         ) as [BigNumberish, BigNumberish][];
       },
@@ -120,10 +122,11 @@ export const ActionInspector: ComponentInspector<Action> = ({
         onChange={handleInputChange}
         dataPool={useEditorData().dataPool}
       />
-      <MultiNumberArray
+      <EffectSelector
         id="effects"
-        value={componentObject.effects.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+        value={componentObject.effects.map(([a, b]) => [a.toString(), b])}
         onChange={handleInputChange}
+        dataPool={useEditorData().dataPool}
       />
       <TextAreaArray
         id="failing_response"
