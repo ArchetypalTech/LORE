@@ -448,6 +448,10 @@ const updateSelectedEntity = (entity: EntityCollection) => {
 	set({ selectedEntity });
 };
 
+/**
+ * Creates a new entity with default inspectable component.
+ * @returns the new entity
+ */
 const newEntity = async () => {
 	const newEntity = createDefaultEntity();
 	syncItem(newEntity);
@@ -468,6 +472,10 @@ const newEntity = async () => {
 	return newEntity;
 };
 
+/**
+ * Creates a new player entity with the default components.
+ * @returns The new player entity
+ */
 export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	const spawnPoint = await getSpawnPoint();
 	if (spawnPoint === undefined) {
@@ -484,17 +492,11 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	await tick();
 
 	// parent will be the spawn point	
-	//const newParent = await getEntityAsync(spawnPoint);
 	const newParent = getEntity(spawnPoint)!;
-	console.log("newParent", newParent);
+	// console.log("newParent", newParent);
 	const children = playerEntity;
-	console.log("children", children);
+	// console.log("children", children);
 	await tick();
-	//const children2 = getEntity(playerEntity.Entity.inst)!;
-	// if (!newParent?.ParentToChildren) {
-	// 	console.error("newParent is missing ParentToChildren component:", newParent);
-	// 	return;
-	// }
 	if (!newParent || !children) {
 		console.error("Failed to retrieve parent or child entity after tick.", {
 			childId: playerEntity.Entity.inst,
@@ -569,6 +571,10 @@ export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promi
 	return properties_array;
 };
 
+/**
+ * This handles fetching the spawn point from the first entity with an area component with is_spawn_point set to true
+ * @returns The spawn point entity inst
+ */
 export const getSpawnPoint = async(): Promise<BigNumberish> => {
 	let areaInst: BigNumberish;
 	try {
@@ -597,37 +603,11 @@ export const getSpawnPoint = async(): Promise<BigNumberish> => {
 	return areaInst;
 }
 
-export const getEntityAsync = async (id: BigNumberish): Promise<EntityCollection> => {
-	let entity: EntityCollection;
-	try {
-		const { sdk } = await InitDojo();
-		const queryEntity = () => {
-			const builder = new ToriiQueryBuilder<SchemaType>();
-			return builder
-				.withCursor("")
-				.withLimit(1000)
-				.includeHashedKeys()
-		};
-
-		const result = await sdk.getEntities({ query: queryEntity() });
-		const targetId = id;
-
-		result.getItems().forEach((item) => {
-			const posEntity = item.models?.lore?.Entity;
-			if (posEntity?.inst === targetId) {
-				entity = item.models?.lore as EntityCollection;
-				console.log("Found entity:", entity);
-			}
-		});
-
-	} catch (error) {
-		console.error("Error fetching entity from Torii:", error);
-		throw error;
-	}
-	if (!entity) console.warn(`Entity with ID ${id} not found in query.`);
-	return entity;
-};
-
+/**
+ * Checks if a player exists using the account address
+ * @param account The controller address of the player
+ * @returns True if the player exists, false otherwise
+ */
 export const getPlayer = async (account: string): Promise<boolean> => {
 	let playerFound = false;	
 	try {
@@ -656,6 +636,9 @@ export const getPlayer = async (account: string): Promise<boolean> => {
 export let playerFound = false;
 export let playerExists = false;
 
+/**
+ * Checks if a player exists and creates one if it doesn't
+ */
 export const checkForPlayer = async () => {
 	if (!playerExists) {
 		playerFound = await getPlayer(getPlayerAddress());
