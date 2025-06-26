@@ -13,6 +13,7 @@ import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { MultiNumberArray } from "../MultiNumberArray";
 import { TriggerSelector } from "../TriggerSelector";
+import { ConditionSelector } from "../ConditionSelector";
 import { BigNumberish } from "starknet";
 import { useEditorData } from "../../data/editor.data";
 
@@ -43,8 +44,10 @@ export const ActionInspector: ComponentInspector<Action> = ({
         ) as [BigNumberish, BigNumberish][];
       },
       conditions: (e, updatedObject) => {
-        const val = e.target.value as unknown as Array<[string, string]>;
-        updatedObject.conditions = val.map(
+        const val = e.target.value as unknown as Array<[string, BigNumberish]>;
+        updatedObject.conditions = val
+        .filter(([a, b]) => a !== "__placeholder__" && b !== "__placeholder__")
+        .map(
           ([a, b]) => [(a), (b)]
         ) as [BigNumberish, BigNumberish][];
       },
@@ -111,10 +114,11 @@ export const ActionInspector: ComponentInspector<Action> = ({
         onChange={handleInputChange}
         dataPool={useEditorData().dataPool}
       />
-      <MultiNumberArray
+      <ConditionSelector
         id="conditions"
-        value={componentObject.conditions.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+        value={componentObject.conditions.map(([a, b]) => [a.toString(), b])}
         onChange={handleInputChange}
+        dataPool={useEditorData().dataPool}
       />
       <MultiNumberArray
         id="effects"

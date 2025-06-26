@@ -4,7 +4,7 @@ import { DeleteButton, Select } from "./FormComponents";
 import { BigNumberish } from "starknet";
 import { formatKeyAsDecimal } from "./FormComponents";
 
-interface TriggerSelectorProps {
+interface ConditionSelectorProps {
   id: string;
   value: Array<[string, BigNumberish]>;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -12,13 +12,13 @@ interface TriggerSelectorProps {
   readOnly?: boolean;
 }
 
-export const TriggerSelector = ({
+export const ConditionSelector = ({
   id,
   value,
   onChange,
   dataPool,
   readOnly,
-}: TriggerSelectorProps) => {
+}: ConditionSelectorProps) => {
   const handleUpdate = (updated: Array<[string, BigNumberish]>) => {
     const syntheticEvent = {
       target: {
@@ -49,30 +49,30 @@ export const TriggerSelector = ({
 
   const entityOptions = useMemo(() => {
     return Array.from(dataPool.entries())
-      .filter(([_, val]) => val.Entity?.name && val.Trigger?.key)
+      .filter(([_, val]) => val.Entity?.name && val.Condition?.key)
       .map(([address, val]) => ({
         label: val.Entity.name,
         value: address,
       }));
   }, [dataPool]);
 
-  const getTriggerOptions = (entityId: string) => {
+  const getConditionOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
-    if (!entity || !entity.Trigger) return [];
+    if (!entity || !entity.Condition) return [];
     return [
       {
-        label: formatKeyAsDecimal(entity.Trigger.key),
-        value: entity.Trigger.key.toString(),
+        label: formatKeyAsDecimal(entity.Condition.key),
+        value: entity.Condition.key.toString(),
       },
     ];
   };
 
   return (
     <div className="flex flex-col gap-2">
-      {value.map(([entityId, triggerKey], i) => (
+      {value.map(([entityId, conditionKey], i) => (
         <div key={i} className="flex gap-2 items-center relative">
           <Select
-            id={`trigger-entity-${i}`}
+            id={`condition-entity-${i}`}
             value={entityId}
             onChange={(e) => handleChange(i, 0, e.target.value)}
             disabled={readOnly}
@@ -86,13 +86,13 @@ export const TriggerSelector = ({
           />
 
           <Select
-            id={`trigger-key-${i}`}
-            value={triggerKey?.toString() ?? ""}
+            id={`condition-key-${i}`}
+            value={conditionKey?.toString() ?? ""}
             onChange={(e) => handleChange(i, 1, e.target.value)}
             disabled={readOnly || !entityId}
             options={[
-              { value: "__placeholder__", label: "Select trigger" },
-              ...getTriggerOptions(entityId),
+              { value: "__placeholder__", label: "Select condition" },
+              ...getConditionOptions(entityId),
             ]}
           />
 
