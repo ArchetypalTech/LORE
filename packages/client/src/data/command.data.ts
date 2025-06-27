@@ -157,6 +157,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Call the check for player
 		await checkForPlayer();
 	},
+	wallet: async () => {
+		if(!WalletStore().isConnected) {
+			addTerminalContent({
+				text: "not connected, connect first",
+				format: "hash",
+				useTypewriter: true,
+			});
+			return;
+		}
+		await WalletStore().openUserProfile();
+	},
 	disconnect: async () => {
 		if (!WalletStore().isConnected) {
 			addTerminalContent({
