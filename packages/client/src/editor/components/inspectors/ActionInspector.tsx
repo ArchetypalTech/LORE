@@ -11,8 +11,11 @@ import {
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { MultiNumberArray } from "../MultiNumberArray";
-import { BigNumberish, num } from "starknet";
+import { TriggerSelector } from "../TriggerSelector";
+import { ConditionSelector } from "../ConditionSelector";
+import { EffectSelector } from "../EffectsSelector";
+import { BigNumberish } from "starknet";
+import { useEditorData } from "../../data/editor.data";
 
 export const ActionInspector: ComponentInspector<Action> = ({
   componentObject,
@@ -32,21 +35,27 @@ export const ActionInspector: ComponentInspector<Action> = ({
         const event = e as ChangeEvent<HTMLInputElement>;
         updatedObject.is_enabled = event.target.checked;
       },
-      trigger: (e, updatedObject) => {
-        const val = e.target.value as unknown as Array<[string, string]>;
-        updatedObject.trigger = val.map(
-          ([a, b]) => [(a), num.toBigInt(b)]
+      triggers: (e, updatedObject) => {
+        const val = e.target.value as unknown as Array<[string, BigNumberish]>;
+        updatedObject.trigger = val
+        .filter(([a, b]) => a !== "__placeholder__" && b !== "__placeholder__")
+        .map(
+          ([a, b]) => [(a), (b)]
         ) as [BigNumberish, BigNumberish][];
       },
       conditions: (e, updatedObject) => {
-        const val = e.target.value as unknown as Array<[string, string]>;
-        updatedObject.conditions = val.map(
+        const val = e.target.value as unknown as Array<[string, BigNumberish]>;
+        updatedObject.conditions = val
+        .filter(([a, b]) => a !== "__placeholder__" && b !== "__placeholder__")
+        .map(
           ([a, b]) => [(a), (b)]
         ) as [BigNumberish, BigNumberish][];
       },
       effects: (e, updatedObject) => {
-        const val = e.target.value as unknown as Array<[string, string]>;
-        updatedObject.effects = val.map(
+        const val = e.target.value as unknown as Array<[string, BigNumberish]>;
+        updatedObject.effects = val
+        .filter(([a, b]) => a !== "__placeholder__" && b !== "__placeholder__")
+        .map(
           ([a, b]) => [(a), (b)]
         ) as [BigNumberish, BigNumberish][];
       },
@@ -101,20 +110,23 @@ export const ActionInspector: ComponentInspector<Action> = ({
         value={componentObject.is_enabled}
         onChange={handleInputChange}
       />
-      <MultiNumberArray
-        id="trigger"
-        value={componentObject.trigger.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+      <TriggerSelector
+        id="triggers"
+        value={componentObject.trigger.map(([a, b]) => [a.toString(), b])}
         onChange={handleInputChange}
+        dataPool={useEditorData().dataPool}
       />
-      <MultiNumberArray
+      <ConditionSelector
         id="conditions"
-        value={componentObject.conditions.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+        value={componentObject.conditions.map(([a, b]) => [a.toString(), b])}
         onChange={handleInputChange}
+        dataPool={useEditorData().dataPool}
       />
-      <MultiNumberArray
+      <EffectSelector
         id="effects"
-        value={componentObject.effects.map(([a, b]) => [formatKeyAsDecimal(a), formatKeyAsDecimal(b)])}
+        value={componentObject.effects.map(([a, b]) => [a.toString(), b])}
         onChange={handleInputChange}
+        dataPool={useEditorData().dataPool}
       />
       <TextAreaArray
         id="failing_response"
