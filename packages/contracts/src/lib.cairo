@@ -25,15 +25,15 @@ pub mod lib {
 }
 
 pub mod models {
-    pub mod models_structs {
-        pub mod actionMap;
-    }
     pub mod index;
 }
 
 pub mod types {
-    pub mod componentsActions;
-    pub mod otherTypes;
+    pub mod action_type;
+    pub mod command_type;
+    pub mod component_type;
+    pub mod direction_type;
+    pub mod property_type;
 }
 
 #[cfg(test)]
