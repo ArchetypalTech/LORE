@@ -24,6 +24,18 @@ pub mod lib {
     pub mod actions;
 }
 
+pub mod models {
+    pub mod models_structs {
+        pub mod actionMap;
+    }
+    pub mod index;
+}
+
+pub mod types {
+    pub mod componentsActions;
+    pub mod otherTypes;
+}
+
 #[cfg(test)]
 pub mod tests {
     pub mod entity_test;
