@@ -8,7 +8,7 @@ use lore::{
             ComponentType, ActionMapInspectable, ActionMapExit, ActionMapContainer,
             ActionMapInventoryItem,
         },
-        direction_type::DirectionType, property_type::{ComponentProperty},
+        direction_type::Direction, property_type::{ComponentProperty},
     },
 };
 
@@ -101,7 +101,7 @@ pub struct Exit {
     /// The leads to entity
     pub leads_to: felt252,
     /// The direction type
-    pub direction_type: DirectionType,
+    pub direction_type: Direction,
     /// Array of action maps for the exit
     pub action_map: Array<ActionMapExit>,
 }
@@ -230,6 +230,14 @@ pub struct Trigger {
     pub is_once: bool,
     /// Whether the trigger has already been triggered
     pub was_triggered: bool,
+}
+
+#[derive(Clone, Drop, Serde, Debug)]
+#[dojo::model]
+pub struct TriggerIndex {
+    #[key]
+    pub trigger_type: TriggerType,
+    pub trigger_id: Array<(felt252, felt252)> // (inst, key)
 }
 
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]

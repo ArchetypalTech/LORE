@@ -1,4 +1,22 @@
-// Here you can find the trigger, condition, effect types
+// Here you can find the trigger, condition, effect types and structs
+
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
+pub struct TriggerContext {
+    /// The entity that triggered the action (usually the player)
+    pub doer: felt252,
+    /// Primary target of the action (e.g., item being picked up, area being entered)
+    pub target1: felt252,
+    /// Secondary target (e.g., container being opened, item being used on)
+    pub target2: felt252,
+    /// Inventory object involved (e.g., item being moved to/from inventory)
+    pub inventory_object: felt252,
+}
+
+#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
+pub struct TriggerParameter {
+    pub name: ByteArray,
+    pub value: felt252,
+}
 
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum TriggerType {
@@ -98,6 +116,23 @@ pub impl IntoEffectTypeU8 of core::traits::Into<EffectType, u8> {
     }
 }
 
+// Implementation into Felt252 //
+
+pub impl IntoTriggerTypeFelt252 of core::traits::Into<TriggerType, felt252> {
+    #[inline]
+    fn into(self: TriggerType) -> felt252 {
+        match self {
+            TriggerType::OnEnter => 0,
+            TriggerType::OnExit => 1,
+            TriggerType::OnInteract => 2,
+            TriggerType::OnInspect => 3,
+            TriggerType::OnUse => 4,
+            TriggerType::OnTimer => 5,
+            TriggerType::OnCondition => 6,
+        }
+    }
+}
+
 // Implementation into Types //
 
 pub impl IntoU8TriggerType of core::traits::Into<u8, TriggerType> {
@@ -155,6 +190,22 @@ pub impl IntoU8EffectType of core::traits::Into<u8, EffectType> {
             4 => EffectType::SendMessage,
             5 => EffectType::TriggerAction,
             _ => EffectType::ModifyProperty,
+        }
+    }
+}
+
+pub impl IntoFelt252TriggerType of core::traits::Into<felt252, TriggerType> {
+    #[inline]
+    fn into(self: felt252) -> TriggerType {
+        match self {
+            0 => TriggerType::OnEnter,
+            1 => TriggerType::OnExit,
+            2 => TriggerType::OnInteract,
+            3 => TriggerType::OnInspect,
+            4 => TriggerType::OnUse,
+            5 => TriggerType::OnTimer,
+            6 => TriggerType::OnCondition,
+            _ => TriggerType::OnEnter,
         }
     }
 }
