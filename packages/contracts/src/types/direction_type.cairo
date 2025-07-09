@@ -1,7 +1,7 @@
 // Here you can find the direction type
 
 #[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
-pub enum DirectionType {
+pub enum Direction {
     North,
     South,
     East,
@@ -16,40 +16,40 @@ pub enum DirectionType {
 
 // Implementation into U8 //
 
-pub impl IntoDirectionTypeU8 of core::traits::Into<DirectionType, u8> {
+pub impl IntoDirectionU8 of core::traits::Into<Direction, u8> {
     #[inline]
-    fn into(self: DirectionType) -> u8 {
+    fn into(self: Direction) -> u8 {
         match self {
-            DirectionType::North => 0,
-            DirectionType::South => 1,
-            DirectionType::East => 2,
-            DirectionType::West => 3,
-            DirectionType::NorthEast => 4,
-            DirectionType::SouthEast => 5,
-            DirectionType::NorthWest => 6,
-            DirectionType::SouthWest => 7,
-            DirectionType::Up => 8,
-            DirectionType::Down => 9,
+            Direction::North => 0,
+            Direction::South => 1,
+            Direction::East => 2,
+            Direction::West => 3,
+            Direction::NorthEast => 4,
+            Direction::SouthEast => 5,
+            Direction::NorthWest => 6,
+            Direction::SouthWest => 7,
+            Direction::Up => 8,
+            Direction::Down => 9,
         }
     }
 }
 
-// Implementation into DirectionType //
-pub impl IntoU8DirectionType of core::traits::Into<u8, DirectionType> {
+// Implementation into Direction //
+pub impl IntoU8Direction of core::traits::Into<u8, Direction> {
     #[inline]
-    fn into(self: u8) -> DirectionType {
+    fn into(self: u8) -> Direction {
         match self {
-            0 => DirectionType::North,
-            1 => DirectionType::South,
-            2 => DirectionType::East,
-            3 => DirectionType::West,
-            4 => DirectionType::NorthEast,
-            5 => DirectionType::SouthEast,
-            6 => DirectionType::NorthWest,
-            7 => DirectionType::SouthWest,
-            8 => DirectionType::Up,
-            9 => DirectionType::Down,
-            _ => DirectionType::North,
+            0 => Direction::North,
+            1 => Direction::South,
+            2 => Direction::East,
+            3 => Direction::West,
+            4 => Direction::NorthEast,
+            5 => Direction::SouthEast,
+            6 => Direction::NorthWest,
+            7 => Direction::SouthWest,
+            8 => Direction::Up,
+            9 => Direction::Down,
+            _ => Direction::North,
         }
     }
 }

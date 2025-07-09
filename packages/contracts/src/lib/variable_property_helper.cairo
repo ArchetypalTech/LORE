@@ -1,23 +1,23 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
-    components::{
-        area::{Area, AreaComponent}, exit::{Exit, ExitComponent},
-        inspectable::{Inspectable, InspectableComponent},
-        inventoryItem::{InventoryItem, InventoryItemComponent},
-        container::{Container, ContainerComponent}, player::{Player, PlayerComponent}, Components,
+    models::{
+        index::{Area, Exit, Inspectable, InventoryItem, Container, Player, PropertyRegistry},
+        area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
+        inventoryItem::InventoryItemComponent, container::ContainerComponent,
+        player::PlayerComponent,
     },
-    lib::{
-        utils::ByteArrayTraitExt,
-        variable_property::{PropertyRegistry, PropertyAccess, ComponentProperty, PropertyType},
+    types::{
+        property_type::{ComponentProperty, PropertyType, PropertyAccess},
+        component_type::ComponentType,
     },
-    constants::errors::Error,
+    lib::{utils::ByteArrayTraitExt}, constants::errors::Error,
 };
 use core::traits::{Into};
 
 #[generate_trait]
 pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     // Register Component Properties
-    fn register_properties(mut world: WorldStorage, component: Components) {
+    fn register_properties(mut world: WorldStorage, component: ComponentType) {
         let pos_property_registry: PropertyRegistry = world.read_model(component);
         if pos_property_registry.properties.len() > 0 {
             // Registry already exists, skip
@@ -25,7 +25,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         }
 
         let props = match component {
-            Components::Area => array![
+            ComponentType::Area => array![
                 ComponentProperty {
                     name: "is_area",
                     property_type: PropertyType::Boolean,
@@ -37,7 +37,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
-            Components::Inspectable => array![
+            ComponentType::Inspectable => array![
                 ComponentProperty {
                     name: "is_inspectable",
                     property_type: PropertyType::Boolean,
@@ -50,7 +50,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 },
                 ComponentProperty {
                     name: "description",
-                    property_type: PropertyType::String,
+                    property_type: PropertyType::ByteArray,
                     access_flags: PropertyAccess::ReadWrite,
                 },
                 ComponentProperty {
@@ -60,11 +60,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 },
                 ComponentProperty {
                     name: "new_entry",
-                    property_type: PropertyType::String,
+                    property_type: PropertyType::ByteArray,
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
-            Components::Exit => array![
+            ComponentType::Exit => array![
                 ComponentProperty {
                     name: "is_exit",
                     property_type: PropertyType::Boolean,
@@ -82,11 +82,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 },
                 ComponentProperty {
                     name: "direction_type",
-                    property_type: PropertyType::Direction,
+                    property_type: PropertyType::Enum,
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
-            Components::InventoryItem => array![
+            ComponentType::InventoryItem => array![
                 ComponentProperty {
                     name: "owner_id",
                     property_type: PropertyType::Felt252,
@@ -113,7 +113,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
-            Components::Container => array![
+            ComponentType::Container => array![
                 ComponentProperty {
                     name: "is_container",
                     property_type: PropertyType::Boolean,
@@ -136,11 +136,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 },
                 ComponentProperty {
                     name: "num_slots",
-                    property_type: PropertyType::Integer,
+                    property_type: PropertyType::U8,
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
-            Components::Player => array![
+            ComponentType::Player => array![
                 ComponentProperty {
                     name: "location",
                     property_type: PropertyType::Felt252,
@@ -367,7 +367,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             result = Result::Err(Error::ReadOnlyVariable);
                         }
                     },
-                    PropertyAccess::WriteOnly |
                     PropertyAccess::ReadWrite => {
                         if name == @is_spawn_point {
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
@@ -404,7 +403,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
             if prop.name == name.clone() {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
-                    PropertyAccess::WriteOnly |
                     PropertyAccess::ReadWrite => {
                         if name == @is_exit {
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
@@ -460,7 +458,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
             if prop.name == name.clone() {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
-                    PropertyAccess::WriteOnly |
                     PropertyAccess::ReadWrite => {
                         if name == @is_visible {
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
@@ -517,7 +514,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
             if prop.name == name.clone() {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
-                    PropertyAccess::WriteOnly |
                     PropertyAccess::ReadWrite => {
                         if name == @owner_id {
                             component.owner_id = new_value[0].to_felt252_word().unwrap();
@@ -576,7 +572,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
             if prop.name == name.clone() {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
-                    PropertyAccess::WriteOnly |
                     PropertyAccess::ReadWrite => {
                         if name == @is_container {
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
@@ -634,7 +629,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
             if prop.name == name.clone() {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
-                    PropertyAccess::WriteOnly |
                     PropertyAccess::ReadWrite => {
                         if name == @location {
                             component

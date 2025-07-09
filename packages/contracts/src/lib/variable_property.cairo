@@ -1,91 +1,35 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
-    components::{
-        area::{Area, AreaComponent}, exit::{Exit, ExitComponent},
-        inspectable::{Inspectable, InspectableComponent},
-        inventoryItem::{InventoryItem, InventoryItemComponent},
-        container::{Container, ContainerComponent}, player::{Player, PlayerComponent}, Components,
+    models::{
+        index::{Area, Exit, Inspectable, InventoryItem, Container, Player, PropertyRegistry},
+        area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
+        inventoryItem::InventoryItemComponent, container::ContainerComponent,
+        player::PlayerComponent,
     },
+    types::{property_type::PropertyAccess, component_type::ComponentType},
     lib::{utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait},
     constants::errors::Error,
 };
 
-// ========== VARIABLE PROXY MODEL ==========
-// DONT KNOW IF THIS IS NEEDED YET
-#[derive(Clone, Drop, Serde, Debug)]
-#[dojo::model]
-pub struct ComponentVariable {
-    #[key]
-    pub key: felt252,
-    pub component_type: Components,
-    pub entity_id: felt252,
-    pub property_name: ByteArray,
-    pub value: ByteArray,
-    pub last_updated: u64,
-}
-
-// ========== REGISTRY STRUCTS ==========
-#[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
-#[dojo::model]
-pub struct PropertyRegistry {
-    #[key]
-    pub component_type: Components,
-    pub properties: Array<ComponentProperty>,
-}
-
-#[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
-pub struct ComponentProperty {
-    pub name: ByteArray,
-    pub property_type: PropertyType,
-    pub access_flags: PropertyAccess,
-}
-
-// ========== ENUMS & TRAITS ==========
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
-pub enum PropertyType {
-    Boolean,
-    Integer,
-    Felt252,
-    Direction,
-    ContractAddress,
-    String,
-    ByteArray,
-    Enum,
-}
-
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
-pub enum PropertyAccess {
-    ReadOnly,
-    WriteOnly,
-    ReadWrite,
-}
-
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
-pub enum ComponentType {
-    Area,
-    Exit,
-    Container,
-    Inspectable,
-    InventoryItem,
-    Player,
-    //etc
-}
 
 #[generate_trait]
 pub impl VariablePropertyImp of VariablePropertyTrait {
-    fn register_component_properties(world: WorldStorage, component: Components) {
+    fn register_component_properties(world: WorldStorage, component: ComponentType) {
         VariablePropertyHelperTrait::register_properties(world, component);
     }
 
     fn get_property(
-        world: @WorldStorage, key: @felt252, property_name: @ByteArray, component_type: Components,
+        world: @WorldStorage,
+        key: @felt252,
+        property_name: @ByteArray,
+        component_type: ComponentType,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         let property_registry: PropertyRegistry = world.read_model((component_type));
         let mut property_value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
 
         match property_registry.component_type.clone() {
-            Components::Area => {
+            ComponentType::Area => {
                 let component: Area = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
@@ -95,7 +39,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 property_value = property_value_opt;
                 access = access_opt;
             },
-            Components::Exit => {
+            ComponentType::Exit => {
                 let component: Exit = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
@@ -105,7 +49,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 property_value = property_value_opt;
                 access = access_opt;
             },
-            Components::Inspectable => {
+            ComponentType::Inspectable => {
                 let component: Inspectable = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
@@ -115,7 +59,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 property_value = property_value_opt;
                 access = access_opt;
             },
-            Components::InventoryItem => {
+            ComponentType::InventoryItem => {
                 let component: InventoryItem = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
@@ -125,7 +69,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 property_value = property_value_opt;
                 access = access_opt;
             },
-            Components::Container => {
+            ComponentType::Container => {
                 let component: Container = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
@@ -135,7 +79,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 property_value = property_value_opt;
                 access = access_opt;
             },
-            Components::Player => {
+            ComponentType::Player => {
                 let component: Player = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
@@ -156,13 +100,13 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         key: @felt252,
         property_name: @ByteArray,
         new_value: @Array<ByteArray>,
-        component_type: Components,
+        component_type: ComponentType,
     ) -> Result<(), Error> {
         let property_registry: PropertyRegistry = world.read_model((component_type));
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Err((Error::EffectFailed));
         match component_type.clone() {
-            Components::Area => {
+            ComponentType::Area => {
                 let component: Area = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (result_p, success_p) = VariablePropertyHelperTrait::set_area_property(
@@ -171,7 +115,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 result = result_p;
                 success = success_p;
             },
-            Components::Exit => {
+            ComponentType::Exit => {
                 let component: Exit = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (result_p, success_p) = VariablePropertyHelperTrait::set_exit_property(
@@ -180,7 +124,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 result = result_p;
                 success = success_p;
             },
-            Components::Inspectable => {
+            ComponentType::Inspectable => {
                 let component: Inspectable = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (result_p, success_p) = VariablePropertyHelperTrait::set_inspectable_property(
@@ -189,7 +133,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 result = result_p;
                 success = success_p;
             },
-            Components::InventoryItem => {
+            ComponentType::InventoryItem => {
                 let component: InventoryItem = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (result_p, success_p) =
@@ -199,7 +143,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 result = result_p;
                 success = success_p;
             },
-            Components::Container => {
+            ComponentType::Container => {
                 let component: Container = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (result_p, success_p) = VariablePropertyHelperTrait::set_container_property(
@@ -208,7 +152,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 result = result_p;
                 success = success_p;
             },
-            Components::Player => {
+            ComponentType::Player => {
                 let component: Player = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (result_p, success_p) = VariablePropertyHelperTrait::set_player_property(

@@ -1,6 +1,6 @@
 use core::traits::{TryInto, Into, DivRem};
 use core::result::{Result};
-use lore::constants::constants::Direction;
+use lore::types::direction_type::Direction;
 
 #[generate_trait]
 pub impl ByteArrayTraitExt of ByteArrayTrait {
@@ -177,11 +177,14 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
 
     fn byte_array_from_direction(direction: Direction) -> ByteArray {
         match direction {
-            Direction::None => "none",
             Direction::North => "north",
             Direction::South => "south",
             Direction::East => "east",
             Direction::West => "west",
+            Direction::NorthEast => "north-east",
+            Direction::SouthEast => "south-east",
+            Direction::NorthWest => "north-west",
+            Direction::SouthWest => "south-west",
             Direction::Up => "up",
             Direction::Down => "down",
         }
@@ -189,14 +192,17 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
 
     fn direction_from_felt252(direction: felt252) -> Direction {
         match direction {
-            0 => Direction::None,
-            1 => Direction::North,
-            2 => Direction::South,
-            3 => Direction::East,
-            4 => Direction::West,
-            5 => Direction::Up,
-            6 => Direction::Down,
-            _ => Direction::None,
+            0 => Direction::North,
+            1 => Direction::South,
+            2 => Direction::East,
+            3 => Direction::West,
+            4 => Direction::NorthEast,
+            5 => Direction::SouthEast,
+            6 => Direction::NorthWest,
+            7 => Direction::SouthWest,
+            8 => Direction::Up,
+            9 => Direction::Down,
+            _ => Direction::North,
         }
     }
 
