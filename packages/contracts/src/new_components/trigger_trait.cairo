@@ -217,15 +217,15 @@ mod tests {
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
     use lore::{
-        lib::{
-            entity::{Entity, EntityImpl},
-            trigger::{Trigger, TriggerType, TriggerImpl, TriggerParameter},
+        models::{
+            index::{Entity, Player, Trigger}, area::AreaComponent, exit::ExitComponent,
+            player::{PlayerComponent, caller_as_player},
         },
-        components::{
-            area::{AreaComponent}, exit::{ExitComponent},
-            player::{Player, PlayerComponent, caller_as_player, PlayerImpl},
+        new_components::{
+            entity_trait::EntityImpl, player_trait::PlayerImpl,
+            trigger_trait::TriggerImpl,
         },
-        constants::constants::Direction,
+        types::{action_type::TriggerType, direction_type::Direction},
     };
 
     fn create_test_trigger(
@@ -236,7 +236,6 @@ mod tests {
             key,
             name: nameT,
             trigger_type,
-            parameters: array![TriggerParameter { name: "area", value: inst }],
             is_enabled: true,
             is_once: false,
             was_triggered: false,
@@ -248,7 +247,7 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
 
         let key: felt252 = 1;
-        let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::PlayerEntersArea);
+        let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnEnter);
 
         let result = TriggerImpl::register_trigger(world, trigger.clone());
         assert(result.is_ok(), 'Trig not register successfully');
@@ -278,7 +277,7 @@ mod tests {
 
         // Create trigger
         let key: felt252 = 2;
-        let trigger = create_test_trigger(1, key, long_name, TriggerType::PlayerLeavesArea);
+        let trigger = create_test_trigger(1, key, long_name, TriggerType::OnExit);
         world.write_model(@trigger);
 
         let result = TriggerImpl::register_trigger(world, trigger);
@@ -291,7 +290,7 @@ mod tests {
 
         // Create trigger
         let key: felt252 = 3;
-        let mut trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::PlayerLeavesArea);
+        let mut trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnExit);
         world.write_model(@trigger);
 
         TriggerImpl::enable_trigger(world, (trigger.inst.clone(), trigger.key.clone()));
@@ -310,8 +309,8 @@ mod tests {
         let id_1: felt252 = 10;
         let id_2: felt252 = 11;
 
-        let trigger1 = create_test_trigger(1, id_1, "TestTrigger", TriggerType::PlayerEntersArea);
-        let trigger2 = create_test_trigger(2, id_2, "TestTrigger", TriggerType::PlayerEntersArea);
+        let trigger1 = create_test_trigger(1, id_1, "TestTrigger", TriggerType::OnEnter);
+        let trigger2 = create_test_trigger(2, id_2, "TestTrigger", TriggerType::OnEnter);
 
         let result1 = TriggerImpl::update_triggerIndex(world, trigger1.clone());
         // message: 1st trigger index insert didn't succeed
@@ -321,7 +320,7 @@ mod tests {
         // message: 2nd trigger index insert didn't succeed
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
-        let index: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
+        let index: TriggerIndex = world.read_model(TriggerType::OnEnter);
         assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
         assert_eq!(
             index.trigger_id[0],
@@ -374,7 +373,7 @@ mod tests {
         // set trigger to room entity 1
         let key: felt252 = 1;
         let mut trigger = create_test_trigger(
-            room_entity_1.inst, key, "TestTrigger", TriggerType::PlayerEntersArea,
+            room_entity_1.inst, key, "TestTrigger", TriggerType::OnEnter,
         );
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 

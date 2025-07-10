@@ -157,24 +157,27 @@ mod tests {
     use super::*;
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
-    use lore::lib::{
-        entity::{EntityImpl}, condition::Condition, variable_property::{VariablePropertyImp},
-    };
-    use lore::components::{
-        Component, Components,
-        inspectable::{Inspectable, InspectableComponent, ActionMapInspectable, InspectableActions},
+    use lore::{
+        models::{
+            index::{Inspectable, Condition}, components::Component,
+            inspectable::InspectableComponent,
+        },
+        new_components::entity_trait::EntityImpl,
+        types::{component_type::{ComponentType, ActionMapInspectable, InspectableActions}},
+        lib::{variable_property::VariablePropertyImp},
     };
 
     fn create_test_condition(
         inst: felt252,
         key: felt252,
+        name: ByteArray,
         target: felt252,
-        component: Components,
+        component: ComponentType,
         property: ByteArray,
         operator: Operator,
         value: Array<felt252>,
     ) -> Condition {
-        Condition { inst, key, target, component, property, operator, value }
+        Condition { inst, key, name,target, component, property, operator, value }
     }
 
     #[test]
@@ -211,17 +214,19 @@ mod tests {
         inspectable.store(world);
 
         // Register component variable properties
-        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
 
         // Test: is_inspectable == true (should pass)
         let key2: felt252 = 2;
+        let name2: ByteArray = "Condition name2";
         let mut array_true = ArrayTrait::new();
         array_true.append(1);
         let mut condition = create_test_condition(
             door.inst,
             key2,
+            name2,
             door.inst,
-            Components::Inspectable,
+            ComponentType::Inspectable,
             "is_inspectable",
             Operator::Equals,
             array_true,
@@ -237,13 +242,15 @@ mod tests {
 
         // Test: is_inspectable == false (should fail)
         let key3: felt252 = 3;
+        let name3: ByteArray = "Condition name3";
         let mut array_false = ArrayTrait::new();
         array_false.append(0);
         let mut condition2 = create_test_condition(
             door.inst,
             key3,
+            name3,
             door.inst,
-            Components::Inspectable,
+            ComponentType::Inspectable,
             "is_inspectable",
             Operator::Equals,
             array_false,
@@ -259,13 +266,15 @@ mod tests {
 
         // Test: is_visible == true (should pass)
         let key4: felt252 = 4;
+        let name4: ByteArray = "Condition name4";
         let mut array3 = ArrayTrait::new();
         array3.append(1);
         let mut condition3 = create_test_condition(
             door.inst,
             key4,
+            name4,
             door.inst,
-            Components::Inspectable,
+            ComponentType::Inspectable,
             "is_visible",
             Operator::Equals,
             array3,
@@ -281,13 +290,15 @@ mod tests {
 
         // Test: is_visible == false (should fail)
         let key5: felt252 = 5;
+        let name5: ByteArray = "Condition name5";
         let mut array4 = ArrayTrait::new();
         array4.append(0);
         let mut condition4 = create_test_condition(
             door.inst,
             key5,
+            name5,
             door.inst,
-            Components::Inspectable,
+            ComponentType::Inspectable,
             "is_visible",
             Operator::Equals,
             array4,
@@ -303,13 +314,15 @@ mod tests {
 
         // Test: is_visible != 0 (should pass)
         let key6: felt252 = 6;
+        let name6: ByteArray = "Condition name6";
         let mut not_eq_array = ArrayTrait::new();
         not_eq_array.append(0);
         let mut condition5 = create_test_condition(
             door.inst,
             key6,
+            name6,
             door.inst,
-            Components::Inspectable,
+            ComponentType::Inspectable,
             "is_visible",
             Operator::NotEquals,
             not_eq_array,
@@ -325,13 +338,15 @@ mod tests {
 
         // Test: is_visible != 1 (should fail)
         let key7: felt252 = 7;
+        let name7: ByteArray = "Condition name7";
         let mut not_eq_array2 = ArrayTrait::new();
         not_eq_array2.append(1);
         let mut condition6 = create_test_condition(
             door.inst,
             key7,
+            name7,
             door.inst,
-            Components::Inspectable,
+            ComponentType::Inspectable,
             "is_visible",
             Operator::NotEquals,
             not_eq_array2,

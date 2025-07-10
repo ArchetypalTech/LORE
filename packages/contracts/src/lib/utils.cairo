@@ -294,7 +294,7 @@ pub impl ClousureTraitImp of ClousureTrait {
 mod tests {
     use super::ByteArrayTraitExt;
     use super::ClousureTrait;
-    use lore::constants::constants::Direction;
+    use lore::types::direction_type::{Direction, IntoDirectionFelt252};
 
     #[test]
     fn ByteArrayExt_to_felt252_word() {
@@ -471,8 +471,8 @@ mod tests {
     #[test]
     fn test_direction_from_felt252() {
         let direction: Direction = Direction::North;
-        let felt252: felt252 = 1;
-        let result: Direction = ByteArrayTraitExt::direction_from_felt252(felt252);
+        let felt252Dir: felt252 = direction.into();
+        let result: Direction = ByteArrayTraitExt::direction_from_felt252(felt252Dir);
         assert_eq!(result, direction, "results should be equal");
     }
 

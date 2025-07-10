@@ -12,12 +12,6 @@ pub struct TriggerContext {
     pub inventory_object: felt252,
 }
 
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
-pub struct TriggerParameter {
-    pub name: ByteArray,
-    pub value: felt252,
-}
-
 #[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
 pub enum TriggerType {
     OnEnter,

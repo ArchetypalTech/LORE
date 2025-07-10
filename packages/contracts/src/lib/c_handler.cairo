@@ -266,9 +266,11 @@ fn system_command(
 mod tests {
     use super::*;
     use lore::tests::helpers;
-    use lore::components::player::{caller_as_player};
-    use lore::lib::a_lexer::{Token, TokenType, Command};
-    use lore::lib::utils::ByteArrayTraitExt;
+    use lore::{
+        models::player::caller_as_player,
+        types::command_type::{Command, Token, TokenType},
+        lib::utils::ByteArrayTraitExt,
+    };
 
     #[test]
     fn CHandler_test_g_command_handling() {

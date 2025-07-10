@@ -134,7 +134,7 @@ mod tests {
     use dojo::{world::WorldStorage, model::ModelStorage};
     use super::*;
     use lore::tests::helpers;
-    use lore::components::inspectable::InspectableImpl;
+    use lore::{models::index::Inspectable, new_components::inspectable_trait::InspectableImpl};
 
     fn Inspectable_create_prefab() -> (
         Inspectable, WorldStorage, ContractAddress, ContractAddress,

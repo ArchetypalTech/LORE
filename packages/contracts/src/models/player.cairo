@@ -78,9 +78,10 @@ pub fn caller_as_player(world: WorldStorage, address: ContractAddress) -> Player
 #[cfg(test)]
 mod tests {
     use dojo::{model::ModelStorage};
-    use super::{Player, PlayerTrait, PlayerStory};
-    use super::{caller_as_player};
-    use lore::tests::helpers;
+    use lore::{
+        models::{index::{Player, PlayerStory}, player::caller_as_player},
+        new_components::player_trait::{PlayerImpl}, tests::helpers,
+    };
 
     #[test]
     fn Player_test_create_player() {

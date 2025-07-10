@@ -10,9 +10,9 @@ pub mod prompt {
     use super::{IPrompt};
     use starknet::{get_caller_address};
     use dojo::{world::{WorldStorage}};
-    use lore::components::{player::{PlayerImpl, caller_as_player}};
-    use lore::lib::{a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command} //
-    // dictionary::{init_dictionary},
+    use lore::{
+        new_components::player_trait::{PlayerImpl, caller_as_player},
+        lib::{a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command}},
     };
 
     #[constructor]

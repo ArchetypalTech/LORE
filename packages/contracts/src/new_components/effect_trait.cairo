@@ -110,27 +110,31 @@ mod tests {
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
     use lore::{
-        lib::{
-            entity::{EntityImpl}, trigger::{TriggerImpl}, variable_property::{VariablePropertyImp},
+        models::{
+            index::{Inspectable, Player}, components::Component, area::AreaComponent,
+            inspectable::InspectableComponent, player::{PlayerComponent, caller_as_player},
         },
-        components::{
-            area::{AreaComponent},
-            inspectable::{
-                Inspectable, InspectableComponent, ActionMapInspectable, InspectableActions,
-            },
-            player::{Player, PlayerComponent, caller_as_player, PlayerImpl}, Component, Components,
+        new_components::{
+            entity_trait::EntityImpl, player_trait::PlayerImpl,
+            trigger_trait::TriggerImpl,
         },
+        types::{
+            action_type::TriggerContext,
+            component_type::{ComponentType, ActionMapInspectable, InspectableActions},
+        },
+        lib::{variable_property::VariablePropertyImp},
     };
 
     fn create_test_effect(
         inst: felt252,
         key: felt252,
+        name: ByteArray,
         target: felt252,
-        component: Components,
+        component: ComponentType,
         property: ByteArray,
         value: Array<ByteArray>,
     ) -> Effect {
-        Effect { inst, key, target, component, property, value }
+        Effect { inst, key, name, target, component, property, value }
     }
 
     fn create_trigger_context(
@@ -176,15 +180,16 @@ mod tests {
         let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
-        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
 
         // Test description new value
         let new_value: Array<ByteArray> = array![
             "A door that is open", "Looks that it leads somewhere",
         ];
         let key: felt252 = 1;
+        let name: ByteArray = "Effect name";
         let mut effect = create_test_effect(
-            door.inst, key, door.inst, Components::Inspectable, "description", new_value.clone(),
+            door.inst, key, name, door.inst, ComponentType::Inspectable, "description", new_value.clone(),
         );
         world.write_model(@effect);
         let result = effect.apply_effect(world, context);

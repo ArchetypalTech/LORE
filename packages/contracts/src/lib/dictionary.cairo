@@ -190,7 +190,7 @@ pub fn init_dictionary(world: WorldStorage) {
 mod tests {
     use lore::tests::helpers;
     use super::*;
-    use lore::lib::a_lexer::{TokenType, TokenTypeFelt252};
+    use lore::types::command_type::{TokenType, IntoTokenTypeFelt252};
 
     #[test]
     fn Dictionary_test_init() {

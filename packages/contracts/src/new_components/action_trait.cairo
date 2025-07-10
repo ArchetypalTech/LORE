@@ -156,26 +156,29 @@ mod tests {
     use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::tests::helpers;
     use lore::{
-        lib::{
-            entity::{Entity, EntityImpl},
-            trigger::{Trigger, TriggerType, TriggerImpl, TriggerParameter, TriggerContext},
-            condition::{Condition, Operator}, effect::{Effect, EffectImpl},
-            actions::{Action, ActionImpl}, variable_property::VariablePropertyImp,
-            utils::ByteArrayTraitExt,
-        },
-        components::{
-            area::{Area, AreaComponent}, exit::{Exit, ExitComponent, ExitActions, ActionMapExit},
-            inspectable::{
-                Inspectable, InspectableComponent, InspectableActions, ActionMapInspectable,
+        models::{
+            index::{
+                Entity, Area, Exit, Inspectable, InventoryItem, Container, Trigger,
+                Condition, Effect, Action,
             },
-            inventoryItem::{
-                InventoryItem, InventoryItemComponent, InventoryItemActions, ActionMapInventoryItem,
-            },
-            container::{Container, ContainerComponent},
-            player::{PlayerComponent, caller_as_player, PlayerImpl}, Components, Component,
+            area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
+            inventoryItem::InventoryItemComponent, container::ContainerComponent,
+            player::{PlayerComponent, caller_as_player}, components::Component,
         },
+        new_components::{
+            entity_trait::EntityImpl, player_trait::{PlayerImpl},
+            trigger_trait::TriggerImpl, effect_trait::EffectImpl, action_trait::ActionImpl,
+        },
+        types::{
+            component_type::{
+                ComponentType, ExitActions, ActionMapExit, InspectableActions, ActionMapInspectable,
+                InventoryItemActions, ActionMapInventoryItem,
+            },
+            action_type::{TriggerType, TriggerContext, Operator},
+            direction_type::Direction,
+        },
+        lib::{variable_property::VariablePropertyImp, utils::ByteArrayTraitExt},
     };
-    use lore::constants::constants::Direction;
 
     fn create_rooms(mut world: WorldStorage) -> (Entity, Entity) {
         // create room entity 1
@@ -322,7 +325,6 @@ mod tests {
             key,
             name: nameT,
             trigger_type,
-            parameters: array![TriggerParameter { name: "area", value: inst }],
             is_enabled: true,
             is_once: false,
             was_triggered: false,
@@ -332,24 +334,26 @@ mod tests {
     fn create_test_condition(
         inst: felt252,
         key: felt252,
+        name: ByteArray,
         target: felt252,
-        component: Components,
+        component: ComponentType,
         property: ByteArray,
         operator: Operator,
         value: Array<felt252>,
     ) -> Condition {
-        Condition { inst, key, target, component, property, operator, value }
+        Condition { inst, key, name, target, component, property, operator, value }
     }
 
     fn create_test_effect(
         inst: felt252,
         key: felt252,
+        name: ByteArray,
         target: felt252,
-        component: Components,
+        component: ComponentType,
         property: ByteArray,
         value: Array<ByteArray>,
     ) -> Effect {
-        Effect { inst, key, target, component, property, value }
+        Effect { inst, key, name,target, component, property, value }
     }
 
     fn create_test_action(
@@ -389,15 +393,15 @@ mod tests {
     }
 
     fn register_variable_properties(world: WorldStorage) {
-        VariablePropertyImp::register_component_properties(world, Components::Area);
-        VariablePropertyImp::register_component_properties(world, Components::Exit);
-        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
-        VariablePropertyImp::register_component_properties(world, Components::InventoryItem);
-        VariablePropertyImp::register_component_properties(world, Components::Container);
-        VariablePropertyImp::register_component_properties(world, Components::Player);
-        VariablePropertyImp::register_component_properties(world, Components::Area);
-        VariablePropertyImp::register_component_properties(world, Components::Container);
-        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Area);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::InventoryItem);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Container);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Player);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Area);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Container);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
     }
 
     #[test]
@@ -431,21 +435,23 @@ mod tests {
         let t_key: felt252 = 1;
         // create trigger for when entering room 2
         let mut trigger = create_test_trigger(
-            room_2.inst, t_key, "TestTrigger", TriggerType::PlayerEntersArea,
+            room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
         let c_key: felt252 = 1;
+        let c_name1: ByteArray = "Condition name1";
         let mut array: Array<felt252> = ArrayTrait::new();
         array.append(player1.inst);
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
             c_key,
+            c_name1,
             item.inst,
-            Components::InventoryItem,
+            ComponentType::InventoryItem,
             property,
             Operator::Equals,
             array,
@@ -473,12 +479,15 @@ mod tests {
         let e_key: felt252 = 1;
         let e_key2: felt252 = 2;
 
+        let name: ByteArray = "Effect name";
+        let name2: ByteArray = "Effect name2";
+
         // Create effects
         let mut effect = create_test_effect(
-            door.inst, e_key, door.inst, Components::Inspectable, property, new_description.clone(),
+            door.inst, e_key, name, door.inst, ComponentType::Inspectable, property, new_description.clone(),
         );
         let mut effect2 = create_test_effect(
-            door.inst, e_key2, door.inst, Components::Exit, property2, new_enterable,
+            door.inst, e_key2, name2, door.inst, ComponentType::Exit, property2, new_enterable,
         );
         world.write_model(@effect);
         world.write_model(@effect2);
@@ -599,21 +608,23 @@ mod tests {
         // create trigger for when entering room 2
         let t_key: felt252 = 1;
         let mut trigger = create_test_trigger(
-            room_2.inst, t_key, "TestTrigger", TriggerType::PlayerEntersArea,
+            room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
         let c_key: felt252 = 1;
+        let c_name1: ByteArray = "Condition name1";
         let mut array: Array<felt252> = ArrayTrait::new();
         array.append(player1.inst);
         // create condition for when player has item
         let mut condition = create_test_condition(
             room_2.inst,
             c_key,
+            c_name1,
             item.inst,
-            Components::InventoryItem,
+            ComponentType::InventoryItem,
             property,
             Operator::Equals,
             array,
@@ -640,13 +651,15 @@ mod tests {
 
         let e_key: felt252 = 1;
         let e_key2: felt252 = 2;
+        let name: ByteArray = "Effect name";
+        let name2: ByteArray = "Effect name2";
 
         // Create effects
         let mut effect = create_test_effect(
-            door.inst, e_key, door.inst, Components::Inspectable, property, new_description.clone(),
+            door.inst, e_key, name, door.inst, ComponentType::Inspectable, property, new_description.clone(),
         );
         let mut effect2 = create_test_effect(
-            door.inst, e_key2, door.inst, Components::Exit, property2, new_enterable.clone(),
+            door.inst, e_key2, name2, door.inst, ComponentType::Exit, property2, new_enterable.clone(),
         );
         world.write_model(@effect);
         world.write_model(@effect2);
