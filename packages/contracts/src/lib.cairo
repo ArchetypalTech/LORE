@@ -1,11 +1,18 @@
 pub mod systems {
     pub mod designer;
     pub mod prompt;
+    pub mod permissions;
 }
 
 pub mod components;
 
 pub mod constants;
+
+pub mod models {
+    pub mod index;
+    pub mod token_gating;
+    pub mod settings;
+}
 
 pub mod lib {
     pub mod a_lexer;
@@ -23,6 +30,8 @@ pub mod lib {
     pub mod effect;
     pub mod actions;
 }
+
+pub mod store;
 
 #[cfg(test)]
 pub mod tests {
