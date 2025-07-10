@@ -1,22 +1,9 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
-    constants::errors::Error,
-    lib::{
-        c_handler::{init_system_dictionary}, a_lexer::{TokenType, TokenTypeFelt252},
-        utils::ByteArrayTraitExt,
-    },
+    models::index::Dict, types::command_type::{TokenType, IntoTokenTypeFelt252},
+    constants::errors::Error, lib::{c_handler::{init_system_dictionary}, utils::ByteArrayTraitExt},
 };
 use core::result::{Result, ResultTrait};
-
-#[derive(Clone, Drop, Serde, Introspect, Debug)]
-#[dojo::model]
-pub struct Dict {
-    #[key]
-    pub dict_key: felt252,
-    pub word: ByteArray,
-    pub tokenType: TokenType,
-    pub n_value: felt252,
-}
 
 pub fn add_to_dictionary(
     mut world: WorldStorage, word: ByteArray, tokenType: TokenType, n_value: felt252,
@@ -203,7 +190,7 @@ pub fn init_dictionary(world: WorldStorage) {
 mod tests {
     use lore::tests::helpers;
     use super::*;
-    use lore::lib::a_lexer::{TokenType, TokenTypeFelt252};
+    use lore::types::command_type::{TokenType, IntoTokenTypeFelt252};
 
     #[test]
     fn Dictionary_test_init() {

@@ -1,59 +1,9 @@
 use core::array::{ArrayTrait, ArrayImpl, Array};
 
-use lore::{components::{player::{PlayerImpl}}};
+use lore::{
+    new_components::player_trait::PlayerImpl, types::command_type::{Command, Token, TokenType},
+};
 
-#[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
-pub enum TokenType {
-    Unknown,
-    Verb, // go, take, drop, look, inventory, spawn
-    Direction, // north, south, east, west
-    Article, // the, a
-    Preposition, // in, on, at, to
-    Pronoun, // they, it, me, you
-    Adjective, // good, bad, happy, sad
-    Noun, // noun, object
-    Quantifier, // number, quantity
-    Interrogative, // who, what, where, why, how
-    System //
-}
-
-pub impl TokenTypeFelt252 of Into<TokenType, felt252> {
-    fn into(self: TokenType) -> felt252 {
-        match self {
-            TokenType::Unknown => 0,
-            TokenType::Verb => 1,
-            TokenType::Direction => 2,
-            TokenType::Article => 3,
-            TokenType::Preposition => 4,
-            TokenType::Pronoun => 5,
-            TokenType::Adjective => 6,
-            TokenType::Noun => 7,
-            TokenType::Quantifier => 8,
-            TokenType::Interrogative => 9,
-            TokenType::System => 252,
-        }
-    }
-}
-
-#[derive(Clone, Drop, Serde, Debug)]
-pub struct Token {
-    pub position: u32, // Token position in the command
-    pub text: ByteArray, // The token text as ByteArray
-    pub token_type: TokenType, // Type of token (using TokenType enum as u8)
-    pub token_value: felt252, // Value of token (ie directionId, obj inst)
-    pub target: felt252 // Target object INST for token
-}
-
-#[derive(Clone, Drop, Serde, Debug)]
-pub struct Command {
-    #[key]
-    pub command_id: felt252, // Unique ID of this command
-    pub text: ByteArray, // Full command text
-    pub words: Array<ByteArray>, // Split words
-    pub token_count: u8, // Number of tokens in the command
-    pub action_type: u8, // Type of action (using ActionType enum as u8)
-    pub tokens: Array<Token> // Array of tokens in the command
-}
 
 #[generate_trait]
 pub impl CommandImpl of CommandTrait {
@@ -141,16 +91,16 @@ pub impl CommandImpl of CommandTrait {
 
 pub mod lexer {
     use super::CommandTrait;
-    use super::super::entity::EntityTrait;
     use dojo::world::IWorldDispatcherTrait;
     use core::array::{ArrayTrait, ArrayImpl, Array};
-    use super::{TokenType, Command, Token, CommandImpl};
+    use super::{CommandImpl};
 
     use dojo::{world::WorldStorage};
 
     use lore::{
-        components::{player::{Player, PlayerImpl}}, //
-        constants::errors::Error, //
+        models::index::{Player},
+        new_components::{entity_trait::EntityImpl, player_trait::PlayerImpl},
+        types::command_type::{Command, Token, TokenType}, constants::errors::Error,
         lib::{
             utils::{ByteArrayTraitExt, ClousureTraitImp},
             dictionary::{get_dict_entry, initialize_dictionary},
@@ -261,10 +211,10 @@ pub mod lexer {
 mod tests {
     use super::lexer;
     use super::CommandImpl;
-    use super::TokenType;
     use lore::{
-        tests::helpers, lib::{level_test::create_test_level, a_lexer::{TokenTypeFelt252}},
-        components::{player::{PlayerImpl, caller_as_player}}, lib::dictionary::{add_to_dictionary},
+        models::player::caller_as_player, new_components::player_trait::PlayerImpl,
+        types::command_type::{TokenType, IntoTokenTypeFelt252}, tests::helpers,
+        lib::{level_test::create_test_level, dictionary::{add_to_dictionary}},
     };
 
     #[test]

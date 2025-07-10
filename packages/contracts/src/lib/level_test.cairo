@@ -1,9 +1,11 @@
-use super::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
-use lore::components::{
-    Component, inspectable::{Inspectable, InspectableComponent}, area::{Area}, exit::{Exit},
+use lore::{
+    models::{
+        index::{Entity, Area, Exit, Inspectable}, components::Component, area::AreaComponent,
+        exit::ExitComponent, inspectable::InspectableComponent,
+    },
+    new_components::entity_trait::EntityImpl,
 };
-use lore::lib::{entity::{Entity, EntityImpl}};
 
 pub fn create_test_level(mut world: WorldStorage) {
     room_start(world);

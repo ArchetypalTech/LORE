@@ -1,22 +1,20 @@
-use super::a_lexer::CommandTrait;
-use super::super::components::player::PlayerTrait;
 use dojo::{world::WorldStorage};
-
-use lore::{ //
-    lib::{ //
-        entity::{EntityImpl}, //
-        a_lexer::{Command, CommandImpl, TokenType, Token},
-        utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
-        level_test::{create_test_level}, //
-        actions::{ActionImpl} //
-    }, //
-    constants::errors::Error, //
-    components::{
-        player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{Exit, ExitComponent}, Component,
-        inspectable::{Inspectable, InspectableImpl, InspectableComponent},
-        inventoryItem::{InventoryItemComponent},
-        container::{Container, ContainerImpl, ContainerComponent},
-    } //
+use lore::{
+    models::{
+        index::{Inspectable, Exit, Container, Player}, area::AreaComponent, exit::ExitComponent,
+        inspectable::InspectableComponent, inventoryItem::InventoryItemComponent,
+        container::ContainerComponent, player::PlayerComponent, components::Component,
+    },
+    new_components::{
+        entity_trait::EntityImpl, player_trait::PlayerImpl, inspectable_trait::InspectableImpl,
+        container_trait::ContainerImpl, condition_trait::ConditionImpl, action_trait::ActionImpl,
+    },
+    types::command_type::{Command, TokenType, Token},
+    lib::{
+        a_lexer::CommandImpl, utils::ByteArrayTraitExt,
+        dictionary::{init_dictionary, add_to_dictionary}, level_test::{create_test_level},
+    },
+    constants::errors::Error,
 };
 
 pub fn handle_command(
@@ -268,9 +266,10 @@ fn system_command(
 mod tests {
     use super::*;
     use lore::tests::helpers;
-    use lore::components::player::{caller_as_player};
-    use lore::lib::a_lexer::{Token, TokenType, Command};
-    use lore::lib::utils::ByteArrayTraitExt;
+    use lore::{
+        models::player::caller_as_player, types::command_type::{Command, Token, TokenType},
+        lib::utils::ByteArrayTraitExt,
+    };
 
     #[test]
     fn CHandler_test_g_command_handling() {

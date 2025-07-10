@@ -1,10 +1,10 @@
-use lore::components::{
-    inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-    container::Container, player::Player,
-};
-use lore::lib::{
-    entity::Entity, relations::{ParentToChildren, ChildToParent}, trigger::Trigger,
-    condition::Condition, actions::Action, effect::Effect,
+use lore::{
+    models::{
+        index::{
+            Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger, Condition,
+            Effect, Action, ParentToChildren, ChildToParent,
+        },
+    },
 };
 
 #[starknet::interface]
@@ -43,18 +43,24 @@ pub trait IDesigner<TContractState> {
 #[dojo::contract]
 pub mod designer {
     use super::IDesigner;
-    use lore::components::{
-        inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-        container::Container, player::Player, Components,
-    };
-    use lore::lib::{
-        entity::{Entity, EntityImpl}, relations::{ParentToChildren, ChildToParent},
-        trigger::{Trigger, TriggerImpl}, condition::Condition, actions::{Action, ActionImpl},
-        effect::Effect, variable_property::{VariablePropertyImp},
-        dictionary::{add_to_dictionary, get_dict_entry}, a_lexer::{TokenType},
-        utils::{ByteArrayTraitExt},
-    };
     use dojo::{model::ModelStorage, world::WorldStorage};
+    use lore::{
+        models::{
+            index::{
+                Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger,
+                Condition, Effect, Action, ParentToChildren, ChildToParent,
+            },
+        },
+        new_components::{
+            entity_trait::EntityImpl, trigger_trait::TriggerImpl, effect_trait::EffectImpl,
+            action_trait::ActionImpl,
+        },
+        types::{component_type::ComponentType, command_type::TokenType},
+        lib::{
+            dictionary::{add_to_dictionary, get_dict_entry}, utils::{ByteArrayTraitExt},
+            variable_property::{VariablePropertyImp},
+        },
+    };
 
     #[abi(embed_v0)]
     pub impl DesignerImpl of IDesigner<ContractState> {
@@ -63,18 +69,20 @@ pub mod designer {
             let world: WorldStorage = self.world(@"lore");
             for d in done {
                 if d {
-                    VariablePropertyImp::register_component_properties(world, Components::Area);
-                    VariablePropertyImp::register_component_properties(world, Components::Exit);
+                    VariablePropertyImp::register_component_properties(world, ComponentType::Area);
+                    VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
                     VariablePropertyImp::register_component_properties(
-                        world, Components::Inspectable,
+                        world, ComponentType::Inspectable,
                     );
                     VariablePropertyImp::register_component_properties(
-                        world, Components::InventoryItem,
+                        world, ComponentType::InventoryItem,
                     );
                     VariablePropertyImp::register_component_properties(
-                        world, Components::Container,
+                        world, ComponentType::Container,
                     );
-                    VariablePropertyImp::register_component_properties(world, Components::Player);
+                    VariablePropertyImp::register_component_properties(
+                        world, ComponentType::Player,
+                    );
                 }
             }
         }
@@ -109,7 +117,7 @@ pub mod designer {
         fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Player);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Player);
             for o in t {
                 world.write_model(@o);
             }
@@ -118,7 +126,7 @@ pub mod designer {
         fn create_inspectable(ref self: ContractState, t: Array<Inspectable>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Inspectable);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Inspectable);
             for o in t {
                 world.write_model(@o);
             }
@@ -127,7 +135,7 @@ pub mod designer {
         fn create_area(ref self: ContractState, t: Array<Area>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Area);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Area);
             for o in t {
                 world.write_model(@o);
             }
@@ -136,7 +144,7 @@ pub mod designer {
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Exit);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Exit);
             for o in t {
                 world.write_model(@o);
             }
@@ -145,7 +153,9 @@ pub mod designer {
         fn create_inventory_item(ref self: ContractState, t: Array<InventoryItem>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::InventoryItem);
+            VariablePropertyImp::register_component_properties(
+                worldSt, ComponentType::InventoryItem,
+            );
             for o in t {
                 world.write_model(@o);
             }
@@ -154,7 +164,7 @@ pub mod designer {
         fn create_container(ref self: ContractState, t: Array<Container>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Container);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Container);
             for o in t {
                 world.write_model(@o);
             }
