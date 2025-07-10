@@ -158,24 +158,23 @@ mod tests {
     use lore::{
         models::{
             index::{
-                Entity, Area, Exit, Inspectable, InventoryItem, Container, Trigger,
-                Condition, Effect, Action,
+                Entity, Area, Exit, Inspectable, InventoryItem, Container, Trigger, Condition,
+                Effect, Action,
             },
             area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
             inventoryItem::InventoryItemComponent, container::ContainerComponent,
             player::{PlayerComponent, caller_as_player}, components::Component,
         },
         new_components::{
-            entity_trait::EntityImpl, player_trait::{PlayerImpl},
-            trigger_trait::TriggerImpl, effect_trait::EffectImpl, action_trait::ActionImpl,
+            entity_trait::EntityImpl, player_trait::{PlayerImpl}, trigger_trait::TriggerImpl,
+            effect_trait::EffectImpl, action_trait::ActionImpl,
         },
         types::{
             component_type::{
                 ComponentType, ExitActions, ActionMapExit, InspectableActions, ActionMapInspectable,
                 InventoryItemActions, ActionMapInventoryItem,
             },
-            action_type::{TriggerType, TriggerContext, Operator},
-            direction_type::Direction,
+            action_type::{TriggerType, TriggerContext, Operator}, direction_type::Direction,
         },
         lib::{variable_property::VariablePropertyImp, utils::ByteArrayTraitExt},
     };
@@ -353,7 +352,7 @@ mod tests {
         property: ByteArray,
         value: Array<ByteArray>,
     ) -> Effect {
-        Effect { inst, key, name,target, component, property, value }
+        Effect { inst, key, name, target, component, property, value }
     }
 
     fn create_test_action(
@@ -484,7 +483,13 @@ mod tests {
 
         // Create effects
         let mut effect = create_test_effect(
-            door.inst, e_key, name, door.inst, ComponentType::Inspectable, property, new_description.clone(),
+            door.inst,
+            e_key,
+            name,
+            door.inst,
+            ComponentType::Inspectable,
+            property,
+            new_description.clone(),
         );
         let mut effect2 = create_test_effect(
             door.inst, e_key2, name2, door.inst, ComponentType::Exit, property2, new_enterable,
@@ -656,10 +661,22 @@ mod tests {
 
         // Create effects
         let mut effect = create_test_effect(
-            door.inst, e_key, name, door.inst, ComponentType::Inspectable, property, new_description.clone(),
+            door.inst,
+            e_key,
+            name,
+            door.inst,
+            ComponentType::Inspectable,
+            property,
+            new_description.clone(),
         );
         let mut effect2 = create_test_effect(
-            door.inst, e_key2, name2, door.inst, ComponentType::Exit, property2, new_enterable.clone(),
+            door.inst,
+            e_key2,
+            name2,
+            door.inst,
+            ComponentType::Exit,
+            property2,
+            new_enterable.clone(),
         );
         world.write_model(@effect);
         world.write_model(@effect2);

@@ -14,8 +14,8 @@ use lore::{
             m_Condition, m_PropertyRegistry, m_Effect, m_Action,
         },
     },
-    types::{command_type::IntoTokenTypeFelt252},
-    constants::{errors::{}}, lib::{dictionary::{initialize_dictionary}, utils::{ByteArrayTraitExt}},
+    types::{command_type::IntoTokenTypeFelt252}, constants::{errors::{}},
+    lib::{dictionary::{initialize_dictionary}, utils::{ByteArrayTraitExt}},
 };
 
 

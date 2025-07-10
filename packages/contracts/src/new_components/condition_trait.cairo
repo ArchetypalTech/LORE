@@ -177,7 +177,7 @@ mod tests {
         operator: Operator,
         value: Array<felt252>,
     ) -> Condition {
-        Condition { inst, key, name,target, component, property, operator, value }
+        Condition { inst, key, name, target, component, property, operator, value }
     }
 
     #[test]

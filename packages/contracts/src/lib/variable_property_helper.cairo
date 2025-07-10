@@ -8,8 +8,7 @@ use lore::{
     },
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
-        component_type::ComponentType,
-        direction_type::IntoDirectionByteArray,
+        component_type::ComponentType, direction_type::IntoDirectionByteArray,
     },
     lib::{utils::ByteArrayTraitExt}, constants::errors::Error,
 };
@@ -207,9 +206,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 } else if name == @direction_type {
                     arr
                         .append(
-                            ByteArrayTraitExt::to_felt252_word(
-                                @component.direction_type.into(),
-                            )
+                            ByteArrayTraitExt::to_felt252_word(@component.direction_type.into())
                                 .unwrap(),
                         );
                 }

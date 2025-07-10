@@ -7,8 +7,7 @@ use lore::{
     },
     types::{
         component_type::{ExitActions, ActionMapExit}, command_type::{Command, Token},
-        action_type::TriggerContext,
-        direction_type::{IntoDirectionByteArray}
+        action_type::TriggerContext, direction_type::{IntoDirectionByteArray},
     },
     lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt}, constants::errors::Error, constants,
 };

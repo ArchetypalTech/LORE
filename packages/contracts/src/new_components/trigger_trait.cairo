@@ -222,8 +222,7 @@ mod tests {
             player::{PlayerComponent, caller_as_player},
         },
         new_components::{
-            entity_trait::EntityImpl, player_trait::PlayerImpl,
-            trigger_trait::TriggerImpl,
+            entity_trait::EntityImpl, player_trait::PlayerImpl, trigger_trait::TriggerImpl,
         },
         types::{action_type::TriggerType, direction_type::Direction},
     };

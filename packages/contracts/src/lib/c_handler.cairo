@@ -267,8 +267,7 @@ mod tests {
     use super::*;
     use lore::tests::helpers;
     use lore::{
-        models::player::caller_as_player,
-        types::command_type::{Command, Token, TokenType},
+        models::player::caller_as_player, types::command_type::{Command, Token, TokenType},
         lib::utils::ByteArrayTraitExt,
     };
 

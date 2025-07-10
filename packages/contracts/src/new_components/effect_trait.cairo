@@ -115,8 +115,7 @@ mod tests {
             inspectable::InspectableComponent, player::{PlayerComponent, caller_as_player},
         },
         new_components::{
-            entity_trait::EntityImpl, player_trait::PlayerImpl,
-            trigger_trait::TriggerImpl,
+            entity_trait::EntityImpl, player_trait::PlayerImpl, trigger_trait::TriggerImpl,
         },
         types::{
             action_type::TriggerContext,
@@ -189,7 +188,13 @@ mod tests {
         let key: felt252 = 1;
         let name: ByteArray = "Effect name";
         let mut effect = create_test_effect(
-            door.inst, key, name, door.inst, ComponentType::Inspectable, "description", new_value.clone(),
+            door.inst,
+            key,
+            name,
+            door.inst,
+            ComponentType::Inspectable,
+            "description",
+            new_value.clone(),
         );
         world.write_model(@effect);
         let result = effect.apply_effect(world, context);

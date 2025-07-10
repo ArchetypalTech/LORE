@@ -212,10 +212,9 @@ mod tests {
     use super::lexer;
     use super::CommandImpl;
     use lore::{
-        models::player::caller_as_player,
-        new_components::player_trait::PlayerImpl,
-        types::command_type::{TokenType, IntoTokenTypeFelt252},
-        tests::helpers, lib::{level_test::create_test_level, dictionary::{add_to_dictionary}},
+        models::player::caller_as_player, new_components::player_trait::PlayerImpl,
+        types::command_type::{TokenType, IntoTokenTypeFelt252}, tests::helpers,
+        lib::{level_test::create_test_level, dictionary::{add_to_dictionary}},
     };
 
     #[test]
