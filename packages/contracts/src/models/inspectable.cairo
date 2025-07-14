@@ -99,7 +99,7 @@ pub impl InspectableComponent of Component<Inspectable> {
                 // Get idx from the action map entrypoint
                 let idx: u32 = action.entrypoint.try_into().unwrap();
                 // Say the description
-                player.say(world, InspectableImpl::get_specific_description(@self, idx));
+                player.say(world, InspectableImpl::get_specific_description(@self, idx, world));
                 return Result::Ok(());
             },
         }
@@ -134,23 +134,25 @@ mod tests {
     use dojo::{world::WorldStorage, model::ModelStorage};
     use super::*;
     use lore::tests::helpers;
-    use lore::{models::index::Inspectable, new_components::inspectable_trait::InspectableImpl};
+    use lore::{models::index::{Inspectable, DescriptionText}, new_components::inspectable_trait::InspectableImpl};
 
     fn Inspectable_create_prefab() -> (
         Inspectable, WorldStorage, ContractAddress, ContractAddress,
     ) {
         let (mut world, _, _, player_1, player_2) = helpers::setup_core();
+
+        let descr1 = DescriptionText { inst: 42, key: 0 , text: "hello"};
+        let descr2 = DescriptionText { inst: 42, key: 1 , text: "world"};
+        let descr3 = DescriptionText { inst: 42, key: 2 , text: "how big is a rock"};
+        let descr4 = DescriptionText { inst: 42, key: 3 , text: "what's up with the rock"};
+        let descr5 = DescriptionText { inst: 42, key: 4 , text: "let's talk about the rock"};
+        let descr6 = DescriptionText { inst: 42, key: 5 , text: "the rock is from the moon"};
         let prefab = Inspectable {
             inst: 42,
             is_inspectable: true,
             is_visible: true,
             description: array![
-                "hello",
-                "world",
-                "how big is a rock",
-                "what's up with the rock",
-                "let's talk about the rock",
-                "the rock is from the moon",
+                0, 1, 2, 3, 4, 5
             ],
             action_map: array![
                 ActionMapInspectable {

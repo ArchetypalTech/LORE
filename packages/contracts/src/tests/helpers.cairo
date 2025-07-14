@@ -11,7 +11,7 @@ use lore::{
         index::{
             m_Dict, m_Entity, m_Area, m_Exit, m_Inspectable, m_InventoryItem, m_Container, m_Player,
             m_PlayerStory, m_ParentToChildren, m_ChildToParent, m_Trigger, m_TriggerIndex,
-            m_Condition, m_PropertyRegistry, m_Effect, m_Action, m_StoryLine,
+            m_Condition, m_PropertyRegistry, m_Effect, m_Action, m_StoryLine, m_DescriptionText,
         },
     },
     types::{command_type::IntoTokenTypeFelt252}, constants::{errors::{}},

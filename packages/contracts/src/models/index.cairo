@@ -80,13 +80,26 @@ pub struct Inspectable {
     /// If the inspectable is visible
     pub is_visible: bool,
     /// Array of descriptions for the inspectable
-    pub description: Array<ByteArray>,
+    pub description: Array<u32>,
     /// Array of action maps for the inspectable
     pub action_map: Array<ActionMapInspectable>,
     /// For the first description, if we want to show a different one
     pub already_shown: bool,
     /// New first description
     pub new_entry: ByteArray,
+}
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct DescriptionText {
+    /// Unique identifier from the Entity it is attached to
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the description
+    #[key]
+    pub key: u32,
+    /// Description text
+    pub text: ByteArray,
 }
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
