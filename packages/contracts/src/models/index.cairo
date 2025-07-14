@@ -157,6 +157,8 @@ pub struct Player {
     pub address: ContractAddress,
     /// The location of the player
     pub location: felt252,
+    /// Current story line
+    pub story_line: CounterType,
     /// If the player is in debug mode
     pub use_debug: bool,
 }
@@ -167,8 +169,22 @@ pub struct PlayerStory {
     #[key]
     pub inst: felt252,
     /// Properties ///
-    /// Array of story lines
-    pub story: Array<ByteArray>,
+    /// Array of story lines (story lines keys)
+    pub story: Array<CounterType>,
+}
+
+pub type CounterType = u64;
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
+#[dojo::model]
+pub struct StoryLine {
+    /// Unique identifier (Player or PlayerStory)
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the line
+    #[key]
+    pub key: CounterType,
+    /// Story line
+    pub line: ByteArray,
 }
 
 #[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
