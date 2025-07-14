@@ -30,7 +30,7 @@ pub impl EntityImpl of EntityTrait {
         player.address = address;
         world.write_model(@player);
         let mut inspectable: Inspectable = Component::add_component(world, address.into());
-        let descr1 = DescriptionText { inst: address.into(), key: 0 , text: "Looks like a visitor"};
+        let descr1 = DescriptionText { inst: address.into(), key: 0, text: "Looks like a visitor" };
         world.write_model(@descr1);
         inspectable.description = array![0];
         world.write_model(@inspectable);

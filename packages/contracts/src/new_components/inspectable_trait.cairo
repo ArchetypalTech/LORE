@@ -31,7 +31,9 @@ pub impl InspectableImpl of InspectableTrait {
         descriptionText.text
     }
 
-    fn get_specific_description(inspectable: @Inspectable, index: u32, world: WorldStorage) -> ByteArray {
+    fn get_specific_description(
+        inspectable: @Inspectable, index: u32, world: WorldStorage,
+    ) -> ByteArray {
         if inspectable.description.len() == 0 {
             return "";
         }

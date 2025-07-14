@@ -309,8 +309,9 @@ pub struct Effect {
     pub component: ComponentType,
     /// Property to modify
     pub property: ByteArray,
-    /// New value to set, needs to be array for multiple values such as description.
-    pub value: Array<ByteArray>,
+    /// New value to set, needs to be tuple array. First element is the value, second is the index
+    /// (for texts).
+    pub value: Array<(ByteArray, u32)>,
 }
 
 /// NOT USED YET ///
