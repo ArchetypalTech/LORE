@@ -1,8 +1,8 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
-        index::{Entity, Inspectable, Container, Player, PlayerStory, StoryLine}, components::Component,
-        inspectable::InspectableComponent, container::ContainerComponent,
+        index::{Entity, Inspectable, Container, Player, PlayerStory, StoryLine},
+        components::Component, inspectable::InspectableComponent, container::ContainerComponent,
     },
     new_components::{entity_trait::EntityImpl, inspectable_trait::InspectableImpl},
     constants::errors::Error,
@@ -67,7 +67,8 @@ pub impl PlayerImpl of PlayerTrait {
         // update player_story.story
         world.write_model(@player_story);
         // try to store only the story variable but doesn't work
-        //world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"), @player_story.story);
+    //world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
+    //@player_story.story);
     }
 
 
@@ -87,12 +88,12 @@ pub impl PlayerImpl of PlayerTrait {
         // update player_story.story
         world.write_model(@player_story);
         // let mut playerStory: PlayerStory = world.read_model(*self.inst);
-        // let mut storyLine = playerStory.story.clone();
-        // if (storyLine.len() > 10) {
-        //     let _ = storyLine.pop_front();
-        // }
-        // storyLine.append(format!("> {}", text));
-        // world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
+    // let mut storyLine = playerStory.story.clone();
+    // if (storyLine.len() > 10) {
+    //     let _ = storyLine.pop_front();
+    // }
+    // storyLine.append(format!("> {}", text));
+    // world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
     }
 
     fn get_room(self: @Player, world: @WorldStorage) -> Option<Entity> {
