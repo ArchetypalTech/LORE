@@ -218,6 +218,7 @@ mod tests {
         let mut inspectable: Inspectable = Component::add_component(world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
+        inspectable.description_counter += 1;
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
         inspectable.description = array![0];
@@ -267,6 +268,7 @@ mod tests {
         let mut inspectable: Inspectable = Component::add_component(world, item.inst);
         let desc1: DescriptionText = DescriptionText { inst: item.inst, key: 0, text: "A ball" };
         world.write_model(@desc1);
+        inspectable.description_counter += 1;
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
         inspectable.description = array![0];
@@ -472,7 +474,9 @@ mod tests {
         let new_txt2: ByteArray = "Looks that it leads somewhere";
         let idx2: u32 = 1;
         // 2. Create array of the new description
-        let new_description: Array<(ByteArray, u32)> = array![(new_txt1.clone(), idx1), (new_txt2.clone(), idx2)];
+        let new_description: Array<(ByteArray, u32)> = array![
+            (new_txt1.clone(), idx1), (new_txt2.clone(), idx2),
+        ];
 
         // New is_enterable -> Exit
         // 1. New value as bytearray
@@ -574,9 +578,7 @@ mod tests {
         // let key2: u32 = *new_description.at(1);
         let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));
         // let _new_text2: DescriptionText = world.read_model((upd_door.inst, key2));
-        assert_ne!(
-            new_txt1.clone(), new_text1.text.clone(), "Description1 should not be updated",
-        );
+        assert_ne!(new_txt1.clone(), new_text1.text.clone(), "Description1 should not be updated");
         // This one fails as there is no index 1 in the array
         //assert_ne!(upd_door.description[1].clone(), new_text2, "Description2 should not be
         //updated");

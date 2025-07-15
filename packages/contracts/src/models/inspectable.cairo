@@ -161,6 +161,7 @@ mod tests {
             is_inspectable: true,
             is_visible: true,
             description: array![0, 1, 2, 3, 4, 5],
+            description_counter: 6,
             action_map: array![
                 ActionMapInspectable {
                     action: "show",

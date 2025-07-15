@@ -471,12 +471,30 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             success = true;
                         } else if name == @description {
                             for (value, index) in new_value.clone() {
-                                // get description
-                                let mut descText: Option<DescriptionText> = world
-                                    .read_model((component.inst.clone(), index));
-                                // update description
-                                descText.text = value;
-                                world.write_model(@descText);
+                                let mut found: bool = false;
+
+                                // Check if index is already in component.description
+                                for key in component.description.clone() {
+                                    if key == index {
+                                        // Update existing description
+                                        let mut descText: DescriptionText = world
+                                            .read_model((component.inst.clone(), index));
+                                        descText.text = value.clone();
+                                        world.write_model(@descText);
+                                        found = true;
+                                        break;
+                                    }
+                                };
+
+                                if !found {
+                                    // Add new description
+                                    let new_desc = DescriptionText {
+                                        inst: component.inst, key: index, text: value,
+                                    };
+                                    world.write_model(@new_desc);
+                                    component.description_counter += 1;
+                                    component.description.append(index);
+                                };
                             };
                             success = true;
                         }

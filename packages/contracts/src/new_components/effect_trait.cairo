@@ -153,6 +153,7 @@ mod tests {
         let mut inspectable: Inspectable = Component::add_component(world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
+        inspectable.description_counter += 1;
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
         inspectable.description = array![0];
