@@ -159,7 +159,7 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Inspectable, Condition}, components::Component,
+            index::{Inspectable, DescriptionText, Condition}, components::Component,
             inspectable::InspectableComponent,
         },
         new_components::entity_trait::EntityImpl,
@@ -190,10 +190,14 @@ mod tests {
 
         let new_entry: ByteArray = "A door";
         let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        let desc1: DescriptionText = DescriptionText {
+            inst: door.inst, key: 0, text: new_entry.clone(),
+        };
+        world.write_model(@desc1);
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
         inspectable.already_shown = false;
-        inspectable.description = array!["A door"];
+        inspectable.description = array![0];
         inspectable.new_entry = new_entry;
         inspectable
             .action_map =

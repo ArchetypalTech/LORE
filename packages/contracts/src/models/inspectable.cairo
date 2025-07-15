@@ -150,6 +150,12 @@ mod tests {
         let descr4 = DescriptionText { inst: 42, key: 3, text: "what's up with the rock" };
         let descr5 = DescriptionText { inst: 42, key: 4, text: "let's talk about the rock" };
         let descr6 = DescriptionText { inst: 42, key: 5, text: "the rock is from the moon" };
+        world.write_model(@descr1);
+        world.write_model(@descr2);
+        world.write_model(@descr3);
+        world.write_model(@descr4);
+        world.write_model(@descr5);
+        world.write_model(@descr6);
         let prefab = Inspectable {
             inst: 42,
             is_inspectable: true,
@@ -207,7 +213,7 @@ mod tests {
         let (prefab, world, _, _) = Inspectable_create_prefab();
         let i: Inspectable = Component::get_component(world, prefab.inst).unwrap();
         let idx: u32 = 5;
-        let res = InspectableImpl::get_specific_description(@i, idx);
+        let res = InspectableImpl::get_specific_description(@i, idx, world);
         assert(res == "the rock is from the moon", 'description should be the moon');
     }
 }

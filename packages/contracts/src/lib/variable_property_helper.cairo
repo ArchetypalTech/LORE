@@ -472,7 +472,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         } else if name == @description {
                             for (value, index) in new_value.clone() {
                                 // get description
-                                let mut descText: DescriptionText = world
+                                let mut descText: Option<DescriptionText> = world
                                     .read_model((component.inst.clone(), index));
                                 // update description
                                 descText.text = value;

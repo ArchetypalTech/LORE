@@ -48,6 +48,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_StoryLine::TEST_CLASS_HASH),
             TestResource::Model(m_Entity::TEST_CLASS_HASH),
             TestResource::Model(m_Inspectable::TEST_CLASS_HASH),
+            TestResource::Model(m_DescriptionText::TEST_CLASS_HASH),
             TestResource::Model(m_Area::TEST_CLASS_HASH),
             TestResource::Model(m_Exit::TEST_CLASS_HASH),
             TestResource::Model(m_Container::TEST_CLASS_HASH),
