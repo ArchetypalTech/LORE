@@ -492,7 +492,6 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                         inst: component.inst, key: index, text: value,
                                     };
                                     world.write_model(@new_desc);
-                                    component.description_counter += 1;
                                     component.description.append(index);
                                 };
                             };

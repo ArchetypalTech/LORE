@@ -218,7 +218,6 @@ mod tests {
         let mut inspectable: Inspectable = Component::add_component(world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
-        inspectable.description_counter += 1;
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
         inspectable.description = array![0];
@@ -268,7 +267,6 @@ mod tests {
         let mut inspectable: Inspectable = Component::add_component(world, item.inst);
         let desc1: DescriptionText = DescriptionText { inst: item.inst, key: 0, text: "A ball" };
         world.write_model(@desc1);
-        inspectable.description_counter += 1;
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
         inspectable.description = array![0];
@@ -426,7 +424,7 @@ mod tests {
         door.set_parent(world, @room_2);
         let old_insp_door: Inspectable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
-        let old_txt: DescriptionText = world.read_model((door.inst, old_key));
+        let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // create item that is in room 1
         let mut item = create_item(world, room_1.inst);

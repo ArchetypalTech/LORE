@@ -81,8 +81,6 @@ pub struct Inspectable {
     pub is_visible: bool,
     /// Array of descriptions for the inspectable
     pub description: Array<u32>,
-    /// Counter to know how many descriptions are there
-    pub description_counter: u32,
     /// Array of action maps for the inspectable
     pub action_map: Array<ActionMapInspectable>,
     /// For the first description, if we want to show a different one
