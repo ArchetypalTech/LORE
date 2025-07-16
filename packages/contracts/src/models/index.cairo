@@ -80,13 +80,26 @@ pub struct Inspectable {
     /// If the inspectable is visible
     pub is_visible: bool,
     /// Array of descriptions for the inspectable
-    pub description: Array<ByteArray>,
+    pub description: Array<u32>,
     /// Array of action maps for the inspectable
     pub action_map: Array<ActionMapInspectable>,
     /// For the first description, if we want to show a different one
     pub already_shown: bool,
     /// New first description
     pub new_entry: ByteArray,
+}
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct DescriptionText {
+    /// Unique identifier from the Entity it is attached to
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the description
+    #[key]
+    pub key: u32,
+    /// Description text
+    pub text: ByteArray,
 }
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
@@ -157,6 +170,8 @@ pub struct Player {
     pub address: ContractAddress,
     /// The location of the player
     pub location: felt252,
+    /// Current story line
+    pub story_line: CounterType,
     /// If the player is in debug mode
     pub use_debug: bool,
 }
@@ -167,8 +182,22 @@ pub struct PlayerStory {
     #[key]
     pub inst: felt252,
     /// Properties ///
-    /// Array of story lines
-    pub story: Array<ByteArray>,
+    /// Array of story lines (story lines keys)
+    pub story: Array<CounterType>,
+}
+
+pub type CounterType = u64;
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
+#[dojo::model]
+pub struct StoryLine {
+    /// Unique identifier (Player or PlayerStory)
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the line
+    #[key]
+    pub key: CounterType,
+    /// Story line
+    pub line: ByteArray,
 }
 
 #[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
@@ -280,8 +309,9 @@ pub struct Effect {
     pub component: ComponentType,
     /// Property to modify
     pub property: ByteArray,
-    /// New value to set, needs to be array for multiple values such as description.
-    pub value: Array<ByteArray>,
+    /// New value to set, needs to be tuple array. First element is the value, second is the index
+    /// (for texts).
+    pub value: Array<(ByteArray, u32)>,
 }
 
 /// NOT USED YET ///

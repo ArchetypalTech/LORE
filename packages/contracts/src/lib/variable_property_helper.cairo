@@ -1,14 +1,18 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{Area, Exit, Inspectable, InventoryItem, Container, Player, PropertyRegistry},
+        index::{
+            Area, Exit, Inspectable, DescriptionText, InventoryItem, Container, Player,
+            PropertyRegistry,
+        },
         area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
         inventoryItem::InventoryItemComponent, container::ContainerComponent,
         player::PlayerComponent,
     },
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
-        component_type::ComponentType, direction_type::IntoDirectionByteArray,
+        component_type::ComponentType,
+        direction_type::{Direction, IntoDirectionByteArray, IntoFelt252Direction},
     },
     lib::{utils::ByteArrayTraitExt}, constants::errors::Error,
 };
@@ -219,7 +223,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn get_inspectable_property(
-        component: Inspectable, name: @ByteArray, property: @PropertyRegistry,
+        component: Inspectable, name: @ByteArray, property: @PropertyRegistry, world: WorldStorage,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
@@ -238,8 +242,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 } else if name == @description {
                     let desc = component.description;
                     for i in 0..desc.len() {
-                        let part: ByteArray = desc.at(i).clone();
-                        let felt = ByteArrayTraitExt::to_felt252_word(@part).unwrap();
+                        let key: u32 = desc.at(i).clone();
+                        let descText: DescriptionText = world.read_model((component.inst, key));
+                        let felt = ByteArrayTraitExt::to_felt252_word(@descText.text).unwrap();
                         arr.append(felt);
                     }
                 }
@@ -347,7 +352,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<ByteArray>,
+        new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
@@ -365,9 +370,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::ReadWrite => {
                         if name == @is_spawn_point {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_spawn_point = new_var_value;
                             success = true;
                         }
@@ -385,7 +389,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<ByteArray>,
+        new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_exit: ByteArray = "is_exit";
@@ -401,29 +405,29 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @is_exit {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_exit = new_var_value;
                             success = true;
                         } else if name == @is_enterable {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_enterable = new_var_value;
                             success = true;
                         } else if name == @leads_to {
-                            component
-                                .leads_to =
-                                    ByteArrayTraitExt::to_felt252_word(@new_value[0].clone())
-                                .unwrap();
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::to_felt252_word(@value).unwrap();
+                            component.leads_to = new_var_value;
                             success = true;
                         } else if name == @direction_type {
-                            let new_dir = ByteArrayTraitExt::direction_from_felt252(
-                                ByteArrayTraitExt::to_felt252_word(
-                                    @ByteArrayTraitExt::to_lowercase(new_value[0].clone()),
-                                )
-                                    .unwrap(),
+                            let (value, _index) = new_value[0].clone();
+                            let lowercased = ByteArrayTraitExt::to_lowercase(value);
+                            let to_felt252_direction = ByteArrayTraitExt::to_felt252_word(
+                                @lowercased,
+                            )
+                                .unwrap();
+                            let new_dir: Direction = IntoFelt252Direction::into(
+                                to_felt252_direction,
                             );
                             component.direction_type = new_dir;
                             success = true;
@@ -442,7 +446,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<ByteArray>,
+        new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
@@ -456,29 +460,41 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @is_visible {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_visible = new_var_value;
                             success = true;
                         } else if name == @is_inspectable {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_inspectable = new_var_value;
                             success = true;
                         } else if name == @description {
-                            // FOR NOW REPLACES THE WHOLE ARRAY,
-                            // TODO: implement a way that supports updating/replacing/removing at
-                            // certain indices Build a temporary mutable copy of description
-                            let mut new_description = array![];
+                            for (value, index) in new_value.clone() {
+                                let mut found: bool = false;
 
-                            // Copy the original description
-                            for item in new_value.clone() {
-                                let new_byte = item;
-                                new_description.append(new_byte.clone());
+                                // Check if index is already in component.description
+                                for key in component.description.clone() {
+                                    if key == index {
+                                        // Update existing description
+                                        let mut descText: DescriptionText = world
+                                            .read_model((component.inst.clone(), index));
+                                        descText.text = value.clone();
+                                        world.write_model(@descText);
+                                        found = true;
+                                        break;
+                                    }
+                                };
+
+                                if !found {
+                                    // Add new description
+                                    let new_desc = DescriptionText {
+                                        inst: component.inst, key: index, text: value,
+                                    };
+                                    world.write_model(@new_desc);
+                                    component.description.append(index);
+                                };
                             };
-                            component.description = new_description;
                             success = true;
                         }
                     },
@@ -495,7 +511,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<ByteArray>,
+        new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
@@ -512,30 +528,27 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @owner_id {
-                            component.owner_id = new_value[0].to_felt252_word().unwrap();
+                            let (value, _index) = new_value[0].clone();
+                            component.owner_id = value.to_felt252_word().unwrap();
                             success = true;
                         } else if name == @can_be_picked_up {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_picked_up = new_var_value;
                             success = true;
                         } else if name == @can_go_in_container {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_go_in_container = new_var_value;
                             success = true;
                         } else if name == @already_used {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.already_used = new_var_value;
                             success = true;
                         } else if name == @multiple_use {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.multiple_use = new_var_value;
                             success = true;
                         }
@@ -553,7 +566,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<ByteArray>,
+        new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_container: ByteArray = "is_container";
@@ -570,33 +583,28 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @is_container {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_container = new_var_value;
                             success = true;
                         } else if name == @can_be_opened {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_opened = new_var_value;
                             success = true;
                         } else if name == @can_receive_items {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_receive_items = new_var_value;
                             success = true;
                         } else if name == @is_open {
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_open = new_var_value;
                             success = true;
                         } else if name == @num_slots {
-                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
-                                new_value[0].clone(),
-                            );
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(value);
                             component.num_slots = new_var_value;
                             success = true;
                         }
@@ -614,7 +622,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<ByteArray>,
+        new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let location: ByteArray = "location";
@@ -627,8 +635,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @location {
+                            let (value, _index) = new_value[0].clone();
                             component
-                                .location = ByteArrayTraitExt::to_felt252_word(new_value[0])
+                                .location = ByteArrayTraitExt::to_felt252_word(@value)
                                 .unwrap();
                             success = true;
                         }

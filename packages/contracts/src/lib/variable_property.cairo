@@ -54,7 +54,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
                     VariablePropertyHelperTrait::get_inspectable_property(
-                    component, @prop_text, @property_registry,
+                    component, @prop_text, @property_registry, *world,
                 );
                 property_value = property_value_opt;
                 access = access_opt;
@@ -99,7 +99,7 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
         mut world: @WorldStorage,
         key: @felt252,
         property_name: @ByteArray,
-        new_value: @Array<ByteArray>,
+        new_value: @Array<(ByteArray, u32)>,
         component_type: ComponentType,
     ) -> Result<(), Error> {
         let property_registry: PropertyRegistry = world.read_model((component_type));

@@ -111,8 +111,9 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Inspectable, Player}, components::Component, area::AreaComponent,
-            inspectable::InspectableComponent, player::{PlayerComponent, caller_as_player},
+            index::{Inspectable, DescriptionText, Player}, components::Component,
+            area::AreaComponent, inspectable::InspectableComponent,
+            player::{PlayerComponent, caller_as_player},
         },
         new_components::{
             entity_trait::EntityImpl, player_trait::PlayerImpl, trigger_trait::TriggerImpl,
@@ -131,7 +132,7 @@ mod tests {
         target: felt252,
         component: ComponentType,
         property: ByteArray,
-        value: Array<ByteArray>,
+        value: Array<(ByteArray, u32)>,
     ) -> Effect {
         Effect { inst, key, name, target, component, property, value }
     }
@@ -150,9 +151,11 @@ mod tests {
         door.name = "door";
         world.write_model(@door);
         let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
+        world.write_model(@desc1);
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
-        inspectable.description = array!["A door"];
+        inspectable.description = array![0];
         inspectable
             .action_map =
                 array![
@@ -170,6 +173,9 @@ mod tests {
                     },
                 ];
         inspectable.store(world);
+        let old_insp_door: Inspectable = world.read_model(door.inst);
+        let old_key: u32 = *old_insp_door.description.at(0);
+        let old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // Create player
         let mut player: Player = caller_as_player(world, player_1);
@@ -182,8 +188,8 @@ mod tests {
         VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
 
         // Test description new value
-        let new_value: Array<ByteArray> = array![
-            "A door that is open", "Looks that it leads somewhere",
+        let new_value: Array<(ByteArray, u32)> = array![
+            ("A door that is open", 0), ("Looks that it leads somewhere", 1),
         ];
         let key: felt252 = 1;
         let name: ByteArray = "Effect name";
@@ -200,15 +206,15 @@ mod tests {
         let result = effect.apply_effect(world, context);
 
         let new_inspectable: Inspectable = world.read_model(door.inst);
+        let key: u32 = *new_inspectable.description.at(0);
+        let key2: u32 = *new_inspectable.description.at(1);
+        let new_txt1: DescriptionText = world.read_model((door.inst, key));
+        let new_txt2: DescriptionText = world.read_model((door.inst, key2));
 
-        assert_ne!(
-            inspectable.description[0],
-            new_inspectable.description[0],
-            "Effect should update description",
-        );
-        assert_eq!(
-            new_inspectable.description[1], new_value.at(1), "Effect should update description",
-        );
+        let (defTxt2, _defKey2) = new_value.at(1);
+
+        assert_ne!(old_txt.text, new_txt1.text.clone(), "Effect should update description");
+        assert_eq!(new_txt2.text.clone(), defTxt2.clone(), "Effect should update description");
         assert_eq!(result.is_ok(), true, "Effect should apply successfully");
     }
 }

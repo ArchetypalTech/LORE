@@ -1,8 +1,8 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
-        index::{Entity, Area, Exit, Inspectable}, components::Component, area::AreaComponent,
-        exit::ExitComponent, inspectable::InspectableComponent,
+        index::{Entity, Area, Exit, Inspectable, DescriptionText}, components::Component,
+        area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
     },
     new_components::entity_trait::EntityImpl,
 };
@@ -22,12 +22,15 @@ fn room_start(mut world: WorldStorage) {
     };
     world.write_model(@obj);
     let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
-    inspectable
-        .description =
-            array![
-                "The first thing you've ever seen, it's pretty wild, flaring colors like flower petals but kaleidoscopically distorted",
-                "Pretty colors",
-            ];
+    let descr1 = DescriptionText {
+        inst: 2826,
+        key: 0,
+        text: "The first thing you've ever seen, it's pretty wild, flaring colors like flower petals but kaleidoscopically distorted",
+    };
+    let descr2 = DescriptionText { inst: 2826, key: 1, text: "Pretty colors" };
+    world.write_model(@descr1);
+    world.write_model(@descr2);
+    inspectable.description = array![0, 1];
     inspectable.store(world);
     let _: Area = Component::add_component(world, obj.inst);
     object_room_one(world, obj);
@@ -43,7 +46,13 @@ fn object_room_one(mut world: WorldStorage, parent: Entity) {
     };
     world.write_model(@obj);
     let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
-    inspectable.description = array!["A swirling circle of colors, it doesn't seem solid"];
+    let descr1 = DescriptionText { inst: 9999, key: 0, text: "A portal" };
+    let descr2 = DescriptionText {
+        inst: 9999, key: 1, text: "A swirling circle of colors, it doesn't seem solid",
+    };
+    world.write_model(@descr1);
+    world.write_model(@descr2);
+    inspectable.description = array![0, 1];
     inspectable.store(world);
     let mut exit: Exit = Component::add_component(world, obj.inst);
     exit.leads_to = 1234;
@@ -58,12 +67,15 @@ fn room_two(mut world: WorldStorage) {
     entity.alt_names = array!["garden"];
     world.write_model(@entity);
     let mut inspectable: Inspectable = Component::add_component(world, entity.inst);
-    inspectable
-        .description =
-            array![
-                "Just suddenly it's all flowers and trees and grass",
-                "Still pretty colors, but now it all has definition",
-            ];
+    let descr1 = DescriptionText {
+        inst: 1234, key: 0, text: "Just suddenly it's all flowers and trees and grass",
+    };
+    let descr2 = DescriptionText {
+        inst: 1234, key: 1, text: "Still pretty colors, but now it all has definition",
+    };
+    world.write_model(@descr1);
+    world.write_model(@descr2);
+    inspectable.description = array![0, 1];
     inspectable.store(world);
     let _: Area = Component::add_component(world, entity.inst);
 }

@@ -158,8 +158,8 @@ mod tests {
     use lore::{
         models::{
             index::{
-                Entity, Area, Exit, Inspectable, InventoryItem, Container, Trigger, Condition,
-                Effect, Action,
+                Entity, Area, Exit, Inspectable, DescriptionText, InventoryItem, Container, Trigger,
+                Condition, Effect, Action,
             },
             area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
             inventoryItem::InventoryItemComponent, container::ContainerComponent,
@@ -216,9 +216,11 @@ mod tests {
         world.write_model(@door);
         // add inspectable component to door
         let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
+        world.write_model(@desc1);
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
-        inspectable.description = array!["A door"];
+        inspectable.description = array![0];
         inspectable
             .action_map =
                 array![
@@ -263,9 +265,11 @@ mod tests {
         world.write_model(@item);
         // add inspectable component to item
         let mut inspectable: Inspectable = Component::add_component(world, item.inst);
+        let desc1: DescriptionText = DescriptionText { inst: item.inst, key: 0, text: "A ball" };
+        world.write_model(@desc1);
         inspectable.is_inspectable = true;
         inspectable.is_visible = true;
-        inspectable.description = array!["A ball"];
+        inspectable.description = array![0];
         inspectable
             .action_map =
                 array![
@@ -350,7 +354,7 @@ mod tests {
         target: felt252,
         component: ComponentType,
         property: ByteArray,
-        value: Array<ByteArray>,
+        value: Array<(ByteArray, u32)>,
     ) -> Effect {
         Effect { inst, key, name, target, component, property, value }
     }
@@ -418,6 +422,9 @@ mod tests {
         // create door entity in room 2 that leads to room 1 via south
         let mut door = create_door(world, room_1.inst, Direction::South);
         door.set_parent(world, @room_2);
+        let old_insp_door: Inspectable = world.read_model(door.inst);
+        let old_key: u32 = *old_insp_door.description.at(0);
+        let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // create item that is in room 1
         let mut item = create_item(world, room_1.inst);
@@ -461,15 +468,19 @@ mod tests {
         // New Description door -> Inspectable
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
+        let idx1: u32 = 0;
         let new_txt2: ByteArray = "Looks that it leads somewhere";
+        let idx2: u32 = 1;
         // 2. Create array of the new description
-        let new_description: Array<ByteArray> = array![new_txt1, new_txt2];
+        let new_description: Array<(ByteArray, u32)> = array![
+            (new_txt1.clone(), idx1), (new_txt2.clone(), idx2),
+        ];
 
         // New is_enterable -> Exit
         // 1. New value as bytearray
         let enterable: ByteArray = "true";
         // 2. Create array of the new value
-        let new_enterable: Array<ByteArray> = array![enterable];
+        let new_enterable: Array<(ByteArray, u32)> = array![(enterable, 0)];
 
         // Properties as bytearray
         let property: ByteArray = "description";
@@ -561,13 +572,11 @@ mod tests {
         // 3. Effects should not be update
         let upd_door: Inspectable = world.read_model(door.inst);
         let upd_door_exit: Exit = world.read_model(door.inst);
-        let new_text1 = new_description.at(0);
-        let _new_text2 = new_description.at(1);
-        assert_ne!(
-            upd_door.description[0].clone(),
-            new_text1.clone(),
-            "Description1 should not be updated",
-        );
+        let key1: u32 = *upd_door.description.at(0);
+        // let key2: u32 = *new_description.at(1);
+        let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));
+        // let _new_text2: DescriptionText = world.read_model((upd_door.inst, key2));
+        assert_ne!(new_txt1.clone(), new_text1.text.clone(), "Description1 should not be updated");
         // This one fails as there is no index 1 in the array
         //assert_ne!(upd_door.description[1].clone(), new_text2, "Description2 should not be
         //updated");
@@ -640,15 +649,19 @@ mod tests {
         // New Description door -> Inspectable
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
+        let idx1: u32 = 0;
         let new_txt2: ByteArray = "Looks that it leads somewhere";
+        let idx2: u32 = 1;
         // 2. Create array of the new description
-        let new_description: Array<ByteArray> = array![new_txt1, new_txt2];
+        let new_description: Array<(ByteArray, u32)> = array![
+            (new_txt1.clone(), idx1), (new_txt2.clone(), idx2),
+        ];
 
         // New is_enterable -> Exit
         // 1. New value as ByteArray
         let enterable: ByteArray = "true";
         // 2. Create array of the new value
-        let new_enterable: Array<ByteArray> = array![enterable];
+        let new_enterable: Array<(ByteArray, u32)> = array![(enterable, 0)];
 
         // Properties as bytearray
         let property: ByteArray = "description";
@@ -759,14 +772,12 @@ mod tests {
         // 3. Effects should be update
         let upd_door: Inspectable = world.read_model(door.inst);
         let upd_door_exit: Exit = world.read_model(door.inst);
-        let new_text1 = new_description.at(0);
-        let new_text2 = new_description.at(1);
-        assert_eq!(
-            upd_door.description[0].clone(), new_text1.clone(), "Description1 should be updated",
-        );
-        assert_eq!(
-            upd_door.description[1].clone(), new_text2.clone(), "Description2 should be updated",
-        );
+        let key1: u32 = *upd_door.description.at(0);
+        let key2: u32 = *upd_door.description.at(1);
+        let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));
+        let new_text2: DescriptionText = world.read_model((upd_door.inst, key2));
+        assert_eq!(new_txt1, new_text1.text.clone(), "Description1 should be updated");
+        assert_eq!(new_txt2, new_text2.text.clone(), "Description2 should be updated");
         assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
         // println!("Old description: {:?}", old_inspectable.description);
     // println!("New description: {:?}", array![new_text1, new_text2]);

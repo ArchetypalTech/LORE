@@ -1,8 +1,8 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
-        index::{Entity, Inspectable, Container, Player, PlayerStory}, components::Component,
-        inspectable::InspectableComponent, container::ContainerComponent,
+        index::{Entity, Inspectable, Container, Player, PlayerStory, StoryLine},
+        components::Component, inspectable::InspectableComponent, container::ContainerComponent,
     },
     new_components::{entity_trait::EntityImpl, inspectable_trait::InspectableImpl},
     constants::errors::Error,
@@ -52,54 +52,48 @@ pub impl PlayerImpl of PlayerTrait {
 
     // TODO: improve name and better description
     fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        const MAX_LENGTH_LIMIT: usize = 2000;
-        let new_text_len = text.len();
-        let mut total_len = 0;
-
-        loop {
-            let playerStoryLoop: PlayerStory = world.read_model(*self.inst);
-            let mut storyLine = playerStoryLoop.story.clone();
-
-            total_len = 0;
-            for line in storyLine.clone() {
-                total_len += line.len();
-            };
-
-            if *self.use_debug {
-                self.clone().say(world, format!("Total length: {:?}", total_len));
-                self.clone().say(world, format!("New text length: {:?}", new_text_len));
-            }
-
-            if total_len + new_text_len <= MAX_LENGTH_LIMIT {
-                storyLine.append(text);
-                world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
-                break;
-            }
-
-            if storyLine.len() == 0 {
-                // Edge case: nothing left to remove, but still too large
-                break;
-            }
-
-            let removed = storyLine.pop_front();
-            total_len -= removed.unwrap().len();
-            if *self.use_debug {
-                self.clone().say(world, format!("Total length after pop: {:?}", total_len));
-            }
-
-            world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
-        }
+        // Read counter from player
+        let mut counter = *self.story_line;
+        // Increase counter
+        let increase: u64 = 1;
+        counter += increase;
+        // Create new story line
+        let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };
+        // Write story line to world
+        world.write_model(@story_line);
+        // Add story line to player story
+        let mut player_story: PlayerStory = world.read_model(*self.inst);
+        player_story.story.append(counter);
+        // update player_story.story
+        world.write_model(@player_story);
+        // try to store only the story variable but doesn't work
+    //world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
+    //@player_story.story);
     }
 
 
     fn add_command_text(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        let mut playerStory: PlayerStory = world.read_model(*self.inst);
-        let mut storyLine = playerStory.story.clone();
-        if (storyLine.len() > 10) {
-            let _ = storyLine.pop_front();
-        }
-        storyLine.append(format!("> {}", text));
-        world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
+        // read counter from player
+        let mut counter = *self.story_line;
+        // increase counter
+        let increase: u64 = 1;
+        counter += increase;
+        // create new story line
+        let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };
+        // write story line to world
+        world.write_model(@story_line);
+        // add story line to player story
+        let mut player_story: PlayerStory = world.read_model(*self.inst);
+        player_story.story.append(counter);
+        // update player_story.story
+        world.write_model(@player_story);
+        // let mut playerStory: PlayerStory = world.read_model(*self.inst);
+    // let mut storyLine = playerStory.story.clone();
+    // if (storyLine.len() > 10) {
+    //     let _ = storyLine.pop_front();
+    // }
+    // storyLine.append(format!("> {}", text));
+    // world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
     }
 
     fn get_room(self: @Player, world: @WorldStorage) -> Option<Entity> {
