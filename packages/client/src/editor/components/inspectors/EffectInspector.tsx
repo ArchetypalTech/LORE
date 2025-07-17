@@ -31,7 +31,7 @@ export const EffectInspector: ComponentInspector<Effect> = ({
         updatedObject.target = e.target.value;
       },
       component: (e, updatedObject) => {
-        updatedObject.component = stringCairoEnum(e.target.value);
+        updatedObject.componentType = stringCairoEnum(e.target.value);
       },
       property: (e, updatedObject) => {
         updatedObject.property = e.target.value;
@@ -88,7 +88,11 @@ export const EffectInspector: ComponentInspector<Effect> = ({
         id="component"
         onChange={handleInputChange}
         value={componentObject.component}
+<<<<<<< HEAD
         enum={componentType.filter((x) => !excludeComponent.includes(x))}
+=======
+        enum={componentType}
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
       />
       <Select
         id="property"

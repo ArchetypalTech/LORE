@@ -10,6 +10,7 @@ export interface ChildToParent {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Type definition for `lore::lib::relations::ChildToParentValue` struct
 export interface ChildToParentValue {
 	is_child: boolean;
@@ -18,6 +19,8 @@ export interface ChildToParentValue {
 
 // Type definition for `lore::models::index::Action` struct
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 // Type definition for `lore::components::container::ActionMapContainer` struct
 export interface ActionMapContainer {
 	action: string;
@@ -107,7 +110,19 @@ export interface PlayerStory {
 }
 
 // Type definition for `lore::lib::actions::Action` struct
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+// Type definition for `lore::lib::relations::ChildToParentValue` struct
+export interface ChildToParentValue {
+	is_child: boolean;
+	parent: BigNumberish;
+}
+
+// Type definition for `lore::models::index::Action` struct
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 export interface Action {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -123,6 +138,7 @@ export interface Action {
 	success_response: Array<string>;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Type definition for `lore::models::index::ActionValue` struct
 export interface ActionValue {
@@ -174,6 +190,58 @@ export interface ComponentVariableValue {
 =======
 // Type definition for `lore::lib::condition::Condition` struct
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+// Type definition for `lore::lib::condition::Condition` struct
+=======
+// Type definition for `lore::models::index::ActionValue` struct
+export interface ActionValue {
+	name: string;
+	description: string;
+	is_enabled: boolean;
+	trigger: Array<[BigNumberish, BigNumberish]>;
+	conditions: Array<[BigNumberish, BigNumberish]>;
+	effects: Array<[BigNumberish, BigNumberish]>;
+	tags: Array<string>;
+	executed: boolean;
+	failing_response: Array<string>;
+	success_response: Array<string>;
+}
+
+// Type definition for `lore::models::index::Area` struct
+export interface Area {
+	inst: BigNumberish;
+	is_area: boolean;
+	is_spawn_point: boolean;
+}
+
+// Type definition for `lore::models::index::AreaValue` struct
+export interface AreaValue {
+	is_area: boolean;
+	is_spawn_point: boolean;
+}
+
+// Type definition for `lore::models::index::ComponentVariable` struct
+export interface ComponentVariable {
+	inst: BigNumberish;
+	key: BigNumberish;
+	id: BigNumberish;
+	component_type: ComponentTypeEnum;
+	property_name: string;
+	value: string;
+	last_updated: BigNumberish;
+}
+
+// Type definition for `lore::models::index::ComponentVariableValue` struct
+export interface ComponentVariableValue {
+	component_type: ComponentTypeEnum;
+	property_name: string;
+	value: string;
+	last_updated: BigNumberish;
+}
+
+// Type definition for `lore::models::index::Condition` struct
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 export interface Condition {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -185,6 +253,7 @@ export interface Condition {
 	value: Array<BigNumberish>;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Type definition for `lore::models::index::ConditionValue` struct
 export interface ConditionValue {
@@ -233,6 +302,55 @@ export interface DescriptionTextValue {
 =======
 // Type definition for `lore::lib::dictionary::Dict` struct
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+// Type definition for `lore::lib::dictionary::Dict` struct
+=======
+// Type definition for `lore::models::index::ConditionValue` struct
+export interface ConditionValue {
+	name: string;
+	target: BigNumberish;
+	component: ComponentTypeEnum;
+	property: string;
+	operator: OperatorEnum;
+	value: Array<BigNumberish>;
+}
+
+// Type definition for `lore::models::index::Container` struct
+export interface Container {
+	inst: BigNumberish;
+	is_container: boolean;
+	can_be_opened: boolean;
+	can_receive_items: boolean;
+	is_open: boolean;
+	num_slots: BigNumberish;
+	action_map: Array<ActionMapContainer>;
+}
+
+// Type definition for `lore::models::index::ContainerValue` struct
+export interface ContainerValue {
+	is_container: boolean;
+	can_be_opened: boolean;
+	can_receive_items: boolean;
+	is_open: boolean;
+	num_slots: BigNumberish;
+	action_map: Array<ActionMapContainer>;
+}
+
+// Type definition for `lore::models::index::DescriptionText` struct
+export interface DescriptionText {
+	inst: BigNumberish;
+	key: BigNumberish;
+	text: string;
+}
+
+// Type definition for `lore::models::index::DescriptionTextValue` struct
+export interface DescriptionTextValue {
+	text: string;
+}
+
+// Type definition for `lore::models::index::Dict` struct
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 export interface Dict {
 	dict_key: BigNumberish;
 	word: string;
@@ -240,6 +358,7 @@ export interface Dict {
 	n_value: BigNumberish;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Type definition for `lore::models::index::DictValue` struct
 export interface DictValue {
@@ -270,6 +389,8 @@ export interface EffectValue {
 
 // Type definition for `lore::models::index::Entity` struct
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 // Type definition for `lore::lib::effect::Effect` struct
 export interface Effect {
 	inst: BigNumberish;
@@ -297,7 +418,40 @@ export interface EffectParameter {
 }
 
 // Type definition for `lore::lib::entity::Entity` struct
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+// Type definition for `lore::models::index::DictValue` struct
+export interface DictValue {
+	word: string;
+	tokenType: TokenTypeEnum;
+	n_value: BigNumberish;
+}
+
+// Type definition for `lore::models::index::Effect` struct
+export interface Effect {
+	inst: BigNumberish;
+	key: BigNumberish;
+	name: string;
+	target: BigNumberish;
+	component: ComponentTypeEnum;
+	property: string;
+	value: Array<[string, BigNumberish]>;
+}
+
+// Type definition for `lore::models::index::EffectValue` struct
+export interface EffectValue {
+	name: string;
+	target: BigNumberish;
+	component: ComponentTypeEnum;
+	property: string;
+	value: Array<[string, BigNumberish]>;
+}
+
+// Type definition for `lore::models::index::Entity` struct
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 export interface Entity {
 	inst: BigNumberish;
 	is_entity: boolean;
@@ -307,6 +461,12 @@ export interface Entity {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+// Type definition for `lore::lib::relations::ChildToParent` struct
+export interface ChildToParent {
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 // Type definition for `lore::models::index::EntityValue` struct
 export interface EntityValue {
 	is_entity: boolean;
@@ -317,10 +477,14 @@ export interface EntityValue {
 
 // Type definition for `lore::models::index::Exit` struct
 export interface Exit {
+<<<<<<< HEAD
 =======
 // Type definition for `lore::lib::relations::ChildToParent` struct
 export interface ChildToParent {
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 	inst: BigNumberish;
 	is_exit: boolean;
 	is_enterable: boolean;
@@ -329,6 +493,7 @@ export interface ChildToParent {
 	action_map: Array<ActionMapExit>;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Type definition for `lore::models::index::ExitValue` struct
 export interface ExitValue {
@@ -366,12 +531,72 @@ export interface InventoryItemValue {
 =======
 // Type definition for `lore::lib::relations::ParentToChildren` struct
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+// Type definition for `lore::lib::relations::ParentToChildren` struct
+=======
+// Type definition for `lore::models::index::ExitValue` struct
+export interface ExitValue {
+	is_exit: boolean;
+	is_enterable: boolean;
+	leads_to: BigNumberish;
+	direction_type: DirectionEnum;
+	action_map: Array<ActionMapExit>;
+}
+
+// Type definition for `lore::models::index::Inspectable` struct
+export interface Inspectable {
+	inst: BigNumberish;
+	is_inspectable: boolean;
+	is_visible: boolean;
+	description: Array<BigNumberish>;
+	action_map: Array<ActionMapInspectable>;
+	already_shown: boolean;
+	new_entry: string;
+}
+
+// Type definition for `lore::models::index::InspectableValue` struct
+export interface InspectableValue {
+	is_inspectable: boolean;
+	is_visible: boolean;
+	description: Array<BigNumberish>;
+	action_map: Array<ActionMapInspectable>;
+	already_shown: boolean;
+	new_entry: string;
+}
+
+// Type definition for `lore::models::index::InventoryItem` struct
+export interface InventoryItem {
+	inst: BigNumberish;
+	is_inventory_item: boolean;
+	owner_id: BigNumberish;
+	can_be_picked_up: boolean;
+	can_go_in_container: boolean;
+	action_map: Array<ActionMapInventoryItem>;
+	already_used: boolean;
+	multiple_use: boolean;
+}
+
+// Type definition for `lore::models::index::InventoryItemValue` struct
+export interface InventoryItemValue {
+	is_inventory_item: boolean;
+	owner_id: BigNumberish;
+	can_be_picked_up: boolean;
+	can_go_in_container: boolean;
+	action_map: Array<ActionMapInventoryItem>;
+	already_used: boolean;
+	multiple_use: boolean;
+}
+
+// Type definition for `lore::models::index::ParentToChildren` struct
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 export interface ParentToChildren {
 	inst: BigNumberish;
 	is_parent: boolean;
 	children: Array<BigNumberish>;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Type definition for `lore::models::index::ParentToChildrenValue` struct
 export interface ParentToChildrenValue {
@@ -457,6 +682,71 @@ export interface StoryLineValue {
 =======
 // Type definition for `lore::lib::trigger::Trigger` struct
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+// Type definition for `lore::lib::trigger::Trigger` struct
+=======
+// Type definition for `lore::models::index::ParentToChildrenValue` struct
+export interface ParentToChildrenValue {
+	is_parent: boolean;
+	children: Array<BigNumberish>;
+}
+
+// Type definition for `lore::models::index::Player` struct
+export interface Player {
+	inst: BigNumberish;
+	is_player: boolean;
+	address: string;
+	location: BigNumberish;
+	story_line: BigNumberish;
+	use_debug: boolean;
+}
+
+// Type definition for `lore::models::index::PlayerStory` struct
+export interface PlayerStory {
+	inst: BigNumberish;
+	story: Array<BigNumberish>;
+}
+
+// Type definition for `lore::models::index::PlayerStoryValue` struct
+export interface PlayerStoryValue {
+	story: Array<BigNumberish>;
+}
+
+// Type definition for `lore::models::index::PlayerValue` struct
+export interface PlayerValue {
+	is_player: boolean;
+	address: string;
+	location: BigNumberish;
+	story_line: BigNumberish;
+	use_debug: boolean;
+}
+
+// Type definition for `lore::models::index::PropertyRegistry` struct
+export interface PropertyRegistry {
+	component_type: ComponentTypeEnum;
+	properties: Array<ComponentProperty>;
+}
+
+// Type definition for `lore::models::index::PropertyRegistryValue` struct
+export interface PropertyRegistryValue {
+	properties: Array<ComponentProperty>;
+}
+
+// Type definition for `lore::models::index::StoryLine` struct
+export interface StoryLine {
+	inst: BigNumberish;
+	key: BigNumberish;
+	line: string;
+}
+
+// Type definition for `lore::models::index::StoryLineValue` struct
+export interface StoryLineValue {
+	line: string;
+}
+
+// Type definition for `lore::models::index::Trigger` struct
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 export interface Trigger {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -473,6 +763,7 @@ export interface TriggerIndex {
 	trigger_id: Array<[BigNumberish, BigNumberish]>;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Type definition for `lore::models::index::TriggerIndexValue` struct
 export interface TriggerIndexValue {
@@ -519,6 +810,8 @@ export interface ActionMapReactable {
 
 // Type definition for `lore::types::property_type::ComponentProperty` struct
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 // Type definition for `lore::lib::trigger::TriggerParameter` struct
 export interface TriggerParameter {
 	name: string;
@@ -526,13 +819,63 @@ export interface TriggerParameter {
 }
 
 // Type definition for `lore::lib::variable_property::ComponentProperty` struct
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+// Type definition for `lore::models::index::TriggerIndexValue` struct
+export interface TriggerIndexValue {
+	trigger_id: Array<[BigNumberish, BigNumberish]>;
+}
+
+// Type definition for `lore::models::index::TriggerValue` struct
+export interface TriggerValue {
+	name: string;
+	trigger_type: TriggerTypeEnum;
+	is_enabled: boolean;
+	is_once: boolean;
+	was_triggered: boolean;
+}
+
+// Type definition for `lore::types::component_type::ActionMapContainer` struct
+export interface ActionMapContainer {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ContainerActionsEnum;
+}
+
+// Type definition for `lore::types::component_type::ActionMapExit` struct
+export interface ActionMapExit {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ExitActionsEnum;
+}
+
+// Type definition for `lore::types::component_type::ActionMapInspectable` struct
+export interface ActionMapInspectable {
+	action: string;
+	inst: BigNumberish;
+	action_fn: InspectableActionsEnum;
+	entrypoint: BigNumberish;
+}
+
+// Type definition for `lore::types::component_type::ActionMapInventoryItem` struct
+export interface ActionMapInventoryItem {
+	action: string;
+	inst: BigNumberish;
+	action_fn: InventoryItemActionsEnum;
+}
+
+// Type definition for `lore::types::property_type::ComponentProperty` struct
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 export interface ComponentProperty {
 	name: string;
 	property_type: PropertyTypeEnum;
 	access_flags: PropertyAccessEnum;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Type definition for `lore::types::action_type::Operator` enum
 export const operator = [
@@ -541,6 +884,8 @@ export const operator = [
 	'GreaterThan',
 	'LessThan',
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 // Type definition for `lore::lib::variable_property::ComponentVariable` struct
 export interface ComponentVariable {
 	key: BigNumberish;
@@ -566,7 +911,18 @@ export const components = [
 	'Inspectable',
 	'InventoryItem',
 	'Player',
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+// Type definition for `lore::types::action_type::Operator` enum
+export const operator = [
+	'Equals',
+	'NotEquals',
+	'GreaterThan',
+	'LessThan',
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 ] as const;
 export type Operator = { [key in typeof operator[number]]: string };
 export type OperatorEnum = CairoCustomEnum;
@@ -608,7 +964,11 @@ export const componentType = [
 	'Container',
 	'Entity',
 	'Exit',
+<<<<<<< HEAD
 	'Reactable',
+=======
+	'Inspectable',
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 	'InventoryItem',
 	'Player',
 	'Trigger',
@@ -635,6 +995,19 @@ export const exitActions = [
 export type ExitActions = { [key in typeof exitActions[number]]: string };
 export type ExitActionsEnum = CairoCustomEnum;
 
+<<<<<<< HEAD
+=======
+// Type definition for `lore::types::component_type::InspectableActions` enum
+export const inspectableActions = [
+	'SetVisible',
+	'ReadRandomDescription',
+	'ReadFirstDescription',
+	'ReadSpecificDescription',
+] as const;
+export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
+export type InspectableActionsEnum = CairoCustomEnum;
+
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 // Type definition for `lore::types::component_type::InventoryItemActions` enum
 export const inventoryItemActions = [
 	'UseItem',
@@ -646,6 +1019,7 @@ export const inventoryItemActions = [
 export type InventoryItemActions = { [key in typeof inventoryItemActions[number]]: string };
 export type InventoryItemActionsEnum = CairoCustomEnum;
 
+<<<<<<< HEAD
 // Type definition for `lore::types::component_type::ReactableActions` enum
 export const reactableActions = [
 	'SetVisible',
@@ -656,6 +1030,8 @@ export const reactableActions = [
 export type ReactableActions = { [key in typeof reactableActions[number]]: string };
 export type ReactableActionsEnum = CairoCustomEnum;
 
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 // Type definition for `lore::types::direction_type::Direction` enum
 export const direction = [
 	'North',
@@ -703,6 +1079,7 @@ export interface SchemaType extends ISchemaType {
 		ActionValue: ActionValue,
 		Area: Area,
 <<<<<<< HEAD
+<<<<<<< HEAD
 		AreaValue: AreaValue,
 		ComponentVariable: ComponentVariable,
 		ComponentVariableValue: ComponentVariableValue,
@@ -744,6 +1121,8 @@ export interface SchemaType extends ISchemaType {
 		ActionMapReactable: ActionMapReactable,
 		ComponentProperty: ComponentProperty,
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ActionMapContainer: ActionMapContainer,
 		Container: Container,
 		ActionMapExit: ActionMapExit,
@@ -769,7 +1148,52 @@ export interface SchemaType extends ISchemaType {
 		ComponentProperty: ComponentProperty,
 		ComponentVariable: ComponentVariable,
 		PropertyRegistry: PropertyRegistry,
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+		AreaValue: AreaValue,
+		ComponentVariable: ComponentVariable,
+		ComponentVariableValue: ComponentVariableValue,
+		Condition: Condition,
+		ConditionValue: ConditionValue,
+		Container: Container,
+		ContainerValue: ContainerValue,
+		DescriptionText: DescriptionText,
+		DescriptionTextValue: DescriptionTextValue,
+		Dict: Dict,
+		DictValue: DictValue,
+		Effect: Effect,
+		EffectValue: EffectValue,
+		Entity: Entity,
+		EntityValue: EntityValue,
+		Exit: Exit,
+		ExitValue: ExitValue,
+		Inspectable: Inspectable,
+		InspectableValue: InspectableValue,
+		InventoryItem: InventoryItem,
+		InventoryItemValue: InventoryItemValue,
+		ParentToChildren: ParentToChildren,
+		ParentToChildrenValue: ParentToChildrenValue,
+		Player: Player,
+		PlayerStory: PlayerStory,
+		PlayerStoryValue: PlayerStoryValue,
+		PlayerValue: PlayerValue,
+		PropertyRegistry: PropertyRegistry,
+		PropertyRegistryValue: PropertyRegistryValue,
+		StoryLine: StoryLine,
+		StoryLineValue: StoryLineValue,
+		Trigger: Trigger,
+		TriggerIndex: TriggerIndex,
+		TriggerIndexValue: TriggerIndexValue,
+		TriggerValue: TriggerValue,
+		ActionMapContainer: ActionMapContainer,
+		ActionMapExit: ActionMapExit,
+		ActionMapInspectable: ActionMapInspectable,
+		ActionMapInventoryItem: ActionMapInventoryItem,
+		ComponentProperty: ComponentProperty,
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 	},
 }
 export const schema: SchemaType = {
@@ -780,10 +1204,13 @@ export const schema: SchemaType = {
 			parent: 0,
 		},
 <<<<<<< HEAD
+<<<<<<< HEAD
 		ChildToParentValue: {
 			is_child: false,
 			parent: 0,
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ActionMapContainer: {
 		action: "",
 			inst: 0,
@@ -884,7 +1311,15 @@ export const schema: SchemaType = {
 		PlayerStory: {
 			inst: 0,
 			story: [""],
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+		ChildToParentValue: {
+			is_child: false,
+			parent: 0,
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		},
 		Action: {
 			inst: 0,
@@ -901,6 +1336,10 @@ export const schema: SchemaType = {
 			success_response: [""],
 		},
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ActionValue: {
 		name: "",
 		description: "",
@@ -950,7 +1389,11 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
+<<<<<<< HEAD
 				Reactable: undefined,
+=======
+				Inspectable: undefined,
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -961,8 +1404,12 @@ export const schema: SchemaType = {
 		value: "",
 			last_updated: 0,
 		},
+<<<<<<< HEAD
 =======
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		Condition: {
 			inst: 0,
 			key: 0,
@@ -974,7 +1421,11 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
+<<<<<<< HEAD
 				Reactable: undefined,
+=======
+				Inspectable: undefined,
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -990,6 +1441,10 @@ export const schema: SchemaType = {
 			value: [0],
 		},
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ConditionValue: {
 		name: "",
 			target: 0,
@@ -999,7 +1454,11 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
+<<<<<<< HEAD
 				Reactable: undefined,
+=======
+				Inspectable: undefined,
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -1045,8 +1504,12 @@ export const schema: SchemaType = {
 		DescriptionTextValue: {
 		text: "",
 		},
+<<<<<<< HEAD
 =======
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		Dict: {
 			dict_key: 0,
 		word: "",
@@ -1084,6 +1547,7 @@ export const schema: SchemaType = {
 				Action: undefined, }),
 		property: "",
 <<<<<<< HEAD
+<<<<<<< HEAD
 			value: [["", 0]],
 		},
 		EffectValue: {
@@ -1106,6 +1570,8 @@ export const schema: SchemaType = {
 			value: [["", 0]],
 		},
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 			value: [""],
 		},
 		EffectExecution: {
@@ -1122,7 +1588,33 @@ export const schema: SchemaType = {
 		name: "",
 			value: 0,
 		},
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+			value: [["", 0]],
+		},
+		EffectValue: {
+		name: "",
+			target: 0,
+		component: new CairoCustomEnum({ 
+					None: "",
+				Area: undefined,
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined,
+				Trigger: undefined,
+				Condition: undefined,
+				Effect: undefined,
+				Action: undefined, }),
+		property: "",
+			value: [["", 0]],
+		},
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		Entity: {
 			inst: 0,
 			is_entity: false,
@@ -1131,6 +1623,11 @@ export const schema: SchemaType = {
 			actions_keys: [0],
 		},
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+		ChildToParent: {
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		EntityValue: {
 			is_entity: false,
 		name: "",
@@ -1138,9 +1635,13 @@ export const schema: SchemaType = {
 			actions_keys: [0],
 		},
 		Exit: {
+<<<<<<< HEAD
 =======
 		ChildToParent: {
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 			inst: 0,
 			is_exit: false,
 			is_enterable: false,
@@ -1160,6 +1661,10 @@ export const schema: SchemaType = {
 					UseExit: "", }), }],
 		},
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ExitValue: {
 			is_exit: false,
 			is_enterable: false,
@@ -1178,6 +1683,34 @@ export const schema: SchemaType = {
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					UseExit: "", }), }],
 		},
+<<<<<<< HEAD
+=======
+		Inspectable: {
+			inst: 0,
+			is_inspectable: false,
+			is_visible: false,
+			description: [0],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
+			already_shown: false,
+		new_entry: "",
+		},
+		InspectableValue: {
+			is_inspectable: false,
+			is_visible: false,
+			description: [0],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
+			already_shown: false,
+		new_entry: "",
+		},
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		InventoryItem: {
 			inst: 0,
 			is_inventory_item: false,
@@ -1207,14 +1740,22 @@ export const schema: SchemaType = {
 			already_used: false,
 			multiple_use: false,
 		},
+<<<<<<< HEAD
 =======
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ParentToChildren: {
 			inst: 0,
 			is_parent: false,
 			children: [0],
 		},
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ParentToChildrenValue: {
 			is_parent: false,
 			children: [0],
@@ -1248,7 +1789,11 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
+<<<<<<< HEAD
 				Reactable: undefined,
+=======
+				Inspectable: undefined,
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -1282,6 +1827,7 @@ export const schema: SchemaType = {
 					ReadOnly: "",
 				ReadWrite: undefined, }), }],
 		},
+<<<<<<< HEAD
 		Reactable: {
 			inst: 0,
 			is_reactable: false,
@@ -1307,6 +1853,8 @@ export const schema: SchemaType = {
 			already_shown: false,
 		new_entry: "",
 		},
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		StoryLine: {
 			inst: 0,
 			key: 0,
@@ -1315,8 +1863,12 @@ export const schema: SchemaType = {
 		StoryLineValue: {
 		line: "",
 		},
+<<<<<<< HEAD
 =======
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		Trigger: {
 			inst: 0,
 			key: 0,
@@ -1344,6 +1896,7 @@ export const schema: SchemaType = {
 				OnCondition: undefined, }),
 			trigger_id: [[0, 0]],
 		},
+<<<<<<< HEAD
 <<<<<<< HEAD
 		TriggerIndexValue: {
 			trigger_id: [[0, 0]],
@@ -1400,6 +1953,63 @@ export const schema: SchemaType = {
 		name: "",
 			value: 0,
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+		TriggerParameter: {
+		name: "",
+			value: 0,
+=======
+		TriggerIndexValue: {
+			trigger_id: [[0, 0]],
+		},
+		TriggerValue: {
+		name: "",
+		trigger_type: new CairoCustomEnum({ 
+					OnEnter: "",
+				OnExit: undefined,
+				OnInteract: undefined,
+				OnInspect: undefined,
+				OnUse: undefined,
+				OnTimer: undefined,
+				OnCondition: undefined, }),
+			is_enabled: false,
+			is_once: false,
+			was_triggered: false,
+		},
+		ActionMapContainer: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined,
+				Check: undefined, }),
+		},
+		ActionMapExit: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseExit: "", }),
+		},
+		ActionMapInspectable: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }),
+			entrypoint: 0,
+		},
+		ActionMapInventoryItem: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }),
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		},
 		ComponentProperty: {
 		name: "",
@@ -1418,7 +2028,10 @@ export const schema: SchemaType = {
 				ReadWrite: undefined, }),
 		},
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 		ComponentVariable: {
 			key: 0,
 		component_type: new CairoCustomEnum({ 
@@ -1456,7 +2069,12 @@ export const schema: SchemaType = {
 				WriteOnly: undefined,
 				ReadWrite: undefined, }), }],
 		},
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 	},
 };
 export enum ModelsMapping {
@@ -1465,6 +2083,7 @@ export enum ModelsMapping {
 	Action = 'lore-Action',
 	ActionValue = 'lore-ActionValue',
 	Area = 'lore-Area',
+<<<<<<< HEAD
 <<<<<<< HEAD
 	AreaValue = 'lore-AreaValue',
 	ComponentVariable = 'lore-ComponentVariable',
@@ -1517,6 +2136,8 @@ export enum ModelsMapping {
 	ComponentProperty = 'lore-ComponentProperty',
 	PropertyAccess = 'lore-PropertyAccess',
 =======
+=======
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 	ActionMapContainer = 'lore-ActionMapContainer',
 	Container = 'lore-Container',
 	ContainerActions = 'lore-ContainerActions',
@@ -1552,6 +2173,61 @@ export enum ModelsMapping {
 	ComponentVariable = 'lore-ComponentVariable',
 	PropertyAccess = 'lore-PropertyAccess',
 	PropertyRegistry = 'lore-PropertyRegistry',
+<<<<<<< HEAD
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
+=======
+=======
+	AreaValue = 'lore-AreaValue',
+	ComponentVariable = 'lore-ComponentVariable',
+	ComponentVariableValue = 'lore-ComponentVariableValue',
+	Condition = 'lore-Condition',
+	ConditionValue = 'lore-ConditionValue',
+	Container = 'lore-Container',
+	ContainerValue = 'lore-ContainerValue',
+	DescriptionText = 'lore-DescriptionText',
+	DescriptionTextValue = 'lore-DescriptionTextValue',
+	Dict = 'lore-Dict',
+	DictValue = 'lore-DictValue',
+	Effect = 'lore-Effect',
+	EffectValue = 'lore-EffectValue',
+	Entity = 'lore-Entity',
+	EntityValue = 'lore-EntityValue',
+	Exit = 'lore-Exit',
+	ExitValue = 'lore-ExitValue',
+	Inspectable = 'lore-Inspectable',
+	InspectableValue = 'lore-InspectableValue',
+	InventoryItem = 'lore-InventoryItem',
+	InventoryItemValue = 'lore-InventoryItemValue',
+	ParentToChildren = 'lore-ParentToChildren',
+	ParentToChildrenValue = 'lore-ParentToChildrenValue',
+	Player = 'lore-Player',
+	PlayerStory = 'lore-PlayerStory',
+	PlayerStoryValue = 'lore-PlayerStoryValue',
+	PlayerValue = 'lore-PlayerValue',
+	PropertyRegistry = 'lore-PropertyRegistry',
+	PropertyRegistryValue = 'lore-PropertyRegistryValue',
+	StoryLine = 'lore-StoryLine',
+	StoryLineValue = 'lore-StoryLineValue',
+	Trigger = 'lore-Trigger',
+	TriggerIndex = 'lore-TriggerIndex',
+	TriggerIndexValue = 'lore-TriggerIndexValue',
+	TriggerValue = 'lore-TriggerValue',
+	Operator = 'lore-Operator',
+	TriggerType = 'lore-TriggerType',
+	TokenType = 'lore-TokenType',
+	ActionMapContainer = 'lore-ActionMapContainer',
+	ActionMapExit = 'lore-ActionMapExit',
+	ActionMapInspectable = 'lore-ActionMapInspectable',
+	ActionMapInventoryItem = 'lore-ActionMapInventoryItem',
+	ComponentType = 'lore-ComponentType',
+	ContainerActions = 'lore-ContainerActions',
+	ExitActions = 'lore-ExitActions',
+	InspectableActions = 'lore-InspectableActions',
+	InventoryItemActions = 'lore-InventoryItemActions',
+	Direction = 'lore-Direction',
+	ComponentProperty = 'lore-ComponentProperty',
+	PropertyAccess = 'lore-PropertyAccess',
+>>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+>>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
 	PropertyType = 'lore-PropertyType',
 }
