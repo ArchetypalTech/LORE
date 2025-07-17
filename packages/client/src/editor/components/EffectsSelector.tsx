@@ -61,7 +61,7 @@ export const EffectSelector = ({
     if (!entity || !entity.Effect) return [];
     return [
       {
-        label: formatKeyAsDecimal(entity.Effect.key),
+        label: entity.Effect.name.toString(),
         value: entity.Effect.key.toString(),
       },
     ];

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   type Effect,
-  components,
+  componentType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
   Input,
@@ -23,11 +23,14 @@ export const EffectInspector: ComponentInspector<Effect> = ({
     componentObject,
     ...props,
     inputHandlers: {
+      name: (e, updatedObject) => {
+        updatedObject.name = e.target.value as unknown as string;
+      },
       target: (e, updatedObject) => {
         updatedObject.target = e.target.value;
       },
       component: (e, updatedObject) => {
-        updatedObject.component = stringCairoEnum(e.target.value);
+        updatedObject.componentType = stringCairoEnum(e.target.value);
       },
       property: (e, updatedObject) => {
         updatedObject.property = e.target.value;
@@ -67,6 +70,11 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
       <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
       <Input
+				id="name"
+				value={componentObject.name}
+				onChange={handleInputChange}
+			/>
+      <Input
         id="target"
         value={componentObject.target.toString()}
         onChange={handleInputChange}
@@ -75,7 +83,7 @@ export const EffectInspector: ComponentInspector<Effect> = ({
         id="component"
         onChange={handleInputChange}
         value={componentObject.component}
-        enum={components}
+        enum={componentType}
       />
       <Select
         id="property"

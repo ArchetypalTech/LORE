@@ -61,7 +61,7 @@ export const ConditionSelector = ({
     if (!entity || !entity.Condition) return [];
     return [
       {
-        label: formatKeyAsDecimal(entity.Condition.key),
+        label: entity.Condition.name.toString(),
         value: entity.Condition.key.toString(),
       },
     ];

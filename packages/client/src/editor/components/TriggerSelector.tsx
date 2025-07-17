@@ -49,7 +49,7 @@ export const TriggerSelector = ({
 
   const entityOptions = useMemo(() => {
     return Array.from(dataPool.entries())
-      .filter(([_, val]) => val.Entity?.name && val.Trigger?.key)
+      .filter(([_, val]) => val.Entity?.name && val.Trigger?.name)
       .map(([address, val]) => ({
         label: val.Entity.name,
         value: address,
@@ -61,7 +61,7 @@ export const TriggerSelector = ({
     if (!entity || !entity.Trigger) return [];
     return [
       {
-        label: formatKeyAsDecimal(entity.Trigger.key),
+        label: entity.Trigger.name.toString(),
         value: entity.Trigger.key.toString(),
       },
     ];

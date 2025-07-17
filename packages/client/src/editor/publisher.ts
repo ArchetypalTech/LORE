@@ -18,7 +18,7 @@ import {
 	triggerType,
 	type Condition,
 	operator,
-	components,
+	componentType,
 	type Effect,
 	type Action,
 	type ParentToChildren,
@@ -270,8 +270,9 @@ const publishCondition = async (condition: Condition) => {
 	const conditionData = [
 		num.toBigInt(condition.inst.toString()),
 		num.toBigInt(condition.key),
+		byteArray.byteArrayFromString(condition.name ?? ""),
 		num.toBigInt(condition.target),
-		toEnumIndex(condition.component, components),
+		toEnumIndex(condition.component, componentType),
 		byteArray.byteArrayFromString(condition.property),
 		toEnumIndex(condition.operator, operator),
 		condition.value.map((v) => num.toBigInt(v ?? "0"))
@@ -283,8 +284,9 @@ const publishEffect = async (effect: Effect) => {
   const effectData = [
     num.toBigInt(effect.inst.toString()),
     num.toBigInt(effect.key.toString()),
+		byteArray.byteArrayFromString(effect.name ?? ""),
     num.toBigInt(effect.target.toString()),
-    toEnumIndex(effect.component, components),
+    toEnumIndex(effect.component, componentType),
     byteArray.byteArrayFromString(effect.property),
     effect.value.map((v) => byteArray.byteArrayFromString(v.toString() ?? "")),
   ];
