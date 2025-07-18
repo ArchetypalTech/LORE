@@ -90,19 +90,25 @@ export const createDefaultAreaComponent = (
 
 export const createDefaultInspectableComponent = (
 	entity: Entity,
-): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
+): WithStringEnums<Pick<SchemaType["lore"], "Inspectable" & "DescriptionText">> => ({
 	Inspectable: {
 		...schema.lore.Inspectable,
 		inst: entity.inst,
 		is_inspectable: true,
 		is_visible: true,
-		description: [entity.name],
+		description_key: [0],
 		action_map: [
-			{ action: "look", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
+			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoint: 0 },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
 		],
 		already_shown: false,
 		new_entry: "",
+	},
+	DescriptionText: {
+		...schema.lore.DescriptionText,
+		inst: entity.inst,
+		key: 0,
+		text: entity.name,
 	},
 });
 

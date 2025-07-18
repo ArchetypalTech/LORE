@@ -9,7 +9,7 @@ import type {
 	Condition,
 	Exit,
 	Action,
-	ComponentsEnum,
+	ComponentTypeEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -469,6 +469,8 @@ const newEntity = async () => {
 	selectEntity(newEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(newEntity.Entity);
 	updateComponent(newEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
+	updateComponent(newEntity.Entity.inst, "DescriptionText", inspectable.DescriptionText as any);
+	
 	return newEntity;
 };
 
@@ -542,7 +544,7 @@ const dojoSync = (
  * @param componentType 
  * @returns the property names for the given component type
  */
-export const syncPropertyRegistry = async (componentType: ComponentsEnum): Promise<string[] | undefined> => {
+export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Promise<string[] | undefined> => {
 	let properties_array: string[] | undefined;
 	try {
 		const { sdk } = await InitDojo();

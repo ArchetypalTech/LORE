@@ -22,6 +22,7 @@ import {
 	type Effect,
 	type Action,
 	type ParentToChildren,
+	DescriptionText,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
 import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
@@ -159,16 +160,12 @@ const publishPlayer = async (player: Player) => {
 	await dispatchDesignerCall("create_player", [playerData]);
 };
 
-const publishInspectable = async (inspectable: Inspectable) => {
+const publishInspectable = async (inspectable: Inspectable, description: DescriptionText) => {
 	const inspectableData = [
 		num.toBigInt(inspectable.inst.toString()),
 		inspectable.is_inspectable,
 		inspectable.is_visible,
-		inspectable.description.length > 0
-			? inspectable.description
-					.filter((x) => x.length > 0)
-					.map((x) => byteArray.byteArrayFromString(x))
-			: 0,
+		inspectable.description.map((x) => num.toBigInt(x.toString())),
 		inspectable.action_map.length > 0
 			? inspectable.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
@@ -180,7 +177,12 @@ const publishInspectable = async (inspectable: Inspectable) => {
 		inspectable.already_shown,
 		byteArray.byteArrayFromString(inspectable.new_entry.toString() ?? ""),
 	];
-	await dispatchDesignerCall("create_inspectable", [inspectableData]);
+	const descriptionData = [
+		num.toBigInt(description.inst.toString()),
+		num.toBigInt(description.key.toString()),
+		byteArray.byteArrayFromString(description.text),
+	];
+	await dispatchDesignerCall("create_inspectable", [inspectableData, descriptionData]);
 };
 
 const publishArea = async (area: Area) => {

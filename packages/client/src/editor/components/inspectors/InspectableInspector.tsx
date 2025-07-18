@@ -2,21 +2,27 @@ import {
 	type ActionMapInspectable,
 	type Inspectable,
 	inspectableActions,
+	type DescriptionText
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { ActionMapEditor, TextAreaArray, Toggle, Input } from "../FormComponents";
+import { ActionMapEditor, Toggle, Input } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
+import { DescriptionEditor } from "../DescriptionManager";
 import { useInspector } from "./useInspector";
+import { BigNumberish } from "starknet";
 
-export const InspectableInspector: ComponentInspector<Inspectable> = ({
+export const InspectableInspector: ComponentInspector<(Inspectable & DescriptionText)> = ({
 	componentObject,
 	...props
 }) => {
-	const { handleInputChange, Inspector } = useInspector<Inspectable>({
+	const { handleInputChange, Inspector } = useInspector<(Inspectable & DescriptionText)>({
 		componentObject,
 		...props,
 		inputHandlers: {
-			description: (e, updatedObject) => {
-				updatedObject.description = e.target.value as unknown as string[];
+			description_key: (e, updatedObject) => {
+				updatedObject.description = e.target.value as unknown as BigNumberish;
+			},
+			description_text: (e, updatedObject) => {
+				updatedObject.text = e.target.value as unknown as string;
 			},
 			is_visible: (e, updatedObject) => {
 				updatedObject.is_visible = e.target.checked;
@@ -37,14 +43,35 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 
 	if (!componentObject) return <div>Inspectable not found</div>;
 
+	const descriptionData = (componentObject.text as unknown as string[] || []).map((text, idx) => ({
+    key: Number(componentObject.description?.[idx] ?? idx),
+    text,
+  }));
+
+  const handleDescriptionChange = (updated: { key: number; text: string }[]) => {
+    const keys = updated.map((d) => d.key.toString());
+    const texts = updated.map((d) => d.text);
+
+    handleInputChange({
+      target: {
+        id: "description_key",
+        value: keys,
+      },
+    } as any as React.ChangeEvent<HTMLTextAreaElement>);
+
+    handleInputChange({
+      target: {
+        id: "description_text",
+        value: texts,
+      },
+    } as any as React.ChangeEvent<HTMLTextAreaElement>);
+  };
+
 	return (
 		<Inspector>
-			<TextAreaArray
-				id="description"
-				value={componentObject.description}
-				onChange={handleInputChange}
-				rows={1}
-			/>
+			<DescriptionEditor 
+				value={descriptionData} 
+				onChange={handleDescriptionChange} />
 			<Toggle
 				id="already_shown"
 				value={componentObject.already_shown}
