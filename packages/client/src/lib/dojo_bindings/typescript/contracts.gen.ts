@@ -109,6 +109,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_createDescriptionText_calldata = (t: Array<DescriptionText>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_description_text",
+			calldata: [t],
+		};
+	};
+
+	const designer_createDescriptionText = async (snAccount: Account | AccountInterface, t: Array<DescriptionText>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createDescriptionText_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createEffect_calldata = (t: Array<Effect>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -382,6 +403,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deleteDescriptionText_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_description_text",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteDescriptionText = async (snAccount: Account | AccountInterface, ids: Array<[BigNumberish, BigNumberish]>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteDescriptionText_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteEffect_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -606,6 +648,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildCreateConditionCalldata: build_designer_createCondition_calldata,
 			createContainer: designer_createContainer,
 			buildCreateContainerCalldata: build_designer_createContainer_calldata,
+			createDescriptionText: designer_createDescriptionText,
+			buildCreateDescriptionTextCalldata: build_designer_createDescriptionText_calldata,
 			createEffect: designer_createEffect,
 			buildCreateEffectCalldata: build_designer_createEffect_calldata,
 			createEntity: designer_createEntity,
@@ -632,6 +676,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeleteConditionCalldata: build_designer_deleteCondition_calldata,
 			deleteContainer: designer_deleteContainer,
 			buildDeleteContainerCalldata: build_designer_deleteContainer_calldata,
+			deleteDescriptionText: designer_deleteDescriptionText,
+			buildDeleteDescriptionTextCalldata: build_designer_deleteDescriptionText_calldata,
 			deleteEffect: designer_deleteEffect,
 			buildDeleteEffectCalldata: build_designer_deleteEffect_calldata,
 			deleteEntity: designer_deleteEntity,

@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x3b856929d4e420dabf66c3eff9f6415b20dc30ce02867c955a0d6ce916e951e",
-      "class_hash": "0x371954c0a623502c567dedbbf57a37284367b08e2de8bd843ee77a5a88bfb1e",
+      "address": "0x7011e8d7beb376c8d20aacd236be9c485a640875e38ebf008e6a7083820c1a9",
+      "class_hash": "0x15b06f68a5bd1eeaf5f5d5e070abb12c680f23efb59c02bc38030604ec5dd90",
       "abi": [
         {
           "type": "impl",
@@ -1530,6 +1530,24 @@
             },
             {
               "name": "new_entry",
+              "type": "core::byte_array::ByteArray"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::models::index::DescriptionText",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "key",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "text",
               "type": "core::byte_array::ByteArray"
             }
           ]
@@ -2156,6 +2174,18 @@
             },
             {
               "type": "function",
+              "name": "create_description_text",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::models::index::DescriptionText>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "create_area",
               "inputs": [
                 {
@@ -2305,6 +2335,18 @@
                 {
                   "name": "ids",
                   "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_description_text",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<(core::felt252, core::felt252)>"
                 }
               ],
               "outputs": [],
@@ -2566,6 +2608,7 @@
         "create_player",
         "create_entity",
         "create_inspectable",
+        "create_description_text",
         "create_area",
         "create_exit",
         "create_inventory_item",
@@ -2579,6 +2622,7 @@
         "delete_player",
         "delete_entity",
         "delete_inspectable",
+        "delete_description_text",
         "delete_area",
         "delete_exit",
         "delete_inventory_item",

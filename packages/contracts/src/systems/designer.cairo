@@ -2,7 +2,7 @@ use lore::{
     models::{
         index::{
             Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger, Condition,
-            Effect, Action, ParentToChildren, ChildToParent,
+            Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
         },
     },
 };
@@ -12,6 +12,7 @@ pub trait IDesigner<TContractState> {
     fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
     fn create_inspectable(ref self: TContractState, t: Array<Inspectable>);
+    fn create_description_text(ref self: TContractState, t: Array<DescriptionText>);
     fn create_area(ref self: TContractState, t: Array<Area>);
     fn create_exit(ref self: TContractState, t: Array<Exit>);
     fn create_inventory_item(ref self: TContractState, t: Array<InventoryItem>);
@@ -26,6 +27,7 @@ pub trait IDesigner<TContractState> {
     fn delete_player(ref self: TContractState, ids: Array<felt252>);
     fn delete_entity(ref self: TContractState, ids: Array<felt252>);
     fn delete_inspectable(ref self: TContractState, ids: Array<felt252>);
+    fn delete_description_text(ref self: TContractState, ids: Array<(felt252, felt252)>);
     fn delete_area(ref self: TContractState, ids: Array<felt252>);
     fn delete_exit(ref self: TContractState, ids: Array<felt252>);
     fn delete_inventory_item(ref self: TContractState, ids: Array<felt252>);
@@ -48,7 +50,7 @@ pub mod designer {
         models::{
             index::{
                 Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger,
-                Condition, Effect, Action, ParentToChildren, ChildToParent,
+                Condition, Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
             },
         },
         new_components::{
@@ -127,6 +129,13 @@ pub mod designer {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyImp::register_component_properties(worldSt, ComponentType::Inspectable);
+            for o in t {
+                world.write_model(@o);
+            }
+        }
+
+        fn create_description_text(ref self: ContractState, t: Array<DescriptionText>) {
+            let mut world = self.world(@"lore");
             for o in t {
                 world.write_model(@o);
             }
@@ -246,6 +255,14 @@ pub mod designer {
             let mut world = self.world(@"lore");
             for inst in ids {
                 let model: Inspectable = world.read_model(inst);
+                world.erase_model(@model);
+            }
+        }
+
+        fn delete_description_text(ref self: ContractState, ids: Array<(felt252, felt252)>) {
+            let mut world = self.world(@"lore");
+            for inst in ids {
+                let model: DescriptionText = world.read_model(inst);
                 world.erase_model(@model);
             }
         }

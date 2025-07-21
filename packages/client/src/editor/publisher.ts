@@ -9,6 +9,7 @@ import {
 	exitActions,
 	type Inspectable,
 	inspectableActions,
+	type DescriptionText,
 	type InventoryItem,
 	inventoryItemActions,
 	type Container,
@@ -22,7 +23,6 @@ import {
 	type Effect,
 	type Action,
 	type ParentToChildren,
-	DescriptionText,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
 import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
@@ -96,6 +96,9 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Inspectable" in collection && collection.Inspectable !== undefined) {
 		await publishInspectable(collection.Inspectable);
 	}
+	if ("DescriptionText" in collection && collection.DescriptionText !== undefined) {
+		await publishDescriptionText(collection.DescriptionText);
+	}
 	if ("Area" in collection && collection.Area !== undefined) {
 		await publishArea(collection.Area);
 	}
@@ -160,7 +163,7 @@ const publishPlayer = async (player: Player) => {
 	await dispatchDesignerCall("create_player", [playerData]);
 };
 
-const publishInspectable = async (inspectable: Inspectable, description: DescriptionText) => {
+const publishInspectable = async (inspectable: Inspectable) => {
 	const inspectableData = [
 		num.toBigInt(inspectable.inst.toString()),
 		inspectable.is_inspectable,
@@ -177,12 +180,17 @@ const publishInspectable = async (inspectable: Inspectable, description: Descrip
 		inspectable.already_shown,
 		byteArray.byteArrayFromString(inspectable.new_entry.toString() ?? ""),
 	];
+	
+	await dispatchDesignerCall("create_inspectable", [inspectableData]);
+};
+
+const publishDescriptionText = async (description: DescriptionText) => {
 	const descriptionData = [
 		num.toBigInt(description.inst.toString()),
 		num.toBigInt(description.key.toString()),
 		byteArray.byteArrayFromString(description.text),
 	];
-	await dispatchDesignerCall("create_inspectable", [inspectableData, descriptionData]);
+	await dispatchDesignerCall("create_description_text", [descriptionData]);
 };
 
 const publishArea = async (area: Area) => {
@@ -257,10 +265,6 @@ const publishTrigger = async (trigger: Trigger) => {
 		num.toBigInt(trigger.key.toString()),
 		byteArray.byteArrayFromString(trigger.name ?? ""),
 		toEnumIndex(trigger.trigger_type, triggerType),
-		trigger.parameters.map((x) => [
-			byteArray.byteArrayFromString(x.name ?? ""),
-			num.toBigInt((x.value ?? 0).toString()),
-		]),
 		trigger.is_enabled,
 		trigger.is_once,
 		trigger.was_triggered,
@@ -356,6 +360,11 @@ const deleteCollection = async (model: EntityCollection) => {
 	if ("Inspectable" in model && model.Inspectable !== undefined) {
 		await dispatchDesignerCall("delete_inspectable", [
 			num.toBigInt(model.Inspectable!.inst),
+		]);
+	}
+	if ("DescriptionText" in model && model.DescriptionText !== undefined) {
+		await dispatchDesignerCall("delete_description_text", [
+			[num.toBigInt(model.DescriptionText!.inst), num.toBigInt(model.DescriptionText!.key)],
 		]);
 	}
 	if ("Area" in model && model.Area !== undefined) {

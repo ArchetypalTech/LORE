@@ -9,6 +9,7 @@ import type {
 	Condition,
 	Exit,
 	Action,
+	DescriptionText,
 	ComponentTypeEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
@@ -16,6 +17,7 @@ import {
 	createDefaultChildToParentComponent,
 	createDefaultEntity,
 	createDefaultInspectableComponent,
+	createDefaultDescriptionText,
 	createDefaultContainerComponent,
 	createDefaultParentToChildrenComponent,
 	createPlayerEntity,
@@ -469,7 +471,8 @@ const newEntity = async () => {
 	selectEntity(newEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(newEntity.Entity);
 	updateComponent(newEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
-	updateComponent(newEntity.Entity.inst, "DescriptionText", inspectable.DescriptionText as any);
+	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
+	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	
 	return newEntity;
 };
@@ -512,6 +515,8 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	selectEntity(playerEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
+	const descriptionText = createDefaultDescriptionText(playerEntity.Entity);
+	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
 	return playerEntity;
@@ -711,6 +716,15 @@ const syncEntities = async () => {
 						if (parentEntity && entity.Action) {
 							parentEntity.Action = entity.Action as Action;
 							setItem(parentEntity as AnyObject, entity.Action.inst, true);
+						}
+					}
+
+					if (entity.DescriptionText?.inst) {
+						// For DescriptionText components, find parent entity and merge
+						const parentEntity = getEntity(entity.DescriptionText.inst, true);
+						if (parentEntity && entity.DescriptionText) {
+							parentEntity.DescriptionText = entity.DescriptionText as DescriptionText;
+							setItem(parentEntity as AnyObject, entity.DescriptionText.inst, true);
 						}
 					}
 				}

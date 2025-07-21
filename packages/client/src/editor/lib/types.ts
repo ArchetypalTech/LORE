@@ -12,8 +12,8 @@ import type {
 	TriggerTypeEnum,
 	OperatorEnum,
 	operator,
-	ComponentsEnum,
-	components,
+	ComponentTypeEnum,
+	componentType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 
 export interface OptionType {
@@ -35,6 +35,7 @@ export type AnyObject = WithStringEnums<
 		| "Container"
 		| "Exit"
 		| "Inspectable"
+		| "DescriptionText"
 		| "InventoryItem"
 		| "PlayerStory"
 		| "Player"
@@ -52,7 +53,7 @@ export type AnyObject = WithStringEnums<
 
 export type OneOf<Obj> = Obj[keyof Obj];
 
-type MultiKeys = "Effect" | "Trigger"; // expand as needed
+type MultiKeys = "Effect" | "Trigger" | "Condition"; // expand as needed
 
 type MultiInstanceWrapped<T> = {
   [K in keyof T]: K extends MultiKeys ? T[K] : T[K];
@@ -74,8 +75,8 @@ export type EditorCollection = {
 export type WithStringEnums<T> = {
 	[K in keyof T]: T[K] extends DirectionEnum
 		? (typeof direction)[number]
-			: T[K] extends ComponentsEnum
-				? (typeof components)[number]
+			: T[K] extends ComponentTypeEnum
+				? (typeof componentType)[number]
 				: T[K] extends TriggerTypeEnum
 					? (typeof triggerType)[number]
 						: T[K] extends OperatorEnum

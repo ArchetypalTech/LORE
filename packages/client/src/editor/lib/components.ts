@@ -15,6 +15,7 @@ import { TriggerInspector } from "../components/inspectors/TriggerInspector";
 import { ConditionInspector } from "../components/inspectors/ConditionInspector";
 import { EffectInspector } from "../components/inspectors/EffectInspector";
 import { ActionInspector } from "../components/inspectors/ActionInspector";
+import { DescriptionTextInspector } from "../components/inspectors/DescriptionInspector";
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
@@ -90,13 +91,13 @@ export const createDefaultAreaComponent = (
 
 export const createDefaultInspectableComponent = (
 	entity: Entity,
-): WithStringEnums<Pick<SchemaType["lore"], "Inspectable" & "DescriptionText">> => ({
+): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
 	Inspectable: {
 		...schema.lore.Inspectable,
 		inst: entity.inst,
 		is_inspectable: true,
 		is_visible: true,
-		description_key: [0],
+		description: [0],
 		action_map: [
 			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoint: 0 },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
@@ -104,11 +105,16 @@ export const createDefaultInspectableComponent = (
 		already_shown: false,
 		new_entry: "",
 	},
+});
+
+export const createDefaultDescriptionText = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => ({
 	DescriptionText: {
 		...schema.lore.DescriptionText,
 		inst: entity.inst,
 		key: 0,
-		text: entity.name,
+		text: entity.name.toString(),
 	},
 });
 
@@ -283,7 +289,7 @@ export const componentData: {
 	},
 	Inspectable: {
 		order: 3,
-		inspector: InspectableInspector,
+		inspector: InspectableInspector, 
 		icon: "🔍",
 		creator: createDefaultInspectableComponent,
 	},
@@ -328,6 +334,12 @@ export const componentData: {
 		inspector: ActionInspector,
 		icon: "📝",
 		creator: createDefaultActionComponent,
+	},
+	DescriptionText: {
+		order: 11,
+		inspector: DescriptionTextInspector,
+		icon: "🔍",
+		creator: createDefaultDescriptionText,
 	},
 };
 

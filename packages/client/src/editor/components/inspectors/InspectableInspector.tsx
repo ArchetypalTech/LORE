@@ -2,34 +2,30 @@ import {
 	type ActionMapInspectable,
 	type Inspectable,
 	inspectableActions,
-	type DescriptionText
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { ActionMapEditor, Toggle, Input } from "../FormComponents";
+import { ActionMapEditor, Toggle, Input, TextAreaArray } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
-import { DescriptionEditor } from "../DescriptionManager";
 import { useInspector } from "./useInspector";
-import { BigNumberish } from "starknet";
 
-export const InspectableInspector: ComponentInspector<(Inspectable & DescriptionText)> = ({
+export const InspectableInspector: ComponentInspector<Inspectable> = ({
 	componentObject,
 	...props
 }) => {
-	const { handleInputChange, Inspector } = useInspector<(Inspectable & DescriptionText)>({
+	const { handleInputChange, Inspector } = useInspector<Inspectable>({
 		componentObject,
 		...props,
 		inputHandlers: {
-			description_key: (e, updatedObject) => {
-				updatedObject.description = e.target.value as unknown as BigNumberish;
-			},
-			description_text: (e, updatedObject) => {
-				updatedObject.text = e.target.value as unknown as string;
+			description_keys: (e, updatedObject) => {
+				updatedObject.description = (
+					e.target.value as unknown as string[]
+				).filter((x) => x !== "");
 			},
 			is_visible: (e, updatedObject) => {
 				updatedObject.is_visible = e.target.checked;
 			},
 			action_map: (e, updatedObject) => {
 				const newActionMap = e.target
-					.value as unknown as ActionMapInspectable[];
+				.value as unknown as ActionMapInspectable[];
 				updatedObject.action_map = newActionMap;
 			},
 			already_shown: (e, updatedObject) => {
@@ -43,35 +39,16 @@ export const InspectableInspector: ComponentInspector<(Inspectable & Description
 
 	if (!componentObject) return <div>Inspectable not found</div>;
 
-	const descriptionData = (componentObject.text as unknown as string[] || []).map((text, idx) => ({
-    key: Number(componentObject.description?.[idx] ?? idx),
-    text,
-  }));
-
-  const handleDescriptionChange = (updated: { key: number; text: string }[]) => {
-    const keys = updated.map((d) => d.key.toString());
-    const texts = updated.map((d) => d.text);
-
-    handleInputChange({
-      target: {
-        id: "description_key",
-        value: keys,
-      },
-    } as any as React.ChangeEvent<HTMLTextAreaElement>);
-
-    handleInputChange({
-      target: {
-        id: "description_text",
-        value: texts,
-      },
-    } as any as React.ChangeEvent<HTMLTextAreaElement>);
-  };
-
 	return (
 		<Inspector>
-			<DescriptionEditor 
-				value={descriptionData} 
-				onChange={handleDescriptionChange} />
+		<TextAreaArray
+				id="description_keys"
+				disabled={true}
+				rows={1}
+				value={componentObject.description as string[]}
+				onChange={handleInputChange}
+				readOnly={true}
+			/>
 			<Toggle
 				id="already_shown"
 				value={componentObject.already_shown}
