@@ -94,13 +94,23 @@ export const createDefaultAreaComponent = (
 
 export const createDefaultReactableComponent = (
 	entity: Entity,
+<<<<<<< HEAD
 ): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
 	Reactable: {
 		...schema.lore.Reactable,
+=======
+): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
+	Inspectable: {
+		...schema.lore.Inspectable,
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 		inst: entity.inst,
 		is_reactable: true,
 		is_visible: true,
+<<<<<<< HEAD
 		description: [],
+=======
+		description: [0],
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 		action_map: [
 			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0 ,0] },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 1] },
@@ -108,8 +118,22 @@ export const createDefaultReactableComponent = (
 		already_shown: false,
 		new_entry: "",
 	},
+<<<<<<< HEAD
 
 	
+=======
+});
+
+export const createDefaultDescriptionText = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => ({
+	DescriptionText: {
+		...schema.lore.DescriptionText,
+		inst: entity.inst,
+		key: 0,
+		text: entity.name.toString(),
+	},
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 });
 
 export const createDefaultDescriptionText = (
@@ -300,7 +324,11 @@ export const componentData: {
 	},
 	Reactable: {
 		order: 3,
+<<<<<<< HEAD
 		inspector: ReactableInspector, 
+=======
+		inspector: InspectableInspector, 
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 		icon: "🔍",
 		creator: createDefaultReactableComponent,
 	},

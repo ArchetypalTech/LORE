@@ -1330,6 +1330,7 @@
     {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x4c37777f8469219e7d5fd180968d847a88609e4b10f5ec3787fa830af1aabaa",
       "class_hash": "0x2f2e2835f1472a1ab784a97dd10f6d21387e4d69d7f73cf093e70e1d0c05954",
 =======
@@ -1337,13 +1338,22 @@
       "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 =======
+=======
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
       "address": "0x6279c732d93918001bfcce2d2cab5d10a9402a7def48c404cb97a7179ed2f95",
       "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
 =======
       "address": "0x3b856929d4e420dabf66c3eff9f6415b20dc30ce02867c955a0d6ce916e951e",
       "class_hash": "0x371954c0a623502c567dedbbf57a37284367b08e2de8bd843ee77a5a88bfb1e",
 >>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+<<<<<<< HEAD
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+=======
+      "address": "0x7011e8d7beb376c8d20aacd236be9c485a640875e38ebf008e6a7083820c1a9",
+      "class_hash": "0x15b06f68a5bd1eeaf5f5d5e070abb12c680f23efb59c02bc38030604ec5dd90",
+>>>>>>> 34e1a4a (wip: implementing description text model in client side)
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
       "abi": [
         {
           "type": "impl",
@@ -1575,6 +1585,9 @@
         {
           "type": "struct",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
           "name": "lore::models::index::DescriptionText",
           "members": [
             {
@@ -1593,8 +1606,11 @@
         },
         {
           "type": "struct",
+<<<<<<< HEAD
 =======
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
           "name": "lore::models::index::Area",
           "members": [
             {
@@ -2231,6 +2247,18 @@
             },
             {
               "type": "function",
+              "name": "create_description_text",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::models::index::DescriptionText>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "create_area",
               "inputs": [
                 {
@@ -2652,7 +2680,11 @@
       "systems": [
         "create_player",
         "create_entity",
+<<<<<<< HEAD
         "create_reactable",
+=======
+        "create_inspectable",
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
         "create_description_text",
         "create_area",
         "create_exit",
@@ -2666,7 +2698,11 @@
         "create_child",
         "delete_player",
         "delete_entity",
+<<<<<<< HEAD
         "delete_reactable",
+=======
+        "delete_inspectable",
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
         "delete_description_text",
         "delete_area",
         "delete_exit",

@@ -1,7 +1,11 @@
 use lore::{
     models::{
         index::{
+<<<<<<< HEAD
             Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
+=======
+            Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger, Condition,
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
             Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
         },
     },
@@ -11,7 +15,11 @@ use lore::{
 pub trait IDesigner<TContractState> {
     fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
+<<<<<<< HEAD
     fn create_reactable(ref self: TContractState, t: Array<Reactable>);
+=======
+    fn create_inspectable(ref self: TContractState, t: Array<Inspectable>);
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
     fn create_description_text(ref self: TContractState, t: Array<DescriptionText>);
     fn create_area(ref self: TContractState, t: Array<Area>);
     fn create_exit(ref self: TContractState, t: Array<Exit>);
@@ -26,7 +34,11 @@ pub trait IDesigner<TContractState> {
     //
     fn delete_player(ref self: TContractState, ids: Array<felt252>);
     fn delete_entity(ref self: TContractState, ids: Array<felt252>);
+<<<<<<< HEAD
     fn delete_reactable(ref self: TContractState, ids: Array<felt252>);
+=======
+    fn delete_inspectable(ref self: TContractState, ids: Array<felt252>);
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
     fn delete_description_text(ref self: TContractState, ids: Array<(felt252, felt252)>);
     fn delete_area(ref self: TContractState, ids: Array<felt252>);
     fn delete_exit(ref self: TContractState, ids: Array<felt252>);
@@ -49,8 +61,13 @@ pub mod designer {
     use lore::{
         models::{
             index::{
+<<<<<<< HEAD
                 Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
                 Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
+=======
+                Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger,
+                Condition, Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
             },
         },
         new_components::{
@@ -129,6 +146,13 @@ pub mod designer {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyImp::register_component_properties(worldSt, ComponentType::Reactable);
+            for o in t {
+                world.write_model(@o);
+            }
+        }
+
+        fn create_description_text(ref self: ContractState, t: Array<DescriptionText>) {
+            let mut world = self.world(@"lore");
             for o in t {
                 world.write_model(@o);
             }
@@ -255,6 +279,14 @@ pub mod designer {
             let mut world = self.world(@"lore");
             for inst in ids {
                 let model: Reactable = world.read_model(inst);
+                world.erase_model(@model);
+            }
+        }
+
+        fn delete_description_text(ref self: ContractState, ids: Array<(felt252, felt252)>) {
+            let mut world = self.world(@"lore");
+            for inst in ids {
+                let model: DescriptionText = world.read_model(inst);
                 world.erase_model(@model);
             }
         }

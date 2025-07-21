@@ -51,7 +51,11 @@ export type DesignerCall =
 	| "register_property_registry"
 	| "create_player"
 	| "create_entity"
+<<<<<<< HEAD
 	| "create_reactable"
+=======
+	| "create_inspectable"
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 	| "create_description_text"
 	| "create_area"
 	| "create_exit"
@@ -65,7 +69,11 @@ export type DesignerCall =
 	| "create_child"
 	| "delete_player"
 	| "delete_entity"
+<<<<<<< HEAD
 	| "delete_reactable"
+=======
+	| "delete_inspectable"
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 	| "delete_description_text"
 	| "delete_area"
 	| "delete_exit"

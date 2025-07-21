@@ -34,7 +34,11 @@ export type AnyObject = WithStringEnums<
 		| "Area"
 		| "Container"
 		| "Exit"
+<<<<<<< HEAD
 		| "Reactable"
+=======
+		| "Inspectable"
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 		| "DescriptionText"
 		| "InventoryItem"
 		| "PlayerStory"
@@ -53,7 +57,11 @@ export type AnyObject = WithStringEnums<
 
 export type OneOf<Obj> = Obj[keyof Obj];
 
+<<<<<<< HEAD
 type MultiKeys = "Effect" | "Trigger" | "Condition" | "DESCRIPTIONTEXT" | "DescriptionText"; // expand as needed
+=======
+type MultiKeys = "Effect" | "Trigger" | "Condition"; // expand as needed
+>>>>>>> 91b4d21 (wip: implementing description text model in client side)
 
 type MultiInstanceWrapped<T> = {
   [K in keyof T]: K extends MultiKeys ? T[K] : T[K];
