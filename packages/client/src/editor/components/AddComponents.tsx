@@ -5,7 +5,7 @@ import { Select } from "./FormComponents";
 import { Button } from "./ui/Button";
 import type { SelectInputRef } from "./ui/Select";
 
-const ALWAYS_INCLUDE = ["Trigger", "Effect", "Condition", "Action" ] as const;
+const ALWAYS_INCLUDE = ["DescriptionText", "Trigger", "Effect", "Condition", "Action" ] as const;
 
 export const AddComponents = ({
 	editedEntity,

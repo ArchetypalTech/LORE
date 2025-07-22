@@ -58,7 +58,7 @@ const {
 const getItem = (id: BigNumberish, syncPool = false) =>
 	get()[syncPool ? "syncPool" : "dataPool"].get(num.toHex64(id.toString()));
 
-const getEntity = (id: BigNumberish, syncPool = false) => {
+export const getEntity = (id: BigNumberish, syncPool = false) => {
 	const item = getItem(id, syncPool);
 	if (item === undefined) return undefined;
 	return JSONbig.parse(JSONbig.stringify(item)) as EntityCollection;
@@ -111,7 +111,7 @@ const createAction = (
 	});
 };
 
-const updateComponent = <T extends keyof EntityCollection>(
+export const updateComponent = <T extends keyof EntityCollection>(
 	inst: BigNumberish,
 	componentName: T,
 	component: EntityCollection[T] | undefined,
@@ -470,10 +470,11 @@ const newEntity = async () => {
 	}
 	selectEntity(newEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(newEntity.Entity);
+	inspectable.Inspectable.description = [0];
 	updateComponent(newEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
-	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
+	const descriptionText = createDefaultDescriptionText(newEntity.Entity, inspectable.Inspectable as any);
+	descriptionText.DescriptionText.text = newEntity.Entity.name;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
-	
 	return newEntity;
 };
 
@@ -515,7 +516,8 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	selectEntity(playerEntity.Entity.inst);
 	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
-	const descriptionText = createDefaultDescriptionText(playerEntity.Entity);
+	const descriptionText = createDefaultDescriptionText(playerEntity.Entity,inspectable.Inspectable as any);
+	descriptionText.DescriptionText.text = playerEntity.Entity.name;
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);

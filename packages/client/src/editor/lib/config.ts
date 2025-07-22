@@ -22,7 +22,7 @@ const { get, set, createFactory } = StoreBuilder({});
  */
 const deepSync = (obj: any) => {
 	EditorData().dojoSync(obj);
-	const nestedKeys = ["children", "parent", "Components", "subEntities", "Trigger", "Condition", "Effect", "Action"];
+	const nestedKeys = ["children", "parent", "Components", "subEntities", "Trigger", "Condition", "Effect", "Action", "DescriptionText"];
 	for (const key of nestedKeys) {
 		if (obj[key] && Array.isArray(obj[key])) {
 			for (const child of obj[key]) {

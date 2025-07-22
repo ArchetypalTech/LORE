@@ -1,5 +1,6 @@
 import {
 	type Entity,
+	type Inspectable,
 	type SchemaType,
 	schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -97,7 +98,7 @@ export const createDefaultInspectableComponent = (
 		inst: entity.inst,
 		is_inspectable: true,
 		is_visible: true,
-		description: [0],
+		description: [],
 		action_map: [
 			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoint: 0 },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
@@ -105,18 +106,26 @@ export const createDefaultInspectableComponent = (
 		already_shown: false,
 		new_entry: "",
 	},
+
+	
 });
 
 export const createDefaultDescriptionText = (
 	entity: Entity,
-): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => ({
-	DescriptionText: {
-		...schema.lore.DescriptionText,
-		inst: entity.inst,
-		key: 0,
-		text: entity.name.toString(),
-	},
-});
+	inspectable: Inspectable,
+): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
+	const existingKeys = (inspectable.description|| []).map(Number);
+	const nextKey = existingKeys.length - 1;
+
+	return {
+		DescriptionText: {
+			...schema.lore.DescriptionText,
+			inst: entity.inst,
+			key: nextKey,
+			text: " ",
+		},
+	};
+};
 
 export const createDefaultExitComponent = (
 	entity: Entity,

@@ -6,6 +6,9 @@ import {
 import { ActionMapEditor, Toggle, Input, TextAreaArray } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
+import { createDefaultDescriptionText } from "@/editor/lib/components";
+import { Button } from "../ui/Button";
+import { getEntity, updateComponent } from "@/editor/data/editor.data";
 
 export const InspectableInspector: ComponentInspector<Inspectable> = ({
 	componentObject,
@@ -49,6 +52,27 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 				onChange={handleInputChange}
 				readOnly={true}
 			/>
+			<Button
+				id="add_description"
+				onClick={() => {
+					const entity = getEntity(componentObject.inst);
+					const newDescription = createDefaultDescriptionText( entity!.Entity, componentObject);
+					const updatedDescriptions = [
+						...(componentObject.description || []),
+						newDescription.DescriptionText.key += 1 as any,
+					];
+					updateComponent(entity!.Entity.inst, "DescriptionText", newDescription.DescriptionText as any);
+
+					handleInputChange({
+						target: {
+							id: "description_keys",
+							value: updatedDescriptions,
+						},
+					} as any); 
+				}}
+			>
+				Add description
+			</Button>
 			<Toggle
 				id="already_shown"
 				value={componentObject.already_shown}
