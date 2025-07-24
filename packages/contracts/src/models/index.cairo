@@ -186,7 +186,7 @@ pub struct PlayerStory {
     pub story: Array<CounterType>,
 }
 
-pub type CounterType = u64;
+pub type CounterType = u32;
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct StoryLine {

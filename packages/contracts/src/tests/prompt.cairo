@@ -31,7 +31,7 @@ pub mod prompt {
             let mut world: WorldStorage = self.world(@"lore");
             let player = caller_as_player(world, get_caller_address());
 
-            player.add_command_text(world, cmd.clone());
+            //player.add_command_text(world, cmd.clone());
             match (lexer::parse(cmd, world, player)) {
                 Result::Ok(result) => {
                     let res = handle_command(result, world, player);

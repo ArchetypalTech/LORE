@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x7011e8d7beb376c8d20aacd236be9c485a640875e38ebf008e6a7083820c1a9",
-      "class_hash": "0x15b06f68a5bd1eeaf5f5d5e070abb12c680f23efb59c02bc38030604ec5dd90",
+      "address": "0x18b5753044f9cf6c2d8544b7c86bbec94505a83926ee7a67e4c5ed992995967",
+      "class_hash": "0x7aef877425177263097403b52c88d1521899010345ffbb75f1c53007a1fc507",
       "abi": [
         {
           "type": "impl",
@@ -1422,7 +1422,7 @@
             },
             {
               "name": "story_line",
-              "type": "core::integer::u64"
+              "type": "core::integer::u32"
             },
             {
               "name": "use_debug",
@@ -2638,8 +2638,8 @@
       ]
     },
     {
-      "address": "0x3474b82da3dcc2f2f76e635ed10f2e87a477de26444aaebb31634ef2966a220",
-      "class_hash": "0x451db41a9464720bc923be3717e4f83cda40ca437110d0530b3431a627d57d0",
+      "address": "0x7faf2252d3b7b50f355e2c3190b31bd8693c08c668ceb0d72458f03bb7c5c6c",
+      "class_hash": "0x27bce18acedbf14fb2e5121c5cc44a31818bcf57d62e531e5684b3bcf0c2076",
       "abi": [
         {
           "type": "impl",
@@ -2926,13 +2926,13 @@
     },
     {
       "members": [],
-      "class_hash": "0x73db034b0907f3908013ab8f9e43af4d33b472c2defaef974bf3f037b9473d7",
+      "class_hash": "0x76b859ea6ae4fb59883549783103b1e56330e3fad2d4e2776e57e1d5500f490",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },
     {
       "members": [],
-      "class_hash": "0x7641a082efcacf0d0d13834f3a97fe7205ce0f754c66a37d0441ff5801525f8",
+      "class_hash": "0x789245bdefe86c42501e150ca819191c75430eb9951bdf87c41dc84e12668e8",
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
     },
@@ -2944,7 +2944,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x10c271ba884a19bf4238c0c5c127a32e990b1478e1ec751774be3c0dec9c89b",
+      "class_hash": "0x5dd210188a9073f1ba28798263048e7cd64255dac7b8845902e46286c51dc02",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },

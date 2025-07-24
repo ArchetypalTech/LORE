@@ -156,8 +156,9 @@ const publishPlayer = async (player: Player) => {
 	const playerData = [
 		num.toBigInt((player.inst ?? getPlayerAddress()).toString()),
 		player.is_player ?? true,
-		player.address ? num.toBigInt(player.address.toString()) : num.toBigInt(getPlayerAddress().toString()) ,
-		num.toBigInt((player.location ?? 0).toString()),
+		player.address ? num.toBigInt(player.address.toString()) : num.toBigInt(getPlayerAddress().toString()),
+		player.location ? num.toBigInt(player.location.toString()) : num.toBigInt("0"),
+		player.story_line ? num.toBigInt(player.story_line.toString()) : num.toBigInt("0"),
 		player.use_debug ?? false,
 	];
 	await dispatchDesignerCall("create_player", [playerData]);

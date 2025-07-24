@@ -64,6 +64,7 @@ export const createPlayerEntity = (
 
 export const createPlayerComponent = (
 	_entity: Entity,
+	_inspectable?: Inspectable,
 	address?: string
   ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
 	const playerAddress = address || getPlayerAddress();
@@ -73,6 +74,7 @@ export const createPlayerComponent = (
 			inst: playerAddress,
 			is_player: true,
 			address: playerAddress,
+			story_line: 0,
 			location: 0,
 			use_debug: false,
 		},
@@ -112,9 +114,9 @@ export const createDefaultInspectableComponent = (
 
 export const createDefaultDescriptionText = (
 	entity: Entity,
-	inspectable: Inspectable,
+	inspectable?: Inspectable,
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
-	const existingKeys = (inspectable.description|| []).map(Number);
+	const existingKeys = (inspectable?.description|| []).map(Number);
 	const nextKey = existingKeys.length - 1;
 
 	return {
@@ -276,7 +278,7 @@ export const componentData: {
 		order: number;
 		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
-		creator?: (entity: Entity) => WithStringEnums<Pick<EntityCollection, K>>;
+		creator?: (entity: Entity, inspectable?: Inspectable) => WithStringEnums<Pick<EntityCollection, K>>;
 	};
 } = {
 	Entity: {

@@ -3,6 +3,7 @@ use lore::{
     models::{
         index::{Entity, Inspectable, Container, Player, PlayerStory, StoryLine},
         components::Component, inspectable::InspectableComponent, container::ContainerComponent,
+        player::PlayerComponent,
     },
     new_components::{entity_trait::EntityImpl, inspectable_trait::InspectableImpl},
     constants::errors::Error,
@@ -52,23 +53,29 @@ pub impl PlayerImpl of PlayerTrait {
 
     // TODO: improve name and better description
     fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        // Read counter from player
-        let mut counter = *self.story_line;
-        // Increase counter
-        let increase: u64 = 1;
-        counter += increase;
-        // Create new story line
-        let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };
-        // Write story line to world
+        let mut player: Player = world.read_model(*self.inst);
+        let mut counter: u32 = player.story_line;
+        let increase: u32 = 1;
+        let new_counter: u32 = counter + increase;
+
+        let story_line = StoryLine {
+            inst: *self.inst,
+            key: new_counter,
+            line: text,
+        };
         world.write_model(@story_line);
-        // Add story line to player story
+
         let mut player_story: PlayerStory = world.read_model(*self.inst);
-        player_story.story.append(counter);
-        // update player_story.story
+        player_story.story.append(new_counter);
         world.write_model(@player_story);
+
+        // Update the player
+        let mut player: Player = world.read_model(*self.inst);
+        player.story_line = new_counter;
+        player.store(world);
         // try to store only the story variable but doesn't work
-    //world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
-    //@player_story.story);
+        // world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
+        // @player_story.story);
     }
 
 
@@ -76,7 +83,7 @@ pub impl PlayerImpl of PlayerTrait {
         // read counter from player
         let mut counter = *self.story_line;
         // increase counter
-        let increase: u64 = 1;
+        let increase: u32 = 1;
         counter += increase;
         // create new story line
         let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };

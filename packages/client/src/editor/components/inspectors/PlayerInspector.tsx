@@ -5,6 +5,7 @@ import {
 import { Toggle, Input} from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
+import { BigNumberish } from "starknet";
 
 export const PlayerInspector: ComponentInspector<Player> = ({
 	componentObject,
@@ -24,7 +25,12 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				updatedObject.address = event.target.value;
 			},
 			location: (e, updatedObject) => {	
-				updatedObject.location = e.target.value
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.location = event.target.value as unknown as BigNumberish;
+			},
+			story_line: (e, updatedObject) => {
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.story_line = event.target.value;
 			},
 			use_debug: (e, updatedObject) => {
 				const event = e as ChangeEvent<HTMLInputElement>;
@@ -53,6 +59,12 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				value={componentObject.location.toString()}
 				onChange={handleInputChange}
 				//readOnly={true}
+			/>
+			<Input
+				id="story_line"
+				value={componentObject.story_line.toString()}
+				onChange={handleInputChange}
+				readOnly={true}
 			/>
 			<Toggle
 				id="use_debug"
