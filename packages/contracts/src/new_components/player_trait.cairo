@@ -58,11 +58,7 @@ pub impl PlayerImpl of PlayerTrait {
         let increase: u32 = 1;
         let new_counter: u32 = counter + increase;
 
-        let story_line = StoryLine {
-            inst: *self.inst,
-            key: new_counter,
-            line: text,
-        };
+        let story_line = StoryLine { inst: *self.inst, key: new_counter, line: text };
         world.write_model(@story_line);
 
         let mut player_story: PlayerStory = world.read_model(*self.inst);
@@ -74,8 +70,8 @@ pub impl PlayerImpl of PlayerTrait {
         player.story_line = new_counter;
         player.store(world);
         // try to store only the story variable but doesn't work
-        // world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
-        // @player_story.story);
+    // world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
+    // @player_story.story);
     }
 
 
