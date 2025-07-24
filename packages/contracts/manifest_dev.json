@@ -1331,6 +1331,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x4c37777f8469219e7d5fd180968d847a88609e4b10f5ec3787fa830af1aabaa",
       "class_hash": "0x2f2e2835f1472a1ab784a97dd10f6d21387e4d69d7f73cf093e70e1d0c05954",
 =======
@@ -1340,6 +1341,8 @@
 =======
 =======
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
       "address": "0x6279c732d93918001bfcce2d2cab5d10a9402a7def48c404cb97a7179ed2f95",
       "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
 =======
@@ -1353,7 +1356,14 @@
       "address": "0x7011e8d7beb376c8d20aacd236be9c485a640875e38ebf008e6a7083820c1a9",
       "class_hash": "0x15b06f68a5bd1eeaf5f5d5e070abb12c680f23efb59c02bc38030604ec5dd90",
 >>>>>>> 34e1a4a (wip: implementing description text model in client side)
+<<<<<<< HEAD
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+=======
+      "address": "0x18b5753044f9cf6c2d8544b7c86bbec94505a83926ee7a67e4c5ed992995967",
+      "class_hash": "0x7aef877425177263097403b52c88d1521899010345ffbb75f1c53007a1fc507",
+>>>>>>> 3e8e7c9 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
       "abi": [
         {
           "type": "impl",
@@ -1447,10 +1457,14 @@
             {
               "name": "story_line",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "type": "core::integer::u32"
 =======
               "type": "core::integer::u64"
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+              "type": "core::integer::u32"
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
             },
             {
               "name": "use_debug",
@@ -2721,6 +2735,7 @@
     {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
       "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
 =======
@@ -2728,13 +2743,22 @@
       "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
 >>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 =======
+=======
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
       "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
       "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
 =======
       "address": "0x3474b82da3dcc2f2f76e635ed10f2e87a477de26444aaebb31634ef2966a220",
       "class_hash": "0x451db41a9464720bc923be3717e4f83cda40ca437110d0530b3431a627d57d0",
 >>>>>>> ef7cc2d (chore: implemented names variable for action system and adjusted dropdown key list)
+<<<<<<< HEAD
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+=======
+      "address": "0x7faf2252d3b7b50f355e2c3190b31bd8693c08c668ceb0d72458f03bb7c5c6c",
+      "class_hash": "0x27bce18acedbf14fb2e5121c5cc44a31818bcf57d62e531e5684b3bcf0c2076",
+>>>>>>> 3e8e7c9 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
       "abi": [
         {
           "type": "impl",
@@ -3037,20 +3061,28 @@
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       "class_hash": "0x76b859ea6ae4fb59883549783103b1e56330e3fad2d4e2776e57e1d5500f490",
 =======
       "class_hash": "0x73db034b0907f3908013ab8f9e43af4d33b472c2defaef974bf3f037b9473d7",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+      "class_hash": "0x76b859ea6ae4fb59883549783103b1e56330e3fad2d4e2776e57e1d5500f490",
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       "class_hash": "0x789245bdefe86c42501e150ca819191c75430eb9951bdf87c41dc84e12668e8",
 =======
       "class_hash": "0x7641a082efcacf0d0d13834f3a97fe7205ce0f754c66a37d0441ff5801525f8",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+      "class_hash": "0x789245bdefe86c42501e150ca819191c75430eb9951bdf87c41dc84e12668e8",
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
     },
@@ -3067,6 +3099,7 @@
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       "class_hash": "0x14e4af343fbd6e16b31b5e47e78e0abe5148331ec49e0cc579764414398b508",
       "tag": "lore-Reactable",
       "selector": "0x13fefc8a36ffca06da26b1726d49465726acb19821a4d3382f5c9420a4a4896"
@@ -3077,6 +3110,9 @@
 =======
       "class_hash": "0x10c271ba884a19bf4238c0c5c127a32e990b1478e1ec751774be3c0dec9c89b",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+      "class_hash": "0x5dd210188a9073f1ba28798263048e7cd64255dac7b8845902e46286c51dc02",
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },

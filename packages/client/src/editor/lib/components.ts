@@ -64,7 +64,11 @@ export const createPlayerEntity = (
 
 export const createPlayerComponent = (
 	_entity: Entity,
+<<<<<<< HEAD
 	_reactable?: Reactable,
+=======
+	_inspectable?: Inspectable,
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
 	address?: string
   ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
 	const playerAddress = address || getPlayerAddress();
@@ -126,6 +130,7 @@ export const createDefaultReactableComponent = (
 
 export const createDefaultDescriptionText = (
 	entity: Entity,
+<<<<<<< HEAD
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => ({
 	DescriptionText: {
 		...schema.lore.DescriptionText,
@@ -141,6 +146,11 @@ export const createDefaultDescriptionText = (
 	reactable?: Reactable,
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
 	const existingKeys = (reactable?.description|| []).map(Number);
+=======
+	inspectable?: Inspectable,
+): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
+	const existingKeys = (inspectable?.description|| []).map(Number);
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
 	const nextKey = existingKeys.length - 1;
 
 	return {
@@ -302,7 +312,11 @@ export const componentData: {
 		order: number;
 		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
+<<<<<<< HEAD
 		creator?: (entity: Entity, reactable?: Reactable) => WithStringEnums<Pick<EntityCollection, K>>;
+=======
+		creator?: (entity: Entity, inspectable?: Inspectable) => WithStringEnums<Pick<EntityCollection, K>>;
+>>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
 	};
 } = {
 	Entity: {
