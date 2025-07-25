@@ -295,7 +295,7 @@ const publishEffect = async (effect: Effect) => {
     num.toBigInt(effect.target.toString()),
     toEnumIndex(effect.component, componentType),
     byteArray.byteArrayFromString(effect.property),
-    effect.value.map((v) => byteArray.byteArrayFromString(v.toString() ?? "")),
+    effect.value.map(([v, i]) => [byteArray.byteArrayFromString(v.toString() ?? ""), num.toBigInt(i.toString())]),
   ];
   await dispatchDesignerCall("create_effect", [effectData]);
 }

@@ -33,7 +33,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         updatedObject.target = e.target.value;
       },
       component: (e, updatedObject) => {
-        updatedObject.componentType = stringCairoEnum(e.target.value);
+        updatedObject.component = stringCairoEnum(e.target.value);
       },
       property: (e, updatedObject) => {
         updatedObject.property = e.target.value;
@@ -56,7 +56,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
       if (!componentObject?.component) return;
       try {
         const properties = await syncPropertyRegistry(componentObject.component);
-        setPropertyNames(properties);
+        setPropertyNames(properties!);
       } catch (error) {
         console.error("Failed to sync property registry:", error);
       }
@@ -65,6 +65,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
     fetchProperties();
   }, [componentObject?.component]);
 
+  
   // Property options for dropdown
   const propertyOptions = propertyNames.map((name) => ({
     value: name,
@@ -72,6 +73,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
   }));
 
   if (!componentObject) return <div>Condition not found</div>;
+  const excludeComponent = ["Entiy", "Action", "Trigger", "Condition", "Effect"];
 
   return (
     <Inspector>
@@ -91,7 +93,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         id="component"
         onChange={handleInputChange}
         value={componentObject.component}
-        enum={componentType}
+        enum={componentType.filter((x) => !excludeComponent.includes(x))}
       />
       <Select
         id="property"
@@ -110,6 +112,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         value={componentObject.value.map((v) => decodeFromFelt(v.toString()))}
         onChange={handleInputChange}
         rows={1}
+        columns={1}
       />
     </Inspector>
   );

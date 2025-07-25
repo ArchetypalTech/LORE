@@ -14,6 +14,7 @@ import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import { syncPropertyRegistry } from "../../data/editor.data"; 
+import { BigNumberish } from "starknet";
 
 export const EffectInspector: ComponentInspector<Effect> = ({
   componentObject,
@@ -30,13 +31,16 @@ export const EffectInspector: ComponentInspector<Effect> = ({
         updatedObject.target = e.target.value;
       },
       component: (e, updatedObject) => {
-        updatedObject.componentType = stringCairoEnum(e.target.value);
+        updatedObject.component = stringCairoEnum(e.target.value);
       },
       property: (e, updatedObject) => {
         updatedObject.property = e.target.value;
       },
       value: (e, updatedObject) => {
-        updatedObject.value =  e.target.value as unknown as string[]
+        const val = e.target.value as unknown as [string, string][];
+        updatedObject.value = val.map(
+          (([text, index]) => [text, index.toString()])
+        ) as [string, BigNumberish][];
       },
     },
   });
@@ -48,7 +52,7 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       if (!componentObject?.component) return;
       try {
         const properties = await syncPropertyRegistry(componentObject.component);
-        setPropertyNames(properties);
+        setPropertyNames(properties!);
       } catch (error) {
         console.error("Failed to sync property registry:", error);
       }
@@ -64,6 +68,7 @@ export const EffectInspector: ComponentInspector<Effect> = ({
   }));
 
   if (!componentObject) return <div>Effect not found</div>;
+  const excludeComponent = ["Entiy", "Action", "Trigger", "Condition", "Effect"];
 
   return (
     <Inspector>
@@ -83,7 +88,7 @@ export const EffectInspector: ComponentInspector<Effect> = ({
         id="component"
         onChange={handleInputChange}
         value={componentObject.component}
-        enum={componentType}
+        enum={componentType.filter((x) => !excludeComponent.includes(x))}
       />
       <Select
         id="property"
@@ -93,9 +98,12 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       />
       <TextAreaStringArray
         id="value"
-        value={componentObject.value.map((v) => v.toString())}
+        value={
+          componentObject.value.map(([text, index]) => [text.toString(), index.toString()]) as [string, string][]
+        }
         onChange={handleInputChange}
         rows={1}
+        columns={2}
       />
     </Inspector>
   );
