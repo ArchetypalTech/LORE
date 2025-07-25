@@ -68,7 +68,7 @@ export const EffectInspector: ComponentInspector<Effect> = ({
   }));
 
   if (!componentObject) return <div>Effect not found</div>;
-  const excludeComponent = ["Entiy", "Action", "Trigger", "Condition", "Effect"];
+  const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
 
   return (
     <Inspector>
