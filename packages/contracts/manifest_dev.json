@@ -2736,6 +2736,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
       "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
 =======
@@ -2745,6 +2746,8 @@
 =======
 =======
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+>>>>>>> 8eb73a2 (chore: finish updating new variables on conditions and effects)
       "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
       "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
 =======
@@ -2756,6 +2759,9 @@
 =======
 =======
       "address": "0x7faf2252d3b7b50f355e2c3190b31bd8693c08c668ceb0d72458f03bb7c5c6c",
+=======
+      "address": "0x753ddded9d17ba9bb7f881aa74d220e5a3edfd78d5a71821ba35024738c4a0c",
+>>>>>>> 22ab864 (chore: finish updating new variables on conditions and effects)
       "class_hash": "0x27bce18acedbf14fb2e5121c5cc44a31818bcf57d62e531e5684b3bcf0c2076",
 >>>>>>> 3e8e7c9 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
