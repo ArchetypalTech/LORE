@@ -11,7 +11,7 @@ rpc_url = "http://localhost:5050/"
 
 account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
 private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
-world_address = "0xfea62706381254891e4e1a685a1c5b7c91ce4dddcd1390fd229691654019c4"
+world_address = "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6"
 
 [writers]
 "lore" = ["lore-prompt", "lore-designer"]
