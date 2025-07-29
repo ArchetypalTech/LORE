@@ -53,10 +53,10 @@ export type AnyObject = WithStringEnums<
 
 export type OneOf<Obj> = Obj[keyof Obj];
 
-type MultiKeys = "Effect" | "Trigger" | "Condition"; // expand as needed
+type MultiKeys = "Effect" | "Trigger" | "Condition" | "DESCRIPTIONTEXT" | "DescriptionText"; // expand as needed
 
 type MultiInstanceWrapped<T> = {
-  [K in keyof T]: K extends MultiKeys ? T[K] : T[K];
+  [K in keyof T]: K extends MultiKeys ? T[K][] : T[K];
 };
 
 export type EntityCollection = {

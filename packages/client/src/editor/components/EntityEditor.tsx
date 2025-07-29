@@ -58,34 +58,38 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	};
 
 	const allComponents = useCallback(() => {
-		isDirty;
 		if (!editedEntity) return [];
-		const components = Object.keys(editedEntity);
+
 		return Object.entries(componentData)
-			.filter(([key]) => !(key in components))
-			.sort((a, b) => {
-				const orderA =
-					componentData[a[0] as keyof typeof componentData]?.order || 99;
-				const orderB =
-					componentData[b[0] as keyof typeof componentData]?.order || 99;
-				return orderB - orderA;
-			})
 			.map(([key, value]) => {
-				const component = editedEntity[key as keyof typeof editedEntity];
-				if (!component) return undefined;
-				const Inspector = value.inspector as ComponentInspector<
-					EntityCollection[keyof EntityCollection]
-				>;
-				if (!Inspector) return undefined;
-				return {
-					key: key as keyof EntityCollection,
+				const componentName = key as keyof EntityCollection;
+				const Inspector = value.inspector as ComponentInspector<EntityCollection[keyof EntityCollection]>;
+
+				const componentData = editedEntity[componentName];
+
+				if (!componentData || !Inspector) return [];
+
+				// Handle multi-instance components (stored as arrays)
+				if (Array.isArray(componentData)) {
+					return componentData.map((componentInstance, index) => ({
+						key: componentName,
+						Inspector,
+						componentObject: componentInstance,
+						index,
+					}));
+				}
+
+				// Single-instance components
+				return [{
+					key: componentName,
 					Inspector,
-					componentObject:
-						component as EntityCollection[keyof EntityCollection],
-				};
+					componentObject: componentData,
+					index: undefined,
+				}];
 			})
-			.filter((x) => x !== undefined);
-	}, [editedEntity, isDirty]);
+			.flat()
+			.filter(Boolean);
+	}, [editedEntity]);
 
 	if (!editedEntity?.Entity) {
 		return <NoEntity />;
@@ -119,44 +123,43 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 				/>
 			</Header>
 			  <div className="flex flex-col gap-0 rounded-md shadow-xs">
-        {allComponents().map(({ key, Inspector, componentObject }) => {
-          if (!Inspector) return <div key={key}>{key}</div>;
-          if (componentObject === undefined) return null;
+        {allComponents().map(({ key, Inspector, componentObject, index }) => {
+				const componentKey = `${key}-${index ?? "single"}`;
+				const isOpen = openComponents[componentKey] ?? true;
 
-          const isOpen = openComponents[key as string] ?? true; // default open
+				return (
+					<div key={componentKey} className="border-b border-gray-300">
+						<div
+							className="flex items-center justify-between bg-gray-100 px-2 py-1 cursor-pointer select-none"
+							onClick={() =>
+								setOpenComponents((prev) => ({
+									...prev,
+									[componentKey]: !prev[componentKey],
+								}))
+							}
+						>
+							<span className="font-semibold">
+								{key}
+								{index !== undefined ? ` #${index + 1}` : ""}
+							</span>
+							<span className="text-xs">{isOpen ? "▼" : "▶"}</span>
+						</div>
 
-          return (
-            <div key={key} className="border-b border-gray-300">
-              {/* Header with toggle button */}
-              <div
-								className="flex items-center justify-between bg-gray-100 px-2 py-1 cursor-pointer select-none"
-								onClick={() => toggleComponent(key as string)}
-								aria-expanded={isOpen}
-								role="button"
-								tabIndex={0}
-								onKeyDown={(e) => {
-									if (e.key === "Tab" || e.key === " ") {
-										e.preventDefault();
-										toggleComponent(key as string);
-									}
+						{isOpen && (
+							<Inspector
+								componentObject={componentObject}
+								componentName={key}
+								handleEdit={async (name, updated) => {
+									EditorData().updateComponent(inst, name, updated);
 								}}
-							>
-								<span className="font-semibold">{key}</span>
-								<span className="text-xs">{isOpen ? "▼" : "▶"}</span>
-							</div>
-
-              {/* Conditionally render the inspector */}
-              {isOpen && (
-                <Inspector
-                  componentObject={componentObject}
-                  componentName={key}
-                  handleEdit={handleEditComponent}
-                  handleRemove={handleRemoveComponent}
-                />
-              )}
-            </div>
-          );
-        })}
+								handleRemove={async () => {
+									EditorData().removeComponent(inst, key, index ?? (componentObject as any).key);
+								}}
+							/>
+						)}
+					</div>
+				);
+			})}
       </div>
 
       <AddComponents editedEntity={editedEntity} handleEdit={handleEditComponent} />
