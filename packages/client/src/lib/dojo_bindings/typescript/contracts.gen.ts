@@ -1,5 +1,5 @@
 import { DojoProvider, DojoCall } from "@dojoengine/core";
-import { Account, AccountInterface, BigNumberish, CairoOption, CairoCustomEnum, ByteArray } from "starknet";
+import { Account, AccountInterface, BigNumberish, CairoOption, CairoCustomEnum } from "starknet";
 import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
@@ -571,7 +571,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_prompt_prompt_calldata = (cmd: ByteArray): DojoCall => {
+	const build_prompt_prompt_calldata = (cmd: string): DojoCall => {
 		return {
 			contractName: "prompt",
 			entrypoint: "prompt",
@@ -579,7 +579,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const prompt_prompt = async (snAccount: Account | AccountInterface, cmd: ByteArray) => {
+	const prompt_prompt = async (snAccount: Account | AccountInterface, cmd: string) => {
 		try {
 			return await provider.execute(
 				snAccount,
