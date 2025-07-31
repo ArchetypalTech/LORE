@@ -111,106 +111,79 @@ const createAction = (
 	});
 };
 
-const multiInstanceComponents = new Set<keyof EntityCollection>([
-  "Trigger",
-  "Condition",
-  "Effect",
-  "Action",
-  "DescriptionText",
-]);
-
 export const updateComponent = <T extends keyof EntityCollection>(
-  inst: BigNumberish,
-  componentName: T,
-  component: EntityCollection[T],
-): EntityCollection | undefined => {
-  const entity = getEntity(inst);
-  if (!entity) throw new Error("Entity not found");
-
-  if (component === undefined) {
-    return removeComponent(inst, componentName);
-  }
-
-  const isMulti = multiInstanceComponents.has(componentName);
-
-  if (isMulti) {
-    const existing = (entity[componentName] as any[]) ?? [];
-    const keyToMatch = (component as any).key;
-
-    const updated = existing.some((item) => item.key === keyToMatch)
-      ? existing.map((item) => (item.key === keyToMatch ? component : item))
-      : [...existing, component];
-
-    entity[componentName] = updated as EntityCollection[T];
-  } else {
-    entity[componentName] = component;
-  }
-
-  syncItem(entity);
-  createAction("update", inst, { [componentName]: component });
-  return entity;
+	inst: BigNumberish,
+	componentName: T,
+	component: EntityCollection[T] | undefined,
+) => {
+	if (component === undefined) {
+		return removeComponent(inst, componentName);
+	}
+	const edited = getEntity(inst);
+	if (edited === undefined) {
+		throw new Error("Entity not found");
+	}
+	edited[componentName] = component;
+	if (
+		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
+	) {
+		console.log(
+			get().changeSet.find((x) => x.inst === inst && componentName in x.object),
+		);
+		set({
+			changeSet: get().changeSet.filter(
+				(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst,
+			),
+		});
+	}
+	// check synced item, do we really need to create an update action
+	const syncedEntity = getEntity(inst, true);
+	if (syncedEntity?.[componentName] !== undefined) {
+		if (
+			JSONbig.stringify(syncedEntity[componentName]) ===
+			JSONbig.stringify(component)
+		) {
+			syncItem(edited);
+			return edited as EntityCollection;
+		}
+	}
+	createAction("update", inst, { [componentName]: component });
+	syncItem(edited);
+	return edited as EntityCollection;
 };
 
-export const addComponent = <T extends keyof EntityCollection>(
-  inst: BigNumberish,
-  componentName: T,
-  component: EntityCollection[T],
+const removeComponent = (
+	inst: BigNumberish,
+	componentName: keyof EntityCollection,
 ): EntityCollection | undefined => {
-  const entity = getEntity(inst);
-  if (!entity) throw new Error("Entity not found");
-
-  if (!multiInstanceComponents.has(componentName)) {
-    throw new Error(`Cannot add multiple instances to single-instance component: ${componentName}`);
-  }
-
-  const existing = (entity[componentName] as any[]) ?? [];
-  entity[componentName] = [...existing, component] as EntityCollection[T];
-
-  syncItem(entity);
-  createAction("update", inst, { [componentName]: entity[componentName] });
-  return entity;
-};
-
-export const removeComponent = <T extends keyof EntityCollection>(
-  inst: BigNumberish,
-  componentName: T,
-  identifier?: number | string,
-): EntityCollection | undefined => {
-  const entity = getEntity(inst);
-  if (!entity) throw new Error("Entity not found");
-
-  if (!entity[componentName]) return entity;
-
-  const isMulti = multiInstanceComponents.has(componentName);
-
-  if (isMulti) {
-    let updated: any[];
-
-    const existing = entity[componentName] as any[];
-    if (identifier === undefined) {
-      // Remove all instances
-      delete entity[componentName];
-    } else if (typeof identifier === "number") {
-      // Remove by index
-      updated = [...existing.slice(0, identifier), ...existing.slice(identifier + 1)];
-      entity[componentName] = updated;
-    } else {
-      // Remove by key match
-      updated = existing.filter((item) => item.key !== identifier);
-      entity[componentName] = updated;
-    }
-
-    if ((entity[componentName] as any[]).length === 0) {
-      delete entity[componentName];
-    }
-  } else {
-    // Single-instance: remove entirely
-    delete entity[componentName];
-  }
-
-  syncItem(entity);
-  createAction("delete", inst, { [componentName]: undefined });
-  return entity;
+	const edited = getEntity(inst);
+	if (edited === undefined) {
+		throw new Error("Entity not found");
+	}
+	if (componentName === "Entity") {
+		removeEntity(edited);
+		return undefined;
+	}
+	console.warn("removeComponent", edited, componentName);
+	const deleted = { ...edited[componentName] };
+	edited[componentName] = undefined;
+	if (
+		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
+	) {
+		console.log("update");
+		set({
+			changeSet: get().changeSet.filter(
+				(x) => x.inst !== inst || (x.inst === inst && !(componentName in x.object)),
+			),
+		});
+	}
+	// check synced item, do we really need to delete anything
+	const syncedEntity = getEntity(inst, true);
+	if (syncedEntity?.[componentName] !== undefined) {
+		createAction("delete", inst, { [componentName]: deleted });
+	}
+	syncItem(edited);
+	return edited as EntityCollection;
 };
 
 const addToParent = (child: EntityCollection, parent: EntityCollection) => {
@@ -502,6 +475,7 @@ const newEntity = async () => {
 	const descriptionText = createDefaultDescriptionText(newEntity.Entity, inspectable.Inspectable as any);
 	descriptionText.DescriptionText.text = newEntity.Entity.name;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
+	
 	return newEntity;
 };
 
