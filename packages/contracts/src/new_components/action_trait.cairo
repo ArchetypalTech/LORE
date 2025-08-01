@@ -1,4 +1,4 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 
 use lore::{
     models::{
@@ -44,7 +44,8 @@ pub impl ActionImpl of ActionTrait {
         let mut entity: Entity = EntityImpl::get_entity(@world, @action.inst).unwrap();
         entity.actions_keys.append(action.key);
         // 2. Update the entity
-        world.write_model(@entity);
+        world.write_member(Model::<Entity>::ptr_from_keys(entity.inst), selector!("actions_keys"), entity.actions_keys);
+        // world.write_model(@entity);
         // 3. Write the action
         world.write_model(@action);
         Result::Ok(())
@@ -127,7 +128,8 @@ pub impl ActionImpl of ActionTrait {
         // If all conditions are met, mark action as executed
         if (result_t.is_ok() && result && result_e.is_ok()) {
             action.executed = true;
-            world.write_model(@action);
+            world.write_member(Model::<Action>::ptr_from_keys((action.inst, action.key)), selector!("executed"), action.executed);
+            // world.write_model(@action);
             for response in action.success_response.clone() {
                 player.say(world, response);
             }
@@ -141,12 +143,14 @@ pub impl ActionImpl of ActionTrait {
 
     fn enable_action(mut self: Action, mut world: WorldStorage) {
         self.is_enabled = true;
-        world.write_model(@self);
+        world.write_member(Model::<Action>::ptr_from_keys((self.inst, self.key)), selector!("is_enabled"), self.is_enabled);
+        // world.write_model(@self);
     }
 
     fn disable_action(mut self: Action, mut world: WorldStorage) {
         self.is_enabled = false;
-        world.write_model(@self);
+        world.write_member(Model::<Action>::ptr_from_keys((self.inst, self.key)), selector!("is_enabled"), self.is_enabled);
+        // world.write_model(@self);
     }
 }
 

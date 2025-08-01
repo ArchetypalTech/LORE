@@ -1,4 +1,4 @@
-use dojo::{world::{WorldStorage}, model::ModelStorage};
+use dojo::{world::{WorldStorage}, model::ModelStorage, model::Model};
 
 use lore::{
     models::{
@@ -84,7 +84,8 @@ pub impl TriggerImpl of TriggerTrait {
             Option::Some(mut trigger_index) => {
                 // Append trigger key to trigger index
                 trigger_index.trigger_id.append((trigger.inst, trigger.key));
-                world.write_model(@trigger_index);
+                world.write_member(Model::<TriggerIndex>::ptr_from_keys(trigger.trigger_type), selector!("trigger_id"), trigger_index.trigger_id);
+                // world.write_model(@trigger_index);
                 Result::Ok(())
             },
         }
@@ -94,14 +95,16 @@ pub impl TriggerImpl of TriggerTrait {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Enable trigger
         trigger.is_enabled = true;
-        world.write_model(@trigger);
+        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("is_enabled"), trigger.is_enabled);
+        // world.write_model(@trigger);
     }
 
     fn disable_trigger(mut world: WorldStorage, trigger_key: (felt252, felt252)) {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Disable trigger
         trigger.is_enabled = false;
-        world.write_model(@trigger);
+        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("is_enabled"), trigger.is_enabled);
+        // world.write_model(@trigger);
     }
 
     fn evaluate_trigger(mut world: WorldStorage, mut trigger: Trigger) -> Result<(), Error> {
@@ -205,7 +208,8 @@ pub impl TriggerImpl of TriggerTrait {
         }
         // Set trigger as triggered
         trigger.was_triggered = true;
-        world.write_model(@trigger);
+        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("was_triggered"), trigger.was_triggered);
+        // world.write_model(@trigger);
         // Return result
         result
     }

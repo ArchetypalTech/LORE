@@ -1,4 +1,4 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         index::{Entity, Inspectable, Container, Player, PlayerStory, StoryLine},
@@ -33,7 +33,8 @@ pub impl PlayerImpl of PlayerTrait {
                     let description = inspectable.get_first_description(world);
                     self.say(world, format!("{}", description));
                     inspectable.already_shown = true;
-                    inspectable.store(world);
+                    world.write_member(Model::<Inspectable>::ptr_from_keys(inspectable.inst), selector!("already_shown"), inspectable.already_shown);
+                    // inspectable.store(world);
                 }
             }
         };
@@ -45,7 +46,8 @@ pub impl PlayerImpl of PlayerTrait {
         let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
         let room = EntityImpl::get_entity(@world, @room_id).unwrap();
         ent.set_parent(world, @room);
-        world.write_model(@self);
+        world.write_member(Model::<Player>::ptr_from_keys(self.inst), selector!("location"), self.location);
+        //world.write_model(@self);
         if self.use_debug {
             self.clone().say(world, format!("You {:?} enter {:?}", ent, room));
         }
