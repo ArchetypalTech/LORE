@@ -70,10 +70,8 @@ pub impl PlayerImpl of PlayerTrait {
         // Update the player
         let mut player: Player = world.read_model(*self.inst);
         player.story_line = new_counter;
-        player.store(world);
-        // try to store only the story variable but doesn't work
-    // world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
-    // @player_story.story);
+        //player.store(world);
+        world.write_member(Model::<PlayerStory>::ptr_from_keys(*self.inst), selector!("story"), player_story.story.span());
     }
 
 
