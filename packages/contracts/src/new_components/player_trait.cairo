@@ -111,6 +111,7 @@ pub impl PlayerImpl of PlayerTrait {
         let mut player: Player = world.read_model(*self.inst);
         player.story_line = new_counter;
 <<<<<<< HEAD
+<<<<<<< HEAD
         world
             .write_member(
                 Model::<Player>::ptr_from_keys(*self.inst),
@@ -125,6 +126,10 @@ pub impl PlayerImpl of PlayerTrait {
         // world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
         // @player_story.story);
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+        //player.store(world);
+        world.write_member(Model::<PlayerStory>::ptr_from_keys(*self.inst), selector!("story"), player_story.story.span());
+>>>>>>> b356381 (chore: solve write member for player.say)
     }
 
 

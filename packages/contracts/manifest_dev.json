@@ -2782,9 +2782,16 @@
 =======
 =======
       "address": "0x3fbb56b0b2940aa69c6e477d3f26750c71173f055a8c91f2993f9dab08bd760",
+<<<<<<< HEAD
       "class_hash": "0x2e003d77667b15a2df015bba9002a9ff3fb7f7cbdb191c538a248d31f1dc461",
 >>>>>>> 5ea9132 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+<<<<<<< HEAD
 >>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+=======
+=======
+      "class_hash": "0x3162ec9ddf6a0f02aca9f504824615409e3f4a16f8be711cb2315d7853fa7c1",
+>>>>>>> f1042f5 (chore: solve write member for player.say)
+>>>>>>> b356381 (chore: solve write member for player.say)
       "abi": [
         {
           "type": "impl",
