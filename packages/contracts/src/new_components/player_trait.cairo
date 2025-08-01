@@ -97,6 +97,7 @@ pub impl PlayerImpl of PlayerTrait {
         let mut player_story: PlayerStory = world.read_model(*self.inst);
         player_story.story.append(new_counter);
 <<<<<<< HEAD
+<<<<<<< HEAD
         // world
         //     .write_member(
         //         Model::<PlayerStory>::ptr_from_keys(*self.inst),
@@ -106,10 +107,15 @@ pub impl PlayerImpl of PlayerTrait {
 =======
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
         world.write_model(@player_story);
+=======
+        world.write_member(Model::<PlayerStory>::ptr_from_keys(*self.inst), selector!("story"), player_story.story.span());
+        // world.write_model(@player_story);
+>>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
 
         // Update the player
         let mut player: Player = world.read_model(*self.inst);
         player.story_line = new_counter;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         world
@@ -130,6 +136,11 @@ pub impl PlayerImpl of PlayerTrait {
         //player.store(world);
         world.write_member(Model::<PlayerStory>::ptr_from_keys(*self.inst), selector!("story"), player_story.story.span());
 >>>>>>> b356381 (chore: solve write member for player.say)
+=======
+        world.write_member(Model::<Player>::ptr_from_keys(*self.inst), selector!("story_line"), player.story_line);
+        //player.store(world);
+        
+>>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
     }
 
 

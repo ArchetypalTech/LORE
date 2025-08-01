@@ -2748,6 +2748,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
       "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
 =======
@@ -2761,6 +2762,8 @@
 >>>>>>> 8eb73a2 (chore: finish updating new variables on conditions and effects)
 =======
 >>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+=======
+>>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
       "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
       "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
 =======
@@ -2791,7 +2794,14 @@
 =======
       "class_hash": "0x3162ec9ddf6a0f02aca9f504824615409e3f4a16f8be711cb2315d7853fa7c1",
 >>>>>>> f1042f5 (chore: solve write member for player.say)
+<<<<<<< HEAD
 >>>>>>> b356381 (chore: solve write member for player.say)
+=======
+=======
+      "address": "0x70bea88823daa38be1389a61cf4bab496cda0148fb8b8a1e10a24da7e71f852",
+      "class_hash": "0x6a2019c854edfdb2bf56a548504054f770b2ab458b5f2da89c6936ebb88b965",
+>>>>>>> 8589dd5 (chore: fix storing player.story_line only rathen than entire model)
+>>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
       "abi": [
         {
           "type": "impl",
