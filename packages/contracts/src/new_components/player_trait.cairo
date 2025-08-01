@@ -37,6 +37,7 @@ pub impl PlayerImpl of PlayerTrait {
                 } else {
                     let description = reactable.get_first_description(world);
                     self.say(world, format!("{}", description));
+<<<<<<< HEAD
                     reactable.already_shown = true;
                     world
                         .write_member(
@@ -45,6 +46,11 @@ pub impl PlayerImpl of PlayerTrait {
                             reactable.already_shown,
                         );
                     // reactable.store(world);
+=======
+                    inspectable.already_shown = true;
+                    world.write_member(Model::<Inspectable>::ptr_from_keys(inspectable.inst), selector!("already_shown"), inspectable.already_shown);
+                    // inspectable.store(world);
+>>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
                 }
             }
         };
@@ -56,10 +62,14 @@ pub impl PlayerImpl of PlayerTrait {
         let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
         let room = EntityImpl::get_entity(@world, @room_id).unwrap();
         ent.set_parent(world, @room);
+<<<<<<< HEAD
         world
             .write_member(
                 Model::<Player>::ptr_from_keys(self.inst), selector!("location"), self.location,
             );
+=======
+        world.write_member(Model::<Player>::ptr_from_keys(self.inst), selector!("location"), self.location);
+>>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         //world.write_model(@self);
         if self.use_debug {
             self.clone().say(world, format!("You {:?} enter {:?}", ent, room));

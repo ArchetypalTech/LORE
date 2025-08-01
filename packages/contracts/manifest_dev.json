@@ -1332,6 +1332,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x4c37777f8469219e7d5fd180968d847a88609e4b10f5ec3787fa830af1aabaa",
       "class_hash": "0x2f2e2835f1472a1ab784a97dd10f6d21387e4d69d7f73cf093e70e1d0c05954",
 =======
@@ -1343,6 +1344,8 @@
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
 =======
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+>>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
       "address": "0x6279c732d93918001bfcce2d2cab5d10a9402a7def48c404cb97a7179ed2f95",
       "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
 =======
@@ -1363,7 +1366,14 @@
       "address": "0x18b5753044f9cf6c2d8544b7c86bbec94505a83926ee7a67e4c5ed992995967",
       "class_hash": "0x7aef877425177263097403b52c88d1521899010345ffbb75f1c53007a1fc507",
 >>>>>>> 3e8e7c9 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+<<<<<<< HEAD
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+=======
+      "address": "0x56ea3a7dc181122495f775e0e64e0931a6b69ace915092cac04dfbffe62e660",
+      "class_hash": "0x493f378ab5416a7c32184c74d40f7c715183c55cb34acc83d82e91d662ee449",
+>>>>>>> 5ea9132 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+>>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
       "abi": [
         {
           "type": "impl",
@@ -2737,6 +2747,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
       "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
 =======
@@ -2748,6 +2759,8 @@
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
 =======
 >>>>>>> 8eb73a2 (chore: finish updating new variables on conditions and effects)
+=======
+>>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
       "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
       "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
 =======
@@ -2764,7 +2777,14 @@
 >>>>>>> 22ab864 (chore: finish updating new variables on conditions and effects)
       "class_hash": "0x27bce18acedbf14fb2e5121c5cc44a31818bcf57d62e531e5684b3bcf0c2076",
 >>>>>>> 3e8e7c9 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+<<<<<<< HEAD
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+=======
+      "address": "0x3fbb56b0b2940aa69c6e477d3f26750c71173f055a8c91f2993f9dab08bd760",
+      "class_hash": "0x2e003d77667b15a2df015bba9002a9ff3fb7f7cbdb191c538a248d31f1dc461",
+>>>>>>> 5ea9132 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+>>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
       "abi": [
         {
           "type": "impl",
