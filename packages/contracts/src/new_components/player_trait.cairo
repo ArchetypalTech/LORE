@@ -73,13 +73,13 @@ pub impl PlayerImpl of PlayerTrait {
 
         let mut player_story: PlayerStory = world.read_model(*self.inst);
         player_story.story.append(new_counter);
-        world
-            .write_member(
-                Model::<PlayerStory>::ptr_from_keys(*self.inst),
-                selector!("story"),
-                player_story.story.span(),
-            );
-        // world.write_model(@player_story);
+        // world
+        //     .write_member(
+        //         Model::<PlayerStory>::ptr_from_keys(*self.inst),
+        //         selector!("story"),
+        //         player_story.story.span(),
+        //     );
+        world.write_model(@player_story);
 
         // Update the player
         let mut player: Player = world.read_model(*self.inst);
