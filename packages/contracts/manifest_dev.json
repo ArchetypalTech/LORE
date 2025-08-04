@@ -2792,6 +2792,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
       "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
 =======
@@ -2809,6 +2810,8 @@
 >>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
 =======
 >>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
+=======
+>>>>>>> 7687c1e (chore: minor fix player.say)
       "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
       "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
 =======
@@ -2853,7 +2856,14 @@
       "address": "0x13872ba27fe4395a10280c90bea03130a54093c9d1aefab7cf3e5b3672f46d0",
       "class_hash": "0x6b1953c4c5ede54ff69d742f6a7cd6edd1bca98f7970ac1a6bc38e58b0a9bb4",
 >>>>>>> 95a7317 (chore: update client side to match changes of Inspectable -> Reactable)
+<<<<<<< HEAD
 >>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
+=======
+=======
+      "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
+      "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
+>>>>>>> 284e017 (chore: minor fix player.say)
+>>>>>>> 7687c1e (chore: minor fix player.say)
       "abi": [
         {
           "type": "impl",
