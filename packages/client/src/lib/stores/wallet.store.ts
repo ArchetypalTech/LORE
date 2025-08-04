@@ -59,7 +59,7 @@ const setupController = async () => {
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "create_inspectable",
+					entrypoint: "create_reactable",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
@@ -115,7 +115,7 @@ const setupController = async () => {
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "delete_inspectable",
+					entrypoint: "delete_reactable",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{

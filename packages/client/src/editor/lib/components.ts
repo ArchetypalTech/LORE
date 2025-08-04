@@ -1,6 +1,6 @@
 import {
 	type Entity,
-	type Inspectable,
+	type Reactable,
 	type SchemaType,
 	schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -8,7 +8,7 @@ import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InventoryItemInspector } from "../components/inspectors/InventoryItemInspector";
-import { InspectableInspector } from "../components/inspectors/InspectableInspector";
+import { ReactableInspector } from "../components/inspectors/ReactableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { ContainerInspector } from "../components/inspectors/ContainerInspector";
 import { PlayerInspector } from "../components/inspectors/PlayerInspector";
@@ -64,7 +64,7 @@ export const createPlayerEntity = (
 
 export const createPlayerComponent = (
 	_entity: Entity,
-	_inspectable?: Inspectable,
+	_reactable?: Reactable,
 	address?: string
   ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
 	const playerAddress = address || getPlayerAddress();
@@ -92,18 +92,18 @@ export const createDefaultAreaComponent = (
 	},
 });
 
-export const createDefaultInspectableComponent = (
+export const createDefaultReactableComponent = (
 	entity: Entity,
-): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
-	Inspectable: {
-		...schema.lore.Inspectable,
+): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
+	Reactable: {
+		...schema.lore.Reactable,
 		inst: entity.inst,
-		is_inspectable: true,
+		is_reactable: true,
 		is_visible: true,
 		description: [],
 		action_map: [
-			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoint: 0 },
-			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
+			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0 ,0] },
+			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 1] },
 		],
 		already_shown: false,
 		new_entry: "",
@@ -114,9 +114,9 @@ export const createDefaultInspectableComponent = (
 
 export const createDefaultDescriptionText = (
 	entity: Entity,
-	inspectable?: Inspectable,
+	reactable?: Reactable,
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
-	const existingKeys = (inspectable?.description|| []).map(Number);
+	const existingKeys = (reactable?.description|| []).map(Number);
 	const nextKey = existingKeys.length - 1;
 
 	return {
@@ -226,7 +226,7 @@ export const createDefaultEffectComponent = (
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
 		target: 0,
-		component: "Inspectable",
+		component: "Reactable",
 		property: "is_visible",
 		value: [],
 	},
@@ -278,7 +278,7 @@ export const componentData: {
 		order: number;
 		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
-		creator?: (entity: Entity, inspectable?: Inspectable) => WithStringEnums<Pick<EntityCollection, K>>;
+		creator?: (entity: Entity, reactable?: Reactable) => WithStringEnums<Pick<EntityCollection, K>>;
 	};
 } = {
 	Entity: {
@@ -298,11 +298,11 @@ export const componentData: {
 		icon: "🥾",
 		creator: createDefaultAreaComponent,
 	},
-	Inspectable: {
+	Reactable: {
 		order: 3,
-		inspector: InspectableInspector, 
+		inspector: ReactableInspector, 
 		icon: "🔍",
-		creator: createDefaultInspectableComponent,
+		creator: createDefaultReactableComponent,
 	},
 	Exit: {
 		order: 4,

@@ -3,8 +3,8 @@ import type {
 	DirectionEnum,
 	direction,
 	Entity,
-	InspectableActionsEnum,
-	inspectableActions,
+	ReactableActionsEnum,
+	reactableActions,
 	SchemaType,
 	TokenTypeEnum,
 	tokenType,
@@ -34,7 +34,7 @@ export type AnyObject = WithStringEnums<
 		| "Area"
 		| "Container"
 		| "Exit"
-		| "Inspectable"
+		| "Reactable"
 		| "DescriptionText"
 		| "InventoryItem"
 		| "PlayerStory"
@@ -47,7 +47,7 @@ export type AnyObject = WithStringEnums<
 		| "Entity"
 		| "ChildToParent"
 		| "ParentToChildren"
-		| "ActionMapInspectable"
+		| "ActionMapReactable"
 	>
 >;
 
@@ -81,8 +81,8 @@ export type WithStringEnums<T> = {
 					? (typeof triggerType)[number]
 						: T[K] extends OperatorEnum
 							? (typeof operator)[number]
-							: T[K] extends InspectableActionsEnum
-								? (typeof inspectableActions)[number]
+							: T[K] extends ReactableActionsEnum
+								? (typeof reactableActions)[number]
 								: T[K] extends TokenTypeEnum
 									? (typeof tokenType)[number]
 									: T[K] extends Array<infer U>
@@ -92,11 +92,20 @@ export type WithStringEnums<T> = {
 											: T[K];
 };
 
+// Standard ActionMap
 export interface ActionMap<T> {
 	action: string;
 	inst: BigNumberish;
 	action_fn: T;
 	entrypoint: BigNumberish;
+}
+
+// Reactable ActionMap
+export interface ActionMapForReactable<T> {
+	action: string;
+	inst: BigNumberish;
+	action_fn: T;
+	entrypoints: [BigNumberish, BigNumberish];
 }
 
 export interface TriggerParameter {

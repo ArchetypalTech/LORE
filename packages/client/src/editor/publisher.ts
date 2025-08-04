@@ -7,8 +7,8 @@ import {
 	type Entity,
 	type Exit,
 	exitActions,
-	type Inspectable,
-	inspectableActions,
+	type Reactable,
+	reactableActions,
 	type DescriptionText,
 	type InventoryItem,
 	inventoryItemActions,
@@ -93,8 +93,8 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	if("Player" in collection && collection.Player !== undefined) {
 		await publishPlayer(collection.Player);
 	}
-	if ("Inspectable" in collection && collection.Inspectable !== undefined) {
-		await publishInspectable(collection.Inspectable);
+	if ("Reactable" in collection && collection.Reactable !== undefined) {
+		await publishReactable(collection.Reactable);
 	}
 	if ("DescriptionText" in collection && collection.DescriptionText !== undefined) {
 		await publishDescriptionText(collection.DescriptionText);
@@ -164,25 +164,26 @@ const publishPlayer = async (player: Player) => {
 	await dispatchDesignerCall("create_player", [playerData]);
 };
 
-const publishInspectable = async (inspectable: Inspectable) => {
-	const inspectableData = [
-		num.toBigInt(inspectable.inst.toString()),
-		inspectable.is_inspectable,
-		inspectable.is_visible,
-		inspectable.description.map((x) => num.toBigInt(x.toString())),
-		inspectable.action_map.length > 0
-			? inspectable.action_map.map((x) => [
+const publishReactable = async (reactable: Reactable) => {
+	const reactableData = [
+		num.toBigInt(reactable.inst.toString()),
+		reactable.is_reactable,
+		reactable.is_visible,
+		reactable.description.map((x) => num.toBigInt(x.toString())),
+		reactable.action_map.length > 0
+			? reactable.action_map.map((x) => [
 					byteArray.byteArrayFromString(x.action),
 					num.toBigInt(x.inst ?? "0"),
-					toEnumIndex(x.action_fn, inspectableActions),
-					x.entrypoint ? num.toBigInt(x.entrypoint.toString()) : num.toBigInt("0"),
+					toEnumIndex(x.action_fn, reactableActions),
+					num.toBigInt(x.entrypoints?.[0] ?? "0"),
+					num.toBigInt(x.entrypoints?.[1] ?? "0"),
 				])
 			: 0,
-		inspectable.already_shown,
-		byteArray.byteArrayFromString(inspectable.new_entry.toString() ?? ""),
+		reactable.already_shown,
+		byteArray.byteArrayFromString(reactable.new_entry.toString() ?? ""),
 	];
 	
-	await dispatchDesignerCall("create_inspectable", [inspectableData]);
+	await dispatchDesignerCall("create_reactable", [reactableData]);
 };
 
 const publishDescriptionText = async (description: DescriptionText) => {
@@ -358,9 +359,9 @@ const deleteCollection = async (model: EntityCollection) => {
 			num.toBigInt(model.Player!.inst),
 		]);
 	}
-	if ("Inspectable" in model && model.Inspectable !== undefined) {
-		await dispatchDesignerCall("delete_inspectable", [
-			num.toBigInt(model.Inspectable!.inst),
+	if ("Reactable" in model && model.Reactable !== undefined) {
+		await dispatchDesignerCall("delete_reactable", [
+			num.toBigInt(model.Reactable!.inst),
 		]);
 	}
 	if ("DescriptionText" in model && model.DescriptionText !== undefined) {

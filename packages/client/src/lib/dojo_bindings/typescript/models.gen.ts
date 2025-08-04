@@ -203,27 +203,6 @@ export interface ExitValue {
 	action_map: Array<ActionMapExit>;
 }
 
-// Type definition for `lore::models::index::Inspectable` struct
-export interface Inspectable {
-	inst: BigNumberish;
-	is_inspectable: boolean;
-	is_visible: boolean;
-	description: Array<BigNumberish>;
-	action_map: Array<ActionMapInspectable>;
-	already_shown: boolean;
-	new_entry: string;
-}
-
-// Type definition for `lore::models::index::InspectableValue` struct
-export interface InspectableValue {
-	is_inspectable: boolean;
-	is_visible: boolean;
-	description: Array<BigNumberish>;
-	action_map: Array<ActionMapInspectable>;
-	already_shown: boolean;
-	new_entry: string;
-}
-
 // Type definition for `lore::models::index::InventoryItem` struct
 export interface InventoryItem {
 	inst: BigNumberish;
@@ -301,6 +280,27 @@ export interface PropertyRegistryValue {
 	properties: Array<ComponentProperty>;
 }
 
+// Type definition for `lore::models::index::Reactable` struct
+export interface Reactable {
+	inst: BigNumberish;
+	is_reactable: boolean;
+	is_visible: boolean;
+	description: Array<BigNumberish>;
+	action_map: Array<ActionMapReactable>;
+	already_shown: boolean;
+	new_entry: string;
+}
+
+// Type definition for `lore::models::index::ReactableValue` struct
+export interface ReactableValue {
+	is_reactable: boolean;
+	is_visible: boolean;
+	description: Array<BigNumberish>;
+	action_map: Array<ActionMapReactable>;
+	already_shown: boolean;
+	new_entry: string;
+}
+
 // Type definition for `lore::models::index::StoryLine` struct
 export interface StoryLine {
 	inst: BigNumberish;
@@ -358,19 +358,19 @@ export interface ActionMapExit {
 	action_fn: ExitActionsEnum;
 }
 
-// Type definition for `lore::types::component_type::ActionMapInspectable` struct
-export interface ActionMapInspectable {
-	action: string;
-	inst: BigNumberish;
-	action_fn: InspectableActionsEnum;
-	entrypoint: BigNumberish;
-}
-
 // Type definition for `lore::types::component_type::ActionMapInventoryItem` struct
 export interface ActionMapInventoryItem {
 	action: string;
 	inst: BigNumberish;
 	action_fn: InventoryItemActionsEnum;
+}
+
+// Type definition for `lore::types::component_type::ActionMapReactable` struct
+export interface ActionMapReactable {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ReactableActionsEnum;
+	entrypoints: [BigNumberish, BigNumberish];
 }
 
 // Type definition for `lore::types::property_type::ComponentProperty` struct
@@ -427,7 +427,7 @@ export const componentType = [
 	'Container',
 	'Entity',
 	'Exit',
-	'Inspectable',
+	'Reactable',
 	'InventoryItem',
 	'Player',
 	'Trigger',
@@ -454,16 +454,6 @@ export const exitActions = [
 export type ExitActions = { [key in typeof exitActions[number]]: string };
 export type ExitActionsEnum = CairoCustomEnum;
 
-// Type definition for `lore::types::component_type::InspectableActions` enum
-export const inspectableActions = [
-	'SetVisible',
-	'ReadRandomDescription',
-	'ReadFirstDescription',
-	'ReadSpecificDescription',
-] as const;
-export type InspectableActions = { [key in typeof inspectableActions[number]]: string };
-export type InspectableActionsEnum = CairoCustomEnum;
-
 // Type definition for `lore::types::component_type::InventoryItemActions` enum
 export const inventoryItemActions = [
 	'UseItem',
@@ -474,6 +464,16 @@ export const inventoryItemActions = [
 ] as const;
 export type InventoryItemActions = { [key in typeof inventoryItemActions[number]]: string };
 export type InventoryItemActionsEnum = CairoCustomEnum;
+
+// Type definition for `lore::types::component_type::ReactableActions` enum
+export const reactableActions = [
+	'SetVisible',
+	'ReadRandomDescription',
+	'ReadFirstDescription',
+	'ReadSpecificDescription',
+] as const;
+export type ReactableActions = { [key in typeof reactableActions[number]]: string };
+export type ReactableActionsEnum = CairoCustomEnum;
 
 // Type definition for `lore::types::direction_type::Direction` enum
 export const direction = [
@@ -538,8 +538,6 @@ export interface SchemaType extends ISchemaType {
 		EntityValue: EntityValue,
 		Exit: Exit,
 		ExitValue: ExitValue,
-		Inspectable: Inspectable,
-		InspectableValue: InspectableValue,
 		InventoryItem: InventoryItem,
 		InventoryItemValue: InventoryItemValue,
 		ParentToChildren: ParentToChildren,
@@ -550,6 +548,8 @@ export interface SchemaType extends ISchemaType {
 		PlayerValue: PlayerValue,
 		PropertyRegistry: PropertyRegistry,
 		PropertyRegistryValue: PropertyRegistryValue,
+		Reactable: Reactable,
+		ReactableValue: ReactableValue,
 		StoryLine: StoryLine,
 		StoryLineValue: StoryLineValue,
 		Trigger: Trigger,
@@ -558,8 +558,8 @@ export interface SchemaType extends ISchemaType {
 		TriggerValue: TriggerValue,
 		ActionMapContainer: ActionMapContainer,
 		ActionMapExit: ActionMapExit,
-		ActionMapInspectable: ActionMapInspectable,
 		ActionMapInventoryItem: ActionMapInventoryItem,
+		ActionMapReactable: ActionMapReactable,
 		ComponentProperty: ComponentProperty,
 	},
 }
@@ -619,7 +619,7 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
-				Inspectable: undefined,
+				Reactable: undefined,
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -637,7 +637,7 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
-				Inspectable: undefined,
+				Reactable: undefined,
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -659,7 +659,7 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
-				Inspectable: undefined,
+				Reactable: undefined,
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -683,7 +683,7 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
-				Inspectable: undefined,
+				Reactable: undefined,
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -773,7 +773,7 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
-				Inspectable: undefined,
+				Reactable: undefined,
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -792,7 +792,7 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
-				Inspectable: undefined,
+				Reactable: undefined,
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -851,31 +851,6 @@ export const schema: SchemaType = {
 				Down: undefined, }),
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					UseExit: "", }), }],
-		},
-		Inspectable: {
-			inst: 0,
-			is_inspectable: false,
-			is_visible: false,
-			description: [0],
-			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					SetVisible: "",
-				ReadRandomDescription: undefined,
-				ReadFirstDescription: undefined,
-				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
-			already_shown: false,
-		new_entry: "",
-		},
-		InspectableValue: {
-			is_inspectable: false,
-			is_visible: false,
-			description: [0],
-			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					SetVisible: "",
-				ReadRandomDescription: undefined,
-				ReadFirstDescription: undefined,
-				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
-			already_shown: false,
-		new_entry: "",
 		},
 		InventoryItem: {
 			inst: 0,
@@ -944,7 +919,7 @@ export const schema: SchemaType = {
 				Container: undefined,
 				Entity: undefined,
 				Exit: undefined,
-				Inspectable: undefined,
+				Reactable: undefined,
 				InventoryItem: undefined,
 				Player: undefined,
 				Trigger: undefined,
@@ -977,6 +952,31 @@ export const schema: SchemaType = {
 				ArrayByteArray: undefined, }), access_flags: new CairoCustomEnum({ 
 					ReadOnly: "",
 				ReadWrite: undefined, }), }],
+		},
+		Reactable: {
+			inst: 0,
+			is_reactable: false,
+			is_visible: false,
+			description: [0],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoints: [0, 0], }],
+			already_shown: false,
+		new_entry: "",
+		},
+		ReactableValue: {
+			is_reactable: false,
+			is_visible: false,
+			description: [0],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoints: [0, 0], }],
+			already_shown: false,
+		new_entry: "",
 		},
 		StoryLine: {
 			inst: 0,
@@ -1044,16 +1044,6 @@ export const schema: SchemaType = {
 		action_fn: new CairoCustomEnum({ 
 					UseExit: "", }),
 		},
-		ActionMapInspectable: {
-		action: "",
-			inst: 0,
-		action_fn: new CairoCustomEnum({ 
-					SetVisible: "",
-				ReadRandomDescription: undefined,
-				ReadFirstDescription: undefined,
-				ReadSpecificDescription: undefined, }),
-			entrypoint: 0,
-		},
 		ActionMapInventoryItem: {
 		action: "",
 			inst: 0,
@@ -1063,6 +1053,16 @@ export const schema: SchemaType = {
 				DropItem: undefined,
 				PutItem: undefined,
 				TakeOutItem: undefined, }),
+		},
+		ActionMapReactable: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }),
+			entrypoints: [0, 0],
 		},
 		ComponentProperty: {
 		name: "",
@@ -1105,8 +1105,6 @@ export enum ModelsMapping {
 	EntityValue = 'lore-EntityValue',
 	Exit = 'lore-Exit',
 	ExitValue = 'lore-ExitValue',
-	Inspectable = 'lore-Inspectable',
-	InspectableValue = 'lore-InspectableValue',
 	InventoryItem = 'lore-InventoryItem',
 	InventoryItemValue = 'lore-InventoryItemValue',
 	ParentToChildren = 'lore-ParentToChildren',
@@ -1117,6 +1115,8 @@ export enum ModelsMapping {
 	PlayerValue = 'lore-PlayerValue',
 	PropertyRegistry = 'lore-PropertyRegistry',
 	PropertyRegistryValue = 'lore-PropertyRegistryValue',
+	Reactable = 'lore-Reactable',
+	ReactableValue = 'lore-ReactableValue',
 	StoryLine = 'lore-StoryLine',
 	StoryLineValue = 'lore-StoryLineValue',
 	Trigger = 'lore-Trigger',
@@ -1128,13 +1128,13 @@ export enum ModelsMapping {
 	TokenType = 'lore-TokenType',
 	ActionMapContainer = 'lore-ActionMapContainer',
 	ActionMapExit = 'lore-ActionMapExit',
-	ActionMapInspectable = 'lore-ActionMapInspectable',
 	ActionMapInventoryItem = 'lore-ActionMapInventoryItem',
+	ActionMapReactable = 'lore-ActionMapReactable',
 	ComponentType = 'lore-ComponentType',
 	ContainerActions = 'lore-ContainerActions',
 	ExitActions = 'lore-ExitActions',
-	InspectableActions = 'lore-InspectableActions',
 	InventoryItemActions = 'lore-InventoryItemActions',
+	ReactableActions = 'lore-ReactableActions',
 	Direction = 'lore-Direction',
 	ComponentProperty = 'lore-ComponentProperty',
 	PropertyAccess = 'lore-PropertyAccess',

@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x56ea3a7dc181122495f775e0e64e0931a6b69ace915092cac04dfbffe62e660",
-      "class_hash": "0x493f378ab5416a7c32184c74d40f7c715183c55cb34acc83d82e91d662ee449",
+      "address": "0x4c37777f8469219e7d5fd180968d847a88609e4b10f5ec3787fa830af1aabaa",
+      "class_hash": "0x2f2e2835f1472a1ab784a97dd10f6d21387e4d69d7f73cf093e70e1d0c05954",
       "abi": [
         {
           "type": "impl",
@@ -1458,7 +1458,7 @@
         },
         {
           "type": "enum",
-          "name": "lore::types::component_type::InspectableActions",
+          "name": "lore::types::component_type::ReactableActions",
           "variants": [
             {
               "name": "SetVisible",
@@ -1480,7 +1480,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::types::component_type::ActionMapInspectable",
+          "name": "lore::types::component_type::ActionMapReactable",
           "members": [
             {
               "name": "action",
@@ -1492,24 +1492,24 @@
             },
             {
               "name": "action_fn",
-              "type": "lore::types::component_type::InspectableActions"
+              "type": "lore::types::component_type::ReactableActions"
             },
             {
-              "name": "entrypoint",
-              "type": "core::integer::u32"
+              "name": "entrypoints",
+              "type": "(core::integer::u32, core::integer::u32)"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Inspectable",
+          "name": "lore::models::index::Reactable",
           "members": [
             {
               "name": "inst",
               "type": "core::felt252"
             },
             {
-              "name": "is_inspectable",
+              "name": "is_reactable",
               "type": "core::bool"
             },
             {
@@ -1522,7 +1522,7 @@
             },
             {
               "name": "action_map",
-              "type": "core::array::Array::<lore::types::component_type::ActionMapInspectable>"
+              "type": "core::array::Array::<lore::types::component_type::ActionMapReactable>"
             },
             {
               "name": "already_shown",
@@ -1919,7 +1919,7 @@
               "type": "()"
             },
             {
-              "name": "Inspectable",
+              "name": "Reactable",
               "type": "()"
             },
             {
@@ -2162,11 +2162,11 @@
             },
             {
               "type": "function",
-              "name": "create_inspectable",
+              "name": "create_reactable",
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Inspectable>"
+                  "type": "core::array::Array::<lore::models::index::Reactable>"
                 }
               ],
               "outputs": [],
@@ -2330,7 +2330,7 @@
             },
             {
               "type": "function",
-              "name": "delete_inspectable",
+              "name": "delete_reactable",
               "inputs": [
                 {
                   "name": "ids",
@@ -2607,7 +2607,7 @@
       "systems": [
         "create_player",
         "create_entity",
-        "create_inspectable",
+        "create_reactable",
         "create_description_text",
         "create_area",
         "create_exit",
@@ -2621,7 +2621,7 @@
         "create_child",
         "delete_player",
         "delete_entity",
-        "delete_inspectable",
+        "delete_reactable",
         "delete_description_text",
         "delete_area",
         "delete_exit",
@@ -2638,8 +2638,8 @@
       ]
     },
     {
-      "address": "0x70bea88823daa38be1389a61cf4bab496cda0148fb8b8a1e10a24da7e71f852",
-      "class_hash": "0x6a2019c854edfdb2bf56a548504054f770b2ab458b5f2da89c6936ebb88b965",
+      "address": "0x13872ba27fe4395a10280c90bea03130a54093c9d1aefab7cf3e5b3672f46d0",
+      "class_hash": "0x6b1953c4c5ede54ff69d742f6a7cd6edd1bca98f7970ac1a6bc38e58b0a9bb4",
       "abi": [
         {
           "type": "impl",
@@ -2860,13 +2860,13 @@
     },
     {
       "members": [],
-      "class_hash": "0x37bcad9818d3b158a61a774b40f0ea2988e3e6dd23c58634d05c1cc2a9807ad",
+      "class_hash": "0x75b8006e4ff009f7be1461be5bb33f98aa0cb860715b39d48ea7f800520d450",
       "tag": "lore-ComponentVariable",
       "selector": "0x7ce96a78c69170fe31cf5c816ec24414fd4c354324f8b9537e6830c9177cfe4"
     },
     {
       "members": [],
-      "class_hash": "0x695c59b3350606d3e8a85a72b062bcbbb536be56d87a1d8edd28e59ae7e6c86",
+      "class_hash": "0x4b5cc9d620bb111af257830584b2108f388ab579421cfd100ef473265ff5c55",
       "tag": "lore-Condition",
       "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
@@ -2890,7 +2890,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x3f94bac2d448d01c4f8c457aaa985ff741c79bbc0d8cf34b396eb75e16cf35f",
+      "class_hash": "0x4f374c110ba75476f4733f6749c4c159d979e10200dc7f439959422910ecd03",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },
@@ -2905,12 +2905,6 @@
       "class_hash": "0x361c4f97448bbf4d18532a2efebbc278ff7d7132489f77dd43b0e9a4c98759b",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
-    },
-    {
-      "members": [],
-      "class_hash": "0x3749ea4829cacad1243f6d717df9cf17604837d7e93d941c47791b7c4bdb50e",
-      "tag": "lore-Inspectable",
-      "selector": "0x761c792e623173857f21316868bd06f19050cfc26238d33476231e335cf59c9"
     },
     {
       "members": [],
@@ -2938,9 +2932,15 @@
     },
     {
       "members": [],
-      "class_hash": "0x7b9d9538a0de186540cf7f34774251ceaa13b39b312aaad246f5d642aa460f6",
+      "class_hash": "0x7ef3371311ee14df227bc9e3944b23dc0da71c1ce0ebf17982532961eb0e411",
       "tag": "lore-PropertyRegistry",
       "selector": "0x54d238bab1b146fbb42252f5fba933d9fb90048459d848a6fff3a2528615b59"
+    },
+    {
+      "members": [],
+      "class_hash": "0x14e4af343fbd6e16b31b5e47e78e0abe5148331ec49e0cc579764414398b508",
+      "tag": "lore-Reactable",
+      "selector": "0x13fefc8a36ffca06da26b1726d49465726acb19821a4d3382f5c9420a4a4896"
     },
     {
       "members": [],

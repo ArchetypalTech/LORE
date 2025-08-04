@@ -1,20 +1,20 @@
 import {
-	type ActionMapInspectable,
-	type Inspectable,
-	inspectableActions,
+	type ActionMapReactable,
+	type Reactable,
+	reactableActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import { ActionMapEditor, Toggle, Input, TextAreaArray } from "../FormComponents";
+import { ReactableActionMapEditor, Toggle, Input, TextAreaArray } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { createDefaultDescriptionText } from "@/editor/lib/components";
 import { Button } from "../ui/Button";
 import { getEntity, updateComponent } from "@/editor/data/editor.data";
 
-export const InspectableInspector: ComponentInspector<Inspectable> = ({
+export const ReactableInspector: ComponentInspector<Reactable> = ({
 	componentObject,
 	...props
 }) => {
-	const { handleInputChange, Inspector } = useInspector<Inspectable>({
+	const { handleInputChange, Inspector } = useInspector<Reactable>({
 		componentObject,
 		...props,
 		inputHandlers: {
@@ -28,7 +28,7 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 			},
 			action_map: (e, updatedObject) => {
 				const newActionMap = e.target
-				.value as unknown as ActionMapInspectable[];
+				.value as unknown as ActionMapReactable[];
 				updatedObject.action_map = newActionMap;
 			},
 			already_shown: (e, updatedObject) => {
@@ -88,11 +88,11 @@ export const InspectableInspector: ComponentInspector<Inspectable> = ({
 				value={componentObject.is_visible}
 				onChange={handleInputChange}
 			/>
-			<ActionMapEditor
+			<ReactableActionMapEditor
 				id="action_map"
 				value={componentObject.action_map}
 				onChange={handleInputChange}
-				cairoEnum={inspectableActions}
+				cairoEnum={reactableActions}
 			/>
 		</Inspector>
 	);
