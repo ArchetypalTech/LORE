@@ -3,7 +3,7 @@ use dojo::{world::{WorldStorage}, model::ModelStorage, model::Model};
 use lore::{
     models::{
         index::{Trigger, TriggerIndex}, area::AreaComponent, exit::ExitComponent,
-        inspectable::InspectableComponent, inventoryItem::InventoryItemComponent,
+        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
         container::ContainerComponent, player::PlayerComponent,
     },
     new_components::entity_trait::EntityImpl,
@@ -84,7 +84,12 @@ pub impl TriggerImpl of TriggerTrait {
             Option::Some(mut trigger_index) => {
                 // Append trigger key to trigger index
                 trigger_index.trigger_id.append((trigger.inst, trigger.key));
-                world.write_member(Model::<TriggerIndex>::ptr_from_keys(trigger.trigger_type), selector!("trigger_id"), trigger_index.trigger_id);
+                world
+                    .write_member(
+                        Model::<TriggerIndex>::ptr_from_keys(trigger.trigger_type),
+                        selector!("trigger_id"),
+                        trigger_index.trigger_id,
+                    );
                 // world.write_model(@trigger_index);
                 Result::Ok(())
             },
@@ -95,7 +100,12 @@ pub impl TriggerImpl of TriggerTrait {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Enable trigger
         trigger.is_enabled = true;
-        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("is_enabled"), trigger.is_enabled);
+        world
+            .write_member(
+                Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
+                selector!("is_enabled"),
+                trigger.is_enabled,
+            );
         // world.write_model(@trigger);
     }
 
@@ -103,7 +113,12 @@ pub impl TriggerImpl of TriggerTrait {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Disable trigger
         trigger.is_enabled = false;
-        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("is_enabled"), trigger.is_enabled);
+        world
+            .write_member(
+                Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
+                selector!("is_enabled"),
+                trigger.is_enabled,
+            );
         // world.write_model(@trigger);
     }
 
@@ -208,7 +223,12 @@ pub impl TriggerImpl of TriggerTrait {
         }
         // Set trigger as triggered
         trigger.was_triggered = true;
-        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("was_triggered"), trigger.was_triggered);
+        world
+            .write_member(
+                Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
+                selector!("was_triggered"),
+                trigger.was_triggered,
+            );
         // world.write_model(@trigger);
         // Return result
         result

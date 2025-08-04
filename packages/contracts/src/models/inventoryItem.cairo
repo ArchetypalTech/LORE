@@ -2,7 +2,7 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         index::{Entity, InventoryItem, Container, Player, Action}, components::Component,
-        area::AreaComponent, container::ContainerComponent, inspectable::InspectableComponent,
+        area::AreaComponent, container::ContainerComponent, reactable::ReactableComponent,
     },
     new_components::{
         entity_trait::EntityImpl, inventoryItem_trait::InventoryItemImpl,

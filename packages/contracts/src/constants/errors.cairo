@@ -33,7 +33,7 @@ pub enum Error {
     NoComponent,
     NoAreaComponent,
     NoExitComponent,
-    NoInspectableComponent,
+    NoReactableComponent,
     NoInventoryItemComponent,
     NoContainerComponent,
     NoPlayerComponent,

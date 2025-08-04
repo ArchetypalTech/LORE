@@ -1,12 +1,12 @@
 use dojo::{world::WorldStorage};
 use lore::{
     models::{
-        index::{Inspectable, Exit, Container, Player}, area::AreaComponent, exit::ExitComponent,
-        inspectable::InspectableComponent, inventoryItem::InventoryItemComponent,
+        index::{Reactable, Exit, Container, Player}, area::AreaComponent, exit::ExitComponent,
+        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
         container::ContainerComponent, player::PlayerComponent, components::Component,
     },
     new_components::{
-        entity_trait::EntityImpl, player_trait::PlayerImpl, inspectable_trait::InspectableImpl,
+        entity_trait::EntityImpl, player_trait::PlayerImpl, reactable_trait::ReactableImpl,
         container_trait::ContainerImpl, condition_trait::ConditionImpl, action_trait::ActionImpl,
     },
     types::command_type::{Command, TokenType, Token},
@@ -37,7 +37,7 @@ pub fn handle_command(
             if player.use_debug {
                 player.say(world, format!("item: {:?}", item));
             }
-            match InspectableComponent::get_component(world, item.inst) {
+            match ReactableComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.clone().can_use_command(world, @player, @command) {
                         if c.clone().execute_command(world, @player, @command).is_ok() {
@@ -217,9 +217,8 @@ fn system_command(
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
-            let inspectable: Inspectable = Component::get_component(world, room.unwrap().inst)
-                .unwrap();
-            player.say(world, format!("+sys+{:?}", inspectable));
+            let reactable: Reactable = Component::get_component(world, room.unwrap().inst).unwrap();
+            player.say(world, format!("+sys+{:?}", reactable));
             return Result::Ok(command);
         }
         if (system_command == "g_init_dict") {
@@ -249,9 +248,9 @@ fn system_command(
             }
             player.say(world, format!("{}", room.unwrap().name));
             for item in context {
-                let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
-                if inspectable.is_some() {
-                    let description = inspectable.unwrap().get_random_description(world);
+                let reactable: Option<Reactable> = Component::get_component(world, item.inst);
+                if reactable.is_some() {
+                    let description = reactable.unwrap().get_random_description(@command, world);
                     player.say(world, format!("{}", description));
                 }
             };

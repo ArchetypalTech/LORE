@@ -5,7 +5,7 @@ use lore::{
     types::{
         action_type::{TriggerType, Operator}, command_type::{TokenType},
         component_type::{
-            ComponentType, ActionMapInspectable, ActionMapExit, ActionMapContainer,
+            ComponentType, ActionMapReactable, ActionMapExit, ActionMapContainer,
             ActionMapInventoryItem,
         },
         direction_type::Direction, property_type::{ComponentProperty},
@@ -72,17 +72,17 @@ pub struct Area {
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
-pub struct Inspectable {
+pub struct Reactable {
     #[key]
     pub inst: felt252,
-    pub is_inspectable: bool,
+    pub is_reactable: bool,
     /// Properties ///
-    /// If the inspectable is visible
+    /// If the reactable is visible
     pub is_visible: bool,
-    /// Array of descriptions for the inspectable
+    /// Array of descriptions for the reactable
     pub description: Array<u32>,
-    /// Array of action maps for the inspectable
-    pub action_map: Array<ActionMapInspectable>,
+    /// Array of action maps for the reactable
+    pub action_map: Array<ActionMapReactable>,
     /// For the first description, if we want to show a different one
     pub already_shown: bool,
     /// New first description

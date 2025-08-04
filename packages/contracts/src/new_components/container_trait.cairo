@@ -26,21 +26,34 @@ pub impl ContainerImpl of ContainerTrait {
     fn set_open(self: Container, mut world: WorldStorage, opened: bool) {
         let mut model: Container = world.read_model(self.clone());
         model.is_open = opened;
-        world.write_member(Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), model.is_open);
+        world
+            .write_member(
+                Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), model.is_open,
+            );
         // world.write_model(@model);
     }
 
     fn set_can_be_opened(self: Container, mut world: WorldStorage, can_be_opened: bool) {
         let mut model: Container = world.read_model(self.clone());
         model.can_be_opened = can_be_opened;
-        world.write_member(Model::<Container>::ptr_from_keys(self.inst), selector!("can_be_opened"), model.can_be_opened);
+        world
+            .write_member(
+                Model::<Container>::ptr_from_keys(self.inst),
+                selector!("can_be_opened"),
+                model.can_be_opened,
+            );
         // world.write_model(@model);
     }
 
     fn set_can_receive_items(self: Container, mut world: WorldStorage, can_receive_items: bool) {
         let mut model: Container = world.read_model(self.clone());
         model.can_receive_items = can_receive_items;
-        world.write_member(Model::<Container>::ptr_from_keys(self.inst), selector!("can_receive_items"), model.can_receive_items);
+        world
+            .write_member(
+                Model::<Container>::ptr_from_keys(self.inst),
+                selector!("can_receive_items"),
+                model.can_receive_items,
+            );
         // world.write_model(@model);
     }
 
@@ -101,7 +114,12 @@ pub impl ContainerImpl of ContainerTrait {
         // update container
         world.write_model(@container);
         // update item
-        world.write_member(Model::<InventoryItem>::ptr_from_keys(item.inst), selector!("owner_id"), item.owner_id);
+        world
+            .write_member(
+                Model::<InventoryItem>::ptr_from_keys(item.inst),
+                selector!("owner_id"),
+                item.owner_id,
+            );
         //world.write_model(@item);
     }
 
@@ -128,7 +146,12 @@ pub impl ContainerImpl of ContainerTrait {
         // update container
         world.write_model(@container);
         // update item
-        world.write_member(Model::<InventoryItem>::ptr_from_keys(item.inst), selector!("owner_id"), item.owner_id);
+        world
+            .write_member(
+                Model::<InventoryItem>::ptr_from_keys(item.inst),
+                selector!("owner_id"),
+                item.owner_id,
+            );
         //world.write_model(@item);
     }
 

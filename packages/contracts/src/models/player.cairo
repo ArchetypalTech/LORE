@@ -2,7 +2,7 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{
     models::{index::{Player}, components::Component},
-    new_components::{entity_trait::EntityImpl, inspectable_trait::InspectableImpl},
+    new_components::{entity_trait::EntityImpl, reactable_trait::ReactableImpl},
     types::{command_type::Command}, constants::errors::Error,
 };
 
