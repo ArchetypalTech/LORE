@@ -52,10 +52,14 @@ export type DesignerCall =
 	| "create_player"
 	| "create_entity"
 <<<<<<< HEAD
+<<<<<<< HEAD
 	| "create_reactable"
 =======
 	| "create_inspectable"
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+	| "create_reactable"
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	| "create_description_text"
 	| "create_area"
 	| "create_exit"
@@ -70,10 +74,14 @@ export type DesignerCall =
 	| "delete_player"
 	| "delete_entity"
 <<<<<<< HEAD
+<<<<<<< HEAD
 	| "delete_reactable"
 =======
 	| "delete_inspectable"
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+	| "delete_reactable"
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	| "delete_description_text"
 	| "delete_area"
 	| "delete_exit"

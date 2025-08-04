@@ -35,10 +35,14 @@ export type AnyObject = WithStringEnums<
 		| "Container"
 		| "Exit"
 <<<<<<< HEAD
+<<<<<<< HEAD
 		| "Reactable"
 =======
 		| "Inspectable"
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+		| "Reactable"
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 		| "DescriptionText"
 		| "InventoryItem"
 		| "PlayerStory"

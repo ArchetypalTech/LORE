@@ -1333,6 +1333,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x4c37777f8469219e7d5fd180968d847a88609e4b10f5ec3787fa830af1aabaa",
       "class_hash": "0x2f2e2835f1472a1ab784a97dd10f6d21387e4d69d7f73cf093e70e1d0c05954",
 =======
@@ -1346,6 +1347,8 @@
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
 =======
 >>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "address": "0x6279c732d93918001bfcce2d2cab5d10a9402a7def48c404cb97a7179ed2f95",
       "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
 =======
@@ -1373,7 +1376,14 @@
       "address": "0x56ea3a7dc181122495f775e0e64e0931a6b69ace915092cac04dfbffe62e660",
       "class_hash": "0x493f378ab5416a7c32184c74d40f7c715183c55cb34acc83d82e91d662ee449",
 >>>>>>> 5ea9132 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+<<<<<<< HEAD
 >>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
+=======
+=======
+      "address": "0x4c37777f8469219e7d5fd180968d847a88609e4b10f5ec3787fa830af1aabaa",
+      "class_hash": "0x2f2e2835f1472a1ab784a97dd10f6d21387e4d69d7f73cf093e70e1d0c05954",
+>>>>>>> 95a7317 (chore: update client side to match changes of Inspectable -> Reactable)
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "abi": [
         {
           "type": "impl",
@@ -1511,10 +1521,14 @@
         {
           "type": "enum",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "name": "lore::types::component_type::ReactableActions",
 =======
           "name": "lore::types::component_type::InspectableActions",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+          "name": "lore::types::component_type::ReactableActions",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
           "variants": [
             {
               "name": "SetVisible",
@@ -1537,10 +1551,14 @@
         {
           "type": "struct",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "name": "lore::types::component_type::ActionMapReactable",
 =======
           "name": "lore::types::component_type::ActionMapInspectable",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+          "name": "lore::types::component_type::ActionMapReactable",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
           "members": [
             {
               "name": "action",
@@ -1553,10 +1571,14 @@
             {
               "name": "action_fn",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "type": "lore::types::component_type::ReactableActions"
 =======
               "type": "lore::types::component_type::InspectableActions"
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+              "type": "lore::types::component_type::ReactableActions"
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
             },
             {
               "name": "entrypoints",
@@ -1567,10 +1589,14 @@
         {
           "type": "struct",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "name": "lore::models::index::Reactable",
 =======
           "name": "lore::models::index::Inspectable",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+          "name": "lore::models::index::Reactable",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
           "members": [
             {
               "name": "inst",
@@ -1591,10 +1617,14 @@
             {
               "name": "action_map",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "type": "core::array::Array::<lore::types::component_type::ActionMapReactable>"
 =======
               "type": "core::array::Array::<lore::types::component_type::ActionMapInspectable>"
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+              "type": "core::array::Array::<lore::types::component_type::ActionMapReactable>"
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
             },
             {
               "name": "already_shown",
@@ -2248,6 +2278,7 @@
                 {
                   "name": "t",
 <<<<<<< HEAD
+<<<<<<< HEAD
                   "type": "core::array::Array::<lore::models::index::Reactable>"
                 }
               ],
@@ -2264,6 +2295,9 @@
 =======
                   "type": "core::array::Array::<lore::models::index::Inspectable>"
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+                  "type": "core::array::Array::<lore::models::index::Reactable>"
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
                 }
               ],
               "outputs": [],
@@ -2705,10 +2739,14 @@
         "create_player",
         "create_entity",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "create_reactable",
 =======
         "create_inspectable",
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+        "create_reactable",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
         "create_description_text",
         "create_area",
         "create_exit",
@@ -2723,10 +2761,14 @@
         "delete_player",
         "delete_entity",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "delete_reactable",
 =======
         "delete_inspectable",
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+        "delete_reactable",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
         "delete_description_text",
         "delete_area",
         "delete_exit",
@@ -2749,6 +2791,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
       "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
 =======
@@ -2764,6 +2807,8 @@
 >>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
 =======
 >>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
       "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
 =======
@@ -2801,7 +2846,14 @@
       "address": "0x70bea88823daa38be1389a61cf4bab496cda0148fb8b8a1e10a24da7e71f852",
       "class_hash": "0x6a2019c854edfdb2bf56a548504054f770b2ab458b5f2da89c6936ebb88b965",
 >>>>>>> 8589dd5 (chore: fix storing player.story_line only rathen than entire model)
+<<<<<<< HEAD
 >>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
+=======
+=======
+      "address": "0x13872ba27fe4395a10280c90bea03130a54093c9d1aefab7cf3e5b3672f46d0",
+      "class_hash": "0x6b1953c4c5ede54ff69d742f6a7cd6edd1bca98f7970ac1a6bc38e58b0a9bb4",
+>>>>>>> 95a7317 (chore: update client side to match changes of Inspectable -> Reactable)
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "abi": [
         {
           "type": "impl",
@@ -3023,20 +3075,28 @@
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       "class_hash": "0x75b8006e4ff009f7be1461be5bb33f98aa0cb860715b39d48ea7f800520d450",
 =======
       "class_hash": "0x37bcad9818d3b158a61a774b40f0ea2988e3e6dd23c58634d05c1cc2a9807ad",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+      "class_hash": "0x75b8006e4ff009f7be1461be5bb33f98aa0cb860715b39d48ea7f800520d450",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "tag": "lore-ComponentVariable",
       "selector": "0x7ce96a78c69170fe31cf5c816ec24414fd4c354324f8b9537e6830c9177cfe4"
     },
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       "class_hash": "0x4b5cc9d620bb111af257830584b2108f388ab579421cfd100ef473265ff5c55",
 =======
       "class_hash": "0x695c59b3350606d3e8a85a72b062bcbbb536be56d87a1d8edd28e59ae7e6c86",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+      "class_hash": "0x4b5cc9d620bb111af257830584b2108f388ab579421cfd100ef473265ff5c55",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "tag": "lore-Condition",
       "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
@@ -3061,10 +3121,14 @@
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       "class_hash": "0x4f374c110ba75476f4733f6749c4c159d979e10200dc7f439959422910ecd03",
 =======
       "class_hash": "0x3f94bac2d448d01c4f8c457aaa985ff741c79bbc0d8cf34b396eb75e16cf35f",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+      "class_hash": "0x4f374c110ba75476f4733f6749c4c159d979e10200dc7f439959422910ecd03",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },
@@ -3083,6 +3147,7 @@
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       "class_hash": "0x3749ea4829cacad1243f6d717df9cf17604837d7e93d941c47791b7c4bdb50e",
       "tag": "lore-Inspectable",
@@ -3091,6 +3156,8 @@
     {
       "members": [],
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "class_hash": "0x74dd07d3418acd535d2fb27d9659d7ca8994f1730745a514539d3bc367f668",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
@@ -3132,10 +3199,14 @@
     {
       "members": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
       "class_hash": "0x7ef3371311ee14df227bc9e3944b23dc0da71c1ce0ebf17982532961eb0e411",
 =======
       "class_hash": "0x7b9d9538a0de186540cf7f34774251ceaa13b39b312aaad246f5d642aa460f6",
 >>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
+=======
+      "class_hash": "0x7ef3371311ee14df227bc9e3944b23dc0da71c1ce0ebf17982532961eb0e411",
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "tag": "lore-PropertyRegistry",
       "selector": "0x54d238bab1b146fbb42252f5fba933d9fb90048459d848a6fff3a2528615b59"
     },
@@ -3143,6 +3214,9 @@
       "members": [],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
       "class_hash": "0x14e4af343fbd6e16b31b5e47e78e0abe5148331ec49e0cc579764414398b508",
       "tag": "lore-Reactable",
       "selector": "0x13fefc8a36ffca06da26b1726d49465726acb19821a4d3382f5c9420a4a4896"

@@ -65,10 +65,14 @@ export const createPlayerEntity = (
 export const createPlayerComponent = (
 	_entity: Entity,
 <<<<<<< HEAD
+<<<<<<< HEAD
 	_reactable?: Reactable,
 =======
 	_inspectable?: Inspectable,
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+	_reactable?: Reactable,
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	address?: string
   ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
 	const playerAddress = address || getPlayerAddress();
@@ -99,6 +103,7 @@ export const createDefaultAreaComponent = (
 export const createDefaultReactableComponent = (
 	entity: Entity,
 <<<<<<< HEAD
+<<<<<<< HEAD
 ): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
 	Reactable: {
 		...schema.lore.Reactable,
@@ -107,6 +112,11 @@ export const createDefaultReactableComponent = (
 	Inspectable: {
 		...schema.lore.Inspectable,
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
+	Reactable: {
+		...schema.lore.Reactable,
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 		inst: entity.inst,
 		is_reactable: true,
 		is_visible: true,
@@ -131,6 +141,7 @@ export const createDefaultReactableComponent = (
 export const createDefaultDescriptionText = (
 	entity: Entity,
 <<<<<<< HEAD
+<<<<<<< HEAD
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => ({
 	DescriptionText: {
 		...schema.lore.DescriptionText,
@@ -151,6 +162,11 @@ export const createDefaultDescriptionText = (
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
 	const existingKeys = (inspectable?.description|| []).map(Number);
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+	reactable?: Reactable,
+): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
+	const existingKeys = (reactable?.description|| []).map(Number);
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	const nextKey = existingKeys.length - 1;
 
 	return {
@@ -313,10 +329,14 @@ export const componentData: {
 		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
 		creator?: (entity: Entity, reactable?: Reactable) => WithStringEnums<Pick<EntityCollection, K>>;
 =======
 		creator?: (entity: Entity, inspectable?: Inspectable) => WithStringEnums<Pick<EntityCollection, K>>;
 >>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
+=======
+		creator?: (entity: Entity, reactable?: Reactable) => WithStringEnums<Pick<EntityCollection, K>>;
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	};
 } = {
 	Entity: {
@@ -339,10 +359,14 @@ export const componentData: {
 	Reactable: {
 		order: 3,
 <<<<<<< HEAD
+<<<<<<< HEAD
 		inspector: ReactableInspector, 
 =======
 		inspector: InspectableInspector, 
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+		inspector: ReactableInspector, 
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 		icon: "🔍",
 		creator: createDefaultReactableComponent,
 	},

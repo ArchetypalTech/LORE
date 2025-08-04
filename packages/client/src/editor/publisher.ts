@@ -8,12 +8,17 @@ import {
 	type Exit,
 	exitActions,
 <<<<<<< HEAD
+<<<<<<< HEAD
 	type Reactable,
 	reactableActions,
 =======
 	type Inspectable,
 	inspectableActions,
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+	type Reactable,
+	reactableActions,
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	type DescriptionText,
 	type InventoryItem,
 	inventoryItemActions,
@@ -100,9 +105,12 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	}
 	if ("Reactable" in collection && collection.Reactable !== undefined) {
 		await publishReactable(collection.Reactable);
+<<<<<<< HEAD
 	}
 	if ("DescriptionText" in collection && collection.DescriptionText !== undefined) {
 		await publishDescriptionText(collection.DescriptionText);
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	}
 	if ("DescriptionText" in collection && collection.DescriptionText !== undefined) {
 		await publishDescriptionText(collection.DescriptionText);
@@ -173,6 +181,9 @@ const publishPlayer = async (player: Player) => {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 const publishReactable = async (reactable: Reactable) => {
 	const reactableData = [
 		num.toBigInt(reactable.inst.toString()),
@@ -181,6 +192,7 @@ const publishReactable = async (reactable: Reactable) => {
 		reactable.description.map((x) => num.toBigInt(x.toString())),
 		reactable.action_map.length > 0
 			? reactable.action_map.map((x) => [
+<<<<<<< HEAD
 =======
 const publishInspectable = async (inspectable: Inspectable) => {
 	const inspectableData = [
@@ -191,6 +203,8 @@ const publishInspectable = async (inspectable: Inspectable) => {
 		inspectable.action_map.length > 0
 			? inspectable.action_map.map((x) => [
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 					byteArray.byteArrayFromString(x.action),
 					num.toBigInt(x.inst ?? "0"),
 					toEnumIndex(x.action_fn, reactableActions),
@@ -203,10 +217,14 @@ const publishInspectable = async (inspectable: Inspectable) => {
 	];
 	
 <<<<<<< HEAD
+<<<<<<< HEAD
 	await dispatchDesignerCall("create_reactable", [reactableData]);
 =======
 	await dispatchDesignerCall("create_inspectable", [inspectableData]);
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+	await dispatchDesignerCall("create_reactable", [reactableData]);
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 };
 
 const publishDescriptionText = async (description: DescriptionText) => {
@@ -385,11 +403,14 @@ const deleteCollection = async (model: EntityCollection) => {
 	if ("Reactable" in model && model.Reactable !== undefined) {
 		await dispatchDesignerCall("delete_reactable", [
 			num.toBigInt(model.Reactable!.inst),
+<<<<<<< HEAD
 		]);
 	}
 	if ("DescriptionText" in model && model.DescriptionText !== undefined) {
 		await dispatchDesignerCall("delete_description_text", [
 			[num.toBigInt(model.DescriptionText!.inst), num.toBigInt(model.DescriptionText!.key)],
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 		]);
 	}
 	if ("DescriptionText" in model && model.DescriptionText !== undefined) {

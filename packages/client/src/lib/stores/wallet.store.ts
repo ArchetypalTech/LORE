@@ -64,10 +64,13 @@ const setupController = async () => {
 				},
 				{
 					entrypoint: "create_reactable",
+<<<<<<< HEAD
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
 					entrypoint: "create_description_text",
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
@@ -124,10 +127,13 @@ const setupController = async () => {
 				},
 				{
 					entrypoint: "delete_reactable",
+<<<<<<< HEAD
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
 					entrypoint: "delete_description_text",
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{

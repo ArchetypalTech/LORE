@@ -17,10 +17,14 @@ import {
 	createDefaultChildToParentComponent,
 	createDefaultEntity,
 <<<<<<< HEAD
+<<<<<<< HEAD
 	createDefaultReactableComponent,
 =======
 	createDefaultInspectableComponent,
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+	createDefaultReactableComponent,
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	createDefaultDescriptionText,
 	createDefaultContainerComponent,
 	createDefaultParentToChildrenComponent,
@@ -474,6 +478,9 @@ const newEntity = async () => {
 	}
 	selectEntity(newEntity.Entity.inst);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	const reactable = createDefaultReactableComponent(newEntity.Entity);
 	reactable.Reactable.description = [0];
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
@@ -526,15 +533,21 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	addToParent(children, newParent);
 	selectEntity(playerEntity.Entity.inst);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	const reactable = createDefaultReactableComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 	const descriptionText = createDefaultDescriptionText(playerEntity.Entity,reactable.Reactable as any);
 	descriptionText.DescriptionText.text = playerEntity.Entity.name;
+<<<<<<< HEAD
 =======
 	const inspectable = createDefaultInspectableComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Inspectable", inspectable.Inspectable as any);
 	const descriptionText = createDefaultDescriptionText(playerEntity.Entity);
 >>>>>>> 91b4d21 (wip: implementing description text model in client side)
+=======
+>>>>>>> 9d4ef2b (chore: update client side to match changes of Inspectable -> Reactable)
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
