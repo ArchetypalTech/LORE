@@ -1,13 +1,8 @@
 use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
-<<<<<<< HEAD
         index::{Entity, Reactable, Container, Player, PlayerStory, StoryLine},
         components::Component, reactable::ReactableComponent, container::ContainerComponent,
-=======
-        index::{Entity, Inspectable, Container, Player, PlayerStory, StoryLine},
-        components::Component, inspectable::InspectableComponent, container::ContainerComponent,
->>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
         player::PlayerComponent,
     },
     new_components::{entity_trait::EntityImpl, reactable_trait::ReactableImpl},
@@ -37,7 +32,6 @@ pub impl PlayerImpl of PlayerTrait {
                 } else {
                     let description = reactable.get_first_description(world);
                     self.say(world, format!("{}", description));
-<<<<<<< HEAD
                     reactable.already_shown = true;
                     world
                         .write_member(
@@ -46,11 +40,6 @@ pub impl PlayerImpl of PlayerTrait {
                             reactable.already_shown,
                         );
                     // reactable.store(world);
-=======
-                    inspectable.already_shown = true;
-                    world.write_member(Model::<Inspectable>::ptr_from_keys(inspectable.inst), selector!("already_shown"), inspectable.already_shown);
-                    // inspectable.store(world);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
                 }
             }
         };
@@ -62,14 +51,10 @@ pub impl PlayerImpl of PlayerTrait {
         let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
         let room = EntityImpl::get_entity(@world, @room_id).unwrap();
         ent.set_parent(world, @room);
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Player>::ptr_from_keys(self.inst), selector!("location"), self.location,
             );
-=======
-        world.write_member(Model::<Player>::ptr_from_keys(self.inst), selector!("location"), self.location);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         //world.write_model(@self);
         if self.use_debug {
             self.clone().say(world, format!("You {:?} enter {:?}", ent, room));
@@ -83,48 +68,22 @@ pub impl PlayerImpl of PlayerTrait {
         let increase: u32 = 1;
         let new_counter: u32 = counter + increase;
 
-<<<<<<< HEAD
         let story_line = StoryLine { inst: *self.inst, key: new_counter, line: text };
-=======
-        let story_line = StoryLine {
-            inst: *self.inst,
-            key: new_counter,
-            line: text,
-        };
->>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
         world.write_model(@story_line);
 
         let mut player_story: PlayerStory = world.read_model(*self.inst);
         player_story.story.append(new_counter);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 7687c1e (chore: minor fix player.say)
         // world
         //     .write_member(
         //         Model::<PlayerStory>::ptr_from_keys(*self.inst),
         //         selector!("story"),
         //         player_story.story.span(),
         //     );
-<<<<<<< HEAD
-=======
->>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
         world.write_model(@player_story);
-=======
-        world.write_member(Model::<PlayerStory>::ptr_from_keys(*self.inst), selector!("story"), player_story.story.span());
-        // world.write_model(@player_story);
->>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
-=======
-        world.write_model(@player_story);
->>>>>>> 7687c1e (chore: minor fix player.say)
 
         // Update the player
         let mut player: Player = world.read_model(*self.inst);
         player.story_line = new_counter;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Player>::ptr_from_keys(*self.inst),
@@ -132,22 +91,6 @@ pub impl PlayerImpl of PlayerTrait {
                 player.story_line,
             );
         //player.store(world);
-
-=======
-        player.store(world);
-        // try to store only the story variable but doesn't work
-        // world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
-        // @player_story.story);
->>>>>>> 7aaec59 (chore: updated the story outputter to match the new PlayerStory and StoryLine models)
-=======
-        //player.store(world);
-        world.write_member(Model::<PlayerStory>::ptr_from_keys(*self.inst), selector!("story"), player_story.story.span());
->>>>>>> b356381 (chore: solve write member for player.say)
-=======
-        world.write_member(Model::<Player>::ptr_from_keys(*self.inst), selector!("story_line"), player.story_line);
-        //player.store(world);
-        
->>>>>>> 5ecfcf1 (chore: fix storing player.story_line only rathen than entire model)
     }
 
 

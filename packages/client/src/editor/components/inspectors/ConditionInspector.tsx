@@ -73,11 +73,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
   }));
 
   if (!componentObject) return <div>Condition not found</div>;
-<<<<<<< HEAD
   const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
-=======
-  const excludeComponent = ["Entiy", "Action", "Trigger", "Condition", "Effect"];
->>>>>>> 8eb73a2 (chore: finish updating new variables on conditions and effects)
 
   return (
     <Inspector>
@@ -97,15 +93,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         id="component"
         onChange={handleInputChange}
         value={componentObject.component}
-<<<<<<< HEAD
-<<<<<<< HEAD
         enum={componentType.filter((x) => !excludeComponent.includes(x))}
-=======
-        enum={componentType}
->>>>>>> da71536 (chore: implemented names variable for action system and adjusted dropdown key list)
-=======
-        enum={componentType.filter((x) => !excludeComponent.includes(x))}
->>>>>>> 8eb73a2 (chore: finish updating new variables on conditions and effects)
       />
       <Select
         id="property"

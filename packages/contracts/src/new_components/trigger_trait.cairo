@@ -84,16 +84,12 @@ pub impl TriggerImpl of TriggerTrait {
             Option::Some(mut trigger_index) => {
                 // Append trigger key to trigger index
                 trigger_index.trigger_id.append((trigger.inst, trigger.key));
-<<<<<<< HEAD
                 world
                     .write_member(
                         Model::<TriggerIndex>::ptr_from_keys(trigger.trigger_type),
                         selector!("trigger_id"),
                         trigger_index.trigger_id,
                     );
-=======
-                world.write_member(Model::<TriggerIndex>::ptr_from_keys(trigger.trigger_type), selector!("trigger_id"), trigger_index.trigger_id);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
                 // world.write_model(@trigger_index);
                 Result::Ok(())
             },
@@ -104,16 +100,12 @@ pub impl TriggerImpl of TriggerTrait {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Enable trigger
         trigger.is_enabled = true;
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
                 selector!("is_enabled"),
                 trigger.is_enabled,
             );
-=======
-        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("is_enabled"), trigger.is_enabled);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         // world.write_model(@trigger);
     }
 
@@ -121,16 +113,12 @@ pub impl TriggerImpl of TriggerTrait {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Disable trigger
         trigger.is_enabled = false;
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
                 selector!("is_enabled"),
                 trigger.is_enabled,
             );
-=======
-        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("is_enabled"), trigger.is_enabled);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         // world.write_model(@trigger);
     }
 
@@ -235,16 +223,12 @@ pub impl TriggerImpl of TriggerTrait {
         }
         // Set trigger as triggered
         trigger.was_triggered = true;
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
                 selector!("was_triggered"),
                 trigger.was_triggered,
             );
-=======
-        world.write_member(Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)), selector!("was_triggered"), trigger.was_triggered);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         // world.write_model(@trigger);
         // Return result
         result

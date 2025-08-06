@@ -26,46 +26,34 @@ pub impl ContainerImpl of ContainerTrait {
     fn set_open(self: Container, mut world: WorldStorage, opened: bool) {
         let mut model: Container = world.read_model(self.clone());
         model.is_open = opened;
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), model.is_open,
             );
-=======
-        world.write_member(Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), model.is_open);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         // world.write_model(@model);
     }
 
     fn set_can_be_opened(self: Container, mut world: WorldStorage, can_be_opened: bool) {
         let mut model: Container = world.read_model(self.clone());
         model.can_be_opened = can_be_opened;
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Container>::ptr_from_keys(self.inst),
                 selector!("can_be_opened"),
                 model.can_be_opened,
             );
-=======
-        world.write_member(Model::<Container>::ptr_from_keys(self.inst), selector!("can_be_opened"), model.can_be_opened);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         // world.write_model(@model);
     }
 
     fn set_can_receive_items(self: Container, mut world: WorldStorage, can_receive_items: bool) {
         let mut model: Container = world.read_model(self.clone());
         model.can_receive_items = can_receive_items;
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<Container>::ptr_from_keys(self.inst),
                 selector!("can_receive_items"),
                 model.can_receive_items,
             );
-=======
-        world.write_member(Model::<Container>::ptr_from_keys(self.inst), selector!("can_receive_items"), model.can_receive_items);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         // world.write_model(@model);
     }
 
@@ -126,16 +114,12 @@ pub impl ContainerImpl of ContainerTrait {
         // update container
         world.write_model(@container);
         // update item
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<InventoryItem>::ptr_from_keys(item.inst),
                 selector!("owner_id"),
                 item.owner_id,
             );
-=======
-        world.write_member(Model::<InventoryItem>::ptr_from_keys(item.inst), selector!("owner_id"), item.owner_id);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         //world.write_model(@item);
     }
 
@@ -162,16 +146,12 @@ pub impl ContainerImpl of ContainerTrait {
         // update container
         world.write_model(@container);
         // update item
-<<<<<<< HEAD
         world
             .write_member(
                 Model::<InventoryItem>::ptr_from_keys(item.inst),
                 selector!("owner_id"),
                 item.owner_id,
             );
-=======
-        world.write_member(Model::<InventoryItem>::ptr_from_keys(item.inst), selector!("owner_id"), item.owner_id);
->>>>>>> 8fff1c5 (chore: updated some storing variables to use the `write_member` when possible rather than entire model.)
         //world.write_model(@item);
     }
 
