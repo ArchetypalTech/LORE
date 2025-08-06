@@ -2,7 +2,7 @@ import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_dev.json";
 import { cleanEnv, str, url } from "envalid";
-import { Account, Contract, RpcProvider } from "starknet";
+import { Account, Contract, RpcProvider, provider } from "starknet";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	if (value === undefined || value === null) {
@@ -11,7 +11,7 @@ const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	return value;
 };
 
-const slotEnv = import.meta.env.MODE === "slot" ? { VITE_SLOT: str() } : {};
+// const slotEnv = import.meta.env.MODE === "slot" ? { VITE_SLOT: str() } : {};
 const isLocalhost = window.location.hostname === "localhost";
 const isEditor = window.location.pathname.startsWith("/editor");
 
@@ -24,7 +24,8 @@ const env = cleanEnv(import.meta.env, {
 	VITE_TORII_WS_RPC: str(),
 	VITE_BURNER_ADDRESS: str(),
 	VITE_BURNER_PRIVATE_KEY: str(),
-	...slotEnv,
+	VITE_SLOT: str(),
+	//...slotEnv,
 });
 
 const endpoints = {
@@ -104,7 +105,8 @@ export const LORE_CONFIG = {
 		contract_address: env.VITE_TOKEN_CONTRACT_ADDRESS,
 		erc20: ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],
 	},
-	useController: import.meta.env.MODE === "slot",
+	useController: true,
+	// import.meta.env.MODE === "slot",
 	env: env,
 	LOCALHOST: isLocalhost,
 	EDITOR_MODE: isEditor,
