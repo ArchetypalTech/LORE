@@ -1,7 +1,7 @@
 {
   "world": {
-    "class_hash": "0x4c60dc46a8ca8bb47675b7b914053cef769afbf0e340523187336b72bd71d1f",
-    "address": "0xfea62706381254891e4e1a685a1c5b7c91ce4dddcd1390fd229691654019c4",
+    "class_hash": "0x13d92333361bb7049c1232c0a5404e2c19082ededc3a73d75cb33fa952adec7",
+    "address": "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6",
     "seed": "lore",
     "name": ">LORE",
     "entrypoints": [
@@ -1328,8 +1328,13 @@
   },
   "contracts": [
     {
+<<<<<<< HEAD
       "address": "0x4c37777f8469219e7d5fd180968d847a88609e4b10f5ec3787fa830af1aabaa",
       "class_hash": "0x2f2e2835f1472a1ab784a97dd10f6d21387e4d69d7f73cf093e70e1d0c05954",
+=======
+      "address": "0x6279c732d93918001bfcce2d2cab5d10a9402a7def48c404cb97a7179ed2f95",
+      "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
       "abi": [
         {
           "type": "impl",
@@ -2638,8 +2643,13 @@
       ]
     },
     {
+<<<<<<< HEAD
       "address": "0x351ca67246b29e5407d8e5709e75072b07f6a199085d0bd2edacfdb91cf536e",
       "class_hash": "0x181f4e560bf414f8458264daf25bb0abbe7c506f9bb2b107c26ddc0ae5bbc8",
+=======
+      "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
+      "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
       "abi": [
         {
           "type": "impl",

@@ -9,6 +9,7 @@ export interface ChildToParent {
 	parent: BigNumberish;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::lib::relations::ChildToParentValue` struct
 export interface ChildToParentValue {
 	is_child: boolean;
@@ -16,6 +17,97 @@ export interface ChildToParentValue {
 }
 
 // Type definition for `lore::models::index::Action` struct
+=======
+// Type definition for `lore::components::container::ActionMapContainer` struct
+export interface ActionMapContainer {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ContainerActionsEnum;
+}
+
+// Type definition for `lore::components::container::Container` struct
+export interface Container {
+	inst: BigNumberish;
+	is_container: boolean;
+	can_be_opened: boolean;
+	can_receive_items: boolean;
+	is_open: boolean;
+	num_slots: BigNumberish;
+	action_map: Array<ActionMapContainer>;
+}
+
+// Type definition for `lore::components::exit::ActionMapExit` struct
+export interface ActionMapExit {
+	action: string;
+	inst: BigNumberish;
+	action_fn: ExitActionsEnum;
+}
+
+// Type definition for `lore::components::exit::Exit` struct
+export interface Exit {
+	inst: BigNumberish;
+	is_exit: boolean;
+	is_enterable: boolean;
+	leads_to: BigNumberish;
+	direction_type: DirectionEnum;
+	action_map: Array<ActionMapExit>;
+}
+
+// Type definition for `lore::components::inspectable::ActionMapInspectable` struct
+export interface ActionMapInspectable {
+	action: string;
+	inst: BigNumberish;
+	action_fn: InspectableActionsEnum;
+	entrypoint: BigNumberish;
+}
+
+// Type definition for `lore::components::inspectable::Inspectable` struct
+export interface Inspectable {
+	inst: BigNumberish;
+	is_inspectable: boolean;
+	is_visible: boolean;
+	description: Array<string>;
+	action_map: Array<ActionMapInspectable>;
+	already_shown: boolean;
+	new_entry: string;
+}
+
+// Type definition for `lore::components::inventoryItem::ActionMapInventoryItem` struct
+export interface ActionMapInventoryItem {
+	action: string;
+	inst: BigNumberish;
+	action_fn: InventoryItemActionsEnum;
+}
+
+// Type definition for `lore::components::inventoryItem::InventoryItem` struct
+export interface InventoryItem {
+	inst: BigNumberish;
+	is_inventory_item: boolean;
+	owner_id: BigNumberish;
+	can_be_picked_up: boolean;
+	can_go_in_container: boolean;
+	action_map: Array<ActionMapInventoryItem>;
+	already_used: boolean;
+	multiple_use: boolean;
+}
+
+// Type definition for `lore::components::player::Player` struct
+export interface Player {
+	inst: BigNumberish;
+	is_player: boolean;
+	address: string;
+	location: BigNumberish;
+	use_debug: boolean;
+}
+
+// Type definition for `lore::components::player::PlayerStory` struct
+export interface PlayerStory {
+	inst: BigNumberish;
+	story: Array<string>;
+}
+
+// Type definition for `lore::lib::actions::Action` struct
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 export interface Action {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -31,6 +123,7 @@ export interface Action {
 	success_response: Array<string>;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::models::index::ActionValue` struct
 export interface ActionValue {
 	name: string;
@@ -78,6 +171,9 @@ export interface ComponentVariableValue {
 }
 
 // Type definition for `lore::models::index::Condition` struct
+=======
+// Type definition for `lore::lib::condition::Condition` struct
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 export interface Condition {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -89,6 +185,7 @@ export interface Condition {
 	value: Array<BigNumberish>;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::models::index::ConditionValue` struct
 export interface ConditionValue {
 	name: string;
@@ -133,6 +230,9 @@ export interface DescriptionTextValue {
 }
 
 // Type definition for `lore::models::index::Dict` struct
+=======
+// Type definition for `lore::lib::dictionary::Dict` struct
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 export interface Dict {
 	dict_key: BigNumberish;
 	word: string;
@@ -140,6 +240,7 @@ export interface Dict {
 	n_value: BigNumberish;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::models::index::DictValue` struct
 export interface DictValue {
 	word: string;
@@ -168,6 +269,35 @@ export interface EffectValue {
 }
 
 // Type definition for `lore::models::index::Entity` struct
+=======
+// Type definition for `lore::lib::effect::Effect` struct
+export interface Effect {
+	inst: BigNumberish;
+	key: BigNumberish;
+	target: BigNumberish;
+	component: ComponentsEnum;
+	property: string;
+	value: Array<string>;
+}
+
+// Type definition for `lore::lib::effect::EffectExecution` struct
+export interface EffectExecution {
+	key: BigNumberish;
+	effect_key: BigNumberish;
+	timestamp: BigNumberish;
+	parameters: Array<EffectParameter>;
+	status: ExecutionStatusEnum;
+	error_message: string;
+}
+
+// Type definition for `lore::lib::effect::EffectParameter` struct
+export interface EffectParameter {
+	name: string;
+	value: BigNumberish;
+}
+
+// Type definition for `lore::lib::entity::Entity` struct
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 export interface Entity {
 	inst: BigNumberish;
 	is_entity: boolean;
@@ -176,6 +306,7 @@ export interface Entity {
 	actions_keys: Array<BigNumberish>;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::models::index::EntityValue` struct
 export interface EntityValue {
 	is_entity: boolean;
@@ -186,6 +317,10 @@ export interface EntityValue {
 
 // Type definition for `lore::models::index::Exit` struct
 export interface Exit {
+=======
+// Type definition for `lore::lib::relations::ChildToParent` struct
+export interface ChildToParent {
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 	inst: BigNumberish;
 	is_exit: boolean;
 	is_enterable: boolean;
@@ -194,6 +329,7 @@ export interface Exit {
 	action_map: Array<ActionMapExit>;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::models::index::ExitValue` struct
 export interface ExitValue {
 	is_exit: boolean;
@@ -227,12 +363,16 @@ export interface InventoryItemValue {
 }
 
 // Type definition for `lore::models::index::ParentToChildren` struct
+=======
+// Type definition for `lore::lib::relations::ParentToChildren` struct
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 export interface ParentToChildren {
 	inst: BigNumberish;
 	is_parent: boolean;
 	children: Array<BigNumberish>;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::models::index::ParentToChildrenValue` struct
 export interface ParentToChildrenValue {
 	is_parent: boolean;
@@ -314,6 +454,9 @@ export interface StoryLineValue {
 }
 
 // Type definition for `lore::models::index::Trigger` struct
+=======
+// Type definition for `lore::lib::trigger::Trigger` struct
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 export interface Trigger {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -330,6 +473,7 @@ export interface TriggerIndex {
 	trigger_id: Array<[BigNumberish, BigNumberish]>;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::models::index::TriggerIndexValue` struct
 export interface TriggerIndexValue {
 	trigger_id: Array<[BigNumberish, BigNumberish]>;
@@ -374,18 +518,55 @@ export interface ActionMapReactable {
 }
 
 // Type definition for `lore::types::property_type::ComponentProperty` struct
+=======
+// Type definition for `lore::lib::trigger::TriggerParameter` struct
+export interface TriggerParameter {
+	name: string;
+	value: BigNumberish;
+}
+
+// Type definition for `lore::lib::variable_property::ComponentProperty` struct
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 export interface ComponentProperty {
 	name: string;
 	property_type: PropertyTypeEnum;
 	access_flags: PropertyAccessEnum;
 }
 
+<<<<<<< HEAD
 // Type definition for `lore::types::action_type::Operator` enum
 export const operator = [
 	'Equals',
 	'NotEquals',
 	'GreaterThan',
 	'LessThan',
+=======
+// Type definition for `lore::lib::variable_property::ComponentVariable` struct
+export interface ComponentVariable {
+	key: BigNumberish;
+	component_type: ComponentsEnum;
+	entity_id: BigNumberish;
+	property_name: string;
+	value: string;
+	last_updated: BigNumberish;
+}
+
+// Type definition for `lore::lib::variable_property::PropertyRegistry` struct
+export interface PropertyRegistry {
+	component_type: ComponentsEnum;
+	properties: Array<ComponentProperty>;
+}
+
+// Type definition for `lore::components::Components` enum
+export const components = [
+	'Area',
+	'Container',
+	'Entity',
+	'Exit',
+	'Inspectable',
+	'InventoryItem',
+	'Player',
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 ] as const;
 export type Operator = { [key in typeof operator[number]]: string };
 export type OperatorEnum = CairoCustomEnum;
@@ -521,6 +702,7 @@ export interface SchemaType extends ISchemaType {
 		Action: Action,
 		ActionValue: ActionValue,
 		Area: Area,
+<<<<<<< HEAD
 		AreaValue: AreaValue,
 		ComponentVariable: ComponentVariable,
 		ComponentVariableValue: ComponentVariableValue,
@@ -561,6 +743,33 @@ export interface SchemaType extends ISchemaType {
 		ActionMapInventoryItem: ActionMapInventoryItem,
 		ActionMapReactable: ActionMapReactable,
 		ComponentProperty: ComponentProperty,
+=======
+		ActionMapContainer: ActionMapContainer,
+		Container: Container,
+		ActionMapExit: ActionMapExit,
+		Exit: Exit,
+		ActionMapInspectable: ActionMapInspectable,
+		Inspectable: Inspectable,
+		ActionMapInventoryItem: ActionMapInventoryItem,
+		InventoryItem: InventoryItem,
+		Player: Player,
+		PlayerStory: PlayerStory,
+		Action: Action,
+		Condition: Condition,
+		Dict: Dict,
+		Effect: Effect,
+		EffectExecution: EffectExecution,
+		EffectParameter: EffectParameter,
+		Entity: Entity,
+		ChildToParent: ChildToParent,
+		ParentToChildren: ParentToChildren,
+		Trigger: Trigger,
+		TriggerIndex: TriggerIndex,
+		TriggerParameter: TriggerParameter,
+		ComponentProperty: ComponentProperty,
+		ComponentVariable: ComponentVariable,
+		PropertyRegistry: PropertyRegistry,
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 	},
 }
 export const schema: SchemaType = {
@@ -570,9 +779,112 @@ export const schema: SchemaType = {
 			is_child: false,
 			parent: 0,
 		},
+<<<<<<< HEAD
 		ChildToParentValue: {
 			is_child: false,
 			parent: 0,
+=======
+		ActionMapContainer: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined,
+				Check: undefined, }),
+		},
+		Container: {
+			inst: 0,
+			is_container: false,
+			can_be_opened: false,
+			can_receive_items: false,
+			is_open: false,
+			num_slots: 0,
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined,
+				Check: undefined, }), }],
+		},
+		ActionMapExit: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseExit: "", }),
+		},
+		Exit: {
+			inst: 0,
+			is_exit: false,
+			is_enterable: false,
+			leads_to: 0,
+		direction_type: new CairoCustomEnum({ 
+					None: "",
+				North: undefined,
+				South: undefined,
+				East: undefined,
+				West: undefined,
+				Up: undefined,
+				Down: undefined, }),
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseExit: "", }), }],
+		},
+		ActionMapInspectable: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }),
+			entrypoint: 0,
+		},
+		Inspectable: {
+			inst: 0,
+			is_inspectable: false,
+			is_visible: false,
+			description: [""],
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoint: 0, }],
+			already_shown: false,
+		new_entry: "",
+		},
+		ActionMapInventoryItem: {
+		action: "",
+			inst: 0,
+		action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }),
+		},
+		InventoryItem: {
+			inst: 0,
+			is_inventory_item: false,
+			owner_id: 0,
+			can_be_picked_up: false,
+			can_go_in_container: false,
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }), }],
+			already_used: false,
+			multiple_use: false,
+		},
+		Player: {
+			inst: 0,
+			is_player: false,
+			address: "",
+			location: 0,
+			use_debug: false,
+		},
+		PlayerStory: {
+			inst: 0,
+			story: [""],
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 		},
 		Action: {
 			inst: 0,
@@ -588,6 +900,7 @@ export const schema: SchemaType = {
 			failing_response: [""],
 			success_response: [""],
 		},
+<<<<<<< HEAD
 		ActionValue: {
 		name: "",
 		description: "",
@@ -648,6 +961,8 @@ export const schema: SchemaType = {
 		value: "",
 			last_updated: 0,
 		},
+=======
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 		Condition: {
 			inst: 0,
 			key: 0,
@@ -674,6 +989,7 @@ export const schema: SchemaType = {
 				LessThan: undefined, }),
 			value: [0],
 		},
+<<<<<<< HEAD
 		ConditionValue: {
 		name: "",
 			target: 0,
@@ -729,24 +1045,10 @@ export const schema: SchemaType = {
 		DescriptionTextValue: {
 		text: "",
 		},
+=======
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 		Dict: {
 			dict_key: 0,
-		word: "",
-		tokenType: new CairoCustomEnum({ 
-					Unknown: "",
-				Verb: undefined,
-				Direction: undefined,
-				Article: undefined,
-				Preposition: undefined,
-				Pronoun: undefined,
-				Adjective: undefined,
-				Noun: undefined,
-				Quantifier: undefined,
-				Interrogative: undefined,
-				System: undefined, }),
-			n_value: 0,
-		},
-		DictValue: {
 		word: "",
 		tokenType: new CairoCustomEnum({ 
 					Unknown: "",
@@ -781,6 +1083,7 @@ export const schema: SchemaType = {
 				Effect: undefined,
 				Action: undefined, }),
 		property: "",
+<<<<<<< HEAD
 			value: [["", 0]],
 		},
 		EffectValue: {
@@ -802,6 +1105,24 @@ export const schema: SchemaType = {
 		property: "",
 			value: [["", 0]],
 		},
+=======
+			value: [""],
+		},
+		EffectExecution: {
+			key: 0,
+			effect_key: 0,
+			timestamp: 0,
+			parameters: [{ name: "", value: 0, }],
+		status: new CairoCustomEnum({ 
+					Success: "",
+				Failure: undefined, }),
+		error_message: "",
+		},
+		EffectParameter: {
+		name: "",
+			value: 0,
+		},
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 		Entity: {
 			inst: 0,
 			is_entity: false,
@@ -809,6 +1130,7 @@ export const schema: SchemaType = {
 			alt_names: [""],
 			actions_keys: [0],
 		},
+<<<<<<< HEAD
 		EntityValue: {
 			is_entity: false,
 		name: "",
@@ -816,6 +1138,9 @@ export const schema: SchemaType = {
 			actions_keys: [0],
 		},
 		Exit: {
+=======
+		ChildToParent: {
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 			inst: 0,
 			is_exit: false,
 			is_enterable: false,
@@ -834,6 +1159,7 @@ export const schema: SchemaType = {
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					UseExit: "", }), }],
 		},
+<<<<<<< HEAD
 		ExitValue: {
 			is_exit: false,
 			is_enterable: false,
@@ -881,11 +1207,14 @@ export const schema: SchemaType = {
 			already_used: false,
 			multiple_use: false,
 		},
+=======
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 		ParentToChildren: {
 			inst: 0,
 			is_parent: false,
 			children: [0],
 		},
+<<<<<<< HEAD
 		ParentToChildrenValue: {
 			is_parent: false,
 			children: [0],
@@ -986,6 +1315,8 @@ export const schema: SchemaType = {
 		StoryLineValue: {
 		line: "",
 		},
+=======
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 		Trigger: {
 			inst: 0,
 			key: 0,
@@ -1013,6 +1344,7 @@ export const schema: SchemaType = {
 				OnCondition: undefined, }),
 			trigger_id: [[0, 0]],
 		},
+<<<<<<< HEAD
 		TriggerIndexValue: {
 			trigger_id: [[0, 0]],
 		},
@@ -1063,6 +1395,11 @@ export const schema: SchemaType = {
 				ReadFirstDescription: undefined,
 				ReadSpecificDescription: undefined, }),
 			entrypoints: [0, 0],
+=======
+		TriggerParameter: {
+		name: "",
+			value: 0,
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 		},
 		ComponentProperty: {
 		name: "",
@@ -1080,6 +1417,46 @@ export const schema: SchemaType = {
 					ReadOnly: "",
 				ReadWrite: undefined, }),
 		},
+<<<<<<< HEAD
+=======
+		ComponentVariable: {
+			key: 0,
+		component_type: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+			entity_id: 0,
+		property_name: "",
+		value: "",
+			last_updated: 0,
+		},
+		PropertyRegistry: {
+		component_type: new CairoCustomEnum({ 
+					Area: "",
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Inspectable: undefined,
+				InventoryItem: undefined,
+				Player: undefined, }),
+			properties: [{ name: "", property_type: new CairoCustomEnum({ 
+					Boolean: "",
+				Integer: undefined,
+				Felt252: undefined,
+				Direction: undefined,
+				ContractAddress: undefined,
+				String: undefined,
+				ByteArray: undefined,
+				Enum: undefined, }), access_flags: new CairoCustomEnum({ 
+					ReadOnly: "",
+				WriteOnly: undefined,
+				ReadWrite: undefined, }), }],
+		},
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 	},
 };
 export enum ModelsMapping {
@@ -1088,6 +1465,7 @@ export enum ModelsMapping {
 	Action = 'lore-Action',
 	ActionValue = 'lore-ActionValue',
 	Area = 'lore-Area',
+<<<<<<< HEAD
 	AreaValue = 'lore-AreaValue',
 	ComponentVariable = 'lore-ComponentVariable',
 	ComponentVariableValue = 'lore-ComponentVariableValue',
@@ -1138,5 +1516,42 @@ export enum ModelsMapping {
 	Direction = 'lore-Direction',
 	ComponentProperty = 'lore-ComponentProperty',
 	PropertyAccess = 'lore-PropertyAccess',
+=======
+	ActionMapContainer = 'lore-ActionMapContainer',
+	Container = 'lore-Container',
+	ContainerActions = 'lore-ContainerActions',
+	ActionMapExit = 'lore-ActionMapExit',
+	Exit = 'lore-Exit',
+	ExitActions = 'lore-ExitActions',
+	ActionMapInspectable = 'lore-ActionMapInspectable',
+	Inspectable = 'lore-Inspectable',
+	InspectableActions = 'lore-InspectableActions',
+	ActionMapInventoryItem = 'lore-ActionMapInventoryItem',
+	InventoryItem = 'lore-InventoryItem',
+	InventoryItemActions = 'lore-InventoryItemActions',
+	Player = 'lore-Player',
+	PlayerStory = 'lore-PlayerStory',
+	Direction = 'lore-Direction',
+	TokenType = 'lore-TokenType',
+	Action = 'lore-Action',
+	Condition = 'lore-Condition',
+	Operator = 'lore-Operator',
+	Dict = 'lore-Dict',
+	Effect = 'lore-Effect',
+	EffectExecution = 'lore-EffectExecution',
+	EffectParameter = 'lore-EffectParameter',
+	ExecutionStatus = 'lore-ExecutionStatus',
+	Entity = 'lore-Entity',
+	ChildToParent = 'lore-ChildToParent',
+	ParentToChildren = 'lore-ParentToChildren',
+	Trigger = 'lore-Trigger',
+	TriggerIndex = 'lore-TriggerIndex',
+	TriggerParameter = 'lore-TriggerParameter',
+	TriggerType = 'lore-TriggerType',
+	ComponentProperty = 'lore-ComponentProperty',
+	ComponentVariable = 'lore-ComponentVariable',
+	PropertyAccess = 'lore-PropertyAccess',
+	PropertyRegistry = 'lore-PropertyRegistry',
+>>>>>>> e854c5e (chore: Upgrade Dependencies, Controller Localhost & SSL certificate Localhost (#128))
 	PropertyType = 'lore-PropertyType',
 }

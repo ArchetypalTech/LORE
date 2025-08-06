@@ -51,6 +51,10 @@ const setupController = async () => {
 			description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
 			methods: [
 				{
+					entrypoint: "register_property_registry",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
 					entrypoint: "create_player",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
