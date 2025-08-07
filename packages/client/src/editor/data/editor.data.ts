@@ -516,6 +516,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	addToParent(children, newParent);
 	selectEntity(playerEntity.Entity.inst);
 	const reactable = createDefaultReactableComponent(playerEntity.Entity);
+	reactable.Reactable.description = [0];
 	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 	const descriptionText = createDefaultDescriptionText(playerEntity.Entity,reactable.Reactable as any);
 	descriptionText.DescriptionText.text = playerEntity.Entity.name;

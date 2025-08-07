@@ -103,7 +103,7 @@ export const createDefaultReactableComponent = (
 		description: [],
 		action_map: [
 			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0 ,0] },
-			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 1] },
+			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 0] },
 		],
 		already_shown: false,
 		new_entry: "",
@@ -227,7 +227,7 @@ export const createDefaultEffectComponent = (
 		key: generateNumericUniqueId(),
 		target: 0,
 		component: "Reactable",
-		property: "is_visible",
+		property: "already_shown",
 		value: [],
 	},
 });
