@@ -11,7 +11,6 @@ import { Button } from "./ui/Button";
 import { Input as UIInput } from "./ui/Input";
 import { SelectInput, type SelectInputRef } from "./ui/Select";
 import { Textarea as UITextarea } from "./ui/Textarea";
-import { ActionMapReactable } from "@/lib/dojo_bindings/typescript/models.gen";
 
 export const Header = ({
 	title,
