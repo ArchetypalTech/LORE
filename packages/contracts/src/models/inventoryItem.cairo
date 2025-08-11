@@ -83,7 +83,9 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         let nouns = command.get_nouns();
         match action.action_fn {
             InventoryItemActions::UseItem => {
-                player.say(world, format!("You are trying to use: {}", nouns[0].text));
+                if *player.use_debug {
+                    player.say(world, format!("You are trying to use: {}", nouns[0].text));
+                }
                 let mut resultUse: Result<(), Error> = Result::Ok(());
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE USE ITEM
@@ -123,14 +125,17 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         target2: 0,
                         inventory_object: self.inst,
                     };
-                    player
-                        .say(
-                            world,
-                            format!(
-                                "Using {} trigger's something at {}", nouns[0].text, nouns[1].text,
-                            ),
-                        );
+
                     if *player.use_debug {
+                        player
+                            .say(
+                                world,
+                                format!(
+                                    "Using {} trigger's something at {}",
+                                    nouns[0].text,
+                                    nouns[1].text,
+                                ),
+                            );
                         player
                             .say(
                                 world,
