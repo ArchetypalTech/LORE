@@ -16,7 +16,7 @@ pub impl PlayerImpl of PlayerTrait {
         let context = self.get_context(@world);
         let room = self.get_room(@world);
         if room.is_none() {
-            return Result::Err(Error::ActionFailed);
+            return Result::Err(Error::NoRoom);
         }
         self.say(world, format!("{}", room.unwrap().name));
         for item in context {

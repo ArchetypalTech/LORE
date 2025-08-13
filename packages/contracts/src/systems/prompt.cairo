@@ -40,7 +40,9 @@ pub mod prompt {
                 Result::Ok(result) => {
                     let res = handle_command(result, world, player);
                     if !res.is_ok() {
-                        ErrorOutputterImpl::output_error(res.unwrap_err(), player, world);
+                        let error = res.unwrap_err();
+                        println!("Error: {:?}", error);
+                        ErrorOutputterImpl::output_error(error, player, world);
                     }
                 },
                 Result::Err(_r) => { player.say(world, random_text(world, random_error())); },

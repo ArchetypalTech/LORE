@@ -170,10 +170,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // Ex: "pickup the sword"
                 let personal_container = player.get_personal_container(@world);
                 if personal_container.is_none() {
-                    return Result::Err(Error::ActionFailed);
+                    return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                container_component.put_item_in(world, self.clone());
+                let res = container_component.put_item_in(world, self.clone());
+                if res.is_err() {
+                    return Result::Err(res.unwrap_err());
+                }
 
                 return Result::Ok(());
             },
@@ -182,10 +185,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // Ex:: "drop the sword"
                 let personal_container = player.get_personal_container(@world);
                 if personal_container.is_none() {
-                    return Result::Err(Error::ActionFailed);
+                    return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                container_component.put_item_out(world, self.clone(), player);
+                let res = container_component.put_item_out(world, self.clone(), player);
+                if res.is_err() {
+                    return Result::Err(res.unwrap_err());
+                }
                 return Result::Ok(());
             },
             InventoryItemActions::PutItem => {
@@ -198,14 +204,20 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     // that is on the room Ex: "put the sword in the box"
                     let entity_container = get_entity_container(@world, player, nouns);
                     if entity_container.is_none() {
-                        return Result::Err(Error::ActionFailed);
+                        return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    container_component.put_item_in(world, self.clone());
+                    let res = container_component.put_item_in(world, self.clone());
+                    if res.is_err() {
+                        return Result::Err(res.unwrap_err());
+                    }
                     return Result::Ok(());
                 }
                 let container_component: Container = player_container.unwrap();
-                container_component.put_item_in(world, self.clone());
+                let res = container_component.put_item_in(world, self.clone());
+                if res.is_err() {
+                    return Result::Err(res.unwrap_err());
+                }
                 return Result::Ok(());
             },
             InventoryItemActions::TakeOutItem => {
@@ -218,10 +230,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     // that is on the room Ex: "take out the sword from the box"
                     let entity_container = get_entity_container(@world, player, nouns);
                     if entity_container.is_none() {
-                        return Result::Err(Error::ActionFailed);
+                        return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    container_component.put_item_out(world, self.clone(), player);
+                    let res = container_component.put_item_out(world, self.clone(), player);
+                    if res.is_err() {
+                        return Result::Err(res.unwrap_err());
+                    }
                     return Result::Ok(());
                 }
                 return Result::Ok(());
