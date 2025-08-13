@@ -27,7 +27,7 @@ export const AreaInspector: ComponentInspector<Area> = ({
 			<Toggle
 				id="is_spawn_point"
 				value={componentObject.is_spawn_point}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 		</Inspector>
 	);

@@ -1,6 +1,7 @@
 import {
 	type Entity,
 	type Reactable,
+	type DescriptionText,
 	type SchemaType,
 	schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -94,13 +95,14 @@ export const createDefaultAreaComponent = (
 
 export const createDefaultReactableComponent = (
 	entity: Entity,
+	descriptions?: DescriptionText[],
 ): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
 	Reactable: {
 		...schema.lore.Reactable,
 		inst: entity.inst,
 		is_reactable: true,
 		is_visible: true,
-		description: [],
+		description: descriptions?.map(x => x.key) || [],
 		action_map: [
 			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0 ,0] },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 0] },
@@ -114,11 +116,10 @@ export const createDefaultReactableComponent = (
 
 export const createDefaultDescriptionText = (
 	entity: Entity,
-	reactable?: Reactable,
+	descriptions?: DescriptionText[],
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
-	const existingKeys = (reactable?.description|| []).map(Number);
-	const nextKey = existingKeys.length - 1;
-
+	const existingKeys = (descriptions || []).map(x => Number(x.key));
+	let nextKey = (existingKeys.length > 0 ? Math.max(...existingKeys) : 0) + 1;
 	return {
 		DescriptionText: {
 			...schema.lore.DescriptionText,
@@ -280,7 +281,7 @@ export const componentData: {
 		order: number;
 		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
-		creator?: (entity: Entity, reactable?: Reactable) => WithStringEnums<Pick<EntityCollection, K>>;
+		creator?: (entity: Entity, ...args: any[]) => WithStringEnums<Pick<EntityCollection, K>>;
 	};
 } = {
 	Entity: {

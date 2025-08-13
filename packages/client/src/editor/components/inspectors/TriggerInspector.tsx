@@ -45,35 +45,39 @@ export const TriggerInspector: ComponentInspector<Trigger> = ({
 	if (!componentObject) return <div>Trigger not found</div>;
 
 	return (
-		<Inspector>
-      <Input id= "inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)}  onChange={handleInputChange} readOnly={true} />
-      <Input
-				id="name"
-				value={componentObject.name}
-				onChange={handleInputChange}
-			/>
-			<Toggle
-				id="is_enabled"
-				value={componentObject.is_enabled}
-				onChange={handleInputChange}
-			/>
-			<CairoEnumSelect
-				id="trigger_type"
-        onChange={handleInputChange}
-				value={componentObject.trigger_type}
-				enum={triggerType}
-			/>
-      <Toggle
-        id="is_once"
-        value={componentObject.is_once}
-        onChange={handleInputChange}
-      />
-      <Toggle
-        id="was_triggered"
-        value={componentObject.was_triggered}
-        onChange={handleInputChange}
-      />
-		</Inspector>
+		<>
+			{componentObject.map((triggerObj, idx) => (
+				<Inspector key={`${triggerObj.inst}-${triggerObj.key}`} index={idx}>
+					<Input id="inst" value={triggerObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
+					<Input id="key" value={formatKeyAsDecimal(triggerObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
+					<Input
+						id="name"
+						value={triggerObj.name}
+						onChange={handleInputChange(idx)}
+					/>
+					<Toggle
+						id="is_enabled"
+						value={triggerObj.is_enabled}
+						onChange={handleInputChange(idx)}
+					/>
+					<CairoEnumSelect
+						id="trigger_type"
+						onChange={handleInputChange(idx)}
+						value={triggerObj.trigger_type}
+						enum={triggerType}
+					/>
+					<Toggle
+						id="is_once"
+						value={triggerObj.is_once}
+						onChange={handleInputChange(idx)}
+					/>
+					<Toggle
+						id="was_triggered"
+						value={triggerObj.was_triggered}
+						onChange={handleInputChange(idx)}
+					/>
+				</Inspector>
+			))}
+		</>
 	);
 }

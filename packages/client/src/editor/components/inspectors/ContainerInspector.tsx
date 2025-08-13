@@ -46,32 +46,32 @@ export const ContainerInspector: ComponentInspector<Container> = ({
 			<Toggle
 				id="is_container"
 				value={componentObject.is_container}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="can_be_opened"
 				value={componentObject.can_be_opened}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="can_receive_items"
 				value={componentObject.can_receive_items}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="is_open"
 				value={componentObject.is_open}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Input
 				id="num_slots"
 				value={componentObject.num_slots.toString()}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<ActionMapEditor
 				id="action_map"
 				value={componentObject.action_map}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				cairoEnum={containerActions}
 			/>
 		</Inspector>

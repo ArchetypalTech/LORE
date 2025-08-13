@@ -46,30 +46,30 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 			<Toggle
 				id="is_player"
 				value={componentObject.is_player}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Input 
 				id="address" 
 				value={componentObject.address} 
-				onChange={handleInputChange} 
+				onChange={handleInputChange(undefined)} 
 				readOnly={true}
 			/>
 			<Input
 				id="location"
 				value={componentObject.location.toString()}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				//readOnly={true}
 			/>
 			<Input
 				id="story_line"
 				value={componentObject.story_line.toString()}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				// readOnly={true}
 			/>
 			<Toggle
 				id="use_debug"
 				value={componentObject.use_debug}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 		</Inspector>
 	);

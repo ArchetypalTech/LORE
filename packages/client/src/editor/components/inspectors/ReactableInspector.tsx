@@ -8,7 +8,7 @@ import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { createDefaultDescriptionText } from "@/editor/lib/components";
 import { Button } from "../ui/Button";
-import { getEntity, updateComponent } from "@/editor/data/editor.data";
+import { getEntity, removeComponent, updateComponent } from "@/editor/data/editor.data";
 
 export const ReactableInspector: ComponentInspector<Reactable> = ({
 	componentObject,
@@ -49,26 +49,45 @@ export const ReactableInspector: ComponentInspector<Reactable> = ({
 				disabled={true}
 				rows={1}
 				value={componentObject.description as string[]}
-				onChange={handleInputChange}
+				onChange={(e) => {
+					const newDescriptionKeys = (e.target.value as unknown as string[]).filter((x) => x !== "");
+					const currentKeys = componentObject.description || [];
+					const removedIndex = currentKeys.findIndex(key => !newDescriptionKeys.includes(key));
+
+					const entity = getEntity(componentObject.inst);
+					if (entity && entity.DescriptionText) {
+						removeComponent(entity.Entity.inst, "DescriptionText", removedIndex, true);
+					}
+					
+					handleInputChange(undefined)({
+						target: {
+							id: "description_keys",
+							value: newDescriptionKeys,
+						},
+					} as any);
+				}}
 				readOnly={true}
 			/>
 			<Button
 				id="add_description"
 				onClick={() => {
 					const entity = getEntity(componentObject.inst);
-					const newDescription = createDefaultDescriptionText( entity!.Entity, componentObject);
+					const newDescription = createDefaultDescriptionText(entity!.Entity, entity?.DescriptionText);
+					const newDescriptionKey = newDescription.DescriptionText.key;
+					
 					const updatedDescriptions = [
 						...(componentObject.description || []),
-						newDescription.DescriptionText.key += 1 as any,
+						newDescriptionKey,
 					];
-					updateComponent(entity!.Entity.inst, "DescriptionText", newDescription.DescriptionText as any);
+					
+					updateComponent(entity!.Entity.inst, "DescriptionText", newDescription.DescriptionText as any, true);
 
-					handleInputChange({
+					handleInputChange(undefined)({
 						target: {
 							id: "description_keys",
 							value: updatedDescriptions,
 						},
-					} as any); 
+					} as any);
 				}}
 			>
 				Add description
@@ -76,22 +95,22 @@ export const ReactableInspector: ComponentInspector<Reactable> = ({
 			<Toggle
 				id="already_shown"
 				value={componentObject.already_shown}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Input
 				id="new_entry"
 				value={componentObject.new_entry}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="is_visible"
 				value={componentObject.is_visible}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<ReactableActionMapEditor
 				id="action_map"
 				value={componentObject.action_map}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				cairoEnum={reactableActions}
 			/>
 		</Inspector>

@@ -27,6 +27,7 @@ export type ChangeSet = {
 	type: EditorAction;
 	object: EditorCollection;
 	inst: BigNumberish;
+	key?: BigNumberish;
 };
 export type AnyObject = WithStringEnums<
 	Pick<
@@ -53,10 +54,10 @@ export type AnyObject = WithStringEnums<
 
 export type OneOf<Obj> = Obj[keyof Obj];
 
-type MultiKeys = "Effect" | "Trigger" | "Condition" | "DESCRIPTIONTEXT" | "DescriptionText"; // expand as needed
+type MultiKeys = "Action" | "Effect" | "Trigger" | "Condition" | "DESCRIPTIONTEXT" | "DescriptionText"; // expand as needed
 
-type MultiInstanceWrapped<T> = {
-  [K in keyof T]: K extends MultiKeys ? T[K] : T[K];
+export type MultiInstanceWrapped<T> = {
+  [K in keyof T]: K extends MultiKeys ? Array<T[K]> : T[K];
 };
 
 export type EntityCollection = {

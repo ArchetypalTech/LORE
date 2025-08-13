@@ -50,39 +50,39 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 			<Toggle
 				id="is_inventory_item"
 				value={componentObject.is_inventory_item}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="can_be_picked_up"
 				value={componentObject.can_be_picked_up}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="can_go_in_container"
 				value={componentObject.can_go_in_container}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Input
 				id="owner_id"
 				value={componentObject.owner_id.toString()}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				readOnly={true}
 			/>
 			<ActionMapEditor
 				id="action_map"
 				value={componentObject.action_map}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				cairoEnum={inventoryItemActions}
 			/>
 			<Toggle
 				id="alread_used"
 				value={componentObject.already_used}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="multiple_use"
 				value={componentObject.multiple_use}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 		</Inspector>
 	);

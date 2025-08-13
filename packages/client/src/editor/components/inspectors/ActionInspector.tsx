@@ -89,67 +89,74 @@ export const ActionInspector: ComponentInspector<Action> = ({
       },
     },
   });
+  
+  const { dataPool } = useEditorData();
+  
   if (!componentObject) return <div>Action not found</div>;
 
   return (
-    <Inspector>
-      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
-      <Input
-        id="name"
-        value={componentObject.name}
-        onChange={handleInputChange}
-      />
-      <Input
-        id="description"
-        value={componentObject.description}
-        onChange={handleInputChange}
-      />
-      <Toggle
-        id="is_enabled"
-        value={componentObject.is_enabled}
-        onChange={handleInputChange}
-      />
-      <TriggerSelector
-        id="triggers"
-        value={componentObject.trigger.map(([a, b]) => [a.toString(), b])}
-        onChange={handleInputChange}
-        dataPool={useEditorData().dataPool}
-      />
-      <ConditionSelector
-        id="conditions"
-        value={componentObject.conditions.map(([a, b]) => [a.toString(), b])}
-        onChange={handleInputChange}
-        dataPool={useEditorData().dataPool}
-      />
-      <EffectSelector
-        id="effects"
-        value={componentObject.effects.map(([a, b]) => [a.toString(), b])}
-        onChange={handleInputChange}
-        dataPool={useEditorData().dataPool}
-      />
-      <TextAreaArray
-        id="failing_response"
-        value={componentObject.failing_response}
-        onChange={handleInputChange}
-        rows={1}
-      />
-      <TextAreaArray
-        id="success_response"
-        value={componentObject.success_response}
-        onChange={handleInputChange}
-        rows={1}
-      />
-      <TagInput
-        id="tags"
-        value={componentObject.tags?.join(",") || ""}
-        onChange={handleInputChange}
-      />
-      <Toggle
-        id="executed"
-        value={componentObject.executed}
-        onChange={handleInputChange}
-      />
-    </Inspector>
+    <>
+      {componentObject.map((componentObj, idx) => (
+        <Inspector index={idx} key={`${componentObj.inst}-${componentObj.key}`}>
+          <Input id="inst" value={componentObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
+          <Input id="key" value={formatKeyAsDecimal(componentObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
+          <Input
+            id="name"
+            value={componentObj.name}
+            onChange={handleInputChange(idx)}
+          />
+          <Input
+            id="description"
+            value={componentObj.description}
+            onChange={handleInputChange(idx)}
+          />
+          <Toggle
+            id="is_enabled"
+            value={componentObj.is_enabled}
+            onChange={handleInputChange(idx)}
+          />
+          <TriggerSelector
+            id="triggers"
+            value={componentObj.trigger.map(([a, b]) => [a.toString(), b])}
+            onChange={handleInputChange(idx)}
+            dataPool={dataPool}
+          />
+          <ConditionSelector
+            id="conditions"
+            value={componentObj.conditions.map(([a, b]) => [a.toString(), b])}
+            onChange={handleInputChange(idx)}
+            dataPool={dataPool}
+          />
+          <EffectSelector
+            id="effects"
+            value={componentObj.effects.map(([a, b]) => [a.toString(), b])}
+            onChange={handleInputChange(idx)}
+            dataPool={dataPool}
+          />
+          <TextAreaArray
+            id="failing_response"
+            value={componentObj.failing_response}
+            onChange={handleInputChange(idx)}
+            rows={1}
+          />
+          <TextAreaArray
+            id="success_response"
+            value={componentObj.success_response}
+            onChange={handleInputChange(idx)}
+            rows={1}
+          />
+          <TagInput
+            id="tags"
+            value={componentObj.tags?.join(",") || ""}
+            onChange={handleInputChange(idx)}
+          />
+          <Toggle
+            id="executed"
+            value={componentObj.executed}
+            onChange={handleInputChange(idx)}
+          />
+        </Inspector>
+      ))}
+    </>
   );
 }
