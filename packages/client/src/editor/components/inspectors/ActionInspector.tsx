@@ -1,3 +1,5 @@
+
+import { useState } from "react";
 import { type ChangeEvent } from "react";
 import {
   type Action,
@@ -94,69 +96,105 @@ export const ActionInspector: ComponentInspector<Action> = ({
   
   if (!componentObject) return <div>Action not found</div>;
 
+  // Ensure componentObject is always an array
+  const componentsArray = Array.isArray(componentObject)
+    ? componentObject
+    : [componentObject];
+  
+    // Track which items are collapsed
+  const [collapsedIndices, setCollapsedIndices] = useState<Set<number>>(new Set());
+  
+  const toggleCollapse = (idx: number) => {
+    const newSet = new Set(collapsedIndices);
+    if (collapsedIndices.has(idx)) newSet.delete(idx);
+    else newSet.add(idx);
+    setCollapsedIndices(newSet);
+  };
+  
   return (
     <>
-      {componentObject.map((componentObj, idx) => (
-        <Inspector index={idx} key={`${componentObj.inst}-${componentObj.key}`}>
-          <Input id="inst" value={componentObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
-          <Input id="key" value={formatKeyAsDecimal(componentObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
-          <Input
-            id="name"
-            value={componentObj.name}
-            onChange={handleInputChange(idx)}
-          />
-          <Input
-            id="description"
-            value={componentObj.description}
-            onChange={handleInputChange(idx)}
-          />
-          <Toggle
-            id="is_enabled"
-            value={componentObj.is_enabled}
-            onChange={handleInputChange(idx)}
-          />
-          <TriggerSelector
-            id="triggers"
-            value={componentObj.trigger.map(([a, b]) => [a.toString(), b])}
-            onChange={handleInputChange(idx)}
-            dataPool={dataPool}
-          />
-          <ConditionSelector
-            id="conditions"
-            value={componentObj.conditions.map(([a, b]) => [a.toString(), b])}
-            onChange={handleInputChange(idx)}
-            dataPool={dataPool}
-          />
-          <EffectSelector
-            id="effects"
-            value={componentObj.effects.map(([a, b]) => [a.toString(), b])}
-            onChange={handleInputChange(idx)}
-            dataPool={dataPool}
-          />
-          <TextAreaArray
-            id="failing_response"
-            value={componentObj.failing_response}
-            onChange={handleInputChange(idx)}
-            rows={1}
-          />
-          <TextAreaArray
-            id="success_response"
-            value={componentObj.success_response}
-            onChange={handleInputChange(idx)}
-            rows={1}
-          />
-          <TagInput
-            id="tags"
-            value={componentObj.tags?.join(",") || ""}
-            onChange={handleInputChange(idx)}
-          />
-          <Toggle
-            id="executed"
-            value={componentObj.executed}
-            onChange={handleInputChange(idx)}
-          />
-        </Inspector>
-      ))}
+      {componentsArray.map((componentObj, idx) => {
+        const isCollapsed = collapsedIndices.has(idx);
+        return (
+          <div key={`${componentObj.inst}-${componentObj.key}`} style={{ marginBottom: "8px" }}>
+            <button onClick={() => toggleCollapse(idx)}>
+              {isCollapsed ? "▶" : "▼"} Action {formatKeyAsDecimal(componentObj.key)}
+            </button>
+
+            {!isCollapsed && (
+              <Inspector index={idx}>
+                <Input
+                  id="inst"
+                  value={componentObj.inst.toString()}
+                  onChange={handleInputChange(idx)}
+                  readOnly={true}
+                />
+                <Input
+                  id="key"
+                  value={formatKeyAsDecimal(componentObj.key)}
+                  onChange={handleInputChange(idx)}
+                  readOnly={true}
+                />
+                <Input
+                  id="name"
+                  value={componentObj.name}
+                  onChange={handleInputChange(idx)}
+                />
+                <Input
+                  id="description"
+                  value={componentObj.description}
+                  onChange={handleInputChange(idx)}
+                />
+                <Toggle
+                  id="is_enabled"
+                  value={componentObj.is_enabled}
+                  onChange={handleInputChange(idx)}
+                />
+                <TriggerSelector
+                  id="triggers"
+                  value={componentObj.trigger.map(([a, b]) => [a.toString(), b])}
+                  onChange={handleInputChange(idx)}
+                  dataPool={dataPool}
+                />
+                <ConditionSelector
+                  id="conditions"
+                  value={componentObj.conditions.map(([a, b]) => [a.toString(), b])}
+                  onChange={handleInputChange(idx)}
+                  dataPool={dataPool}
+                />
+                <EffectSelector
+                  id="effects"
+                  value={componentObj.effects.map(([a, b]) => [a.toString(), b])}
+                  onChange={handleInputChange(idx)}
+                  dataPool={dataPool}
+                />
+                <TextAreaArray
+                  id="failing_response"
+                  value={componentObj.failing_response}
+                  onChange={handleInputChange(idx)}
+                  rows={1}
+                />
+                <TextAreaArray
+                  id="success_response"
+                  value={componentObj.success_response}
+                  onChange={handleInputChange(idx)}
+                  rows={1}
+                />
+                <TagInput
+                  id="tags"
+                  value={componentObj.tags?.join(",") || ""}
+                  onChange={handleInputChange(idx)}
+                />
+                <Toggle
+                  id="executed"
+                  value={componentObj.executed}
+                  onChange={handleInputChange(idx)}
+                />
+              </Inspector>
+            )}
+          </div>
+        );
+      })}
     </>
   );
-}
+};

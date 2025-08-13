@@ -130,6 +130,7 @@ export const updateComponent = <T extends keyof EntityCollection>(
 		"Effect",
 		"Trigger",
 		"Condition",
+		"CONDITION",
 		"DESCRIPTIONTEXT",
 		"DescriptionText",
 	].includes(componentName)

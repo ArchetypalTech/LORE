@@ -186,13 +186,20 @@ const publishReactable = async (reactable: Reactable) => {
 	await dispatchDesignerCall("create_reactable", [reactableData]);
 };
 
-const publishDescriptionText = async (descriptions: DescriptionText[]) => {
-	const preparedDescriptions = descriptions.map((description) => [
-		num.toBigInt(description.inst.toString()),
-		num.toBigInt(description.key.toString()),
-		byteArray.byteArrayFromString(description.text),
-	]);
-	await dispatchDesignerCall("create_description_text", preparedDescriptions);
+const publishDescriptionText = async (
+  descriptions: DescriptionText | DescriptionText[]
+) => {
+  const array = Array.isArray(descriptions) ? descriptions : [descriptions];
+
+  for (const description of array) {
+    const preparedDescription = [
+      num.toBigInt(description.inst.toString()),
+      num.toBigInt(description.key.toString()),
+      byteArray.byteArrayFromString(description.text),
+    ];
+
+    await dispatchDesignerCall("create_description_text", [preparedDescription]);
+  }
 };
 
 const publishArea = async (area: Area) => {
@@ -261,71 +268,106 @@ const publishContainer = async (container: Container) => {
 	await dispatchDesignerCall("create_container", [containerData]);
 };
 
-const publishTrigger = async (triggers: Trigger[]) => {
-	const preparedTriggers = triggers.map((trigger) => [
-		num.toBigInt(trigger.inst.toString()),
-		num.toBigInt(trigger.key.toString()),
-		byteArray.byteArrayFromString(trigger.name ?? ""),
-		toEnumIndex(trigger.trigger_type, triggerType),
-		trigger.is_enabled,
-		trigger.is_once,
-		trigger.was_triggered,
-	]);
-	await dispatchDesignerCall("create_trigger", preparedTriggers);
+const publishTrigger = async (
+	triggers: Trigger | Trigger[]
+) => {
+	const array = Array.isArray(triggers) ? triggers : [triggers];
+
+	for (const trigger of array) {
+		const preparedTrigger = [
+			num.toBigInt(trigger.inst.toString()),
+			num.toBigInt(trigger.key.toString()),
+			byteArray.byteArrayFromString(trigger.name ?? ""),
+			toEnumIndex(trigger.trigger_type, triggerType),
+			trigger.is_enabled,
+			trigger.is_once,
+			trigger.was_triggered,
+		];
+		await dispatchDesignerCall("create_trigger", [preparedTrigger]);
+	}
 };
 
-const publishCondition = async (conditions: Condition[]) => {
-	const preparedConditions = conditions.map((condition) => [
-		num.toBigInt(condition.inst.toString()),
-		num.toBigInt(condition.key),
-		byteArray.byteArrayFromString(condition.name ?? ""),
-		num.toBigInt(condition.target),
-		toEnumIndex(condition.component, componentType),
-		byteArray.byteArrayFromString(condition.property),
-		toEnumIndex(condition.operator, operator),
-		condition.value.map((v) => num.toBigInt(v ?? "0"))
-	]);
-	await dispatchDesignerCall("create_condition", preparedConditions);
+const publishCondition = async (
+	conditions: Condition | Condition[]
+) => {
+	const array = Array.isArray(conditions) ? conditions : [conditions];
+
+	for (const condition of array) {
+		const preparedCondition = [
+			num.toBigInt(condition.inst.toString()),
+			num.toBigInt(condition.key),
+			byteArray.byteArrayFromString(condition.name ?? ""),
+			num.toBigInt(condition.target),
+			toEnumIndex(condition.component, componentType),
+			byteArray.byteArrayFromString(condition.property),
+			toEnumIndex(condition.operator, operator),
+			condition.value.map((v) => num.toBigInt(v ?? "0")),
+		];
+		await dispatchDesignerCall("create_condition", [preparedCondition]);
+	}
 };
 
-const publishEffect = async (effects: Effect[]) => {
-  const preparedEffects = effects.map((effect) => [
-    num.toBigInt(effect.inst.toString()),
-    num.toBigInt(effect.key.toString()),
-		byteArray.byteArrayFromString(effect.name ?? ""),
-    num.toBigInt(effect.target.toString()),
-    toEnumIndex(effect.component, componentType),
-    byteArray.byteArrayFromString(effect.property),
-    effect.value.map(([v, i]) => [byteArray.byteArrayFromString(v.toString() ?? ""), num.toBigInt(i.toString())]),
-  ]);
-  await dispatchDesignerCall("create_effect", preparedEffects);
+const publishEffect = async (
+	effects: Effect | Effect[]
+) => {
+	const array = Array.isArray(effects) ? effects : [effects];
+
+	for (const effect of array) {
+		const preparedEffect = [
+			num.toBigInt(effect.inst.toString()),
+			num.toBigInt(effect.key.toString()),
+			byteArray.byteArrayFromString(effect.name ?? ""),
+			num.toBigInt(effect.target.toString()),
+			toEnumIndex(effect.component, componentType),
+			byteArray.byteArrayFromString(effect.property),
+			effect.value.map(([v, i]) => [
+				byteArray.byteArrayFromString(v.toString() ?? ""),
+				num.toBigInt(i.toString()),
+			]),
+		];
+		await dispatchDesignerCall("create_effect", [preparedEffect]);
+	}
 }
 
-const publishAction = async (actions: Action[]) => {
-	const preparedActions = actions.map((action) => [
-		num.toBigInt(action.inst.toString()),
-		num.toBigInt(action.key),
-		byteArray.byteArrayFromString(action.name ?? ""),
-		byteArray.byteArrayFromString(action.description ?? ""),
-		action.is_enabled,
-		action.trigger.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
-		action.conditions.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
-		action.effects.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
-		action.tags.map((x) => byteArray.byteArrayFromString(x)),
-		action.executed ?? false,
-		action.failing_response.length > 0
-			? action.failing_response
-					.filter((x) => x.length > 0)
-					.map((x) => byteArray.byteArrayFromString(x))
-			: 0,
-		action.success_response.length > 0
-			? action.success_response
-					.filter((x) => x.length > 0)
-					.map((x) => byteArray.byteArrayFromString(x))
-			: 0,
-	]);
+const publishAction = async (
+	actions: Action | Action[]
+) => {	
+	const array = Array.isArray(actions) ? actions : [actions];
 
-	await dispatchDesignerCall("create_action", preparedActions);
+	for (const action of array) {
+		const preparedAction = [
+			num.toBigInt(action.inst.toString()),
+			num.toBigInt(action.key),
+			byteArray.byteArrayFromString(action.name ?? ""),
+			byteArray.byteArrayFromString(action.description ?? ""),
+			action.is_enabled,
+			action.trigger.map(([a, b]) => [
+				num.toBigInt(a.toString()),
+				num.toBigInt(b.toString()),
+			]),
+			action.conditions.map(([a, b]) => [
+				num.toBigInt(a.toString()),
+				num.toBigInt(b.toString()),
+			]),
+			action.effects.map(([a, b]) => [
+				num.toBigInt(a.toString()),
+				num.toBigInt(b.toString()),
+			]),
+			action.tags.map((x) => byteArray.byteArrayFromString(x)),
+			action.executed ?? false,
+			action.failing_response.length > 0
+				? action.failing_response
+						.filter((x) => x.length > 0)
+						.map((x) => byteArray.byteArrayFromString(x))
+				: 0,
+			action.success_response.length > 0
+				? action.success_response
+						.filter((x) => x.length > 0)
+						.map((x) => byteArray.byteArrayFromString(x))
+				: 0,
+		];
+		await dispatchDesignerCall("create_action", [preparedAction]);
+	}
 };
 
 const publishChildToParent = async (childToParent: ChildToParent) => {
