@@ -40,7 +40,7 @@ pub enum Error {
     // Entity
     NoTargetEntity,
     // Exit
-    NameNotMatch
+    NameNotMatch,
     DirectionNotMatch,
     Unenterable,
     // Reactable

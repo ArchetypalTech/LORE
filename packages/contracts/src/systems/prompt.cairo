@@ -13,7 +13,10 @@ pub mod prompt {
     use lore::{
         models::{player::{PlayerComponent, caller_as_player}},
         new_components::player_trait::PlayerImpl,
-        lib::{a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command}},
+        lib::{
+            a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command},
+            errors_texts_output::{ErrorOutputterImpl},
+        },
     };
 
     #[constructor]
@@ -37,7 +40,7 @@ pub mod prompt {
                 Result::Ok(result) => {
                     let res = handle_command(result, world, player);
                     if !res.is_ok() {
-                        player.say(world, random_text(world, random_error()));
+                        ErrorOutputterImpl::output_error(res.unwrap_err(), player, world);
                     }
                 },
                 Result::Err(_r) => { player.say(world, random_text(world, random_error())); },
