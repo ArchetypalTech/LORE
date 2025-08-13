@@ -76,45 +76,49 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
   const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
 
   return (
-    <Inspector>
-      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
-      <Input
-				id="name"
-				value={componentObject.name}
-				onChange={handleInputChange}
-			/>
-      <Input
-        id="target"
-        value={componentObject.target.toString()}
-        onChange={handleInputChange}
-      />
-      <CairoEnumSelect
-        id="component"
-        onChange={handleInputChange}
-        value={componentObject.component}
-        enum={componentType.filter((x) => !excludeComponent.includes(x))}
-      />
-      <Select
-        id="property"
-        value={componentObject.property.toString()}
-        onChange={handleInputChange}
-        options={propertyOptions}
-      />
-      <CairoEnumSelect
-        id="operator"
-        onChange={handleInputChange}
-        value={componentObject.operator}
-        enum={operator}
-      />
-      <TextAreaStringArray
-        id="value"
-        value={componentObject.value.map((v) => decodeFromFelt(v.toString()))}
-        onChange={handleInputChange}
-        rows={1}
-        columns={1}
-      />
-    </Inspector>
+    <>
+      {componentObject.map((conditionObj, idx) => (
+        <Inspector key={`${conditionObj.inst}-${conditionObj.key}`} index={idx}>
+          <Input id="inst" value={conditionObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
+          <Input id="key" value={formatKeyAsDecimal(conditionObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
+          <Input
+            id="name"
+            value={conditionObj.name}
+            onChange={handleInputChange(idx)}
+          />
+          <Input
+            id="target"
+            value={conditionObj.target.toString()}
+            onChange={handleInputChange(idx)}
+          />
+          <CairoEnumSelect
+            id="component"
+            onChange={handleInputChange(idx)}
+            value={conditionObj.component}
+            enum={componentType.filter((x) => !excludeComponent.includes(x))}
+          />
+          <Select
+            id="property"
+            value={conditionObj.property.toString()}
+            onChange={handleInputChange(idx)}
+            options={propertyOptions}
+          />
+          <CairoEnumSelect
+            id="operator"
+            onChange={handleInputChange(idx)}
+            value={conditionObj.operator}
+            enum={operator}
+          />
+          <TextAreaStringArray
+            id="value"
+            value={conditionObj.value.map((v) => decodeFromFelt(v.toString()))}
+            onChange={handleInputChange(idx)}
+            rows={1}
+            columns={1}
+          />
+        </Inspector>
+      ))}
+    </>
   );
 }
 

@@ -4,21 +4,20 @@ import {
 import { Input } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { BigNumberish } from "starknet";
 
-export const DescriptionTextInspector: ComponentInspector<(DescriptionText)> = ({
+export const DescriptionTextInspector: ComponentInspector<DescriptionText> = ({
 	componentObject,
 	...props
 }) => {
-	const { handleInputChange, Inspector } = useInspector<(DescriptionText)>({
+	const { handleInputChange, Inspector } = useInspector<DescriptionText>({
 		componentObject,
 		...props,
 		inputHandlers: {
       description_inst: (e, updatedObject) => {
-        updatedObject.key = e.target.value as unknown as BigNumberish;
+        updatedObject.inst = Number(e.target.value);
       },
 			description_key: (e, updatedObject) => {
-				updatedObject.key = e.target.value as unknown as BigNumberish;
+				updatedObject.key = Number(e.target.value);
 			},
 			description_text: (e, updatedObject) => {
 				updatedObject.text = e.target.value as unknown as string;
@@ -26,25 +25,33 @@ export const DescriptionTextInspector: ComponentInspector<(DescriptionText)> = (
     },
   });
 
-  if (!componentObject) return <div>Description not found</div>;
-  
-  return (
-    <Inspector>
-      <Input
-        id="description_inst"
-        value={componentObject.inst.toString()}
-        onChange={handleInputChange}
-        readOnly={true}
-      />
-      <Input
-        id="description_key"
-        value={componentObject.key.toString()}
-        onChange={handleInputChange}
-      />
-      <Input
-        id="description_text"
-        value={componentObject.text}
-        onChange={handleInputChange}
-      />
-    </Inspector>
-)};
+	if (!componentObject) return <div>Description not found</div>;
+
+	// console.log(componentObject);
+	return (
+		<>
+			{componentObject.map((componentObj, idx) => {
+				return (
+					<Inspector index={idx} key={`${componentObj.inst}-${componentObj.key}`}>
+						<Input
+							id="description_inst"
+							value={componentObj.inst.toString()}
+							onChange={handleInputChange(idx)}
+							readOnly={true}
+						/>
+						<Input
+							id="description_key"
+							value={componentObj.key}
+							onChange={handleInputChange(idx)}
+						/>
+						<Input
+							id="description_text"
+							value={componentObj.text}
+							onChange={handleInputChange(idx)}
+						/>
+					</Inspector>
+				);
+			})}
+		</>
+	);
+};

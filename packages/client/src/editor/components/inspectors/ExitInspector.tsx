@@ -62,24 +62,24 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			<Toggle
 				id="is_enterable"
 				value={componentObject.is_enterable}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Select
 				id="leads_to"
 				defaultValue={area_value}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				options={area_options}
 			/>
 			<CairoEnumSelect
 				id="direction_type"
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				value={componentObject.direction_type}
 				enum={direction}
 			/>
 			<ActionMapEditor
 				id="action_map"
 				value={componentObject.action_map}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				cairoEnum={exitActions}
 			/>
 		</Inspector>

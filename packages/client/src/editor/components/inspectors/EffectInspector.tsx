@@ -71,40 +71,44 @@ export const EffectInspector: ComponentInspector<Effect> = ({
   const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
 
   return (
-    <Inspector>
-      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
-      <Input
-				id="name"
-				value={componentObject.name}
-				onChange={handleInputChange}
-			/>
-      <Input
-        id="target"
-        value={componentObject.target.toString()}
-        onChange={handleInputChange}
-      />
-      <CairoEnumSelect
-        id="component"
-        onChange={handleInputChange}
-        value={componentObject.component}
-        enum={componentType.filter((x) => !excludeComponent.includes(x))}
-      />
-      <Select
-        id="property"
-        value={componentObject.property.toString()}
-        onChange={handleInputChange}
-        options={propertyOptions}
-      />
-      <TextAreaStringArray
-        id="value"
-        value={
-          componentObject.value.map(([text, index]) => [text.toString(), index.toString()]) as [string, string][]
-        }
-        onChange={handleInputChange}
-        rows={1}
-        columns={2}
-      />
-    </Inspector>
-  );
+		<>
+			{componentObject.map((componentObj, idx) => {
+				<Inspector key={`${componentObj.inst}-${componentObj.key}`} index={idx}>
+					<Input id="inst" value={componentObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
+					<Input id="key" value={formatKeyAsDecimal(componentObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
+					<Input
+						id="name"
+						value={componentObj.name}
+						onChange={handleInputChange(idx)}
+					/>
+					<Input
+						id="target"
+						value={componentObj.target.toString()}
+						onChange={handleInputChange(idx)}
+					/>
+					<CairoEnumSelect
+						id="component"
+						onChange={handleInputChange(idx)}
+						value={componentObj.component}
+						enum={componentType.filter((x) => !excludeComponent.includes(x))}
+					/>
+					<Select
+						id="property"
+						value={componentObj.property.toString()}
+						onChange={handleInputChange(idx)}
+						options={propertyOptions}
+					/>
+					<TextAreaStringArray
+						id="value"
+						value={
+							componentObj.value.map(([text, index]) => [text.toString(), index.toString()]) as [string, string][]
+						}
+						onChange={handleInputChange(idx)}
+						rows={1}
+						columns={2}
+					/>
+				</Inspector>
+			})}
+		</>
+	);
 }

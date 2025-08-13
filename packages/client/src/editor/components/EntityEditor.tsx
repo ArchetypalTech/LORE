@@ -48,11 +48,13 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 
 	const handleRemoveComponent = async (
 		componentName: keyof EntityCollection,
+		index?: BigNumberish,
 	) => {
 		EditorData().set({
 			editedEntity: EditorData().removeComponent(
 				editedEntity!.Entity.inst,
 				componentName,
+				index,
 			),
 		});
 	};

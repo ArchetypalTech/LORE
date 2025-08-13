@@ -186,13 +186,13 @@ const publishReactable = async (reactable: Reactable) => {
 	await dispatchDesignerCall("create_reactable", [reactableData]);
 };
 
-const publishDescriptionText = async (description: DescriptionText) => {
-	const descriptionData = [
+const publishDescriptionText = async (descriptions: DescriptionText[]) => {
+	const preparedDescriptions = descriptions.map((description) => [
 		num.toBigInt(description.inst.toString()),
 		num.toBigInt(description.key.toString()),
 		byteArray.byteArrayFromString(description.text),
-	];
-	await dispatchDesignerCall("create_description_text", [descriptionData]);
+	]);
+	await dispatchDesignerCall("create_description_text", preparedDescriptions);
 };
 
 const publishArea = async (area: Area) => {
@@ -261,8 +261,8 @@ const publishContainer = async (container: Container) => {
 	await dispatchDesignerCall("create_container", [containerData]);
 };
 
-const publishTrigger = async (trigger: Trigger) => {
-	const triggerData = [
+const publishTrigger = async (triggers: Trigger[]) => {
+	const preparedTriggers = triggers.map((trigger) => [
 		num.toBigInt(trigger.inst.toString()),
 		num.toBigInt(trigger.key.toString()),
 		byteArray.byteArrayFromString(trigger.name ?? ""),
@@ -270,12 +270,12 @@ const publishTrigger = async (trigger: Trigger) => {
 		trigger.is_enabled,
 		trigger.is_once,
 		trigger.was_triggered,
-	];
-	await dispatchDesignerCall("create_trigger", [triggerData]);
+	]);
+	await dispatchDesignerCall("create_trigger", preparedTriggers);
 };
 
-const publishCondition = async (condition: Condition) => {
-	const conditionData = [
+const publishCondition = async (conditions: Condition[]) => {
+	const preparedConditions = conditions.map((condition) => [
 		num.toBigInt(condition.inst.toString()),
 		num.toBigInt(condition.key),
 		byteArray.byteArrayFromString(condition.name ?? ""),
@@ -284,12 +284,12 @@ const publishCondition = async (condition: Condition) => {
 		byteArray.byteArrayFromString(condition.property),
 		toEnumIndex(condition.operator, operator),
 		condition.value.map((v) => num.toBigInt(v ?? "0"))
-	];
-	await dispatchDesignerCall("create_condition", [conditionData]);
+	]);
+	await dispatchDesignerCall("create_condition", preparedConditions);
 };
 
-const publishEffect = async (effect: Effect) => {
-  const effectData = [
+const publishEffect = async (effects: Effect[]) => {
+  const preparedEffects = effects.map((effect) => [
     num.toBigInt(effect.inst.toString()),
     num.toBigInt(effect.key.toString()),
 		byteArray.byteArrayFromString(effect.name ?? ""),
@@ -297,12 +297,12 @@ const publishEffect = async (effect: Effect) => {
     toEnumIndex(effect.component, componentType),
     byteArray.byteArrayFromString(effect.property),
     effect.value.map(([v, i]) => [byteArray.byteArrayFromString(v.toString() ?? ""), num.toBigInt(i.toString())]),
-  ];
-  await dispatchDesignerCall("create_effect", [effectData]);
+  ]);
+  await dispatchDesignerCall("create_effect", preparedEffects);
 }
 
-const publishAction = async (action: Action) => {
-	const actionData = [
+const publishAction = async (actions: Action[]) => {
+	const preparedActions = actions.map((action) => [
 		num.toBigInt(action.inst.toString()),
 		num.toBigInt(action.key),
 		byteArray.byteArrayFromString(action.name ?? ""),
@@ -323,9 +323,9 @@ const publishAction = async (action: Action) => {
 					.filter((x) => x.length > 0)
 					.map((x) => byteArray.byteArrayFromString(x))
 			: 0,
-	];
+	]);
 
-	await dispatchDesignerCall("create_action", [actionData]);
+	await dispatchDesignerCall("create_action", preparedActions);
 };
 
 const publishChildToParent = async (childToParent: ChildToParent) => {
@@ -366,7 +366,7 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 	if ("DescriptionText" in model && model.DescriptionText !== undefined) {
 		await dispatchDesignerCall("delete_description_text", [
-			[num.toBigInt(model.DescriptionText!.inst), num.toBigInt(model.DescriptionText!.key)],
+			model.DescriptionText!.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
 		]);
 	}
 	if ("Area" in model && model.Area !== undefined) {
@@ -387,22 +387,22 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 	if ("Trigger" in model && model.Trigger !== undefined) {
 		await dispatchDesignerCall("delete_trigger", [
-			[num.toBigInt(model.Trigger!.inst), num.toBigInt(model.Trigger!.key)],
+			model.Trigger!.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
 		]);
 	}
 	if ("Condition" in model && model.Condition !== undefined) {
 		await dispatchDesignerCall("delete_condition", [
-			[num.toBigInt(model.Condition!.inst), num.toBigInt(model.Condition!.key)],
+			model.Condition!.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
 		]);
 	}
 	if ("Effect" in model && model.Effect !== undefined) {
 		await dispatchDesignerCall("delete_effect", [
-			[num.toBigInt(model.Effect!.inst), num.toBigInt(model.Effect!.key)],
+			model.Effect!.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
 		]);
 	}
 	if ("Action" in model && model.Action !== undefined) {
 		await dispatchDesignerCall("delete_action", [
-			[num.toBigInt(model.Action!.inst), num.toBigInt(model.Action!.key)],
+			model.Action!.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
 		]);
 	}
 	if ("ChildToParent" in model && model.ChildToParent !== undefined) {
