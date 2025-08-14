@@ -32,6 +32,7 @@ pub fn handle_command(
     let mut nouns = command.get_nouns();
     let mut directions = command.get_directions();
     let mut result: Result::<Command, Error> = Result::Err(Error::ActionFailed);
+    let mut found_error = false;
     if nouns.len() > 0 {
         for noun in nouns {
             let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
@@ -41,8 +42,16 @@ pub fn handle_command(
             match ReactableComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.clone().can_use_command(world, @player, @command) {
-                        if c.clone().execute_command(world, @player, @command).is_ok() {
+                        let res = c.clone().execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("Error: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -52,8 +61,17 @@ pub fn handle_command(
             match AreaComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
+                        let res = c.execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("Error: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -64,8 +82,17 @@ pub fn handle_command(
             match ExitComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
+                        let res = c.execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("Error: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -83,9 +110,9 @@ pub fn handle_command(
 
                         if res.is_err() {
                             let rest = Result::Err(res.unwrap_err());
-                            println!("InventoryItem execute_command: {:?}", rest);
                             result = rest;
-                            println!("result: {:?}", result);
+                            found_error = true;
+                            // println!("result: {:?}", result);
                             break;
                         }
                     }
@@ -95,8 +122,16 @@ pub fn handle_command(
             match ContainerComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
+                        let res = c.execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("result: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -113,8 +148,16 @@ pub fn handle_command(
             if exit.is_some() {
                 let exit = exit.unwrap();
                 if exit.can_use_command(world, @player, @command) {
-                    if exit.execute_command(world, @player, @command).is_ok() {
+                    let res = exit.execute_command(world, @player, @command);
+                    if res.is_ok() {
                         executed = true;
+                        break;
+                    }
+                    if res.is_err() {
+                        let error = Result::Err(res.unwrap_err());
+                        // println!("result: {:?}", error);
+                        result = error;
+                        found_error = true;
                         break;
                     }
                 }
@@ -125,6 +168,10 @@ pub fn handle_command(
     //println!("executed: {:?}", executed);
     if executed {
         return Result::Ok(command);
+    }
+
+    if found_error {
+        return result;
     }
 
     // We haven't found any targets that have a verb mapped to the action
