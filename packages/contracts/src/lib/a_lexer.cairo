@@ -109,7 +109,7 @@ pub mod lexer {
 
 
     pub fn parse(
-        message: ByteArray, world: WorldStorage, player: Player,
+        message: ByteArray, world: WorldStorage, player: Player, game_instance: felt252,
     ) -> Result<Command, Error> {
         initialize_dictionary(world);
         let words = message.split_into_words();
@@ -123,7 +123,7 @@ pub mod lexer {
             action_type: 0,
             tokens,
         };
-        command = match_player_context(world, player, command);
+        command = match_player_context(world, player, command, game_instance);
         command = post_process_command(world, player, command);
         command.pretty_print();
         Result::Ok(command)
@@ -157,9 +157,9 @@ pub mod lexer {
         tokens
     }
 
-    fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
-        // get player for their context (room + room objects + inventory)
-        let context = player.get_full_context(@world);
+    fn match_player_context(world: WorldStorage, player: Player, mut command: Command, game_instance: felt252) -> Command {
+        // get player for their context (room + room objects + inventory) - scoped to game instance
+        let context = player.get_full_context(@world, game_instance);
         let mut newTokens: Array<Token> = array![];
         for i in 0..command.tokens.len() {
             let mut token = command.tokens.at(i).clone();

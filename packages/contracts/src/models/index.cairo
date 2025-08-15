@@ -49,6 +49,8 @@ pub struct Dict {
 pub struct Entity {
     #[key]
     pub inst: felt252,
+    #[key]
+    pub game_instance: felt252,
     pub is_entity: bool,
     /// Properties ///
     /// Name of the entity
@@ -64,6 +66,8 @@ pub struct Entity {
 pub struct Area {
     #[key]
     pub inst: felt252,
+    #[key]
+    pub game_instance: felt252,
     pub is_area: bool,
     /// Properties ///
     /// If the area is a spawn point for players
@@ -75,6 +79,8 @@ pub struct Area {
 pub struct Inspectable {
     #[key]
     pub inst: felt252,
+    #[key]
+    pub game_instance: felt252,
     pub is_inspectable: bool,
     /// Properties ///
     /// If the inspectable is visible
@@ -107,6 +113,8 @@ pub struct DescriptionText {
 pub struct Exit {
     #[key]
     pub inst: felt252,
+    #[key]
+    pub game_instance: felt252,
     pub is_exit: bool,
     /// Properties ///
     /// If the exit is enterable
@@ -124,6 +132,8 @@ pub struct Exit {
 pub struct Container {
     #[key]
     pub inst: felt252,
+    #[key]
+    pub game_instance: felt252,
     pub is_container: bool,
     /// Properties ///
     /// If the container can be opened
@@ -143,6 +153,8 @@ pub struct Container {
 pub struct InventoryItem {
     #[key]
     pub inst: felt252,
+    #[key]
+    pub game_instance: felt252,
     pub is_inventory_item: bool,
     /// Properties ///
     /// The owner of the inventory item
@@ -168,6 +180,8 @@ pub struct Player {
     /// Properties ///
     /// The address of the player
     pub address: ContractAddress,
+    /// The game instance this player belongs to
+    pub game_instance: felt252,
     /// The location of the player
     pub location: felt252,
     /// Current story line
@@ -217,6 +231,9 @@ pub struct Action {
     /// Unique identifier of the action
     #[key]
     pub key: felt252,
+    /// Game instance this action belongs to
+    #[key]
+    pub game_instance: felt252,
     /// Properties ///
     /// Name of the action
     pub name: ByteArray,
@@ -249,6 +266,9 @@ pub struct Trigger {
     /// Unique identifier of the trigger
     #[key]
     pub key: felt252,
+    /// Game instance this trigger belongs to
+    #[key]
+    pub game_instance: felt252,
     /// Trigger name
     pub name: ByteArray,
     /// The type of trigger
@@ -278,6 +298,9 @@ pub struct Condition {
     /// Unique identifier of the condition
     #[key]
     pub key: felt252,
+    /// Game instance this condition belongs to
+    #[key]
+    pub game_instance: felt252,
     /// Condition name
     pub name: ByteArray,
     /// The target inst.
@@ -301,6 +324,9 @@ pub struct Effect {
     /// Unique identifier of the effect
     #[key]
     pub key: felt252,
+    /// Game instance this effect belongs to
+    #[key]
+    pub game_instance: felt252,
     /// Effect name
     pub name: ByteArray,
     /// Target entity
@@ -336,4 +362,22 @@ pub struct ComponentVariable {
     pub value: ByteArray,
     /// The last time the property was updated
     pub last_updated: u64,
+}
+
+// ========== GAME INSTANCE MODEL ==========
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct GameInstance {
+    #[key]
+    pub inst: felt252,
+    pub is_game_instance: bool,
+    /// Properties ///
+    /// The owner/creator of this game instance
+    pub owner: ContractAddress,
+    /// Game instance name
+    pub name: ByteArray,
+    /// Whether the instance is active
+    pub is_active: bool,
+    /// Creation timestamp
+    pub created_at: u64,
 }

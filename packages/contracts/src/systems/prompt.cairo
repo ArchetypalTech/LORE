@@ -32,10 +32,19 @@ pub mod prompt {
             let mut world: WorldStorage = self.world(@"lore");
             let player = caller_as_player(world, get_caller_address());
 
+            // Get the player's game instance context
+            let game_instance = player.game_instance;
+            
+            // Verify player is in a valid game instance
+            if game_instance == 0 {
+                player.say(world, "You need to join a game instance first. Use 'create_game_instance' or 'join_game_instance'.");
+                return;
+            }
+
             player.add_command_text(world, cmd.clone());
-            match (lexer::parse(cmd, world, player)) {
+            match (lexer::parse(cmd, world, player, game_instance)) {
                 Result::Ok(result) => {
-                    let res = handle_command(result, world, player);
+                    let res = handle_command(result, world, player, game_instance);
                     if !res.is_ok() {
                         player.say(world, random_text(world, random_error()));
                     }

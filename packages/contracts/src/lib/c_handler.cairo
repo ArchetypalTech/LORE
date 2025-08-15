@@ -18,11 +18,11 @@ use lore::{
 };
 
 pub fn handle_command(
-    mut command: Command, world: WorldStorage, player: Player,
+    mut command: Command, world: WorldStorage, player: Player, game_instance: felt252,
 ) -> Result<Command, Error> {
     let sys_command = command.is_system_command();
     if sys_command {
-        return system_command(command.clone(), world, player);
+        return system_command(command.clone(), world, player, game_instance);
     }
     let verbs = command.get_verbs();
     if verbs.len() == 0 {
@@ -95,7 +95,7 @@ pub fn handle_command(
             };
         };
     } else if directions.len() > 0 {
-        let context = player.get_context(@world);
+        let context = player.get_context(@world, game_instance);
         for item in context {
             let exit: Option<Exit> = Component::get_component(world, item.inst);
 
@@ -180,7 +180,7 @@ pub fn init_system_dictionary(world: WorldStorage) {
 }
 
 fn system_command(
-    mut command: Command, world: WorldStorage, player: Player,
+    mut command: Command, world: WorldStorage, player: Player, game_instance: felt252,
 ) -> Result<Command, Error> {
     let mut system_command: ByteArray = "";
     for token in command.clone().tokens {
@@ -242,7 +242,7 @@ fn system_command(
         }
         if (system_command == "g_look") {
             player.say(world, "+sys+you see this:");
-            let context = player.get_context(@world);
+            let context = player.get_context(@world, game_instance);
             let room = player.get_room(@world);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);

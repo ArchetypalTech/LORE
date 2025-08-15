@@ -1,6 +1,7 @@
 use core::traits::{TryInto, Into, DivRem};
 use core::result::{Result};
 use lore::types::direction_type::Direction;
+use starknet::get_block_timestamp;
 
 #[generate_trait]
 pub impl ByteArrayTraitExt of ByteArrayTrait {
@@ -251,6 +252,14 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         };
 
         return result.rev();
+    }
+
+    fn generate_unique_id() -> felt252 {
+        // Simple unique ID generation using timestamp and a counter
+        // In a real implementation, you might want to use a more sophisticated approach
+        let timestamp: felt252 = get_block_timestamp().into();
+        let random_offset: felt252 = 12345; // Simple offset for uniqueness
+        timestamp + random_offset
     }
 }
 
