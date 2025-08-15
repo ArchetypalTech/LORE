@@ -1,6 +1,7 @@
 pub mod systems {
     pub mod designer;
     pub mod prompt;
+    pub mod game_instance;
 }
 
 // pub mod components;

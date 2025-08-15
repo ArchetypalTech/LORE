@@ -12,7 +12,7 @@ use lore::{
 #[generate_trait]
 pub impl PlayerImpl of PlayerTrait {
     fn describe_room(mut self: @Player, mut world: WorldStorage) -> Result<(), Error> {
-        let context = self.get_context(@world);
+        let context = self.get_context(@world, *self.game_instance);
         let room = self.get_room(@world);
         if room.is_none() {
             return Result::Err(Error::ActionFailed);
@@ -105,8 +105,8 @@ pub impl PlayerImpl of PlayerTrait {
         parent
     }
 
-    // Get the 1st level context of the room
-    fn get_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
+    // Get the 1st level context of the room - scoped to game instance
+    fn get_context(self: @Player, world: @WorldStorage, game_instance: felt252) -> Array<Entity> {
         match self.get_room(world) {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
@@ -122,8 +122,8 @@ pub impl PlayerImpl of PlayerTrait {
         }
     }
 
-    // Get the full context of the room
-    fn get_full_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
+    // Get the full context of the room - scoped to game instance
+    fn get_full_context(self: @Player, world: @WorldStorage, game_instance: felt252) -> Array<Entity> {
         match self.get_room(world) {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];

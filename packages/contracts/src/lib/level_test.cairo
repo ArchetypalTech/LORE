@@ -15,6 +15,7 @@ pub fn create_test_level(mut world: WorldStorage) {
 fn room_start(mut world: WorldStorage) {
     let obj = Entity {
         inst: 2826,
+        game_instance: 0, // Default game instance for test level
         is_entity: true,
         name: "The Bang",
         alt_names: array!["bang", "explosion"],
@@ -39,6 +40,7 @@ fn room_start(mut world: WorldStorage) {
 fn object_room_one(mut world: WorldStorage, parent: Entity) {
     let obj = Entity {
         inst: 9999,
+        game_instance: 0, // Default game instance for test level
         is_entity: true,
         name: "a portal",
         alt_names: array!["portal", "door"],

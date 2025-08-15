@@ -38,6 +38,7 @@ pub impl EntityImpl of EntityTrait {
         world.write_model(@entity);
         let mut player: Player = Component::add_component(world, address.into());
         player.address = address;
+        player.game_instance = 0; // Initialize to 0 (no game instance)
         world.write_model(@player);
         let mut inspectable: Inspectable = Component::add_component(world, address.into());
         inspectable.description = array!["Looks like a visitor"];
