@@ -10,6 +10,7 @@ import { useInspector } from "./useInspector";
 import { createDefaultDescriptionText } from "@/editor/lib/components";
 import { Button } from "../ui/Button";
 import { getEntity, removeComponent, updateComponent } from "@/editor/data/editor.data";
+import { CollapsibleComponent } from "../CollapsibleComponent";
 
 export const ReactableInspector: ComponentInspector<Reactable> = ({
 	componentObject,
@@ -42,18 +43,11 @@ export const ReactableInspector: ComponentInspector<Reactable> = ({
 	});
 
 	if (!componentObject) return <div>Inspectable not found</div>;
-	const [collapsed, setCollapsed] = useState(true);
+
 	return (
     <Inspector>
       <div style={{ marginBottom: "8px" }}>
-        <button
-          type="button"
-          onClick={() => setCollapsed((prev) => !prev)}
-        >
-          {collapsed ? "▶" : "▼"} Description Keys
-        </button>
-
-        {!collapsed && (
+        <CollapsibleComponent title="Description Keys">
           <div style={{ marginTop: "4px" }}>
             <TextAreaArray
               id="description_keys"
@@ -116,7 +110,7 @@ export const ReactableInspector: ComponentInspector<Reactable> = ({
               Add description
             </Button>
           </div>
-        )}
+        </CollapsibleComponent>
       </div>
 			<Toggle
 				id="already_shown"
