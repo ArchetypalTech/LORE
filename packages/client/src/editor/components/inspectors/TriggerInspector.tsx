@@ -12,6 +12,7 @@ import {
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
+import { CollapsibleComponent } from "../CollapsibleComponent";
 
 export const TriggerInspector: ComponentInspector<Trigger> = ({
   componentObject,
@@ -44,39 +45,49 @@ export const TriggerInspector: ComponentInspector<Trigger> = ({
 
 	if (!componentObject) return <div>Trigger not found</div>;
 
+	// Ensure componentObject is always an array
+  const componentsArray = Array.isArray(componentObject)
+  ? componentObject
+  : [componentObject];
+
 	return (
 		<>
-			{componentObject.map((triggerObj, idx) => (
-				<Inspector key={`${triggerObj.inst}-${triggerObj.key}`} index={idx}>
-					<Input id="inst" value={triggerObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
-					<Input id="key" value={formatKeyAsDecimal(triggerObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
-					<Input
-						id="name"
-						value={triggerObj.name}
-						onChange={handleInputChange(idx)}
-					/>
-					<Toggle
-						id="is_enabled"
-						value={triggerObj.is_enabled}
-						onChange={handleInputChange(idx)}
-					/>
-					<CairoEnumSelect
-						id="trigger_type"
-						onChange={handleInputChange(idx)}
-						value={triggerObj.trigger_type}
-						enum={triggerType}
-					/>
-					<Toggle
-						id="is_once"
-						value={triggerObj.is_once}
-						onChange={handleInputChange(idx)}
-					/>
-					<Toggle
-						id="was_triggered"
-						value={triggerObj.was_triggered}
-						onChange={handleInputChange(idx)}
-					/>
-				</Inspector>
+			{componentsArray.map((triggerObj, idx) => (
+				<CollapsibleComponent
+					key={`${triggerObj.inst}-${triggerObj.key}`}
+					title={`Trigger ${triggerObj.key}`}
+				>
+					<Inspector key={`${triggerObj.inst}-${triggerObj.key}`} index={idx}>
+						<Input id="inst" value={triggerObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
+						<Input id="key" value={formatKeyAsDecimal(triggerObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
+						<Input
+							id="name"
+							value={triggerObj.name}
+							onChange={handleInputChange(idx)}
+						/>
+						<Toggle
+							id="is_enabled"
+							value={triggerObj.is_enabled}
+							onChange={handleInputChange(idx)}
+						/>
+						<CairoEnumSelect
+							id="trigger_type"
+							onChange={handleInputChange(idx)}
+							value={triggerObj.trigger_type}
+							enum={triggerType}
+						/>
+						<Toggle
+							id="is_once"
+							value={triggerObj.is_once}
+							onChange={handleInputChange(idx)}
+						/>
+						<Toggle
+							id="was_triggered"
+							value={triggerObj.was_triggered}
+							onChange={handleInputChange(idx)}
+						/>
+					</Inspector>
+				</CollapsibleComponent>
 			))}
 		</>
 	);

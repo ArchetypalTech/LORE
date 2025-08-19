@@ -18,6 +18,7 @@ import { ConditionSelector } from "../ConditionSelector";
 import { EffectSelector } from "../EffectsSelector";
 import { BigNumberish } from "starknet";
 import { useEditorData } from "../../data/editor.data";
+import { CollapsibleComponent } from "../CollapsibleComponent";
 
 export const ActionInspector: ComponentInspector<Action> = ({
   componentObject,
@@ -101,98 +102,81 @@ export const ActionInspector: ComponentInspector<Action> = ({
     ? componentObject
     : [componentObject];
   
-    // Track which items are collapsed
-  const [collapsedIndices, setCollapsedIndices] = useState<Set<number>>(new Set());
-  
-  const toggleCollapse = (idx: number) => {
-    const newSet = new Set(collapsedIndices);
-    if (collapsedIndices.has(idx)) newSet.delete(idx);
-    else newSet.add(idx);
-    setCollapsedIndices(newSet);
-  };
-  
   return (
     <>
       {componentsArray.map((componentObj, idx) => {
-        const isCollapsed = collapsedIndices.has(idx);
         return (
-          <div key={`${componentObj.inst}-${componentObj.key}`} style={{ marginBottom: "8px" }}>
-            <button onClick={() => toggleCollapse(idx)}>
-              {isCollapsed ? "▶" : "▼"} Action {formatKeyAsDecimal(componentObj.key)}
-            </button>
-
-            {!isCollapsed && (
-              <Inspector index={idx}>
-                <Input
-                  id="inst"
-                  value={componentObj.inst.toString()}
-                  onChange={handleInputChange(idx)}
-                  readOnly={true}
-                />
-                <Input
-                  id="key"
-                  value={formatKeyAsDecimal(componentObj.key)}
-                  onChange={handleInputChange(idx)}
-                  readOnly={true}
-                />
-                <Input
-                  id="name"
-                  value={componentObj.name}
-                  onChange={handleInputChange(idx)}
-                />
-                <Input
-                  id="description"
-                  value={componentObj.description}
-                  onChange={handleInputChange(idx)}
-                />
-                <Toggle
-                  id="is_enabled"
-                  value={componentObj.is_enabled}
-                  onChange={handleInputChange(idx)}
-                />
-                <TriggerSelector
-                  id="triggers"
-                  value={componentObj.trigger.map(([a, b]) => [a.toString(), b])}
-                  onChange={handleInputChange(idx)}
-                  dataPool={dataPool}
-                />
-                <ConditionSelector
-                  id="conditions"
-                  value={componentObj.conditions.map(([a, b]) => [a.toString(), b])}
-                  onChange={handleInputChange(idx)}
-                  dataPool={dataPool}
-                />
-                <EffectSelector
-                  id="effects"
-                  value={componentObj.effects.map(([a, b]) => [a.toString(), b])}
-                  onChange={handleInputChange(idx)}
-                  dataPool={dataPool}
-                />
-                <TextAreaArray
-                  id="failing_response"
-                  value={componentObj.failing_response}
-                  onChange={handleInputChange(idx)}
-                  rows={1}
-                />
-                <TextAreaArray
-                  id="success_response"
-                  value={componentObj.success_response}
-                  onChange={handleInputChange(idx)}
-                  rows={1}
-                />
-                <TagInput
-                  id="tags"
-                  value={componentObj.tags?.join(",") || ""}
-                  onChange={handleInputChange(idx)}
-                />
-                <Toggle
-                  id="executed"
-                  value={componentObj.executed}
-                  onChange={handleInputChange(idx)}
-                />
-              </Inspector>
-            )}
-          </div>
+          <CollapsibleComponent key={`${componentObj.inst}-${componentObj.key}`} title={`Action ${componentObj.key}`}>
+            <Inspector index={idx}>
+              <Input
+                id="inst"
+                value={componentObj.inst.toString()}
+                onChange={handleInputChange(idx)}
+                readOnly={true}
+              />
+              <Input
+                id="key"
+                value={formatKeyAsDecimal(componentObj.key)}
+                onChange={handleInputChange(idx)}
+                readOnly={true}
+              />
+              <Input
+                id="name"
+                value={componentObj.name}
+                onChange={handleInputChange(idx)}
+              />
+              <Input
+                id="description"
+                value={componentObj.description}
+                onChange={handleInputChange(idx)}
+              />
+              <Toggle
+                id="is_enabled"
+                value={componentObj.is_enabled}
+                onChange={handleInputChange(idx)}
+              />
+              <TriggerSelector
+                id="triggers"
+                value={componentObj.trigger.map(([a, b]) => [a.toString(), b])}
+                onChange={handleInputChange(idx)}
+                dataPool={dataPool}
+              />
+              <ConditionSelector
+                id="conditions"
+                value={componentObj.conditions.map(([a, b]) => [a.toString(), b])}
+                onChange={handleInputChange(idx)}
+                dataPool={dataPool}
+              />
+              <EffectSelector
+                id="effects"
+                value={componentObj.effects.map(([a, b]) => [a.toString(), b])}
+                onChange={handleInputChange(idx)}
+                dataPool={dataPool}
+              />
+              <TextAreaArray
+                id="failing_response"
+                value={componentObj.failing_response}
+                onChange={handleInputChange(idx)}
+                rows={1}
+              />
+              <TextAreaArray
+                id="success_response"
+                value={componentObj.success_response}
+                onChange={handleInputChange(idx)}
+                rows={1}
+              />
+              <TagInput
+                id="tags"
+                value={componentObj.tags?.join(",") || ""}
+                onChange={handleInputChange(idx)}
+              />
+              <Toggle
+                id="executed"
+                value={componentObj.executed}
+                onChange={handleInputChange(idx)}
+              />
+            </Inspector>
+          </CollapsibleComponent>
         );
       })}
     </>
