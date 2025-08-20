@@ -31,8 +31,8 @@ import type {
 import type { ChangeSet, EditorAction } from "../lib/types";
 import { tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
-import { ToriiQueryBuilder} from "@dojoengine/sdk";
-import {type SchemaType} from "@lib/dojo_bindings/typescript/models.gen";
+import { ToriiQueryBuilder } from "@dojoengine/sdk";
+import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 
 import { getPlayerAddress } from "@/editor/lib/components";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
@@ -136,30 +136,30 @@ export const updateComponent = <T extends keyof EntityCollection>(
 	].includes(componentName)
 
 	if (isMultiKey && !edited[componentName]) {
-        edited[componentName] = [];
-    }
+		edited[componentName] = [];
+	}
 
-    if (edited[componentName] && Array.isArray(edited[componentName])) {
-        let index = edited[componentName].findIndex(
-            (i) => i.inst === component.inst && i.key === component.key
-        );
-        if (index > -1) {
-            edited[componentName][index] = component;
-        } else {
-            edited[componentName].push(component);
-            if (componentName === "DescriptionText" && !disableAutoSync) {
-                if (edited.Reactable && edited.Reactable.description) {
-                    const newKey = (component as any).key;
-                    if (!edited.Reactable.description.includes(newKey)) {
-                        edited.Reactable.description.push(newKey);
-                    }
-                }
-            }
-        }
-    } else {
-        edited[componentName] = component;
-    }
-	
+	if (edited[componentName] && Array.isArray(edited[componentName])) {
+		let index = edited[componentName].findIndex(
+			(i) => i.inst === component.inst && i.key === component.key
+		);
+		if (index > -1) {
+			edited[componentName][index] = component;
+		} else {
+			edited[componentName].push(component);
+			if (componentName === "DescriptionText" && !disableAutoSync) {
+				if (edited.Reactable && edited.Reactable.description) {
+					const newKey = (component as any).key;
+					if (!edited.Reactable.description.includes(newKey)) {
+						edited.Reactable.description.push(newKey);
+					}
+				}
+			}
+		}
+	} else {
+		edited[componentName] = component;
+	}
+
 	if (isMultiKey) {
 		if (
 			get().changeSet.some((x) => x.inst === inst && x.key === component.key && componentName in x.object)
@@ -203,103 +203,74 @@ export const updateComponent = <T extends keyof EntityCollection>(
 	return edited as EntityCollection;
 };
 
-export const removeComponent = (
+export const removeComponent = <T extends keyof EntityCollection>(
 	inst: BigNumberish,
-	componentName: keyof EntityCollection,
+	componentName: T,
 	index?: number,
 	disableAutoSync = false,
 ): EntityCollection | undefined => {
 	const edited = getEntity(inst);
-	if (edited === undefined) {
-		throw new Error("Entity not found");
-	}
-	if (componentName === "Entity") {
-		removeEntity(edited);
-		return undefined;
-	}
+	if (!edited) throw new Error("Entity not found");
 
-	const deleted = { ...edited[componentName] };
-	let key = undefined;
+	let deleted: any = undefined;
+	let key: any = undefined;
+
 	const isMultiKey = [
 		"Action",
 		"Effect",
 		"Trigger",
 		"Condition",
-		"DESCRIPTIONTEXT",
 		"DescriptionText",
-	].includes(componentName)
-	
-	if (isMultiKey && index !== undefined) {
-		// Remove specific item by key from array component
-		if (edited[componentName] && Array.isArray(edited[componentName])) {
-			const arrayComponent = edited[componentName] as any[];
-			key = arrayComponent[index].key;
-			arrayComponent.splice(index, 1);
-			if (componentName === "DescriptionText" && !disableAutoSync) {
-				if (edited.Reactable && edited.Reactable.description) {
-					edited.Reactable.description.splice(index, 1);
-				}
-			}
-			
-			if (arrayComponent.length === 0) {
-				edited[componentName] = undefined;
-			} else {
-				if (isMultiKey) {
-					if (
-						get().changeSet.some((x) => x.inst === inst && x.key === key && componentName in x.object)
-					) {
-						console.log(
-							get().changeSet.find((x) => x.inst === inst && x.key === key && componentName in x.object),
-						);
-						set({
-							changeSet: get().changeSet.filter(
-								(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst || x.key !== key,
-							),
-						});
-					}
-				} else {
-					if (
-						get().changeSet.some((x) => x.inst === inst && componentName in x.object)
-					) {
-						console.log(
-							get().changeSet.find((x) => x.inst === inst && componentName in x.object),
-						);
-						set({
-							changeSet: get().changeSet.filter(
-								(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst,
-							),
-						});
-					}
-				}
-				// check synced item, do we really need to create an update action
-				const syncedEntity = getEntity(inst, true);
-				if (syncedEntity?.[componentName] !== undefined) {
-					createAction("delete", inst, { [componentName]: deleted }, key);
-				}
-				syncItem(edited);
-				return edited as EntityCollection;
-			}
+	].includes(componentName as string);
+
+	if (isMultiKey && Array.isArray(edited[componentName])) {
+		// --- multi-component array deletion ---
+		if (index === undefined || !edited[componentName]?.[index]) {
+			console.warn(`No item found at index ${index} for ${componentName}`);
+			return edited;
 		}
 
-	}
-	edited[componentName] = undefined;
-	if (
-		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
-	) {
+		deleted = edited[componentName][index];
+		key = deleted.key;
+		edited[componentName].splice(index, 1);
+
+		if (componentName === "DescriptionText" && edited.Reactable?.description && !disableAutoSync) {
+			edited.Reactable.description.splice(index, 1);
+		}
+
+		if (edited[componentName].length === 0) {
+			edited[componentName] = undefined;
+		}
+
+		// remove from changeSet
 		set({
 			changeSet: get().changeSet.filter(
-				(x) => x.inst !== inst || (x.inst === inst && !(componentName in x.object)),
+				(x) => !(x.inst === inst && x.key === key && componentName in x.object)
+			),
+		});
+
+	} else {
+		// --- single component deletion ---
+		deleted = edited[componentName];
+		edited[componentName] = undefined;
+
+		// remove from changeSet
+		set({
+			changeSet: get().changeSet.filter(
+				(x) => !(x.inst === inst && componentName in x.object)
 			),
 		});
 	}
-	
-	// check synced item, do we really need to delete anything
+
+	// create delete action only if component existed in synced entity
 	const syncedEntity = getEntity(inst, true);
-	if (syncedEntity?.[componentName] !== undefined) {
+	if (syncedEntity?.[componentName] !== undefined && deleted !== undefined) {
 		createAction("delete", inst, { [componentName]: deleted }, key);
 	}
+
+	// sync edited entity
 	syncItem(edited);
-	return edited as EntityCollection;
+	return edited;
 };
 
 const addToParent = (child: EntityCollection, parent: EntityCollection) => {
@@ -341,38 +312,38 @@ const removeParent = (child: EntityCollection) => {
 		const parentId = child.ChildToParent.parent;
 
 		// Store the parent reference before modifying the child
-  const parent = getEntity(parentId);
+		const parent = getEntity(parentId);
 
 		// Remove the child's parent reference
-  updateComponent(childId, "ChildToParent", undefined);
+		updateComponent(childId, "ChildToParent", undefined);
 
 		if (parent && "Entity" in parent && parent.Entity.inst === parentId) {
 			if ("ParentToChildren" in parent && parent.ParentToChildren !== undefined) {
-      const newChildren = parent.ParentToChildren.children.filter(
-        (c) => c !== childId,
-      );
+				const newChildren = parent.ParentToChildren.children.filter(
+					(c) => c !== childId,
+				);
 
-      if (newChildren.length === 0) {
-        updateComponent(parentId, "ParentToChildren", undefined);
-      } else {
+				if (newChildren.length === 0) {
+					updateComponent(parentId, "ParentToChildren", undefined);
+				} else {
 					// Update with the new children list
 					const updatedParentComponent = {
-          ...parent.ParentToChildren,
-          children: newChildren,
+						...parent.ParentToChildren,
+						children: newChildren,
 					};
 					updateComponent(parentId, "ParentToChildren", updatedParentComponent);
-      }
+				}
 				EditorData().set({
 					isDirty: Date.now(),
 				});
-      return;
-    }
-  }
+				return;
+			}
+		}
 
 		EditorData().set({
 			isDirty: Date.now(),
 		});
-  throw new Error("Parent missing or invalid");
+		throw new Error("Parent missing or invalid");
 	}
 };
 
@@ -495,8 +466,8 @@ const syncItem = (
 		if (verbose)
 			console.log(
 				`[Editor] Sync${name ? `: ${name}` : ""}: ${
-					// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
-					Object.keys(obj as any)
+				// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
+				Object.keys(obj as any)
 				}`,
 				obj,
 				get(),
@@ -593,8 +564,8 @@ const newEntity = async () => {
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 
-	
-	
+
+
 	return newEntity;
 };
 
@@ -636,6 +607,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	selectEntity(playerEntity.Entity.inst);
 	const descriptionText = createDefaultDescriptionText(playerEntity.Entity);
 	descriptionText.DescriptionText.text = playerEntity.Entity.name;
+	descriptionText.DescriptionText.key = 0;
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	const reactable = createDefaultReactableComponent(playerEntity.Entity);
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
@@ -679,7 +651,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
 		const queryProperties = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
-		
+
 			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-PropertyRegistry"]);
 			return query;
 		};
@@ -693,7 +665,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
 				properties_array = registry?.properties?.map((x) => x.name);
 				// console.log("properties_array", properties_array);
 			}
-		});		
+		});
 	} catch (error) {
 		console.error("Error fetching properties from Torii:", error);
 		throw error;
@@ -705,7 +677,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
  * This handles fetching the spawn point from the first entity with an area component with is_spawn_point set to true
  * @returns The spawn point entity inst
  */
-export const getSpawnPoint = async(): Promise<BigNumberish> => {
+export const getSpawnPoint = async (): Promise<BigNumberish> => {
 	let areaInst: BigNumberish;
 	try {
 		const { sdk } = await InitDojo();
@@ -739,7 +711,7 @@ export const getSpawnPoint = async(): Promise<BigNumberish> => {
  * @returns True if the player exists, false otherwise
  */
 export const getPlayer = async (account: string): Promise<boolean> => {
-	let playerFound = false;	
+	let playerFound = false;
 	try {
 		const { sdk } = await InitDojo();
 		const queryPlayer = () => {

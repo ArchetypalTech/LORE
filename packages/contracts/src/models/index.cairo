@@ -151,6 +151,8 @@ pub struct InventoryItem {
     pub can_be_picked_up: bool,
     /// If the inventory item can go in a container
     pub can_go_in_container: bool,
+    /// The quantity of the inventory item
+    pub quantity: u32,
     /// Array of action maps for the inventory item
     pub action_map: Array<ActionMapInventoryItem>,
     /// If the inventory item has already been used

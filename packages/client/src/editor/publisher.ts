@@ -90,7 +90,7 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
-	if("Player" in collection && collection.Player !== undefined) {
+	if ("Player" in collection && collection.Player !== undefined) {
 		await publishPlayer(collection.Player);
 	}
 	if ("Reactable" in collection && collection.Reactable !== undefined) {
@@ -141,12 +141,12 @@ const publishEntity = async (entity: Entity) => {
 		byteArray.byteArrayFromString(entity.name),
 		entity.alt_names.length > 0
 			? entity.alt_names
-					.filter((x) => x.length > 0)
-					.map((x) => byteArray.byteArrayFromString(x))
+				.filter((x) => x.length > 0)
+				.map((x) => byteArray.byteArrayFromString(x))
 			: 0,
-			entity.actions_keys.length > 0
-				? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
-				: 0,
+		entity.actions_keys.length > 0
+			? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
+			: 0,
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -172,34 +172,34 @@ const publishReactable = async (reactable: Reactable) => {
 		reactable.description.map((x) => num.toBigInt(x.toString())),
 		reactable.action_map.length > 0
 			? reactable.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt(x.inst ?? "0"),
-					toEnumIndex(x.action_fn, reactableActions),
-					num.toBigInt(x.entrypoints?.[0] ?? "0"),
-					num.toBigInt(x.entrypoints?.[1] ?? "0"),
-				])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt(x.inst ?? "0"),
+				toEnumIndex(x.action_fn, reactableActions),
+				num.toBigInt(x.entrypoints?.[0] ?? "0"),
+				num.toBigInt(x.entrypoints?.[1] ?? "0"),
+			])
 			: 0,
 		reactable.already_shown,
 		byteArray.byteArrayFromString(reactable.new_entry.toString() ?? ""),
 	];
-	
+
 	await dispatchDesignerCall("create_reactable", [reactableData]);
 };
 
 const publishDescriptionText = async (
-  descriptions: DescriptionText | DescriptionText[]
+	descriptions: DescriptionText | DescriptionText[]
 ) => {
-  const array = Array.isArray(descriptions) ? descriptions : [descriptions];
+	const array = Array.isArray(descriptions) ? descriptions : [descriptions];
 
-  for (const description of array) {
-    const preparedDescription = [
-      num.toBigInt(description.inst.toString()),
-      num.toBigInt(description.key.toString()),
-      byteArray.byteArrayFromString(description.text),
-    ];
+	for (const description of array) {
+		const preparedDescription = [
+			num.toBigInt(description.inst.toString()),
+			num.toBigInt(description.key.toString()),
+			byteArray.byteArrayFromString(description.text),
+		];
 
-    await dispatchDesignerCall("create_description_text", [preparedDescription]);
-  }
+		await dispatchDesignerCall("create_description_text", [preparedDescription]);
+	}
 };
 
 const publishArea = async (area: Area) => {
@@ -220,10 +220,10 @@ const publishExit = async (exit: Exit) => {
 		toEnumIndex(exit.direction_type, direction),
 		exit.action_map.length > 0
 			? exit.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt((x.inst ?? 0).toString()),
-					toEnumIndex(x.action_fn, exitActions),
-				])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt((x.inst ?? 0).toString()),
+				toEnumIndex(x.action_fn, exitActions),
+			])
 			: 0,
 	];
 	await dispatchDesignerCall("create_exit", [exitData]);
@@ -236,12 +236,13 @@ const publishInventoryItem = async (inventoryItem: InventoryItem) => {
 		inventoryItem.owner_id ? num.toBigInt(inventoryItem.owner_id.toString()) : num.toBigInt("0"),
 		inventoryItem.can_be_picked_up,
 		inventoryItem.can_go_in_container,
+		num.toBigInt(inventoryItem.quantity.toString() ?? 0),
 		inventoryItem.action_map.length > 0
 			? inventoryItem.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt((x.inst ?? "0").toString()),
-					toEnumIndex(x.action_fn, inventoryItemActions),
-			  ])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt((x.inst ?? "0").toString()),
+				toEnumIndex(x.action_fn, inventoryItemActions),
+			])
 			: 0,
 		inventoryItem.already_used,
 		inventoryItem.multiple_use,
@@ -259,10 +260,10 @@ const publishContainer = async (container: Container) => {
 		num.toBigInt(container.num_slots.toString() ?? 0),
 		container.action_map.length > 0
 			? container.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt((x.inst ?? 0).toString()),
-					toEnumIndex(x.action_fn, containerActions),
-			  ])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt((x.inst ?? 0).toString()),
+				toEnumIndex(x.action_fn, containerActions),
+			])
 			: 0,
 	];
 	await dispatchDesignerCall("create_container", [containerData]);
@@ -331,7 +332,7 @@ const publishEffect = async (
 
 const publishAction = async (
 	actions: Action | Action[]
-) => {	
+) => {
 	const array = Array.isArray(actions) ? actions : [actions];
 
 	for (const action of array) {
@@ -357,13 +358,13 @@ const publishAction = async (
 			action.executed ?? false,
 			action.failing_response.length > 0
 				? action.failing_response
-						.filter((x) => x.length > 0)
-						.map((x) => byteArray.byteArrayFromString(x))
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
 				: 0,
 			action.success_response.length > 0
 				? action.success_response
-						.filter((x) => x.length > 0)
-						.map((x) => byteArray.byteArrayFromString(x))
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
 				: 0,
 		];
 		await dispatchDesignerCall("create_action", [preparedAction]);
@@ -407,11 +408,11 @@ const deleteCollection = async (model: EntityCollection) => {
 		]);
 	}
 	if ("DescriptionText" in model && model.DescriptionText !== undefined) {
-    const array = Array.isArray(model.DescriptionText) ? model.DescriptionText : [model.DescriptionText];
-    await dispatchDesignerCall("delete_description_text", [
-      array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-    ]);
-  }
+		const array = Array.isArray(model.DescriptionText) ? model.DescriptionText : [model.DescriptionText];
+		await dispatchDesignerCall("delete_description_text", [
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
+		]);
+	}
 	if ("Area" in model && model.Area !== undefined) {
 		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Area!.inst)]);
 	}
@@ -429,29 +430,29 @@ const deleteCollection = async (model: EntityCollection) => {
 		]);
 	}
 	if ("Trigger" in model && model.Trigger !== undefined) {
-    const array = Array.isArray(model.Trigger) ? model.Trigger : [model.Trigger];
-    await dispatchDesignerCall("delete_trigger", [
-      array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-    ]);
-  }
-  if ("Condition" in model && model.Condition !== undefined) {
-    const array = Array.isArray(model.Condition) ? model.Condition : [model.Condition];
-    await dispatchDesignerCall("delete_condition", [
-      array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-    ]);
-  }
-  if ("Effect" in model && model.Effect !== undefined) {
-    const array = Array.isArray(model.Effect) ? model.Effect : [model.Effect];
-    await dispatchDesignerCall("delete_effect", [
-      array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-    ]);
-  }
-  if ("Action" in model && model.Action !== undefined) {
-    const array = Array.isArray(model.Action) ? model.Action : [model.Action];
-    await dispatchDesignerCall("delete_action", [
-      array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-    ]);
-  }
+		const array = Array.isArray(model.Trigger) ? model.Trigger : [model.Trigger];
+		await dispatchDesignerCall("delete_trigger", [
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
+		]);
+	}
+	if ("Condition" in model && model.Condition !== undefined) {
+		const array = Array.isArray(model.Condition) ? model.Condition : [model.Condition];
+		await dispatchDesignerCall("delete_condition", [
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
+		]);
+	}
+	if ("Effect" in model && model.Effect !== undefined) {
+		const array = Array.isArray(model.Effect) ? model.Effect : [model.Effect];
+		await dispatchDesignerCall("delete_effect", [
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
+		]);
+	}
+	if ("Action" in model && model.Action !== undefined) {
+		const array = Array.isArray(model.Action) ? model.Action : [model.Action];
+		await dispatchDesignerCall("delete_action", [
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
+		]);
+	}
 	if ("ChildToParent" in model && model.ChildToParent !== undefined) {
 		await dispatchDesignerCall("delete_child", [
 			num.toBigInt(model.ChildToParent!.inst),

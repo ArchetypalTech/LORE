@@ -16,31 +16,35 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 	componentObject,
 	...props
 }) => {
-  const { handleInputChange, Inspector } = useInspector<InventoryItem>({
-    componentObject,
-    ...props,
-    inputHandlers: {
-      is_inventory_item: (e, updatedObject) => {
-        const event = e as ChangeEvent<HTMLInputElement>;
-        updatedObject.is_inventory_item = event.target.checked;
-      },
-      can_be_picked_up: (e, updatedObject) => {
-        updatedObject.can_be_picked_up = e.target.checked;
-      },
-      can_go_in_container: (e, updatedObject) => {
-        updatedObject.can_go_in_container = e.target.checked;
-      },
-      action_map: (e, updatedObject) => {
-        const newActionMap = e.target.value as unknown as ActionMapInventoryItem[];
-        updatedObject.action_map = newActionMap;
-      },
+	const { handleInputChange, Inspector } = useInspector<InventoryItem>({
+		componentObject,
+		...props,
+		inputHandlers: {
+			is_inventory_item: (e, updatedObject) => {
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.is_inventory_item = event.target.checked;
+			},
+			can_be_picked_up: (e, updatedObject) => {
+				updatedObject.can_be_picked_up = e.target.checked;
+			},
+			can_go_in_container: (e, updatedObject) => {
+				updatedObject.can_go_in_container = e.target.checked;
+			},
+			quantity: (e, updatedObject) => {
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.quantity = event.target.value;
+			},
+			action_map: (e, updatedObject) => {
+				const newActionMap = e.target.value as unknown as ActionMapInventoryItem[];
+				updatedObject.action_map = newActionMap;
+			},
 			alread_used: (e, updatedObject) => {
 				updatedObject.already_used = e.target.checked;
 			},
 			multiple_use: (e, updatedObject) => {
 				updatedObject.multiple_use = e.target.checked;
 			},
-    },
+		},
 	});
 
 	if (!componentObject) return <div>InventoryItem not found</div>;
@@ -60,6 +64,11 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 			<Toggle
 				id="can_go_in_container"
 				value={componentObject.can_go_in_container}
+				onChange={handleInputChange(undefined)}
+			/>
+			<Input
+				id="quantity"
+				value={componentObject.quantity.toString()}
 				onChange={handleInputChange(undefined)}
 			/>
 			<Input

@@ -107,6 +107,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     access_flags: PropertyAccess::ReadWrite,
                 },
                 ComponentProperty {
+                    name: "quantity",
+                    property_type: PropertyType::U32,
+                    access_flags: PropertyAccess::ReadWrite,
+                },
+                ComponentProperty {
                     name: "already_used",
                     property_type: PropertyType::Boolean,
                     access_flags: PropertyAccess::ReadWrite,
@@ -140,7 +145,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 },
                 ComponentProperty {
                     name: "num_slots",
-                    property_type: PropertyType::U8,
+                    property_type: PropertyType::U32,
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
@@ -263,6 +268,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
         let can_go_in_container: ByteArray = "can_go_in_container";
+        let quantity: ByteArray = "quantity";
         let already_used: ByteArray = "already_used";
         let multiple_use: ByteArray = "multiple_use";
         let mut value: Option<Array<felt252>> = Option::None;
@@ -277,6 +283,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     arr.append(component.can_be_picked_up.into());
                 } else if name == @can_go_in_container {
                     arr.append(component.can_go_in_container.into());
+                } else if name == @quantity {
+                    arr.append(component.quantity.into());
                 } else if name == @already_used {
                     arr.append(component.already_used.into());
                 } else if name == @multiple_use {
@@ -517,6 +525,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
         let can_go_in_container: ByteArray = "can_go_in_container";
+        let quantity: ByteArray = "quantity";
         let already_used: ByteArray = "already_used";
         let multiple_use: ByteArray = "multiple_use";
         let mut success: bool = false;
@@ -540,6 +549,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             let (value, _index) = new_value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_go_in_container = new_var_value;
+                            success = true;
+                        } else if name == @quantity {
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(value);
+                            component.quantity = new_var_value;
                             success = true;
                         } else if name == @already_used {
                             let (value, _index) = new_value[0].clone();

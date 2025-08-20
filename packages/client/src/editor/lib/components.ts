@@ -154,9 +154,10 @@ export const createDefaultInventoryItemComponent = (
 		...schema.lore.InventoryItem,
 		inst: entity.inst,
 		is_inventory_item: true,
-		owner_id: 0,
+		owner_id: entity.inst,
 		can_be_picked_up: true,
 		can_go_in_container: true,
+		quantity: 1,
 		action_map: [
 			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
 			{ action: "drop", inst: 0, action_fn: "DropItem" },

@@ -118,6 +118,7 @@ export interface InventoryItem {
 	owner_id: BigNumberish;
 	can_be_picked_up: boolean;
 	can_go_in_container: boolean;
+	quantity: BigNumberish;
 	action_map: Array<ActionMapInventoryItem>;
 	already_used: boolean;
 	multiple_use: boolean;
@@ -546,6 +547,7 @@ export const schema: SchemaType = {
 			owner_id: 0,
 			can_be_picked_up: false,
 			can_go_in_container: false,
+			quantity: 0,
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					UseItem: "",
 				PickupItem: undefined,

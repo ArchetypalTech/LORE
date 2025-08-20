@@ -142,9 +142,9 @@ export const Editor = () => {
 				id="editor-root"
 				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"
 			>
-				<div className="relative mx-auto h-full max-w-[1200px]">
+				<div className="relative mx-auto h-full max-w-screen">
 					<EditorHeader />
-					<div className="relative m-0 mx-auto p-0 lg:container">
+					<div className="relative m-0 mx-auto p-0 ">
 						{editorContents}
 					</div>
 				</div>
