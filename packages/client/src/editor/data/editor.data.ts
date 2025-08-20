@@ -587,6 +587,7 @@ const newEntity = async () => {
 	selectEntity(newEntity.Entity.inst);
 	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
 	descriptionText.DescriptionText.text = newEntity.Entity.name;
+	descriptionText.DescriptionText.key = 0;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	const reactable = createDefaultReactableComponent(newEntity.Entity);
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];

@@ -6,23 +6,22 @@ import {
 import {
   Input,
   CairoEnumSelect,
-  formatKeyAsDecimal,
   Select,
 } from "../FormComponents";
 import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import { syncPropertyRegistry } from "../../data/editor.data"; 
+import { syncPropertyRegistry } from "../../data/editor.data";
 import { BigNumberish } from "starknet";
 import { CollapsibleComponent } from "../CollapsibleComponent";
 
 // Individual Effect Item Component
-const EffectItem = ({ 
-  effectObj, 
-  idx, 
-  handleInputChange, 
-  Inspector 
+const EffectItem = ({
+  effectObj,
+  idx,
+  handleInputChange,
+  Inspector
 }: {
   effectObj: Effect;
   idx: number;
@@ -54,23 +53,12 @@ const EffectItem = ({
   }));
 
   return (
-    <CollapsibleComponent 
-      key={`${effectObj.inst}-${effectObj.key}`} 
-      title={`Effect ${formatKeyAsDecimal(effectObj.key)}`}
+    <CollapsibleComponent
+      key={`${effectObj.inst}-${effectObj.key}`}
+      // title={`Effect ${formatKeyAsDecimal(effectObj.key)}`}
+      title={`Effect: ${effectObj?.name}`}
     >
       <Inspector index={idx}>
-        <Input 
-          id="inst" 
-          value={effectObj.inst.toString()} 
-          onChange={handleInputChange(idx)} 
-          readOnly={true} 
-        />
-        <Input 
-          id="key" 
-          value={formatKeyAsDecimal(effectObj.key)} 
-          onChange={handleInputChange(idx)} 
-          readOnly={true} 
-        />
         <Input
           id="name"
           value={effectObj.name}

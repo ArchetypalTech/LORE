@@ -70,10 +70,10 @@ export const MultiTextStringArea = ({
         name: id,
         value: arrays,
       },
-      preventDefault: () => {},
-      stopPropagation: () => {},
+      preventDefault: () => { },
+      stopPropagation: () => { },
       isPropagationStopped: () => false,
-      persist: () => {},
+      persist: () => { },
       nativeEvent: new Event("input"),
       type: "change",
     } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
@@ -81,21 +81,21 @@ export const MultiTextStringArea = ({
   };
 
   const handleChange = (i: number, col: number, val: string) => {
-		let newValue: [string, string][] | string[];
+    let newValue: [string, string][] | string[];
 
-		if (columns === 2) {
-			newValue = [...(value as [string, string][])];
-			const oldRow = newValue[i] ?? ["", ""];
-			const row: [string, string] = [oldRow[0], oldRow[1]];
-			row[col] = val;
-			newValue[i] = row;
-		} else {
-			newValue = [...(value as string[])];
-			newValue[i] = val;
-		}
+    if (columns === 2) {
+      newValue = [...(value as [string, string][])];
+      const oldRow = newValue[i] ?? ["", ""];
+      const row: [string, string] = [oldRow[0], oldRow[1]];
+      row[col] = val;
+      newValue[i] = row;
+    } else {
+      newValue = [...(value as string[])];
+      newValue[i] = val;
+    }
 
-		handleNewValue(newValue);
-	};
+    handleNewValue(newValue);
+  };
 
 
   const handleAddArray = () => {
@@ -120,6 +120,7 @@ export const MultiTextStringArea = ({
         <div key={i} className="relative flex items-center gap-2">
           {columns === 2 ? (
             <>
+              <label htmlFor={`${i}-0`}>Value</label>
               <Textarea
                 id={`${i}-0`}
                 defaultValue={(v as [string, string])[0]}
@@ -128,6 +129,7 @@ export const MultiTextStringArea = ({
                 readOnly={readOnly}
                 className={cn("w-1/2 bg-white", className)}
               />
+              <label htmlFor={`${i}-1`}>Idx</label>
               <Input
                 id={`${i}-1`}
                 type="number"

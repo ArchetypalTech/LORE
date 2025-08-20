@@ -7,7 +7,6 @@ import {
 import {
   Input,
   CairoEnumSelect,
-  formatKeyAsDecimal,
   Select,
   encodeToFelt,
   decodeFromFelt,
@@ -17,14 +16,14 @@ import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import { syncPropertyRegistry } from "../../data/editor.data";
-import { CollapsibleComponent } from "../CollapsibleComponent"; 
+import { CollapsibleComponent } from "../CollapsibleComponent";
 
 // Individual Condition Item Component
-const ConditionItem = ({ 
-  conditionObj, 
-  idx, 
-  handleInputChange, 
-  Inspector 
+const ConditionItem = ({
+  conditionObj,
+  idx,
+  handleInputChange,
+  Inspector
 }: {
   conditionObj: Condition;
   idx: number;
@@ -60,11 +59,9 @@ const ConditionItem = ({
   return (
     <CollapsibleComponent
       key={`${conditionObj.inst}-${conditionObj.key}`}
-      title={`Condition ${formatKeyAsDecimal(conditionObj.key.toString())}`}
+      title={`Condition: ${conditionObj?.name}`}
     >
       <Inspector key={`${conditionObj.inst}-${conditionObj.key}`} index={idx}>
-        <Input id="inst" value={conditionObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />
-        <Input id="key" value={formatKeyAsDecimal(conditionObj.key)} onChange={handleInputChange(idx)} readOnly={true} />
         <Input
           id="name"
           value={conditionObj.name}
@@ -140,8 +137,8 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
 
   // Ensure componentObject is always an array
   const componentsArray = Array.isArray(componentObject)
-  ? componentObject
-  : [componentObject];
+    ? componentObject
+    : [componentObject];
 
   return (
     <>

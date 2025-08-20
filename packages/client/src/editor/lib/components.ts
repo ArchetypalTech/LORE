@@ -40,8 +40,8 @@ export const createDefaultEntity = (): WithStringEnums<
 
 export const createPlayerEntity = (
 	spawn_location?: BigNumberish
-  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
-	const playerAddress =  getPlayerAddress();
+): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
+	const playerAddress = getPlayerAddress();
 	const playerName = getPlayerName();
 	return {
 		// Adding the Entity as we need to set the inst to be the address
@@ -67,7 +67,7 @@ export const createPlayerComponent = (
 	_entity: Entity,
 	_reactable?: Reactable,
 	address?: string
-  ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
+): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
 	const playerAddress = address || getPlayerAddress();
 	return {
 		Player: {
@@ -104,14 +104,14 @@ export const createDefaultReactableComponent = (
 		is_visible: true,
 		description: descriptions?.map(x => x.key) || [],
 		action_map: [
-			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0 ,0] },
+			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0, 0] },
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 0] },
 		],
 		already_shown: false,
 		new_entry: "",
 	},
 
-	
+
 });
 
 export const createDefaultDescriptionText = (
@@ -195,8 +195,8 @@ export const createDefaultTrigger = (
 		...schema.lore.Trigger,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
-		name: "",
-		trigger_type:"OnEnter",
+		name: createRandomName(),
+		trigger_type: "OnEnter",
 		is_enabled: true,
 		is_once: false,
 		was_triggered: false,
@@ -210,7 +210,7 @@ export const createDefaultCondition = (
 		...schema.lore.Condition,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
-		name: "",
+		name: createRandomName(),
 		target: 0,
 		component: "Area",
 		property: "",
@@ -226,7 +226,7 @@ export const createDefaultEffectComponent = (
 		...schema.lore.Effect,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
-		name: "",
+		name: createRandomName(),
 		target: 0,
 		component: "Reactable",
 		property: "already_shown",
@@ -241,7 +241,7 @@ export const createDefaultActionComponent = (
 		...schema.lore.Action,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
-		name: "",
+		name: createRandomName(),
 		description: "",
 		is_enabled: true,
 		trigger: [],
@@ -302,7 +302,7 @@ export const componentData: {
 	},
 	Reactable: {
 		order: 3,
-		inspector: ReactableInspector, 
+		inspector: ReactableInspector,
 		icon: "🔍",
 		creator: createDefaultReactableComponent,
 	},

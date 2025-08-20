@@ -106,7 +106,10 @@ export const ActionInspector: ComponentInspector<Action> = ({
     <>
       {componentsArray.map((componentObj, idx) => {
         return (
-          <CollapsibleComponent key={`${componentObj.inst}-${componentObj.key}`} title={`Action ${formatKeyAsDecimal(componentObj.key)}`}>
+          <CollapsibleComponent
+          key={`${componentObj.inst}-${componentObj.key}`}
+          title={`Action: ${componentObj?.name}`}
+          >
             <Inspector index={idx}>
               <Input
                 id="inst"
