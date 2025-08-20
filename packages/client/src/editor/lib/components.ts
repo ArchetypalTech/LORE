@@ -197,7 +197,6 @@ export const createDefaultTrigger = (
 		key: generateNumericUniqueId(),
 		name: "",
 		trigger_type:"OnEnter",
-		parameters: [{ name: schema.lore.Trigger.name, value: schema.lore.Trigger.inst }],
 		is_enabled: true,
 		is_once: false,
 		was_triggered: false,

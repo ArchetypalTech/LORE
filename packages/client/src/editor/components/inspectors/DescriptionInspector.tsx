@@ -39,7 +39,10 @@ export const DescriptionTextInspector: ComponentInspector<DescriptionText> = ({
     <>
       {componentsArray.map((componentObj, idx) => {
         return (
-          <CollapsibleComponent key={`${componentObj.inst}-${componentObj.key}`} title={`Description ${componentObj.key}`}>
+          <CollapsibleComponent 
+          key={`${componentObj.inst}-${componentObj.key}`} 
+          title={`Description ${componentObj.key}`}
+          >
             <Inspector index={idx}>
               <Input
                 id="description_inst"

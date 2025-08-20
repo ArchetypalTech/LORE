@@ -55,7 +55,7 @@ export const TriggerInspector: ComponentInspector<Trigger> = ({
 			{componentsArray.map((triggerObj, idx) => (
 				<CollapsibleComponent
 					key={`${triggerObj.inst}-${triggerObj.key}`}
-					title={`Trigger ${triggerObj.key}`}
+					title={`Trigger ${formatKeyAsDecimal(triggerObj.key)}`}
 				>
 					<Inspector key={`${triggerObj.inst}-${triggerObj.key}`} index={idx}>
 						<Input id="inst" value={triggerObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />

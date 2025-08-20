@@ -60,7 +60,7 @@ const ConditionItem = ({
   return (
     <CollapsibleComponent
       key={`${conditionObj.inst}-${conditionObj.key}`}
-      title={`Condition ${conditionObj.key}`}
+      title={`Condition ${formatKeyAsDecimal(conditionObj.key.toString())}`}
     >
       <Inspector key={`${conditionObj.inst}-${conditionObj.key}`} index={idx}>
         <Input id="inst" value={conditionObj.inst.toString()} onChange={handleInputChange(idx)} readOnly={true} />

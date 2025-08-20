@@ -135,29 +135,31 @@ export const updateComponent = <T extends keyof EntityCollection>(
 		"DescriptionText",
 	].includes(componentName)
 
-	if (isMultiKey) {
-		if (!edited[componentName]) {
-			edited[componentName] = [];
-		}
-		let index = edited[componentName].findIndex(
-			(i) => i.inst === component.inst && i.key === component.key
-		);
-		if (index > -1) {
-			edited[componentName][index] = component;
-		} else {
-			edited[componentName].push(component);
-			if (componentName === "DescriptionText" && !disableAutoSync) {
-				if (edited.Reactable && edited.Reactable.description) {
-					const newKey = (component as any).key;
-					if (!edited.Reactable.description.includes(newKey)) {
-						edited.Reactable.description.push(newKey);
-					}
-				}
-			}
-		}
-	} else {
-		edited[componentName] = component;
-	}
+	if (isMultiKey && !edited[componentName]) {
+        edited[componentName] = [];
+    }
+
+    if (edited[componentName] && Array.isArray(edited[componentName])) {
+        let index = edited[componentName].findIndex(
+            (i) => i.inst === component.inst && i.key === component.key
+        );
+        if (index > -1) {
+            edited[componentName][index] = component;
+        } else {
+            edited[componentName].push(component);
+            if (componentName === "DescriptionText" && !disableAutoSync) {
+                if (edited.Reactable && edited.Reactable.description) {
+                    const newKey = (component as any).key;
+                    if (!edited.Reactable.description.includes(newKey)) {
+                        edited.Reactable.description.push(newKey);
+                    }
+                }
+            }
+        }
+    } else {
+        edited[componentName] = component;
+    }
+	
 	if (isMultiKey) {
 		if (
 			get().changeSet.some((x) => x.inst === inst && x.key === component.key && componentName in x.object)
@@ -819,21 +821,54 @@ const syncEntities = async () => {
 						// For Trigger components, find parent entity and merge
 						const parentEntity = getEntity(entity.Trigger.inst, true);
 						if (parentEntity && entity.Trigger) {
-							parentEntity.Trigger = entity.Trigger as Trigger;
+							if (!parentEntity.Trigger) {
+								parentEntity.Trigger = [];
+							}
+							// Check if this trigger already exists (by key) and update or add
+							const existingIndex = parentEntity.Trigger.findIndex(
+								(t: any) => t.key === entity.Trigger!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Trigger[existingIndex] = entity.Trigger as Trigger;
+							} else {
+								parentEntity.Trigger.push(entity.Trigger as Trigger);
+							}
 							setItem(parentEntity as AnyObject, entity.Trigger.inst, true);
 						}
 					} else if (entity.Effect?.inst) {
 						// For Effect components, find parent entity and merge
 						const parentEntity = getEntity(entity.Effect.inst, true);
 						if (parentEntity && entity.Effect) {
-							parentEntity.Effect = entity.Effect as Effect;
+							if (!parentEntity.Effect) {
+								parentEntity.Effect = [];
+							}
+							// Check if this effect already exists (by key) and update or add
+							const existingIndex = parentEntity.Effect.findIndex(
+								(e: any) => e.key === entity.Effect!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Effect[existingIndex] = entity.Effect as Effect;
+							} else {
+								parentEntity.Effect.push(entity.Effect as Effect);
+							}
 							setItem(parentEntity as AnyObject, entity.Effect.inst, true);
 						}
 					} else if (entity.Condition?.inst) {
 						// For Condition components, find parent entity and merge
 						const parentEntity = getEntity(entity.Condition.inst, true);
 						if (parentEntity && entity.Condition) {
-							parentEntity.Condition = entity.Condition as Condition;
+							if (!parentEntity.Condition) {
+								parentEntity.Condition = [];
+							}
+							// Check if this condition already exists (by key) and update or add
+							const existingIndex = parentEntity.Condition.findIndex(
+								(c: any) => c.key === entity.Condition!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Condition[existingIndex] = entity.Condition as Condition;
+							} else {
+								parentEntity.Condition.push(entity.Condition as Condition);
+							}
 							setItem(parentEntity as AnyObject, entity.Condition.inst, true);
 						}
 					} else if (entity.Exit?.inst) {
@@ -847,7 +882,18 @@ const syncEntities = async () => {
 						// For Action components, find parent entity and merge
 						const parentEntity = getEntity(entity.Action.inst, true);
 						if (parentEntity && entity.Action) {
-							parentEntity.Action = entity.Action as Action;
+							if (!parentEntity.Action) {
+								parentEntity.Action = [];
+							}
+							// Check if this action already exists (by key) and update or add
+							const existingIndex = parentEntity.Action.findIndex(
+								(a: any) => a.key === entity.Action!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Action[existingIndex] = entity.Action as Action;
+							} else {
+								parentEntity.Action.push(entity.Action as Action);
+							}
 							setItem(parentEntity as AnyObject, entity.Action.inst, true);
 						}
 					}
@@ -860,9 +906,17 @@ const syncEntities = async () => {
 								parentEntity.DescriptionText = [];
 							}
 
-							parentEntity.DescriptionText.push(
-								entity.DescriptionText as DescriptionText
+							// Check if this description already exists (by key) and update or add
+							const existingIndex = parentEntity.DescriptionText.findIndex(
+								(d: any) => d.key === entity.DescriptionText!.key
 							);
+							if (existingIndex > -1) {
+								parentEntity.DescriptionText[existingIndex] = entity.DescriptionText as DescriptionText;
+							} else {
+								parentEntity.DescriptionText.push(
+									entity.DescriptionText as DescriptionText
+								);
+							}
 							setItem(
 								parentEntity as AnyObject,
 								entity.DescriptionText.inst,

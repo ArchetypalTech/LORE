@@ -56,7 +56,7 @@ const EffectItem = ({
   return (
     <CollapsibleComponent 
       key={`${effectObj.inst}-${effectObj.key}`} 
-      title={`Effect ${effectObj.key}`}
+      title={`Effect ${formatKeyAsDecimal(effectObj.key)}`}
     >
       <Inspector index={idx}>
         <Input 
