@@ -5,7 +5,7 @@ import { Select } from "./FormComponents";
 import { Button } from "./ui/Button";
 import type { SelectInputRef } from "./ui/Select";
 
-const ALWAYS_INCLUDE = ["Trigger", "Effect", "Condition", "Action" ] as const;
+const ALWAYS_INCLUDE = ["DescriptionText", "Trigger", "Effect", "Condition", "Action" ] as const;
 
 export const AddComponents = ({
 	editedEntity,
@@ -48,7 +48,18 @@ export const AddComponents = ({
 		if (!component.creator) {
 			throw new Error(`Component has no creator: ${key}`);
 		}
-		const newComponent = component.creator(editedEntity.Entity!);
+
+		let newComponent;
+		if (key === "DescriptionText" && editedEntity.DescriptionText) {
+			console.log("DescriptionText", editedEntity.DescriptionText);
+			newComponent = component.creator(editedEntity.Entity!, editedEntity.DescriptionText);
+		} else if (key === "Reactable" && editedEntity.DescriptionText) {
+			console.log("Reactable", editedEntity.DescriptionText);
+			newComponent = component.creator(editedEntity.Entity!, editedEntity.DescriptionText);
+		} else {
+			newComponent = component.creator(editedEntity.Entity!);
+		}
+		
 		console.log(newComponent);
 		handleEdit(
 			key,

@@ -2,7 +2,7 @@ import { ChangeEvent, useMemo } from "react";
 import { Button } from "./ui/Button";
 import { DeleteButton, Select } from "./FormComponents";
 import { BigNumberish } from "starknet";
-import { formatKeyAsDecimal } from "./FormComponents";
+import type { Effect } from "@/lib/dojo_bindings/typescript/models.gen";
 
 interface EffectSelectorProps {
   id: string;
@@ -49,7 +49,7 @@ export const EffectSelector = ({
 
   const entityOptions = useMemo(() => {
     return Array.from(dataPool.entries())
-      .filter(([_, val]) => val.Entity?.name && val.Effect?.key)
+      .filter(([_, val]) => val.Entity?.name && val.Effect as Effect[])
       .map(([address, val]) => ({
         label: val.Entity.name,
         value: address,
@@ -59,12 +59,13 @@ export const EffectSelector = ({
   const getEffectOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
     if (!entity || !entity.Effect) return [];
-    return [
-      {
-        label: formatKeyAsDecimal(entity.Effect.key),
-        value: entity.Effect.key.toString(),
-      },
-    ];
+    return entity.Effect.map(effect => {
+      return {
+        label: effect.name.toString(),
+        value: effect.key.toString()
+      }
+    }
+    );
   };
 
   return (
@@ -77,12 +78,12 @@ export const EffectSelector = ({
             onChange={(e) => handleChange(i, 0, e.target.value)}
             disabled={readOnly}
             options={[
-            { value: "__placeholder__", label: "Select entity"},
-            ...entityOptions.map((opt) => ({
-              value: opt.value.toString(),
-              label: String(opt.label),
-            })),
-          ]}
+              { value: "__placeholder__", label: "Select entity" },
+              ...entityOptions.map((opt) => ({
+                value: opt.value.toString(),
+                label: String(opt.label),
+              })),
+            ]}
           />
 
           <Select

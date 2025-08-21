@@ -1,22 +1,20 @@
-use super::a_lexer::CommandTrait;
-use super::super::components::player::PlayerTrait;
 use dojo::{world::WorldStorage};
-
-use lore::{ //
-    lib::{ //
-        entity::{EntityImpl}, //
-        a_lexer::{Command, CommandImpl, TokenType, Token},
-        utils::ByteArrayTraitExt, dictionary::{init_dictionary, add_to_dictionary},
-        level_test::{create_test_level}, //
-        actions::{ActionImpl} //
-    }, //
-    constants::errors::Error, //
-    components::{
-        player::{Player, PlayerImpl}, area::{AreaComponent}, exit::{Exit, ExitComponent}, Component,
-        inspectable::{Inspectable, InspectableImpl, InspectableComponent},
-        inventoryItem::{InventoryItemComponent},
-        container::{Container, ContainerImpl, ContainerComponent},
-    } //
+use lore::{
+    models::{
+        index::{Reactable, Exit, Container, Player}, area::AreaComponent, exit::ExitComponent,
+        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
+        container::ContainerComponent, player::PlayerComponent, components::Component,
+    },
+    new_components::{
+        entity_trait::EntityImpl, player_trait::PlayerImpl, reactable_trait::ReactableImpl,
+        container_trait::ContainerImpl, condition_trait::ConditionImpl, action_trait::ActionImpl,
+    },
+    types::command_type::{Command, TokenType, Token},
+    lib::{
+        a_lexer::CommandImpl, utils::ByteArrayTraitExt,
+        dictionary::{init_dictionary, add_to_dictionary}, level_test::{create_test_level},
+    },
+    constants::errors::Error,
 };
 
 pub fn handle_command(
@@ -33,17 +31,27 @@ pub fn handle_command(
     let mut executed: bool = false;
     let mut nouns = command.get_nouns();
     let mut directions = command.get_directions();
+    let mut result: Result::<Command, Error> = Result::Err(Error::ActionFailed);
+    let mut found_error = false;
     if nouns.len() > 0 {
         for noun in nouns {
             let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
             if player.use_debug {
                 player.say(world, format!("item: {:?}", item));
             }
-            match InspectableComponent::get_component(world, item.inst) {
+            match ReactableComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.clone().can_use_command(world, @player, @command) {
-                        if c.clone().execute_command(world, @player, @command).is_ok() {
+                        let res = c.clone().execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("Error: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -53,8 +61,17 @@ pub fn handle_command(
             match AreaComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
+                        let res = c.execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("Error: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -65,8 +82,17 @@ pub fn handle_command(
             match ExitComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
+                        let res = c.execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("Error: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -76,8 +102,17 @@ pub fn handle_command(
             match InventoryItemComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
+                        let res = c.execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+
+                        if res.is_err() {
+                            let rest = Result::Err(res.unwrap_err());
+                            result = rest;
+                            found_error = true;
+                            // println!("result: {:?}", result);
                             break;
                         }
                     }
@@ -87,8 +122,16 @@ pub fn handle_command(
             match ContainerComponent::get_component(world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(world, @player, @command) {
-                        if c.execute_command(world, @player, @command).is_ok() {
+                        let res = c.execute_command(world, @player, @command);
+                        if res.is_ok() {
                             executed = true;
+                            break;
+                        }
+                        if res.is_err() {
+                            let error = Result::Err(res.unwrap_err());
+                            // println!("result: {:?}", error);
+                            result = error;
+                            found_error = true;
                             break;
                         }
                     }
@@ -105,8 +148,16 @@ pub fn handle_command(
             if exit.is_some() {
                 let exit = exit.unwrap();
                 if exit.can_use_command(world, @player, @command) {
-                    if exit.execute_command(world, @player, @command).is_ok() {
+                    let res = exit.execute_command(world, @player, @command);
+                    if res.is_ok() {
                         executed = true;
+                        break;
+                    }
+                    if res.is_err() {
+                        let error = Result::Err(res.unwrap_err());
+                        // println!("result: {:?}", error);
+                        result = error;
+                        found_error = true;
                         break;
                     }
                 }
@@ -114,9 +165,13 @@ pub fn handle_command(
         };
     }
 
-    println!("executed: {:?}", executed);
+    //println!("executed: {:?}", executed);
     if executed {
         return Result::Ok(command);
+    }
+
+    if found_error {
+        return result;
     }
 
     // We haven't found any targets that have a verb mapped to the action
@@ -127,14 +182,14 @@ pub fn handle_command(
         if initialVerb == 'look' {
             let res = player.describe_room(world);
             if res.is_err() {
-                return Result::Err(Error::ActionFailed);
+                return Result::Err(res.unwrap_err());
             };
             return Result::Ok(command);
         }
         if initialVerb == 'inventory' {
             let personal_container = player.get_personal_container(@world);
             if personal_container.is_none() {
-                return Result::Err(Error::ActionFailed);
+                return Result::Err(Error::NoPersonalContainer);
             }
             let container_component: Container = personal_container.unwrap();
             let noun: ByteArray = "Your";
@@ -150,12 +205,16 @@ pub fn handle_command(
             let secondToken: Token = command.tokens.at(1).clone();
             if initialVerb == 'look' {
                 let around: ByteArray = "around";
+                let at: ByteArray = "at";
                 if secondToken.text == around {
                     let res = player.describe_room(world);
                     if res.is_err() {
-                        return Result::Err(Error::ActionFailed);
+                        return Result::Err(res.unwrap_err());
                     };
                     return Result::Ok(command);
+                }
+                if secondToken.text == at {
+                    return Result::Err(Error::NoTarget);
                 }
             }
             // if initial verb is not look
@@ -166,7 +225,8 @@ pub fn handle_command(
         // return error
         return Result::Err(Error::ActionFailed);
     }
-    Result::Err(Error::ActionFailed)
+
+    result
 }
 
 pub fn init_system_dictionary(world: WorldStorage) {
@@ -219,9 +279,8 @@ fn system_command(
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
-            let inspectable: Inspectable = Component::get_component(world, room.unwrap().inst)
-                .unwrap();
-            player.say(world, format!("+sys+{:?}", inspectable));
+            let reactable: Reactable = Component::get_component(world, room.unwrap().inst).unwrap();
+            player.say(world, format!("+sys+{:?}", reactable));
             return Result::Ok(command);
         }
         if (system_command == "g_init_dict") {
@@ -251,9 +310,9 @@ fn system_command(
             }
             player.say(world, format!("{}", room.unwrap().name));
             for item in context {
-                let inspectable: Option<Inspectable> = Component::get_component(world, item.inst);
-                if inspectable.is_some() {
-                    let description = inspectable.unwrap().get_random_description(world);
+                let reactable: Option<Reactable> = Component::get_component(world, item.inst);
+                if reactable.is_some() {
+                    let description = reactable.unwrap().get_random_description(@command, world);
                     player.say(world, format!("{}", description));
                 }
             };
@@ -268,9 +327,10 @@ fn system_command(
 mod tests {
     use super::*;
     use lore::tests::helpers;
-    use lore::components::player::{caller_as_player};
-    use lore::lib::a_lexer::{Token, TokenType, Command};
-    use lore::lib::utils::ByteArrayTraitExt;
+    use lore::{
+        models::player::caller_as_player, types::command_type::{Command, Token, TokenType},
+        lib::utils::ByteArrayTraitExt,
+    };
 
     #[test]
     fn CHandler_test_g_command_handling() {

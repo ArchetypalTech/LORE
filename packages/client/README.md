@@ -61,7 +61,7 @@ bun run preview
 Once the development server is running, you can access the world editor at:
 
 ```
-http://localhost:5173/editor
+https://localhost:5173/editor
 ```
 
 Use this to create and publish your own text adventure world.

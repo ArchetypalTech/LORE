@@ -51,6 +51,10 @@ const setupController = async () => {
 			description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
 			methods: [
 				{
+					entrypoint: "register_property_registry",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
 					entrypoint: "create_player",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
@@ -59,7 +63,15 @@ const setupController = async () => {
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "create_inspectable",
+					entrypoint: "create_reactable",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "create_description_text",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "create_description_text",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
@@ -111,7 +123,15 @@ const setupController = async () => {
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "delete_inspectable",
+					entrypoint: "delete_reactable",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_description_text",
+					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+				},
+				{
+					entrypoint: "delete_description_text",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{

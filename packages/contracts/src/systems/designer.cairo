@@ -1,17 +1,18 @@
-use lore::components::{
-    inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-    container::Container, player::Player,
-};
-use lore::lib::{
-    entity::Entity, relations::{ParentToChildren, ChildToParent}, trigger::Trigger,
-    condition::Condition, actions::Action, effect::Effect,
+use lore::{
+    models::{
+        index::{
+            Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
+            Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
+        },
+    },
 };
 
 #[starknet::interface]
 pub trait IDesigner<TContractState> {
     fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
-    fn create_inspectable(ref self: TContractState, t: Array<Inspectable>);
+    fn create_reactable(ref self: TContractState, t: Array<Reactable>);
+    fn create_description_text(ref self: TContractState, t: Array<DescriptionText>);
     fn create_area(ref self: TContractState, t: Array<Area>);
     fn create_exit(ref self: TContractState, t: Array<Exit>);
     fn create_inventory_item(ref self: TContractState, t: Array<InventoryItem>);
@@ -25,7 +26,8 @@ pub trait IDesigner<TContractState> {
     //
     fn delete_player(ref self: TContractState, ids: Array<felt252>);
     fn delete_entity(ref self: TContractState, ids: Array<felt252>);
-    fn delete_inspectable(ref self: TContractState, ids: Array<felt252>);
+    fn delete_reactable(ref self: TContractState, ids: Array<felt252>);
+    fn delete_description_text(ref self: TContractState, ids: Array<(felt252, felt252)>);
     fn delete_area(ref self: TContractState, ids: Array<felt252>);
     fn delete_exit(ref self: TContractState, ids: Array<felt252>);
     fn delete_inventory_item(ref self: TContractState, ids: Array<felt252>);
@@ -43,18 +45,24 @@ pub trait IDesigner<TContractState> {
 #[dojo::contract]
 pub mod designer {
     use super::IDesigner;
-    use lore::components::{
-        inspectable::{Inspectable}, area::Area, exit::Exit, inventoryItem::InventoryItem,
-        container::Container, player::Player, Components,
-    };
-    use lore::lib::{
-        entity::{Entity, EntityImpl}, relations::{ParentToChildren, ChildToParent},
-        trigger::{Trigger, TriggerImpl}, condition::Condition, actions::{Action, ActionImpl},
-        effect::Effect, variable_property::{VariablePropertyImp},
-        dictionary::{add_to_dictionary, get_dict_entry}, a_lexer::{TokenType},
-        utils::{ByteArrayTraitExt},
-    };
     use dojo::{model::ModelStorage, world::WorldStorage};
+    use lore::{
+        models::{
+            index::{
+                Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
+                Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
+            },
+        },
+        new_components::{
+            entity_trait::EntityImpl, trigger_trait::TriggerImpl, effect_trait::EffectImpl,
+            action_trait::ActionImpl,
+        },
+        types::{component_type::ComponentType, command_type::TokenType},
+        lib::{
+            dictionary::{add_to_dictionary, get_dict_entry}, utils::{ByteArrayTraitExt},
+            variable_property::{VariablePropertyImp},
+        },
+    };
 
     #[abi(embed_v0)]
     pub impl DesignerImpl of IDesigner<ContractState> {
@@ -63,18 +71,20 @@ pub mod designer {
             let world: WorldStorage = self.world(@"lore");
             for d in done {
                 if d {
-                    VariablePropertyImp::register_component_properties(world, Components::Area);
-                    VariablePropertyImp::register_component_properties(world, Components::Exit);
+                    VariablePropertyImp::register_component_properties(world, ComponentType::Area);
+                    VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
                     VariablePropertyImp::register_component_properties(
-                        world, Components::Inspectable,
+                        world, ComponentType::Reactable,
                     );
                     VariablePropertyImp::register_component_properties(
-                        world, Components::InventoryItem,
+                        world, ComponentType::InventoryItem,
                     );
                     VariablePropertyImp::register_component_properties(
-                        world, Components::Container,
+                        world, ComponentType::Container,
                     );
-                    VariablePropertyImp::register_component_properties(world, Components::Player);
+                    VariablePropertyImp::register_component_properties(
+                        world, ComponentType::Player,
+                    );
                 }
             }
         }
@@ -109,16 +119,23 @@ pub mod designer {
         fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Player);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Player);
             for o in t {
                 world.write_model(@o);
             }
         }
 
-        fn create_inspectable(ref self: ContractState, t: Array<Inspectable>) {
+        fn create_reactable(ref self: ContractState, t: Array<Reactable>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Inspectable);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Reactable);
+            for o in t {
+                world.write_model(@o);
+            }
+        }
+
+        fn create_description_text(ref self: ContractState, t: Array<DescriptionText>) {
+            let mut world = self.world(@"lore");
             for o in t {
                 world.write_model(@o);
             }
@@ -127,7 +144,7 @@ pub mod designer {
         fn create_area(ref self: ContractState, t: Array<Area>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Area);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Area);
             for o in t {
                 world.write_model(@o);
             }
@@ -136,7 +153,7 @@ pub mod designer {
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Exit);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Exit);
             for o in t {
                 world.write_model(@o);
             }
@@ -145,7 +162,9 @@ pub mod designer {
         fn create_inventory_item(ref self: ContractState, t: Array<InventoryItem>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::InventoryItem);
+            VariablePropertyImp::register_component_properties(
+                worldSt, ComponentType::InventoryItem,
+            );
             for o in t {
                 world.write_model(@o);
             }
@@ -154,7 +173,7 @@ pub mod designer {
         fn create_container(ref self: ContractState, t: Array<Container>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, Components::Container);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Container);
             for o in t {
                 world.write_model(@o);
             }
@@ -163,12 +182,13 @@ pub mod designer {
         fn create_trigger(ref self: ContractState, t: Array<Trigger>) {
             let mut world: WorldStorage = self.world(@"lore");
             for o in t {
-                let result = TriggerImpl::register_trigger(world, o.clone());
-                if result.is_err() {
-                    println!(
-                        "Trigger: {:?} failed to register with error: {:?}", o, result.unwrap_err(),
-                    );
-                }
+                let _result = TriggerImpl::register_trigger(world, o.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Trigger: {:?} failed to register with error: {:?}", o,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 
@@ -189,12 +209,13 @@ pub mod designer {
         fn create_action(ref self: ContractState, t: Array<Action>) {
             let world: WorldStorage = self.world(@"lore");
             for o in t {
-                let result = ActionImpl::register_action(world, o.clone());
-                if result.is_err() {
-                    println!(
-                        "Action: {:?} failed to register with error: {:?}", o, result.unwrap_err(),
-                    );
-                }
+                let _result = ActionImpl::register_action(world, o.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Action: {:?} failed to register with error: {:?}", o,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 
@@ -218,7 +239,7 @@ pub mod designer {
             for inst in ids {
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
-                // delete_inspectable(world, model.Inspectable);
+                // delete_reactable(world, model.Reactable);
             // delete_area(world, model.Area);
             // delete_exit(world, model.Exit);
             }
@@ -232,10 +253,18 @@ pub mod designer {
             }
         }
 
-        fn delete_inspectable(ref self: ContractState, ids: Array<felt252>) {
+        fn delete_reactable(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
             for inst in ids {
-                let model: Inspectable = world.read_model(inst);
+                let model: Reactable = world.read_model(inst);
+                world.erase_model(@model);
+            }
+        }
+
+        fn delete_description_text(ref self: ContractState, ids: Array<(felt252, felt252)>) {
+            let mut world = self.world(@"lore");
+            for inst in ids {
+                let model: DescriptionText = world.read_model(inst);
                 world.erase_model(@model);
             }
         }
@@ -276,14 +305,14 @@ pub mod designer {
             let world: WorldStorage = self.world(@"lore");
             for inst in ids {
                 let model: Trigger = world.read_model(inst);
-                let result = TriggerImpl::unregister_trigger(world, model.clone());
-                if result.is_err() {
-                    println!(
-                        "Trigger: {:?} failed to unregister with error: {:?}",
-                        model,
-                        result.unwrap_err(),
-                    );
-                }
+                let _result = TriggerImpl::unregister_trigger(world, model.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Trigger: {:?} failed to unregister with error: {:?}",
+            //         model,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 
@@ -307,14 +336,14 @@ pub mod designer {
             let world: WorldStorage = self.world(@"lore");
             for inst in ids {
                 let model: Action = world.read_model(inst);
-                let result = ActionImpl::unregister_action(world, model.clone());
-                if result.is_err() {
-                    println!(
-                        "Action: {:?} failed to unregister with error: {:?}",
-                        model,
-                        result.unwrap_err(),
-                    );
-                }
+                let _result = ActionImpl::unregister_action(world, model.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Action: {:?} failed to unregister with error: {:?}",
+            //         model,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 

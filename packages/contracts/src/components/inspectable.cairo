@@ -139,7 +139,7 @@ pub impl InspectableComponent of Component<Inspectable> {
     fn execute_command(
         mut self: Inspectable, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("Inspectable execute_command");
+        // println!("Inspectable execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         match action.action_fn {
             InspectableActions::SetVisible => {

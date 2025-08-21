@@ -10,9 +10,13 @@ pub mod prompt {
     use super::{IPrompt};
     use starknet::{get_caller_address};
     use dojo::{world::{WorldStorage}};
-    use lore::components::{player::{PlayerImpl, caller_as_player}};
-    use lore::lib::{a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command} //
-    // dictionary::{init_dictionary},
+    use lore::{
+        models::{player::{PlayerComponent, caller_as_player}},
+        new_components::player_trait::PlayerImpl,
+        lib::{
+            a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command},
+            errors_texts_output::{ErrorOutputterImpl},
+        },
     };
 
     #[constructor]
@@ -36,7 +40,9 @@ pub mod prompt {
                 Result::Ok(result) => {
                     let res = handle_command(result, world, player);
                     if !res.is_ok() {
-                        player.say(world, random_text(world, random_error()));
+                        let error = res.unwrap_err();
+                        // println!("Error: {:?}", error);
+                        ErrorOutputterImpl::output_error(error, player, world);
                     }
                 },
                 Result::Err(_r) => { player.say(world, random_text(world, random_error())); },

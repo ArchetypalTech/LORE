@@ -17,7 +17,7 @@ export const HELP_TEXTS: Record<string, HelpContent> = {
 		],
 		more: "Use `help_exits` for more information",
 	},
-	Inspectables: {
+	Reactables: {
 		description: "Examine your surroundings or specific objects",
 		usage: "look [around], look at [object], examine [object]",
 		examples: ["look", "look around", "look at tree"],

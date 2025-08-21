@@ -120,7 +120,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     fn execute_command(
         mut self: InventoryItem, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("InventoryItem execute_command");
+        // println!("InventoryItem execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {

@@ -1,9 +1,11 @@
-use super::entity::EntityTrait;
 use dojo::{world::WorldStorage, model::ModelStorage};
-use lore::components::{
-    Component, inspectable::{Inspectable, InspectableComponent}, area::{Area}, exit::{Exit},
+use lore::{
+    models::{
+        index::{Entity, Area, Exit, Reactable, DescriptionText}, components::Component,
+        area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
+    },
+    new_components::entity_trait::EntityImpl,
 };
-use lore::lib::{entity::{Entity, EntityImpl}};
 
 pub fn create_test_level(mut world: WorldStorage) {
     room_start(world);
@@ -19,14 +21,17 @@ fn room_start(mut world: WorldStorage) {
         actions_keys: array![],
     };
     world.write_model(@obj);
-    let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
-    inspectable
-        .description =
-            array![
-                "The first thing you've ever seen, it's pretty wild, flaring colors like flower petals but kaleidoscopically distorted",
-                "Pretty colors",
-            ];
-    inspectable.store(world);
+    let mut reactable: Reactable = Component::add_component(world, obj.inst);
+    let descr1 = DescriptionText {
+        inst: 2826,
+        key: 0,
+        text: "The first thing you've ever seen, it's pretty wild, flaring colors like flower petals but kaleidoscopically distorted",
+    };
+    let descr2 = DescriptionText { inst: 2826, key: 1, text: "Pretty colors" };
+    world.write_model(@descr1);
+    world.write_model(@descr2);
+    reactable.description = array![0, 1];
+    reactable.store(world);
     let _: Area = Component::add_component(world, obj.inst);
     object_room_one(world, obj);
 }
@@ -40,9 +45,15 @@ fn object_room_one(mut world: WorldStorage, parent: Entity) {
         actions_keys: array![],
     };
     world.write_model(@obj);
-    let mut inspectable: Inspectable = Component::add_component(world, obj.inst);
-    inspectable.description = array!["A swirling circle of colors, it doesn't seem solid"];
-    inspectable.store(world);
+    let mut reactable: Reactable = Component::add_component(world, obj.inst);
+    let descr1 = DescriptionText { inst: 9999, key: 0, text: "A portal" };
+    let descr2 = DescriptionText {
+        inst: 9999, key: 1, text: "A swirling circle of colors, it doesn't seem solid",
+    };
+    world.write_model(@descr1);
+    world.write_model(@descr2);
+    reactable.description = array![0, 1];
+    reactable.store(world);
     let mut exit: Exit = Component::add_component(world, obj.inst);
     exit.leads_to = 1234;
     exit.store(world);
@@ -55,13 +66,16 @@ fn room_two(mut world: WorldStorage) {
     entity.name = "Idyllic garden";
     entity.alt_names = array!["garden"];
     world.write_model(@entity);
-    let mut inspectable: Inspectable = Component::add_component(world, entity.inst);
-    inspectable
-        .description =
-            array![
-                "Just suddenly it's all flowers and trees and grass",
-                "Still pretty colors, but now it all has definition",
-            ];
-    inspectable.store(world);
+    let mut reactable: Reactable = Component::add_component(world, entity.inst);
+    let descr1 = DescriptionText {
+        inst: 1234, key: 0, text: "Just suddenly it's all flowers and trees and grass",
+    };
+    let descr2 = DescriptionText {
+        inst: 1234, key: 1, text: "Still pretty colors, but now it all has definition",
+    };
+    world.write_model(@descr1);
+    world.write_model(@descr2);
+    reactable.description = array![0, 1];
+    reactable.store(world);
     let _: Area = Component::add_component(world, entity.inst);
 }

@@ -1,0 +1,53 @@
+use dojo::{world::WorldStorage, model::ModelStorage};
+use lore::{
+    models::{index::{Area, Player}, components::Component}, types::{command_type::Command},
+    constants::errors::Error,
+};
+
+pub impl AreaComponent of Component<Area> {
+    type ComponentType = Area;
+
+    fn inst(self: @Area) -> @felt252 {
+        self.inst
+    }
+
+    fn has_component(self: @Area, world: WorldStorage, inst: felt252) -> bool {
+        let area: Area = world.read_model(inst);
+        area.is_area
+    }
+
+    fn add_component(mut world: WorldStorage, inst: felt252) -> Area {
+        let mut area: Area = world.read_model(inst);
+        area.inst = inst;
+        area.is_area = true;
+        world.write_model(@area);
+        // Return the component
+        area
+    }
+
+    fn get_component(world: WorldStorage, inst: felt252) -> Option<Area> {
+        let area: Area = world.read_model(inst);
+        if (!area.has_component(world, inst)) {
+            return Option::None;
+        }
+        let area: Area = world.read_model(inst);
+        Option::Some(area)
+    }
+
+    fn can_use_command(
+        self: @Area, world: WorldStorage, player: @Player, command: @Command,
+    ) -> bool {
+        true
+    }
+
+    fn execute_command(
+        self: Area, world: WorldStorage, player: @Player, command: @Command,
+    ) -> Result<(), Error> {
+        // println!("Area execute_command");
+        Result::Err(Error::Unimplemented)
+    }
+
+    fn store(self: @Area, mut world: WorldStorage) {
+        world.write_model(self);
+    }
+}

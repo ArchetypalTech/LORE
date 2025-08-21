@@ -6,31 +6,16 @@ use dojo_cairo_test::{
 };
 
 use lore::{
-    systems::{ //
-        designer::{designer, IDesignerDispatcher}, //
-        prompt::{prompt, IPromptDispatcher} //
+    systems::{designer::{designer, IDesignerDispatcher}, prompt::{prompt, IPromptDispatcher}},
+    models::{
+        index::{
+            m_Dict, m_Entity, m_Area, m_Exit, m_Reactable, m_InventoryItem, m_Container, m_Player,
+            m_PlayerStory, m_ParentToChildren, m_ChildToParent, m_Trigger, m_TriggerIndex,
+            m_Condition, m_PropertyRegistry, m_Effect, m_Action, m_StoryLine, m_DescriptionText,
+        },
     },
-    components::{ //
-        area::{m_Area}, // 
-        inspectable::{m_Inspectable}, //
-        player::{m_Player, m_PlayerStory}, //
-        exit::{m_Exit}, //
-        container::{m_Container}, //
-        inventoryItem::{m_InventoryItem} //
-    },
-    constants::{errors::{}},
-    lib::{
-        entity::{m_Entity}, //
-        a_lexer::{TokenTypeFelt252}, //
-        dictionary::{m_Dict, initialize_dictionary}, //
-        utils::{ByteArrayTraitExt}, //
-        relations::{m_ParentToChildren, m_ChildToParent}, //
-        trigger::{m_Trigger, m_TriggerIndex}, //
-        condition::{m_Condition}, //
-        variable_property::{m_PropertyRegistry}, //
-        effect::{m_Effect}, //
-        actions::{m_Action} //
-    },
+    types::{command_type::IntoTokenTypeFelt252}, constants::{errors::{}},
+    lib::{dictionary::{initialize_dictionary}, utils::{ByteArrayTraitExt}},
 };
 
 
@@ -60,8 +45,10 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_Dict::TEST_CLASS_HASH),
             TestResource::Model(m_Player::TEST_CLASS_HASH),
             TestResource::Model(m_PlayerStory::TEST_CLASS_HASH),
+            TestResource::Model(m_StoryLine::TEST_CLASS_HASH),
             TestResource::Model(m_Entity::TEST_CLASS_HASH),
-            TestResource::Model(m_Inspectable::TEST_CLASS_HASH),
+            TestResource::Model(m_Reactable::TEST_CLASS_HASH),
+            TestResource::Model(m_DescriptionText::TEST_CLASS_HASH),
             TestResource::Model(m_Area::TEST_CLASS_HASH),
             TestResource::Model(m_Exit::TEST_CLASS_HASH),
             TestResource::Model(m_Container::TEST_CLASS_HASH),

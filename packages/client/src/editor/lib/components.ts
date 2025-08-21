@@ -1,5 +1,7 @@
 import {
 	type Entity,
+	type Reactable,
+	type DescriptionText,
 	type SchemaType,
 	schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -7,7 +9,7 @@ import { AreaInspector } from "../components/inspectors/AreaInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InventoryItemInspector } from "../components/inspectors/InventoryItemInspector";
-import { InspectableInspector } from "../components/inspectors/InspectableInspector";
+import { ReactableInspector } from "../components/inspectors/ReactableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { ContainerInspector } from "../components/inspectors/ContainerInspector";
 import { PlayerInspector } from "../components/inspectors/PlayerInspector";
@@ -15,6 +17,7 @@ import { TriggerInspector } from "../components/inspectors/TriggerInspector";
 import { ConditionInspector } from "../components/inspectors/ConditionInspector";
 import { EffectInspector } from "../components/inspectors/EffectInspector";
 import { ActionInspector } from "../components/inspectors/ActionInspector";
+import { DescriptionTextInspector } from "../components/inspectors/DescriptionInspector";
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
@@ -37,8 +40,8 @@ export const createDefaultEntity = (): WithStringEnums<
 
 export const createPlayerEntity = (
 	spawn_location?: BigNumberish
-  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
-	const playerAddress =  getPlayerAddress();
+): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
+	const playerAddress = getPlayerAddress();
 	const playerName = getPlayerName();
 	return {
 		// Adding the Entity as we need to set the inst to be the address
@@ -62,8 +65,9 @@ export const createPlayerEntity = (
 
 export const createPlayerComponent = (
 	_entity: Entity,
+	_reactable?: Reactable,
 	address?: string
-  ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
+): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
 	const playerAddress = address || getPlayerAddress();
 	return {
 		Player: {
@@ -71,6 +75,7 @@ export const createPlayerComponent = (
 			inst: playerAddress,
 			is_player: true,
 			address: playerAddress,
+			story_line: 0,
 			location: 0,
 			use_debug: false,
 		},
@@ -88,23 +93,42 @@ export const createDefaultAreaComponent = (
 	},
 });
 
-export const createDefaultInspectableComponent = (
+export const createDefaultReactableComponent = (
 	entity: Entity,
-): WithStringEnums<Pick<SchemaType["lore"], "Inspectable">> => ({
-	Inspectable: {
-		...schema.lore.Inspectable,
+	descriptions?: DescriptionText[],
+): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
+	Reactable: {
+		...schema.lore.Reactable,
 		inst: entity.inst,
-		is_inspectable: true,
+		is_reactable: true,
 		is_visible: true,
-		description: [entity.name],
+		description: descriptions?.map(x => x.key) || [],
 		action_map: [
-			{ action: "look", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
-			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoint: 1 },
+			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0, 0] },
+			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 0] },
 		],
 		already_shown: false,
 		new_entry: "",
 	},
+
+
 });
+
+export const createDefaultDescriptionText = (
+	entity: Entity,
+	descriptions?: DescriptionText[],
+): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
+	const existingKeys = (descriptions || []).map(x => Number(x.key));
+	let nextKey = (existingKeys.length > 0 ? Math.max(...existingKeys) : 0) + 1;
+	return {
+		DescriptionText: {
+			...schema.lore.DescriptionText,
+			inst: entity.inst,
+			key: nextKey,
+			text: " ",
+		},
+	};
+};
 
 export const createDefaultExitComponent = (
 	entity: Entity,
@@ -130,9 +154,10 @@ export const createDefaultInventoryItemComponent = (
 		...schema.lore.InventoryItem,
 		inst: entity.inst,
 		is_inventory_item: true,
-		owner_id: 0,
+		owner_id: entity.inst,
 		can_be_picked_up: true,
 		can_go_in_container: true,
+		quantity: 1,
 		action_map: [
 			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
 			{ action: "drop", inst: 0, action_fn: "DropItem" },
@@ -171,9 +196,8 @@ export const createDefaultTrigger = (
 		...schema.lore.Trigger,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
-		name: "",
-		trigger_type:"None",
-		parameters: [{ name: schema.lore.Trigger.name, value: schema.lore.Trigger.inst }],
+		name: createRandomName(),
+		trigger_type: "OnEnter",
 		is_enabled: true,
 		is_once: false,
 		was_triggered: false,
@@ -187,6 +211,7 @@ export const createDefaultCondition = (
 		...schema.lore.Condition,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
+		name: createRandomName(),
 		target: 0,
 		component: "Area",
 		property: "",
@@ -202,9 +227,10 @@ export const createDefaultEffectComponent = (
 		...schema.lore.Effect,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
+		name: createRandomName(),
 		target: 0,
-		component: "Inspectable",
-		property: "is_visible",
+		component: "Reactable",
+		property: "already_shown",
 		value: [],
 	},
 });
@@ -216,7 +242,7 @@ export const createDefaultActionComponent = (
 		...schema.lore.Action,
 		inst: entity.inst,
 		key: generateNumericUniqueId(),
-		name: "",
+		name: createRandomName(),
 		description: "",
 		is_enabled: true,
 		trigger: [],
@@ -255,7 +281,7 @@ export const componentData: {
 		order: number;
 		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
 		icon?: string;
-		creator?: (entity: Entity) => WithStringEnums<Pick<EntityCollection, K>>;
+		creator?: (entity: Entity, ...args: any[]) => WithStringEnums<Pick<EntityCollection, K>>;
 	};
 } = {
 	Entity: {
@@ -275,11 +301,11 @@ export const componentData: {
 		icon: "🥾",
 		creator: createDefaultAreaComponent,
 	},
-	Inspectable: {
+	Reactable: {
 		order: 3,
-		inspector: InspectableInspector,
+		inspector: ReactableInspector,
 		icon: "🔍",
-		creator: createDefaultInspectableComponent,
+		creator: createDefaultReactableComponent,
 	},
 	Exit: {
 		order: 4,
@@ -322,6 +348,12 @@ export const componentData: {
 		inspector: ActionInspector,
 		icon: "📝",
 		creator: createDefaultActionComponent,
+	},
+	DescriptionText: {
+		order: 11,
+		inspector: DescriptionTextInspector,
+		icon: "🔍",
+		creator: createDefaultDescriptionText,
 	},
 };
 
