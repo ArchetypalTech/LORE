@@ -93,12 +93,16 @@ pub impl ExitComponent of Component<Exit> {
 
                 // we need to either match by name or by direction
                 if (!(matchesName || matchesDirection)) {
-                    return Result::Err(Error::ActionFailed);
+                    if !matchesDirection {
+                        return Result::Err(Error::DirectionNotMatch);
+                    }
+                    if !matchesName {
+                        return Result::Err(Error::NameNotMatch);
+                    }
                 }
                 // if the exit is not enterable, we can't go there
                 if (!self.clone().can_player_enter()) {
-                    player.say(world, format!("You can't go there yet."));
-                    return Result::Err(Error::ActionFailed);
+                    return Result::Err(Error::Unenterable);
                 }
                 // Move player to room
                 destination_inst = self.leads_to;
