@@ -41,7 +41,7 @@ pub mod prompt {
                     let res = handle_command(result, world, player);
                     if !res.is_ok() {
                         let error = res.unwrap_err();
-                        println!("Error: {:?}", error);
+                        // println!("Error: {:?}", error);
                         ErrorOutputterImpl::output_error(error, player, world);
                     }
                 },

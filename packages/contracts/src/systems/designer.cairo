@@ -182,12 +182,13 @@ pub mod designer {
         fn create_trigger(ref self: ContractState, t: Array<Trigger>) {
             let mut world: WorldStorage = self.world(@"lore");
             for o in t {
-                let result = TriggerImpl::register_trigger(world, o.clone());
-                if result.is_err() {
-                    println!(
-                        "Trigger: {:?} failed to register with error: {:?}", o, result.unwrap_err(),
-                    );
-                }
+                let _result = TriggerImpl::register_trigger(world, o.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Trigger: {:?} failed to register with error: {:?}", o,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 
@@ -208,12 +209,13 @@ pub mod designer {
         fn create_action(ref self: ContractState, t: Array<Action>) {
             let world: WorldStorage = self.world(@"lore");
             for o in t {
-                let result = ActionImpl::register_action(world, o.clone());
-                if result.is_err() {
-                    println!(
-                        "Action: {:?} failed to register with error: {:?}", o, result.unwrap_err(),
-                    );
-                }
+                let _result = ActionImpl::register_action(world, o.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Action: {:?} failed to register with error: {:?}", o,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 
@@ -303,14 +305,14 @@ pub mod designer {
             let world: WorldStorage = self.world(@"lore");
             for inst in ids {
                 let model: Trigger = world.read_model(inst);
-                let result = TriggerImpl::unregister_trigger(world, model.clone());
-                if result.is_err() {
-                    println!(
-                        "Trigger: {:?} failed to unregister with error: {:?}",
-                        model,
-                        result.unwrap_err(),
-                    );
-                }
+                let _result = TriggerImpl::unregister_trigger(world, model.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Trigger: {:?} failed to unregister with error: {:?}",
+            //         model,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 
@@ -334,14 +336,14 @@ pub mod designer {
             let world: WorldStorage = self.world(@"lore");
             for inst in ids {
                 let model: Action = world.read_model(inst);
-                let result = ActionImpl::unregister_action(world, model.clone());
-                if result.is_err() {
-                    println!(
-                        "Action: {:?} failed to unregister with error: {:?}",
-                        model,
-                        result.unwrap_err(),
-                    );
-                }
+                let _result = ActionImpl::unregister_action(world, model.clone());
+                // if result.is_err() {
+            //     println!(
+            //         "Action: {:?} failed to unregister with error: {:?}",
+            //         model,
+            //         result.unwrap_err(),
+            //     );
+            // }
             }
         }
 

@@ -62,7 +62,7 @@ pub impl ExitComponent of Component<Exit> {
     fn execute_command(
         mut self: Exit, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("Exit execute_command");
+        // println!("Exit execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         let direction_tokens = command.get_directions();
 

@@ -43,7 +43,7 @@ pub impl AreaComponent of Component<Area> {
     fn execute_command(
         self: Area, world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("Area execute_command");
+        // println!("Area execute_command");
         Result::Err(Error::Unimplemented)
     }
 

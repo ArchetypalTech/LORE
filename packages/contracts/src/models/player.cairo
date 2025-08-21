@@ -45,7 +45,7 @@ pub impl PlayerComponent of Component<Player> {
     fn execute_command(
         self: Player, world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("Player execute_command");
+        // println!("Player execute_command");
         Result::Err(Error::Unimplemented)
     }
 

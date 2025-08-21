@@ -77,7 +77,7 @@ pub impl ReactableComponent of Component<Reactable> {
     fn execute_command(
         mut self: Reactable, mut world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
-        println!("Reactable execute_command");
+        // println!("Reactable execute_command");
         let (action, _token) = get_action_token(@self, world, command).unwrap();
         match action.action_fn {
             ReactableActions::SetVisible => {

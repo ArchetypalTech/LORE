@@ -82,9 +82,8 @@ pub impl CommandImpl of CommandTrait {
     }
 
     fn pretty_print(self: @Command) {
-        println!("Command: {:?}", self);
-        for token in self.tokens.clone() {
-            println!("{:?}: {:?}", token.text, token);
+        // println!("Command: {:?}", self);
+        for _token in self.tokens.clone() { // println!("{:?}: {:?}", token.text, token);
         };
     }
 }
