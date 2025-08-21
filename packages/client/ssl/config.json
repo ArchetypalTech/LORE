@@ -1,0 +1,15 @@
+{
+  "version": "v1.4.4",
+  "record": {
+    "hosts": [
+      "localhost",
+      "127.0.0.1",
+      "172.21.113.194"
+    ],
+    "hash": {
+      "key": "ab9079ed1530f62cd1638473f6a7e86ad66444459c11b263794c172f9b8136ac",
+      "cert": "aeba39440e03576b74de787ef8697744beb5bc5eb135071aac163d467cc3c0c0"
+    }
+  },
+  "configFilePath": "/home/tal-valdar/Archetypal/LORE/packages/client/ssl/config.json"
+}
