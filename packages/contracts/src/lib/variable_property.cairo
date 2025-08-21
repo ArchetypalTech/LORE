@@ -1,8 +1,8 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{Area, Exit, Inspectable, InventoryItem, Container, Player, PropertyRegistry},
-        area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
+        index::{Area, Exit, Reactable, InventoryItem, Container, Player, PropertyRegistry},
+        area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
         inventoryItem::InventoryItemComponent, container::ContainerComponent,
         player::PlayerComponent,
     },
@@ -49,11 +49,11 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 property_value = property_value_opt;
                 access = access_opt;
             },
-            ComponentType::Inspectable => {
-                let component: Inspectable = world.read_model(*key);
+            ComponentType::Reactable => {
+                let component: Reactable = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (property_value_opt, access_opt) =
-                    VariablePropertyHelperTrait::get_inspectable_property(
+                    VariablePropertyHelperTrait::get_reactable_property(
                     component, @prop_text, @property_registry, *world,
                 );
                 property_value = property_value_opt;
@@ -124,10 +124,10 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 result = result_p;
                 success = success_p;
             },
-            ComponentType::Inspectable => {
-                let component: Inspectable = world.read_model(*key);
+            ComponentType::Reactable => {
+                let component: Reactable = world.read_model(*key);
                 let prop_text = property_name.clone();
-                let (result_p, success_p) = VariablePropertyHelperTrait::set_inspectable_property(
+                let (result_p, success_p) = VariablePropertyHelperTrait::set_reactable_property(
                     component, *world, @prop_text, @property_registry, new_value,
                 );
                 result = result_p;

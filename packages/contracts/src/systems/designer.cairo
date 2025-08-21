@@ -1,8 +1,8 @@
 use lore::{
     models::{
         index::{
-            Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger, Condition,
-            Effect, Action, ParentToChildren, ChildToParent,
+            Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
+            Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
         },
     },
 };
@@ -11,7 +11,8 @@ use lore::{
 pub trait IDesigner<TContractState> {
     fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
-    fn create_inspectable(ref self: TContractState, t: Array<Inspectable>);
+    fn create_reactable(ref self: TContractState, t: Array<Reactable>);
+    fn create_description_text(ref self: TContractState, t: Array<DescriptionText>);
     fn create_area(ref self: TContractState, t: Array<Area>);
     fn create_exit(ref self: TContractState, t: Array<Exit>);
     fn create_inventory_item(ref self: TContractState, t: Array<InventoryItem>);
@@ -25,7 +26,8 @@ pub trait IDesigner<TContractState> {
     //
     fn delete_player(ref self: TContractState, ids: Array<felt252>);
     fn delete_entity(ref self: TContractState, ids: Array<felt252>);
-    fn delete_inspectable(ref self: TContractState, ids: Array<felt252>);
+    fn delete_reactable(ref self: TContractState, ids: Array<felt252>);
+    fn delete_description_text(ref self: TContractState, ids: Array<(felt252, felt252)>);
     fn delete_area(ref self: TContractState, ids: Array<felt252>);
     fn delete_exit(ref self: TContractState, ids: Array<felt252>);
     fn delete_inventory_item(ref self: TContractState, ids: Array<felt252>);
@@ -47,8 +49,8 @@ pub mod designer {
     use lore::{
         models::{
             index::{
-                Entity, Area, Exit, Inspectable, InventoryItem, Container, Player, Trigger,
-                Condition, Effect, Action, ParentToChildren, ChildToParent,
+                Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
+                Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
             },
         },
         new_components::{
@@ -72,7 +74,7 @@ pub mod designer {
                     VariablePropertyImp::register_component_properties(world, ComponentType::Area);
                     VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
                     VariablePropertyImp::register_component_properties(
-                        world, ComponentType::Inspectable,
+                        world, ComponentType::Reactable,
                     );
                     VariablePropertyImp::register_component_properties(
                         world, ComponentType::InventoryItem,
@@ -123,10 +125,17 @@ pub mod designer {
             }
         }
 
-        fn create_inspectable(ref self: ContractState, t: Array<Inspectable>) {
+        fn create_reactable(ref self: ContractState, t: Array<Reactable>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Inspectable);
+            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Reactable);
+            for o in t {
+                world.write_model(@o);
+            }
+        }
+
+        fn create_description_text(ref self: ContractState, t: Array<DescriptionText>) {
+            let mut world = self.world(@"lore");
             for o in t {
                 world.write_model(@o);
             }
@@ -228,7 +237,7 @@ pub mod designer {
             for inst in ids {
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
-                // delete_inspectable(world, model.Inspectable);
+                // delete_reactable(world, model.Reactable);
             // delete_area(world, model.Area);
             // delete_exit(world, model.Exit);
             }
@@ -242,10 +251,18 @@ pub mod designer {
             }
         }
 
-        fn delete_inspectable(ref self: ContractState, ids: Array<felt252>) {
+        fn delete_reactable(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
             for inst in ids {
-                let model: Inspectable = world.read_model(inst);
+                let model: Reactable = world.read_model(inst);
+                world.erase_model(@model);
+            }
+        }
+
+        fn delete_description_text(ref self: ContractState, ids: Array<(felt252, felt252)>) {
+            let mut world = self.world(@"lore");
+            for inst in ids {
+                let model: DescriptionText = world.read_model(inst);
                 world.erase_model(@model);
             }
         }

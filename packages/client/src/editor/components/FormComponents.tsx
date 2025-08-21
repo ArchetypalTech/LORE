@@ -4,7 +4,7 @@ import type { CairoCustomEnum } from "starknet";
 import { num, BigNumberish } from "starknet";
 import { cn } from "@/lib/utils/utils";
 import { useCairoEnum } from "../lib/schemas";
-import type { ActionMap, OptionType } from "../lib/types";
+import type { ActionMap, ActionMapForReactable,OptionType } from "../lib/types";
 import { MultiTextArea } from "./MultiTextArea";
 import { TagInput as Tags } from "./TagInput";
 import { Button } from "./ui/Button";
@@ -372,6 +372,7 @@ export const ActionMapInput = <T extends CairoCustomEnum>({
 	);
 };
 
+// Standar Action Map Editor
 export const ActionMapEditor = <T extends CairoCustomEnum>({
 	id,
 	value,
@@ -456,6 +457,222 @@ export const ActionMapEditor = <T extends CairoCustomEnum>({
 			<Button variant="secondary" onClick={addNewMap}>
 				Add Action Map
 			</Button>
+		</div>
+	);
+};
+
+// Reactable Action Map Editor
+export const ReactableActionMapEditor = <T extends CairoCustomEnum>({
+	id,
+	value,
+	onChange,
+	cairoEnum,
+}: {
+	id: string;
+	value: ActionMapForReactable<T>[];
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	className?: string;
+	cairoEnum: readonly string[];
+}) => {
+	const handleChange = (a: ActionMapForReactable<T> | undefined, idx: number) => {
+		const newActionMap = [...value];
+		if (a === undefined) {
+			newActionMap.splice(idx, 1);
+		} else {
+			newActionMap[idx] = a;
+		}
+		sendEvent(newActionMap);
+	};
+
+	const sendEvent = (actionMaps: ActionMapForReactable<T>[]) => {
+		const syntheticEvent = {
+			target: {
+				id,
+				name: id,
+				value: actionMaps,
+				type: "text",
+				checked: false,
+			},
+			currentTarget: {
+				id,
+				name: id,
+				value: actionMaps,
+				type: "text",
+				checked: false,
+			},
+			bubbles: true,
+			cancelable: true,
+			defaultPrevented: false,
+			preventDefault: () => {},
+			stopPropagation: () => {},
+			isPropagationStopped: () => false,
+			persist: () => {},
+			nativeEvent: new Event("input"),
+			type: "change",
+		} as unknown as ChangeEvent<HTMLInputElement>;
+		onChange(syntheticEvent);
+	};
+
+	const addNewMap = () => {
+		const newActionMap = [...value];
+		newActionMap.push({
+			action: "",
+			inst: 0,
+			action_fn: cairoEnum[0],
+			entrypoints: [0, 0],
+		});
+		sendEvent(newActionMap);
+	};
+
+	return (
+		<div
+			id={id}
+			className="flex flex-col gap-2 bg-[#E5E7EB] p-2 rounded-md shadow-xs border-gray-300 border"
+		>
+			<div className="text-xs opacity-50 font-medium px-1">Actions</div>
+
+			{/* Header Row */}
+			<div className="hidden md:grid md:grid-cols-[1fr_2fr_auto] grid-rows-1 text-xs font-semibold text-gray-600 px-1">
+				<div className="col-span-1">Action</div>
+				<div className="flex gap-1 col-span-1">
+					<span className="flex-[0.3] min-w-[12rem]">Type</span>
+					<span className="flex-1">Idx 1</span>
+					<span className="flex-1">Idx 2</span>
+				</div>
+				<div className="text-right">Remove</div>
+			</div>
+
+			{value?.map((actionMap, idx) => (
+				<ActionMapReactableInput
+					key={`${actionMap.action}-${idx}`}
+					actionMap={actionMap}
+					handleChange={handleChange}
+					cairoEnum={cairoEnum}
+					idx={idx}
+				/>
+			))}
+
+			<Button variant="secondary" onClick={addNewMap}>
+				Add Action Map
+			</Button>
+		</div>
+	);
+};
+
+// Reactable Map Input
+export const ActionMapReactableInput = <T extends CairoCustomEnum>({
+	actionMap,
+	handleChange,
+	cairoEnum,
+	idx,
+}: {
+	actionMap: ActionMapForReactable<T>;
+	handleChange: (a: ActionMapForReactable<T> | undefined, idx: number) => void;
+	cairoEnum: readonly string[];
+	idx: number;
+}) => {
+	const [input, setInput] = useState(actionMap.action);
+	const [enumValue, setEnumValue] = useState(actionMap.action_fn);
+	const [entrypoint, setEntrypoint] = useState<[BigNumberish, BigNumberish]>(
+		actionMap.entrypoints
+	);
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newValue = e.target.value;
+		const newActionMap: ActionMapForReactable<T> = {
+			...actionMap,
+			action: newValue,
+		};
+		setInput(newValue);
+		return newActionMap;
+	};
+
+	const submit = (action: ActionMapForReactable<T>) => {
+		handleChange(
+			{
+				action: action.action.trim(),
+				inst: action.inst,
+				action_fn: action.action_fn,
+				entrypoints: action.entrypoints,
+			},
+			idx
+		);
+	};
+
+	const handleCairoEnumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const newValue = e.target.value as unknown as CairoCustomEnum;
+		const newActionMap: ActionMapForReactable<T> = {
+			...actionMap,
+			action_fn: newValue,
+		};
+		setEnumValue(newValue);
+		return newActionMap;
+	};
+
+	const handleEntrypointChange = (
+		i: 0 | 1,
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
+		const newValue = e.target.value;
+		const updated: [BigNumberish, BigNumberish] = [...entrypoint];
+		updated[i] = newValue;
+		const newActionMap: ActionMapForReactable<T> = {
+			...actionMap,
+			entrypoints: updated,
+		};
+		setEntrypoint(updated);
+		return newActionMap;
+	};
+
+	return (
+		<div className="grid md:grid-cols-[1fr_2fr_auto] grid-rows-3 md:grid-rows-none items-center gap-1 px-1">
+			<UIInput
+				id={`input-${idx}`}
+				value={input}
+				onBlur={(e) => {
+					let a = handleInputChange(e);
+					submit(a);
+				}}
+				onChange={handleInputChange}
+				className="bg-white border-solid"
+			/>
+			<div className="flex flex-row gap-1">
+				<CairoEnumSelect
+					id={`enum-${idx}`}
+					value={enumValue}
+					onChange={(e) => {
+						let a = handleCairoEnumChange(e);
+						submit(a);
+					}}
+					enum={cairoEnum}
+					className="bg-white rounded-md flex-[0.3] min-w-[12rem]"
+					hideLabel={true}
+				/>
+				<UIInput
+					id={`entry-0-${idx}`}
+					value={entrypoint[0].toString()}
+					onChange={(e) => {
+						let a = handleEntrypointChange(0, e);
+						submit(a);
+					}}
+					className="bg-white border-solid flex-1"
+					placeholder="Idx 1"
+				/>
+				<UIInput
+					id={`entry-1-${idx}`}
+					value={entrypoint[1].toString()}
+					onChange={(e) => {
+						let a = handleEntrypointChange(1, e);
+						submit(a);
+					}}
+					className="bg-white border-solid flex-1"
+					placeholder="Idx 2"
+				/>
+			</div>
+			<DeleteButton
+				className="text-xs justify-self-end"
+				onClick={() => handleChange(undefined, idx)}
+			/>
 		</div>
 	);
 };

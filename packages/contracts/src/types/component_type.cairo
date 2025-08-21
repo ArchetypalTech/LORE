@@ -9,7 +9,7 @@ pub enum ComponentType {
     Container,
     Entity,
     Exit,
-    Inspectable,
+    Reactable,
     InventoryItem,
     Player,
     Trigger,
@@ -18,21 +18,21 @@ pub enum ComponentType {
     Action,
 }
 
-// Inspectable //
+// Reactable //
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
-pub struct ActionMapInspectable {
+pub struct ActionMapReactable {
     /// The action verb
     pub action: ByteArray,
     /// The inst of the component that the action is attached to
     pub inst: felt252,
     ///  The types of actions
-    pub action_fn: InspectableActions,
+    pub action_fn: ReactableActions,
     /// The entrypoint to match the action with the description index
-    pub entrypoint: u32,
+    pub entrypoints: (u32, u32),
 }
 
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
-pub enum InspectableActions {
+pub enum ReactableActions {
     SetVisible,
     ReadRandomDescription,
     ReadFirstDescription,
@@ -105,7 +105,7 @@ pub impl IntoComponentTypeU8 of core::traits::Into<ComponentType, u8> {
             ComponentType::Container => 2,
             ComponentType::Entity => 3,
             ComponentType::Exit => 4,
-            ComponentType::Inspectable => 5,
+            ComponentType::Reactable => 5,
             ComponentType::InventoryItem => 6,
             ComponentType::Player => 7,
             ComponentType::Trigger => 8,
@@ -116,14 +116,14 @@ pub impl IntoComponentTypeU8 of core::traits::Into<ComponentType, u8> {
     }
 }
 
-pub impl IntoInspectableActionsU8 of core::traits::Into<InspectableActions, u8> {
+pub impl IntoReactableActionsU8 of core::traits::Into<ReactableActions, u8> {
     #[inline]
-    fn into(self: InspectableActions) -> u8 {
+    fn into(self: ReactableActions) -> u8 {
         match self {
-            InspectableActions::SetVisible => 0,
-            InspectableActions::ReadRandomDescription => 1,
-            InspectableActions::ReadFirstDescription => 2,
-            InspectableActions::ReadSpecificDescription => 3,
+            ReactableActions::SetVisible => 0,
+            ReactableActions::ReadRandomDescription => 1,
+            ReactableActions::ReadFirstDescription => 2,
+            ReactableActions::ReadSpecificDescription => 3,
         }
     }
 }
@@ -172,7 +172,7 @@ pub impl IntoU8ComponentType of core::traits::Into<u8, ComponentType> {
             2 => ComponentType::Container,
             3 => ComponentType::Entity,
             4 => ComponentType::Exit,
-            5 => ComponentType::Inspectable,
+            5 => ComponentType::Reactable,
             6 => ComponentType::InventoryItem,
             7 => ComponentType::Player,
             8 => ComponentType::Trigger,
@@ -184,15 +184,15 @@ pub impl IntoU8ComponentType of core::traits::Into<u8, ComponentType> {
     }
 }
 
-pub impl IntoU8InspectableAction of core::traits::Into<u8, InspectableActions> {
+pub impl IntoU8ReactableAction of core::traits::Into<u8, ReactableActions> {
     #[inline]
-    fn into(self: u8) -> InspectableActions {
+    fn into(self: u8) -> ReactableActions {
         match self {
-            0 => InspectableActions::SetVisible,
-            1 => InspectableActions::ReadRandomDescription,
-            2 => InspectableActions::ReadFirstDescription,
-            3 => InspectableActions::ReadSpecificDescription,
-            _ => InspectableActions::SetVisible,
+            0 => ReactableActions::SetVisible,
+            1 => ReactableActions::ReadRandomDescription,
+            2 => ReactableActions::ReadFirstDescription,
+            3 => ReactableActions::ReadSpecificDescription,
+            _ => ReactableActions::SetVisible,
         }
     }
 }

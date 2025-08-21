@@ -1,19 +1,99 @@
 import { useEffect, useState } from "react";
 import {
   type Effect,
-  components,
+  componentType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
   Input,
   CairoEnumSelect,
-  formatKeyAsDecimal,
   Select,
 } from "../FormComponents";
 import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import { syncPropertyRegistry } from "../../data/editor.data"; 
+import { syncPropertyRegistry } from "../../data/editor.data";
+import { BigNumberish } from "starknet";
+import { CollapsibleComponent } from "../CollapsibleComponent";
+
+// Individual Effect Item Component
+const EffectItem = ({
+  effectObj,
+  idx,
+  handleInputChange,
+  Inspector
+}: {
+  effectObj: Effect;
+  idx: number;
+  handleInputChange: (idx: number) => any;
+  Inspector: any;
+}) => {
+  const [propertyNames, setPropertyNames] = useState<string[]>([]);
+  const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      if (!effectObj?.component) return;
+      try {
+        const properties = await syncPropertyRegistry(effectObj.component);
+        setPropertyNames(properties || []);
+      } catch (error) {
+        console.error("Failed to sync property registry:", error);
+        setPropertyNames([]);
+      }
+    };
+
+    fetchProperties();
+  }, [effectObj?.component]);
+
+  // Property options for dropdown
+  const propertyOptions = propertyNames.map((name) => ({
+    value: name,
+    label: name,
+  }));
+
+  return (
+    <CollapsibleComponent
+      key={`${effectObj.inst}-${effectObj.key}`}
+      // title={`Effect ${formatKeyAsDecimal(effectObj.key)}`}
+      title={`Effect: ${effectObj?.name}`}
+    >
+      <Inspector index={idx}>
+        <Input
+          id="name"
+          value={effectObj.name}
+          onChange={handleInputChange(idx)}
+        />
+        <Input
+          id="target"
+          value={effectObj.target.toString()}
+          onChange={handleInputChange(idx)}
+        />
+        <CairoEnumSelect
+          id="component"
+          onChange={handleInputChange(idx)}
+          value={effectObj.component}
+          enum={componentType.filter((x) => !excludeComponent.includes(x))}
+        />
+        <Select
+          id="property"
+          value={effectObj.property.toString()}
+          onChange={handleInputChange(idx)}
+          options={propertyOptions}
+        />
+        <TextAreaStringArray
+          id="value"
+          value={
+            effectObj.value.map(([text, index]) => [text.toString(), index.toString()]) as [string, string][]
+          }
+          onChange={handleInputChange(idx)}
+          rows={1}
+          columns={2}
+        />
+      </Inspector>
+    </CollapsibleComponent>
+  );
+};
 
 export const EffectInspector: ComponentInspector<Effect> = ({
   componentObject,
@@ -23,6 +103,9 @@ export const EffectInspector: ComponentInspector<Effect> = ({
     componentObject,
     ...props,
     inputHandlers: {
+      name: (e, updatedObject) => {
+        updatedObject.name = e.target.value as unknown as string;
+      },
       target: (e, updatedObject) => {
         updatedObject.target = e.target.value;
       },
@@ -33,62 +116,31 @@ export const EffectInspector: ComponentInspector<Effect> = ({
         updatedObject.property = e.target.value;
       },
       value: (e, updatedObject) => {
-        updatedObject.value =  e.target.value as unknown as string[]
+        const val = e.target.value as unknown as [string, string][];
+        updatedObject.value = val.map(
+          (([text, index]) => [text, index.toString()])
+        ) as [string, BigNumberish][];
       },
     },
   });
 
-  const [propertyNames, setPropertyNames] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchProperties = async () => {
-      if (!componentObject?.component) return;
-      try {
-        const properties = await syncPropertyRegistry(componentObject.component);
-        setPropertyNames(properties);
-      } catch (error) {
-        console.error("Failed to sync property registry:", error);
-      }
-    };
-
-    fetchProperties();
-  }, [componentObject?.component]);
-
-  // Property options for dropdown
-  const propertyOptions = propertyNames.map((name) => ({
-    value: name,
-    label: name,
-  }));
-
   if (!componentObject) return <div>Effect not found</div>;
 
+  const componentsArray = Array.isArray(componentObject)
+    ? componentObject
+    : [componentObject];
+
   return (
-    <Inspector>
-      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
-      <Input
-        id="target"
-        value={componentObject.target.toString()}
-        onChange={handleInputChange}
-      />
-      <CairoEnumSelect
-        id="component"
-        onChange={handleInputChange}
-        value={componentObject.component}
-        enum={components}
-      />
-      <Select
-        id="property"
-        value={componentObject.property.toString()}
-        onChange={handleInputChange}
-        options={propertyOptions}
-      />
-      <TextAreaStringArray
-        id="value"
-        value={componentObject.value.map((v) => v.toString())}
-        onChange={handleInputChange}
-        rows={1}
-      />
-    </Inspector>
+    <>
+      {componentsArray.map((effectObj, idx) => (
+        <EffectItem
+          key={`${effectObj.inst}-${effectObj.key}`}
+          effectObj={effectObj}
+          idx={idx}
+          handleInputChange={handleInputChange}
+          Inspector={Inspector}
+        />
+      ))}
+    </>
   );
 }

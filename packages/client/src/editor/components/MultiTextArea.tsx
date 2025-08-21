@@ -100,9 +100,11 @@ export const MultiTextArea = ({
 						</div>
 					);
 				})}
-				<Button variant="secondary" onClick={handleAddArray}>
-					Add {id}
-				</Button>
+				{!disabled && (
+					<Button variant="secondary" onClick={handleAddArray}>
+						Add {id}
+					</Button>
+				)}
 			</div>
 		</>
 	);

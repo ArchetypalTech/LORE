@@ -2,7 +2,7 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{
     models::{index::{Player}, components::Component},
-    new_components::{entity_trait::EntityImpl, inspectable_trait::InspectableImpl},
+    new_components::{entity_trait::EntityImpl, reactable_trait::ReactableImpl},
     types::{command_type::Command}, constants::errors::Error,
 };
 
@@ -102,7 +102,7 @@ mod tests {
         assert(story.story.len() == 2, 'story has two entries'); // first entry is intro text
         let test_text: ByteArray = "hello";
 
-        let story_key: u64 = *story.story.at(story.story.len() - 1);
+        let story_key: u32 = *story.story.at(story.story.len() - 1);
         let story_line: StoryLine = world.read_model((story.inst, story_key));
         assert(story_line.line == test_text, 'story has "hello"');
     }

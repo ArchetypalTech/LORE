@@ -1,10 +1,11 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
-        index::{Entity, Inspectable, Container, Player, PlayerStory, StoryLine},
-        components::Component, inspectable::InspectableComponent, container::ContainerComponent,
+        index::{Entity, Reactable, Container, Player, PlayerStory, StoryLine},
+        components::Component, reactable::ReactableComponent, container::ContainerComponent,
+        player::PlayerComponent,
     },
-    new_components::{entity_trait::EntityImpl, inspectable_trait::InspectableImpl},
+    new_components::{entity_trait::EntityImpl, reactable_trait::ReactableImpl},
     constants::errors::Error,
 };
 
@@ -15,7 +16,7 @@ pub impl PlayerImpl of PlayerTrait {
         let context = self.get_context(@world);
         let room = self.get_room(@world);
         if room.is_none() {
-            return Result::Err(Error::ActionFailed);
+            return Result::Err(Error::NoRoom);
         }
         self.say(world, format!("{}", room.unwrap().name));
         for item in context {
@@ -23,16 +24,22 @@ pub impl PlayerImpl of PlayerTrait {
             if (item.inst == *self.inst) {
                 continue;
             }
-            let inspectable_opt: Option<Inspectable> = Component::get_component(world, item.inst);
-            if inspectable_opt.is_some() {
-                let mut inspectable = inspectable_opt.unwrap();
-                if inspectable.already_shown {
-                    self.say(world, format!("{}", inspectable.new_entry));
+            let reactable_opt: Option<Reactable> = Component::get_component(world, item.inst);
+            if reactable_opt.is_some() {
+                let mut reactable = reactable_opt.unwrap();
+                if reactable.already_shown {
+                    self.say(world, format!("{}", reactable.new_entry));
                 } else {
-                    let description = inspectable.get_first_description(world);
+                    let description = reactable.get_first_description(world);
                     self.say(world, format!("{}", description));
-                    inspectable.already_shown = true;
-                    inspectable.store(world);
+                    reactable.already_shown = true;
+                    world
+                        .write_member(
+                            Model::<Reactable>::ptr_from_keys(reactable.inst),
+                            selector!("already_shown"),
+                            reactable.already_shown,
+                        );
+                    // reactable.store(world);
                 }
             }
         };
@@ -44,7 +51,11 @@ pub impl PlayerImpl of PlayerTrait {
         let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
         let room = EntityImpl::get_entity(@world, @room_id).unwrap();
         ent.set_parent(world, @room);
-        world.write_model(@self);
+        world
+            .write_member(
+                Model::<Player>::ptr_from_keys(self.inst), selector!("location"), self.location,
+            );
+        //world.write_model(@self);
         if self.use_debug {
             self.clone().say(world, format!("You {:?} enter {:?}", ent, room));
         }
@@ -52,23 +63,34 @@ pub impl PlayerImpl of PlayerTrait {
 
     // TODO: improve name and better description
     fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        // Read counter from player
-        let mut counter = *self.story_line;
-        // Increase counter
-        let increase: u64 = 1;
-        counter += increase;
-        // Create new story line
-        let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };
-        // Write story line to world
+        let mut player: Player = world.read_model(*self.inst);
+        let mut counter: u32 = player.story_line;
+        let increase: u32 = 1;
+        let new_counter: u32 = counter + increase;
+
+        let story_line = StoryLine { inst: *self.inst, key: new_counter, line: text };
         world.write_model(@story_line);
-        // Add story line to player story
+
         let mut player_story: PlayerStory = world.read_model(*self.inst);
-        player_story.story.append(counter);
-        // update player_story.story
+        player_story.story.append(new_counter);
+        // world
+        //     .write_member(
+        //         Model::<PlayerStory>::ptr_from_keys(*self.inst),
+        //         selector!("story"),
+        //         player_story.story.span(),
+        //     );
         world.write_model(@player_story);
-        // try to store only the story variable but doesn't work
-    //world.write_member(Model::<PlayerStory>::ptr_from_keys(self.inst), selector!("story"),
-    //@player_story.story);
+
+        // Update the player
+        let mut player: Player = world.read_model(*self.inst);
+        player.story_line = new_counter;
+        world
+            .write_member(
+                Model::<Player>::ptr_from_keys(*self.inst),
+                selector!("story_line"),
+                player.story_line,
+            );
+        //player.store(world);
     }
 
 
@@ -76,7 +98,7 @@ pub impl PlayerImpl of PlayerTrait {
         // read counter from player
         let mut counter = *self.story_line;
         // increase counter
-        let increase: u64 = 1;
+        let increase: u32 = 1;
         counter += increase;
         // create new story line
         let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };

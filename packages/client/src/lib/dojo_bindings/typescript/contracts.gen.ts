@@ -109,6 +109,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_createDescriptionText_calldata = (t: Array<DescriptionText>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_description_text",
+			calldata: [t],
+		};
+	};
+
+	const designer_createDescriptionText = async (snAccount: Account | AccountInterface, t: Array<DescriptionText>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createDescriptionText_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createEffect_calldata = (t: Array<Effect>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -172,27 +193,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_createInspectable_calldata = (t: Array<Inspectable>): DojoCall => {
-		return {
-			contractName: "designer",
-			entrypoint: "create_inspectable",
-			calldata: [t],
-		};
-	};
-
-	const designer_createInspectable = async (snAccount: Account | AccountInterface, t: Array<Inspectable>) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_designer_createInspectable_calldata(t),
-				"lore",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_designer_createInventoryItem_calldata = (t: Array<InventoryItem>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -248,6 +248,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_createPlayer_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_createReactable_calldata = (t: Array<Reactable>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_reactable",
+			calldata: [t],
+		};
+	};
+
+	const designer_createReactable = async (snAccount: Account | AccountInterface, t: Array<Reactable>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createReactable_calldata(t),
 				"lore",
 			);
 		} catch (error) {
@@ -382,6 +403,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deleteDescriptionText_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_description_text",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteDescriptionText = async (snAccount: Account | AccountInterface, ids: Array<[BigNumberish, BigNumberish]>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteDescriptionText_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteEffect_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -445,27 +487,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_deleteInspectable_calldata = (ids: Array<BigNumberish>): DojoCall => {
-		return {
-			contractName: "designer",
-			entrypoint: "delete_inspectable",
-			calldata: [ids],
-		};
-	};
-
-	const designer_deleteInspectable = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_designer_deleteInspectable_calldata(ids),
-				"lore",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_designer_deleteInventoryItem_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -521,6 +542,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_deletePlayer_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_deleteReactable_calldata = (ids: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_reactable",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteReactable = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteReactable_calldata(ids),
 				"lore",
 			);
 		} catch (error) {
@@ -606,20 +648,22 @@ export function setupWorld(provider: DojoProvider) {
 			buildCreateConditionCalldata: build_designer_createCondition_calldata,
 			createContainer: designer_createContainer,
 			buildCreateContainerCalldata: build_designer_createContainer_calldata,
+			createDescriptionText: designer_createDescriptionText,
+			buildCreateDescriptionTextCalldata: build_designer_createDescriptionText_calldata,
 			createEffect: designer_createEffect,
 			buildCreateEffectCalldata: build_designer_createEffect_calldata,
 			createEntity: designer_createEntity,
 			buildCreateEntityCalldata: build_designer_createEntity_calldata,
 			createExit: designer_createExit,
 			buildCreateExitCalldata: build_designer_createExit_calldata,
-			createInspectable: designer_createInspectable,
-			buildCreateInspectableCalldata: build_designer_createInspectable_calldata,
 			createInventoryItem: designer_createInventoryItem,
 			buildCreateInventoryItemCalldata: build_designer_createInventoryItem_calldata,
 			createParent: designer_createParent,
 			buildCreateParentCalldata: build_designer_createParent_calldata,
 			createPlayer: designer_createPlayer,
 			buildCreatePlayerCalldata: build_designer_createPlayer_calldata,
+			createReactable: designer_createReactable,
+			buildCreateReactableCalldata: build_designer_createReactable_calldata,
 			createTrigger: designer_createTrigger,
 			buildCreateTriggerCalldata: build_designer_createTrigger_calldata,
 			deleteAction: designer_deleteAction,
@@ -632,20 +676,22 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeleteConditionCalldata: build_designer_deleteCondition_calldata,
 			deleteContainer: designer_deleteContainer,
 			buildDeleteContainerCalldata: build_designer_deleteContainer_calldata,
+			deleteDescriptionText: designer_deleteDescriptionText,
+			buildDeleteDescriptionTextCalldata: build_designer_deleteDescriptionText_calldata,
 			deleteEffect: designer_deleteEffect,
 			buildDeleteEffectCalldata: build_designer_deleteEffect_calldata,
 			deleteEntity: designer_deleteEntity,
 			buildDeleteEntityCalldata: build_designer_deleteEntity_calldata,
 			deleteExit: designer_deleteExit,
 			buildDeleteExitCalldata: build_designer_deleteExit_calldata,
-			deleteInspectable: designer_deleteInspectable,
-			buildDeleteInspectableCalldata: build_designer_deleteInspectable_calldata,
 			deleteInventoryItem: designer_deleteInventoryItem,
 			buildDeleteInventoryItemCalldata: build_designer_deleteInventoryItem_calldata,
 			deleteParent: designer_deleteParent,
 			buildDeleteParentCalldata: build_designer_deleteParent_calldata,
 			deletePlayer: designer_deletePlayer,
 			buildDeletePlayerCalldata: build_designer_deletePlayer_calldata,
+			deleteReactable: designer_deleteReactable,
+			buildDeleteReactableCalldata: build_designer_deleteReactable_calldata,
 			deleteTrigger: designer_deleteTrigger,
 			buildDeleteTriggerCalldata: build_designer_deleteTrigger_calldata,
 			registerPropertyRegistry: designer_registerPropertyRegistry,

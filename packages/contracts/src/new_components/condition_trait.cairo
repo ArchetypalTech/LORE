@@ -2,9 +2,9 @@ use dojo::{world::WorldStorage};
 
 use lore::{
     models::{
-        index::Condition, area::AreaComponent, exit::ExitComponent,
-        inspectable::InspectableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent,
+        index::Condition, area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent, container::ContainerComponent,
+        player::PlayerComponent,
     },
     new_components::{entity_trait::EntityImpl, trigger_trait::TriggerImpl},
     types::{component_type::ComponentType, action_type::{TriggerContext, Operator}},
@@ -40,14 +40,14 @@ pub impl ConditionImpl of ConditionTrait {
                 );
                 component_value = b_component_value;
             },
-            ComponentType::Inspectable => {
-                let inspectable_opt = InspectableComponent::get_component(*world, target);
-                if inspectable_opt.is_none() {
+            ComponentType::Reactable => {
+                let reactable_opt = ReactableComponent::get_component(*world, target);
+                if reactable_opt.is_none() {
                     return false;
                 }
-                let inspectable = OptionTrait::unwrap(inspectable_opt);
+                let reactable = OptionTrait::unwrap(reactable_opt);
                 let (b_component_value, _) = VariablePropertyTrait::get_property(
-                    world, @inspectable.inst, self.property, *self.component,
+                    world, @reactable.inst, self.property, *self.component,
                 );
                 component_value = b_component_value;
             },
@@ -159,11 +159,11 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Inspectable, DescriptionText, Condition}, components::Component,
-            inspectable::InspectableComponent,
+            index::{Reactable, DescriptionText, Condition}, components::Component,
+            reactable::ReactableComponent,
         },
         new_components::entity_trait::EntityImpl,
-        types::{component_type::{ComponentType, ActionMapInspectable, InspectableActions}},
+        types::{component_type::{ComponentType, ActionMapReactable, ReactableActions}},
         lib::{variable_property::VariablePropertyImp},
     };
 
@@ -183,44 +183,44 @@ mod tests {
     #[test]
     fn Condition_test_evaluate_condition() {
         let (mut world, _, _, _, _) = helpers::setup_core();
-        // Create entity and attach InspectableComponent
+        // Create entity and attach ReactableComponent
         let mut door = EntityImpl::create_entity(world);
         door.name = "door";
         world.write_model(@door);
 
         let new_entry: ByteArray = "A door";
-        let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        let mut reactable: Reactable = Component::add_component(world, door.inst);
         let desc1: DescriptionText = DescriptionText {
             inst: door.inst, key: 0, text: new_entry.clone(),
         };
         world.write_model(@desc1);
-        inspectable.is_inspectable = true;
-        inspectable.is_visible = true;
-        inspectable.already_shown = false;
-        inspectable.description = array![0];
-        inspectable.new_entry = new_entry;
-        inspectable
+        reactable.is_reactable = true;
+        reactable.is_visible = true;
+        reactable.already_shown = false;
+        reactable.description = array![0];
+        reactable.new_entry = new_entry;
+        reactable
             .action_map =
                 array![
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "show",
                         inst: 0,
-                        action_fn: InspectableActions::SetVisible,
-                        entrypoint: 0,
+                        action_fn: ReactableActions::SetVisible,
+                        entrypoints: (0, 0),
                     },
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "look",
                         inst: 0,
-                        action_fn: InspectableActions::ReadRandomDescription,
-                        entrypoint: 1,
+                        action_fn: ReactableActions::ReadRandomDescription,
+                        entrypoints: (1, 1),
                     },
                 ];
-        inspectable.store(world);
+        reactable.store(world);
 
         // Register component variable properties
-        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
 
-        // Test: is_inspectable == true (should pass)
+        // Test: is_reactable == true (should pass)
         let key2: felt252 = 2;
         let name2: ByteArray = "Condition name2";
         let mut array_true = ArrayTrait::new();
@@ -230,8 +230,8 @@ mod tests {
             key2,
             name2,
             door.inst,
-            ComponentType::Inspectable,
-            "is_inspectable",
+            ComponentType::Reactable,
+            "is_reactable",
             Operator::Equals,
             array_true,
         );
@@ -241,10 +241,10 @@ mod tests {
                 .evaluate_condition(
                     @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                 ),
-            'is_inspectable should be true',
+            'is_reactable should be true',
         );
 
-        // Test: is_inspectable == false (should fail)
+        // Test: is_reactable == false (should fail)
         let key3: felt252 = 3;
         let name3: ByteArray = "Condition name3";
         let mut array_false = ArrayTrait::new();
@@ -254,8 +254,8 @@ mod tests {
             key3,
             name3,
             door.inst,
-            ComponentType::Inspectable,
-            "is_inspectable",
+            ComponentType::Reactable,
+            "is_reactable",
             Operator::Equals,
             array_false,
         );
@@ -265,7 +265,7 @@ mod tests {
                 .evaluate_condition(
                     @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                 ),
-            'is_inspectable should be false',
+            'is_reactable should be false',
         );
 
         // Test: is_visible == true (should pass)
@@ -278,7 +278,7 @@ mod tests {
             key4,
             name4,
             door.inst,
-            ComponentType::Inspectable,
+            ComponentType::Reactable,
             "is_visible",
             Operator::Equals,
             array3,
@@ -302,7 +302,7 @@ mod tests {
             key5,
             name5,
             door.inst,
-            ComponentType::Inspectable,
+            ComponentType::Reactable,
             "is_visible",
             Operator::Equals,
             array4,
@@ -326,7 +326,7 @@ mod tests {
             key6,
             name6,
             door.inst,
-            ComponentType::Inspectable,
+            ComponentType::Reactable,
             "is_visible",
             Operator::NotEquals,
             not_eq_array,
@@ -350,7 +350,7 @@ mod tests {
             key7,
             name7,
             door.inst,
-            ComponentType::Inspectable,
+            ComponentType::Reactable,
             "is_visible",
             Operator::NotEquals,
             not_eq_array2,

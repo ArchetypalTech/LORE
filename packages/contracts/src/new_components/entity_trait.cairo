@@ -3,8 +3,8 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
 use lore::{
     models::{
-        index::{Entity, Inspectable, DescriptionText, Player, ChildToParent, ParentToChildren},
-        components::Component, player::PlayerComponent, inspectable::InspectableComponent,
+        index::{Entity, Reactable, DescriptionText, Player, ChildToParent, ParentToChildren},
+        components::Component, player::PlayerComponent, reactable::ReactableComponent,
     },
     new_components::player_trait::PlayerImpl,
 };
@@ -29,11 +29,11 @@ pub impl EntityImpl of EntityTrait {
         let mut player: Player = Component::add_component(world, address.into());
         player.address = address;
         world.write_model(@player);
-        let mut inspectable: Inspectable = Component::add_component(world, address.into());
+        let mut reactable: Reactable = Component::add_component(world, address.into());
         let descr1 = DescriptionText { inst: address.into(), key: 0, text: "Looks like a visitor" };
         world.write_model(@descr1);
-        inspectable.description = array![0];
-        world.write_model(@inspectable);
+        reactable.description = array![0];
+        world.write_model(@reactable);
         player.say(world, "You feel light, and shiny, in the head");
         player
     }

@@ -9,7 +9,7 @@ use lore::{
     systems::{designer::{designer, IDesignerDispatcher}, prompt::{prompt, IPromptDispatcher}},
     models::{
         index::{
-            m_Dict, m_Entity, m_Area, m_Exit, m_Inspectable, m_InventoryItem, m_Container, m_Player,
+            m_Dict, m_Entity, m_Area, m_Exit, m_Reactable, m_InventoryItem, m_Container, m_Player,
             m_PlayerStory, m_ParentToChildren, m_ChildToParent, m_Trigger, m_TriggerIndex,
             m_Condition, m_PropertyRegistry, m_Effect, m_Action, m_StoryLine, m_DescriptionText,
         },
@@ -47,7 +47,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(m_PlayerStory::TEST_CLASS_HASH),
             TestResource::Model(m_StoryLine::TEST_CLASS_HASH),
             TestResource::Model(m_Entity::TEST_CLASS_HASH),
-            TestResource::Model(m_Inspectable::TEST_CLASS_HASH),
+            TestResource::Model(m_Reactable::TEST_CLASS_HASH),
             TestResource::Model(m_DescriptionText::TEST_CLASS_HASH),
             TestResource::Model(m_Area::TEST_CLASS_HASH),
             TestResource::Model(m_Exit::TEST_CLASS_HASH),

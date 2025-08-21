@@ -1,11 +1,11 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         index::{Entity, Container, InventoryItem, Player}, components::Component,
         container::ContainerComponent,
     },
     new_components::{entity_trait::EntityImpl, player_trait::PlayerImpl},
-    lib::{a_lexer::CommandImpl},
+    lib::{a_lexer::CommandImpl}, constants::errors::Error,
 };
 
 #[generate_trait]
@@ -24,21 +24,37 @@ pub impl ContainerImpl of ContainerTrait {
     }
 
     fn set_open(self: Container, mut world: WorldStorage, opened: bool) {
-        let mut model: Container = world.read_model(self);
+        let mut model: Container = world.read_model(self.clone());
         model.is_open = opened;
-        world.write_model(@model);
+        world
+            .write_member(
+                Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), model.is_open,
+            );
+        // world.write_model(@model);
     }
 
     fn set_can_be_opened(self: Container, mut world: WorldStorage, can_be_opened: bool) {
-        let mut model: Container = world.read_model(self);
+        let mut model: Container = world.read_model(self.clone());
         model.can_be_opened = can_be_opened;
-        world.write_model(@model);
+        world
+            .write_member(
+                Model::<Container>::ptr_from_keys(self.inst),
+                selector!("can_be_opened"),
+                model.can_be_opened,
+            );
+        // world.write_model(@model);
     }
 
     fn set_can_receive_items(self: Container, mut world: WorldStorage, can_receive_items: bool) {
-        let mut model: Container = world.read_model(self);
+        let mut model: Container = world.read_model(self.clone());
         model.can_receive_items = can_receive_items;
-        world.write_model(@model);
+        world
+            .write_member(
+                Model::<Container>::ptr_from_keys(self.inst),
+                selector!("can_receive_items"),
+                model.can_receive_items,
+            );
+        // world.write_model(@model);
     }
 
     fn is_full(self: @Container, world: @WorldStorage) -> bool {
@@ -50,38 +66,42 @@ pub impl ContainerImpl of ContainerTrait {
         return self.clone().get_item_ids(world).len() == 0;
     }
 
-    fn can_put_item(self: @Container, world: @WorldStorage, item: @InventoryItem) -> bool {
+    fn can_put_item(
+        self: @Container, world: @WorldStorage, item: @InventoryItem,
+    ) -> (bool, Result<(), Error>) {
         let mut can_put_item = false;
         // check if container is open
         if (!*self.is_open) {
-            return can_put_item;
+            return (can_put_item, Result::Err(Error::NotOpen));
         }
         // check if container is full
         if (self.clone().is_full(world)) {
-            return can_put_item;
+            return (can_put_item, Result::Err(Error::ContainerFull));
         }
         // check if container can receive items
         if (!*self.can_receive_items) {
-            return can_put_item;
+            return (can_put_item, Result::Err(Error::CantStore));
         }
         // check if item can be picked up
         if (!*item.can_be_picked_up) {
-            return can_put_item;
+            return (can_put_item, Result::Err(Error::CantBePicked));
         }
         // check if item can go into the container
         if (!*item.can_go_in_container) {
-            return can_put_item;
+            return (can_put_item, Result::Err(Error::CantBeStored));
         }
         // check if item is already in the container
         if (self.contains(*item.inst, world)) {
-            return can_put_item;
+            return (can_put_item, Result::Err(Error::AlreadyStored));
         }
         // if checks pass, container can receive item
         can_put_item = true;
-        can_put_item
+        (can_put_item, Result::Ok(()))
     }
 
-    fn put_item_in(self: Container, mut world: WorldStorage, mut item: InventoryItem) {
+    fn put_item_in(
+        self: Container, mut world: WorldStorage, mut item: InventoryItem,
+    ) -> Result<(), Error> {
         // get container
         let mut container: Container = world.read_model(self.inst);
 
@@ -89,8 +109,9 @@ pub impl ContainerImpl of ContainerTrait {
         let item_entity: Entity = world.read_model(item.inst);
 
         // check if item can be put in container
-        if (!container.clone().can_put_item(@world, @item.clone())) {
-            return;
+        let (result_b, result_c) = container.clone().can_put_item(@world, @item.clone());
+        if (!result_b) {
+            return Result::Err(result_c.unwrap_err());
         }
         // set parent to be the container's entity
         item_entity.set_parent(world, @container.entity(@world));
@@ -98,13 +119,20 @@ pub impl ContainerImpl of ContainerTrait {
         // update container
         world.write_model(@container);
         // update item
-        world.write_model(@item);
+        world
+            .write_member(
+                Model::<InventoryItem>::ptr_from_keys(item.inst),
+                selector!("owner_id"),
+                item.owner_id,
+            );
+        //world.write_model(@item);
+        return Result::Ok(());
     }
 
 
     fn put_item_out(
         self: Container, mut world: WorldStorage, mut item: InventoryItem, player: @Player,
-    ) {
+    ) -> Result<(), Error> {
         // get container
         let mut container: Container = world.read_model(self.inst);
         // get item entity
@@ -114,7 +142,7 @@ pub impl ContainerImpl of ContainerTrait {
 
         // check if the item is in the container
         if (!container.clone().contains(item_entity.inst, @world)) {
-            return;
+            return Result::Err(Error::NotStored);
         }
         // remove item from container:
         // set parent to be the room's entity
@@ -124,7 +152,14 @@ pub impl ContainerImpl of ContainerTrait {
         // update container
         world.write_model(@container);
         // update item
-        world.write_model(@item);
+        world
+            .write_member(
+                Model::<InventoryItem>::ptr_from_keys(item.inst),
+                selector!("owner_id"),
+                item.owner_id,
+            );
+        //world.write_model(@item);
+        return Result::Ok(());
     }
 
     fn contains(self: @Container, itemID: felt252, world: @WorldStorage) -> bool {

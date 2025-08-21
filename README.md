@@ -37,7 +37,7 @@ bun run quickstart
 bun run dev
 ```
 
-> 🛖 Development MODE (local) runs a local instance of Katana, Torii and the client at `http://localhost:5173` and `http://localhost:5173/editor` (without _SSL_, make sure to use `http`)
+> 🛖 Development MODE (local) runs a local instance of Katana, Torii and the client at `https://localhost:5173` and `https://localhost:5173/editor`. It also uses Cartridge Controller for wallet management.
 
 #### Slot MODE:
 _will create a local SSL certificate with mkcert and asks for sudo password_
@@ -52,7 +52,7 @@ bun run dev:slot
 
 ## 🗺️ World deployment:
 
-Initial deployments start with an empty world, use the editor at `http://localhost:5173/editor` to create and publish a world.
+Initial deployments start with an empty world, use the editor at `https://localhost:5173/editor` to create and publish a world.
 
 ## 🔧 Manual dependency installation:
 

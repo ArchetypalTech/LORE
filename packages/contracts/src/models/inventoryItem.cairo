@@ -2,7 +2,7 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         index::{Entity, InventoryItem, Container, Player, Action}, components::Component,
-        area::AreaComponent, container::ContainerComponent, inspectable::InspectableComponent,
+        area::AreaComponent, container::ContainerComponent, reactable::ReactableComponent,
     },
     new_components::{
         entity_trait::EntityImpl, inventoryItem_trait::InventoryItemImpl,
@@ -83,7 +83,9 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         let nouns = command.get_nouns();
         match action.action_fn {
             InventoryItemActions::UseItem => {
-                player.say(world, format!("You are trying to use: {}", nouns[0].text));
+                if *player.use_debug {
+                    player.say(world, format!("You are trying to use: {}", nouns[0].text));
+                }
                 let mut resultUse: Result<(), Error> = Result::Ok(());
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE USE ITEM
@@ -123,14 +125,17 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         target2: 0,
                         inventory_object: self.inst,
                     };
-                    player
-                        .say(
-                            world,
-                            format!(
-                                "Using {} trigger's something at {}", nouns[0].text, nouns[1].text,
-                            ),
-                        );
+
                     if *player.use_debug {
+                        player
+                            .say(
+                                world,
+                                format!(
+                                    "Using {} trigger's something at {}",
+                                    nouns[0].text,
+                                    nouns[1].text,
+                                ),
+                            );
                         player
                             .say(
                                 world,
@@ -165,10 +170,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // Ex: "pickup the sword"
                 let personal_container = player.get_personal_container(@world);
                 if personal_container.is_none() {
-                    return Result::Err(Error::ActionFailed);
+                    return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                container_component.put_item_in(world, self.clone());
+                let res = container_component.put_item_in(world, self.clone());
+                if res.is_err() {
+                    return Result::Err(res.unwrap_err());
+                }
 
                 return Result::Ok(());
             },
@@ -177,10 +185,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // Ex:: "drop the sword"
                 let personal_container = player.get_personal_container(@world);
                 if personal_container.is_none() {
-                    return Result::Err(Error::ActionFailed);
+                    return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                container_component.put_item_out(world, self.clone(), player);
+                let res = container_component.put_item_out(world, self.clone(), player);
+                if res.is_err() {
+                    return Result::Err(res.unwrap_err());
+                }
                 return Result::Ok(());
             },
             InventoryItemActions::PutItem => {
@@ -193,14 +204,20 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     // that is on the room Ex: "put the sword in the box"
                     let entity_container = get_entity_container(@world, player, nouns);
                     if entity_container.is_none() {
-                        return Result::Err(Error::ActionFailed);
+                        return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    container_component.put_item_in(world, self.clone());
+                    let res = container_component.put_item_in(world, self.clone());
+                    if res.is_err() {
+                        return Result::Err(res.unwrap_err());
+                    }
                     return Result::Ok(());
                 }
                 let container_component: Container = player_container.unwrap();
-                container_component.put_item_in(world, self.clone());
+                let res = container_component.put_item_in(world, self.clone());
+                if res.is_err() {
+                    return Result::Err(res.unwrap_err());
+                }
                 return Result::Ok(());
             },
             InventoryItemActions::TakeOutItem => {
@@ -213,10 +230,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     // that is on the room Ex: "take out the sword from the box"
                     let entity_container = get_entity_container(@world, player, nouns);
                     if entity_container.is_none() {
-                        return Result::Err(Error::ActionFailed);
+                        return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    container_component.put_item_out(world, self.clone(), player);
+                    let res = container_component.put_item_out(world, self.clone(), player);
+                    if res.is_err() {
+                        return Result::Err(res.unwrap_err());
+                    }
                     return Result::Ok(());
                 }
                 return Result::Ok(());

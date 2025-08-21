@@ -38,25 +38,25 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 			<Input
 				id="name"
 				value={componentObject.name}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Input
 				id="inst"
 				value={componentObject.inst.toString()}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				readOnly={true}
 			/>
 			<TagInput
 				id="alt_names"
 				value={componentObject.alt_names?.join(",") || ""}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<TextAreaArray
 				id="actions_keys"
 				disabled={true}
 				rows={1}
 				value={componentObject.actions_keys.filter((v) => v !== num.toBigInt(0)).map((v) => formatKeyAsDecimal(v))}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				readOnly={true}
 			/>
 		</Inspector>

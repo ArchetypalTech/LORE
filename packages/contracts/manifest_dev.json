@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x6279c732d93918001bfcce2d2cab5d10a9402a7def48c404cb97a7179ed2f95",
-      "class_hash": "0x42469e17180b773f2e99d209f0ad120576dadd869a6803564281d8b31558447",
+      "address": "0x3375cb3690a698348f65790ed4f64026577dde45566efad50361086f4dd7b41",
+      "class_hash": "0x4eef39a519a6226c5b71e1c4f1361124d398ef1aaf01bf018a161dc663ff198",
       "abi": [
         {
           "type": "impl",
@@ -1402,7 +1402,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::components::player::Player",
+          "name": "lore::models::index::Player",
           "members": [
             {
               "name": "inst",
@@ -1421,6 +1421,10 @@
               "type": "core::felt252"
             },
             {
+              "name": "story_line",
+              "type": "core::integer::u32"
+            },
+            {
               "name": "use_debug",
               "type": "core::bool"
             }
@@ -1428,7 +1432,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::lib::entity::Entity",
+          "name": "lore::models::index::Entity",
           "members": [
             {
               "name": "inst",
@@ -1454,7 +1458,7 @@
         },
         {
           "type": "enum",
-          "name": "lore::components::inspectable::InspectableActions",
+          "name": "lore::types::component_type::ReactableActions",
           "variants": [
             {
               "name": "SetVisible",
@@ -1476,7 +1480,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::components::inspectable::ActionMapInspectable",
+          "name": "lore::types::component_type::ActionMapReactable",
           "members": [
             {
               "name": "action",
@@ -1488,24 +1492,24 @@
             },
             {
               "name": "action_fn",
-              "type": "lore::components::inspectable::InspectableActions"
+              "type": "lore::types::component_type::ReactableActions"
             },
             {
-              "name": "entrypoint",
-              "type": "core::integer::u32"
+              "name": "entrypoints",
+              "type": "(core::integer::u32, core::integer::u32)"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::components::inspectable::Inspectable",
+          "name": "lore::models::index::Reactable",
           "members": [
             {
               "name": "inst",
               "type": "core::felt252"
             },
             {
-              "name": "is_inspectable",
+              "name": "is_reactable",
               "type": "core::bool"
             },
             {
@@ -1514,11 +1518,11 @@
             },
             {
               "name": "description",
-              "type": "core::array::Array::<core::byte_array::ByteArray>"
+              "type": "core::array::Array::<core::integer::u32>"
             },
             {
               "name": "action_map",
-              "type": "core::array::Array::<lore::components::inspectable::ActionMapInspectable>"
+              "type": "core::array::Array::<lore::types::component_type::ActionMapReactable>"
             },
             {
               "name": "already_shown",
@@ -1532,7 +1536,25 @@
         },
         {
           "type": "struct",
-          "name": "lore::components::area::Area",
+          "name": "lore::models::index::DescriptionText",
+          "members": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "key",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "text",
+              "type": "core::byte_array::ByteArray"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "lore::models::index::Area",
           "members": [
             {
               "name": "inst",
@@ -1550,12 +1572,8 @@
         },
         {
           "type": "enum",
-          "name": "lore::constants::constants::Direction",
+          "name": "lore::types::direction_type::Direction",
           "variants": [
-            {
-              "name": "None",
-              "type": "()"
-            },
             {
               "name": "North",
               "type": "()"
@@ -1573,6 +1591,22 @@
               "type": "()"
             },
             {
+              "name": "NorthEast",
+              "type": "()"
+            },
+            {
+              "name": "SouthEast",
+              "type": "()"
+            },
+            {
+              "name": "NorthWest",
+              "type": "()"
+            },
+            {
+              "name": "SouthWest",
+              "type": "()"
+            },
+            {
               "name": "Up",
               "type": "()"
             },
@@ -1584,7 +1618,7 @@
         },
         {
           "type": "enum",
-          "name": "lore::components::exit::ExitActions",
+          "name": "lore::types::component_type::ExitActions",
           "variants": [
             {
               "name": "UseExit",
@@ -1594,7 +1628,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::components::exit::ActionMapExit",
+          "name": "lore::types::component_type::ActionMapExit",
           "members": [
             {
               "name": "action",
@@ -1606,13 +1640,13 @@
             },
             {
               "name": "action_fn",
-              "type": "lore::components::exit::ExitActions"
+              "type": "lore::types::component_type::ExitActions"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::components::exit::Exit",
+          "name": "lore::models::index::Exit",
           "members": [
             {
               "name": "inst",
@@ -1632,17 +1666,17 @@
             },
             {
               "name": "direction_type",
-              "type": "lore::constants::constants::Direction"
+              "type": "lore::types::direction_type::Direction"
             },
             {
               "name": "action_map",
-              "type": "core::array::Array::<lore::components::exit::ActionMapExit>"
+              "type": "core::array::Array::<lore::types::component_type::ActionMapExit>"
             }
           ]
         },
         {
           "type": "enum",
-          "name": "lore::components::inventoryItem::InventoryItemActions",
+          "name": "lore::types::component_type::InventoryItemActions",
           "variants": [
             {
               "name": "UseItem",
@@ -1668,7 +1702,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::components::inventoryItem::ActionMapInventoryItem",
+          "name": "lore::types::component_type::ActionMapInventoryItem",
           "members": [
             {
               "name": "action",
@@ -1680,13 +1714,13 @@
             },
             {
               "name": "action_fn",
-              "type": "lore::components::inventoryItem::InventoryItemActions"
+              "type": "lore::types::component_type::InventoryItemActions"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::components::inventoryItem::InventoryItem",
+          "name": "lore::models::index::InventoryItem",
           "members": [
             {
               "name": "inst",
@@ -1709,8 +1743,12 @@
               "type": "core::bool"
             },
             {
+              "name": "quantity",
+              "type": "core::integer::u32"
+            },
+            {
               "name": "action_map",
-              "type": "core::array::Array::<lore::components::inventoryItem::ActionMapInventoryItem>"
+              "type": "core::array::Array::<lore::types::component_type::ActionMapInventoryItem>"
             },
             {
               "name": "already_used",
@@ -1724,7 +1762,7 @@
         },
         {
           "type": "enum",
-          "name": "lore::components::container::ContainerActions",
+          "name": "lore::types::component_type::ContainerActions",
           "variants": [
             {
               "name": "Open",
@@ -1742,7 +1780,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::components::container::ActionMapContainer",
+          "name": "lore::types::component_type::ActionMapContainer",
           "members": [
             {
               "name": "action",
@@ -1754,13 +1792,13 @@
             },
             {
               "name": "action_fn",
-              "type": "lore::components::container::ContainerActions"
+              "type": "lore::types::component_type::ContainerActions"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::components::container::Container",
+          "name": "lore::models::index::Container",
           "members": [
             {
               "name": "inst",
@@ -1788,49 +1826,47 @@
             },
             {
               "name": "action_map",
-              "type": "core::array::Array::<lore::components::container::ActionMapContainer>"
+              "type": "core::array::Array::<lore::types::component_type::ActionMapContainer>"
             }
           ]
         },
         {
           "type": "enum",
-          "name": "lore::lib::trigger::TriggerType",
+          "name": "lore::types::action_type::TriggerType",
           "variants": [
             {
-              "name": "None",
+              "name": "OnEnter",
               "type": "()"
             },
             {
-              "name": "PlayerEntersArea",
+              "name": "OnExit",
               "type": "()"
             },
             {
-              "name": "PlayerLeavesArea",
+              "name": "OnInteract",
               "type": "()"
             },
             {
-              "name": "UseItem",
+              "name": "OnInspect",
+              "type": "()"
+            },
+            {
+              "name": "OnUse",
+              "type": "()"
+            },
+            {
+              "name": "OnTimer",
+              "type": "()"
+            },
+            {
+              "name": "OnCondition",
               "type": "()"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::lib::trigger::TriggerParameter",
-          "members": [
-            {
-              "name": "name",
-              "type": "core::byte_array::ByteArray"
-            },
-            {
-              "name": "value",
-              "type": "core::felt252"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "lore::lib::trigger::Trigger",
+          "name": "lore::models::index::Trigger",
           "members": [
             {
               "name": "inst",
@@ -1846,11 +1882,7 @@
             },
             {
               "name": "trigger_type",
-              "type": "lore::lib::trigger::TriggerType"
-            },
-            {
-              "name": "parameters",
-              "type": "core::array::Array::<lore::lib::trigger::TriggerParameter>"
+              "type": "lore::types::action_type::TriggerType"
             },
             {
               "name": "is_enabled",
@@ -1868,8 +1900,12 @@
         },
         {
           "type": "enum",
-          "name": "lore::components::Components",
+          "name": "lore::types::component_type::ComponentType",
           "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
             {
               "name": "Area",
               "type": "()"
@@ -1887,7 +1923,7 @@
               "type": "()"
             },
             {
-              "name": "Inspectable",
+              "name": "Reactable",
               "type": "()"
             },
             {
@@ -1897,12 +1933,28 @@
             {
               "name": "Player",
               "type": "()"
+            },
+            {
+              "name": "Trigger",
+              "type": "()"
+            },
+            {
+              "name": "Condition",
+              "type": "()"
+            },
+            {
+              "name": "Effect",
+              "type": "()"
+            },
+            {
+              "name": "Action",
+              "type": "()"
             }
           ]
         },
         {
           "type": "enum",
-          "name": "lore::lib::condition::Operator",
+          "name": "lore::types::action_type::Operator",
           "variants": [
             {
               "name": "Equals",
@@ -1911,12 +1963,20 @@
             {
               "name": "NotEquals",
               "type": "()"
+            },
+            {
+              "name": "GreaterThan",
+              "type": "()"
+            },
+            {
+              "name": "LessThan",
+              "type": "()"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::lib::condition::Condition",
+          "name": "lore::models::index::Condition",
           "members": [
             {
               "name": "inst",
@@ -1927,12 +1987,16 @@
               "type": "core::felt252"
             },
             {
+              "name": "name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
               "name": "target",
               "type": "core::felt252"
             },
             {
               "name": "component",
-              "type": "lore::components::Components"
+              "type": "lore::types::component_type::ComponentType"
             },
             {
               "name": "property",
@@ -1940,7 +2004,7 @@
             },
             {
               "name": "operator",
-              "type": "lore::lib::condition::Operator"
+              "type": "lore::types::action_type::Operator"
             },
             {
               "name": "value",
@@ -1950,7 +2014,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::lib::effect::Effect",
+          "name": "lore::models::index::Effect",
           "members": [
             {
               "name": "inst",
@@ -1961,12 +2025,16 @@
               "type": "core::felt252"
             },
             {
+              "name": "name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
               "name": "target",
               "type": "core::felt252"
             },
             {
               "name": "component",
-              "type": "lore::components::Components"
+              "type": "lore::types::component_type::ComponentType"
             },
             {
               "name": "property",
@@ -1974,13 +2042,13 @@
             },
             {
               "name": "value",
-              "type": "core::array::Array::<core::byte_array::ByteArray>"
+              "type": "core::array::Array::<(core::byte_array::ByteArray, core::integer::u32)>"
             }
           ]
         },
         {
           "type": "struct",
-          "name": "lore::lib::actions::Action",
+          "name": "lore::models::index::Action",
           "members": [
             {
               "name": "inst",
@@ -2034,7 +2102,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::lib::relations::ParentToChildren",
+          "name": "lore::models::index::ParentToChildren",
           "members": [
             {
               "name": "inst",
@@ -2052,7 +2120,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::lib::relations::ChildToParent",
+          "name": "lore::models::index::ChildToParent",
           "members": [
             {
               "name": "inst",
@@ -2078,7 +2146,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::components::player::Player>"
+                  "type": "core::array::Array::<lore::models::index::Player>"
                 }
               ],
               "outputs": [],
@@ -2090,7 +2158,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::lib::entity::Entity>"
+                  "type": "core::array::Array::<lore::models::index::Entity>"
                 }
               ],
               "outputs": [],
@@ -2098,11 +2166,23 @@
             },
             {
               "type": "function",
-              "name": "create_inspectable",
+              "name": "create_reactable",
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::components::inspectable::Inspectable>"
+                  "type": "core::array::Array::<lore::models::index::Reactable>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_description_text",
+              "inputs": [
+                {
+                  "name": "t",
+                  "type": "core::array::Array::<lore::models::index::DescriptionText>"
                 }
               ],
               "outputs": [],
@@ -2114,7 +2194,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::components::area::Area>"
+                  "type": "core::array::Array::<lore::models::index::Area>"
                 }
               ],
               "outputs": [],
@@ -2126,7 +2206,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::components::exit::Exit>"
+                  "type": "core::array::Array::<lore::models::index::Exit>"
                 }
               ],
               "outputs": [],
@@ -2138,7 +2218,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::components::inventoryItem::InventoryItem>"
+                  "type": "core::array::Array::<lore::models::index::InventoryItem>"
                 }
               ],
               "outputs": [],
@@ -2150,7 +2230,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::components::container::Container>"
+                  "type": "core::array::Array::<lore::models::index::Container>"
                 }
               ],
               "outputs": [],
@@ -2162,7 +2242,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::lib::trigger::Trigger>"
+                  "type": "core::array::Array::<lore::models::index::Trigger>"
                 }
               ],
               "outputs": [],
@@ -2174,7 +2254,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::lib::condition::Condition>"
+                  "type": "core::array::Array::<lore::models::index::Condition>"
                 }
               ],
               "outputs": [],
@@ -2186,7 +2266,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::lib::effect::Effect>"
+                  "type": "core::array::Array::<lore::models::index::Effect>"
                 }
               ],
               "outputs": [],
@@ -2198,7 +2278,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::lib::actions::Action>"
+                  "type": "core::array::Array::<lore::models::index::Action>"
                 }
               ],
               "outputs": [],
@@ -2210,7 +2290,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::lib::relations::ParentToChildren>"
+                  "type": "core::array::Array::<lore::models::index::ParentToChildren>"
                 }
               ],
               "outputs": [],
@@ -2222,7 +2302,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::lib::relations::ChildToParent>"
+                  "type": "core::array::Array::<lore::models::index::ChildToParent>"
                 }
               ],
               "outputs": [],
@@ -2254,11 +2334,23 @@
             },
             {
               "type": "function",
-              "name": "delete_inspectable",
+              "name": "delete_reactable",
               "inputs": [
                 {
                   "name": "ids",
                   "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "delete_description_text",
+              "inputs": [
+                {
+                  "name": "ids",
+                  "type": "core::array::Array::<(core::felt252, core::felt252)>"
                 }
               ],
               "outputs": [],
@@ -2519,7 +2611,8 @@
       "systems": [
         "create_player",
         "create_entity",
-        "create_inspectable",
+        "create_reactable",
+        "create_description_text",
         "create_area",
         "create_exit",
         "create_inventory_item",
@@ -2532,7 +2625,8 @@
         "create_child",
         "delete_player",
         "delete_entity",
-        "delete_inspectable",
+        "delete_reactable",
+        "delete_description_text",
         "delete_area",
         "delete_exit",
         "delete_inventory_item",
@@ -2548,8 +2642,8 @@
       ]
     },
     {
-      "address": "0x521fd5bbd6abd0edd550accfd2464946f016e11ff4ac25e66c05f295b827f7d",
-      "class_hash": "0x652ee26dd17ff1fbc4f193f411625d9de8dcfb83e1a3d1012a522ae425af380",
+      "address": "0x5e5de39d13757249ee6a9e1c0948c704b95b2791f7848d80d4e97114ec1c65e",
+      "class_hash": "0x292ed38a181d1366721005ef9630cb0ab8cbb96658291fab47546e71f8be9f8",
       "abi": [
         {
           "type": "impl",
@@ -2752,13 +2846,13 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x526e7e9fd44c1487a0410c7e077287e7535615b41f3f4d22899556ec13d1112",
+      "class_hash": "0xc66faac2db2aaf5195503c975339ab853fc246bf8709ec9d0828488cd03866",
       "tag": "lore-Action",
       "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
     },
     {
       "members": [],
-      "class_hash": "0x7e7cfcf4d8bf55d02275a114a38a223d5b0f5f163429873993aa8dc2ec86d13",
+      "class_hash": "0x7c20a169299741cb15f5858f5db06589b0e7763ee041d6a5014e36a676843de",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },
@@ -2770,97 +2864,103 @@
     },
     {
       "members": [],
-      "class_hash": "0x7c217202bb561a7e2e56f979e671213631be3faa86f4b8bfcf18734ece6c577",
+      "class_hash": "0x75b8006e4ff009f7be1461be5bb33f98aa0cb860715b39d48ea7f800520d450",
       "tag": "lore-ComponentVariable",
       "selector": "0x7ce96a78c69170fe31cf5c816ec24414fd4c354324f8b9537e6830c9177cfe4"
     },
     {
       "members": [],
-      "class_hash": "0x7a55e6993b61f266faac73fb6a382535bfadccc100cbbc6eea05beb2ce370e7",
+      "class_hash": "0x4b5cc9d620bb111af257830584b2108f388ab579421cfd100ef473265ff5c55",
       "tag": "lore-Condition",
       "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
     {
       "members": [],
-      "class_hash": "0x7d1fb74c282729be74ebf1d4f19e5333c52906d7c1c5047bf005d9180e96e7c",
+      "class_hash": "0x44a2e9438a622ecd645805e28a94c1db492c70cd3dab6b0728bec4cd87d3046",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
     },
     {
       "members": [],
-      "class_hash": "0x7bae21cb4194aa32ac1dc312c476397c8c7aef10cad75b4546f43a1e679191b",
+      "class_hash": "0x3abcef04ec7aa5ad38ccb9ff542c808f976cf5bc8fe66f032a702f37561b629",
+      "tag": "lore-DescriptionText",
+      "selector": "0x167fb02affa7c5f0c7eb85c605f7030903bcc6887619cc8b1b1898f05c78fd6"
+    },
+    {
+      "members": [],
+      "class_hash": "0x4fc0e779ff3d347b1c55cc85ffbb9a5b079ef237c5b2a6968539de9c1d50a99",
       "tag": "lore-Dict",
       "selector": "0x9996c1f71c9e4ac6a9494339f26be5714aa647941449dde8a2feb62a02801"
     },
     {
       "members": [],
-      "class_hash": "0x30b5b29ea96bbf75f794287a03734d0b93c02574eea41bb78f6a085e66e246c",
+      "class_hash": "0x4f374c110ba75476f4733f6749c4c159d979e10200dc7f439959422910ecd03",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },
     {
       "members": [],
-      "class_hash": "0x46595900b8e4e7beec2f291b577afdba400ed56978858102a3f912519900990",
-      "tag": "lore-EffectExecution",
-      "selector": "0x698a995d9da4025df54271e22829b96485465b52623ccd9c33509af48e20ba8"
-    },
-    {
-      "members": [],
-      "class_hash": "0x4eb566b0b8218becc004a11da62d8f8db400d4cf9fa1031aa41f50c8867176d",
+      "class_hash": "0x2174170603e87d1089db0c282b42f9ff2a3941d7cc77bcc8971dde7a2ddc72a",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
     {
       "members": [],
-      "class_hash": "0x4e319e1aaee413e00f2b7ad2d7f6a18a2be7a8558f4409f2aad67d23bbecb3c",
+      "class_hash": "0x361c4f97448bbf4d18532a2efebbc278ff7d7132489f77dd43b0e9a4c98759b",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
     },
     {
       "members": [],
-      "class_hash": "0x6caadfae8d4c947e2c11bf07ea3752211c8131f3fe3fd4e8e79859cd9a850b1",
-      "tag": "lore-Inspectable",
-      "selector": "0x761c792e623173857f21316868bd06f19050cfc26238d33476231e335cf59c9"
-    },
-    {
-      "members": [],
-      "class_hash": "0x31c4db33bd8800480087322ccf2ffe71436fd0687e1ed7111330fb069d04c30",
+      "class_hash": "0x75637d4ecdf3fb01400a13bfd01873bf5bcc8b508783987ce6c5b42b4f79296",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },
     {
       "members": [],
-      "class_hash": "0x2e22e037a74386b5d506caaa79b3c5371afa28e25ab5401fe61b77d7ab8fb82",
+      "class_hash": "0x6d7a9c1511cb3e0ab62710782d0dc6814b70c8fa93890b6081979adb27e18e5",
       "tag": "lore-ParentToChildren",
       "selector": "0x6dbfac2c9f2142b49b785d40a8a9408a3d9097687a344f6daf21cddde65412b"
     },
     {
       "members": [],
-      "class_hash": "0x289066825cd496894f27022bccb7775a8c6ebd4563f726ef2faaa3d773f1fb8",
+      "class_hash": "0x76b859ea6ae4fb59883549783103b1e56330e3fad2d4e2776e57e1d5500f490",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },
     {
       "members": [],
-      "class_hash": "0x746ed669c8da81a12c82275a4316e71ac37e5d1fdae797a3c675386247a375e",
+      "class_hash": "0x789245bdefe86c42501e150ca819191c75430eb9951bdf87c41dc84e12668e8",
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
     },
     {
       "members": [],
-      "class_hash": "0x784376b270f7927fda8990cb052993b59c2ecf14249214fed3ed653a69719a1",
+      "class_hash": "0x7ef3371311ee14df227bc9e3944b23dc0da71c1ce0ebf17982532961eb0e411",
       "tag": "lore-PropertyRegistry",
       "selector": "0x54d238bab1b146fbb42252f5fba933d9fb90048459d848a6fff3a2528615b59"
     },
     {
       "members": [],
-      "class_hash": "0x4144c14ef0ac63c28832a15f9a274897de8311789515e0371883311bbc7656b",
+      "class_hash": "0x14e4af343fbd6e16b31b5e47e78e0abe5148331ec49e0cc579764414398b508",
+      "tag": "lore-Reactable",
+      "selector": "0x13fefc8a36ffca06da26b1726d49465726acb19821a4d3382f5c9420a4a4896"
+    },
+    {
+      "members": [],
+      "class_hash": "0x5dd210188a9073f1ba28798263048e7cd64255dac7b8845902e46286c51dc02",
+      "tag": "lore-StoryLine",
+      "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
+    },
+    {
+      "members": [],
+      "class_hash": "0x184bfe735d125feab45e8b6ab2aeed0a53f7763ca9d464b476247d526b53fda",
       "tag": "lore-Trigger",
       "selector": "0x8f76987efdbfa10b4f5f6a6ed5450ecc5241301beabc41a889d84c40f87cfa"
     },
     {
       "members": [],
-      "class_hash": "0x15143642c0242196ec72433fa5cf9488c5ec11b3b1e471fb7fe4f37d12da8bc",
+      "class_hash": "0x23daba7ed06708a30ea083232a8fea65a33eea1faa17c762c99c77bbcff7d81",
       "tag": "lore-TriggerIndex",
       "selector": "0x472f592295e556e032f9ea3d00faf9cbd2729afe3a6fc168cf6034c65b7dc6"
     }

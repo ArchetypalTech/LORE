@@ -33,10 +33,30 @@ pub enum Error {
     NoComponent,
     NoAreaComponent,
     NoExitComponent,
-    NoInspectableComponent,
+    NoReactableComponent,
     NoInventoryItemComponent,
     NoContainerComponent,
     NoPlayerComponent,
     // Entity
     NoTargetEntity,
+    // Exit
+    NameNotMatch,
+    DirectionNotMatch,
+    Unenterable,
+    // Reactable
+    FailToReactTo,
+    NoTarget,
+    // Container
+    NotOpen,
+    ContainerFull,
+    CantStore,
+    NoPersonalContainer,
+    NoContainer,
+    // Inventory Item
+    CantBePicked,
+    CantBeStored,
+    AlreadyStored,
+    NotStored,
+    // Player
+    NoRoom,
 }

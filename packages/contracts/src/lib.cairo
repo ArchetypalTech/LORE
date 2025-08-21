@@ -20,6 +20,7 @@ pub mod lib {
     //pub mod condition;
     pub mod variable_property;
     pub mod variable_property_helper;
+    pub mod errors_texts_output;
     //pub mod effect;
 //pub mod actions;
 }
@@ -30,7 +31,7 @@ pub mod models {
     pub mod container;
     pub mod area;
     pub mod exit;
-    pub mod inspectable;
+    pub mod reactable;
     pub mod inventoryItem;
     pub mod player;
 }
@@ -42,7 +43,7 @@ pub mod new_components {
     pub mod effect_trait;
     pub mod entity_trait;
     pub mod exit_trait;
-    pub mod inspectable_trait;
+    pub mod reactable_trait;
     pub mod inventoryItem_trait;
     pub mod player_trait;
     pub mod trigger_trait;

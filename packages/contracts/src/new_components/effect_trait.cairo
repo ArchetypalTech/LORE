@@ -2,9 +2,9 @@ use dojo::{world::WorldStorage};
 
 use lore::{
     models::{
-        index::{Effect}, area::AreaComponent, exit::ExitComponent,
-        inspectable::InspectableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent,
+        index::{Effect}, area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent, container::ContainerComponent,
+        player::PlayerComponent,
     },
     types::{action_type::TriggerContext, component_type::ComponentType},
     lib::{utils::ByteArrayTraitExt, variable_property::{VariablePropertyImp}},
@@ -49,19 +49,15 @@ pub impl EffectImpl of EffectTrait {
                         @world, @exit.inst, self.property, self.value, self.component.clone(),
                     );
             },
-            ComponentType::Inspectable => {
-                let inspect_opt = InspectableComponent::get_component(world, *actual_target);
+            ComponentType::Reactable => {
+                let inspect_opt = ReactableComponent::get_component(world, *actual_target);
                 if inspect_opt.is_none() {
-                    result = Result::Err(Error::NoInspectableComponent);
+                    result = Result::Err(Error::NoReactableComponent);
                 }
-                let mut inspectable = inspect_opt.unwrap();
+                let mut reactable = inspect_opt.unwrap();
                 result =
                     VariablePropertyImp::set_property(
-                        @world,
-                        @inspectable.inst,
-                        self.property,
-                        self.value,
-                        self.component.clone(),
+                        @world, @reactable.inst, self.property, self.value, self.component.clone(),
                     );
             },
             ComponentType::InventoryItem => {
@@ -111,16 +107,15 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Inspectable, DescriptionText, Player}, components::Component,
-            area::AreaComponent, inspectable::InspectableComponent,
-            player::{PlayerComponent, caller_as_player},
+            index::{Reactable, DescriptionText, Player}, components::Component, area::AreaComponent,
+            reactable::ReactableComponent, player::{PlayerComponent, caller_as_player},
         },
         new_components::{
             entity_trait::EntityImpl, player_trait::PlayerImpl, trigger_trait::TriggerImpl,
         },
         types::{
             action_type::TriggerContext,
-            component_type::{ComponentType, ActionMapInspectable, InspectableActions},
+            component_type::{ComponentType, ActionMapReactable, ReactableActions},
         },
         lib::{variable_property::VariablePropertyImp},
     };
@@ -150,30 +145,30 @@ mod tests {
         let mut door = EntityImpl::create_entity(world);
         door.name = "door";
         world.write_model(@door);
-        let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        let mut reactable: Reactable = Component::add_component(world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
-        inspectable.is_inspectable = true;
-        inspectable.is_visible = true;
-        inspectable.description = array![0];
-        inspectable
+        reactable.is_reactable = true;
+        reactable.is_visible = true;
+        reactable.description = array![0];
+        reactable
             .action_map =
                 array![
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "show",
                         inst: 0,
-                        action_fn: InspectableActions::SetVisible,
-                        entrypoint: 0,
+                        action_fn: ReactableActions::SetVisible,
+                        entrypoints: (0, 0),
                     },
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "look",
                         inst: 0,
-                        action_fn: InspectableActions::ReadRandomDescription,
-                        entrypoint: 1,
+                        action_fn: ReactableActions::ReadRandomDescription,
+                        entrypoints: (1, 1),
                     },
                 ];
-        inspectable.store(world);
-        let old_insp_door: Inspectable = world.read_model(door.inst);
+        reactable.store(world);
+        let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
@@ -185,7 +180,7 @@ mod tests {
         let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
-        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
 
         // Test description new value
         let new_value: Array<(ByteArray, u32)> = array![
@@ -198,16 +193,16 @@ mod tests {
             key,
             name,
             door.inst,
-            ComponentType::Inspectable,
+            ComponentType::Reactable,
             "description",
             new_value.clone(),
         );
         world.write_model(@effect);
         let result = effect.apply_effect(world, context);
 
-        let new_inspectable: Inspectable = world.read_model(door.inst);
-        let key: u32 = *new_inspectable.description.at(0);
-        let key2: u32 = *new_inspectable.description.at(1);
+        let new_reactable: Reactable = world.read_model(door.inst);
+        let key: u32 = *new_reactable.description.at(0);
+        let key2: u32 = *new_reactable.description.at(1);
         let new_txt1: DescriptionText = world.read_model((door.inst, key));
         let new_txt2: DescriptionText = world.read_model((door.inst, key2));
 

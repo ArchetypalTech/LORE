@@ -2,10 +2,10 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         index::{
-            Area, Exit, Inspectable, DescriptionText, InventoryItem, Container, Player,
+            Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Player,
             PropertyRegistry,
         },
-        area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
+        area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
         inventoryItem::InventoryItemComponent, container::ContainerComponent,
         player::PlayerComponent,
     },
@@ -41,9 +41,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
-            ComponentType::Inspectable => array![
+            ComponentType::Reactable => array![
                 ComponentProperty {
-                    name: "is_inspectable",
+                    name: "is_reactable",
                     property_type: PropertyType::Boolean,
                     access_flags: PropertyAccess::ReadOnly,
                 },
@@ -107,6 +107,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     access_flags: PropertyAccess::ReadWrite,
                 },
                 ComponentProperty {
+                    name: "quantity",
+                    property_type: PropertyType::U32,
+                    access_flags: PropertyAccess::ReadWrite,
+                },
+                ComponentProperty {
                     name: "already_used",
                     property_type: PropertyType::Boolean,
                     access_flags: PropertyAccess::ReadWrite,
@@ -140,7 +145,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 },
                 ComponentProperty {
                     name: "num_slots",
-                    property_type: PropertyType::U8,
+                    property_type: PropertyType::U32,
                     access_flags: PropertyAccess::ReadWrite,
                 },
             ],
@@ -222,12 +227,12 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (value, access);
     }
 
-    fn get_inspectable_property(
-        component: Inspectable, name: @ByteArray, property: @PropertyRegistry, world: WorldStorage,
+    fn get_reactable_property(
+        component: Reactable, name: @ByteArray, property: @PropertyRegistry, world: WorldStorage,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
-        let is_inspectable: ByteArray = "is_inspectable";
+        let is_reactable: ByteArray = "is_reactable";
         let description: ByteArray = "description";
         let mut value: Option<Array<felt252>> = Option::None;
         let mut access: Option<PropertyAccess> = Option::None;
@@ -237,8 +242,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 let mut arr: Array<felt252> = ArrayTrait::new();
                 if name == @is_visible {
                     arr.append(component.is_visible.into());
-                } else if name == @is_inspectable {
-                    arr.append(component.is_inspectable.into());
+                } else if name == @is_reactable {
+                    arr.append(component.is_reactable.into());
                 } else if name == @description {
                     let desc = component.description;
                     for i in 0..desc.len() {
@@ -263,6 +268,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
         let can_go_in_container: ByteArray = "can_go_in_container";
+        let quantity: ByteArray = "quantity";
         let already_used: ByteArray = "already_used";
         let multiple_use: ByteArray = "multiple_use";
         let mut value: Option<Array<felt252>> = Option::None;
@@ -277,6 +283,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     arr.append(component.can_be_picked_up.into());
                 } else if name == @can_go_in_container {
                     arr.append(component.can_go_in_container.into());
+                } else if name == @quantity {
+                    arr.append(component.quantity.into());
                 } else if name == @already_used {
                     arr.append(component.already_used.into());
                 } else if name == @multiple_use {
@@ -441,8 +449,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (result, success);
     }
 
-    fn set_inspectable_property(
-        mut component: Inspectable,
+    fn set_reactable_property(
+        mut component: Reactable,
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
@@ -450,7 +458,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
-        let is_inspectable: ByteArray = "is_inspectable";
+        let is_reactable: ByteArray = "is_reactable";
         let description: ByteArray = "description";
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Ok(());
@@ -464,10 +472,10 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_visible = new_var_value;
                             success = true;
-                        } else if name == @is_inspectable {
+                        } else if name == @is_reactable {
                             let (value, _index) = new_value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
-                            component.is_inspectable = new_var_value;
+                            component.is_reactable = new_var_value;
                             success = true;
                         } else if name == @description {
                             for (value, index) in new_value.clone() {
@@ -517,6 +525,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let owner_id: ByteArray = "owner_id";
         let can_be_picked_up: ByteArray = "can_be_picked_up";
         let can_go_in_container: ByteArray = "can_go_in_container";
+        let quantity: ByteArray = "quantity";
         let already_used: ByteArray = "already_used";
         let multiple_use: ByteArray = "multiple_use";
         let mut success: bool = false;
@@ -540,6 +549,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             let (value, _index) = new_value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_go_in_container = new_var_value;
+                            success = true;
+                        } else if name == @quantity {
+                            let (value, _index) = new_value[0].clone();
+                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(value);
+                            component.quantity = new_var_value;
                             success = true;
                         } else if name == @already_used {
                             let (value, _index) = new_value[0].clone();

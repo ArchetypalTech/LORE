@@ -3,6 +3,7 @@ import { Button } from "./ui/Button";
 import { DeleteButton, Select } from "./FormComponents";
 import { BigNumberish } from "starknet";
 import { formatKeyAsDecimal } from "./FormComponents";
+import type { Trigger } from "@/lib/dojo_bindings/typescript/models.gen";
 
 interface TriggerSelectorProps {
   id: string;
@@ -49,7 +50,7 @@ export const TriggerSelector = ({
 
   const entityOptions = useMemo(() => {
     return Array.from(dataPool.entries())
-      .filter(([_, val]) => val.Entity?.name && val.Trigger?.key)
+      .filter(([_, val]) => val.Entity?.name && val.Trigger as Trigger[])
       .map(([address, val]) => ({
         label: val.Entity.name,
         value: address,
@@ -59,12 +60,14 @@ export const TriggerSelector = ({
   const getTriggerOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
     if (!entity || !entity.Trigger) return [];
-    return [
-      {
-        label: formatKeyAsDecimal(entity.Trigger.key),
-        value: entity.Trigger.key.toString(),
-      },
-    ];
+    console.log("entity.Trigger", entity.Trigger);
+    return entity.Trigger.map(trigger => {
+      return {
+        label: trigger.name.toString(),
+        value: trigger.key.toString()
+      }
+    }
+    );
   };
 
   return (
@@ -77,12 +80,12 @@ export const TriggerSelector = ({
             onChange={(e) => handleChange(i, 0, e.target.value)}
             disabled={readOnly}
             options={[
-            { value: "__placeholder__", label: "Select entity"},
-            ...entityOptions.map((opt) => ({
-              value: opt.value.toString(),
-              label: String(opt.label),
-            })),
-          ]}
+              { value: "__placeholder__", label: "Select entity" },
+              ...entityOptions.map((opt) => ({
+                value: opt.value.toString(),
+                label: String(opt.label),
+              })),
+            ]}
           />
 
           <Select

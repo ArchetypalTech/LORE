@@ -40,7 +40,7 @@ type InspectorProps<T extends { inst: BigNumberish }> = {
 		componentName: keyof EntityCollection,
 		component: T,
 	) => Promise<void>;
-	handleRemove: (componentName: keyof EntityCollection) => void;
+	handleRemove: (componentName: keyof EntityCollection, index?: number) => void;
 	inputHandlers?: {
 		[key: string]: InputHandler<T>;
 	};
@@ -53,21 +53,38 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 	handleRemove,
 	inputHandlers = {},
 }: InspectorProps<T>) => {
-	const handleInputChange = (e: InputEvent) => {
+	const handleInputChange = (index?: number) => (e: InputEvent) => {
 		if (!componentObject) return;
 
-		const entity = EditorData().getEntity(componentObject.inst);
+		let inst = componentObject.inst;
+		if (index !== undefined) {
+			inst = componentObject[index].inst;
+		}
+
+		const entity = EditorData().getEntity(inst);
 		if (!entity) {
 			throw new Error("Entity not found");
 		}
-		const component = entity[componentName as keyof typeof entity];
+		let component = entity[componentName as keyof typeof entity];
+
+		if (index !== undefined) {
+			component[index] = entity[componentName as keyof typeof entity][index];
+		}
+
 		if (!component) {
 			throw new Error(`${componentName} not found`);
 		}
 
-		const updatedObject = {
-			...component,
-		} as unknown as T;
+		let updatedObject;
+		if (index !== undefined) {
+			updatedObject = {
+				...component[index],
+			} as unknown as T;
+		} else {
+			updatedObject = {
+				...component,
+			} as unknown as T;
+		}
 
 		const { id, value } = e.target;
 
@@ -79,21 +96,34 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 			updatedObject[id as keyof T] = value as unknown as T[keyof T];
 		}
 
-		const editorObject = {
-			...entity,
-			[componentName]: updatedObject,
-		} as AnyObject;
+		let editorObject;
+		if (index !== undefined) {
+			editorObject = {
+				...entity,
+			} as AnyObject;
+			editorObject[componentName][index] = updatedObject;
+		} else {
+			editorObject = {
+				...entity,
+				[componentName]: updatedObject,
+			} as AnyObject;
+		}
+
 		if (!editorObject) {
 			throw new Error("Editor object not found");
 		}
 		// @dev: check if we have any changes- if not we don't blur the inputs; if we don't do this, we can't use tab to select different fields (as react updates whole entity inspector)
-		if (JSONbig.stringify(editorObject) !== JSONbig.stringify(entity)) {
+		if (index !== undefined) {
 			handleEdit(componentName, updatedObject);
+		} else {
+			if (JSONbig.stringify(editorObject) !== JSONbig.stringify(entity)) {
+				handleEdit(componentName, updatedObject);
+			}
 		}
 	};
 
 	const Inspector = useCallback(
-		({ children }: React.PropsWithChildren) => {
+		({ children, index }: React.PropsWithChildren<{ index?: number }>) => {
 			return (
 				<div className="component-inspector">
 					<div className="relative flex w-full flex-row items-center justify-end gap-2 text-right font-bold text-black/50 text-xs uppercase">
@@ -105,7 +135,9 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 							className="text-[7pt] text-black/20 opacity-0 hover:opacity-100"
 							// biome-ignore lint/security/noDangerouslySetInnerHtml: <hey, sometimes, you have to live dangerously!>
 							dangerouslySetInnerHTML={{
-								__html: formatColorHash(componentObject.inst),
+								__html: Array.isArray(componentObject)
+									? formatColorHash(componentObject[0].inst)
+									: formatColorHash(componentObject.inst),
 							}}
 						/>
 						<div className="flex grow" />
@@ -114,7 +146,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 								title={`Remove ${componentName} component`}
 								variant={"ghost"}
 								size="sm"
-								onClick={() => handleRemove(componentName)}
+								onClick={() => handleRemove(componentName, index)}
 								className="h-2 w-2 opacity-50 hover:opacity-100"
 							>
 								<Trash2 />

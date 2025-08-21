@@ -1,11 +1,10 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 
 use lore::{
     models::{
         index::{Entity, Action, Player, Trigger, Condition, Effect}, area::AreaComponent,
-        exit::ExitComponent, inspectable::InspectableComponent,
-        inventoryItem::InventoryItemComponent, container::ContainerComponent,
-        player::PlayerComponent,
+        exit::ExitComponent, reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
+        container::ContainerComponent, player::PlayerComponent,
     },
     new_components::{
         entity_trait::EntityImpl, trigger_trait::TriggerImpl, condition_trait::ConditionImpl,
@@ -44,7 +43,13 @@ pub impl ActionImpl of ActionTrait {
         let mut entity: Entity = EntityImpl::get_entity(@world, @action.inst).unwrap();
         entity.actions_keys.append(action.key);
         // 2. Update the entity
-        world.write_model(@entity);
+        world
+            .write_member(
+                Model::<Entity>::ptr_from_keys(entity.inst),
+                selector!("actions_keys"),
+                entity.actions_keys,
+            );
+        // world.write_model(@entity);
         // 3. Write the action
         world.write_model(@action);
         Result::Ok(())
@@ -127,7 +132,13 @@ pub impl ActionImpl of ActionTrait {
         // If all conditions are met, mark action as executed
         if (result_t.is_ok() && result && result_e.is_ok()) {
             action.executed = true;
-            world.write_model(@action);
+            world
+                .write_member(
+                    Model::<Action>::ptr_from_keys((action.inst, action.key)),
+                    selector!("executed"),
+                    action.executed,
+                );
+            // world.write_model(@action);
             for response in action.success_response.clone() {
                 player.say(world, response);
             }
@@ -141,12 +152,24 @@ pub impl ActionImpl of ActionTrait {
 
     fn enable_action(mut self: Action, mut world: WorldStorage) {
         self.is_enabled = true;
-        world.write_model(@self);
+        world
+            .write_member(
+                Model::<Action>::ptr_from_keys((self.inst, self.key)),
+                selector!("is_enabled"),
+                self.is_enabled,
+            );
+        // world.write_model(@self);
     }
 
     fn disable_action(mut self: Action, mut world: WorldStorage) {
         self.is_enabled = false;
-        world.write_model(@self);
+        world
+            .write_member(
+                Model::<Action>::ptr_from_keys((self.inst, self.key)),
+                selector!("is_enabled"),
+                self.is_enabled,
+            );
+        // world.write_model(@self);
     }
 }
 
@@ -158,10 +181,10 @@ mod tests {
     use lore::{
         models::{
             index::{
-                Entity, Area, Exit, Inspectable, DescriptionText, InventoryItem, Container, Trigger,
+                Entity, Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Trigger,
                 Condition, Effect, Action,
             },
-            area::AreaComponent, exit::ExitComponent, inspectable::InspectableComponent,
+            area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
             inventoryItem::InventoryItemComponent, container::ContainerComponent,
             player::{PlayerComponent, caller_as_player}, components::Component,
         },
@@ -171,7 +194,7 @@ mod tests {
         },
         types::{
             component_type::{
-                ComponentType, ExitActions, ActionMapExit, InspectableActions, ActionMapInspectable,
+                ComponentType, ExitActions, ActionMapExit, ReactableActions, ActionMapReactable,
                 InventoryItemActions, ActionMapInventoryItem,
             },
             action_type::{TriggerType, TriggerContext, Operator}, direction_type::Direction,
@@ -214,30 +237,30 @@ mod tests {
         let mut door = EntityImpl::create_entity(world);
         door.name = "door";
         world.write_model(@door);
-        // add inspectable component to door
-        let mut inspectable: Inspectable = Component::add_component(world, door.inst);
+        // add reactable component to door
+        let mut reactable: Reactable = Component::add_component(world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
-        inspectable.is_inspectable = true;
-        inspectable.is_visible = true;
-        inspectable.description = array![0];
-        inspectable
+        reactable.is_reactable = true;
+        reactable.is_visible = true;
+        reactable.description = array![0];
+        reactable
             .action_map =
                 array![
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "show",
                         inst: 0,
-                        action_fn: InspectableActions::SetVisible,
-                        entrypoint: 0,
+                        action_fn: ReactableActions::SetVisible,
+                        entrypoints: (0, 0),
                     },
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "look",
                         inst: 0,
-                        action_fn: InspectableActions::ReadRandomDescription,
-                        entrypoint: 1,
+                        action_fn: ReactableActions::ReadRandomDescription,
+                        entrypoints: (1, 1),
                     },
                 ];
-        inspectable.store(world);
+        reactable.store(world);
         // add exit component to door
         let mut exit_component: Exit = Component::add_component(world, door.inst);
         exit_component.is_exit = true;
@@ -263,30 +286,30 @@ mod tests {
         item.name = "ball";
         item.alt_names = array!["ball"];
         world.write_model(@item);
-        // add inspectable component to item
-        let mut inspectable: Inspectable = Component::add_component(world, item.inst);
+        // add reactable component to item
+        let mut reactable: Reactable = Component::add_component(world, item.inst);
         let desc1: DescriptionText = DescriptionText { inst: item.inst, key: 0, text: "A ball" };
         world.write_model(@desc1);
-        inspectable.is_inspectable = true;
-        inspectable.is_visible = true;
-        inspectable.description = array![0];
-        inspectable
+        reactable.is_reactable = true;
+        reactable.is_visible = true;
+        reactable.description = array![0];
+        reactable
             .action_map =
                 array![
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "show",
                         inst: 0,
-                        action_fn: InspectableActions::SetVisible,
-                        entrypoint: 0,
+                        action_fn: ReactableActions::SetVisible,
+                        entrypoints: (0, 0),
                     },
-                    ActionMapInspectable {
+                    ActionMapReactable {
                         action: "look",
                         inst: 0,
-                        action_fn: InspectableActions::ReadRandomDescription,
-                        entrypoint: 1,
+                        action_fn: ReactableActions::ReadRandomDescription,
+                        entrypoints: (1, 1),
                     },
                 ];
-        inspectable.store(world);
+        reactable.store(world);
         // add inventory item component to item
         let mut inventory_item: InventoryItem = Component::add_component(world, item.inst);
         inventory_item.owner_id = owner_id;
@@ -398,13 +421,13 @@ mod tests {
     fn register_variable_properties(world: WorldStorage) {
         VariablePropertyImp::register_component_properties(world, ComponentType::Area);
         VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
         VariablePropertyImp::register_component_properties(world, ComponentType::InventoryItem);
         VariablePropertyImp::register_component_properties(world, ComponentType::Container);
         VariablePropertyImp::register_component_properties(world, ComponentType::Player);
         VariablePropertyImp::register_component_properties(world, ComponentType::Area);
         VariablePropertyImp::register_component_properties(world, ComponentType::Container);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Inspectable);
+        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
     }
 
     #[test]
@@ -422,7 +445,7 @@ mod tests {
         // create door entity in room 2 that leads to room 1 via south
         let mut door = create_door(world, room_1.inst, Direction::South);
         door.set_parent(world, @room_2);
-        let old_insp_door: Inspectable = world.read_model(door.inst);
+        let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
@@ -465,7 +488,7 @@ mod tests {
         world.write_model(@condition);
 
         // EFFECT TO APPLY WHEN PLAYER1 HAS ITEM
-        // New Description door -> Inspectable
+        // New Description door -> Reactable
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
         let idx1: u32 = 0;
@@ -498,7 +521,7 @@ mod tests {
             e_key,
             name,
             door.inst,
-            ComponentType::Inspectable,
+            ComponentType::Reactable,
             property,
             new_description.clone(),
         );
@@ -570,7 +593,7 @@ mod tests {
         //assert(eff_res2.is_err(), 'Effects2 shoul fail');
 
         // 3. Effects should not be update
-        let upd_door: Inspectable = world.read_model(door.inst);
+        let upd_door: Reactable = world.read_model(door.inst);
         let upd_door_exit: Exit = world.read_model(door.inst);
         let key1: u32 = *upd_door.description.at(0);
         // let key2: u32 = *new_description.at(1);
@@ -596,7 +619,7 @@ mod tests {
         // create door entity in room 2 that leads to room 1 via south
         let mut door = create_door(world, room_1.inst, Direction::South);
         door.set_parent(world, @room_2);
-        let _old_inspectable: Inspectable = world.read_model(door.inst);
+        let _old_reactable: Reactable = world.read_model(door.inst);
         let _old_exit: Exit = world.read_model(door.inst);
 
         // create item that is in room 1
@@ -646,7 +669,7 @@ mod tests {
         world.write_model(@condition);
 
         // EFFECT TO APPLY WHEN PLAYER1 HAS ITEM
-        // New Description door -> Inspectable
+        // New Description door -> Reactable
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
         let idx1: u32 = 0;
@@ -678,7 +701,7 @@ mod tests {
             e_key,
             name,
             door.inst,
-            ComponentType::Inspectable,
+            ComponentType::Reactable,
             property,
             new_description.clone(),
         );
@@ -770,7 +793,7 @@ mod tests {
         //assert(eff_res2.is_err(), 'Effects2 shoul fail');
 
         // 3. Effects should be update
-        let upd_door: Inspectable = world.read_model(door.inst);
+        let upd_door: Reactable = world.read_model(door.inst);
         let upd_door_exit: Exit = world.read_model(door.inst);
         let key1: u32 = *upd_door.description.at(0);
         let key2: u32 = *upd_door.description.at(1);
@@ -779,7 +802,7 @@ mod tests {
         assert_eq!(new_txt1, new_text1.text.clone(), "Description1 should be updated");
         assert_eq!(new_txt2, new_text2.text.clone(), "Description2 should be updated");
         assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
-        // println!("Old description: {:?}", old_inspectable.description);
+        // println!("Old description: {:?}", old_reactable.description);
     // println!("New description: {:?}", array![new_text1, new_text2]);
     // println!("Old is_enterable: {:?}", old_exit.is_enterable);
     // println!("New is_enterable: {:?}", new_enterable);
