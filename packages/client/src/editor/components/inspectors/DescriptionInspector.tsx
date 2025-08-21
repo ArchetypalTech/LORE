@@ -32,7 +32,7 @@ export const DescriptionTextInspector: ComponentInspector<DescriptionText> = ({
   const sortedComponents = componentsArray.length > 1 ? [...componentsArray].sort((a, b) => a.key - b.key) : componentsArray
   return (
     <>
-      {sortedComponents.map((componentObj, idx) => {
+      {componentsArray.map((componentObj, idx) => {
         return (
           <CollapsibleComponent
             key={`${componentObj.inst}-${componentObj.key}`}

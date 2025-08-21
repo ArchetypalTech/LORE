@@ -76,7 +76,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 			EditorData().set({
 				changeSet: EditorData().changeSet.filter((x) => x !== change),
 			});
-			console.log(EditorData().changeSet);
+			console.log("Publish ChangeSet", EditorData().changeSet);
 			if (EditorData().changeSet.length > 0) {
 				Notifications().needsToPublish();
 			} else {
@@ -409,9 +409,10 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 	if ("DescriptionText" in model && model.DescriptionText !== undefined) {
 		const array = Array.isArray(model.DescriptionText) ? model.DescriptionText : [model.DescriptionText];
-		await dispatchDesignerCall("delete_description_text", [
-			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-		]);
+		await dispatchDesignerCall(
+			"delete_description_text",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Area" in model && model.Area !== undefined) {
 		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Area!.inst)]);
@@ -431,27 +432,27 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 	if ("Trigger" in model && model.Trigger !== undefined) {
 		const array = Array.isArray(model.Trigger) ? model.Trigger : [model.Trigger];
-		await dispatchDesignerCall("delete_trigger", [
-			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-		]);
+		await dispatchDesignerCall("delete_trigger",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Condition" in model && model.Condition !== undefined) {
 		const array = Array.isArray(model.Condition) ? model.Condition : [model.Condition];
-		await dispatchDesignerCall("delete_condition", [
-			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-		]);
+		await dispatchDesignerCall("delete_condition",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Effect" in model && model.Effect !== undefined) {
 		const array = Array.isArray(model.Effect) ? model.Effect : [model.Effect];
-		await dispatchDesignerCall("delete_effect", [
-			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-		]);
+		await dispatchDesignerCall("delete_effect",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Action" in model && model.Action !== undefined) {
 		const array = Array.isArray(model.Action) ? model.Action : [model.Action];
-		await dispatchDesignerCall("delete_action", [
-			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)]),
-		]);
+		await dispatchDesignerCall("delete_action",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("ChildToParent" in model && model.ChildToParent !== undefined) {
 		await dispatchDesignerCall("delete_child", [

@@ -9,6 +9,7 @@ import type {
 	Condition,
 	Exit,
 	Action,
+	Reactable,
 	DescriptionText,
 	ComponentTypeEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -27,6 +28,7 @@ import type {
 	AnyObject,
 	EditorCollection,
 	EntityCollection,
+	WithStringEnums,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
 import { tick } from "@/lib/utils/utils";
@@ -108,7 +110,7 @@ const createAction = (
 	set({
 		changeSet: [...get().changeSet, { type, object, inst, key }],
 	});
-	console.log("changeSet", get().changeSet);
+	console.log("Create Action: changeSet", get().changeSet);
 };
 
 export const updateComponent = <T extends keyof EntityCollection>(
@@ -232,10 +234,18 @@ export const removeComponent = <T extends keyof EntityCollection>(
 
 		deleted = edited[componentName][index];
 		key = deleted.key;
+
+		// remove from the component array
 		edited[componentName].splice(index, 1);
 
+		// special handling for DescriptionText ↔ Reactable.description sync
 		if (componentName === "DescriptionText" && edited.Reactable?.description && !disableAutoSync) {
-			edited.Reactable.description.splice(index, 1);
+			edited.Reactable.description = edited.Reactable.description.filter(
+				(k) => num.toBigInt(k) !== num.toBigInt(key)
+			);
+			// update Reactable component
+			const componentReactable = edited.Reactable as unknown as WithStringEnums<Reactable>;
+			createAction("update", inst, { Reactable: componentReactable }, componentReactable.key);
 		}
 
 		if (edited[componentName].length === 0) {
@@ -270,7 +280,7 @@ export const removeComponent = <T extends keyof EntityCollection>(
 
 	// sync edited entity
 	syncItem(edited);
-	return edited;
+	return edited as EntityCollection;
 };
 
 const addToParent = (child: EntityCollection, parent: EntityCollection) => {
