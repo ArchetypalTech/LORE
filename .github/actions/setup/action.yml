@@ -31,7 +31,7 @@ runs:
         dojoup install ${{ env.DOJO_VERSION }}
 
         # Optional: move binaries to system path
-        sudo mv "$HOME/.config/.dojo/installed/toolchain/${{ env.KATANA_VERSION }}/katana" /usr/local/bin/
+        sudo mv "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/katana" /usr/local/bin/
         sudo mv "$HOME/.config/.dojo/installed/toolchain/${{ env.DOJO_VERSION }}/sozo" /usr/local/bin/
     # - name: Install dojoup
     #   run: curl -L https://install.dojoengine.org | bash

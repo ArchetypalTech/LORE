@@ -11,8 +11,8 @@ on:
 env:
   DOJO_VERSION: 1.6.1
   SCARB_VERSION: 2.10.1
-  KATANA_VERSION: 1.6.3
-  TORII_VERSION: 1.6.0
+  # KATANA_VERSION: 1.6.3
+  # TORII_VERSION: 1.6.0
 
 jobs:
   check:
