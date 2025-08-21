@@ -48,44 +48,63 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 
 	const handleRemoveComponent = async (
 		componentName: keyof EntityCollection,
+		index?: BigNumberish,
 	) => {
 		EditorData().set({
 			editedEntity: EditorData().removeComponent(
 				editedEntity!.Entity.inst,
 				componentName,
+				index,
 			),
 		});
 	};
 
 	const allComponents = useCallback(() => {
-		isDirty;
-		if (!editedEntity) return [];
-		const components = Object.keys(editedEntity);
-		return Object.entries(componentData)
-			.filter(([key]) => !(key in components))
-			.sort((a, b) => {
-				const orderA =
-					componentData[a[0] as keyof typeof componentData]?.order || 99;
-				const orderB =
-					componentData[b[0] as keyof typeof componentData]?.order || 99;
-				return orderB - orderA;
-			})
-			.map(([key, value]) => {
-				const component = editedEntity[key as keyof typeof editedEntity];
-				if (!component) return undefined;
-				const Inspector = value.inspector as ComponentInspector<
-					EntityCollection[keyof EntityCollection]
-				>;
-				if (!Inspector) return undefined;
-				return {
-					key: key as keyof EntityCollection,
-					Inspector,
-					componentObject:
-						component as EntityCollection[keyof EntityCollection],
-				};
-			})
-			.filter((x) => x !== undefined);
-	}, [editedEntity, isDirty]);
+        isDirty;
+        if (!editedEntity) return [];
+        const components = Object.keys(editedEntity);
+        return Object.entries(componentData)
+            .filter(([key]) => !(key in components))
+            .sort((a, b) => {
+                const orderA =
+                    componentData[a[0] as keyof typeof componentData]?.order || 99;
+                const orderB =
+                    componentData[b[0] as keyof typeof componentData]?.order || 99;
+                return orderB - orderA;
+            })
+            .map(([key, value]) => {
+                const component = editedEntity[key as keyof typeof editedEntity];
+                if (!component) return undefined;
+                const Inspector = value.inspector as ComponentInspector<
+                    EntityCollection[keyof EntityCollection]
+                >;
+                if (!Inspector) return undefined;
+
+                // Ensure multikey components are always arrays
+                const isMultiKey = [
+                    "Action",
+                    "Effect", 
+                    "Trigger",
+                    "Condition",
+                    "DESCRIPTIONTEXT",
+                    "DescriptionText",
+                ].includes(key);
+
+                let componentObject = component as EntityCollection[keyof EntityCollection];
+
+                // If it's a multikey component but not an array, wrap it in an array
+                if (isMultiKey && !Array.isArray(componentObject)) {
+                    componentObject = [componentObject] as any;
+                }
+
+                return {
+                    key: key as keyof EntityCollection,
+                    Inspector,
+                    componentObject,
+                };
+            })
+            .filter((x) => x !== undefined);
+    }, [editedEntity, isDirty]);
 
 	if (!editedEntity?.Entity) {
 		return <NoEntity />;

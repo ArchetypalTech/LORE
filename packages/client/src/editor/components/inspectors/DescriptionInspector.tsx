@@ -1,50 +1,53 @@
 import {
-	type DescriptionText
+  type DescriptionText
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { Input } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { BigNumberish } from "starknet";
+import { CollapsibleComponent } from "../CollapsibleComponent";
 
-export const DescriptionTextInspector: ComponentInspector<(DescriptionText)> = ({
-	componentObject,
-	...props
+export const DescriptionTextInspector: ComponentInspector<DescriptionText> = ({
+  componentObject,
+  ...props
 }) => {
-	const { handleInputChange, Inspector } = useInspector<(DescriptionText)>({
-		componentObject,
-		...props,
-		inputHandlers: {
-      description_inst: (e, updatedObject) => {
-        updatedObject.key = e.target.value as unknown as BigNumberish;
+  const { handleInputChange, Inspector } = useInspector<DescriptionText>({
+    componentObject,
+    ...props,
+    inputHandlers: {
+      description_text: (e, updatedObject) => {
+        updatedObject.text = e.target.value as unknown as string;
       },
-			description_key: (e, updatedObject) => {
-				updatedObject.key = e.target.value as unknown as BigNumberish;
-			},
-			description_text: (e, updatedObject) => {
-				updatedObject.text = e.target.value as unknown as string;
-			},
     },
   });
 
   if (!componentObject) return <div>Description not found</div>;
-  
+
+  // console.log(componentObject);
+
+  // Ensure componentObject is always an array
+  const componentsArray = Array.isArray(componentObject)
+    ? componentObject
+    : [componentObject];
+
+  const sortedComponents = componentsArray.length > 1 ? [...componentsArray].sort((a, b) => a.key - b.key) : componentsArray
   return (
-    <Inspector>
-      <Input
-        id="description_inst"
-        value={componentObject.inst.toString()}
-        onChange={handleInputChange}
-        readOnly={true}
-      />
-      <Input
-        id="description_key"
-        value={componentObject.key.toString()}
-        onChange={handleInputChange}
-      />
-      <Input
-        id="description_text"
-        value={componentObject.text}
-        onChange={handleInputChange}
-      />
-    </Inspector>
-)};
+    <>
+      {componentsArray.map((componentObj, idx) => {
+        return (
+          <CollapsibleComponent
+            key={`${componentObj.inst}-${componentObj.key}`}
+            title={`Description - Key: ${componentObj.key}`}
+          >
+            <Inspector index={idx}>
+              <Input
+                id="description_text"
+                value={componentObj.text}
+                onChange={handleInputChange(idx)}
+              />
+            </Inspector>
+          </CollapsibleComponent>
+        );
+      })}
+    </>
+  );
+};

@@ -9,6 +9,7 @@ import type {
 	Condition,
 	Exit,
 	Action,
+	Reactable,
 	DescriptionText,
 	ComponentTypeEnum,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -27,12 +28,13 @@ import type {
 	AnyObject,
 	EditorCollection,
 	EntityCollection,
+	WithStringEnums,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
 import { tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
-import { ToriiQueryBuilder} from "@dojoengine/sdk";
-import {type SchemaType} from "@lib/dojo_bindings/typescript/models.gen";
+import { ToriiQueryBuilder } from "@dojoengine/sdk";
+import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 
 import { getPlayerAddress } from "@/editor/lib/components";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
@@ -65,13 +67,11 @@ export const getEntity = (id: BigNumberish, syncPool = false) => {
 };
 
 const getEntities = () =>
-	get()
-		.dataPool.values()
-		.toArray()
-		.map((x) => x.Entity && getEntity(x?.Entity?.inst)!)
-		.filter((x) => x !== undefined)
+	Array.from(get().dataPool.values())
+		.map((x: any) => x.Entity && getEntity(x?.Entity?.inst)!)
+		.filter((x: any) => x !== undefined)
 		// Dev Note: we should try to order by created time instead of name
-		.sort((a, b) =>
+		.sort((a: any, b: any) =>
 			a.Entity.name.toString().localeCompare(b.Entity.name.toString()),
 		);
 
@@ -105,16 +105,19 @@ const createAction = (
 	type: EditorAction,
 	inst: BigNumberish,
 	object: EditorCollection,
+	key?: BigNumberish,
 ) => {
 	set({
-		changeSet: [...get().changeSet, { type, object, inst }],
+		changeSet: [...get().changeSet, { type, object, inst, key }],
 	});
+	console.log("Create Action: changeSet", get().changeSet);
 };
 
 export const updateComponent = <T extends keyof EntityCollection>(
 	inst: BigNumberish,
 	componentName: T,
 	component: EntityCollection[T] | undefined,
+	disableAutoSync = false,
 ) => {
 	if (component === undefined) {
 		return removeComponent(inst, componentName);
@@ -123,18 +126,68 @@ export const updateComponent = <T extends keyof EntityCollection>(
 	if (edited === undefined) {
 		throw new Error("Entity not found");
 	}
-	edited[componentName] = component;
-	if (
-		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
-	) {
-		console.log(
-			get().changeSet.find((x) => x.inst === inst && componentName in x.object),
+
+	const isMultiKey = [
+		"Action",
+		"Effect",
+		"Trigger",
+		"Condition",
+		"CONDITION",
+		"DESCRIPTIONTEXT",
+		"DescriptionText",
+	].includes(componentName)
+
+	if (isMultiKey && !edited[componentName]) {
+		edited[componentName] = [];
+	}
+
+	if (edited[componentName] && Array.isArray(edited[componentName])) {
+		let index = edited[componentName].findIndex(
+			(i) => i.inst === component.inst && i.key === component.key
 		);
-		set({
-			changeSet: get().changeSet.filter(
-				(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst,
-			),
-		});
+		if (index > -1) {
+			edited[componentName][index] = component;
+		} else {
+			edited[componentName].push(component);
+			if (componentName === "DescriptionText" && !disableAutoSync) {
+				if (edited.Reactable && edited.Reactable.description) {
+					const newKey = (component as any).key;
+					if (!edited.Reactable.description.includes(newKey)) {
+						edited.Reactable.description.push(newKey);
+					}
+				}
+			}
+		}
+	} else {
+		edited[componentName] = component;
+	}
+
+	if (isMultiKey) {
+		if (
+			get().changeSet.some((x) => x.inst === inst && x.key === component.key && componentName in x.object)
+		) {
+			console.log(
+				get().changeSet.find((x) => x.inst === inst && x.key === component.key && componentName in x.object),
+			);
+			set({
+				changeSet: get().changeSet.filter(
+					(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst || x.key !== component.key,
+				),
+			});
+		}
+	} else {
+		if (
+			get().changeSet.some((x) => x.inst === inst && componentName in x.object)
+		) {
+			console.log(
+				get().changeSet.find((x) => x.inst === inst && componentName in x.object),
+			);
+			set({
+				changeSet: get().changeSet.filter(
+					(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst,
+				),
+			});
+		}
 	}
 	// check synced item, do we really need to create an update action
 	const syncedEntity = getEntity(inst, true);
@@ -147,41 +200,85 @@ export const updateComponent = <T extends keyof EntityCollection>(
 			return edited as EntityCollection;
 		}
 	}
-	createAction("update", inst, { [componentName]: component });
+	createAction("update", inst, { [componentName]: component }, component.key);
 	syncItem(edited);
 	return edited as EntityCollection;
 };
 
-const removeComponent = (
+export const removeComponent = <T extends keyof EntityCollection>(
 	inst: BigNumberish,
-	componentName: keyof EntityCollection,
+	componentName: T,
+	index?: number,
+	disableAutoSync = false,
 ): EntityCollection | undefined => {
 	const edited = getEntity(inst);
-	if (edited === undefined) {
-		throw new Error("Entity not found");
-	}
-	if (componentName === "Entity") {
-		removeEntity(edited);
-		return undefined;
-	}
-	console.warn("removeComponent", edited, componentName);
-	const deleted = { ...edited[componentName] };
-	edited[componentName] = undefined;
-	if (
-		get().changeSet.some((x) => x.inst === inst && componentName in x.object)
-	) {
-		console.log("update");
+	if (!edited) throw new Error("Entity not found");
+
+	let deleted: any = undefined;
+	let key: any = undefined;
+
+	const isMultiKey = [
+		"Action",
+		"Effect",
+		"Trigger",
+		"Condition",
+		"DescriptionText",
+	].includes(componentName as string);
+
+	if (isMultiKey && Array.isArray(edited[componentName])) {
+		// --- multi-component array deletion ---
+		if (index === undefined || !edited[componentName]?.[index]) {
+			console.warn(`No item found at index ${index} for ${componentName}`);
+			return edited;
+		}
+
+		deleted = edited[componentName][index];
+		key = deleted.key;
+
+		// remove from the component array
+		edited[componentName].splice(index, 1);
+
+		// special handling for DescriptionText ↔ Reactable.description sync
+		if (componentName === "DescriptionText" && edited.Reactable?.description && !disableAutoSync) {
+			edited.Reactable.description = edited.Reactable.description.filter(
+				(k) => num.toBigInt(k) !== num.toBigInt(key)
+			);
+			// update Reactable component
+			const componentReactable = edited.Reactable as unknown as WithStringEnums<Reactable>;
+			createAction("update", inst, { Reactable: componentReactable }, componentReactable.key);
+		}
+
+		if (edited[componentName].length === 0) {
+			edited[componentName] = undefined;
+		}
+
+		// remove from changeSet
 		set({
 			changeSet: get().changeSet.filter(
-				(x) => x.inst !== inst || (x.inst === inst && !(componentName in x.object)),
+				(x) => !(x.inst === inst && x.key === key && componentName in x.object)
+			),
+		});
+
+	} else {
+		// --- single component deletion ---
+		deleted = edited[componentName];
+		edited[componentName] = undefined;
+
+		// remove from changeSet
+		set({
+			changeSet: get().changeSet.filter(
+				(x) => !(x.inst === inst && componentName in x.object)
 			),
 		});
 	}
-	// check synced item, do we really need to delete anything
+
+	// create delete action only if component existed in synced entity
 	const syncedEntity = getEntity(inst, true);
-	if (syncedEntity?.[componentName] !== undefined) {
-		createAction("delete", inst, { [componentName]: deleted });
+	if (syncedEntity?.[componentName] !== undefined && deleted !== undefined) {
+		createAction("delete", inst, { [componentName]: deleted }, key);
 	}
+
+	// sync edited entity
 	syncItem(edited);
 	return edited as EntityCollection;
 };
@@ -225,38 +322,38 @@ const removeParent = (child: EntityCollection) => {
 		const parentId = child.ChildToParent.parent;
 
 		// Store the parent reference before modifying the child
-  const parent = getEntity(parentId);
+		const parent = getEntity(parentId);
 
 		// Remove the child's parent reference
-  updateComponent(childId, "ChildToParent", undefined);
+		updateComponent(childId, "ChildToParent", undefined);
 
 		if (parent && "Entity" in parent && parent.Entity.inst === parentId) {
 			if ("ParentToChildren" in parent && parent.ParentToChildren !== undefined) {
-      const newChildren = parent.ParentToChildren.children.filter(
-        (c) => c !== childId,
-      );
+				const newChildren = parent.ParentToChildren.children.filter(
+					(c) => c !== childId,
+				);
 
-      if (newChildren.length === 0) {
-        updateComponent(parentId, "ParentToChildren", undefined);
-      } else {
+				if (newChildren.length === 0) {
+					updateComponent(parentId, "ParentToChildren", undefined);
+				} else {
 					// Update with the new children list
 					const updatedParentComponent = {
-          ...parent.ParentToChildren,
-          children: newChildren,
+						...parent.ParentToChildren,
+						children: newChildren,
 					};
 					updateComponent(parentId, "ParentToChildren", updatedParentComponent);
-      }
+				}
 				EditorData().set({
 					isDirty: Date.now(),
 				});
-      return;
-    }
-  }
+				return;
+			}
+		}
 
 		EditorData().set({
 			isDirty: Date.now(),
 		});
-  throw new Error("Parent missing or invalid");
+		throw new Error("Parent missing or invalid");
 	}
 };
 
@@ -379,8 +476,8 @@ const syncItem = (
 		if (verbose)
 			console.log(
 				`[Editor] Sync${name ? `: ${name}` : ""}: ${
-					// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
-					Object.keys(obj as any)
+				// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
+				Object.keys(obj as any)
 				}`,
 				obj,
 				get(),
@@ -469,13 +566,16 @@ const newEntity = async () => {
 		}
 	}
 	selectEntity(newEntity.Entity.inst);
-	const reactable = createDefaultReactableComponent(newEntity.Entity);
-	reactable.Reactable.description = [0];
-	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
-	const descriptionText = createDefaultDescriptionText(newEntity.Entity, reactable.Reactable as any);
+	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
 	descriptionText.DescriptionText.text = newEntity.Entity.name;
+	descriptionText.DescriptionText.key = 0;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
-	
+	const reactable = createDefaultReactableComponent(newEntity.Entity);
+	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
+
+
+
 	return newEntity;
 };
 
@@ -515,20 +615,21 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	}
 	addToParent(children, newParent);
 	selectEntity(playerEntity.Entity.inst);
-	const reactable = createDefaultReactableComponent(playerEntity.Entity);
-	reactable.Reactable.description = [0];
-	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
-	const descriptionText = createDefaultDescriptionText(playerEntity.Entity,reactable.Reactable as any);
+	const descriptionText = createDefaultDescriptionText(playerEntity.Entity);
 	descriptionText.DescriptionText.text = playerEntity.Entity.name;
+	descriptionText.DescriptionText.key = 0;
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
+	const reactable = createDefaultReactableComponent(playerEntity.Entity);
+	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
 	return playerEntity;
 };
 
 const logPool = () => {
-	const poolArray = get().dataPool.values().toArray();
-	const syncPoolArray = get().syncPool.values().toArray();
+	const poolArray = Array.from(get().dataPool.values());
+	const syncPoolArray = Array.from(get().syncPool.values());
 	console.info("DataPool");
 	console.table(poolArray);
 	console.log("DataPool", get().dataPool);
@@ -560,7 +661,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
 		const queryProperties = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
-		
+
 			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-PropertyRegistry"]);
 			return query;
 		};
@@ -574,7 +675,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
 				properties_array = registry?.properties?.map((x) => x.name);
 				// console.log("properties_array", properties_array);
 			}
-		});		
+		});
 	} catch (error) {
 		console.error("Error fetching properties from Torii:", error);
 		throw error;
@@ -586,7 +687,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
  * This handles fetching the spawn point from the first entity with an area component with is_spawn_point set to true
  * @returns The spawn point entity inst
  */
-export const getSpawnPoint = async(): Promise<BigNumberish> => {
+export const getSpawnPoint = async (): Promise<BigNumberish> => {
 	let areaInst: BigNumberish;
 	try {
 		const { sdk } = await InitDojo();
@@ -620,7 +721,7 @@ export const getSpawnPoint = async(): Promise<BigNumberish> => {
  * @returns True if the player exists, false otherwise
  */
 export const getPlayer = async (account: string): Promise<boolean> => {
-	let playerFound = false;	
+	let playerFound = false;
 	try {
 		const { sdk } = await InitDojo();
 		const queryPlayer = () => {
@@ -686,25 +787,71 @@ const syncEntities = async () => {
 					if (entity.Entity?.inst) {
 						// For Entity components, set the full entity
 						setItem(entity as AnyObject, entity.Entity.inst, true);
-					} else if (entity.Trigger?.inst) {
+					}
+				}
+			});
+
+			// Update pools with fetched data
+			result.getItems().forEach((item) => {
+				if (item.models?.lore) {
+					const entity = item.models.lore;
+					// Handle all component types
+					// if (entity.Entity?.inst) {
+					// 	// For Entity components, set the full entity
+					// 	setItem(entity as AnyObject, entity.Entity.inst, true);
+					// } else
+					if (entity.Trigger?.inst) {
 						// For Trigger components, find parent entity and merge
 						const parentEntity = getEntity(entity.Trigger.inst, true);
 						if (parentEntity && entity.Trigger) {
-							parentEntity.Trigger = entity.Trigger as Trigger;
+							if (!parentEntity.Trigger) {
+								parentEntity.Trigger = [];
+							}
+							// Check if this trigger already exists (by key) and update or add
+							const existingIndex = parentEntity.Trigger.findIndex(
+								(t: any) => t.key === entity.Trigger!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Trigger[existingIndex] = entity.Trigger as Trigger;
+							} else {
+								parentEntity.Trigger.push(entity.Trigger as Trigger);
+							}
 							setItem(parentEntity as AnyObject, entity.Trigger.inst, true);
 						}
 					} else if (entity.Effect?.inst) {
 						// For Effect components, find parent entity and merge
 						const parentEntity = getEntity(entity.Effect.inst, true);
 						if (parentEntity && entity.Effect) {
-							parentEntity.Effect = entity.Effect as Effect;
+							if (!parentEntity.Effect) {
+								parentEntity.Effect = [];
+							}
+							// Check if this effect already exists (by key) and update or add
+							const existingIndex = parentEntity.Effect.findIndex(
+								(e: any) => e.key === entity.Effect!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Effect[existingIndex] = entity.Effect as Effect;
+							} else {
+								parentEntity.Effect.push(entity.Effect as Effect);
+							}
 							setItem(parentEntity as AnyObject, entity.Effect.inst, true);
 						}
 					} else if (entity.Condition?.inst) {
 						// For Condition components, find parent entity and merge
 						const parentEntity = getEntity(entity.Condition.inst, true);
 						if (parentEntity && entity.Condition) {
-							parentEntity.Condition = entity.Condition as Condition;
+							if (!parentEntity.Condition) {
+								parentEntity.Condition = [];
+							}
+							// Check if this condition already exists (by key) and update or add
+							const existingIndex = parentEntity.Condition.findIndex(
+								(c: any) => c.key === entity.Condition!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Condition[existingIndex] = entity.Condition as Condition;
+							} else {
+								parentEntity.Condition.push(entity.Condition as Condition);
+							}
 							setItem(parentEntity as AnyObject, entity.Condition.inst, true);
 						}
 					} else if (entity.Exit?.inst) {
@@ -718,7 +865,18 @@ const syncEntities = async () => {
 						// For Action components, find parent entity and merge
 						const parentEntity = getEntity(entity.Action.inst, true);
 						if (parentEntity && entity.Action) {
-							parentEntity.Action = entity.Action as Action;
+							if (!parentEntity.Action) {
+								parentEntity.Action = [];
+							}
+							// Check if this action already exists (by key) and update or add
+							const existingIndex = parentEntity.Action.findIndex(
+								(a: any) => a.key === entity.Action!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.Action[existingIndex] = entity.Action as Action;
+							} else {
+								parentEntity.Action.push(entity.Action as Action);
+							}
 							setItem(parentEntity as AnyObject, entity.Action.inst, true);
 						}
 					}
@@ -727,8 +885,26 @@ const syncEntities = async () => {
 						// For DescriptionText components, find parent entity and merge
 						const parentEntity = getEntity(entity.DescriptionText.inst, true);
 						if (parentEntity && entity.DescriptionText) {
-							parentEntity.DescriptionText = entity.DescriptionText as DescriptionText;
-							setItem(parentEntity as AnyObject, entity.DescriptionText.inst, true);
+							if (!parentEntity.DescriptionText) {
+								parentEntity.DescriptionText = [];
+							}
+
+							// Check if this description already exists (by key) and update or add
+							const existingIndex = parentEntity.DescriptionText.findIndex(
+								(d: any) => d.key === entity.DescriptionText!.key
+							);
+							if (existingIndex > -1) {
+								parentEntity.DescriptionText[existingIndex] = entity.DescriptionText as DescriptionText;
+							} else {
+								parentEntity.DescriptionText.push(
+									entity.DescriptionText as DescriptionText
+								);
+							}
+							setItem(
+								parentEntity as AnyObject,
+								entity.DescriptionText.inst,
+								true
+							);
 						}
 					}
 				}

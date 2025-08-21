@@ -76,7 +76,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 			EditorData().set({
 				changeSet: EditorData().changeSet.filter((x) => x !== change),
 			});
-			console.log(EditorData().changeSet);
+			console.log("Publish ChangeSet", EditorData().changeSet);
 			if (EditorData().changeSet.length > 0) {
 				Notifications().needsToPublish();
 			} else {
@@ -90,7 +90,7 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
-	if("Player" in collection && collection.Player !== undefined) {
+	if ("Player" in collection && collection.Player !== undefined) {
 		await publishPlayer(collection.Player);
 	}
 	if ("Reactable" in collection && collection.Reactable !== undefined) {
@@ -141,12 +141,12 @@ const publishEntity = async (entity: Entity) => {
 		byteArray.byteArrayFromString(entity.name),
 		entity.alt_names.length > 0
 			? entity.alt_names
-					.filter((x) => x.length > 0)
-					.map((x) => byteArray.byteArrayFromString(x))
+				.filter((x) => x.length > 0)
+				.map((x) => byteArray.byteArrayFromString(x))
 			: 0,
-			entity.actions_keys.length > 0
-				? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
-				: 0,
+		entity.actions_keys.length > 0
+			? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
+			: 0,
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -172,27 +172,34 @@ const publishReactable = async (reactable: Reactable) => {
 		reactable.description.map((x) => num.toBigInt(x.toString())),
 		reactable.action_map.length > 0
 			? reactable.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt(x.inst ?? "0"),
-					toEnumIndex(x.action_fn, reactableActions),
-					num.toBigInt(x.entrypoints?.[0] ?? "0"),
-					num.toBigInt(x.entrypoints?.[1] ?? "0"),
-				])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt(x.inst ?? "0"),
+				toEnumIndex(x.action_fn, reactableActions),
+				num.toBigInt(x.entrypoints?.[0] ?? "0"),
+				num.toBigInt(x.entrypoints?.[1] ?? "0"),
+			])
 			: 0,
 		reactable.already_shown,
 		byteArray.byteArrayFromString(reactable.new_entry.toString() ?? ""),
 	];
-	
+
 	await dispatchDesignerCall("create_reactable", [reactableData]);
 };
 
-const publishDescriptionText = async (description: DescriptionText) => {
-	const descriptionData = [
-		num.toBigInt(description.inst.toString()),
-		num.toBigInt(description.key.toString()),
-		byteArray.byteArrayFromString(description.text),
-	];
-	await dispatchDesignerCall("create_description_text", [descriptionData]);
+const publishDescriptionText = async (
+	descriptions: DescriptionText | DescriptionText[]
+) => {
+	const array = Array.isArray(descriptions) ? descriptions : [descriptions];
+
+	for (const description of array) {
+		const preparedDescription = [
+			num.toBigInt(description.inst.toString()),
+			num.toBigInt(description.key.toString()),
+			byteArray.byteArrayFromString(description.text),
+		];
+
+		await dispatchDesignerCall("create_description_text", [preparedDescription]);
+	}
 };
 
 const publishArea = async (area: Area) => {
@@ -213,10 +220,10 @@ const publishExit = async (exit: Exit) => {
 		toEnumIndex(exit.direction_type, direction),
 		exit.action_map.length > 0
 			? exit.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt((x.inst ?? 0).toString()),
-					toEnumIndex(x.action_fn, exitActions),
-				])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt((x.inst ?? 0).toString()),
+				toEnumIndex(x.action_fn, exitActions),
+			])
 			: 0,
 	];
 	await dispatchDesignerCall("create_exit", [exitData]);
@@ -229,12 +236,13 @@ const publishInventoryItem = async (inventoryItem: InventoryItem) => {
 		inventoryItem.owner_id ? num.toBigInt(inventoryItem.owner_id.toString()) : num.toBigInt("0"),
 		inventoryItem.can_be_picked_up,
 		inventoryItem.can_go_in_container,
+		num.toBigInt(inventoryItem.quantity.toString() ?? 0),
 		inventoryItem.action_map.length > 0
 			? inventoryItem.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt((x.inst ?? "0").toString()),
-					toEnumIndex(x.action_fn, inventoryItemActions),
-			  ])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt((x.inst ?? "0").toString()),
+				toEnumIndex(x.action_fn, inventoryItemActions),
+			])
 			: 0,
 		inventoryItem.already_used,
 		inventoryItem.multiple_use,
@@ -252,80 +260,115 @@ const publishContainer = async (container: Container) => {
 		num.toBigInt(container.num_slots.toString() ?? 0),
 		container.action_map.length > 0
 			? container.action_map.map((x) => [
-					byteArray.byteArrayFromString(x.action),
-					num.toBigInt((x.inst ?? 0).toString()),
-					toEnumIndex(x.action_fn, containerActions),
-			  ])
+				byteArray.byteArrayFromString(x.action),
+				num.toBigInt((x.inst ?? 0).toString()),
+				toEnumIndex(x.action_fn, containerActions),
+			])
 			: 0,
 	];
 	await dispatchDesignerCall("create_container", [containerData]);
 };
 
-const publishTrigger = async (trigger: Trigger) => {
-	const triggerData = [
-		num.toBigInt(trigger.inst.toString()),
-		num.toBigInt(trigger.key.toString()),
-		byteArray.byteArrayFromString(trigger.name ?? ""),
-		toEnumIndex(trigger.trigger_type, triggerType),
-		trigger.is_enabled,
-		trigger.is_once,
-		trigger.was_triggered,
-	];
-	await dispatchDesignerCall("create_trigger", [triggerData]);
+const publishTrigger = async (
+	triggers: Trigger | Trigger[]
+) => {
+	const array = Array.isArray(triggers) ? triggers : [triggers];
+
+	for (const trigger of array) {
+		const preparedTrigger = [
+			num.toBigInt(trigger.inst.toString()),
+			num.toBigInt(trigger.key.toString()),
+			byteArray.byteArrayFromString(trigger.name ?? ""),
+			toEnumIndex(trigger.trigger_type, triggerType),
+			trigger.is_enabled,
+			trigger.is_once,
+			trigger.was_triggered,
+		];
+		await dispatchDesignerCall("create_trigger", [preparedTrigger]);
+	}
 };
 
-const publishCondition = async (condition: Condition) => {
-	const conditionData = [
-		num.toBigInt(condition.inst.toString()),
-		num.toBigInt(condition.key),
-		byteArray.byteArrayFromString(condition.name ?? ""),
-		num.toBigInt(condition.target),
-		toEnumIndex(condition.component, componentType),
-		byteArray.byteArrayFromString(condition.property),
-		toEnumIndex(condition.operator, operator),
-		condition.value.map((v) => num.toBigInt(v ?? "0"))
-	];
-	await dispatchDesignerCall("create_condition", [conditionData]);
+const publishCondition = async (
+	conditions: Condition | Condition[]
+) => {
+	const array = Array.isArray(conditions) ? conditions : [conditions];
+
+	for (const condition of array) {
+		const preparedCondition = [
+			num.toBigInt(condition.inst.toString()),
+			num.toBigInt(condition.key.toString()),
+			byteArray.byteArrayFromString(condition.name ?? ""),
+			num.toBigInt(condition.target),
+			toEnumIndex(condition.component, componentType),
+			byteArray.byteArrayFromString(condition.property),
+			toEnumIndex(condition.operator, operator),
+			condition.value.map((v) => num.toBigInt(v ?? "0")),
+		];
+		await dispatchDesignerCall("create_condition", [preparedCondition]);
+	}
 };
 
-const publishEffect = async (effect: Effect) => {
-  const effectData = [
-    num.toBigInt(effect.inst.toString()),
-    num.toBigInt(effect.key.toString()),
-		byteArray.byteArrayFromString(effect.name ?? ""),
-    num.toBigInt(effect.target.toString()),
-    toEnumIndex(effect.component, componentType),
-    byteArray.byteArrayFromString(effect.property),
-    effect.value.map(([v, i]) => [byteArray.byteArrayFromString(v.toString() ?? ""), num.toBigInt(i.toString())]),
-  ];
-  await dispatchDesignerCall("create_effect", [effectData]);
+const publishEffect = async (
+	effects: Effect | Effect[]
+) => {
+	const array = Array.isArray(effects) ? effects : [effects];
+
+	for (const effect of array) {
+		const preparedEffect = [
+			num.toBigInt(effect.inst.toString()),
+			num.toBigInt(effect.key.toString()),
+			byteArray.byteArrayFromString(effect.name ?? ""),
+			num.toBigInt(effect.target.toString()),
+			toEnumIndex(effect.component, componentType),
+			byteArray.byteArrayFromString(effect.property),
+			effect.value.map(([v, i]) => [
+				byteArray.byteArrayFromString(v.toString() ?? ""),
+				num.toBigInt(i.toString()),
+			]),
+		];
+		await dispatchDesignerCall("create_effect", [preparedEffect]);
+	}
 }
 
-const publishAction = async (action: Action) => {
-	const actionData = [
-		num.toBigInt(action.inst.toString()),
-		num.toBigInt(action.key),
-		byteArray.byteArrayFromString(action.name ?? ""),
-		byteArray.byteArrayFromString(action.description ?? ""),
-		action.is_enabled,
-		action.trigger.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
-		action.conditions.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
-		action.effects.map(([a, b]) => [num.toBigInt(a.toString()), num.toBigInt(b.toString())]),
-		action.tags.map((x) => byteArray.byteArrayFromString(x)),
-		action.executed ?? false,
-		action.failing_response.length > 0
-			? action.failing_response
-					.filter((x) => x.length > 0)
-					.map((x) => byteArray.byteArrayFromString(x))
-			: 0,
-		action.success_response.length > 0
-			? action.success_response
-					.filter((x) => x.length > 0)
-					.map((x) => byteArray.byteArrayFromString(x))
-			: 0,
-	];
+const publishAction = async (
+	actions: Action | Action[]
+) => {
+	const array = Array.isArray(actions) ? actions : [actions];
 
-	await dispatchDesignerCall("create_action", [actionData]);
+	for (const action of array) {
+		const preparedAction = [
+			num.toBigInt(action.inst.toString()),
+			num.toBigInt(action.key),
+			byteArray.byteArrayFromString(action.name ?? ""),
+			byteArray.byteArrayFromString(action.description ?? ""),
+			action.is_enabled,
+			action.trigger.map(([a, b]) => [
+				num.toBigInt(a.toString()),
+				num.toBigInt(b.toString()),
+			]),
+			action.conditions.map(([a, b]) => [
+				num.toBigInt(a.toString()),
+				num.toBigInt(b.toString()),
+			]),
+			action.effects.map(([a, b]) => [
+				num.toBigInt(a.toString()),
+				num.toBigInt(b.toString()),
+			]),
+			action.tags.map((x) => byteArray.byteArrayFromString(x)),
+			action.executed ?? false,
+			action.failing_response.length > 0
+				? action.failing_response
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
+				: 0,
+			action.success_response.length > 0
+				? action.success_response
+					.filter((x) => x.length > 0)
+					.map((x) => byteArray.byteArrayFromString(x))
+				: 0,
+		];
+		await dispatchDesignerCall("create_action", [preparedAction]);
+	}
 };
 
 const publishChildToParent = async (childToParent: ChildToParent) => {
@@ -365,9 +408,11 @@ const deleteCollection = async (model: EntityCollection) => {
 		]);
 	}
 	if ("DescriptionText" in model && model.DescriptionText !== undefined) {
-		await dispatchDesignerCall("delete_description_text", [
-			[num.toBigInt(model.DescriptionText!.inst), num.toBigInt(model.DescriptionText!.key)],
-		]);
+		const array = Array.isArray(model.DescriptionText) ? model.DescriptionText : [model.DescriptionText];
+		await dispatchDesignerCall(
+			"delete_description_text",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Area" in model && model.Area !== undefined) {
 		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Area!.inst)]);
@@ -386,24 +431,28 @@ const deleteCollection = async (model: EntityCollection) => {
 		]);
 	}
 	if ("Trigger" in model && model.Trigger !== undefined) {
-		await dispatchDesignerCall("delete_trigger", [
-			[num.toBigInt(model.Trigger!.inst), num.toBigInt(model.Trigger!.key)],
-		]);
+		const array = Array.isArray(model.Trigger) ? model.Trigger : [model.Trigger];
+		await dispatchDesignerCall("delete_trigger",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Condition" in model && model.Condition !== undefined) {
-		await dispatchDesignerCall("delete_condition", [
-			[num.toBigInt(model.Condition!.inst), num.toBigInt(model.Condition!.key)],
-		]);
+		const array = Array.isArray(model.Condition) ? model.Condition : [model.Condition];
+		await dispatchDesignerCall("delete_condition",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Effect" in model && model.Effect !== undefined) {
-		await dispatchDesignerCall("delete_effect", [
-			[num.toBigInt(model.Effect!.inst), num.toBigInt(model.Effect!.key)],
-		]);
+		const array = Array.isArray(model.Effect) ? model.Effect : [model.Effect];
+		await dispatchDesignerCall("delete_effect",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("Action" in model && model.Action !== undefined) {
-		await dispatchDesignerCall("delete_action", [
-			[num.toBigInt(model.Action!.inst), num.toBigInt(model.Action!.key)],
-		]);
+		const array = Array.isArray(model.Action) ? model.Action : [model.Action];
+		await dispatchDesignerCall("delete_action",
+			array.map((x) => [num.toBigInt(x.inst), num.toBigInt(x.key)])
+		);
 	}
 	if ("ChildToParent" in model && model.ChildToParent !== undefined) {
 		await dispatchDesignerCall("delete_child", [

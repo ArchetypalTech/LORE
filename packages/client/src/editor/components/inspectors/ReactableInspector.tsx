@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
 	type ActionMapReactable,
 	type Reactable,
@@ -8,7 +9,8 @@ import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { createDefaultDescriptionText } from "@/editor/lib/components";
 import { Button } from "../ui/Button";
-import { getEntity, updateComponent } from "@/editor/data/editor.data";
+import { getEntity, removeComponent, updateComponent } from "@/editor/data/editor.data";
+import { CollapsibleComponent } from "../CollapsibleComponent";
 
 export const ReactableInspector: ComponentInspector<Reactable> = ({
 	componentObject,
@@ -43,55 +45,92 @@ export const ReactableInspector: ComponentInspector<Reactable> = ({
 	if (!componentObject) return <div>Inspectable not found</div>;
 
 	return (
-		<Inspector>
-		<TextAreaArray
-				id="description_keys"
-				disabled={true}
-				rows={1}
-				value={componentObject.description as string[]}
-				onChange={handleInputChange}
-				readOnly={true}
-			/>
-			<Button
-				id="add_description"
-				onClick={() => {
-					const entity = getEntity(componentObject.inst);
-					const newDescription = createDefaultDescriptionText( entity!.Entity, componentObject);
-					const updatedDescriptions = [
-						...(componentObject.description || []),
-						newDescription.DescriptionText.key += 1 as any,
-					];
-					updateComponent(entity!.Entity.inst, "DescriptionText", newDescription.DescriptionText as any);
+    <Inspector>
+      <div style={{ marginBottom: "8px" }}>
+        <CollapsibleComponent title="Description Keys">
+          <div style={{ marginTop: "4px" }}>
+            <TextAreaArray
+              id="description_keys"
+              disabled={true}
+              rows={1}
+              value={componentObject.description as string[]}
+              onChange={(e) => {
+                const newDescriptionKeys = (
+                  e.target.value as unknown as string[]
+                ).filter((x) => x !== "");
+                const currentKeys = componentObject.description || [];
+                const removedIndex = currentKeys.findIndex(
+                  (key) => !newDescriptionKeys.includes(key)
+                );
 
-					handleInputChange({
-						target: {
-							id: "description_keys",
-							value: updatedDescriptions,
-						},
-					} as any); 
-				}}
-			>
-				Add description
-			</Button>
+                const entity = getEntity(componentObject.inst);
+                if (entity && entity.DescriptionText) {
+                  removeComponent(entity.Entity.inst, "DescriptionText", removedIndex, true);
+                }
+
+                handleInputChange(undefined)({
+                  target: {
+                    id: "description_keys",
+                    value: newDescriptionKeys,
+                  },
+                } as any);
+              }}
+              readOnly={true}
+            />
+            <Button
+              id="add_description"
+              onClick={() => {
+                const entity = getEntity(componentObject.inst);
+                const newDescription = createDefaultDescriptionText(
+                  entity!.Entity,
+                  entity?.DescriptionText
+                );
+                const newDescriptionKey = newDescription.DescriptionText.key;
+
+                const updatedDescriptions = [
+                  ...(componentObject.description || []),
+                  newDescriptionKey,
+                ];
+
+                updateComponent(
+                  entity!.Entity.inst,
+                  "DescriptionText",
+                  newDescription.DescriptionText as any,
+                  true
+                );
+
+                handleInputChange(undefined)({
+                  target: {
+                    id: "description_keys",
+                    value: updatedDescriptions,
+                  },
+                } as any);
+              }}
+            >
+              Add description
+            </Button>
+          </div>
+        </CollapsibleComponent>
+      </div>
 			<Toggle
 				id="already_shown"
 				value={componentObject.already_shown}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Input
 				id="new_entry"
 				value={componentObject.new_entry}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<Toggle
 				id="is_visible"
 				value={componentObject.is_visible}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 			/>
 			<ReactableActionMapEditor
 				id="action_map"
 				value={componentObject.action_map}
-				onChange={handleInputChange}
+				onChange={handleInputChange(undefined)}
 				cairoEnum={reactableActions}
 			/>
 		</Inspector>

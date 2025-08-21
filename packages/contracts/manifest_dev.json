@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0xee63f657ab6ebe4db7472e6153faf80791b7188e4a4dfb81f696cc605e22a5",
-      "class_hash": "0x5cff6e8f75b8f91fdac6841de3f1f84a092d48dd561ed3155eaf51440c18ff5",
+      "address": "0x3375cb3690a698348f65790ed4f64026577dde45566efad50361086f4dd7b41",
+      "class_hash": "0x4eef39a519a6226c5b71e1c4f1361124d398ef1aaf01bf018a161dc663ff198",
       "abi": [
         {
           "type": "impl",
@@ -1741,6 +1741,10 @@
             {
               "name": "can_go_in_container",
               "type": "core::bool"
+            },
+            {
+              "name": "quantity",
+              "type": "core::integer::u32"
             },
             {
               "name": "action_map",
@@ -2638,8 +2642,8 @@
       ]
     },
     {
-      "address": "0x60dfb5ee985aefbf0b8fb3785cab264ff3e2fbd1c691bc3d14d5eb2da8f50b9",
-      "class_hash": "0x555f7a8b5664f18d4396d2e8b8cd42c0839e3e0985aa7a3f7f50f3622373977",
+      "address": "0x5e5de39d13757249ee6a9e1c0948c704b95b2791f7848d80d4e97114ec1c65e",
+      "class_hash": "0x292ed38a181d1366721005ef9630cb0ab8cbb96658291fab47546e71f8be9f8",
       "abi": [
         {
           "type": "impl",
@@ -2908,7 +2912,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x74dd07d3418acd535d2fb27d9659d7ca8994f1730745a514539d3bc367f668",
+      "class_hash": "0x75637d4ecdf3fb01400a13bfd01873bf5bcc8b508783987ce6c5b42b4f79296",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },

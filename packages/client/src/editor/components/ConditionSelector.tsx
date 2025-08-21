@@ -2,7 +2,7 @@ import { ChangeEvent, useMemo } from "react";
 import { Button } from "./ui/Button";
 import { DeleteButton, Select } from "./FormComponents";
 import { BigNumberish } from "starknet";
-import { formatKeyAsDecimal } from "./FormComponents";
+import type { Condition } from "@/lib/dojo_bindings/typescript/models.gen";
 
 interface ConditionSelectorProps {
   id: string;
@@ -49,7 +49,7 @@ export const ConditionSelector = ({
 
   const entityOptions = useMemo(() => {
     return Array.from(dataPool.entries())
-      .filter(([_, val]) => val.Entity?.name && val.Condition?.key)
+      .filter(([_, val]) => val.Entity?.name && val.Condition as Condition[])
       .map(([address, val]) => ({
         label: val.Entity.name,
         value: address,
@@ -59,12 +59,13 @@ export const ConditionSelector = ({
   const getConditionOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
     if (!entity || !entity.Condition) return [];
-    return [
-      {
-        label: entity.Condition.name.toString(),
-        value: entity.Condition.key.toString(),
-      },
-    ];
+    return entity.Condition.map(condition => {
+      return {
+        label: condition.name.toString(),
+        value: condition.key.toString()
+      }
+    }
+    );
   };
 
   return (
@@ -77,12 +78,12 @@ export const ConditionSelector = ({
             onChange={(e) => handleChange(i, 0, e.target.value)}
             disabled={readOnly}
             options={[
-            { value: "__placeholder__", label: "Select entity"},
-            ...entityOptions.map((opt) => ({
-              value: opt.value.toString(),
-              label: String(opt.label),
-            })),
-          ]}
+              { value: "__placeholder__", label: "Select entity" },
+              ...entityOptions.map((opt) => ({
+                value: opt.value.toString(),
+                label: String(opt.label),
+              })),
+            ]}
           />
 
           <Select

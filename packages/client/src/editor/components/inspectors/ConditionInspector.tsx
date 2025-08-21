@@ -7,7 +7,6 @@ import {
 import {
   Input,
   CairoEnumSelect,
-  formatKeyAsDecimal,
   Select,
   encodeToFelt,
   decodeFromFelt,
@@ -16,7 +15,92 @@ import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import { syncPropertyRegistry } from "../../data/editor.data"; 
+import { syncPropertyRegistry } from "../../data/editor.data";
+import { CollapsibleComponent } from "../CollapsibleComponent";
+
+// Individual Condition Item Component
+const ConditionItem = ({
+  conditionObj,
+  idx,
+  handleInputChange,
+  Inspector
+}: {
+  conditionObj: Condition;
+  idx: number;
+  handleInputChange: (idx: number) => any;
+  Inspector: any;
+}) => {
+  const [propertyNames, setPropertyNames] = useState<string[]>([]);
+  const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      console.log(conditionObj, conditionObj?.component);
+      if (!conditionObj?.component) return;
+      try {
+        const properties = await syncPropertyRegistry(conditionObj.component);
+        console.log(properties);
+        setPropertyNames(properties || []);
+      } catch (error) {
+        console.error("Failed to sync property registry:", error);
+        setPropertyNames([]);
+      }
+    };
+
+    fetchProperties();
+  }, [conditionObj?.component]);
+
+  // Property options for dropdown
+  const propertyOptions = propertyNames.map((name) => ({
+    value: name,
+    label: name,
+  }));
+
+  return (
+    <CollapsibleComponent
+      key={`${conditionObj.inst}-${conditionObj.key}`}
+      title={`Condition: ${conditionObj?.name}`}
+    >
+      <Inspector key={`${conditionObj.inst}-${conditionObj.key}`} index={idx}>
+        <Input
+          id="name"
+          value={conditionObj.name}
+          onChange={handleInputChange(idx)}
+        />
+        <Input
+          id="target"
+          value={conditionObj.target.toString()}
+          onChange={handleInputChange(idx)}
+        />
+        <CairoEnumSelect
+          id="component"
+          onChange={handleInputChange(idx)}
+          value={conditionObj.component}
+          enum={componentType.filter((x) => !excludeComponent.includes(x))}
+        />
+        <Select
+          id="property"
+          value={conditionObj.property.toString()}
+          onChange={handleInputChange(idx)}
+          options={propertyOptions}
+        />
+        <CairoEnumSelect
+          id="operator"
+          onChange={handleInputChange(idx)}
+          value={conditionObj.operator}
+          enum={operator}
+        />
+        <TextAreaStringArray
+          id="value"
+          value={conditionObj.value.map((v) => decodeFromFelt(v.toString()))}
+          onChange={handleInputChange(idx)}
+          rows={1}
+          columns={1}
+        />
+      </Inspector>
+    </CollapsibleComponent>
+  );
+};
 
 export const ConditionInspector: ComponentInspector<Condition> = ({
   componentObject,
@@ -49,72 +133,25 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
     },
   });
 
-  const [propertyNames, setPropertyNames] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchProperties = async () => {
-      if (!componentObject?.component) return;
-      try {
-        const properties = await syncPropertyRegistry(componentObject.component);
-        setPropertyNames(properties!);
-      } catch (error) {
-        console.error("Failed to sync property registry:", error);
-      }
-    };
-
-    fetchProperties();
-  }, [componentObject?.component]);
-
-  
-  // Property options for dropdown
-  const propertyOptions = propertyNames.map((name) => ({
-    value: name,
-    label: name,
-  }));
-
   if (!componentObject) return <div>Condition not found</div>;
-  const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
+
+  // Ensure componentObject is always an array
+  const componentsArray = Array.isArray(componentObject)
+    ? componentObject
+    : [componentObject];
 
   return (
-    <Inspector>
-      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
-      <Input
-				id="name"
-				value={componentObject.name}
-				onChange={handleInputChange}
-			/>
-      <Input
-        id="target"
-        value={componentObject.target.toString()}
-        onChange={handleInputChange}
-      />
-      <CairoEnumSelect
-        id="component"
-        onChange={handleInputChange}
-        value={componentObject.component}
-        enum={componentType.filter((x) => !excludeComponent.includes(x))}
-      />
-      <Select
-        id="property"
-        value={componentObject.property.toString()}
-        onChange={handleInputChange}
-        options={propertyOptions}
-      />
-      <CairoEnumSelect
-        id="operator"
-        onChange={handleInputChange}
-        value={componentObject.operator}
-        enum={operator}
-      />
-      <TextAreaStringArray
-        id="value"
-        value={componentObject.value.map((v) => decodeFromFelt(v.toString()))}
-        onChange={handleInputChange}
-        rows={1}
-        columns={1}
-      />
-    </Inspector>
+    <>
+      {componentsArray.map((conditionObj, idx) => (
+        <ConditionItem
+          key={`${conditionObj.inst}-${conditionObj.key}`}
+          conditionObj={conditionObj}
+          idx={idx}
+          handleInputChange={handleInputChange}
+          Inspector={Inspector}
+        />
+      ))}
+    </>
   );
 }
 
