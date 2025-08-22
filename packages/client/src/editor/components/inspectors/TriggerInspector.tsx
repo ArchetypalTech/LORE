@@ -44,6 +44,8 @@ export const TriggerInspector: ComponentInspector<Trigger> = ({
 
 	if (!componentObject) return <div>Trigger not found</div>;
 
+	const excludeTriggerTypes = ["OnInteract", "OnInspect", "OnTimer", "OnCondition"];
+
 	// Ensure componentObject is always an array
 	const componentsArray = Array.isArray(componentObject)
 		? componentObject
@@ -71,7 +73,7 @@ export const TriggerInspector: ComponentInspector<Trigger> = ({
 							id="trigger_type"
 							onChange={handleInputChange(idx)}
 							value={triggerObj.trigger_type}
-							enum={triggerType}
+							enum={triggerType.filter((x) => !excludeTriggerTypes.includes(x))}
 						/>
 						<Toggle
 							id="is_once"

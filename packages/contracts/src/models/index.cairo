@@ -3,7 +3,7 @@
 use starknet::ContractAddress;
 use lore::{
     types::{
-        action_type::{TriggerType, Operator}, command_type::{TokenType},
+        action_type::{TriggerType, Operator, EffectType}, command_type::{TokenType},
         component_type::{
             ComponentType, ActionMapReactable, ActionMapExit, ActionMapContainer,
             ActionMapInventoryItem,
@@ -307,6 +307,8 @@ pub struct Effect {
     pub name: ByteArray,
     /// Target entity
     pub target: felt252,
+    /// Effect type
+    pub effect_type: EffectType,
     /// Component to affect
     pub component: ComponentType,
     /// Property to modify

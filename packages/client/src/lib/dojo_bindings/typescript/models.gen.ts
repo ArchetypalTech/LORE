@@ -87,6 +87,7 @@ export interface Effect {
 	key: BigNumberish;
 	name: string;
 	target: BigNumberish;
+	effect_type: EffectTypeEnum;
 	component: ComponentTypeEnum;
 	property: string;
 	value: Array<[string, BigNumberish]>;
@@ -223,6 +224,20 @@ export interface ComponentProperty {
 	property_type: PropertyTypeEnum;
 	access_flags: PropertyAccessEnum;
 }
+
+// Type definition for `lore::types::action_type::EffectType` enum
+export const effectType = [
+	'ModifyProperty',
+	'AddItem',
+	'RemoveItem',
+	'MoveEntity',
+	'SendMessage',
+	'TriggerAction',
+	'AddQuantity',
+	'RemoveQuantity',
+] as const;
+export type EffectType = { [key in typeof effectType[number]]: string };
+export type EffectTypeEnum = CairoCustomEnum;
 
 // Type definition for `lore::types::action_type::Operator` enum
 export const operator = [
@@ -499,6 +514,15 @@ export const schema: SchemaType = {
 			key: 0,
 		name: "",
 			target: 0,
+		effect_type: new CairoCustomEnum({ 
+					ModifyProperty: "",
+				AddItem: undefined,
+				RemoveItem: undefined,
+				MoveEntity: undefined,
+				SendMessage: undefined,
+				TriggerAction: undefined,
+				AddQuantity: undefined,
+				RemoveQuantity: undefined, }),
 		component: new CairoCustomEnum({ 
 					None: "",
 				Area: undefined,
@@ -719,6 +743,7 @@ export enum ModelsMapping {
 	StoryLine = 'lore-StoryLine',
 	Trigger = 'lore-Trigger',
 	TriggerIndex = 'lore-TriggerIndex',
+	EffectType = 'lore-EffectType',
 	Operator = 'lore-Operator',
 	TriggerType = 'lore-TriggerType',
 	TokenType = 'lore-TokenType',

@@ -50,16 +50,6 @@ pub mod prompt {
         }
     }
 
-    pub fn random_intro() -> Array<ByteArray> {
-        array![
-            "Hello, yeah",
-            "It's still just very bright here",
-            "Yeah, you're still here",
-            "Not sure what's happening yet",
-            "Looks like a void for now",
-        ]
-    }
-
     pub fn random_error() -> Array<ByteArray> {
         array![
             "I don't know what that means",

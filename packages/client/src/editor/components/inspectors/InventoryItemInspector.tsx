@@ -31,8 +31,7 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 				updatedObject.can_go_in_container = e.target.checked;
 			},
 			quantity: (e, updatedObject) => {
-				const event = e as ChangeEvent<HTMLInputElement>;
-				updatedObject.quantity = event.target.value;
+				updatedObject.quantity = e.target.value;
 			},
 			action_map: (e, updatedObject) => {
 				const newActionMap = e.target.value as unknown as ActionMapInventoryItem[];

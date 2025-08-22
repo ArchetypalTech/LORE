@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x55f51eeb04d54e5c37136b4ff86a4ec88be7f42cbdce482e05ad0f76c212a54",
-      "class_hash": "0xa361c6dc1ea5878370eb9c6559d4ebf6f903f1a5d2fbaa543cb713a552bb9e",
+      "address": "0x70c74f5a902c32c6f6ebf994baa6ff5ace205897e850993b521d4a4d728f340",
+      "class_hash": "0x75b1fb06ffb3fb6e5d9af4710947ebe2e9e4bbdda979d70a96f346d8caf3a1d",
       "abi": [
         {
           "type": "impl",
@@ -2013,6 +2013,44 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "lore::types::action_type::EffectType",
+          "variants": [
+            {
+              "name": "ModifyProperty",
+              "type": "()"
+            },
+            {
+              "name": "AddItem",
+              "type": "()"
+            },
+            {
+              "name": "RemoveItem",
+              "type": "()"
+            },
+            {
+              "name": "MoveEntity",
+              "type": "()"
+            },
+            {
+              "name": "SendMessage",
+              "type": "()"
+            },
+            {
+              "name": "TriggerAction",
+              "type": "()"
+            },
+            {
+              "name": "AddQuantity",
+              "type": "()"
+            },
+            {
+              "name": "RemoveQuantity",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "lore::models::index::Effect",
           "members": [
@@ -2031,6 +2069,10 @@
             {
               "name": "target",
               "type": "core::felt252"
+            },
+            {
+              "name": "effect_type",
+              "type": "lore::types::action_type::EffectType"
             },
             {
               "name": "component",
@@ -2642,8 +2684,8 @@
       ]
     },
     {
-      "address": "0x46d66981102b936e4c962209e37d08e47db7e63b13c3008ea8b12638c119adf",
-      "class_hash": "0x13015a56b2de4fc6f78bb1d5db33f0d2db7286cb7c395e5d515f571487b5586",
+      "address": "0x55255480ea6e51e948a1e8b631bdccd68935144a82d23d8f3984a2a87deee3d",
+      "class_hash": "0x428725c2775122584b146366eeab2d842d70c2a1cf37ba60f6d79433c715b90",
       "abi": [
         {
           "type": "impl",
@@ -2894,7 +2936,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x4f374c110ba75476f4733f6749c4c159d979e10200dc7f439959422910ecd03",
+      "class_hash": "0x45fff6faded7fe7e2921531ca534d2ea77f4bc1c116a24e10640926c2a3cefa",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },
