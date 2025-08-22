@@ -13,6 +13,7 @@ use lore::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
         component_type::ComponentType,
         direction_type::{Direction, IntoDirectionByteArray, IntoFelt252Direction},
+        action_type::EffectType,
     },
     lib::{utils::ByteArrayTraitExt}, constants::errors::Error,
 };
@@ -518,6 +519,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut component: InventoryItem,
         mut world: WorldStorage,
         name: @ByteArray,
+        effect_type: @EffectType,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
@@ -551,10 +553,43 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.can_go_in_container = new_var_value;
                             success = true;
                         } else if name == @quantity {
-                            let (value, _index) = new_value[0].clone();
-                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(value);
-                            component.quantity = new_var_value;
-                            success = true;
+                            match effect_type.clone() {
+                                EffectType::AddQuantity => {
+                                    let (value, _index) = new_value[0].clone();
+                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
+                                        value,
+                                    );
+                                    component.quantity = component.quantity + new_var_value;
+                                    success = true;
+                                },
+                                EffectType::RemoveQuantity => {
+                                    let (value, _index) = new_value[0].clone();
+                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
+                                        value,
+                                    );
+                                    if component.quantity >= new_var_value {
+                                        component.quantity = component.quantity - new_var_value;
+                                        success = true;
+                                        break;
+                                    } else {
+                                        let zero: u32 = 0;
+                                        component.quantity = zero;
+                                        success = true;
+                                        break;
+                                    }
+                                    println!("new component.quantity: {:?}", component.quantity);
+                                },
+                                EffectType::ModifyProperty => {
+                                    let (value, _index) = new_value[0].clone();
+                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
+                                        value,
+                                    );
+                                    component.quantity = new_var_value;
+                                    success = true;
+                                },
+                                _ => { // Do nothing for now
+                                },
+                            }
                         } else if name == @already_used {
                             let (value, _index) = new_value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
@@ -579,6 +614,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut component: Container,
         mut world: WorldStorage,
         name: @ByteArray,
+        effect_type: @EffectType,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
     ) -> (Result::<(), Error>, bool) {
@@ -617,10 +653,39 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.is_open = new_var_value;
                             success = true;
                         } else if name == @num_slots {
-                            let (value, _index) = new_value[0].clone();
-                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(value);
-                            component.num_slots = new_var_value;
-                            success = true;
+                            match effect_type.clone() {
+                                EffectType::ModifyProperty => {
+                                    let (value, _index) = new_value[0].clone();
+                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
+                                        value,
+                                    );
+                                    component.num_slots = new_var_value;
+                                    success = true;
+                                },
+                                EffectType::AddQuantity => {
+                                    let (value, _index) = new_value[0].clone();
+                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
+                                        value,
+                                    );
+                                    component.num_slots = component.num_slots + new_var_value;
+                                    success = true;
+                                },
+                                EffectType::RemoveQuantity => {
+                                    let (value, _index) = new_value[0].clone();
+                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
+                                        value,
+                                    );
+                                    if component.num_slots >= new_var_value {
+                                        component.num_slots = component.num_slots - new_var_value;
+                                        success = true;
+                                    } else {
+                                        component.num_slots = 0;
+                                        success = true;
+                                    }
+                                },
+                                _ => { // Do nothing for now
+                                },
+                            }
                         }
                     },
                 }
