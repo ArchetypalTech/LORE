@@ -157,8 +157,9 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     }
                     // If all are ok, set used to true
                     if trig_res.is_ok() && cond_res && eff_res.is_ok() {
-                        self.already_used = true;
-                        world.write_model(@self);
+                        let mut updated_invItem: InventoryItem = world.read_model(self.inst);
+                        updated_invItem.already_used = true;
+                        world.write_model(@updated_invItem);
                         resultUse = Result::Ok(());
                         break;
                     }

@@ -16,6 +16,7 @@ export interface Action {
 	name: string;
 	description: string;
 	is_enabled: boolean;
+	executor: BigNumberish;
 	trigger: Array<[BigNumberish, BigNumberish]>;
 	conditions: Array<[BigNumberish, BigNumberish]>;
 	effects: Array<[BigNumberish, BigNumberish]>;
@@ -91,6 +92,7 @@ export interface Effect {
 	component: ComponentTypeEnum;
 	property: string;
 	value: Array<[string, BigNumberish]>;
+	n_value: BigNumberish;
 }
 
 // Type definition for `lore::models::index::Entity` struct
@@ -415,6 +417,7 @@ export const schema: SchemaType = {
 		name: "",
 		description: "",
 			is_enabled: false,
+			executor: 0,
 			trigger: [[0, 0]],
 			conditions: [[0, 0]],
 			effects: [[0, 0]],
@@ -538,6 +541,7 @@ export const schema: SchemaType = {
 				Action: undefined, }),
 		property: "",
 			value: [["", 0]],
+			n_value: 0,
 		},
 		Entity: {
 			inst: 0,

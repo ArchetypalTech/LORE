@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x70c74f5a902c32c6f6ebf994baa6ff5ace205897e850993b521d4a4d728f340",
-      "class_hash": "0x75b1fb06ffb3fb6e5d9af4710947ebe2e9e4bbdda979d70a96f346d8caf3a1d",
+      "address": "0x67831517a668320d44e6911014920e21bed6ed709096a4b7d8c0987caa58385",
+      "class_hash": "0x37a443f0581dd061742aee5e0f7364b81343dd68075a675fd1a76cc958c8280",
       "abi": [
         {
           "type": "impl",
@@ -2085,6 +2085,10 @@
             {
               "name": "value",
               "type": "core::array::Array::<(core::byte_array::ByteArray, core::integer::u32)>"
+            },
+            {
+              "name": "n_value",
+              "type": "core::integer::u32"
             }
           ]
         },
@@ -2111,6 +2115,10 @@
             {
               "name": "is_enabled",
               "type": "core::bool"
+            },
+            {
+              "name": "executor",
+              "type": "core::felt252"
             },
             {
               "name": "trigger",
@@ -2684,8 +2692,8 @@
       ]
     },
     {
-      "address": "0x55255480ea6e51e948a1e8b631bdccd68935144a82d23d8f3984a2a87deee3d",
-      "class_hash": "0x428725c2775122584b146366eeab2d842d70c2a1cf37ba60f6d79433c715b90",
+      "address": "0x77b555bc387596650037e43f59960fb6db8161f8d3f4cd030b583944ed3b32d",
+      "class_hash": "0x44f960682ed0fb8048c4e8d0693022fc4daa56afdb7c474123221ca60320ecd",
       "abi": [
         {
           "type": "impl",
@@ -2888,7 +2896,7 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0xc66faac2db2aaf5195503c975339ab853fc246bf8709ec9d0828488cd03866",
+      "class_hash": "0x40361d82a09aaedf450e42ad956fd1794647041d08c44be030f5bfca5b56fdb",
       "tag": "lore-Action",
       "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
     },
@@ -2936,7 +2944,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x45fff6faded7fe7e2921531ca534d2ea77f4bc1c116a24e10640926c2a3cefa",
+      "class_hash": "0x59e1bbcbd5d85e34401ed83edf59314ac9cfb278ab332655a6ca791fa96ca9c",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },

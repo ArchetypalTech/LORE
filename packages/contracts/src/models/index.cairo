@@ -226,6 +226,8 @@ pub struct Action {
     pub description: ByteArray,
     /// For toggling the entire action
     pub is_enabled: bool,
+    /// Executor, to know if the action is called by the correct entity
+    pub executor: felt252,
     /// When this action can occur, the id's of the triggers. Key is (trigger.inst, trigger.key)
     pub trigger: Array<(felt252, felt252)>,
     /// What must be true, the id's of the conditions. Key is (condition.inst, condition.key)
@@ -316,6 +318,8 @@ pub struct Effect {
     /// New value to set, needs to be tuple array. First element is the value, second is the index
     /// (for texts).
     pub value: Array<(ByteArray, u32)>,
+    /// for numbers: the value that will add/substract or replace the current value
+    pub n_value: u32,
 }
 
 /// NOT USED YET ///

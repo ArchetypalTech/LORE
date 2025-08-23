@@ -2,12 +2,15 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 
 use lore::{
     models::{
-        index::{Effect, PropertyRegistry}, area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent, container::ContainerComponent,
-        player::PlayerComponent,
+        index::{Effect, PropertyRegistry}, area::AreaComponent, exit::ExitComponent,
+        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
+        container::ContainerComponent, player::PlayerComponent,
     },
     types::{action_type::TriggerContext, component_type::ComponentType},
-    lib::{utils::ByteArrayTraitExt, variable_property::{VariablePropertyImp}, variable_property_helper::VariablePropertyHelperTrait},
+    lib::{
+        utils::ByteArrayTraitExt, variable_property::{VariablePropertyImp},
+        variable_property_helper::VariablePropertyHelperTrait,
+    },
     constants::errors::Error,
 };
 
@@ -35,11 +38,7 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_area_property(
-                    area,
-                    world,
-                    self.property,
-                    @property_registry,
-                    self.value,
+                    area, world, self.property, @property_registry, self.value,
                 );
                 result = result_p;
             },
@@ -52,11 +51,7 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_exit_property(
-                    exit,
-                    world,
-                    self.property,
-                    @property_registry,
-                    self.value,
+                    exit, world, self.property, @property_registry, self.value,
                 );
                 result = result_p;
             },
@@ -69,11 +64,7 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_reactable_property(
-                    reactable,
-                    world,
-                    self.property,
-                    @property_registry,
-                    self.value,
+                    reactable, world, self.property, @property_registry, self.value,
                 );
                 result = result_p;
             },
@@ -85,13 +76,15 @@ pub impl EffectImpl of EffectTrait {
                 let mut item = item_opt.unwrap();
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
-                let (result_p, _success_p) = VariablePropertyHelperTrait::set_inventory_item_property(
+                let (result_p, _success_p) =
+                    VariablePropertyHelperTrait::set_inventory_item_property(
                     item,
                     world,
                     self.property,
                     self.effect_type,
                     @property_registry,
                     self.value,
+                    self.n_value,
                 );
                 result = result_p;
             },
@@ -110,6 +103,7 @@ pub impl EffectImpl of EffectTrait {
                     self.effect_type,
                     @property_registry,
                     self.value,
+                    self.n_value,
                 );
                 result = result_p;
             },
@@ -122,11 +116,7 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_player_property(
-                    player,
-                    world,
-                    self.property,
-                    @property_registry,
-                    self.value,
+                    player, world, self.property, @property_registry, self.value,
                 );
                 result = result_p;
             },
@@ -166,8 +156,9 @@ mod tests {
         component: ComponentType,
         property: ByteArray,
         value: Array<(ByteArray, u32)>,
+        n_value: u32,
     ) -> Effect {
-        Effect { inst, key, name, target, effect_type, component, property, value }
+        Effect { inst, key, name, target, effect_type, component, property, value, n_value }
     }
 
     fn create_trigger_context(
@@ -226,6 +217,7 @@ mod tests {
         ];
         let key: felt252 = 1;
         let name: ByteArray = "Effect name";
+        let n_value: u32 = 0;
         let mut effect = create_test_effect(
             door.inst,
             key,
@@ -235,6 +227,7 @@ mod tests {
             ComponentType::Reactable,
             "description",
             new_value.clone(),
+            n_value,
         );
         world.write_model(@effect);
         let result = effect.apply_effect(world, context);

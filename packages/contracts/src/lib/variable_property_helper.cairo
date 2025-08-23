@@ -522,6 +522,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         effect_type: @EffectType,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        num_value: @u32,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
@@ -555,36 +556,22 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         } else if name == @quantity {
                             match effect_type.clone() {
                                 EffectType::AddQuantity => {
-                                    let (value, _index) = new_value[0].clone();
-                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
-                                        value,
-                                    );
-                                    component.quantity = component.quantity + new_var_value;
+                                    component.quantity += num_value.clone();
                                     success = true;
                                 },
                                 EffectType::RemoveQuantity => {
-                                    let (value, _index) = new_value[0].clone();
-                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
-                                        value,
-                                    );
-                                    if component.quantity >= new_var_value {
-                                        component.quantity = component.quantity - new_var_value;
+                                    if component.quantity >= num_value.clone() {
+                                        component.quantity -= num_value.clone();
                                         success = true;
-                                        break;
                                     } else {
                                         let zero: u32 = 0;
                                         component.quantity = zero;
                                         success = true;
-                                        break;
                                     }
-                                    println!("new component.quantity: {:?}", component.quantity);
                                 },
                                 EffectType::ModifyProperty => {
-                                    let (value, _index) = new_value[0].clone();
-                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
-                                        value,
-                                    );
-                                    component.quantity = new_var_value;
+                                    // Overwrite the quantity
+                                    component.quantity = num_value.clone();
                                     success = true;
                                 },
                                 _ => { // Do nothing for now
@@ -617,6 +604,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         effect_type: @EffectType,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        num_value: @u32,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_container: ByteArray = "is_container";
@@ -655,28 +643,16 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         } else if name == @num_slots {
                             match effect_type.clone() {
                                 EffectType::ModifyProperty => {
-                                    let (value, _index) = new_value[0].clone();
-                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
-                                        value,
-                                    );
-                                    component.num_slots = new_var_value;
+                                    component.num_slots = num_value.clone();
                                     success = true;
                                 },
                                 EffectType::AddQuantity => {
-                                    let (value, _index) = new_value[0].clone();
-                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
-                                        value,
-                                    );
-                                    component.num_slots = component.num_slots + new_var_value;
+                                    component.num_slots += num_value.clone();
                                     success = true;
                                 },
                                 EffectType::RemoveQuantity => {
-                                    let (value, _index) = new_value[0].clone();
-                                    let new_var_value = ByteArrayTraitExt::u32_from_byte_array(
-                                        value,
-                                    );
-                                    if component.num_slots >= new_var_value {
-                                        component.num_slots = component.num_slots - new_var_value;
+                                    if component.num_slots >= num_value.clone() {
+                                        component.num_slots -= num_value.clone();
                                         success = true;
                                     } else {
                                         component.num_slots = 0;
@@ -686,6 +662,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 _ => { // Do nothing for now
                                 },
                             }
+                            component.store(world);
                         }
                     },
                 }

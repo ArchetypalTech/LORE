@@ -134,7 +134,7 @@ pub impl ExitComponent of Component<Exit> {
                             doer: *player.inst,
                             target1: self.leads_to, // would be the room that the player moved to
                             target2: 0,
-                            inventory_object: 0,
+                            inventory_object: self.inst,
                         };
 
                         let (_trig_res, _cond_res, _eff_res) = ActionImpl::process_action(
