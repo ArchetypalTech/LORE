@@ -21,6 +21,7 @@ import {
 	operator,
 	componentType,
 	type Effect,
+	effectType,
 	type Action,
 	type ParentToChildren,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -319,12 +320,14 @@ const publishEffect = async (
 			num.toBigInt(effect.key.toString()),
 			byteArray.byteArrayFromString(effect.name ?? ""),
 			num.toBigInt(effect.target.toString()),
+			toEnumIndex(effect.effect_type, effectType),
 			toEnumIndex(effect.component, componentType),
 			byteArray.byteArrayFromString(effect.property),
 			effect.value.map(([v, i]) => [
 				byteArray.byteArrayFromString(v.toString() ?? ""),
-				num.toBigInt(i.toString()),
+				num.toBigInt(i.toString() ?? 0),
 			]),
+			num.toBigInt(effect.n_value.toString() ?? 0),
 		];
 		await dispatchDesignerCall("create_effect", [preparedEffect]);
 	}
@@ -342,6 +345,7 @@ const publishAction = async (
 			byteArray.byteArrayFromString(action.name ?? ""),
 			byteArray.byteArrayFromString(action.description ?? ""),
 			action.is_enabled,
+			num.toBigInt(action.executor.toString()?? 0),
 			action.trigger.map(([a, b]) => [
 				num.toBigInt(a.toString()),
 				num.toBigInt(b.toString()),

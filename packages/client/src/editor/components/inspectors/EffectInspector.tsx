@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   type Effect,
   componentType,
+  effectType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
   Input,
@@ -30,6 +31,7 @@ const EffectItem = ({
 }) => {
   const [propertyNames, setPropertyNames] = useState<string[]>([]);
   const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
+  const excludeEffectTypes = ["AddItem", "RemoveItem", "MoveEntity", "SendMessage", "TriggerAction"];
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -70,6 +72,12 @@ const EffectItem = ({
           onChange={handleInputChange(idx)}
         />
         <CairoEnumSelect
+          id="effectType"
+          onChange={handleInputChange(idx)}
+          value={effectObj.effect_type}
+          enum={effectType.filter((x) => !excludeEffectTypes.includes(x))}
+        />
+        <CairoEnumSelect
           id="component"
           onChange={handleInputChange(idx)}
           value={effectObj.component}
@@ -82,13 +90,18 @@ const EffectItem = ({
           options={propertyOptions}
         />
         <TextAreaStringArray
-          id="value"
+          id="text_value"
           value={
             effectObj.value.map(([text, index]) => [text.toString(), index.toString()]) as [string, string][]
           }
           onChange={handleInputChange(idx)}
           rows={1}
           columns={2}
+        />
+        <Input
+          id="numeric_value"
+          value={effectObj.n_value.toString()}
+          onChange={handleInputChange(idx)}
         />
       </Inspector>
     </CollapsibleComponent>
@@ -109,17 +122,23 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       target: (e, updatedObject) => {
         updatedObject.target = e.target.value;
       },
+      effectType: (e, updatedObject) => {
+        updatedObject.effect_type = stringCairoEnum(e.target.value);
+      },
       component: (e, updatedObject) => {
         updatedObject.component = stringCairoEnum(e.target.value);
       },
       property: (e, updatedObject) => {
         updatedObject.property = e.target.value;
       },
-      value: (e, updatedObject) => {
+      text_value: (e, updatedObject) => {
         const val = e.target.value as unknown as [string, string][];
         updatedObject.value = val.map(
           (([text, index]) => [text, index.toString()])
         ) as [string, BigNumberish][];
+      },
+      numeric_value: (e, updatedObject) => {
+        updatedObject.n_value = e.target.value;
       },
     },
   });

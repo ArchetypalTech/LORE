@@ -1,13 +1,16 @@
-use dojo::{world::WorldStorage};
+use dojo::{world::{WorldStorage}, model::ModelStorage};
 
 use lore::{
     models::{
-        index::{Effect}, area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent, container::ContainerComponent,
-        player::PlayerComponent,
+        index::{Effect, PropertyRegistry}, area::AreaComponent, exit::ExitComponent,
+        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
+        container::ContainerComponent, player::PlayerComponent,
     },
     types::{action_type::TriggerContext, component_type::ComponentType},
-    lib::{utils::ByteArrayTraitExt, variable_property::{VariablePropertyImp}},
+    lib::{
+        utils::ByteArrayTraitExt, variable_property::{VariablePropertyImp},
+        variable_property_helper::VariablePropertyHelperTrait,
+    },
     constants::errors::Error,
 };
 
@@ -32,11 +35,12 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoAreaComponent);
                 }
                 let mut area = area_opt.unwrap();
+                let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
-                result =
-                    VariablePropertyImp::set_property(
-                        @world, @area.inst, self.property, self.value, self.component.clone(),
-                    );
+                let (result_p, _success_p) = VariablePropertyHelperTrait::set_area_property(
+                    area, world, self.property, @property_registry, self.value,
+                );
+                result = result_p;
             },
             ComponentType::Exit => {
                 let exit_opt = ExitComponent::get_component(world, *actual_target);
@@ -44,10 +48,12 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoExitComponent);
                 }
                 let mut exit = exit_opt.unwrap();
-                result =
-                    VariablePropertyImp::set_property(
-                        @world, @exit.inst, self.property, self.value, self.component.clone(),
-                    );
+                let property_registry: PropertyRegistry = world.read_model(*self.component);
+                // Direct modification to component
+                let (result_p, _success_p) = VariablePropertyHelperTrait::set_exit_property(
+                    exit, world, self.property, @property_registry, self.value,
+                );
+                result = result_p;
             },
             ComponentType::Reactable => {
                 let inspect_opt = ReactableComponent::get_component(world, *actual_target);
@@ -55,10 +61,12 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoReactableComponent);
                 }
                 let mut reactable = inspect_opt.unwrap();
-                result =
-                    VariablePropertyImp::set_property(
-                        @world, @reactable.inst, self.property, self.value, self.component.clone(),
-                    );
+                let property_registry: PropertyRegistry = world.read_model(*self.component);
+                // Direct modification to component
+                let (result_p, _success_p) = VariablePropertyHelperTrait::set_reactable_property(
+                    reactable, world, self.property, @property_registry, self.value,
+                );
+                result = result_p;
             },
             ComponentType::InventoryItem => {
                 let item_opt = InventoryItemComponent::get_component(world, *actual_target);
@@ -66,10 +74,19 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoInventoryItemComponent);
                 }
                 let mut item = item_opt.unwrap();
-                result =
-                    VariablePropertyImp::set_property(
-                        @world, @item.inst, self.property, self.value, self.component.clone(),
-                    );
+                let property_registry: PropertyRegistry = world.read_model(*self.component);
+                // Direct modification to component
+                let (result_p, _success_p) =
+                    VariablePropertyHelperTrait::set_inventory_item_property(
+                    item,
+                    world,
+                    self.property,
+                    self.effect_type,
+                    @property_registry,
+                    self.value,
+                    self.n_value,
+                );
+                result = result_p;
             },
             ComponentType::Container => {
                 let cont_opt = ContainerComponent::get_component(world, *actual_target);
@@ -77,10 +94,18 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoContainerComponent);
                 }
                 let mut container = cont_opt.unwrap();
-                result =
-                    VariablePropertyImp::set_property(
-                        @world, @container.inst, self.property, self.value, self.component.clone(),
-                    );
+                let property_registry: PropertyRegistry = world.read_model(*self.component);
+                // Direct modification to component
+                let (result_p, _success_p) = VariablePropertyHelperTrait::set_container_property(
+                    container,
+                    world,
+                    self.property,
+                    self.effect_type,
+                    @property_registry,
+                    self.value,
+                    self.n_value,
+                );
+                result = result_p;
             },
             ComponentType::Player => {
                 let player_opt = PlayerComponent::get_component(world, *actual_target);
@@ -88,10 +113,12 @@ pub impl EffectImpl of EffectTrait {
                     result = Result::Err(Error::NoPlayerComponent);
                 }
                 let mut player = player_opt.unwrap();
-                result =
-                    VariablePropertyImp::set_property(
-                        @world, @player.inst, self.property, self.value, self.component.clone(),
-                    );
+                let property_registry: PropertyRegistry = world.read_model(*self.component);
+                // Direct modification to component
+                let (result_p, _success_p) = VariablePropertyHelperTrait::set_player_property(
+                    player, world, self.property, @property_registry, self.value,
+                );
+                result = result_p;
             },
             _ => { result = Result::Err(Error::NoComponent); },
         }
@@ -114,7 +141,7 @@ mod tests {
             entity_trait::EntityImpl, player_trait::PlayerImpl, trigger_trait::TriggerImpl,
         },
         types::{
-            action_type::TriggerContext,
+            action_type::{TriggerContext, EffectType},
             component_type::{ComponentType, ActionMapReactable, ReactableActions},
         },
         lib::{variable_property::VariablePropertyImp},
@@ -124,12 +151,14 @@ mod tests {
         inst: felt252,
         key: felt252,
         name: ByteArray,
+        effect_type: EffectType,
         target: felt252,
         component: ComponentType,
         property: ByteArray,
         value: Array<(ByteArray, u32)>,
+        n_value: u32,
     ) -> Effect {
-        Effect { inst, key, name, target, component, property, value }
+        Effect { inst, key, name, target, effect_type, component, property, value, n_value }
     }
 
     fn create_trigger_context(
@@ -188,14 +217,17 @@ mod tests {
         ];
         let key: felt252 = 1;
         let name: ByteArray = "Effect name";
+        let n_value: u32 = 0;
         let mut effect = create_test_effect(
             door.inst,
             key,
             name,
+            EffectType::ModifyProperty,
             door.inst,
             ComponentType::Reactable,
             "description",
             new_value.clone(),
+            n_value,
         );
         world.write_model(@effect);
         let result = effect.apply_effect(world, context);

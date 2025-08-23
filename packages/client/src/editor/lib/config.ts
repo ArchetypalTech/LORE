@@ -21,52 +21,87 @@ const { get, set, createFactory } = StoreBuilder({});
  * Recursively sync nested components/entities into the store
  */
 const deepSync = (obj: any) => {
-	EditorData().dojoSync(obj);
-	const nestedKeys = ["children", "parent", "Components", "subEntities", "Trigger", "Condition", "Effect", "Action", "DescriptionText"];
-	for (const key of nestedKeys) {
-		if (obj[key] && Array.isArray(obj[key])) {
-			for (const child of obj[key]) {
-				deepSync(child);
-			}
-		}
-	}
+  if (!obj || typeof obj !== "object") return;
+
+  EditorData().dojoSync(obj);
+
+  const nestedKeys = [
+    "children",
+    "parent",
+    "Components",
+    "subEntities",
+    "Trigger",
+    "Condition",
+    "Effect",
+    "Action",
+    "DescriptionText",
+		"DESCRIPTIONTEXT",
+  ];
+
+  for (const key of nestedKeys) {
+    if (obj[key] && Array.isArray(obj[key])) {
+      for (const child of obj[key]) {
+        if (child && typeof child === "object") {
+          deepSync(child);
+        }
+      }
+    }
+  }
 };
+
 
 /**
  * Recursively register parent-child relationships
  */
 const registerParentChildLinks = (obj: any, parentInst?: BigNumberish) => {
+  if (!obj || typeof obj !== "object") return;
+
   const inst = obj?.Entity?.inst || obj.inst;
+
+  // Handle parent-child linking
   if (inst && parentInst !== undefined) {
     const { get, set } = EditorData();
     let parents = get().parents || [];
 
-    // Find if the parent already exists in the array
-    let parentEntry = parents.find(p => p.inst === parentInst);
-
+    // Find or create the parent entry
+    let parentEntry = parents.find((p) => p.inst === parentInst);
     if (!parentEntry) {
-      // Create a new ParentToChildren entry if none exists
       parentEntry = {
         inst: parentInst,
         is_parent: true,
         children: [],
       };
-      parents.push(parentEntry);
+      parents = [...parents, parentEntry]; // ensure immutable update
     }
 
-    // Add child if not already included
-    if (!parentEntry.children.includes(inst)) {
-      parentEntry.children.push(inst);
+    // Always assign a new array to avoid frozen/mutability issues
+    if (!parentEntry.children?.includes(inst)) {
+      parentEntry.children = [...(parentEntry.children || []), inst];
     }
 
     set({ parents });
   }
 
-  const nestedKeys = ["children", "Components", "subEntities", "Trigger", "Condition", "Effect", "Action"];
+  // Recursively process nested objects
+  const nestedKeys = [
+    "children",
+    "Components",
+    "subEntities",
+    "Trigger",
+    "Condition",
+    "Effect",
+    "Action",
+    "DescriptionText",
+    "DESCRIPTIONTEXT",
+  ];
+
   for (const key of nestedKeys) {
     if (Array.isArray(obj[key])) {
       for (const child of obj[key]) {
-        registerParentChildLinks(child, inst);
+        // Only recurse if child is an object with an inst
+        if (child && (child.inst || child.Entity?.inst)) {
+          registerParentChildLinks(child, inst);
+        }
       }
     }
   }
@@ -76,22 +111,39 @@ const registerParentChildLinks = (obj: any, parentInst?: BigNumberish) => {
  * Recursively build a flat changeSet from all entities/components
  */
 const buildChangeSet = (obj: any): any[] => {
-	const inst = obj?.Entity?.inst || obj.inst;
-	const set: any[] = inst
-		? [{ type: "update" as const, inst, object: obj }]
-		: [];
+  if (!obj) return [];
 
-	const nestedKeys = ["children", "parent", "Components", "subEntities", "Action", "Condition", "Effect", "Trigger"];
-	for (const key of nestedKeys) {
-		if (obj[key] && Array.isArray(obj[key])) {
-			for (const child of obj[key]) {
-				set.push(...buildChangeSet(child));
-			}
-		}
-	}
+  const inst = obj?.Entity?.inst || obj.inst;
+  const set: any[] = inst ? [{ type: "update" as const, inst, object: obj }] : [];
 
-	return set;
-}
+  const nestedKeys = [
+    "children",
+    "parent",
+    "Components",
+    "subEntities",
+    "Action",
+    "Condition",
+    "Effect",
+    "Trigger",
+    "DescriptionText",
+    "DESCRIPTIONTEXT",
+  ];
+
+  for (const key of nestedKeys) {
+    if (Array.isArray(obj[key])) {
+      for (const child of obj[key]) {
+        if (child && typeof child === "object") {
+          set.push(...buildChangeSet(child));
+        } else {
+          // Optional: track primitive values too
+          set.push({ type: "update", inst, key, value: child });
+        }
+      }
+    }
+  }
+
+  return set;
+};
 
 const config = {
 	/**

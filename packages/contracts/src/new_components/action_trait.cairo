@@ -74,6 +74,13 @@ pub impl ActionImpl of ActionTrait {
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
+        // Check if the action is called by the correct entity
+        if action.executor != *context.inventory_object {
+            if player.use_debug {
+                player.say(world, format!("Action is not called by the correct entity"));
+            }
+            return (Result::Ok(()), false, Result::Ok(()));
+        }
         // Trigger
         let mut result_t: Result<(), Error> = Result::Ok(());
         //Conditions. We want to have the bool value as true in case there is no condition
@@ -108,8 +115,8 @@ pub impl ActionImpl of ActionTrait {
             }
         };
 
-        // Finally execute all effects if conditions are met
-        if result {
+        // Finally execute all effects if triggers and conditions are met
+        if result_t.is_ok() && result {
             for effect_key in action.effects.clone() {
                 let effect: Effect = world.read_model(effect_key);
                 let result_pos = effect.apply_effect(world, *context);
@@ -197,7 +204,8 @@ mod tests {
                 ComponentType, ExitActions, ActionMapExit, ReactableActions, ActionMapReactable,
                 InventoryItemActions, ActionMapInventoryItem,
             },
-            action_type::{TriggerType, TriggerContext, Operator}, direction_type::Direction,
+            action_type::{TriggerType, TriggerContext, Operator, EffectType},
+            direction_type::Direction,
         },
         lib::{variable_property::VariablePropertyImp, utils::ByteArrayTraitExt},
     };
@@ -375,11 +383,13 @@ mod tests {
         key: felt252,
         name: ByteArray,
         target: felt252,
+        effect_type: EffectType,
         component: ComponentType,
         property: ByteArray,
         value: Array<(ByteArray, u32)>,
+        n_value: u32,
     ) -> Effect {
-        Effect { inst, key, name, target, component, property, value }
+        Effect { inst, key, name, target, effect_type, component, property, value, n_value }
     }
 
     fn create_test_action(
@@ -388,6 +398,7 @@ mod tests {
         name: ByteArray,
         description: ByteArray,
         is_enabled: bool,
+        executor: felt252,
         trigger: Array<(felt252, felt252)>,
         conditions: Array<(felt252, felt252)>,
         effects: Array<(felt252, felt252)>,
@@ -402,6 +413,7 @@ mod tests {
             name,
             description,
             is_enabled,
+            executor,
             trigger,
             conditions,
             effects,
@@ -521,12 +533,22 @@ mod tests {
             e_key,
             name,
             door.inst,
+            EffectType::ModifyProperty,
             ComponentType::Reactable,
             property,
             new_description.clone(),
+            0,
         );
         let mut effect2 = create_test_effect(
-            door.inst, e_key2, name2, door.inst, ComponentType::Exit, property2, new_enterable,
+            door.inst,
+            e_key2,
+            name2,
+            door.inst,
+            EffectType::ModifyProperty,
+            ComponentType::Exit,
+            property2,
+            new_enterable,
+            0,
         );
         world.write_model(@effect);
         world.write_model(@effect2);
@@ -555,6 +577,7 @@ mod tests {
             act_name,
             act_desc,
             true,
+            item.inst,
             triggers,
             conditions,
             effects,
@@ -701,18 +724,22 @@ mod tests {
             e_key,
             name,
             door.inst,
+            EffectType::ModifyProperty,
             ComponentType::Reactable,
             property,
             new_description.clone(),
+            0,
         );
         let mut effect2 = create_test_effect(
             door.inst,
             e_key2,
             name2,
             door.inst,
+            EffectType::ModifyProperty,
             ComponentType::Exit,
             property2,
             new_enterable.clone(),
+            0,
         );
         world.write_model(@effect);
         world.write_model(@effect2);
@@ -741,6 +768,7 @@ mod tests {
             act_name,
             act_desc,
             true,
+            item.inst,
             triggers,
             conditions,
             effects,

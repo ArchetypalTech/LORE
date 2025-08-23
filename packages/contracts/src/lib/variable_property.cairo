@@ -6,7 +6,7 @@ use lore::{
         inventoryItem::InventoryItemComponent, container::ContainerComponent,
         player::PlayerComponent,
     },
-    types::{property_type::PropertyAccess, component_type::ComponentType},
+    types::{property_type::PropertyAccess, component_type::ComponentType, action_type::EffectType},
     lib::{utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait},
     constants::errors::Error,
 };
@@ -98,8 +98,10 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
     fn set_property(
         mut world: @WorldStorage,
         key: @felt252,
+        effect_type: @EffectType,
         property_name: @ByteArray,
         new_value: @Array<(ByteArray, u32)>,
+        num_value: @u32,
         component_type: ComponentType,
     ) -> Result<(), Error> {
         let property_registry: PropertyRegistry = world.read_model((component_type));
@@ -138,7 +140,13 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 let prop_text = property_name.clone();
                 let (result_p, success_p) =
                     VariablePropertyHelperTrait::set_inventory_item_property(
-                    component, *world, @prop_text, @property_registry, new_value,
+                    component,
+                    *world,
+                    @prop_text,
+                    effect_type,
+                    @property_registry,
+                    new_value,
+                    num_value,
                 );
                 result = result_p;
                 success = success_p;
@@ -147,7 +155,13 @@ pub impl VariablePropertyImp of VariablePropertyTrait {
                 let component: Container = world.read_model(*key);
                 let prop_text = property_name.clone();
                 let (result_p, success_p) = VariablePropertyHelperTrait::set_container_property(
-                    component, *world, @prop_text, @property_registry, new_value,
+                    component,
+                    *world,
+                    @prop_text,
+                    effect_type,
+                    @property_registry,
+                    new_value,
+                    num_value,
                 );
                 result = result_p;
                 success = success_p;

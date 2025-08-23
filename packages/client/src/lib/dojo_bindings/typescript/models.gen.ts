@@ -16,6 +16,7 @@ export interface Action {
 	name: string;
 	description: string;
 	is_enabled: boolean;
+	executor: BigNumberish;
 	trigger: Array<[BigNumberish, BigNumberish]>;
 	conditions: Array<[BigNumberish, BigNumberish]>;
 	effects: Array<[BigNumberish, BigNumberish]>;
@@ -87,9 +88,11 @@ export interface Effect {
 	key: BigNumberish;
 	name: string;
 	target: BigNumberish;
+	effect_type: EffectTypeEnum;
 	component: ComponentTypeEnum;
 	property: string;
 	value: Array<[string, BigNumberish]>;
+	n_value: BigNumberish;
 }
 
 // Type definition for `lore::models::index::Entity` struct
@@ -223,6 +226,20 @@ export interface ComponentProperty {
 	property_type: PropertyTypeEnum;
 	access_flags: PropertyAccessEnum;
 }
+
+// Type definition for `lore::types::action_type::EffectType` enum
+export const effectType = [
+	'ModifyProperty',
+	'AddItem',
+	'RemoveItem',
+	'MoveEntity',
+	'SendMessage',
+	'TriggerAction',
+	'AddQuantity',
+	'RemoveQuantity',
+] as const;
+export type EffectType = { [key in typeof effectType[number]]: string };
+export type EffectTypeEnum = CairoCustomEnum;
 
 // Type definition for `lore::types::action_type::Operator` enum
 export const operator = [
@@ -400,6 +417,7 @@ export const schema: SchemaType = {
 		name: "",
 		description: "",
 			is_enabled: false,
+			executor: 0,
 			trigger: [[0, 0]],
 			conditions: [[0, 0]],
 			effects: [[0, 0]],
@@ -499,6 +517,15 @@ export const schema: SchemaType = {
 			key: 0,
 		name: "",
 			target: 0,
+		effect_type: new CairoCustomEnum({ 
+					ModifyProperty: "",
+				AddItem: undefined,
+				RemoveItem: undefined,
+				MoveEntity: undefined,
+				SendMessage: undefined,
+				TriggerAction: undefined,
+				AddQuantity: undefined,
+				RemoveQuantity: undefined, }),
 		component: new CairoCustomEnum({ 
 					None: "",
 				Area: undefined,
@@ -514,6 +541,7 @@ export const schema: SchemaType = {
 				Action: undefined, }),
 		property: "",
 			value: [["", 0]],
+			n_value: 0,
 		},
 		Entity: {
 			inst: 0,
@@ -719,6 +747,7 @@ export enum ModelsMapping {
 	StoryLine = 'lore-StoryLine',
 	Trigger = 'lore-Trigger',
 	TriggerIndex = 'lore-TriggerIndex',
+	EffectType = 'lore-EffectType',
 	Operator = 'lore-Operator',
 	TriggerType = 'lore-TriggerType',
 	TokenType = 'lore-TokenType',

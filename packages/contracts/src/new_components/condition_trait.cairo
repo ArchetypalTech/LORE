@@ -1,14 +1,13 @@
-use dojo::{world::WorldStorage};
-
+use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::Condition, area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent, container::ContainerComponent,
-        player::PlayerComponent,
+        index::{Condition, PropertyRegistry}, area::AreaComponent, exit::ExitComponent,
+        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
+        container::ContainerComponent, player::PlayerComponent,
     },
     new_components::{entity_trait::EntityImpl, trigger_trait::TriggerImpl},
     types::{component_type::ComponentType, action_type::{TriggerContext, Operator}},
-    lib::{utils::ByteArrayTraitExt, variable_property::{VariablePropertyTrait}},
+    lib::{utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait},
 };
 
 #[generate_trait]
@@ -17,6 +16,7 @@ pub impl ConditionImpl of ConditionTrait {
         let target = *self.target;
         let mut component_value: Option<Array<felt252>> = Option::None;
         let mut eval_result: bool = false;
+        let property_registry: PropertyRegistry = world.read_model(*self.component);
         match self.component {
             ComponentType::Area => {
                 let container_opt = AreaComponent::get_component(*world, target);
@@ -24,8 +24,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let area = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyTrait::get_property(
-                    world, @area.inst, self.property, *self.component,
+                let (b_component_value, _) = VariablePropertyHelperTrait::get_area_property(
+                    area, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -35,8 +35,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let exit = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyTrait::get_property(
-                    world, @exit.inst, self.property, *self.component,
+                let (b_component_value, _) = VariablePropertyHelperTrait::get_exit_property(
+                    exit, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -46,8 +46,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let reactable = OptionTrait::unwrap(reactable_opt);
-                let (b_component_value, _) = VariablePropertyTrait::get_property(
-                    world, @reactable.inst, self.property, *self.component,
+                let (b_component_value, _) = VariablePropertyHelperTrait::get_reactable_property(
+                    reactable, self.property, @property_registry, *world,
                 );
                 component_value = b_component_value;
             },
@@ -57,8 +57,9 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let inventoryItem = OptionTrait::unwrap(inventoryItem_opt);
-                let (b_component_value, _) = VariablePropertyTrait::get_property(
-                    world, @inventoryItem.inst, self.property, *self.component,
+                let (b_component_value, _) =
+                    VariablePropertyHelperTrait::get_inventory_item_property(
+                    inventoryItem, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -68,8 +69,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyTrait::get_property(
-                    world, @container.inst, self.property, *self.component,
+                let (b_component_value, _) = VariablePropertyHelperTrait::get_container_property(
+                    container, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -79,8 +80,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let player = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyTrait::get_property(
-                    world, @player.inst, self.property, *self.component,
+                let (b_component_value, _) = VariablePropertyHelperTrait::get_player_property(
+                    player, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -110,39 +111,101 @@ pub impl ConditionImpl of ConditionTrait {
         match self.operator {
             Operator::Equals => {
                 // First, check if the lengths of the two arrays are equal.
-                // If not, they can't be equal, so return false immediately.
+                // If not, they can't be compared, so return false immediately.
                 if component_value.len() != condition_value.len() {
                     result = false;
                 }
 
-                // Iterate through each index and compare the corresponding elements.
-                // If any pair of elements differ, return false.
-                for i in 0..component_value.len() {
-                    if component_value.at(i) != condition_value.at(i) {
-                        result = false;
+                if result {
+                    // Iterate through each index and compare the corresponding elements.
+                    // If any pair of elements differ, return false.
+                    for i in 0..component_value.len() {
+                        if component_value.at(i) != condition_value.at(i) {
+                            result = false;
+                            break;
+                        };
                     };
-                };
+                }
 
                 // If we get here, all elements matched, so return true.
                 return result;
             },
             Operator::NotEquals => {
-                // If the lengths are different, arrays are not equal,
-                // so return true for NotEquals.
+                // First, check if the lengths of the two arrays are equal.
+                // If not, they can't be compared, so return false immediately.
                 if component_value.len() != condition_value.len() {
                     result = false;
                 }
 
-                // Iterate through each element and check if any pair differs.
-                // If so, return true, indicating arrays are not equal.
-                for i in 0..component_value.len() {
-                    if component_value.at(i) == condition_value.at(i) {
-                        result = false;
+                if result {
+                    // Iterate through each element and check if any pair differs.
+                    // If so, return true, indicating arrays are not equal.
+                    for i in 0..component_value.len() {
+                        if component_value.at(i) == condition_value.at(i) {
+                            result = false;
+                            break;
+                        };
                     };
-                };
+                }
 
                 // If all elements matched and lengths are equal, arrays are equal,
                 // so return false for NotEquals.
+                return result;
+            },
+            Operator::GreaterThan => {
+                // First, check if the lengths of the two arrays are equal.
+                // If not, they can't be compared, so return false immediately.
+                if component_value.len() != condition_value.len() {
+                    result = false;
+                }
+
+                if result {
+                    // Iterate through each element and check if any pair differs.
+                    // If component value is less than condition value, return false.
+                    for i in 0..component_value.len() {
+                        let comp_val: felt252 = *(component_value.at(i)); // dereference
+                        let cond_val: felt252 = *(condition_value.at(i)); // dereference
+
+                        // Now convert to u256 for comparison
+                        let comp_u256: u256 = comp_val.try_into().unwrap();
+                        let cond_u256: u256 = cond_val.try_into().unwrap();
+                        if comp_u256 < cond_u256 {
+                            // Not greater than
+                            result = false;
+                            break;
+                        }
+                    };
+                }
+
+                // If all elements matches length and they are greater than, return true
+                return result;
+            },
+            Operator::LessThan => {
+                // First, check if the lengths of the two arrays are equal.
+                // If not, they can't be compared, so return false immediately.
+                if component_value.len() != condition_value.len() {
+                    result = false;
+                }
+
+                if result {
+                    // Iterate through each element and check if any pair differs.
+                    // If component value is greater than condition value, return false.
+                    for i in 0..component_value.len() {
+                        let comp_val: felt252 = *(component_value.at(i)); // dereference
+                        let cond_val: felt252 = *(condition_value.at(i)); // dereference
+
+                        // Now convert to u256 for comparison
+                        let comp_u256: u256 = comp_val.try_into().unwrap();
+                        let cond_u256: u256 = cond_val.try_into().unwrap();
+                        if comp_u256 > cond_u256 {
+                            // Not less than
+                            result = false;
+                            break;
+                        }
+                    };
+                }
+
+                // If all elements matches length and they are less than, return true
                 return result;
             },
             _ => { // Do nothing

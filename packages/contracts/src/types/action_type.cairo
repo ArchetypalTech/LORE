@@ -42,14 +42,16 @@ pub enum Operator {
     LessThan,
 }
 
-#[derive(Drop, Serde)]
-enum EffectType {
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+pub enum EffectType {
     ModifyProperty,
     AddItem,
     RemoveItem,
     MoveEntity,
     SendMessage,
     TriggerAction,
+    AddQuantity,
+    RemoveQuantity,
 }
 
 
@@ -106,6 +108,8 @@ pub impl IntoEffectTypeU8 of core::traits::Into<EffectType, u8> {
             EffectType::MoveEntity => 3,
             EffectType::SendMessage => 4,
             EffectType::TriggerAction => 5,
+            EffectType::AddQuantity => 6,
+            EffectType::RemoveQuantity => 7,
         }
     }
 }
@@ -183,6 +187,8 @@ pub impl IntoU8EffectType of core::traits::Into<u8, EffectType> {
             3 => EffectType::MoveEntity,
             4 => EffectType::SendMessage,
             5 => EffectType::TriggerAction,
+            6 => EffectType::AddQuantity,
+            7 => EffectType::RemoveQuantity,
             _ => EffectType::ModifyProperty,
         }
     }

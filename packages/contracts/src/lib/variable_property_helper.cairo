@@ -13,6 +13,7 @@ use lore::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
         component_type::ComponentType,
         direction_type::{Direction, IntoDirectionByteArray, IntoFelt252Direction},
+        action_type::EffectType,
     },
     lib::{utils::ByteArrayTraitExt}, constants::errors::Error,
 };
@@ -518,8 +519,10 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut component: InventoryItem,
         mut world: WorldStorage,
         name: @ByteArray,
+        effect_type: @EffectType,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        num_value: @u32,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
@@ -551,10 +554,29 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.can_go_in_container = new_var_value;
                             success = true;
                         } else if name == @quantity {
-                            let (value, _index) = new_value[0].clone();
-                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(value);
-                            component.quantity = new_var_value;
-                            success = true;
+                            match effect_type.clone() {
+                                EffectType::AddQuantity => {
+                                    component.quantity += num_value.clone();
+                                    success = true;
+                                },
+                                EffectType::RemoveQuantity => {
+                                    if component.quantity >= num_value.clone() {
+                                        component.quantity -= num_value.clone();
+                                        success = true;
+                                    } else {
+                                        let zero: u32 = 0;
+                                        component.quantity = zero;
+                                        success = true;
+                                    }
+                                },
+                                EffectType::ModifyProperty => {
+                                    // Overwrite the quantity
+                                    component.quantity = num_value.clone();
+                                    success = true;
+                                },
+                                _ => { // Do nothing for now
+                                },
+                            }
                         } else if name == @already_used {
                             let (value, _index) = new_value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
@@ -579,8 +601,10 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut component: Container,
         mut world: WorldStorage,
         name: @ByteArray,
+        effect_type: @EffectType,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        num_value: @u32,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_container: ByteArray = "is_container";
@@ -617,10 +641,28 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.is_open = new_var_value;
                             success = true;
                         } else if name == @num_slots {
-                            let (value, _index) = new_value[0].clone();
-                            let new_var_value = ByteArrayTraitExt::u32_from_byte_array(value);
-                            component.num_slots = new_var_value;
-                            success = true;
+                            match effect_type.clone() {
+                                EffectType::ModifyProperty => {
+                                    component.num_slots = num_value.clone();
+                                    success = true;
+                                },
+                                EffectType::AddQuantity => {
+                                    component.num_slots += num_value.clone();
+                                    success = true;
+                                },
+                                EffectType::RemoveQuantity => {
+                                    if component.num_slots >= num_value.clone() {
+                                        component.num_slots -= num_value.clone();
+                                        success = true;
+                                    } else {
+                                        component.num_slots = 0;
+                                        success = true;
+                                    }
+                                },
+                                _ => { // Do nothing for now
+                                },
+                            }
+                            component.store(world);
                         }
                     },
                 }

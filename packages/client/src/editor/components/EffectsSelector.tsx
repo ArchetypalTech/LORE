@@ -59,13 +59,15 @@ export const EffectSelector = ({
   const getEffectOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
     if (!entity || !entity.Effect) return [];
-    return entity.Effect.map(effect => {
-      return {
-        label: effect.name.toString(),
-        value: effect.key.toString()
-      }
-    }
-    );
+    
+    const effects = Array.isArray(entity.Effect)
+    ? entity.Effect
+    : [entity.Effect];
+
+    return effects.map(effect => ({
+      label: String(effect.name),
+      value: String(effect.key),
+    }));
   };
 
   return (
