@@ -38,6 +38,9 @@ export const ActionInspector: ComponentInspector<Action> = ({
         const event = e as ChangeEvent<HTMLInputElement>;
         updatedObject.is_enabled = event.target.checked;
       },
+      executor: (e, updatedObject) => {
+        updatedObject.executor = e.target.value;
+      },
       triggers: (e, updatedObject) => {
         const val = e.target.value as unknown as Array<[string, BigNumberish]>;
         updatedObject.trigger = val
@@ -136,6 +139,11 @@ export const ActionInspector: ComponentInspector<Action> = ({
               <Toggle
                 id="is_enabled"
                 value={componentObj.is_enabled}
+                onChange={handleInputChange(idx)}
+              />
+              <Input
+                id="executor"
+                value={componentObj.executor.toString()}
                 onChange={handleInputChange(idx)}
               />
               <TriggerSelector

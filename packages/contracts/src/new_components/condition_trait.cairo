@@ -1,9 +1,9 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{Condition, PropertyRegistry}, area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent, container::ContainerComponent,
-        player::PlayerComponent,
+        index::{Condition, PropertyRegistry}, area::AreaComponent, exit::ExitComponent,
+        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
+        container::ContainerComponent, player::PlayerComponent,
     },
     new_components::{entity_trait::EntityImpl, trigger_trait::TriggerImpl},
     types::{component_type::ComponentType, action_type::{TriggerContext, Operator}},
@@ -57,7 +57,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let inventoryItem = OptionTrait::unwrap(inventoryItem_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_inventory_item_property(
+                let (b_component_value, _) =
+                    VariablePropertyHelperTrait::get_inventory_item_property(
                     inventoryItem, self.property, @property_registry,
                 );
                 component_value = b_component_value;

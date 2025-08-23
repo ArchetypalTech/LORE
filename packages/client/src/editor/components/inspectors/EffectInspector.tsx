@@ -90,13 +90,18 @@ const EffectItem = ({
           options={propertyOptions}
         />
         <TextAreaStringArray
-          id="value"
+          id="text_value"
           value={
             effectObj.value.map(([text, index]) => [text.toString(), index.toString()]) as [string, string][]
           }
           onChange={handleInputChange(idx)}
           rows={1}
           columns={2}
+        />
+        <Input
+          id="numeric_value"
+          value={effectObj.n_value.toString()}
+          onChange={handleInputChange(idx)}
         />
       </Inspector>
     </CollapsibleComponent>
@@ -126,11 +131,14 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       property: (e, updatedObject) => {
         updatedObject.property = e.target.value;
       },
-      value: (e, updatedObject) => {
+      text_value: (e, updatedObject) => {
         const val = e.target.value as unknown as [string, string][];
         updatedObject.value = val.map(
           (([text, index]) => [text, index.toString()])
         ) as [string, BigNumberish][];
+      },
+      numeric_value: (e, updatedObject) => {
+        updatedObject.n_value = e.target.value;
       },
     },
   });
