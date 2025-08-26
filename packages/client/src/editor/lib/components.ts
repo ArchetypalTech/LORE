@@ -159,7 +159,7 @@ export const createDefaultInventoryItemComponent = (
 		can_go_in_container: true,
 		quantity: 1,
 		action_map: [
-			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
+			{ action: "pick", inst: 0, action_fn: "PickupItem" },
 			{ action: "drop", inst: 0, action_fn: "DropItem" },
 			{ action: "put", inst: 0, action_fn: "PutItem" },
 			{ action: "take", inst: 0, action_fn: "TakeOutItem" },

@@ -9,6 +9,7 @@ use lore::{
         inventoryItem::InventoryItemComponent, container::ContainerComponent,
         player::PlayerComponent,
     },
+    new_components::{container_trait::ContainerImpl},
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
         component_type::ComponentType,
@@ -542,7 +543,15 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         if name == @owner_id {
                             let (value, _index) = new_value[0].clone();
                             component.owner_id = value.to_felt252_word().unwrap();
-                            success = true;
+                            // move item to new owner
+                            let new_owner_container: Container = world
+                                .read_model(component.owner_id);
+                            let res = new_owner_container.put_item_in(world, component.clone());
+                            if res.is_err() {
+                                result = Result::Err(res.unwrap_err());
+                            } else {
+                                success = true;
+                            }
                         } else if name == @can_be_picked_up {
                             let (value, _index) = new_value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);

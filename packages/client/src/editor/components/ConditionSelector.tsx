@@ -59,7 +59,12 @@ export const ConditionSelector = ({
   const getConditionOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
     if (!entity || !entity.Condition) return [];
-    return entity.Condition.map(condition => {
+
+    const conditions = Array.isArray(entity.Condition)
+    ? entity.Condition
+    : [entity.Condition];
+
+    return conditions.map(condition => {
       return {
         label: condition.name.toString(),
         value: condition.key.toString()
