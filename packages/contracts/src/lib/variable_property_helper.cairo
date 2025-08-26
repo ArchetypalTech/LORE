@@ -544,7 +544,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             let (value, _index) = new_value[0].clone();
                             component.owner_id = value.to_felt252_word().unwrap();
                             // move item to new owner
-                            let new_owner_container: Container = world.read_model(component.owner_id);
+                            let new_owner_container: Container = world
+                                .read_model(component.owner_id);
                             let res = new_owner_container.put_item_in(world, component.clone());
                             if res.is_err() {
                                 result = Result::Err(res.unwrap_err());
