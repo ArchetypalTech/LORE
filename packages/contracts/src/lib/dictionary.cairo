@@ -62,7 +62,7 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "look", TokenType::Verb, 18).unwrap();
     add_to_dictionary(world, "l", TokenType::Verb, 18).unwrap();
     add_to_dictionary(world, "open", TokenType::Verb, 19).unwrap();
-    add_to_dictionary(world, "pickup", TokenType::Verb, 20).unwrap();
+    add_to_dictionary(world, "pick", TokenType::Verb, 20).unwrap();
     add_to_dictionary(world, "put", TokenType::Verb, 21).unwrap();
     add_to_dictionary(world, "insert", TokenType::Verb, 21).unwrap();
     add_to_dictionary(world, "read", TokenType::Verb, 22).unwrap();
@@ -78,6 +78,15 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "search", TokenType::Verb, 31).unwrap();
     add_to_dictionary(world, "show", TokenType::Verb, 32).unwrap();
     add_to_dictionary(world, "inspect", TokenType::Verb, 33).unwrap();
+    add_to_dictionary(world, "recruit", TokenType::Verb, 34).unwrap();
+    add_to_dictionary(world, "place", TokenType::Verb, 35).unwrap();
+    add_to_dictionary(world, "sell", TokenType::Verb, 36).unwrap();
+    add_to_dictionary(world, "buy", TokenType::Verb, 37).unwrap();
+    add_to_dictionary(world, "introduce", TokenType::Verb, 38).unwrap();
+    add_to_dictionary(world, "talk", TokenType::Verb, 39).unwrap();
+    add_to_dictionary(world, "play", TokenType::Verb, 40).unwrap();
+    add_to_dictionary(world, "validate", TokenType::Verb, 41).unwrap();
+    add_to_dictionary(world, "approach", TokenType::Verb, 42).unwrap();
 
     // directions
     add_to_dictionary(world, "north", TokenType::Direction, 1).unwrap();

@@ -74,7 +74,7 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 				id="owner_id"
 				value={componentObject.owner_id.toString()}
 				onChange={handleInputChange(undefined)}
-				readOnly={true}
+				//readOnly={true}
 			/>
 			<ActionMapEditor
 				id="action_map"

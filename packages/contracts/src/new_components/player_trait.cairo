@@ -27,19 +27,21 @@ pub impl PlayerImpl of PlayerTrait {
             let reactable_opt: Option<Reactable> = Component::get_component(world, item.inst);
             if reactable_opt.is_some() {
                 let mut reactable = reactable_opt.unwrap();
-                if reactable.already_shown {
-                    self.say(world, format!("{}", reactable.new_entry));
-                } else {
-                    let description = reactable.get_first_description(world);
-                    self.say(world, format!("{}", description));
-                    reactable.already_shown = true;
-                    world
-                        .write_member(
-                            Model::<Reactable>::ptr_from_keys(reactable.inst),
-                            selector!("already_shown"),
-                            reactable.already_shown,
-                        );
-                    // reactable.store(world);
+                if reactable.is_visible {
+                    if reactable.already_shown {
+                        self.say(world, format!("{}", reactable.new_entry));
+                    } else {
+                        let description = reactable.get_first_description(world);
+                        self.say(world, format!("{}", description));
+                        reactable.already_shown = true;
+                        world
+                            .write_member(
+                                Model::<Reactable>::ptr_from_keys(reactable.inst),
+                                selector!("already_shown"),
+                                reactable.already_shown,
+                            );
+                        // reactable.store(world);
+                    }
                 }
             }
         };

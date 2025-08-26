@@ -2,7 +2,6 @@ import { ChangeEvent, useMemo } from "react";
 import { Button } from "./ui/Button";
 import { DeleteButton, Select } from "./FormComponents";
 import { BigNumberish } from "starknet";
-import { formatKeyAsDecimal } from "./FormComponents";
 import type { Trigger } from "@/lib/dojo_bindings/typescript/models.gen";
 
 interface TriggerSelectorProps {
@@ -60,8 +59,12 @@ export const TriggerSelector = ({
   const getTriggerOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
     if (!entity || !entity.Trigger) return [];
-    console.log("entity.Trigger", entity.Trigger);
-    return entity.Trigger.map(trigger => {
+    
+    const triggers = Array.isArray(entity.Trigger)
+    ? entity.Trigger
+    : [entity.Trigger];
+
+    return triggers.map(trigger => {
       return {
         label: trigger.name.toString(),
         value: trigger.key.toString()
