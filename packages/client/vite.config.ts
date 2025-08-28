@@ -13,6 +13,8 @@ import fs from "node:fs";
 //TODO: https://github.com/nksaraf/vinxi
 // https://www.npmjs.com/package/wouter
 
+
+
 export default defineConfig(async ({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 	console.log(`\n🧾 LORE IN (${mode}) MODE`);
@@ -25,6 +27,12 @@ export default defineConfig(async ({ mode }) => {
 				),
 			),
 		);
+
+	const ssl = isSlot ? {}
+    : { https: {
+                key: fs.readFileSync(path.resolve(__dirname, "ssl/dev.pem")),
+                cert: fs.readFileSync(path.resolve(__dirname, "ssl/cert.pem")),
+            }} 
 
 	return {
 		plugins: [
@@ -61,10 +69,7 @@ export default defineConfig(async ({ mode }) => {
 			// },
 		},
 		server: {
-			https: {
-				key: fs.readFileSync(path.resolve(__dirname, "ssl/dev.pem")),
-				cert: fs.readFileSync(path.resolve(__dirname, "ssl/cert.pem")),
-			},
+  		...ssl,
 			proxy: {
 				"/katana": {
 					target: process.env.VITE_KATANA_HTTP_RPC,

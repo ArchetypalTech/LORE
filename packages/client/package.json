@@ -71,7 +71,7 @@
 		"vite-plugin-wasm": "^3.4.1"
 	},
 	"resolutions": {
-  "@dojoengine/torii-wasm": "1.6.0"
+  	"@dojoengine/torii-wasm": "1.6.0"
 	},
 	"engines": {
 		"node": "22.x"
