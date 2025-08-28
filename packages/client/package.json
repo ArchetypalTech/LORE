@@ -73,6 +73,9 @@
 	"resolutions": {
   	"@dojoengine/torii-wasm": "1.6.0"
 	},
+	"overrides": {
+    "@dojoengine/torii-wasm": "1.6.0"
+  },
 	"engines": {
 		"node": "22.x"
 	},
