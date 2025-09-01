@@ -16,7 +16,6 @@ export default defineConfig(async ({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 	console.log(`\n🧾 LORE IN (${mode}) MODE`);
 	const isSlot = mode === "slot";
-	// if (isSlot) {
 		console.info(
 			black(
 				bgGreen(
@@ -24,7 +23,6 @@ export default defineConfig(async ({ mode }) => {
 				),
 			),
 		);
-	// }
 	return {
 		plugins: [
 			oxlintPlugin(),
