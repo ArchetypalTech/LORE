@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -9,7 +8,7 @@ import oxlintPlugin from "vite-plugin-oxlint";
 import wasm from "vite-plugin-wasm";
 import { patchBindings } from "./scripts/vite-fix-bindings";
 
-//TODO: https://github.com/nksaraf/vinxi
+// TODO: https://github.com/nksaraf/vinxi
 // https://www.npmjs.com/package/wouter
 
 export default defineConfig(async ({ mode }) => {
