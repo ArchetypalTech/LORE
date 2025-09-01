@@ -16,33 +16,23 @@ export default defineConfig(async ({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 	console.log(`\n🧾 LORE IN (${mode}) MODE`);
 	const isSlot = mode === "slot";
-	if (isSlot) {
-		console.info(
-			black(
-				bgGreen(
-					" Mkcert may prompt for sudo password to generate SSL certificates. ",
-				),
-			),
-		);
-	}
-	const useSSL =
-		isSlot && fs.existsSync(resolve(__dirname, "ssl/dev.pem"))
-			? {
-					https: {
-						key: fs.readFileSync(resolve(__dirname, "ssl/dev.pem")),
-						cert: fs.readFileSync(resolve(__dirname, "ssl/cert.pem")),
-					},
-				}
-			: {};
+	// if (isSlot) {
+	// 	console.info(
+	// 		black(
+	// 			bgGreen(
+	// 				" Mkcert may prompt for sudo password to generate SSL certificates. ",
+	// 			),
+	// 		),
+	// 	);
+	// }
 	return {
 		plugins: [
 			oxlintPlugin(),
-			isSlot &&
-				mkcert({
-					hosts: ["localhost"],
-					autoUpgrade: true,
-					savePath: resolve(__dirname, "ssl"),
-				}),
+			mkcert({
+				hosts: ["localhost", "127.0.0.1"],
+				autoUpgrade: true,
+				savePath: resolve(__dirname, "ssl"),
+			}),
 			wasm(),
 			tailwindcss(),
 			react(),
@@ -53,7 +43,7 @@ export default defineConfig(async ({ mode }) => {
 			sourcemap: true,
 		},
 		server: {
-			...useSSL,
+			https: true,
 			proxy: {
 				"/katana": {
 					target: process.env.VITE_KATANA_HTTP_RPC,
