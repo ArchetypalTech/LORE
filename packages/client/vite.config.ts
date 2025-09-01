@@ -1,25 +1,22 @@
-import path from "node:path";
+import fs from "node:fs";
+import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { bgGreen, black } from "ansicolor";
 import { defineConfig, loadEnv } from "vite";
 import mkcert from "vite-plugin-mkcert";
 import oxlintPlugin from "vite-plugin-oxlint";
-import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 import { patchBindings } from "./scripts/vite-fix-bindings";
-import fs from "node:fs";
 
 //TODO: https://github.com/nksaraf/vinxi
 // https://www.npmjs.com/package/wouter
-
-
 
 export default defineConfig(async ({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 	console.log(`\n🧾 LORE IN (${mode}) MODE`);
 	const isSlot = mode === "slot";
-	if (isSlot)
+	if (isSlot) {
 		console.info(
 			black(
 				bgGreen(
@@ -27,13 +24,16 @@ export default defineConfig(async ({ mode }) => {
 				),
 			),
 		);
-
-	const ssl = isSlot ? {}
-    : { https: {
-                key: fs.readFileSync(path.resolve(__dirname, "ssl/dev.pem")),
-                cert: fs.readFileSync(path.resolve(__dirname, "ssl/cert.pem")),
-            }} 
-
+	}
+	const useSSL =
+		isSlot && fs.existsSync(resolve(__dirname, "ssl/dev.pem"))
+			? {
+					https: {
+						key: fs.readFileSync(resolve(__dirname, "ssl/dev.pem")),
+						cert: fs.readFileSync(resolve(__dirname, "ssl/cert.pem")),
+					},
+				}
+			: {};
 	return {
 		plugins: [
 			oxlintPlugin(),
@@ -41,10 +41,9 @@ export default defineConfig(async ({ mode }) => {
 				mkcert({
 					hosts: ["localhost"],
 					autoUpgrade: true,
-					savePath: path.resolve(__dirname, "ssl"),
+					savePath: resolve(__dirname, "ssl"),
 				}),
 			wasm(),
-			topLevelAwait(),
 			tailwindcss(),
 			react(),
 			patchBindings(),
@@ -52,24 +51,9 @@ export default defineConfig(async ({ mode }) => {
 		build: {
 			target: "esnext",
 			sourcemap: true,
-			// minify: false,
-			// terserOptions: {
-			// compress: false,
-			// mangle: false,
-			// },
-			// rollupOptions: {
-			// 	output: {
-			// 		manualChunks: {
-			// 			"@dojoengine/core": ["@dojoengine/core"],
-			// 			"@dojoengine/sdk": ["@dojoengine/sdk"],
-			// 			"@cartridge/controller": ["@cartridge/controller"],
-			// 			starknet: ["starknet"],
-			// 		},
-			// 	},
-			// },
 		},
 		server: {
-  		...ssl,
+			...useSSL,
 			proxy: {
 				"/katana": {
 					target: process.env.VITE_KATANA_HTTP_RPC,
@@ -81,11 +65,11 @@ export default defineConfig(async ({ mode }) => {
 		},
 		resolve: {
 			alias: {
-				"@": path.resolve(__dirname, "./src"),
-				"@components": path.resolve(__dirname, "./src/components"),
-				"@lib": path.resolve(__dirname, "./src/lib"),
-				"@styles": path.resolve(__dirname, "./src/styles"),
-				"@editor": path.resolve(__dirname, "./src/editor"),
+				"@": resolve(__dirname, "./src"),
+				"@components": resolve(__dirname, "./src/components"),
+				"@lib": resolve(__dirname, "./src/lib"),
+				"@styles": resolve(__dirname, "./src/styles"),
+				"@editor": resolve(__dirname, "./src/editor"),
 				"@lore/contracts/manifest": isSlot
 					? "@lore/contracts/manifest_slot.json"
 					: "@lore/contracts/manifest_dev.json",
