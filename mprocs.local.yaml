@@ -4,7 +4,7 @@ procs:
     shell: wait-port 5050 && bun run dev:watch
   client:
     cwd: packages/client
-    shell: bun run dev:slot
+    shell: bun run dev
   torii:
     cwd: packages/contracts
     shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
