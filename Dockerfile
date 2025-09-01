@@ -1,9 +1,10 @@
 # Builder Stage / compiles contracts
-ARG NODE_VERSION=22
-FROM node:${NODE_VERSION}-slim AS build
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+#ARG NODE_VERSION=22
+# FROM node:${NODE_VERSION}-slim AS build
+FROM oven/bun:latest as build
+# ENV PNPM_HOME="/pnpm"
+# ENV PATH="$PNPM_HOME:$PATH"
+#RUN corepack enable
 
 # Define build arguments in the build stage
 ARG VITE_CONTROLLER_CHAINID
@@ -34,16 +35,18 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies at the root level for all packages
-ARG PNPM_VERSION=latest
-RUN npm install -g pnpm@$PNPM_VERSION --force
+# ARG PNPM_VERSION=latest
+# RUN npm install -g pnpm@$PNPM_VERSION --force
 
 # Build the client package
 WORKDIR /app/packages/client
-RUN pnpm install
-RUN pnpm exec vite build --mode slot
+RUN bun install
+RUN bun run build
+# RUN pnpm install
+# RUN pnpm exec vite build --mode slot
 
 # Runtime Stage
-FROM oven/bun:latest as serve
+FROM oven/bun:slim as serve
 
 WORKDIR /app
 
@@ -56,4 +59,4 @@ ENV PORT=${PORT}
 COPY --from=build /app/packages/client/dist /app
 
 EXPOSE ${PORT}
-CMD ["bunx", "--bun", "serve", "-s", "/app"] 
+CMD ["bun", "serve", "/app"] 
