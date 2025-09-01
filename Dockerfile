@@ -59,4 +59,4 @@ ENV PORT=${PORT}
 COPY --from=build /app/packages/client/dist /app
 
 EXPOSE ${PORT}
-CMD ["bun", "serve", "/app"] 
+CMD ["bunx", "--bun", "serve", "-s", "/app"] 
