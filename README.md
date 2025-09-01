@@ -26,8 +26,8 @@ Since Dojo 1.5 Katana and Torii have been seperated and this quickstart won't wo
 ## DONT DO THIS UNTIL WE'VE UPDATED IT!
 bun run quickstart
 ```
-<hr/>
 
+<hr/>
 
 ## 🕹️ Development:
 
@@ -39,7 +39,17 @@ bun run dev
 
 > 🛖 Development MODE (local) runs a local instance of Katana, Torii and the client at `https://localhost:5173` and `https://localhost:5173/editor`. It also uses Cartridge Controller for wallet management.
 
+_will create a local SSL certificate with mkcert and asks for sudo password_
+
+- First run - make sure password is passed to terminal in order to add root certificate to your OS keychain
+- ssl keys are added to `package/client/ssl`
+
+**Trouble shooting** Sometimes you have a valid cert, but it browser says connection is insecure:
+
+- You may need to restart your browser in order to register new root ssl cert.
+
 #### Slot MODE:
+
 _will create a local SSL certificate with mkcert and asks for sudo password_
 
 ```bash

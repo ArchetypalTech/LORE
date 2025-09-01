@@ -17,13 +17,13 @@ export default defineConfig(async ({ mode }) => {
 	console.log(`\n🧾 LORE IN (${mode}) MODE`);
 	const isSlot = mode === "slot";
 	// if (isSlot) {
-	// 	console.info(
-	// 		black(
-	// 			bgGreen(
-	// 				" Mkcert may prompt for sudo password to generate SSL certificates. ",
-	// 			),
-	// 		),
-	// 	);
+		console.info(
+			black(
+				bgGreen(
+					" Mkcert may prompt for sudo password when generating SSL certificates. ",
+				),
+			),
+		);
 	// }
 	return {
 		plugins: [
