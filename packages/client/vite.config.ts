@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -7,7 +8,6 @@ import mkcert from "vite-plugin-mkcert";
 import oxlintPlugin from "vite-plugin-oxlint";
 import wasm from "vite-plugin-wasm";
 import { patchBindings } from "./scripts/vite-fix-bindings";
-import fs from "node:fs";
 
 //TODO: https://github.com/nksaraf/vinxi
 // https://www.npmjs.com/package/wouter
@@ -21,16 +21,19 @@ export default defineConfig(async ({ mode }) => {
 			black(
 				bgGreen(
 					" Mkcert may prompt for sudo password to generate SSL certificates. ",
-				)
-			)
+				),
+			),
 		);
 	}
-	const useSSL = isSlot && fs.existsSync(resolve(__dirname, "ssl/dev.pem")) ? {
-		https: {
-				key: fs.readFileSync(resolve(__dirname, "ssl/dev.pem")),
-				cert: fs.readFileSync(resolve(__dirname, "ssl/cert.pem")),
-		}
-	} : {}
+	const useSSL =
+		isSlot && fs.existsSync(resolve(__dirname, "ssl/dev.pem"))
+			? {
+					https: {
+						key: fs.readFileSync(resolve(__dirname, "ssl/dev.pem")),
+						cert: fs.readFileSync(resolve(__dirname, "ssl/cert.pem")),
+					},
+				}
+			: {};
 	return {
 		plugins: [
 			oxlintPlugin(),
