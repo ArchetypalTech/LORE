@@ -7,7 +7,7 @@
     "build": "vite build",
     "build:slot": "vite build --mode slot",
     "dev": "vite --mode development",
-    "dev:slot": "vite dev --mode slot",
+    "dev:slot": "vite --mode slot",
     "lint": "bun run lint:oxlint && bun run lint:biome",
     "lint:biome": "biome check --write",
     "lint:ci": "bun run lint:ci:oxlint && bun run lint:ci:biome",
@@ -15,7 +15,8 @@
     "lint:ci:oxlint": "oxlint -c ./.oxlintrc.json --import-plugin",
     "lint:oxlint": "oxlint -c ./.oxlintrc.json --import-plugin --fix",
     "preview": "vite preview --port 8080",
-    "start": "serve -s /dist --port 8080"
+    "start": "serve -s /dist --port 8080",
+    "cert:install": "cd ssl && bunx mkcert create-ca && bunx mkcert create-cert localhost"
   },
   "dependencies": {
     "@cartridge/controller": "^0.9.2",
@@ -40,6 +41,7 @@
     "immer": "^10.1.1",
     "json-bigint": "^1.0.0",
     "lucide-react": "^0.487.0",
+    "mkcert": "^3.2.0",
     "pure-rand": "^7.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -9,40 +8,28 @@ import oxlintPlugin from "vite-plugin-oxlint";
 import wasm from "vite-plugin-wasm";
 import { patchBindings } from "./scripts/vite-fix-bindings";
 
-//TODO: https://github.com/nksaraf/vinxi
+// TODO: https://github.com/nksaraf/vinxi
 // https://www.npmjs.com/package/wouter
 
 export default defineConfig(async ({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 	console.log(`\n🧾 LORE IN (${mode}) MODE`);
 	const isSlot = mode === "slot";
-	if (isSlot) {
 		console.info(
 			black(
 				bgGreen(
-					" Mkcert may prompt for sudo password to generate SSL certificates. ",
+					" Mkcert may prompt for sudo password when generating SSL certificates. ",
 				),
 			),
 		);
-	}
-	const useSSL =
-		isSlot && fs.existsSync(resolve(__dirname, "ssl/dev.pem"))
-			? {
-					https: {
-						key: fs.readFileSync(resolve(__dirname, "ssl/dev.pem")),
-						cert: fs.readFileSync(resolve(__dirname, "ssl/cert.pem")),
-					},
-				}
-			: {};
 	return {
 		plugins: [
 			oxlintPlugin(),
-			isSlot &&
-				mkcert({
-					hosts: ["localhost"],
-					autoUpgrade: true,
-					savePath: resolve(__dirname, "ssl"),
-				}),
+			mkcert({
+				hosts: ["localhost", "127.0.0.1"],
+				autoUpgrade: true,
+				savePath: resolve(__dirname, "ssl"),
+			}),
 			wasm(),
 			tailwindcss(),
 			react(),
@@ -53,7 +40,7 @@ export default defineConfig(async ({ mode }) => {
 			sourcemap: true,
 		},
 		server: {
-			...useSSL,
+			https: true,
 			proxy: {
 				"/katana": {
 					target: process.env.VITE_KATANA_HTTP_RPC,
