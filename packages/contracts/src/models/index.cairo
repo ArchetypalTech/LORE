@@ -3,7 +3,7 @@
 use starknet::ContractAddress;
 use lore::{
     types::{
-        action_type::{TriggerType, Operator, EffectType}, command_type::{TokenType},
+        command_type::{TokenType},
         component_type::{
             ComponentType, ActionMapReactable, ActionMapExit, ActionMapContainer,
             ActionMapInventoryItem,
@@ -11,28 +11,6 @@ use lore::{
         direction_type::Direction, property_type::{ComponentProperty},
     },
 };
-
-#[derive(Clone, Drop, Serde, Introspect)]
-#[dojo::model]
-pub struct ParentToChildren {
-    #[key]
-    pub inst: felt252,
-    pub is_parent: bool,
-    /// Properties ///
-    /// The children entities
-    pub children: Array<felt252>,
-}
-
-#[derive(Clone, Drop, Serde, Introspect)]
-#[dojo::model]
-pub struct ChildToParent {
-    #[key]
-    pub inst: felt252,
-    pub is_child: bool,
-    /// Properties ///
-    /// The parent entity
-    pub parent: felt252,
-}
 
 #[derive(Clone, Drop, Serde, Introspect, Debug)]
 #[dojo::model]
@@ -193,118 +171,6 @@ pub struct PropertyRegistry {
     #[key]
     pub component_type: ComponentType,
     pub properties: Array<ComponentProperty>,
-}
-
-#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
-#[dojo::model]
-pub struct Action {
-    /// Unique identifier attached to the entity
-    #[key]
-    pub inst: felt252,
-    /// Unique identifier of the action
-    #[key]
-    pub key: felt252,
-    /// Properties ///
-    /// Name of the action
-    pub name: ByteArray,
-    /// Optional description
-    pub description: ByteArray,
-    /// For toggling the entire action
-    pub is_enabled: bool,
-    /// Executor, to know if the action is called by the correct entity
-    pub executor: felt252,
-    /// When this action can occur, the id's of the triggers. Key is (trigger.inst, trigger.key)
-    pub trigger: Array<(felt252, felt252)>,
-    /// What must be true, the id's of the conditions. Key is (condition.inst, condition.key)
-    pub conditions: Array<(felt252, felt252)>,
-    /// What happens when triggered, the id's of the effects. Key is (effect.inst, effect.key)
-    pub effects: Array<(felt252, felt252)>,
-    /// For searching/filtering
-    pub tags: Array<ByteArray>,
-    /// Whether the action has been executed
-    pub executed: bool,
-    /// In case action fails, need a response
-    pub failing_response: Array<ByteArray>,
-    /// In case action succeeds, need a response
-    pub success_response: Array<ByteArray>,
-}
-
-#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
-#[dojo::model]
-pub struct Trigger {
-    /// Unique identifier from the entity that is attached to
-    #[key]
-    pub inst: felt252,
-    /// Unique identifier of the trigger
-    #[key]
-    pub key: felt252,
-    /// Trigger name
-    pub name: ByteArray,
-    /// The type of trigger
-    pub trigger_type: TriggerType,
-    /// Whether the trigger is enabled
-    pub is_enabled: bool,
-    /// Whether the trigger only triggers once
-    pub is_once: bool,
-    /// Whether the trigger has already been triggered
-    pub was_triggered: bool,
-}
-
-#[derive(Clone, Drop, Serde, Debug)]
-#[dojo::model]
-pub struct TriggerIndex {
-    #[key]
-    pub trigger_type: TriggerType,
-    pub trigger_id: Array<(felt252, felt252)> // (inst, key)
-}
-
-#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
-#[dojo::model]
-pub struct Condition {
-    /// Unique identifier attached to the entity
-    #[key]
-    pub inst: felt252,
-    /// Unique identifier of the condition
-    #[key]
-    pub key: felt252,
-    /// Condition name
-    pub name: ByteArray,
-    /// The target inst.
-    pub target: felt252,
-    /// Which component to check
-    pub component: ComponentType,
-    /// Which property of the component to check
-    pub property: ByteArray,
-    /// How to compare the values
-    pub operator: Operator,
-    /// Value to compare against
-    pub value: Array<felt252>,
-}
-
-#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
-#[dojo::model]
-pub struct Effect {
-    /// Unique identifier attached to the entity
-    #[key]
-    pub inst: felt252,
-    /// Unique identifier of the effect
-    #[key]
-    pub key: felt252,
-    /// Effect name
-    pub name: ByteArray,
-    /// Target entity
-    pub target: felt252,
-    /// Effect type
-    pub effect_type: EffectType,
-    /// Component to affect
-    pub component: ComponentType,
-    /// Property to modify
-    pub property: ByteArray,
-    /// New value to set, needs to be tuple array. First element is the value, second is the index
-    /// (for texts).
-    pub value: Array<(ByteArray, u32)>,
-    /// for numbers: the value that will add/substract or replace the current value
-    pub n_value: u32,
 }
 
 /// NOT USED YET ///

@@ -10,13 +10,13 @@ use lore::{
         container::ContainerComponent,
         player::PlayerComponent,
         components::Component,
+        action::{ActionImpl},
+        condition::{ConditionImpl},
     },
     new_components::{
         player_trait::PlayerImpl,
         reactable_trait::ReactableImpl,
         container_trait::ContainerImpl,
-        condition_trait::ConditionImpl,
-        action_trait::ActionImpl,
     },
     types::command_type::{Command, TokenType, Token},
     lib::{

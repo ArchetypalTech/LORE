@@ -10,7 +10,6 @@ use lore::{
 };
 use super::{Component, player::{Player, PlayerImpl, PlayerTrait}};
 
-
 #[derive(Clone, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct InventoryItem {

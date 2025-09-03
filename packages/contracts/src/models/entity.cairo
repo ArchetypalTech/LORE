@@ -3,7 +3,7 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
 use lore::{
     models::{
-        index::{Reactable, DescriptionText, Player, ChildToParent, ParentToChildren},
+        index::{Reactable, DescriptionText, Player},
         components::Component,
         player::PlayerComponent,
         reactable::ReactableComponent,
@@ -26,6 +26,27 @@ pub struct Entity {
     pub actions_keys: Array<felt252>,
 }
 
+#[derive(Clone, Drop, Serde, Introspect)]
+#[dojo::model]
+pub struct ParentToChildren {
+    #[key]
+    pub inst: felt252,
+    pub is_parent: bool,
+    /// Properties ///
+    /// The children entities
+    pub children: Array<felt252>,
+}
+
+#[derive(Clone, Drop, Serde, Introspect)]
+#[dojo::model]
+pub struct ChildToParent {
+    #[key]
+    pub inst: felt252,
+    pub is_child: bool,
+    /// Properties ///
+    /// The parent entity
+    pub parent: felt252,
+}
 
 #[generate_trait]
 pub impl EntityImpl of EntityTrait {

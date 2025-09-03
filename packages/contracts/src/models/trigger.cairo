@@ -1,12 +1,17 @@
-use dojo::{world::{WorldStorage}, model::ModelStorage};
+use dojo::{world::{WorldStorage}, model::ModelStorage, model::Model};
 
 use lore::{
-    components::{
-        area::{AreaComponent}, exit::{ExitComponent}, inspectable::{InspectableComponent},
-        inventoryItem::{InventoryItemComponent}, container::{ContainerComponent},
-        player::{PlayerComponent},
+    models::{
+        entity::{EntityImpl},
+        area::AreaComponent,
+        exit::ExitComponent,
+        reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent,
+        container::ContainerComponent,
+        player::PlayerComponent,
     },
-    constants::errors::Error, lib::{entity::{EntityImpl}},
+    types::action_type::{TriggerType, IntoTriggerTypeFelt252},
+    constants::errors::Error,
 };
 
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
@@ -18,12 +23,10 @@ pub struct Trigger {
     /// Unique identifier of the trigger
     #[key]
     pub key: felt252,
-    /// Human-readable name
+    /// Trigger name
     pub name: ByteArray,
     /// The type of trigger
     pub trigger_type: TriggerType,
-    /// Trigger parameters
-    pub parameters: Array<TriggerParameter>,
     /// Whether the trigger is enabled
     pub is_enabled: bool,
     /// Whether the trigger only triggers once
@@ -38,34 +41,6 @@ pub struct TriggerIndex {
     #[key]
     pub trigger_type: TriggerType,
     pub trigger_id: Array<(felt252, felt252)> // (inst, key)
-}
-
-#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
-pub struct TriggerContext {
-    /// The entity that triggered the action (usually the player)
-    pub doer: felt252,
-    /// Primary target of the action (e.g., item being picked up, area being entered)
-    pub target1: felt252,
-    /// Secondary target (e.g., container being opened, item being used on)
-    pub target2: felt252,
-    /// Inventory object involved (e.g., item being moved to/from inventory)
-    pub inventory_object: felt252,
-}
-
-#[derive(Clone, Drop, Serde, Debug, PartialEq, Introspect)]
-pub struct TriggerParameter {
-    pub name: ByteArray,
-    pub value: felt252,
-}
-
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
-pub enum TriggerType {
-    None,
-    // Player Triggers //
-    PlayerEntersArea,
-    PlayerLeavesArea,
-    // UseItem Inventory Item //
-    UseItem,
 }
 
 #[generate_trait]
@@ -142,7 +117,13 @@ pub impl TriggerImpl of TriggerTrait {
             Option::Some(mut trigger_index) => {
                 // Append trigger key to trigger index
                 trigger_index.trigger_id.append((trigger.inst, trigger.key));
-                world.write_model(@trigger_index);
+                world
+                    .write_member(
+                        Model::<TriggerIndex>::ptr_from_keys(trigger.trigger_type),
+                        selector!("trigger_id"),
+                        trigger_index.trigger_id,
+                    );
+                // world.write_model(@trigger_index);
                 Result::Ok(())
             },
         }
@@ -152,14 +133,26 @@ pub impl TriggerImpl of TriggerTrait {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Enable trigger
         trigger.is_enabled = true;
-        world.write_model(@trigger);
+        world
+            .write_member(
+                Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
+                selector!("is_enabled"),
+                trigger.is_enabled,
+            );
+        // world.write_model(@trigger);
     }
 
     fn disable_trigger(mut world: WorldStorage, trigger_key: (felt252, felt252)) {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Disable trigger
         trigger.is_enabled = false;
-        world.write_model(@trigger);
+        world
+            .write_member(
+                Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
+                selector!("is_enabled"),
+                trigger.is_enabled,
+            );
+        // world.write_model(@trigger);
     }
 
     fn evaluate_trigger(mut world: WorldStorage, mut trigger: Trigger) -> Result<(), Error> {
@@ -178,9 +171,7 @@ pub impl TriggerImpl of TriggerTrait {
         }
 
         match trigger.trigger_type {
-            TriggerType::None => { // Do nothing
-            },
-            TriggerType::PlayerEntersArea => {
+            TriggerType::OnEnter => {
                 // Get entity that trigger is attached to
                 let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
                 if ent_opt.is_none() {
@@ -208,7 +199,7 @@ pub impl TriggerImpl of TriggerTrait {
                 }
                 return result;
             },
-            TriggerType::PlayerLeavesArea => {
+            TriggerType::OnExit => {
                 // Get entity that trigger is attached to
                 let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
                 if ent_opt.is_none() {
@@ -235,7 +226,7 @@ pub impl TriggerImpl of TriggerTrait {
                 }
                 return result;
             },
-            TriggerType::UseItem => {
+            TriggerType::OnUse => {
                 // Get entity that trigger is attached to
                 let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
                 if ent_opt.is_none() {
@@ -265,21 +256,15 @@ pub impl TriggerImpl of TriggerTrait {
         }
         // Set trigger as triggered
         trigger.was_triggered = true;
-        world.write_model(@trigger);
+        world
+            .write_member(
+                Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
+                selector!("was_triggered"),
+                trigger.was_triggered,
+            );
+        // world.write_model(@trigger);
         // Return result
         result
-    }
-}
-
-pub impl TriggerTypeToFelt252 of Into<TriggerType, felt252> {
-    #[inline]
-    fn into(self: TriggerType) -> felt252 {
-        match self {
-            TriggerType::None => 0,
-            TriggerType::PlayerEntersArea => 1,
-            TriggerType::PlayerLeavesArea => 2,
-            TriggerType::UseItem => 3,
-        }
     }
 }
 
@@ -289,15 +274,17 @@ mod tests {
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
     use lore::{
-        lib::{
+        models::{
             entity::{Entity, EntityImpl},
-            trigger::{Trigger, TriggerType, TriggerImpl, TriggerParameter},
+            index::{Player},
+            area::AreaComponent,
+            exit::ExitComponent,
+            player::{PlayerComponent, caller_as_player},
         },
-        components::{
-            area::{AreaComponent}, exit::{ExitComponent},
-            player::{Player, PlayerComponent, caller_as_player, PlayerImpl},
+        new_components::{
+            player_trait::PlayerImpl,
         },
-        constants::constants::Direction,
+        types::{action_type::TriggerType, direction_type::Direction},
     };
 
     fn create_test_trigger(
@@ -308,7 +295,6 @@ mod tests {
             key,
             name: nameT,
             trigger_type,
-            parameters: array![TriggerParameter { name: "area", value: inst }],
             is_enabled: true,
             is_once: false,
             was_triggered: false,
@@ -320,7 +306,7 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
 
         let key: felt252 = 1;
-        let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::PlayerEntersArea);
+        let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnEnter);
 
         let result = TriggerImpl::register_trigger(world, trigger.clone());
         assert(result.is_ok(), 'Trig not register successfully');
@@ -350,7 +336,7 @@ mod tests {
 
         // Create trigger
         let key: felt252 = 2;
-        let trigger = create_test_trigger(1, key, long_name, TriggerType::PlayerLeavesArea);
+        let trigger = create_test_trigger(1, key, long_name, TriggerType::OnExit);
         world.write_model(@trigger);
 
         let result = TriggerImpl::register_trigger(world, trigger);
@@ -363,7 +349,7 @@ mod tests {
 
         // Create trigger
         let key: felt252 = 3;
-        let mut trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::PlayerLeavesArea);
+        let mut trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnExit);
         world.write_model(@trigger);
 
         TriggerImpl::enable_trigger(world, (trigger.inst.clone(), trigger.key.clone()));
@@ -382,8 +368,8 @@ mod tests {
         let id_1: felt252 = 10;
         let id_2: felt252 = 11;
 
-        let trigger1 = create_test_trigger(1, id_1, "TestTrigger", TriggerType::PlayerEntersArea);
-        let trigger2 = create_test_trigger(2, id_2, "TestTrigger", TriggerType::PlayerEntersArea);
+        let trigger1 = create_test_trigger(1, id_1, "TestTrigger", TriggerType::OnEnter);
+        let trigger2 = create_test_trigger(2, id_2, "TestTrigger", TriggerType::OnEnter);
 
         let result1 = TriggerImpl::update_triggerIndex(world, trigger1.clone());
         // message: 1st trigger index insert didn't succeed
@@ -393,7 +379,7 @@ mod tests {
         // message: 2nd trigger index insert didn't succeed
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
-        let index: TriggerIndex = world.read_model(TriggerType::PlayerEntersArea);
+        let index: TriggerIndex = world.read_model(TriggerType::OnEnter);
         assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
         assert_eq!(
             index.trigger_id[0],
@@ -446,7 +432,7 @@ mod tests {
         // set trigger to room entity 1
         let key: felt252 = 1;
         let mut trigger = create_test_trigger(
-            room_entity_1.inst, key, "TestTrigger", TriggerType::PlayerEntersArea,
+            room_entity_1.inst, key, "TestTrigger", TriggerType::OnEnter,
         );
         let _result = TriggerImpl::register_trigger(world, trigger.clone());
 

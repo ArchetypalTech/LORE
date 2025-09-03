@@ -3,18 +3,18 @@ use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Action, Player, Trigger, Condition, Effect},
+        index::{Player},
         area::AreaComponent,
         exit::ExitComponent,
         reactable::ReactableComponent,
         inventoryItem::InventoryItemComponent,
         container::ContainerComponent,
         player::PlayerComponent,
+        effect::{Effect, EffectImpl},
+        condition::{Condition, ConditionImpl},
+        trigger::{Trigger, TriggerImpl},
     },
     new_components::{
-        trigger_trait::TriggerImpl,
-        condition_trait::ConditionImpl,
-        effect_trait::EffectImpl,
         player_trait::PlayerImpl,
     },
     types::action_type::{TriggerContext},
@@ -25,6 +25,39 @@ use lore::{
     constants::{errors::Error},
 };
 
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
+#[dojo::model]
+pub struct Action {
+    /// Unique identifier attached to the entity
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the action
+    #[key]
+    pub key: felt252,
+    /// Properties ///
+    /// Name of the action
+    pub name: ByteArray,
+    /// Optional description
+    pub description: ByteArray,
+    /// For toggling the entire action
+    pub is_enabled: bool,
+    /// Executor, to know if the action is called by the correct entity
+    pub executor: felt252,
+    /// When this action can occur, the id's of the triggers. Key is (trigger.inst, trigger.key)
+    pub trigger: Array<(felt252, felt252)>,
+    /// What must be true, the id's of the conditions. Key is (condition.inst, condition.key)
+    pub conditions: Array<(felt252, felt252)>,
+    /// What happens when triggered, the id's of the effects. Key is (effect.inst, effect.key)
+    pub effects: Array<(felt252, felt252)>,
+    /// For searching/filtering
+    pub tags: Array<ByteArray>,
+    /// Whether the action has been executed
+    pub executed: bool,
+    /// In case action fails, need a response
+    pub failing_response: Array<ByteArray>,
+    /// In case action succeeds, need a response
+    pub success_response: Array<ByteArray>,
+}
 
 #[generate_trait]
 pub impl ActionImpl of ActionTrait {
@@ -200,8 +233,9 @@ mod tests {
             entity::{Entity, EntityImpl},
             index::{
                 Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Trigger,
-                Condition, Effect, Action,
+                Condition, Effect,
             },
+            action::{Action, ActionImpl},
             area::AreaComponent,
             exit::ExitComponent,
             reactable::ReactableComponent,

@@ -12,40 +12,35 @@ pub mod lib {
     pub mod dictionary;
     pub mod c_handler;
     pub mod random;
-    pub mod relations;
     pub mod utils;
     pub mod level_test;
-    //pub mod trigger;
-    //pub mod condition;
     pub mod variable_property;
     pub mod variable_property_helper;
     pub mod errors_texts_output;
-    //pub mod effect;
-//pub mod actions;
 }
 
 pub mod models {
-    pub mod index;
-    pub mod entity;
-    pub mod components;
-    pub mod container;
+    pub mod action;
     pub mod area;
+    pub mod components;
+    pub mod condition;
+    pub mod container;
+    pub mod effect;
+    pub mod entity;
     pub mod exit;
-    pub mod reactable;
+    pub mod index;
     pub mod inventoryItem;
     pub mod player;
+    pub mod reactable;
+    pub mod trigger;
 }
 
 pub mod new_components {
-    pub mod action_trait;
-    pub mod condition_trait;
     pub mod container_trait;
-    pub mod effect_trait;
     pub mod exit_trait;
     pub mod reactable_trait;
     pub mod inventoryItem_trait;
     pub mod player_trait;
-    pub mod trigger_trait;
 }
 
 

@@ -1,10 +1,14 @@
 use lore::{
     models::{
-        entity::{Entity},
+        entity::{Entity, ParentToChildren, ChildToParent},
         index::{
-            Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
-            Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
+            Area, Exit, Reactable, InventoryItem, Container, Player,
+            DescriptionText,
         },
+        action::{Action},
+        effect::{Effect},
+        condition::{Condition},
+        trigger::{Trigger},
     },
 };
 
@@ -49,16 +53,15 @@ pub mod designer {
     use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::{
         models::{
-            entity::{Entity, EntityImpl},
+            entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
             index::{
-                Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
-                Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
+                Area, Exit, Reactable, InventoryItem, Container, Player,
+                DescriptionText,
             },
-        },
-        new_components::{
-            trigger_trait::TriggerImpl,
-            effect_trait::EffectImpl,
-            action_trait::ActionImpl,
+            action::{Action, ActionImpl},
+            effect::{Effect, EffectImpl},
+            condition::{Condition},
+            trigger::{Trigger, TriggerImpl},
         },
         types::{
             component_type::ComponentType,

@@ -2,8 +2,9 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{InventoryItem, Container, Player, Action},
-        components::Component,
+        index::{InventoryItem, Container, Player},
+        action::{Action, ActionImpl},
+        components::{Component},
         area::AreaComponent,
         container::ContainerComponent,
         reactable::ReactableComponent,
@@ -12,7 +13,6 @@ use lore::{
         inventoryItem_trait::InventoryItemImpl,
         container_trait::ContainerImpl,
         player_trait::PlayerImpl,
-        action_trait::ActionImpl,
     },
     types::{
         command_type::{Command, Token},
@@ -20,7 +20,10 @@ use lore::{
         action_type::TriggerContext,
     },
     constants::errors::Error,
-    lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt},
+    lib::{
+        a_lexer::CommandImpl,
+        utils::ByteArrayTraitExt,
+    },
 };
 
 pub impl InventoryItemComponent of Component<InventoryItem> {

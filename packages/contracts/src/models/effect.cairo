@@ -2,17 +2,51 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 
 use lore::{
     models::{
-        index::{Effect, PropertyRegistry}, area::AreaComponent, exit::ExitComponent,
-        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent,
+        index::{PropertyRegistry},
+        area::AreaComponent,
+        exit::ExitComponent,
+        reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent,
+        container::ContainerComponent,
+        player::PlayerComponent,
     },
-    types::{action_type::TriggerContext, component_type::ComponentType},
+    types::{
+        action_type::{TriggerContext, EffectType},
+        component_type::{ComponentType},
+    },
     lib::{
-        utils::ByteArrayTraitExt, variable_property::{VariablePropertyImp},
+        utils::ByteArrayTraitExt,
+        variable_property::{VariablePropertyImp},
         variable_property_helper::VariablePropertyHelperTrait,
     },
     constants::errors::Error,
 };
+
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
+#[dojo::model]
+pub struct Effect {
+    /// Unique identifier attached to the entity
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the effect
+    #[key]
+    pub key: felt252,
+    /// Effect name
+    pub name: ByteArray,
+    /// Target entity
+    pub target: felt252,
+    /// Effect type
+    pub effect_type: EffectType,
+    /// Component to affect
+    pub component: ComponentType,
+    /// Property to modify
+    pub property: ByteArray,
+    /// New value to set, needs to be tuple array. First element is the value, second is the index
+    /// (for texts).
+    pub value: Array<(ByteArray, u32)>,
+    /// for numbers: the value that will add/substract or replace the current value
+    pub n_value: u32,
+}
 
 #[generate_trait]
 pub impl EffectImpl of EffectTrait {

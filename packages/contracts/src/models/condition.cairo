@@ -2,15 +2,15 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         entity::{EntityImpl},
-        index::{Condition, PropertyRegistry},
+        index::{PropertyRegistry},
         area::AreaComponent,
         exit::ExitComponent,
         reactable::ReactableComponent,
         inventoryItem::InventoryItemComponent,
         container::ContainerComponent,
         player::PlayerComponent,
+        trigger::{TriggerImpl},
     },
-    new_components::{trigger_trait::TriggerImpl},
     types::{
         component_type::ComponentType,
         action_type::{TriggerContext, Operator},
@@ -20,6 +20,29 @@ use lore::{
         variable_property_helper::VariablePropertyHelperTrait,
     },
 };
+
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
+#[dojo::model]
+pub struct Condition {
+    /// Unique identifier attached to the entity
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the condition
+    #[key]
+    pub key: felt252,
+    /// Condition name
+    pub name: ByteArray,
+    /// The target inst.
+    pub target: felt252,
+    /// Which component to check
+    pub component: ComponentType,
+    /// Which property of the component to check
+    pub property: ByteArray,
+    /// How to compare the values
+    pub operator: Operator,
+    /// Value to compare against
+    pub value: Array<felt252>,
+}
 
 #[generate_trait]
 pub impl ConditionImpl of ConditionTrait {

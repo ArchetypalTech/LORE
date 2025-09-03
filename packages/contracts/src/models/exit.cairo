@@ -2,13 +2,13 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Exit, Player, Action},
-        components::Component,
+        index::{Exit, Player},
+        components::{Component},
+        action::{Action, ActionImpl},
     },
     new_components::{
         exit_trait::ExitImpl,
         player_trait::PlayerImpl,
-        action_trait::ActionImpl,
     },
     types::{
         component_type::{ExitActions, ActionMapExit},
