@@ -2,16 +2,22 @@ use starknet::ContractAddress;
 use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
 use lore::{
-    lib::relations::{ChildToParent, ParentToChildren},
-    components::{player::{Player, PlayerImpl}, inspectable::Inspectable, Component},
+    models::{
+        index::{Reactable, DescriptionText, Player, ChildToParent, ParentToChildren},
+        components::Component,
+        player::PlayerComponent,
+        reactable::ReactableComponent,
+    },
+    new_components::player_trait::PlayerImpl,
 };
 
-#[derive(Clone, PartialEq, Drop, Serde, Introspect, Debug)]
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
 pub struct Entity {
     #[key]
     pub inst: felt252,
     pub is_entity: bool,
+    /// Properties ///
     /// Name of the entity
     pub name: ByteArray,
     /// Alternative names of the entity
@@ -19,6 +25,7 @@ pub struct Entity {
     /// Holds the keys of the actions that are attached to this entity
     pub actions_keys: Array<felt252>,
 }
+
 
 #[generate_trait]
 pub impl EntityImpl of EntityTrait {
@@ -39,9 +46,11 @@ pub impl EntityImpl of EntityTrait {
         let mut player: Player = Component::add_component(world, address.into());
         player.address = address;
         world.write_model(@player);
-        let mut inspectable: Inspectable = Component::add_component(world, address.into());
-        inspectable.description = array!["Looks like a visitor"];
-        world.write_model(@inspectable);
+        let mut reactable: Reactable = Component::add_component(world, address.into());
+        let descr1 = DescriptionText { inst: address.into(), key: 0, text: "Looks like a visitor" };
+        world.write_model(@descr1);
+        reactable.description = array![0];
+        world.write_model(@reactable);
         player.say(world, "You feel light, and shiny, in the head");
         player
     }
@@ -78,7 +87,6 @@ pub impl EntityImpl of EntityTrait {
         let mut entity: Entity = world.read_model(*inst);
         entity.is_entity
     }
-
 
     fn has_parent(self: @Entity, world: @WorldStorage) -> bool {
         let child_to_parent: ChildToParent = world.read_model(*self.inst);
@@ -151,9 +159,5 @@ pub impl EntityImpl of EntityTrait {
                 );
         }
     }
-    // fn get_component<+Component<T>>(self: Entity, world: WorldStorage) -> Option<T> {
-//     let component: T = Component::get_component(world, self.inst).unwrap();
-//     Option::Some(component)
-// }
 }
 

@@ -1,13 +1,22 @@
 use dojo::{world::WorldStorage};
 use lore::{
     models::{
-        index::{Reactable, Exit, Container, Player}, area::AreaComponent, exit::ExitComponent,
-        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent, components::Component,
+        entity::{Entity, EntityImpl},
+        index::{Reactable, Exit, Container, Player},
+        area::AreaComponent,
+        exit::ExitComponent,
+        reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent,
+        container::ContainerComponent,
+        player::PlayerComponent,
+        components::Component,
     },
     new_components::{
-        entity_trait::EntityImpl, player_trait::PlayerImpl, reactable_trait::ReactableImpl,
-        container_trait::ContainerImpl, condition_trait::ConditionImpl, action_trait::ActionImpl,
+        player_trait::PlayerImpl,
+        reactable_trait::ReactableImpl,
+        container_trait::ContainerImpl,
+        condition_trait::ConditionImpl,
+        action_trait::ActionImpl,
     },
     types::command_type::{Command, TokenType, Token},
     lib::{
@@ -35,7 +44,7 @@ pub fn handle_command(
     let mut found_error = false;
     if nouns.len() > 0 {
         for noun in nouns {
-            let item = EntityImpl::get_entity(@world, @noun.target).unwrap();
+            let item: Entity = EntityImpl::get_entity(@world, @noun.target).unwrap();
             if player.use_debug {
                 player.say(world, format!("item: {:?}", item));
             }

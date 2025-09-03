@@ -1,5 +1,8 @@
 use dojo::{model::ModelStorage};
-use lore::{models::index::Entity, new_components::entity_trait::EntityImpl, tests::helpers};
+use lore::{
+    entity::{Entity, EntityImpl},
+    tests::helpers,
+};
 
 #[cfg(test)]
 mod tests {

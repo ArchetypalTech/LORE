@@ -46,21 +46,6 @@ pub struct Dict {
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
-pub struct Entity {
-    #[key]
-    pub inst: felt252,
-    pub is_entity: bool,
-    /// Properties ///
-    /// Name of the entity
-    pub name: ByteArray,
-    /// Alternative names of the entity
-    pub alt_names: Array<ByteArray>,
-    /// Holds the keys of the actions that are attached to this entity
-    pub actions_keys: Array<felt252>,
-}
-
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
-#[dojo::model]
 pub struct Area {
     #[key]
     pub inst: felt252,

@@ -134,11 +134,15 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Reactable, DescriptionText, Player}, components::Component, area::AreaComponent,
-            reactable::ReactableComponent, player::{PlayerComponent, caller_as_player},
+            entity::{EntityImpl},
+            index::{Reactable, DescriptionText, Player},
+            components::Component, area::AreaComponent,
+            reactable::ReactableComponent,
+            player::{PlayerComponent, caller_as_player},
         },
         new_components::{
-            entity_trait::EntityImpl, player_trait::PlayerImpl, trigger_trait::TriggerImpl,
+            player_trait::PlayerImpl,
+            trigger_trait::TriggerImpl,
         },
         types::{
             action_type::{TriggerContext, EffectType},

@@ -2,16 +2,26 @@ use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 
 use lore::{
     models::{
-        index::{Entity, Action, Player, Trigger, Condition, Effect}, area::AreaComponent,
-        exit::ExitComponent, reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent,
+        entity::{Entity, EntityImpl},
+        index::{Action, Player, Trigger, Condition, Effect},
+        area::AreaComponent,
+        exit::ExitComponent,
+        reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent,
+        container::ContainerComponent,
+        player::PlayerComponent,
     },
     new_components::{
-        entity_trait::EntityImpl, trigger_trait::TriggerImpl, condition_trait::ConditionImpl,
-        effect_trait::EffectImpl, player_trait::PlayerImpl,
+        trigger_trait::TriggerImpl,
+        condition_trait::ConditionImpl,
+        effect_trait::EffectImpl,
+        player_trait::PlayerImpl,
     },
     types::action_type::{TriggerContext},
-    lib::{utils::ByteArrayTraitExt, variable_property::{VariablePropertyImp}},
+    lib::{
+        utils::ByteArrayTraitExt,
+        variable_property::{VariablePropertyImp},
+    },
     constants::{errors::Error},
 };
 
@@ -187,17 +197,24 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
+            entity::{Entity, EntityImpl},
             index::{
-                Entity, Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Trigger,
+                Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Trigger,
                 Condition, Effect, Action,
             },
-            area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
-            inventoryItem::InventoryItemComponent, container::ContainerComponent,
-            player::{PlayerComponent, caller_as_player}, components::Component,
+            area::AreaComponent,
+            exit::ExitComponent,
+            reactable::ReactableComponent,
+            inventoryItem::InventoryItemComponent,
+            container::ContainerComponent,
+            player::{PlayerComponent, caller_as_player},
+            components::Component,
         },
         new_components::{
-            entity_trait::EntityImpl, player_trait::{PlayerImpl}, trigger_trait::TriggerImpl,
-            effect_trait::EffectImpl, action_trait::ActionImpl,
+            player_trait::{PlayerImpl},
+            trigger_trait::TriggerImpl,
+            effect_trait::EffectImpl,
+            action_trait::ActionImpl,
         },
         types::{
             component_type::{
@@ -207,7 +224,10 @@ mod tests {
             action_type::{TriggerType, TriggerContext, Operator, EffectType},
             direction_type::Direction,
         },
-        lib::{variable_property::VariablePropertyImp, utils::ByteArrayTraitExt},
+        lib::{
+            variable_property::VariablePropertyImp,
+            utils::ByteArrayTraitExt,
+        },
     };
 
     fn create_rooms(mut world: WorldStorage) -> (Entity, Entity) {

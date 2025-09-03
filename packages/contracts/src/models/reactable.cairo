@@ -1,10 +1,18 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
-    models::{index::{Entity, Reactable, Player}, components::Component},
-    new_components::{
-        entity_trait::EntityImpl, reactable_trait::ReactableImpl, player_trait::PlayerImpl,
+    models::{
+        entity::{Entity, EntityImpl},
+        index::{Reactable, Player},
+        components::Component,
     },
-    types::{command_type::{Command, Token}, component_type::{ReactableActions, ActionMapReactable}},
+    new_components::{
+        reactable_trait::ReactableImpl,
+        player_trait::PlayerImpl,
+    },
+    types::{
+        command_type::{Command, Token},
+        component_type::{ReactableActions, ActionMapReactable},
+    },
     constants::errors::Error,
 };
 

@@ -1,11 +1,14 @@
 use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
-        index::{Entity, Container, InventoryItem, Player}, components::Component,
+        entity::{Entity, EntityImpl},
+        index::{Container, InventoryItem, Player},
+        components::Component,
         container::ContainerComponent,
     },
-    new_components::{entity_trait::EntityImpl, player_trait::PlayerImpl},
-    lib::{a_lexer::CommandImpl}, constants::errors::Error,
+    new_components::{player_trait::PlayerImpl},
+    lib::{a_lexer::CommandImpl},
+    constants::errors::Error,
 };
 
 #[generate_trait]

@@ -1,15 +1,24 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
-    models::{index::{Entity, Exit, Player, Action}, components::Component},
+    models::{
+        entity::{Entity, EntityImpl},
+        index::{Exit, Player, Action},
+        components::Component,
+    },
     new_components::{
-        entity_trait::EntityImpl, exit_trait::ExitImpl, player_trait::PlayerImpl,
+        exit_trait::ExitImpl,
+        player_trait::PlayerImpl,
         action_trait::ActionImpl,
     },
     types::{
-        component_type::{ExitActions, ActionMapExit}, command_type::{Command, Token},
-        action_type::TriggerContext, direction_type::{IntoDirectionByteArray},
+        component_type::{ExitActions, ActionMapExit},
+        command_type::{Command, Token},
+        action_type::TriggerContext,
+        direction_type::{IntoDirectionByteArray},
     },
-    lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt}, constants::errors::Error, constants,
+    lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt},
+    constants::errors::Error,
+    constants,
 };
 
 pub impl ExitComponent of Component<Exit> {

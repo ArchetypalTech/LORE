@@ -1,9 +1,16 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use starknet::ContractAddress;
 use lore::{
-    models::{index::{Player}, components::Component},
-    new_components::{entity_trait::EntityImpl, reactable_trait::ReactableImpl},
-    types::{command_type::Command}, constants::errors::Error,
+    models::{
+        entity::{EntityImpl},
+        index::{Player},
+        components::Component,
+    },
+    new_components::{
+        reactable_trait::ReactableImpl,
+    },
+    types::{command_type::Command},
+    constants::errors::Error,
 };
 
 pub impl PlayerComponent of Component<Player> {

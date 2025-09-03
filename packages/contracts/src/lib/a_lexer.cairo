@@ -97,9 +97,13 @@ pub mod lexer {
     use dojo::{world::WorldStorage};
 
     use lore::{
-        models::index::{Player},
-        new_components::{entity_trait::EntityImpl, player_trait::PlayerImpl},
-        types::command_type::{Command, Token, TokenType}, constants::errors::Error,
+        models::{
+            index::{Player},
+            entity::{EntityImpl},
+        },
+        new_components::{player_trait::PlayerImpl},
+        types::command_type::{Command, Token, TokenType},
+        constants::errors::Error,
         lib::{
             utils::{ByteArrayTraitExt, ClousureTraitImp},
             dictionary::{get_dict_entry, initialize_dictionary},

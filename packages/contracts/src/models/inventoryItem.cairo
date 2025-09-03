@@ -1,18 +1,26 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{Entity, InventoryItem, Container, Player, Action}, components::Component,
-        area::AreaComponent, container::ContainerComponent, reactable::ReactableComponent,
+        entity::{Entity, EntityImpl},
+        index::{InventoryItem, Container, Player, Action},
+        components::Component,
+        area::AreaComponent,
+        container::ContainerComponent,
+        reactable::ReactableComponent,
     },
     new_components::{
-        entity_trait::EntityImpl, inventoryItem_trait::InventoryItemImpl,
-        container_trait::ContainerImpl, player_trait::PlayerImpl, action_trait::ActionImpl,
+        inventoryItem_trait::InventoryItemImpl,
+        container_trait::ContainerImpl,
+        player_trait::PlayerImpl,
+        action_trait::ActionImpl,
     },
     types::{
         command_type::{Command, Token},
-        component_type::{InventoryItemActions, ActionMapInventoryItem}, action_type::TriggerContext,
+        component_type::{InventoryItemActions, ActionMapInventoryItem},
+        action_type::TriggerContext,
     },
-    constants::errors::Error, lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt},
+    constants::errors::Error,
+    lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt},
 };
 
 pub impl InventoryItemComponent of Component<InventoryItem> {

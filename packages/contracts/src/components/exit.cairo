@@ -144,7 +144,7 @@ pub impl ExitComponent of Component<Exit> {
 
                 // Do action
                 // Check if the entity of the exit has an action
-                let pos_entity = EntityImpl::get_entity(@world, @self.inst);
+                let pos_entity: Entity = EntityImpl::get_entity(@world, @self.inst);
                 if pos_entity.is_none() {
                     return Result::Err(Error::NoTargetEntity);
                 }

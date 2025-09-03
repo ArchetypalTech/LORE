@@ -2,8 +2,10 @@
 
 use dojo::{world::WorldStorage, model::{Model}};
 use lore::{
-    models::index::{Entity, Player}, new_components::entity_trait::EntityImpl,
-    types::{command_type::Command}, constants::errors::Error,
+    models::entity::{Entity, EntityImpl},
+    models::index::{Player},
+    types::{command_type::Command},
+    constants::errors::Error,
 };
 
 

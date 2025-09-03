@@ -11,7 +11,6 @@ pub mod lib {
     pub mod a_lexer;
     pub mod dictionary;
     pub mod c_handler;
-    //pub mod entity;
     pub mod random;
     pub mod relations;
     pub mod utils;
@@ -27,6 +26,7 @@ pub mod lib {
 
 pub mod models {
     pub mod index;
+    pub mod entity;
     pub mod components;
     pub mod container;
     pub mod area;
@@ -41,7 +41,6 @@ pub mod new_components {
     pub mod condition_trait;
     pub mod container_trait;
     pub mod effect_trait;
-    pub mod entity_trait;
     pub mod exit_trait;
     pub mod reactable_trait;
     pub mod inventoryItem_trait;

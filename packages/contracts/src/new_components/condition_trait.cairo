@@ -1,13 +1,24 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{Condition, PropertyRegistry}, area::AreaComponent, exit::ExitComponent,
-        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent,
+        entity::{EntityImpl},
+        index::{Condition, PropertyRegistry},
+        area::AreaComponent,
+        exit::ExitComponent,
+        reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent,
+        container::ContainerComponent,
+        player::PlayerComponent,
     },
-    new_components::{entity_trait::EntityImpl, trigger_trait::TriggerImpl},
-    types::{component_type::ComponentType, action_type::{TriggerContext, Operator}},
-    lib::{utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait},
+    new_components::{trigger_trait::TriggerImpl},
+    types::{
+        component_type::ComponentType,
+        action_type::{TriggerContext, Operator},
+    },
+    lib::{
+        utils::ByteArrayTraitExt,
+        variable_property_helper::VariablePropertyHelperTrait,
+    },
 };
 
 #[generate_trait]
@@ -222,10 +233,11 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Reactable, DescriptionText, Condition}, components::Component,
+            entity::{EntityImpl},
+            index::{Reactable, DescriptionText, Condition},
+            components::Component,
             reactable::ReactableComponent,
         },
-        new_components::entity_trait::EntityImpl,
         types::{component_type::{ComponentType, ActionMapReactable, ReactableActions}},
         lib::{variable_property::VariablePropertyImp},
     };

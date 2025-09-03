@@ -1,7 +1,8 @@
 use lore::{
     models::{
+        entity::{Entity},
         index::{
-            Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
+            Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
             Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
         },
     },
@@ -48,18 +49,24 @@ pub mod designer {
     use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::{
         models::{
+            entity::{Entity, EntityImpl},
             index::{
-                Entity, Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
+                Area, Exit, Reactable, InventoryItem, Container, Player, Trigger, Condition,
                 Effect, Action, DescriptionText, ParentToChildren, ChildToParent,
             },
         },
         new_components::{
-            entity_trait::EntityImpl, trigger_trait::TriggerImpl, effect_trait::EffectImpl,
+            trigger_trait::TriggerImpl,
+            effect_trait::EffectImpl,
             action_trait::ActionImpl,
         },
-        types::{component_type::ComponentType, command_type::TokenType},
+        types::{
+            component_type::ComponentType,
+            command_type::TokenType,
+        },
         lib::{
-            dictionary::{add_to_dictionary, get_dict_entry}, utils::{ByteArrayTraitExt},
+            dictionary::{add_to_dictionary, get_dict_entry},
+            utils::{ByteArrayTraitExt},
             variable_property::{VariablePropertyImp},
         },
     };

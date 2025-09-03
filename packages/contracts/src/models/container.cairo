@@ -1,11 +1,18 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
-    models::{index::{Entity, Container, Player}, components::Component},
-    new_components::{
-        entity_trait::EntityImpl, player_trait::PlayerImpl, container_trait::ContainerImpl,
+    models::{
+        entity::{Entity, EntityImpl},
+        index::{Container, Player},
+        components::Component,
     },
-    types::{command_type::{Command, Token}, component_type::{ContainerActions, ActionMapContainer}},
-    lib::{a_lexer::CommandImpl}, constants::errors::Error,
+    new_components::{
+        player_trait::PlayerImpl,
+        container_trait::ContainerImpl,
+    },
+    types::{command_type::{Command, Token},
+    component_type::{ContainerActions, ActionMapContainer}},
+    lib::{a_lexer::CommandImpl},
+    constants::errors::Error,
 };
 
 pub impl ContainerComponent of Component<Container> {

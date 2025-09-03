@@ -1,10 +1,13 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
-        index::{Entity, Area, Exit, Reactable, DescriptionText}, components::Component,
-        area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
+        entity::{Entity, EntityImpl},
+        index::{Area, Exit, Reactable, DescriptionText},
+        components::Component,
+        area::AreaComponent,
+        exit::ExitComponent,
+        reactable::ReactableComponent,
     },
-    new_components::entity_trait::EntityImpl,
 };
 
 pub fn create_test_level(mut world: WorldStorage) {

@@ -2,12 +2,17 @@ use dojo::{world::{WorldStorage}, model::ModelStorage, model::Model};
 
 use lore::{
     models::{
-        index::{Trigger, TriggerIndex}, area::AreaComponent, exit::ExitComponent,
-        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent,
+        entity::{EntityImpl},
+        index::{Trigger, TriggerIndex},
+        area::AreaComponent,
+        exit::ExitComponent,
+        reactable::ReactableComponent,
+        inventoryItem::InventoryItemComponent,
+        container::ContainerComponent,
+        player::PlayerComponent,
     },
-    new_components::entity_trait::EntityImpl,
-    types::action_type::{TriggerType, IntoTriggerTypeFelt252}, constants::errors::Error,
+    types::action_type::{TriggerType, IntoTriggerTypeFelt252},
+    constants::errors::Error,
 };
 
 #[generate_trait]
@@ -242,11 +247,15 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Entity, Player, Trigger}, area::AreaComponent, exit::ExitComponent,
+            entity::{Entity, EntityImpl},
+            index::{Player, Trigger},
+            area::AreaComponent,
+            exit::ExitComponent,
             player::{PlayerComponent, caller_as_player},
         },
         new_components::{
-            entity_trait::EntityImpl, player_trait::PlayerImpl, trigger_trait::TriggerImpl,
+            player_trait::PlayerImpl,
+            trigger_trait::TriggerImpl,
         },
         types::{action_type::TriggerType, direction_type::Direction},
     };
