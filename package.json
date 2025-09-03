@@ -1,38 +1,38 @@
 {
-	"name": "@lore/root",
-	"version": "0.1.0",
-	"private": true,
-	"type": "module",
-	"workspaces": [
-		"packages/*"
-	],
-	"scripts": {
-		"dev": "mprocs --config ./mprocs.local.yaml # start developer mode",
-		"dev:slot": "mprocs --config ./mprocs.slot.yaml # start developer mode",
-		"quickstart": "bun run ./scripts/quickstart.ts # 🧾 quickstart installer "
-	},
-	"devDependencies": {
-		"@types/bun": "latest",
-		"@types/semver": "^7.7.0",
-		"ansicolor": "^2.0.3",
-		"mprocs": "^0.7.3",
-		"semver": "^7.7.2",
-		"wait-port": "^1.1.0"
-	},
-	"peerDependencies": {
-		"typescript": "^5.8.2"
-	},
-	"engines": {
-		"asdf": "^0.16.0",
-		"bun": "^1.2.3",
-		"dojo": "1.3.1",
-		"scarb": "2.9.2"
-	},
-	"trustedDependencies": [
-		"@swc/core",
-		"cbor-extract",
-		"esbuild",
-		"keccak",
-		"secp256k1"
-	]
+  "name": "@lore/root",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "mprocs --config ./mprocs.local.yaml # start developer mode",
+    "dev:slot": "mprocs --config ./mprocs.slot.yaml # start developer mode",
+    "quickstart": "bun run ./scripts/quickstart.ts # 🧾 quickstart installer "
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/semver": "^7.7.0",
+    "ansicolor": "^2.0.3",
+    "mprocs": "^0.7.3",
+    "semver": "^7.7.2",
+    "wait-port": "^1.1.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "engines": {
+    "asdf": "^0.16.0",
+    "bun": "^1.2.3",
+    "dojo": "1.3.1",
+    "scarb": "2.9.2"
+  },
+  "trustedDependencies": [
+    "@swc/core",
+    "cbor-extract",
+    "esbuild",
+    "keccak",
+    "secp256k1"
+  ]
 }

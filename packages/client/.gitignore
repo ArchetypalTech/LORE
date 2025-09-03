@@ -69,8 +69,3 @@ torii_local_db
 # build output
 build
 dist
-
-# ssl
-ssl
-cert.pem
-dev.pem

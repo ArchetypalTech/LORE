@@ -1,9 +1,5 @@
 # Builder Stage / compiles contracts
-ARG NODE_VERSION=22
-FROM node:${NODE_VERSION}-slim AS build
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+FROM oven/bun:latest as build
 
 # Define build arguments in the build stage
 ARG VITE_CONTROLLER_CHAINID
@@ -33,17 +29,13 @@ WORKDIR /app
 # Copy the entire monorepo
 COPY . .
 
-# Install dependencies at the root level for all packages
-ARG PNPM_VERSION=latest
-RUN npm install -g pnpm@$PNPM_VERSION --force
-
 # Build the client package
 WORKDIR /app/packages/client
-RUN pnpm install
-RUN pnpm exec vite build --mode slot
+RUN bun install
+RUN bun run build
 
 # Runtime Stage
-FROM oven/bun:latest as serve
+FROM oven/bun:slim as serve
 
 WORKDIR /app
 
