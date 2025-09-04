@@ -1,6 +1,8 @@
 use dojo::world::WorldStorage;
 use lore::{
-    models::index::Player, new_components::player_trait::PlayerImpl, constants::errors::Error,
+    models::player::{Player},
+    new_components::player_trait::PlayerImpl,
+    constants::errors::Error,
     lib::random::random_text,
 };
 

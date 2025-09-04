@@ -98,8 +98,8 @@ pub mod lexer {
 
     use lore::{
         models::{
-            index::{Player},
             entity::{EntityImpl},
+            player::{Player},
         },
         new_components::{player_trait::PlayerImpl},
         types::command_type::{Command, Token, TokenType},

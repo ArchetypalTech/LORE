@@ -3,7 +3,7 @@
 use dojo::{world::WorldStorage, model::{Model}};
 use lore::{
     models::entity::{Entity, EntityImpl},
-    models::index::{Player},
+    models::player::{Player},
     types::{command_type::Command},
     constants::errors::Error,
 };

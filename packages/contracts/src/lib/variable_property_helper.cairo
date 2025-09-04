@@ -2,12 +2,15 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         index::{
-            Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Player,
+            DescriptionText,
             PropertyRegistry,
         },
-        area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent, container::ContainerComponent,
-        player::PlayerComponent,
+        area::{Area, AreaComponent},
+        exit::{Exit},
+        reactable::{Reactable},
+        inventory_item::{InventoryItem},
+        container::{Container},
+        player::{Player},
     },
     new_components::{container_trait::ContainerImpl},
     types::{

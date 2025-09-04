@@ -2,15 +2,13 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{InventoryItem, Container, Player},
+        player::{Player},
         action::{Action, ActionImpl},
         components::{Component},
         area::AreaComponent,
-        container::ContainerComponent,
-        reactable::ReactableComponent,
+        container::{Container, ContainerComponent},
     },
     new_components::{
-        inventoryItem_trait::InventoryItemImpl,
         container_trait::ContainerImpl,
         player_trait::PlayerImpl,
     },
@@ -25,6 +23,44 @@ use lore::{
         utils::ByteArrayTraitExt,
     },
 };
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct InventoryItem {
+    #[key]
+    pub inst: felt252,
+    pub is_inventory_item: bool,
+    /// Properties ///
+    /// The owner of the inventory item
+    pub owner_id: felt252,
+    /// If the inventory item can be picked up
+    pub can_be_picked_up: bool,
+    /// If the inventory item can go in a container
+    pub can_go_in_container: bool,
+    /// The quantity of the inventory item
+    pub quantity: u32,
+    /// Array of action maps for the inventory item
+    pub action_map: Array<ActionMapInventoryItem>,
+    /// If the inventory item has already been used
+    pub already_used: bool,
+    /// If the inventory item can be used multiple times
+    pub multiple_use: bool,
+}
+
+#[generate_trait]
+pub impl InventoryItemImpl of InventoryItemTrait {
+    fn is_inventory_item(self: InventoryItem) -> bool {
+        self.is_inventory_item
+    }
+
+    fn set_can_be_picked_up(ref self: InventoryItem, can_be_picked_up: bool) {
+        self.can_be_picked_up = can_be_picked_up;
+    }
+
+    fn set_can_go_in_container(ref self: InventoryItem, can_go_in_container: bool) {
+        self.can_go_in_container = can_go_in_container;
+    }
+}
 
 pub impl InventoryItemComponent of Component<InventoryItem> {
     type ComponentType = InventoryItem;

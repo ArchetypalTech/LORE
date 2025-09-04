@@ -2,11 +2,11 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Area, Exit, Reactable, DescriptionText},
-        components::Component,
-        area::AreaComponent,
-        exit::ExitComponent,
-        reactable::ReactableComponent,
+        index::{DescriptionText},
+        components::{Component},
+        area::{Area},
+        exit::{Exit},
+        reactable::{Reactable},
     },
 };
 

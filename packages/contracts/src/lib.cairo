@@ -3,8 +3,6 @@ pub mod systems {
     pub mod prompt;
 }
 
-// pub mod components;
-
 pub mod constants;
 
 pub mod lib {
@@ -29,7 +27,7 @@ pub mod models {
     pub mod entity;
     pub mod exit;
     pub mod index;
-    pub mod inventoryItem;
+    pub mod inventory_item;
     pub mod player;
     pub mod reactable;
     pub mod trigger;
@@ -37,9 +35,7 @@ pub mod models {
 
 pub mod new_components {
     pub mod container_trait;
-    pub mod exit_trait;
     pub mod reactable_trait;
-    pub mod inventoryItem_trait;
     pub mod player_trait;
 }
 

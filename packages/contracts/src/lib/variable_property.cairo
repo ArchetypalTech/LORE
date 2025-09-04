@@ -1,13 +1,23 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{Area, Exit, Reactable, InventoryItem, Container, Player, PropertyRegistry},
-        area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent, container::ContainerComponent,
-        player::PlayerComponent,
+        index::{PropertyRegistry},
+        area::{Area},
+        exit::{Exit},
+        reactable::{Reactable},
+        inventory_item::{InventoryItem},
+        container::{Container},
+        player::{Player},
     },
-    types::{property_type::PropertyAccess, component_type::ComponentType, action_type::EffectType},
-    lib::{utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait},
+    types::{
+        property_type::{PropertyAccess},
+        component_type::{ComponentType},
+        action_type::{EffectType},
+    },
+    lib::{
+        utils::ByteArrayTraitExt,
+        variable_property_helper::VariablePropertyHelperTrait,
+    },
     constants::errors::Error,
 };
 

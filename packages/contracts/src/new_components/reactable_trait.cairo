@@ -1,7 +1,14 @@
 use dojo::{model::ModelStorage, world::{WorldStorage, IWorldDispatcherTrait}};
 use lore::{
-    models::{index::{Reactable, DescriptionText}, reactable::get_action_token}, lib::random,
-    types::{component_type::{ReactableActions}, command_type::Command},
+    models::{
+        index::{DescriptionText},
+        reactable::{Reactable, get_action_token}
+    },
+    types::{
+        component_type::{ReactableActions},
+        command_type::Command,
+    },
+    lib::random,
 };
 
 

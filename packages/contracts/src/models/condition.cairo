@@ -3,12 +3,12 @@ use lore::{
     models::{
         entity::{EntityImpl},
         index::{PropertyRegistry},
-        area::AreaComponent,
-        exit::ExitComponent,
-        reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent,
-        container::ContainerComponent,
-        player::PlayerComponent,
+        area::{AreaComponent},
+        exit::{ExitComponent},
+        reactable::{ReactableComponent},
+        inventory_item::{InventoryItemComponent},
+        container::{ContainerComponent},
+        player::{PlayerComponent},
         trigger::{TriggerImpl},
     },
     types::{
@@ -86,14 +86,14 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::InventoryItem => {
-                let inventoryItem_opt = InventoryItemComponent::get_component(*world, target);
-                if inventoryItem_opt.is_none() {
+                let inventory_item_opt = InventoryItemComponent::get_component(*world, target);
+                if inventory_item_opt.is_none() {
                     return false;
                 }
-                let inventoryItem = OptionTrait::unwrap(inventoryItem_opt);
+                let inventory_item = OptionTrait::unwrap(inventory_item_opt);
                 let (b_component_value, _) =
                     VariablePropertyHelperTrait::get_inventory_item_property(
-                    inventoryItem, self.property, @property_registry,
+                    inventory_item, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -257,8 +257,10 @@ mod tests {
     use lore::{
         models::{
             entity::{EntityImpl},
-            index::{Reactable, DescriptionText, Condition},
-            components::Component,
+            index::{DescriptionText},
+            reactable::{Reactable},
+            condition::{Condition},
+            components::{Component},
             reactable::ReactableComponent,
         },
         types::{component_type::{ComponentType, ActionMapReactable, ReactableActions}},

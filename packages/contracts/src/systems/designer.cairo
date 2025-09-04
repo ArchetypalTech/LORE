@@ -2,9 +2,14 @@ use lore::{
     models::{
         entity::{Entity, ParentToChildren, ChildToParent},
         index::{
-            Area, Exit, Reactable, InventoryItem, Container, Player,
             DescriptionText,
         },
+        container::{Container},
+        player::{Player},
+        area::{Area},
+        exit::{Exit},
+        inventory_item::{InventoryItem},
+        reactable::{Reactable},
         action::{Action},
         effect::{Effect},
         condition::{Condition},
@@ -55,9 +60,14 @@ pub mod designer {
         models::{
             entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
             index::{
-                Area, Exit, Reactable, InventoryItem, Container, Player,
                 DescriptionText,
             },
+            player::{Player},
+            area::{Area},
+            exit::{Exit},
+            reactable::{Reactable},
+            container::{Container},
+            inventory_item::{InventoryItem},
             action::{Action, ActionImpl},
             effect::{Effect, EffectImpl},
             condition::{Condition},

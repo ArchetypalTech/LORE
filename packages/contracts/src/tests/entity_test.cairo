@@ -1,6 +1,8 @@
 use dojo::{model::ModelStorage};
 use lore::{
-    entity::{Entity, EntityImpl},
+    models::{
+        entity::{Entity, EntityImpl},
+    },
     tests::helpers,
 };
 

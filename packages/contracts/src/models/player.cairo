@@ -3,8 +3,7 @@ use starknet::ContractAddress;
 use lore::{
     models::{
         entity::{EntityImpl},
-        index::{Player},
-        components::Component,
+        components::{Component},
     },
     new_components::{
         reactable_trait::ReactableImpl,
@@ -12,6 +11,47 @@ use lore::{
     types::{command_type::Command},
     constants::errors::Error,
 };
+
+#[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct Player {
+    #[key]
+    pub inst: felt252,
+    pub is_player: bool,
+    /// Properties ///
+    /// The address of the player
+    pub address: ContractAddress,
+    /// The location of the player
+    pub location: felt252,
+    /// Current story line
+    pub story_line: CounterType,
+    /// If the player is in debug mode
+    pub use_debug: bool,
+}
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct PlayerStory {
+    #[key]
+    pub inst: felt252,
+    /// Properties ///
+    /// Array of story lines (story lines keys)
+    pub story: Array<CounterType>,
+}
+
+pub type CounterType = u32;
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
+#[dojo::model]
+pub struct StoryLine {
+    /// Unique identifier (Player or PlayerStory)
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the line
+    #[key]
+    pub key: CounterType,
+    /// Story line
+    pub line: ByteArray,
+}
 
 pub impl PlayerComponent of Component<Player> {
     type ComponentType = Player;
@@ -85,9 +125,10 @@ pub fn caller_as_player(world: WorldStorage, address: ContractAddress) -> Player
 #[cfg(test)]
 mod tests {
     use dojo::{model::ModelStorage};
+    use super::*;
     use lore::{
-        models::{index::{Player, PlayerStory, StoryLine}, player::caller_as_player},
-        new_components::player_trait::{PlayerImpl}, tests::helpers,
+        new_components::player_trait::{PlayerImpl},
+        tests::helpers,
     };
 
     #[test]

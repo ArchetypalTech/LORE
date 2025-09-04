@@ -2,9 +2,10 @@ use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Container, InventoryItem, Player},
-        components::Component,
-        container::ContainerComponent,
+        components::{Component},
+        container::{Container, ContainerComponent},
+        player::{Player},
+        inventory_item::{InventoryItem},
     },
     new_components::{player_trait::PlayerImpl},
     lib::{a_lexer::CommandImpl},

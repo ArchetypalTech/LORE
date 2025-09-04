@@ -2,8 +2,8 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Reactable, Player},
-        components::Component,
+        components::{Component},
+        player::{Player},
     },
     new_components::{
         reactable_trait::ReactableImpl,
@@ -16,6 +16,24 @@ use lore::{
     constants::errors::Error,
 };
 
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct Reactable {
+    #[key]
+    pub inst: felt252,
+    pub is_reactable: bool,
+    /// Properties ///
+    /// If the reactable is visible
+    pub is_visible: bool,
+    /// Array of descriptions for the reactable
+    pub description: Array<u32>,
+    /// Array of action maps for the reactable
+    pub action_map: Array<ActionMapReactable>,
+    /// For the first description, if we want to show a different one
+    pub already_shown: bool,
+    /// New first description
+    pub new_entry: ByteArray,
+}
 
 pub impl ReactableComponent of Component<Reactable> {
     type ComponentType = Reactable;
@@ -141,7 +159,11 @@ mod tests {
     use super::*;
     use lore::tests::helpers;
     use lore::{
-        models::index::{Reactable, DescriptionText}, new_components::reactable_trait::ReactableImpl,
+        models::{
+            index::{DescriptionText},
+            reactable::{Reactable},
+        },
+        new_components::reactable_trait::{ReactableImpl},
         types::{command_type::{Command, Token, TokenType}},
     };
 

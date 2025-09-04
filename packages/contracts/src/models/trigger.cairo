@@ -3,12 +3,9 @@ use dojo::{world::{WorldStorage}, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{EntityImpl},
-        area::AreaComponent,
-        exit::ExitComponent,
-        reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent,
-        container::ContainerComponent,
-        player::PlayerComponent,
+        area::{AreaComponent},
+        inventory_item::{InventoryItemComponent},
+        player::{PlayerComponent},
     },
     types::action_type::{TriggerType, IntoTriggerTypeFelt252},
     constants::errors::Error,
@@ -276,7 +273,7 @@ mod tests {
     use lore::{
         models::{
             entity::{Entity, EntityImpl},
-            index::{Player},
+            player::{Player},
             area::AreaComponent,
             exit::ExitComponent,
             player::{PlayerComponent, caller_as_player},

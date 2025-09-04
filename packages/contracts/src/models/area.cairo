@@ -1,8 +1,23 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
-    models::{index::{Area, Player}, components::Component}, types::{command_type::Command},
+    models::{
+        player::{Player},
+        components::{Component},
+    },
+    types::{command_type::Command},
     constants::errors::Error,
 };
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct Area {
+    #[key]
+    pub inst: felt252,
+    pub is_area: bool,
+    /// Properties ///
+    /// If the area is a spawn point for players
+    pub is_spawn_point: bool,
+}
 
 pub impl AreaComponent of Component<Area> {
     type ComponentType = Area;

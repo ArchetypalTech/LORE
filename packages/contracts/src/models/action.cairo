@@ -3,13 +3,7 @@ use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Player},
-        area::AreaComponent,
-        exit::ExitComponent,
-        reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent,
-        container::ContainerComponent,
-        player::PlayerComponent,
+        player::{Player},
         effect::{Effect, EffectImpl},
         condition::{Condition, ConditionImpl},
         trigger::{Trigger, TriggerImpl},
@@ -231,24 +225,21 @@ mod tests {
     use lore::{
         models::{
             entity::{Entity, EntityImpl},
-            index::{
-                Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Trigger,
-                Condition, Effect,
-            },
+            index::{DescriptionText},
             action::{Action, ActionImpl},
-            area::AreaComponent,
-            exit::ExitComponent,
-            reactable::ReactableComponent,
-            inventoryItem::InventoryItemComponent,
-            container::ContainerComponent,
-            player::{PlayerComponent, caller_as_player},
-            components::Component,
+            area::{Area},
+            exit::{Exit},
+            inventory_item::{InventoryItem},
+            container::{Container},
+            player::{caller_as_player},
+            components::{Component},
+            reactable::{Reactable},
+            trigger::{Trigger, TriggerImpl},
+            condition::{Condition},
+            effect::{Effect, EffectImpl},
         },
         new_components::{
             player_trait::{PlayerImpl},
-            trigger_trait::TriggerImpl,
-            effect_trait::EffectImpl,
-            action_trait::ActionImpl,
         },
         types::{
             component_type::{

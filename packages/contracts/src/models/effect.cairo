@@ -3,12 +3,12 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         index::{PropertyRegistry},
-        area::AreaComponent,
-        exit::ExitComponent,
-        reactable::ReactableComponent,
-        inventoryItem::InventoryItemComponent,
-        container::ContainerComponent,
-        player::PlayerComponent,
+        player::{PlayerComponent},
+        area::{AreaComponent},
+        exit::{ExitComponent},
+        reactable::{ReactableComponent},
+        inventory_item::{InventoryItemComponent},
+        container::{ContainerComponent},
     },
     types::{
         action_type::{TriggerContext, EffectType},
@@ -169,14 +169,15 @@ mod tests {
     use lore::{
         models::{
             entity::{EntityImpl},
-            index::{Reactable, DescriptionText, Player},
-            components::Component, area::AreaComponent,
-            reactable::ReactableComponent,
-            player::{PlayerComponent, caller_as_player},
+            index::{DescriptionText},
+            reactable::{Reactable},
+            trigger::{TriggerImpl},
+            player::{Player},
+            components::{Component}, 
+            player::{caller_as_player},
         },
         new_components::{
             player_trait::PlayerImpl,
-            trigger_trait::TriggerImpl,
         },
         types::{
             action_type::{TriggerContext, EffectType},

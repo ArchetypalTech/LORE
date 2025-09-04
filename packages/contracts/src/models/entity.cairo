@@ -3,10 +3,10 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
 
 use lore::{
     models::{
-        index::{Reactable, DescriptionText, Player},
-        components::Component,
-        player::PlayerComponent,
-        reactable::ReactableComponent,
+        index::{DescriptionText},
+        components::{Component},
+        player::{Player},
+        reactable::{Reactable},
     },
     new_components::player_trait::PlayerImpl,
 };

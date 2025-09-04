@@ -2,24 +2,51 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Exit, Player},
         components::{Component},
+        player::{Player},
         action::{Action, ActionImpl},
     },
     new_components::{
-        exit_trait::ExitImpl,
         player_trait::PlayerImpl,
     },
     types::{
         component_type::{ExitActions, ActionMapExit},
         command_type::{Command, Token},
         action_type::TriggerContext,
-        direction_type::{IntoDirectionByteArray},
+        direction_type::{Direction, IntoDirectionByteArray},
     },
     lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt},
     constants::errors::Error,
     constants,
 };
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct Exit {
+    #[key]
+    pub inst: felt252,
+    pub is_exit: bool,
+    /// Properties ///
+    /// If the exit is enterable
+    pub is_enterable: bool,
+    /// The leads to entity
+    pub leads_to: felt252,
+    /// The direction type
+    pub direction_type: Direction,
+    /// Array of action maps for the exit
+    pub action_map: Array<ActionMapExit>,
+}
+
+#[generate_trait]
+pub impl ExitImpl of ExitTrait {
+    fn is_exit(self: Exit) -> bool {
+        self.is_exit
+    }
+
+    fn can_player_enter(self: Exit) -> bool {
+        self.is_enterable
+    }
+}
 
 pub impl ExitComponent of Component<Exit> {
     type ComponentType = Exit;

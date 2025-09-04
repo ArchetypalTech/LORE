@@ -2,8 +2,8 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{Container, Player},
-        components::Component,
+        player::{Player},
+        components::{Component},
     },
     new_components::{
         player_trait::PlayerImpl,
@@ -14,6 +14,25 @@ use lore::{
     lib::{a_lexer::CommandImpl},
     constants::errors::Error,
 };
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct Container {
+    #[key]
+    pub inst: felt252,
+    pub is_container: bool,
+    /// Properties ///
+    /// If the container can be opened
+    pub can_be_opened: bool,
+    /// If the container can receive items
+    pub can_receive_items: bool,
+    /// If the container is open
+    pub is_open: bool,
+    /// Total number of slots of the container
+    pub num_slots: u32,
+    // pub accept_tags: Array<Tag>,
+    pub action_map: Array<ActionMapContainer>,
+}
 
 pub impl ContainerComponent of Component<Container> {
     type ComponentType = Container;

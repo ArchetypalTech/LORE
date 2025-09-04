@@ -11,10 +11,14 @@ pub mod prompt {
     use starknet::{get_caller_address};
     use dojo::{world::{WorldStorage}};
     use lore::{
-        models::{player::{PlayerComponent, caller_as_player}},
+        models::{
+            player::{caller_as_player}
+        },
         new_components::player_trait::PlayerImpl,
         lib::{
-            a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command},
+            a_lexer::{lexer},
+            random::{random_text},
+            c_handler::{handle_command},
             errors_texts_output::{ErrorOutputterImpl},
         },
     };
