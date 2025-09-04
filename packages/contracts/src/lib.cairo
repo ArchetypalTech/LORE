@@ -3,7 +3,10 @@ pub mod systems {
     pub mod prompt;
 }
 
-pub mod constants;
+pub mod constants {
+    pub mod constants;
+    pub mod errors;
+}
 
 pub mod lib {
     pub mod a_lexer;

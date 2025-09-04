@@ -16,8 +16,10 @@ use lore::{
         direction_type::{Direction, IntoDirectionByteArray},
     },
     lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt},
-    constants::errors::Error,
-    constants,
+    constants::{
+        constants,
+        errors::Error,
+    },
 };
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
