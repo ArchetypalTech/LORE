@@ -1,7 +1,8 @@
 use core::array::{ArrayTrait, ArrayImpl, Array};
 
 use lore::{
-    new_components::player_trait::PlayerImpl, types::command_type::{Command, Token, TokenType},
+    models::player::PlayerImpl,
+    types::command_type::{Command, Token, TokenType},
 };
 
 
@@ -99,9 +100,8 @@ pub mod lexer {
     use lore::{
         models::{
             entity::{EntityImpl},
-            player::{Player},
+            player::{Player, PlayerImpl},
         },
-        new_components::{player_trait::PlayerImpl},
         types::command_type::{Command, Token, TokenType},
         constants::errors::Error,
         lib::{
@@ -215,18 +215,22 @@ mod tests {
     use super::lexer;
     use super::CommandImpl;
     use lore::{
-        models::player::caller_as_player, new_components::player_trait::PlayerImpl,
-        types::command_type::{TokenType, IntoTokenTypeFelt252}, tests::helpers,
-        lib::{level_test::create_test_level, dictionary::{add_to_dictionary}},
+        models::player::{PlayerImpl},
+        types::command_type::{TokenType, IntoTokenTypeFelt252},
+        tests::helpers,
+        lib::{
+            level_test::create_test_level,
+            dictionary::{add_to_dictionary},
+        },
     };
 
     #[test]
     fn Lexer_test_prompt() {
-        let (world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, player_1, _) = helpers::setup_core();
         let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
         // println!("promptText: {:?}", promptText);
         create_test_level(world);
-        let player = caller_as_player(world, player_1);
+        let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
         let _command = lexer::parse(promptText, world, player);
         // println!("command: {:?}", command);
@@ -237,13 +241,13 @@ mod tests {
 
     #[test]
     fn test_get_verbs() {
-        let (world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, player_1, _) = helpers::setup_core();
         let prompt_text: ByteArray = "look at the magic circle";
         let expected_verb: ByteArray = "look"; // Correctly set verb as a ByteArray
 
         // Setup environment
         create_test_level(world);
-        let player = caller_as_player(world, player_1);
+        let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
 
         // Parse command
@@ -261,13 +265,13 @@ mod tests {
 
     #[test]
     fn test_get_nouns() {
-        let (world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, player_1, _) = helpers::setup_core();
         let prompt_text: ByteArray = "look at the ball";
         let expected_noun: ByteArray = "ball"; // Correctly set verb as a ByteArray
 
         // Setup environment
         create_test_level(world);
-        let player = caller_as_player(world, player_1);
+        let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
         let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);
 

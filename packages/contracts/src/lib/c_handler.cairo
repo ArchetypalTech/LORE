@@ -4,23 +4,20 @@ use lore::{
         entity::{Entity, EntityImpl},
         area::{AreaComponent},
         exit::{Exit, ExitComponent},
-        reactable::{Reactable, ReactableComponent},
+        reactable::{Reactable, ReactableImpl, ReactableComponent},
         inventory_item::{InventoryItemComponent},
-        container::{Container, ContainerComponent},
-        player::{Player},
+        container::{Container, ContainerImpl, ContainerComponent},
+        player::{Player, PlayerImpl},
         components::{Component},
         action::{ActionImpl},
         condition::{ConditionImpl},
     },
-    new_components::{
-        player_trait::PlayerImpl,
-        reactable_trait::ReactableImpl,
-        container_trait::ContainerImpl,
-    },
     types::command_type::{Command, TokenType, Token},
     lib::{
-        a_lexer::CommandImpl, utils::ByteArrayTraitExt,
-        dictionary::{init_dictionary, add_to_dictionary}, level_test::{create_test_level},
+        a_lexer::CommandImpl,
+        utils::ByteArrayTraitExt,
+        dictionary::{init_dictionary, add_to_dictionary},
+        level_test::{create_test_level},
     },
     constants::errors::Error,
 };
@@ -336,16 +333,17 @@ mod tests {
     use super::*;
     use lore::tests::helpers;
     use lore::{
-        models::player::caller_as_player, types::command_type::{Command, Token, TokenType},
+        models::player::{PlayerImpl},
+        types::command_type::{Command, Token, TokenType},
         lib::utils::ByteArrayTraitExt,
     };
 
     #[test]
     fn CHandler_test_g_command_handling() {
         // Setup test environment
-        let (world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, player_1, _) = helpers::setup_core();
         create_test_level(world);
-        let player = caller_as_player(world, player_1);
+        let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
 
         // Create a test command with g_command system token

@@ -2,15 +2,11 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        player::{Player},
+        player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
         components::{Component},
         area::AreaComponent,
-        container::{Container, ContainerComponent},
-    },
-    new_components::{
-        container_trait::ContainerImpl,
-        player_trait::PlayerImpl,
+        container::{Container, ContainerImpl, ContainerComponent},
     },
     types::{
         command_type::{Command, Token},
@@ -47,6 +43,10 @@ pub struct InventoryItem {
     pub multiple_use: bool,
 }
 
+
+//---------------------------------
+// Model Trait
+//
 #[generate_trait]
 pub impl InventoryItemImpl of InventoryItemTrait {
     fn is_inventory_item(self: InventoryItem) -> bool {
@@ -62,6 +62,10 @@ pub impl InventoryItemImpl of InventoryItemTrait {
     }
 }
 
+
+//---------------------------------
+// Component
+//
 pub impl InventoryItemComponent of Component<InventoryItem> {
     type ComponentType = InventoryItem;
 

@@ -36,13 +36,6 @@ pub mod models {
     pub mod trigger;
 }
 
-pub mod new_components {
-    pub mod container_trait;
-    pub mod reactable_trait;
-    pub mod player_trait;
-}
-
-
 pub mod types {
     pub mod action_type;
     pub mod command_type;

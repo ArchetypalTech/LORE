@@ -9,10 +9,9 @@ use lore::{
         exit::{Exit},
         reactable::{Reactable},
         inventory_item::{InventoryItem},
-        container::{Container},
+        container::{Container, ContainerImpl},
         player::{Player},
     },
-    new_components::{container_trait::ContainerImpl},
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
         component_type::ComponentType,

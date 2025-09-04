@@ -11,7 +11,7 @@ pub mod prompt {
     use starknet::{get_caller_address};
     use dojo::{world::{WorldStorage}};
     use lore::{
-        new_components::player_trait::{PlayerImpl, caller_as_player},
+        models::player::{PlayerImpl},
         lib::{a_lexer::{lexer}, random::{random_text}, c_handler::{handle_command}},
     };
 
@@ -29,7 +29,7 @@ pub mod prompt {
     pub impl PromptImpl of IPrompt<ContractState> {
         fn prompt(ref self: ContractState, cmd: ByteArray) {
             let mut world: WorldStorage = self.world(@"lore");
-            let player = caller_as_player(world, get_caller_address());
+            let player = PlayerImpl::caller_as_player(ref world, get_caller_address());
 
             //player.add_command_text(world, cmd.clone());
             match (lexer::parse(cmd, world, player)) {

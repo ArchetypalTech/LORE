@@ -5,10 +5,9 @@ use lore::{
     models::{
         index::{DescriptionText},
         components::{Component},
-        player::{Player},
+        player::{Player, PlayerImpl},
         reactable::{Reactable},
     },
-    new_components::player_trait::PlayerImpl,
 };
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
@@ -58,7 +57,7 @@ pub impl EntityImpl of EntityTrait {
         entity
     }
 
-    fn create_player_entity(mut world: WorldStorage, address: ContractAddress) -> Player {
+    fn create_player_entity(ref world: WorldStorage, address: ContractAddress) -> Player {
         let mut entity: Entity = world.read_model(0);
         entity.name = "Player";
         entity.inst = address.into();

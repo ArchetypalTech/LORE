@@ -19,6 +19,10 @@ pub struct Area {
     pub is_spawn_point: bool,
 }
 
+
+//---------------------------------
+// Component
+//
 pub impl AreaComponent of Component<Area> {
     type ComponentType = Area;
 

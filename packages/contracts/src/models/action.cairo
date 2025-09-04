@@ -3,13 +3,10 @@ use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        player::{Player},
+        player::{Player, PlayerImpl},
         effect::{Effect, EffectImpl},
         condition::{Condition, ConditionImpl},
         trigger::{Trigger, TriggerImpl},
-    },
-    new_components::{
-        player_trait::PlayerImpl,
     },
     types::action_type::{TriggerContext},
     lib::{
@@ -53,6 +50,10 @@ pub struct Action {
     pub success_response: Array<ByteArray>,
 }
 
+
+//---------------------------------
+// Model Trait
+//
 #[generate_trait]
 pub impl ActionImpl of ActionTrait {
     fn register_action(mut world: WorldStorage, action: Action) -> Result<(), Error> {
@@ -231,15 +232,12 @@ mod tests {
             exit::{Exit},
             inventory_item::{InventoryItem},
             container::{Container},
-            player::{caller_as_player},
+            player::{PlayerImpl},
             components::{Component},
             reactable::{Reactable},
             trigger::{Trigger, TriggerImpl},
             condition::{Condition},
             effect::{Effect, EffectImpl},
-        },
-        new_components::{
-            player_trait::{PlayerImpl},
         },
         types::{
             component_type::{
@@ -511,7 +509,7 @@ mod tests {
         item.set_parent(world, @room_1);
 
         // create player
-        let mut player1 = caller_as_player(world, player_1);
+        let mut player1 = PlayerImpl::caller_as_player(ref world, player_1);
         world.write_model(@player1);
 
         // Register variable properties
@@ -695,7 +693,7 @@ mod tests {
         item.set_parent(world, @room_1);
 
         // create player
-        let mut player1 = caller_as_player(world, player_1);
+        let mut player1 = PlayerImpl::caller_as_player(ref world, player_1);
         world.write_model(@player1);
         let player_entity: Entity = EntityImpl::get_entity(@world, @player1.inst).unwrap();
         let mut player_container: Container = Component::add_component(world, player_entity.inst);

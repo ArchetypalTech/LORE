@@ -273,13 +273,9 @@ mod tests {
     use lore::{
         models::{
             entity::{Entity, EntityImpl},
-            player::{Player},
+            player::{Player, PlayerImpl, PlayerComponent},
             area::AreaComponent,
             exit::ExitComponent,
-            player::{PlayerComponent, caller_as_player},
-        },
-        new_components::{
-            player_trait::PlayerImpl,
         },
         types::{action_type::TriggerType, direction_type::Direction},
     };
@@ -418,7 +414,7 @@ mod tests {
         exit_component_2.direction_type = Direction::South;
         world.write_model(@exit_component_2);
 
-        let mut player: Player = caller_as_player(world, player_1);
+        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1);
         player.location = room_entity_2.inst;
         world.write_model(@player);
 

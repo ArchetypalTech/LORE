@@ -26,8 +26,14 @@ dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.6.1" }
 build-external-contracts = ["dojo::world::world_contract::world"]
 allowed-libfuncs-list.name = "experimental"
 
+# debug contract size (max=81,920 felts)
+# to be used with `sozo build --stats.by-tag`
+# https://docs.starknet.io/resources/chain-info/
+# uncomment this...
+# sierra = true
+# casm = true
+
+# Dojo profiles
 [profile.dev]
-
 [profile.slot]
-
 [profile.local]

@@ -48,6 +48,10 @@ pub struct Effect {
     pub n_value: u32,
 }
 
+
+//---------------------------------
+// Model Trait
+//
 #[generate_trait]
 pub impl EffectImpl of EffectTrait {
     fn apply_effect(
@@ -172,12 +176,8 @@ mod tests {
             index::{DescriptionText},
             reactable::{Reactable},
             trigger::{TriggerImpl},
-            player::{Player},
+            player::{Player, PlayerImpl},
             components::{Component}, 
-            player::{caller_as_player},
-        },
-        new_components::{
-            player_trait::PlayerImpl,
         },
         types::{
             action_type::{TriggerContext, EffectType},
@@ -241,7 +241,7 @@ mod tests {
         let old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // Create player
-        let mut player: Player = caller_as_player(world, player_1);
+        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1);
         world.write_model(@player);
 
         // Create trigger context

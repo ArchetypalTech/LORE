@@ -3,11 +3,8 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Component},
-        player::{Player},
+        player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
-    },
-    new_components::{
-        player_trait::PlayerImpl,
     },
     types::{
         component_type::{ExitActions, ActionMapExit},
@@ -39,6 +36,10 @@ pub struct Exit {
     pub action_map: Array<ActionMapExit>,
 }
 
+
+//---------------------------------
+// Model Trait
+//
 #[generate_trait]
 pub impl ExitImpl of ExitTrait {
     fn is_exit(self: Exit) -> bool {
@@ -50,6 +51,10 @@ pub impl ExitImpl of ExitTrait {
     }
 }
 
+
+//---------------------------------
+// Component
+//
 pub impl ExitComponent of Component<Exit> {
     type ComponentType = Exit;
 
