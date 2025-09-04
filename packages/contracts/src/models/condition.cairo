@@ -315,7 +315,7 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(world);
+        reactable.store(ref world);
 
         // Register component variable properties
         VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);

@@ -54,19 +54,19 @@ pub impl AreaComponent of Component<Area> {
     }
 
     fn can_use_command(
-        self: @Area, world: WorldStorage, player: @Player, command: @Command,
+        self: @Area, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         true
     }
 
     fn execute_command(
-        self: Area, world: WorldStorage, player: @Player, command: @Command,
+        self: Area, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("Area execute_command");
         Result::Err(Error::Unimplemented)
     }
 
-    fn store(self: @Area, mut world: WorldStorage) {
+    fn store(self: @Area, ref world: WorldStorage) {
         world.write_model(self);
     }
 }

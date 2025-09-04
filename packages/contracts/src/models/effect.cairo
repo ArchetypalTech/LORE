@@ -235,7 +235,7 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(world);
+        reactable.store(ref world);
         let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let old_txt: DescriptionText = world.read_model((door.inst, old_key));

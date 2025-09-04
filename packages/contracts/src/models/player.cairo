@@ -106,7 +106,7 @@ pub impl PlayerImpl of PlayerTrait {
                                 selector!("already_shown"),
                                 reactable.already_shown,
                             );
-                        // reactable.store(world);
+                        // reactable.store(ref world);
                     }
                 }
             }
@@ -158,7 +158,7 @@ pub impl PlayerImpl of PlayerTrait {
                 selector!("story_line"),
                 player.story_line,
             );
-        //player.store(world);
+        //player.store(ref world);
     }
 
 
@@ -273,7 +273,7 @@ pub impl PlayerComponent of Component<Player> {
         let mut player: Player = world.read_model(inst);
         player.inst = inst;
         player.is_player = true;
-        player.store(world);
+        player.store(ref world);
         // Return the component
         player
     }
@@ -288,19 +288,19 @@ pub impl PlayerComponent of Component<Player> {
     }
 
     fn can_use_command(
-        self: @Player, world: WorldStorage, player: @Player, command: @Command,
+        self: @Player, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         true
     }
 
     fn execute_command(
-        self: Player, world: WorldStorage, player: @Player, command: @Command,
+        self: Player, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("Player execute_command");
         Result::Err(Error::Unimplemented)
     }
 
-    fn store(self: @Player, mut world: WorldStorage) {
+    fn store(self: @Player, ref world: WorldStorage) {
         world.write_model(self);
     }
 }

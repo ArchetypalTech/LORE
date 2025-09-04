@@ -41,7 +41,7 @@ pub mod prompt {
             player.add_command_text(world, cmd.clone());
             match (lexer::parse(cmd, world, player)) {
                 Result::Ok(result) => {
-                    let res = handle_command(result, world, player);
+                    let res = handle_command(result, ref world, player);
                     if !res.is_ok() {
                         let error = res.unwrap_err();
                         // println!("Error: {:?}", error);

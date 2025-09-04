@@ -106,7 +106,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     },
                 ];
         inventory_item.already_used = false;
-        inventory_item.store(world);
+        inventory_item.store(ref world);
         // Return the component
         inventory_item
     }
@@ -121,16 +121,16 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     }
 
     fn can_use_command(
-        self: @InventoryItem, world: WorldStorage, player: @Player, command: @Command,
+        self: @InventoryItem, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         get_action_token(self, world, command).is_some()
     }
 
     fn execute_command(
-        mut self: InventoryItem, mut world: WorldStorage, player: @Player, command: @Command,
+        mut self: InventoryItem, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("InventoryItem execute_command");
-        let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let (action, _token) = get_action_token(@self, @world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {
             InventoryItemActions::UseItem => {
@@ -297,14 +297,14 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         Result::Err(Error::ActionFailed)
     }
 
-    fn store(self: @InventoryItem, mut world: WorldStorage) {
+    fn store(self: @InventoryItem, ref world: WorldStorage) {
         world.write_model(self);
     }
 }
 
 // @dev: wip how to access tokens
 fn get_action_token(
-    self: @InventoryItem, world: WorldStorage, command: @Command,
+    self: @InventoryItem, world: @WorldStorage, command: @Command,
 ) -> Option<(ActionMapInventoryItem, Token)> {
     let mut action_token: Option<(ActionMapInventoryItem, Token)> = Option::None;
     for token in command.tokens.clone() {

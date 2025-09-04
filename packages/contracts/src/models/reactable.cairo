@@ -42,7 +42,7 @@ pub impl ReactableImpl of ReactableTrait {
     fn get_random_description(
         self: @Reactable, command: @Command, world: WorldStorage,
     ) -> ByteArray {
-        let (action, _token) = get_action_token(self, world, command).unwrap();
+        let (action, _token) = get_action_token(self, @world, command).unwrap();
         match action.action_fn {
             ReactableActions::ReadRandomDescription => {
                 let (idx1, idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
@@ -136,7 +136,7 @@ pub impl ReactableComponent of Component<Reactable> {
                 ];
         reactable.already_shown = false;
         reactable.new_entry = "";
-        reactable.store(world);
+        reactable.store(ref world);
         // Return the component
         reactable
     }
@@ -151,16 +151,16 @@ pub impl ReactableComponent of Component<Reactable> {
     }
 
     fn can_use_command(
-        self: @Reactable, world: WorldStorage, player: @Player, command: @Command,
+        self: @Reactable, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         get_action_token(self, world, command).is_some()
     }
 
     fn execute_command(
-        mut self: Reactable, mut world: WorldStorage, player: @Player, command: @Command,
+        mut self: Reactable, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("Reactable execute_command");
-        let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let (action, _token) = get_action_token(@self, @world, command).unwrap();
         match action.action_fn {
             ReactableActions::SetVisible => {
                 self.is_visible = !self.is_visible;
@@ -186,14 +186,14 @@ pub impl ReactableComponent of Component<Reactable> {
         Result::Err(Error::ActionFailed)
     }
 
-    fn store(self: @Reactable, mut world: WorldStorage) {
+    fn store(self: @Reactable, ref world: WorldStorage) {
         world.write_model(self);
     }
 }
 
 // @dev: wip how to access tokens
 pub fn get_action_token(
-    self: @Reactable, world: WorldStorage, command: @Command,
+    self: @Reactable, world: @WorldStorage, command: @Command,
 ) -> Option<(ActionMapReactable, Token)> {
     let mut action_token: Option<(ActionMapReactable, Token)> = Option::None;
     for token in command.tokens.clone() {

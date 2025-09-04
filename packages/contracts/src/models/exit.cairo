@@ -82,7 +82,7 @@ pub impl ExitComponent of Component<Exit> {
                     ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];
-        exit.store(world);
+        exit.store(ref world);
         // Return the component
         exit
     }
@@ -97,16 +97,16 @@ pub impl ExitComponent of Component<Exit> {
     }
 
     fn can_use_command(
-        self: @Exit, world: WorldStorage, player: @Player, command: @Command,
+        self: @Exit, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         get_action_token(self, world, command).is_some()
     }
 
     fn execute_command(
-        mut self: Exit, mut world: WorldStorage, player: @Player, command: @Command,
+        mut self: Exit, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("Exit execute_command");
-        let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let (action, _token) = get_action_token(@self, @world, command).unwrap();
         let direction_tokens = command.get_directions();
 
         let mut destination_inst: felt252 = 0;
@@ -193,7 +193,7 @@ pub impl ExitComponent of Component<Exit> {
         Result::Err(Error::ActionFailed)
     }
 
-    fn store(self: @Exit, mut world: WorldStorage) {
+    fn store(self: @Exit, ref world: WorldStorage) {
         world.write_model(self);
     }
 }
@@ -216,7 +216,7 @@ fn matches_direction(
 
 // @dev: wip how to access tokens
 fn get_action_token(
-    self: @Exit, world: WorldStorage, command: @Command,
+    self: @Exit, world: @WorldStorage, command: @Command,
 ) -> Option<(ActionMapExit, Token)> {
     let mut action_token: Option<(ActionMapExit, Token)> = Option::None;
     for token in command.tokens.clone() {

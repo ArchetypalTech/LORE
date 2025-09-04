@@ -265,19 +265,19 @@ mod tests {
         // add area component to room entity 1
         let mut area_component: Area = Component::add_component(world, room_entity_1.inst);
         area_component.is_area = true;
-        area_component.store(world);
+        area_component.store(ref world);
         // add exit component to room entity
         let mut exit_component_1: Exit = Component::add_component(world, room_entity_1.inst);
         exit_component_1.is_enterable = true;
         exit_component_1.leads_to = room_entity_2.inst;
         exit_component_1.direction_type = Direction::North;
-        exit_component_1.store(world);
+        exit_component_1.store(ref world);
 
         // ROOM 2 //
         // add area component to room entity 2
         let mut area_component_2: Area = Component::add_component(world, room_entity_2.inst);
         area_component_2.is_area = true;
-        area_component_2.store(world);
+        area_component_2.store(ref world);
 
         // return room entities
         (room_entity_1, room_entity_2)
@@ -311,7 +311,7 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(world);
+        reactable.store(ref world);
         // add exit component to door
         let mut exit_component: Exit = Component::add_component(world, door.inst);
         exit_component.is_exit = true;
@@ -325,7 +325,7 @@ mod tests {
                     ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];
-        exit_component.store(world);
+        exit_component.store(ref world);
 
         // return door entity
         door
@@ -360,7 +360,7 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(world);
+        reactable.store(ref world);
         // add inventory item component to item
         let mut inventory_item: InventoryItem = Component::add_component(world, item.inst);
         inventory_item.owner_id = owner_id;
@@ -388,7 +388,7 @@ mod tests {
                 ];
         inventory_item.already_used = false;
         inventory_item.multiple_use = true;
-        inventory_item.store(world);
+        inventory_item.store(ref world);
 
         // return item entity
         item
@@ -702,7 +702,7 @@ mod tests {
         player_container.can_receive_items = true;
         player_container.is_open = true;
         player_container.num_slots = 2;
-        player_container.store(world);
+        player_container.store(ref world);
 
         // Register variable properties
         register_variable_properties(world);
@@ -831,7 +831,7 @@ mod tests {
         // EXECUTE ACTION
         // 1. move player to room 1
         player1.location = room_1.inst;
-        player1.store(world);
+        player1.store(ref world);
         player1.move_to_room(world, room_1.inst);
         let player_entity: Entity = EntityImpl::get_entity(@world, @player1.inst).unwrap();
 
@@ -840,7 +840,7 @@ mod tests {
         let player_container: Container = world.read_model(player1.inst);
         let mut itemInv: InventoryItem = world.read_model(item.inst);
         itemInv.owner_id = player_container.inst;
-        itemInv.store(world);
+        itemInv.store(ref world);
         // 3. Check if item is owned by player1
         assert(itemInv.owner_id == player_container.inst, 'Item should be owned by player1');
         // 4. Move player to room 2

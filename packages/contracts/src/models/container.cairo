@@ -292,7 +292,7 @@ pub impl ContainerComponent of Component<Container> {
                         action: "check", inst: 0, action_fn: ContainerActions::Check,
                     },
                 ];
-        container.store(world);
+        container.store(ref world);
         // Return the component
         container
     }
@@ -306,16 +306,16 @@ pub impl ContainerComponent of Component<Container> {
     }
 
     fn can_use_command(
-        self: @Container, world: WorldStorage, player: @Player, command: @Command,
+        self: @Container, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         get_action_token(self, world, command).is_some()
     }
 
     fn execute_command(
-        mut self: Container, mut world: WorldStorage, player: @Player, command: @Command,
+        mut self: Container, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("Container execute_command");
-        let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let (action, _token) = get_action_token(@self, @world, command).unwrap();
         let nouns = command.get_nouns();
         match action.action_fn {
             ContainerActions::Open => {
@@ -355,14 +355,14 @@ pub impl ContainerComponent of Component<Container> {
         Result::Err(Error::ActionFailed)
     }
 
-    fn store(self: @Container, mut world: WorldStorage) {
+    fn store(self: @Container, ref world: WorldStorage) {
         world.write_model(self);
     }
 }
 
 // @dev: wip how to access tokens
 fn get_action_token(
-    self: @Container, world: WorldStorage, command: @Command,
+    self: @Container, world: @WorldStorage, command: @Command,
 ) -> Option<(ActionMapContainer, Token)> {
     let mut action_token: Option<(ActionMapContainer, Token)> = Option::None;
     for token in command.tokens.clone() {

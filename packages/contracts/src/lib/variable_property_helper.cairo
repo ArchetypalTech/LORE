@@ -390,7 +390,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                 }
             }
-            component.store(world);
+            component.store(ref world);
             break;
         };
         return (result, success);
@@ -446,7 +446,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(world);
+                component.store(ref world);
                 break;
             }
         };
@@ -511,7 +511,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(world);
+                component.store(ref world);
                 break;
             }
         };
@@ -601,7 +601,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(world);
+                component.store(ref world);
                 break;
             }
         };
@@ -673,11 +673,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 _ => { // Do nothing for now
                                 },
                             }
-                            component.store(world);
+                            component.store(ref world);
                         }
                     },
                 }
-                component.store(world);
+                component.store(ref world);
                 break;
             }
         };
@@ -710,7 +710,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(world);
+                component.store(ref world);
                 break;
             }
         };

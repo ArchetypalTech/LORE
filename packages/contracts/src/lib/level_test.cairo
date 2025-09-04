@@ -34,7 +34,7 @@ fn room_start(mut world: WorldStorage) {
     world.write_model(@descr1);
     world.write_model(@descr2);
     reactable.description = array![0, 1];
-    reactable.store(world);
+    reactable.store(ref world);
     let _: Area = Component::add_component(world, obj.inst);
     object_room_one(world, obj);
 }
@@ -56,10 +56,10 @@ fn object_room_one(mut world: WorldStorage, parent: Entity) {
     world.write_model(@descr1);
     world.write_model(@descr2);
     reactable.description = array![0, 1];
-    reactable.store(world);
+    reactable.store(ref world);
     let mut exit: Exit = Component::add_component(world, obj.inst);
     exit.leads_to = 1234;
-    exit.store(world);
+    exit.store(ref world);
     obj.set_parent(world, @parent);
 }
 
@@ -79,6 +79,6 @@ fn room_two(mut world: WorldStorage) {
     world.write_model(@descr1);
     world.write_model(@descr2);
     reactable.description = array![0, 1];
-    reactable.store(world);
+    reactable.store(ref world);
     let _: Area = Component::add_component(world, entity.inst);
 }
