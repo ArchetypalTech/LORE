@@ -1,8 +1,8 @@
-use dojo::{world::{WorldStorage}, model::ModelStorage};
+use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Component},
+        components::{Instance, Component},
         player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
         area::AreaComponent,
@@ -66,28 +66,40 @@ pub impl InventoryItemImpl of InventoryItemTrait {
 //---------------------------------
 // Component
 //
+pub impl InventoryItemInstance of Instance<InventoryItem> {
+    #[inline(always)]
+    fn inst(self: @InventoryItem) -> felt252 {
+        (*self.inst)
+    }
+
+    #[inline(always)]
+    fn is_component(self: @InventoryItem) -> bool {
+        (*self.is_inventory_item)
+    }
+
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<InventoryItem>::ptr_from_keys(inst), selector!("is_inventory_item")))
+    }
+}
+
 pub impl InventoryItemComponent of Component<InventoryItem> {
     type ComponentType = InventoryItem;
 
     fn entity(self: @InventoryItem, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
+        EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn inst(self: @InventoryItem) -> felt252 {
-        *self.inst
-    }
-
-    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
-        Self::get_component(world, inst).is_some()
-    }
-
-    fn get_component(world: @WorldStorage, inst: felt252) -> Option<InventoryItem> {
-        let inventory_item: InventoryItem = world.read_model(inst);
-        if (inventory_item.is_inventory_item) {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<InventoryItem> {
+        let inventory_item: InventoryItem = world.read_game_inst(inst, game_id);
+        if (inventory_item.is_component()) {
             Option::Some(inventory_item)
         } else {
             Option::None
         }
+    }
+
+    fn store(self: @InventoryItem, ref world: WorldStorage, game_id: felt252) {
+        world.write_game_inst(self, game_id);
     }
 
     fn can_use_command(
@@ -265,10 +277,6 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             },
         }
         Result::Err(Error::ActionFailed)
-    }
-
-    fn store(self: @InventoryItem, ref world: WorldStorage) {
-        world.write_model(self);
     }
 
     // used for tests only

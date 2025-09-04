@@ -1,8 +1,8 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Component},
+        components::{Instance, Component},
         player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
     },
@@ -55,28 +55,40 @@ pub impl ExitImpl of ExitTrait {
 //---------------------------------
 // Component
 //
+pub impl ExitInstance of Instance<Exit> {
+    #[inline(always)]
+    fn inst(self: @Exit) -> felt252 {
+        (*self.inst)
+    }
+
+    #[inline(always)]
+    fn is_component(self: @Exit) -> bool {
+        (*self.is_exit)
+    }
+
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<Exit>::ptr_from_keys(inst), selector!("is_exit")))
+    }
+}
+
 pub impl ExitComponent of Component<Exit> {
     type ComponentType = Exit;
 
     fn entity(self: @Exit, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
+        EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn inst(self: @Exit) -> felt252 {
-        *self.inst
-    }
-
-    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
-        Self::get_component(world, inst).is_some()
-    }
-
-    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Exit> {
-        let exit: Exit = world.read_model(inst);
-        if (exit.is_exit) {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Exit> {
+        let exit: Exit = world.read_game_inst(inst, game_id);
+        if (exit.is_component()) {
             Option::Some(exit)
         } else {
             Option::None
         }
+    }
+
+    fn store(self: @Exit, ref world: WorldStorage, game_id: felt252) {
+        world.write_game_inst(self, game_id);
     }
 
     fn can_use_command(
@@ -174,10 +186,6 @@ pub impl ExitComponent of Component<Exit> {
             },
         }
         Result::Err(Error::ActionFailed)
-    }
-
-    fn store(self: @Exit, ref world: WorldStorage) {
-        world.write_model(self);
     }
 
     // used for tests only

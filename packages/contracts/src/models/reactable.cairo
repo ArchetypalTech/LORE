@@ -1,9 +1,9 @@
-use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage};
+use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
         index::{DescriptionText},
-        components::{Component},
+        components::{Instance, Component},
         player::{Player, PlayerImpl},
     },
     types::{
@@ -91,28 +91,40 @@ pub impl ReactableImpl of ReactableTrait {
 //---------------------------------
 // Component
 //
+pub impl ReactableInstance of Instance<Reactable> {
+    #[inline(always)]
+    fn inst(self: @Reactable) -> felt252 {
+        (*self.inst)
+    }
+
+    #[inline(always)]
+    fn is_component(self: @Reactable) -> bool {
+        (*self.is_reactable)
+    }
+
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<Reactable>::ptr_from_keys(inst), selector!("is_reactable")))
+    }
+}
+
 pub impl ReactableComponent of Component<Reactable> {
     type ComponentType = Reactable;
 
     fn entity(self: @Reactable, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
+        EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn inst(self: @Reactable) -> felt252 {
-        *self.inst
-    }
-
-    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
-        Self::get_component(world, inst).is_some()
-    }
-
-    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Reactable> {
-        let reactable: Reactable = world.read_model(inst);
-        if (reactable.is_reactable) {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Reactable> {
+        let reactable: Reactable = world.read_game_inst(inst, game_id);
+        if (reactable.is_component()) {
             Option::Some(reactable)
         } else {
             Option::None
         }
+    }
+
+    fn store(self: @Reactable, ref world: WorldStorage, game_id: felt252) {
+        world.write_game_inst(self, game_id);
     }
 
     fn can_use_command(
@@ -149,10 +161,6 @@ pub impl ReactableComponent of Component<Reactable> {
             },
         }
         Result::Err(Error::ActionFailed)
-    }
-
-    fn store(self: @Reactable, ref world: WorldStorage) {
-        world.write_model(self);
     }
 
     // used for tests only

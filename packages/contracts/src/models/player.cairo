@@ -3,7 +3,7 @@ use starknet::ContractAddress;
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Component},
+        components::{Instance, Component},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
     },
@@ -257,28 +257,40 @@ pub impl PlayerImpl of PlayerTrait {
 //---------------------------------
 // Component
 //
+pub impl PlayerInstance of Instance<Player> {
+    #[inline(always)]
+    fn inst(self: @Player) -> felt252 {
+        (*self.inst)
+    }
+
+    #[inline(always)]
+    fn is_component(self: @Player) -> bool {
+        (*self.is_player)
+    }
+
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<Player>::ptr_from_keys(inst), selector!("is_player")))
+    }
+}
+
 pub impl PlayerComponent of Component<Player> {
     type ComponentType = Player;
 
     fn entity(self: @Player, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
+        EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn inst(self: @Player) -> felt252 {
-        *self.inst
-    }
-
-    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
-        Self::get_component(world, inst).is_some()
-    }
-
-    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Player> {
-        let player: Player = world.read_model(inst);
-        if (player.is_player) {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Player> {
+        let player: Player = world.read_game_inst(inst, game_id);
+        if (player.is_component()) {
             Option::Some(player)
         } else {
             Option::None
         }
+    }
+
+    fn store(self: @Player, ref world: WorldStorage, game_id: felt252) {
+        world.write_game_inst(self, game_id);
     }
 
     fn can_use_command(
@@ -292,10 +304,6 @@ pub impl PlayerComponent of Component<Player> {
     ) -> Result<(), Error> {
         // println!("Player execute_command");
         Result::Err(Error::Unimplemented)
-    }
-
-    fn store(self: @Player, ref world: WorldStorage) {
-        world.write_model(self);
     }
 
     // used for tests only
@@ -331,7 +339,7 @@ mod tests {
         let entity: Entity = PlayerComponent::entity(@player, @world);
         assert(entity.inst == player.inst, 'entity.inst == player.inst');
 
-        assert(PlayerComponent::has_component(@world, player.inst), 'has_component()');
+        assert(PlayerInstance::has_component(@world, player.inst), 'has_component()');
         let component: Option<Player> = PlayerComponent::get_component(@world, player.inst);
         assert(component.is_some(), 'component.is_some()');
         assert(component.unwrap().inst() == player.inst, 'component.is_some()');

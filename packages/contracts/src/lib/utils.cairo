@@ -1,6 +1,8 @@
 use core::traits::{TryInto, Into, DivRem};
 use core::result::{Result};
 use lore::types::direction_type::Direction;
+use core::poseidon::{PoseidonTrait, HashState};
+use core::hash::HashStateTrait;
 
 #[generate_trait]
 pub impl ByteArrayTraitExt of ByteArrayTrait {
@@ -286,6 +288,25 @@ pub impl ClousureTraitImp of ClousureTrait {
             output.append(f(elem));
         };
         output
+    }
+}
+
+#[generate_trait]
+pub impl HashImpl of HashTrait {
+    fn hash_values(values: Span<felt252>) -> felt252 {
+        assert(values.len() > 0, 'hash_values() has no values!');
+        let mut state: HashState = PoseidonTrait::new();
+        state = state.update(*values[0]);
+        if (values.len() == 1) {
+            state = state.update(*values[0]);
+        } else {
+            let mut index: usize = 1;
+            while (index < values.len()) {
+                state = state.update(*values[index]);
+                index += 1;
+            };
+        }
+        (state.finalize())
     }
 }
 

@@ -2,7 +2,7 @@ use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Component},
+        components::{Instance, Component},
         player::{Player, PlayerImpl},
         inventory_item::{InventoryItem, InventoryItemImpl},
     },
@@ -249,28 +249,40 @@ pub impl ContainerImpl of ContainerTrait {
 //---------------------------------
 // Component
 //
+pub impl ContainerInstance of Instance<Container> {
+    #[inline(always)]
+    fn inst(self: @Container) -> felt252 {
+        (*self.inst)
+    }
+
+    #[inline(always)]
+    fn is_component(self: @Container) -> bool {
+        (*self.is_container)
+    }
+
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<Container>::ptr_from_keys(inst), selector!("is_container")))
+    }
+}
+
 pub impl ContainerComponent of Component<Container> {
     type ComponentType = Container;
 
     fn entity(self: @Container, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
+        EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn inst(self: @Container) -> felt252 {
-        *self.inst
-    }
-
-    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
-        Self::get_component(world, inst).is_some()
-    }
-
-    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Container> {
-        let container: Container = world.read_model(inst);
-        if (container.is_container) {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Container> {
+        let container: Container = world.read_game_inst(inst, game_id);
+        if (container.is_component()) {
             Option::Some(container)
         } else {
             Option::None
         }
+    }
+
+    fn store(self: @Container, ref world: WorldStorage, game_id: felt252) {
+        world.write_game_inst(self, game_id);
     }
 
     fn can_use_command(
@@ -321,10 +333,6 @@ pub impl ContainerComponent of Component<Container> {
             },
         }
         Result::Err(Error::ActionFailed)
-    }
-
-    fn store(self: @Container, ref world: WorldStorage) {
-        world.write_model(self);
     }
 
     // used for tests only
