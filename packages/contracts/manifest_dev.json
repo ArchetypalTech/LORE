@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x67831517a668320d44e6911014920e21bed6ed709096a4b7d8c0987caa58385",
-      "class_hash": "0x37a443f0581dd061742aee5e0f7364b81343dd68075a675fd1a76cc958c8280",
+      "address": "0x7ce3aa65a3760ceacacfa93532f48c5d53078845fdb1051c91c875415a2a0ec",
+      "class_hash": "0x4a0c48f3146e72447d0fcf42516025b6526b71ab86f56875b575801e93251e1",
       "abi": [
         {
           "type": "impl",
@@ -2089,6 +2089,10 @@
             {
               "name": "n_value",
               "type": "core::integer::u32"
+            },
+            {
+              "name": "hex_value",
+              "type": "core::felt252"
             }
           ]
         },
@@ -2692,8 +2696,8 @@
       ]
     },
     {
-      "address": "0x397a41c41bff02a4c11593665473c712ef5377a614a8c37da6d7628fc9288c0",
-      "class_hash": "0xe740d8c663c2b59854744d6fa8c9dde0920faa320f3755c2167b7ee8b9e1a7",
+      "address": "0x5672d62652690442ed88ced6b603f64d75b410fee09ab069e4ce5111bc3f907",
+      "class_hash": "0x5b27a51e2d00b00cdec6b791b0be1236300b62a002603ec503e46a3b6b606d4",
       "abi": [
         {
           "type": "impl",
@@ -2908,7 +2912,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x5dd0a40f39f0ba1c787d5b7aa2adddc3fe88a71f1aa5071ba3ec2fc8407b35c",
+      "class_hash": "0x2bf734f4b3cf7681a839fc565677becf877524a5a1e04bf16a96de6da3b1931",
       "tag": "lore-ChildToParent",
       "selector": "0x6c2a358df76ae2ca942ea3cc2f59ade04e5f5ba87ee162b41a10ad5a5755287"
     },
@@ -2944,7 +2948,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x59e1bbcbd5d85e34401ed83edf59314ac9cfb278ab332655a6ca791fa96ca9c",
+      "class_hash": "0x52d571c0e79fcd1a4e46317029821242832ee45a738182e4a5a94cde5ec0d22",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },

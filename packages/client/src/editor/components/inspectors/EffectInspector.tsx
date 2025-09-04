@@ -103,6 +103,11 @@ const EffectItem = ({
           value={effectObj.n_value.toString()}
           onChange={handleInputChange(idx)}
         />
+        <Input
+          id="hex_value"
+          value={effectObj.hex_value.toString()}
+          onChange={handleInputChange(idx)}
+        />
       </Inspector>
     </CollapsibleComponent>
   );
@@ -139,6 +144,9 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       },
       numeric_value: (e, updatedObject) => {
         updatedObject.n_value = e.target.value;
+      },
+      hex_value: (e, updatedObject) => {
+        updatedObject.hex_value = e.target.value;
       },
     },
   });

@@ -328,6 +328,7 @@ const publishEffect = async (
 				num.toBigInt(i.toString() ?? 0),
 			]),
 			num.toBigInt(effect.n_value.toString() ?? 0),
+			num.toBigInt(effect.hex_value.toString() ?? num.toBigInt("0")),
 		];
 		await dispatchDesignerCall("create_effect", [preparedEffect]);
 	}

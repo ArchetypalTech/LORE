@@ -320,6 +320,8 @@ pub struct Effect {
     pub value: Array<(ByteArray, u32)>,
     /// for numbers: the value that will add/substract or replace the current value
     pub n_value: u32,
+    // for hex: will be used mostly in owner_id
+    pub hex_value: felt252,
 }
 
 /// NOT USED YET ///
