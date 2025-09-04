@@ -39,11 +39,11 @@ pub fn handle_command(
     let mut result: Result::<Command, Error> = Result::Err(Error::ActionFailed);
     if nouns.len() > 0 {
         for noun in nouns {
-            let item: Entity = EntityImpl::get_entity(@world, @noun.target).unwrap();
+            let item: Entity = EntityImpl::get_entity(@world, noun.target).unwrap();
             if player.use_debug {
                 player.say(world, format!("item: {:?}", item));
             }
-            match ReactableComponent::get_component(world, item.inst) {
+            match ReactableComponent::get_component(@world, item.inst) {
                 Option::Some(c) => {
                     if c.clone().can_use_command(@world, @player, @command) {
                         let res = c.clone().execute_command(ref world, @player, @command);
@@ -61,7 +61,7 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match AreaComponent::get_component(world, item.inst) {
+            match AreaComponent::get_component(@world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -80,7 +80,7 @@ pub fn handle_command(
                 Option::None => {},
             }
             // @dev: guaranteed there's a noun
-            match ExitComponent::get_component(world, item.inst) {
+            match ExitComponent::get_component(@world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -98,7 +98,7 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match InventoryItemComponent::get_component(world, item.inst) {
+            match InventoryItemComponent::get_component(@world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -116,7 +116,7 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match ContainerComponent::get_component(world, item.inst) {
+            match ContainerComponent::get_component(@world, item.inst) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -138,7 +138,7 @@ pub fn handle_command(
     } else if directions.len() > 0 {
         let context = player.get_context(@world);
         for item in context {
-            let exit: Option<Exit> = Component::get_component(world, item.inst);
+            let exit: Option<Exit> = Component::get_component(@world, item.inst);
             // @dev: not guaranteed there's a noun
             match exit {
                 Option::Some(exit) => {
@@ -278,7 +278,7 @@ fn system_command(
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
-            let reactable: Reactable = Component::get_component(world, room.unwrap().inst).unwrap();
+            let reactable: Reactable = Component::get_component(@world, room.unwrap().inst).unwrap();
             player.say(world, format!("+sys+{:?}", reactable));
             return Result::Ok(command);
         }
@@ -289,7 +289,7 @@ fn system_command(
             return Result::Ok(command);
         }
         if (system_command == "g_level") {
-            create_test_level(world);
+            create_test_level(ref world);
             player.say(world, "+sys+created test level");
             return Result::Ok(command);
         }
@@ -309,7 +309,7 @@ fn system_command(
             }
             player.say(world, format!("{}", room.unwrap().name));
             for item in context {
-                let reactable: Option<Reactable> = Component::get_component(world, item.inst);
+                let reactable: Option<Reactable> = Component::get_component(@world, item.inst);
                 if reactable.is_some() {
                     let description = reactable.unwrap().get_random_description(@command, world);
                     player.say(world, format!("{}", description));
@@ -336,7 +336,7 @@ mod tests {
     fn CHandler_test_g_command_handling() {
         // Setup test environment
         let (mut world, _, _, player_1, _) = helpers::setup_core();
-        create_test_level(world);
+        create_test_level(ref world);
         let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
 

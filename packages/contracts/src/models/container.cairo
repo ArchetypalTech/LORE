@@ -2,8 +2,8 @@ use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        player::{Player, PlayerImpl},
         components::{Component},
+        player::{Player, PlayerImpl},
         inventory_item::{InventoryItem, InventoryItemImpl},
     },
     types::{command_type::{Command, Token},
@@ -52,35 +52,29 @@ pub impl ContainerImpl of ContainerTrait {
     }
 
     fn set_open(self: Container, mut world: WorldStorage, opened: bool) {
-        let mut model: Container = world.read_model(self.clone());
-        model.is_open = opened;
         world
             .write_member(
-                Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), model.is_open,
+                Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), opened,
             );
         // world.write_model(@model);
     }
 
     fn set_can_be_opened(self: Container, mut world: WorldStorage, can_be_opened: bool) {
-        let mut model: Container = world.read_model(self.clone());
-        model.can_be_opened = can_be_opened;
         world
             .write_member(
                 Model::<Container>::ptr_from_keys(self.inst),
                 selector!("can_be_opened"),
-                model.can_be_opened,
+                can_be_opened,
             );
         // world.write_model(@model);
     }
 
     fn set_can_receive_items(self: Container, mut world: WorldStorage, can_receive_items: bool) {
-        let mut model: Container = world.read_model(self.clone());
-        model.can_receive_items = can_receive_items;
         world
             .write_member(
                 Model::<Container>::ptr_from_keys(self.inst),
                 selector!("can_receive_items"),
-                model.can_receive_items,
+                can_receive_items,
             );
         // world.write_model(@model);
     }
@@ -142,7 +136,7 @@ pub impl ContainerImpl of ContainerTrait {
             return Result::Err(result_c.unwrap_err());
         }
         // set parent to be the container's entity
-        item_entity.set_parent(world, @container.entity(@world));
+        item_entity.set_parent(ref world, @container.entity(@world));
         item.owner_id = container.inst;
         // update container
         world.write_model(@container);
@@ -174,9 +168,9 @@ pub impl ContainerImpl of ContainerTrait {
         }
         // remove item from container:
         // set parent to be the room's entity
-        item_entity.set_parent(world, @room);
+        item_entity.set_parent(ref world, @room);
         item.owner_id = room.inst;
-        //item_entity.remove_from_parent(world, @container);
+        //item_entity.remove_from_parent(ref world, @container);
         // update container
         world.write_model(@container);
         // update item
@@ -242,7 +236,7 @@ pub impl ContainerImpl of ContainerTrait {
             player.say(*world, format!("It contains:"));
             let items_id = self.get_item_ids(world);
             for item_id in items_id {
-                let item = EntityImpl::get_entity(world, @item_id).unwrap();
+                let item = EntityImpl::get_entity(world, item_id).unwrap();
                 player.say(*world, format!("{}", item.name));
             };
         }
@@ -258,51 +252,25 @@ pub impl ContainerImpl of ContainerTrait {
 pub impl ContainerComponent of Component<Container> {
     type ComponentType = Container;
 
-    fn inst(self: @Container) -> @felt252 {
-        self.inst
-    }
-
     fn entity(self: @Container, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, self.inst).unwrap()
+        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
     }
 
-    fn has_component(self: @Container, world: WorldStorage, inst: felt252) -> bool {
+    fn inst(self: @Container) -> felt252 {
+        *self.inst
+    }
+
+    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
+        Self::get_component(world, inst).is_some()
+    }
+
+    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Container> {
         let container: Container = world.read_model(inst);
-        container.is_container
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> Container {
-        let mut container: Container = world.read_model(inst);
-        container.inst = inst;
-        container.is_container = true;
-        container.can_be_opened = true;
-        container.can_receive_items = true;
-        container.is_open = true;
-        container.num_slots = 0;
-        container
-            .action_map =
-                array![
-                    ActionMapContainer {
-                        action: "open", inst: 0, action_fn: ContainerActions::Open,
-                    },
-                    ActionMapContainer {
-                        action: "close", inst: 0, action_fn: ContainerActions::Close,
-                    },
-                    ActionMapContainer {
-                        action: "check", inst: 0, action_fn: ContainerActions::Check,
-                    },
-                ];
-        container.store(ref world);
-        // Return the component
-        container
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<Container> {
-        let container: Container = world.read_model(inst);
-        if (!container.has_component(world, inst)) {
-            return Option::None;
+        if (container.is_container) {
+            Option::Some(container)
+        } else {
+            Option::None
         }
-        Option::Some(container)
     }
 
     fn can_use_command(
@@ -357,6 +325,33 @@ pub impl ContainerComponent of Component<Container> {
 
     fn store(self: @Container, ref world: WorldStorage) {
         world.write_model(self);
+    }
+
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Container {
+        let mut container: Container = world.read_model(inst);
+        container.inst = inst;
+        container.is_container = true;
+        container.can_be_opened = true;
+        container.can_receive_items = true;
+        container.is_open = true;
+        container.num_slots = 0;
+        container
+            .action_map =
+                array![
+                    ActionMapContainer {
+                        action: "open", inst: 0, action_fn: ContainerActions::Open,
+                    },
+                    ActionMapContainer {
+                        action: "close", inst: 0, action_fn: ContainerActions::Close,
+                    },
+                    ActionMapContainer {
+                        action: "check", inst: 0, action_fn: ContainerActions::Check,
+                    },
+                ];
+        container.store(ref world);
+        // Return the component
+        container
     }
 }
 

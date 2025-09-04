@@ -1,8 +1,9 @@
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
-        player::{Player},
+        entity::{Entity, EntityImpl},
         components::{Component},
+        player::{Player},
     },
     types::{command_type::Command},
     constants::errors::Error,
@@ -26,31 +27,25 @@ pub struct Area {
 pub impl AreaComponent of Component<Area> {
     type ComponentType = Area;
 
-    fn inst(self: @Area) -> @felt252 {
-        self.inst
+    fn entity(self: @Area, world: @WorldStorage) -> Entity {
+        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
     }
 
-    fn has_component(self: @Area, world: WorldStorage, inst: felt252) -> bool {
+    fn inst(self: @Area) -> felt252 {
+        *self.inst
+    }
+
+    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
+        Self::get_component(world, inst).is_some()
+    }
+
+    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Area> {
         let area: Area = world.read_model(inst);
-        area.is_area
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> Area {
-        let mut area: Area = world.read_model(inst);
-        area.inst = inst;
-        area.is_area = true;
-        world.write_model(@area);
-        // Return the component
-        area
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<Area> {
-        let area: Area = world.read_model(inst);
-        if (!area.has_component(world, inst)) {
-            return Option::None;
+        if (area.is_area) {
+            Option::Some(area)
+        } else {
+            Option::None
         }
-        let area: Area = world.read_model(inst);
-        Option::Some(area)
     }
 
     fn can_use_command(
@@ -68,5 +63,15 @@ pub impl AreaComponent of Component<Area> {
 
     fn store(self: @Area, ref world: WorldStorage) {
         world.write_model(self);
+    }
+
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Area {
+        let mut area: Area = world.read_model(inst);
+        area.inst = inst;
+        area.is_area = true;
+        world.write_model(@area);
+        // Return the component
+        area
     }
 }

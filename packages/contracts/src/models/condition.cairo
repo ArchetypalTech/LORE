@@ -53,7 +53,7 @@ pub impl ConditionImpl of ConditionTrait {
         let property_registry: PropertyRegistry = world.read_model(*self.component);
         match self.component {
             ComponentType::Area => {
-                let container_opt = AreaComponent::get_component(*world, target);
+                let container_opt = AreaComponent::get_component(world, target);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -64,7 +64,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Exit => {
-                let container_opt = ExitComponent::get_component(*world, target);
+                let container_opt = ExitComponent::get_component(world, target);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -75,7 +75,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Reactable => {
-                let reactable_opt = ReactableComponent::get_component(*world, target);
+                let reactable_opt = ReactableComponent::get_component(world, target);
                 if reactable_opt.is_none() {
                     return false;
                 }
@@ -86,7 +86,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::InventoryItem => {
-                let inventory_item_opt = InventoryItemComponent::get_component(*world, target);
+                let inventory_item_opt = InventoryItemComponent::get_component(world, target);
                 if inventory_item_opt.is_none() {
                     return false;
                 }
@@ -98,7 +98,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Container => {
-                let container_opt = ContainerComponent::get_component(*world, target);
+                let container_opt = ContainerComponent::get_component(world, target);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -109,7 +109,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Player => {
-                let container_opt = PlayerComponent::get_component(*world, target);
+                let container_opt = PlayerComponent::get_component(world, target);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -284,12 +284,11 @@ mod tests {
     fn Condition_test_evaluate_condition() {
         let (mut world, _, _, _, _) = helpers::setup_core();
         // Create entity and attach ReactableComponent
-        let mut door = EntityImpl::create_entity(world);
-        door.name = "door";
+        let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
 
         let new_entry: ByteArray = "A door";
-        let mut reactable: Reactable = Component::add_component(world, door.inst);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText {
             inst: door.inst, key: 0, text: new_entry.clone(),
         };
@@ -318,7 +317,7 @@ mod tests {
         reactable.store(ref world);
 
         // Register component variable properties
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
 
         // Test: is_reactable == true (should pass)
         let key2: felt252 = 2;

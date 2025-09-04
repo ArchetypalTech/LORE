@@ -229,7 +229,7 @@ mod tests {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
         // println!("promptText: {:?}", promptText);
-        create_test_level(world);
+        create_test_level(ref world);
         let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
         let _command = lexer::parse(promptText, world, player);
@@ -246,7 +246,7 @@ mod tests {
         let expected_verb: ByteArray = "look"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(world);
+        create_test_level(ref world);
         let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
 
@@ -270,7 +270,7 @@ mod tests {
         let expected_noun: ByteArray = "ball"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(world);
+        create_test_level(ref world);
         let player = PlayerImpl::caller_as_player(ref world, player_1);
         player.move_to_room(world, 2826);
         let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);

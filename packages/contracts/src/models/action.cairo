@@ -56,9 +56,9 @@ pub struct Action {
 //
 #[generate_trait]
 pub impl ActionImpl of ActionTrait {
-    fn register_action(mut world: WorldStorage, action: Action) -> Result<(), Error> {
+    fn register_action(ref world: WorldStorage, action: Action) -> Result<(), Error> {
         // 0. Check if action is already in the entity array
-        let maybe_entity = EntityImpl::get_entity(@world, @action.inst);
+        let maybe_entity = EntityImpl::get_entity(@world, action.inst);
         match maybe_entity {
             Option::Some(mut entity) => {
                 // Check if action is already registered
@@ -78,7 +78,7 @@ pub impl ActionImpl of ActionTrait {
             Option::None => {},
         }
         // 1. Register action key in the entity
-        let mut entity: Entity = EntityImpl::get_entity(@world, @action.inst).unwrap();
+        let mut entity: Entity = EntityImpl::get_entity(@world, action.inst).unwrap();
         entity.actions_keys.append(action.key);
         // 2. Update the entity
         world
@@ -93,7 +93,7 @@ pub impl ActionImpl of ActionTrait {
         Result::Ok(())
     }
 
-    fn unregister_action(mut world: WorldStorage, action: Action) -> Result<(), Error> {
+    fn unregister_action(ref world: WorldStorage, action: Action) -> Result<(), Error> {
         // 1. Remove the action
         world.erase_model(@action);
         Result::Ok(())
@@ -129,7 +129,7 @@ pub impl ActionImpl of ActionTrait {
         // First check if the trigger/s are valid
         for trigger_key in action.trigger.clone() {
             let trigger: Trigger = world.read_model(trigger_key);
-            let result_opt = TriggerImpl::evaluate_trigger(world, trigger.clone());
+            let result_opt = TriggerImpl::evaluate_trigger(ref world, trigger.clone());
             if player.use_debug {
                 player
                     .say(world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
@@ -253,21 +253,21 @@ mod tests {
         },
     };
 
-    fn create_rooms(mut world: WorldStorage) -> (Entity, Entity) {
+    fn create_rooms(ref world: WorldStorage) -> (Entity, Entity) {
         // create room entity 1
-        let mut room_entity_1 = EntityImpl::create_entity(world);
+        let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");
         world.write_model(@room_entity_1);
         // create room entity 2
-        let mut room_entity_2 = EntityImpl::create_entity(world);
+        let mut room_entity_2 = EntityImpl::create_entity(ref world, "room_entity_2");
         world.write_model(@room_entity_2);
 
         // ROOM 1 //
         // add area component to room entity 1
-        let mut area_component: Area = Component::add_component(world, room_entity_1.inst);
+        let mut area_component: Area = Component::add_component(ref world, room_entity_1.inst);
         area_component.is_area = true;
         area_component.store(ref world);
         // add exit component to room entity
-        let mut exit_component_1: Exit = Component::add_component(world, room_entity_1.inst);
+        let mut exit_component_1: Exit = Component::add_component(ref world, room_entity_1.inst);
         exit_component_1.is_enterable = true;
         exit_component_1.leads_to = room_entity_2.inst;
         exit_component_1.direction_type = Direction::North;
@@ -275,7 +275,7 @@ mod tests {
 
         // ROOM 2 //
         // add area component to room entity 2
-        let mut area_component_2: Area = Component::add_component(world, room_entity_2.inst);
+        let mut area_component_2: Area = Component::add_component(ref world, room_entity_2.inst);
         area_component_2.is_area = true;
         area_component_2.store(ref world);
 
@@ -283,13 +283,12 @@ mod tests {
         (room_entity_1, room_entity_2)
     }
 
-    fn create_door(mut world: WorldStorage, leads_to: felt252, direction: Direction) -> Entity {
+    fn create_door(ref world: WorldStorage, leads_to: felt252, direction: Direction) -> Entity {
         // create door entity
-        let mut door = EntityImpl::create_entity(world);
-        door.name = "door";
+        let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
         // add reactable component to door
-        let mut reactable: Reactable = Component::add_component(world, door.inst);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
         reactable.is_reactable = true;
@@ -313,7 +312,7 @@ mod tests {
                 ];
         reactable.store(ref world);
         // add exit component to door
-        let mut exit_component: Exit = Component::add_component(world, door.inst);
+        let mut exit_component: Exit = Component::add_component(ref world, door.inst);
         exit_component.is_exit = true;
         exit_component.is_enterable = false;
         exit_component.leads_to = leads_to;
@@ -331,14 +330,13 @@ mod tests {
         door
     }
 
-    fn create_item(mut world: WorldStorage, owner_id: felt252) -> Entity {
+    fn create_item(ref world: WorldStorage, owner_id: felt252) -> Entity {
         // create item entity
-        let mut item = EntityImpl::create_entity(world);
-        item.name = "ball";
+        let mut item = EntityImpl::create_entity(ref world, "ball");
         item.alt_names = array!["ball"];
         world.write_model(@item);
         // add reactable component to item
-        let mut reactable: Reactable = Component::add_component(world, item.inst);
+        let mut reactable: Reactable = Component::add_component(ref world, item.inst);
         let desc1: DescriptionText = DescriptionText { inst: item.inst, key: 0, text: "A ball" };
         world.write_model(@desc1);
         reactable.is_reactable = true;
@@ -362,7 +360,7 @@ mod tests {
                 ];
         reactable.store(ref world);
         // add inventory item component to item
-        let mut inventory_item: InventoryItem = Component::add_component(world, item.inst);
+        let mut inventory_item: InventoryItem = Component::add_component(ref world, item.inst);
         inventory_item.owner_id = owner_id;
         inventory_item.is_inventory_item = true;
         inventory_item.can_be_picked_up = true;
@@ -473,16 +471,16 @@ mod tests {
         TriggerContext { doer, target1, target2, inventory_object }
     }
 
-    fn register_variable_properties(world: WorldStorage) {
-        VariablePropertyImp::register_component_properties(world, ComponentType::Area);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
-        VariablePropertyImp::register_component_properties(world, ComponentType::InventoryItem);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Container);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Player);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Area);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Container);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
+    fn register_variable_properties(ref world: WorldStorage) {
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Exit);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::InventoryItem);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Container);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Player);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Container);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
     }
 
     #[test]
@@ -495,25 +493,25 @@ mod tests {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
-        let (room_1, room_2) = create_rooms(world);
+        let (room_1, room_2) = create_rooms(ref world);
 
         // create door entity in room 2 that leads to room 1 via south
-        let mut door = create_door(world, room_1.inst, Direction::South);
-        door.set_parent(world, @room_2);
+        let mut door = create_door(ref world, room_1.inst, Direction::South);
+        door.set_parent(ref world, @room_2);
         let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // create item that is in room 1
-        let mut item = create_item(world, room_1.inst);
-        item.set_parent(world, @room_1);
+        let mut item = create_item(ref world, room_1.inst);
+        item.set_parent(ref world, @room_1);
 
         // create player
         let mut player1 = PlayerImpl::caller_as_player(ref world, player_1);
         world.write_model(@player1);
 
         // Register variable properties
-        register_variable_properties(world);
+        register_variable_properties(ref world);
 
         // TRIGGER that jumps when an action is executed
         let t_key: felt252 = 1;
@@ -521,7 +519,7 @@ mod tests {
         let mut trigger = create_test_trigger(
             room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(world, trigger.clone());
+        let _result = TriggerImpl::register_trigger(ref world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
@@ -630,7 +628,7 @@ mod tests {
             success_response,
         );
         // Register the action
-        let _res = ActionImpl::register_action(world, action.clone());
+        let _res = ActionImpl::register_action(ref world, action.clone());
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -643,7 +641,7 @@ mod tests {
         // 2. Execute action
         let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context);
         // // The one below are for testing individually
-        //let trig_res = TriggerImpl::evaluate_trigger(world, @trigger);
+        //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
         //let eff_res1 = effect.apply_effect(world, context);
         //let eff_res2 = effect2.apply_effect(world, context);
@@ -680,23 +678,23 @@ mod tests {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
-        let (room_1, room_2) = create_rooms(world);
+        let (room_1, room_2) = create_rooms(ref world);
 
         // create door entity in room 2 that leads to room 1 via south
-        let mut door = create_door(world, room_1.inst, Direction::South);
-        door.set_parent(world, @room_2);
+        let mut door = create_door(ref world, room_1.inst, Direction::South);
+        door.set_parent(ref world, @room_2);
         let _old_reactable: Reactable = world.read_model(door.inst);
         let _old_exit: Exit = world.read_model(door.inst);
 
         // create item that is in room 1
-        let mut item = create_item(world, room_1.inst);
-        item.set_parent(world, @room_1);
+        let mut item = create_item(ref world, room_1.inst);
+        item.set_parent(ref world, @room_1);
 
         // create player
         let mut player1 = PlayerImpl::caller_as_player(ref world, player_1);
         world.write_model(@player1);
-        let player_entity: Entity = EntityImpl::get_entity(@world, @player1.inst).unwrap();
-        let mut player_container: Container = Component::add_component(world, player_entity.inst);
+        let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
+        let mut player_container: Container = Component::add_component(ref world, player_entity.inst);
         player_container.is_container = true;
         player_container.can_be_opened = true;
         player_container.can_receive_items = true;
@@ -705,7 +703,7 @@ mod tests {
         player_container.store(ref world);
 
         // Register variable properties
-        register_variable_properties(world);
+        register_variable_properties(ref world);
 
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2
@@ -713,7 +711,7 @@ mod tests {
         let mut trigger = create_test_trigger(
             room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(world, trigger.clone());
+        let _result = TriggerImpl::register_trigger(ref world, trigger.clone());
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
@@ -821,7 +819,7 @@ mod tests {
             success_response,
         );
         // Register the action
-        let _result = ActionImpl::register_action(world, action.clone());
+        let _result = ActionImpl::register_action(ref world, action.clone());
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -833,10 +831,10 @@ mod tests {
         player1.location = room_1.inst;
         player1.store(ref world);
         player1.move_to_room(world, room_1.inst);
-        let player_entity: Entity = EntityImpl::get_entity(@world, @player1.inst).unwrap();
+        let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
 
         // 2. Pickup item
-        item.set_parent(world, @player_entity);
+        item.set_parent(ref world, @player_entity);
         let player_container: Container = world.read_model(player1.inst);
         let mut itemInv: InventoryItem = world.read_model(item.inst);
         itemInv.owner_id = player_container.inst;
@@ -848,7 +846,7 @@ mod tests {
         // 5. Execute action
         let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context);
         // // The one below are for testing individually
-        //let trig_res = TriggerImpl::evaluate_trigger(world, @trigger);
+        //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
         //let eff_res1 = effect.apply_effect(world, context);
         //let eff_res2 = effect2.apply_effect(world, context);

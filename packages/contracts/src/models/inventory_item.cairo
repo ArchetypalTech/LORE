@@ -2,9 +2,9 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
+        components::{Component},
         player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
-        components::{Component},
         area::AreaComponent,
         container::{Container, ContainerImpl, ContainerComponent},
     },
@@ -69,55 +69,25 @@ pub impl InventoryItemImpl of InventoryItemTrait {
 pub impl InventoryItemComponent of Component<InventoryItem> {
     type ComponentType = InventoryItem;
 
-    fn inst(self: @InventoryItem) -> @felt252 {
-        self.inst
-    }
-
     fn entity(self: @InventoryItem, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, self.inst).unwrap()
+        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
     }
 
-    fn has_component(self: @InventoryItem, world: WorldStorage, inst: felt252) -> bool {
+    fn inst(self: @InventoryItem) -> felt252 {
+        *self.inst
+    }
+
+    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
+        Self::get_component(world, inst).is_some()
+    }
+
+    fn get_component(world: @WorldStorage, inst: felt252) -> Option<InventoryItem> {
         let inventory_item: InventoryItem = world.read_model(inst);
-        inventory_item.is_inventory_item
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> InventoryItem {
-        let mut inventory_item: InventoryItem = world.read_model(inst);
-        inventory_item.inst = inst;
-        inventory_item.is_inventory_item = true;
-        inventory_item
-            .action_map =
-                array![
-                    ActionMapInventoryItem {
-                        action: "pickup", inst: 0, action_fn: InventoryItemActions::PickupItem,
-                    },
-                    ActionMapInventoryItem {
-                        action: "drop", inst: 0, action_fn: InventoryItemActions::DropItem,
-                    },
-                    ActionMapInventoryItem {
-                        action: "put", inst: 0, action_fn: InventoryItemActions::PutItem,
-                    },
-                    ActionMapInventoryItem {
-                        action: "take", inst: 0, action_fn: InventoryItemActions::TakeOutItem,
-                    },
-                    ActionMapInventoryItem {
-                        action: "use", inst: 0, action_fn: InventoryItemActions::UseItem,
-                    },
-                ];
-        inventory_item.already_used = false;
-        inventory_item.store(ref world);
-        // Return the component
-        inventory_item
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<InventoryItem> {
-        let inventory_item: InventoryItem = world.read_model(inst);
-        if (!inventory_item.has_component(world, inst)) {
-            return Option::None;
+        if (inventory_item.is_inventory_item) {
+            Option::Some(inventory_item)
+        } else {
+            Option::None
         }
-        let inventory_item: InventoryItem = world.read_model(inst);
-        Option::Some(inventory_item)
     }
 
     fn can_use_command(
@@ -147,7 +117,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     player.say(world, format!("Your target is: {}", nouns[1].text));
                 }
 
-                let target_entity = EntityImpl::get_entity(@world, nouns[1].target);
+                let target_entity = EntityImpl::get_entity(@world, *nouns[1].target);
                 if target_entity.is_none() {
                     return Result::Err(Error::NoTargetEntity);
                 }
@@ -300,6 +270,36 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     fn store(self: @InventoryItem, ref world: WorldStorage) {
         world.write_model(self);
     }
+
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> InventoryItem {
+        let mut inventory_item: InventoryItem = world.read_model(inst);
+        inventory_item.inst = inst;
+        inventory_item.is_inventory_item = true;
+        inventory_item
+            .action_map =
+                array![
+                    ActionMapInventoryItem {
+                        action: "pickup", inst: 0, action_fn: InventoryItemActions::PickupItem,
+                    },
+                    ActionMapInventoryItem {
+                        action: "drop", inst: 0, action_fn: InventoryItemActions::DropItem,
+                    },
+                    ActionMapInventoryItem {
+                        action: "put", inst: 0, action_fn: InventoryItemActions::PutItem,
+                    },
+                    ActionMapInventoryItem {
+                        action: "take", inst: 0, action_fn: InventoryItemActions::TakeOutItem,
+                    },
+                    ActionMapInventoryItem {
+                        action: "use", inst: 0, action_fn: InventoryItemActions::UseItem,
+                    },
+                ];
+        inventory_item.already_used = false;
+        inventory_item.store(ref world);
+        // Return the component
+        inventory_item
+    }
 }
 
 // @dev: wip how to access tokens
@@ -324,7 +324,7 @@ fn get_action_token(
 fn get_player_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>,
 ) -> Option<Container> {
-    let player_entity: Entity = EntityImpl::get_entity(world, player.inst).unwrap();
+    let player_entity: Entity = EntityImpl::get_entity(world, *player.inst).unwrap();
     let player_children = player_entity.get_children(world);
     let mut container: Option<Entity> = Option::None;
     let mut player_container: Option<Container> = Option::None;
@@ -339,7 +339,7 @@ fn get_player_container(
         return Option::None;
     }
     // get container component
-    player_container = ContainerComponent::get_component(*world, container.unwrap().inst);
+    player_container = ContainerComponent::get_component(world, container.unwrap().inst);
     return player_container;
 }
 
@@ -354,7 +354,7 @@ fn get_entity_container(
     if room.is_none() {
         return Option::None;
     }
-    let room_entity: Entity = EntityImpl::get_entity(world, @room.unwrap().inst).unwrap();
+    let room_entity: Entity = EntityImpl::get_entity(world, room.unwrap().inst).unwrap();
     let room_children = room_entity.get_children(world);
     let mut container: Option<Entity> = Option::None;
     let mut room_container: Option<Container> = Option::None;
@@ -369,6 +369,6 @@ fn get_entity_container(
         return Option::None;
     }
     // get container component
-    room_container = ContainerComponent::get_component(*world, container.unwrap().inst);
+    room_container = ContainerComponent::get_component(world, container.unwrap().inst);
     return room_container;
 }

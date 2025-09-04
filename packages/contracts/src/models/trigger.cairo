@@ -42,7 +42,7 @@ pub struct TriggerIndex {
 
 #[generate_trait]
 pub impl TriggerImpl of TriggerTrait {
-    fn register_trigger(mut world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
+    fn register_trigger(ref world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
         // 0. Check if trigger is already in the index
         let maybe_index = Self::get_triggerIndex(@world, @trigger.trigger_type);
         match maybe_index {
@@ -73,7 +73,7 @@ pub impl TriggerImpl of TriggerTrait {
         world.write_model(@trigger);
 
         // 2. Update trigger index
-        let result: Result = Self::update_triggerIndex(world, trigger.clone());
+        let result: Result = Self::update_triggerIndex(ref world, trigger.clone());
         if result.is_err() {
             return Result::Err(Error::FailedToUpdateTriggerIndex);
         }
@@ -81,7 +81,7 @@ pub impl TriggerImpl of TriggerTrait {
         Result::Ok(())
     }
 
-    fn unregister_trigger(mut world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
+    fn unregister_trigger(ref world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
         // 1. Remove the trigger
         world.erase_model(@trigger);
         Result::Ok(())
@@ -96,7 +96,7 @@ pub impl TriggerImpl of TriggerTrait {
         Option::Some(trigger_index)
     }
 
-    fn update_triggerIndex(mut world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
+    fn update_triggerIndex(ref world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
         // Get the trigger index option
         let maybe_index = Self::get_triggerIndex(@world, @trigger.trigger_type);
 
@@ -126,7 +126,7 @@ pub impl TriggerImpl of TriggerTrait {
         }
     }
 
-    fn enable_trigger(mut world: WorldStorage, trigger_key: (felt252, felt252)) {
+    fn enable_trigger(ref world: WorldStorage, trigger_key: (felt252, felt252)) {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Enable trigger
         trigger.is_enabled = true;
@@ -139,7 +139,7 @@ pub impl TriggerImpl of TriggerTrait {
         // world.write_model(@trigger);
     }
 
-    fn disable_trigger(mut world: WorldStorage, trigger_key: (felt252, felt252)) {
+    fn disable_trigger(ref world: WorldStorage, trigger_key: (felt252, felt252)) {
         let mut trigger: Trigger = world.read_model(trigger_key);
         // Disable trigger
         trigger.is_enabled = false;
@@ -152,7 +152,7 @@ pub impl TriggerImpl of TriggerTrait {
         // world.write_model(@trigger);
     }
 
-    fn evaluate_trigger(mut world: WorldStorage, mut trigger: Trigger) -> Result<(), Error> {
+    fn evaluate_trigger(ref world: WorldStorage, mut trigger: Trigger) -> Result<(), Error> {
         let mut result: Result::<(), Error> = Result::Ok(());
         // Evaluate trigger
         if !trigger.is_enabled {
@@ -170,13 +170,13 @@ pub impl TriggerImpl of TriggerTrait {
         match trigger.trigger_type {
             TriggerType::OnEnter => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, trigger.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(world, ent.inst);
+                let area_opt = AreaComponent::get_component(@world, ent.inst);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
@@ -184,7 +184,7 @@ pub impl TriggerImpl of TriggerTrait {
                 let children = ent.get_children(@world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(world, child.inst);
+                    let child_player = PlayerComponent::get_component(@world, child.inst);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -198,13 +198,13 @@ pub impl TriggerImpl of TriggerTrait {
             },
             TriggerType::OnExit => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, trigger.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(world, ent.inst);
+                let area_opt = AreaComponent::get_component(@world, ent.inst);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
@@ -212,7 +212,7 @@ pub impl TriggerImpl of TriggerTrait {
                 let children = ent.get_children(@world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(world, child.inst);
+                    let child_player = PlayerComponent::get_component(@world, child.inst);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -225,13 +225,13 @@ pub impl TriggerImpl of TriggerTrait {
             },
             TriggerType::OnUse => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, @trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, trigger.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an inventory item component
                 let ent = ent_opt.unwrap();
-                let inventory_item_opt = InventoryItemComponent::get_component(world, ent.inst);
+                let inventory_item_opt = InventoryItemComponent::get_component(@world, ent.inst);
                 if inventory_item_opt.is_none() {
                     return Result::Err(Error::NoInventoryItemComponent);
                 }
@@ -301,7 +301,7 @@ mod tests {
         let key: felt252 = 1;
         let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnEnter);
 
-        let result = TriggerImpl::register_trigger(world, trigger.clone());
+        let result = TriggerImpl::register_trigger(ref world, trigger.clone());
         assert(result.is_ok(), 'Trig not register successfully');
 
         let stored: Trigger = world.read_model(trigger.clone());
@@ -323,8 +323,7 @@ mod tests {
         let long_name = "Aakldjflkajdflkjldafljaldfjldjsdfdfdf";
 
         // Create entity
-        let mut player = EntityImpl::create_entity(world);
-        player.name = "player";
+        let mut player = EntityImpl::create_entity(ref world, "player");
         world.write_model(@player);
 
         // Create trigger
@@ -332,7 +331,7 @@ mod tests {
         let trigger = create_test_trigger(1, key, long_name, TriggerType::OnExit);
         world.write_model(@trigger);
 
-        let result = TriggerImpl::register_trigger(world, trigger);
+        let result = TriggerImpl::register_trigger(ref world, trigger);
         assert(result.is_err(), 'Trig name too long should fail');
     }
 
@@ -345,11 +344,11 @@ mod tests {
         let mut trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnExit);
         world.write_model(@trigger);
 
-        TriggerImpl::enable_trigger(world, (trigger.inst.clone(), trigger.key.clone()));
+        TriggerImpl::enable_trigger(ref world, (trigger.inst.clone(), trigger.key.clone()));
         let enable_trigger: Trigger = world.read_model((trigger.inst.clone(), trigger.key.clone()));
         assert(enable_trigger.is_enabled, 'Trigger should be enabled');
 
-        TriggerImpl::disable_trigger(world, (trigger.inst.clone(), trigger.key.clone()));
+        TriggerImpl::disable_trigger(ref world, (trigger.inst.clone(), trigger.key.clone()));
         let disable_trigger: Trigger = world
             .read_model((trigger.inst.clone(), trigger.key.clone()));
         assert_eq!(disable_trigger.is_enabled, false, "Trigger should be disabled");
@@ -364,11 +363,11 @@ mod tests {
         let trigger1 = create_test_trigger(1, id_1, "TestTrigger", TriggerType::OnEnter);
         let trigger2 = create_test_trigger(2, id_2, "TestTrigger", TriggerType::OnEnter);
 
-        let result1 = TriggerImpl::update_triggerIndex(world, trigger1.clone());
+        let result1 = TriggerImpl::update_triggerIndex(ref world, trigger1.clone());
         // message: 1st trigger index insert didn't succeed
         assert(result1.is_ok(), '1 trig idx insert nt succ');
 
-        let result2 = TriggerImpl::update_triggerIndex(world, trigger2.clone());
+        let result2 = TriggerImpl::update_triggerIndex(ref world, trigger2.clone());
         // message: 2nd trigger index insert didn't succeed
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
@@ -390,25 +389,25 @@ mod tests {
     fn test_evaluate_trigger() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         // create room entity 1
-        let mut room_entity_1 = EntityImpl::create_entity(world);
+        let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");
         // create room entity 2
-        let mut room_entity_2 = EntityImpl::create_entity(world);
+        let mut room_entity_2 = EntityImpl::create_entity(ref world, "room_entity_2");
 
         // add area component to room entity 1
-        let mut area_component_1 = AreaComponent::add_component(world, room_entity_1.inst);
+        let mut area_component_1 = AreaComponent::add_component(ref world, room_entity_1.inst);
         world.write_model(@area_component_1);
         // add exit component to room entity 1
-        let mut exit_component_1 = ExitComponent::add_component(world, room_entity_1.inst);
+        let mut exit_component_1 = ExitComponent::add_component(ref world, room_entity_1.inst);
         // update exit component
         exit_component_1.leads_to = room_entity_2.inst;
         exit_component_1.direction_type = Direction::North;
         world.write_model(@exit_component_1);
 
         // add area component to room entity 2
-        let mut area_component_2 = AreaComponent::add_component(world, room_entity_2.inst);
+        let mut area_component_2 = AreaComponent::add_component(ref world, room_entity_2.inst);
         world.write_model(@area_component_2);
         // add exit component to room entity 2
-        let mut exit_component_2 = ExitComponent::add_component(world, room_entity_2.inst);
+        let mut exit_component_2 = ExitComponent::add_component(ref world, room_entity_2.inst);
         // update exit component
         exit_component_2.leads_to = room_entity_1.inst;
         exit_component_2.direction_type = Direction::South;
@@ -418,31 +417,31 @@ mod tests {
         player.location = room_entity_2.inst;
         world.write_model(@player);
 
-        let mut player_entity: Entity = EntityImpl::get_entity(@world, @player.inst).unwrap();
+        let mut player_entity: Entity = EntityImpl::get_entity(@world, player.inst).unwrap();
         // add player to room entity 2
-        player_entity.set_parent(world, @room_entity_2);
+        player_entity.set_parent(ref world, @room_entity_2);
 
         // set trigger to room entity 1
         let key: felt252 = 1;
         let mut trigger = create_test_trigger(
             room_entity_1.inst, key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(world, trigger.clone());
+        let _result = TriggerImpl::register_trigger(ref world, trigger.clone());
 
         // move player to room entity 1
         let mut playerR1: Player = world.read_model(player.inst);
         playerR1.move_to_room(world, room_entity_1.inst);
 
-        let result = TriggerImpl::evaluate_trigger(world, trigger.clone());
+        let result = TriggerImpl::evaluate_trigger(ref world, trigger.clone());
         if result.is_ok() { // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
 
         // move player to room entity 2
         player.move_to_room(world, room_entity_2.inst);
-        player_entity.set_parent(world, @room_entity_2);
+        player_entity.set_parent(ref world, @room_entity_2);
 
-        let result2 = TriggerImpl::evaluate_trigger(world, trigger);
+        let result2 = TriggerImpl::evaluate_trigger(ref world, trigger);
         if result2.is_err() { // println!("Trigger does not jump");
         };
         assert(result2.is_err(), 'Trigger should not jump');

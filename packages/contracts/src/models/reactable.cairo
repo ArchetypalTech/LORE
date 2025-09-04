@@ -94,60 +94,25 @@ pub impl ReactableImpl of ReactableTrait {
 pub impl ReactableComponent of Component<Reactable> {
     type ComponentType = Reactable;
 
-    fn inst(self: @Reactable) -> @felt252 {
-        self.inst
-    }
-
     fn entity(self: @Reactable, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, self.inst).unwrap()
+        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
     }
 
-    fn has_component(self: @Reactable, world: WorldStorage, inst: felt252) -> bool {
+    fn inst(self: @Reactable) -> felt252 {
+        *self.inst
+    }
+
+    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
+        Self::get_component(world, inst).is_some()
+    }
+
+    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Reactable> {
         let reactable: Reactable = world.read_model(inst);
-        reactable.is_reactable
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> Reactable {
-        let mut reactable: Reactable = world.read_model(inst);
-        reactable.inst = inst;
-        reactable.is_reactable = true;
-        reactable.is_visible = true;
-        reactable
-            .action_map =
-                array![
-                    ActionMapReactable {
-                        action: "look",
-                        inst: 0,
-                        action_fn: ReactableActions::ReadRandomDescription,
-                        entrypoints: (0, 2),
-                    },
-                    ActionMapReactable {
-                        action: "stare",
-                        inst: 0,
-                        action_fn: ReactableActions::ReadFirstDescription,
-                        entrypoints: (1, 1),
-                    },
-                    ActionMapReactable {
-                        action: "read",
-                        inst: 0,
-                        action_fn: ReactableActions::ReadSpecificDescription,
-                        entrypoints: (2, 2),
-                    },
-                ];
-        reactable.already_shown = false;
-        reactable.new_entry = "";
-        reactable.store(ref world);
-        // Return the component
-        reactable
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<Reactable> {
-        let reactable: Reactable = world.read_model(inst);
-        if (!reactable.has_component(world, inst)) {
-            return Option::None;
+        if (reactable.is_reactable) {
+            Option::Some(reactable)
+        } else {
+            Option::None
         }
-        let reactable: Reactable = world.read_model(inst);
-        Option::Some(reactable)
     }
 
     fn can_use_command(
@@ -188,6 +153,41 @@ pub impl ReactableComponent of Component<Reactable> {
 
     fn store(self: @Reactable, ref world: WorldStorage) {
         world.write_model(self);
+    }
+
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Reactable {
+        let mut reactable: Reactable = world.read_model(inst);
+        reactable.inst = inst;
+        reactable.is_reactable = true;
+        reactable.is_visible = true;
+        reactable
+            .action_map =
+                array![
+                    ActionMapReactable {
+                        action: "look",
+                        inst: 0,
+                        action_fn: ReactableActions::ReadRandomDescription,
+                        entrypoints: (0, 2),
+                    },
+                    ActionMapReactable {
+                        action: "stare",
+                        inst: 0,
+                        action_fn: ReactableActions::ReadFirstDescription,
+                        entrypoints: (1, 1),
+                    },
+                    ActionMapReactable {
+                        action: "read",
+                        inst: 0,
+                        action_fn: ReactableActions::ReadSpecificDescription,
+                        entrypoints: (2, 2),
+                    },
+                ];
+        reactable.already_shown = false;
+        reactable.new_entry = "";
+        reactable.store(ref world);
+        // Return the component
+        reactable
     }
 }
 
@@ -296,7 +296,7 @@ mod tests {
             ],
         };
         let (prefab, world, _, _) = Reactable_create_prefab();
-        let read_reactable: Reactable = Component::get_component(world, prefab.inst).unwrap();
+        let read_reactable: Reactable = Component::get_component(@world, prefab.inst).unwrap();
         // println!("read_reactable: {:?}", read_reactable);
         assert(read_reactable.is_reactable, 'reactable is reactable');
         let mut res = array![];
@@ -309,14 +309,14 @@ mod tests {
     #[test]
     fn Reactable_test_get_component() {
         let (prefab, world, _, _) = Reactable_create_prefab();
-        let i: Reactable = Component::get_component(world, prefab.inst).unwrap();
+        let i: Reactable = Component::get_component(@world, prefab.inst).unwrap();
         assert(i.is_reactable, 'reactable is reactable');
     }
 
     #[test]
     fn Reactable_test_read_specific_description() {
         let (prefab, world, _, _) = Reactable_create_prefab();
-        let i: Reactable = Component::get_component(world, prefab.inst).unwrap();
+        let i: Reactable = Component::get_component(@world, prefab.inst).unwrap();
         let idx: u32 = 5;
         let res = ReactableImpl::get_specific_description(@i, idx, world);
         assert(res == "the rock is from the moon", 'description should be the moon');

@@ -58,42 +58,25 @@ pub impl ExitImpl of ExitTrait {
 pub impl ExitComponent of Component<Exit> {
     type ComponentType = Exit;
 
-    fn inst(self: @Exit) -> @felt252 {
-        self.inst
-    }
-
     fn entity(self: @Exit, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, self.inst).unwrap()
+        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
     }
 
-    fn has_component(self: @Exit, world: WorldStorage, inst: felt252) -> bool {
+    fn inst(self: @Exit) -> felt252 {
+        *self.inst
+    }
+
+    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
+        Self::get_component(world, inst).is_some()
+    }
+
+    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Exit> {
         let exit: Exit = world.read_model(inst);
-        exit.is_exit
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> Exit {
-        let mut exit: Exit = world.read_model(inst);
-        exit.inst = inst;
-        exit.is_exit = true;
-        exit
-            .action_map =
-                array![
-                    ActionMapExit { action: "go", inst: 0, action_fn: ExitActions::UseExit },
-                    ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
-                    ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
-                ];
-        exit.store(ref world);
-        // Return the component
-        exit
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<Exit> {
-        let exit: Exit = world.read_model(inst);
-        if (!exit.has_component(world, inst)) {
-            return Option::None;
+        if (exit.is_exit) {
+            Option::Some(exit)
+        } else {
+            Option::None
         }
-        let exit: Exit = world.read_model(inst);
-        Option::Some(exit)
     }
 
     fn can_use_command(
@@ -153,7 +136,7 @@ pub impl ExitComponent of Component<Exit> {
 
                 // Do action
                 // Check if the entity of the exit has an action
-                let pos_entity = EntityImpl::get_entity(@world, @self.inst);
+                let pos_entity = EntityImpl::get_entity(@world, self.inst);
                 if pos_entity.is_none() {
                     return Result::Err(Error::NoTargetEntity);
                 }
@@ -195,6 +178,23 @@ pub impl ExitComponent of Component<Exit> {
 
     fn store(self: @Exit, ref world: WorldStorage) {
         world.write_model(self);
+    }
+
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Exit {
+        let mut exit: Exit = world.read_model(inst);
+        exit.inst = inst;
+        exit.is_exit = true;
+        exit
+            .action_map =
+                array![
+                    ActionMapExit { action: "go", inst: 0, action_fn: ExitActions::UseExit },
+                    ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
+                    ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
+                ];
+        exit.store(ref world);
+        // Return the component
+        exit
     }
 }
 

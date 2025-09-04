@@ -90,7 +90,7 @@ pub impl PlayerImpl of PlayerTrait {
             if (item.inst == *self.inst) {
                 continue;
             }
-            let reactable_opt: Option<Reactable> = Component::get_component(world, item.inst);
+            let reactable_opt: Option<Reactable> = Component::get_component(@world, item.inst);
             if reactable_opt.is_some() {
                 let mut reactable = reactable_opt.unwrap();
                 if reactable.is_visible {
@@ -116,9 +116,9 @@ pub impl PlayerImpl of PlayerTrait {
 
     fn move_to_room(mut self: Player, mut world: WorldStorage, room_id: felt252) {
         self.location = room_id;
-        let ent: Entity = EntityImpl::get_entity(@world, @self.inst).unwrap();
-        let room = EntityImpl::get_entity(@world, @room_id).unwrap();
-        ent.set_parent(world, @room);
+        let ent: Entity = EntityImpl::get_entity(@world, self.inst).unwrap();
+        let room = EntityImpl::get_entity(@world, room_id).unwrap();
+        ent.set_parent(ref world, @room);
         world
             .write_member(
                 Model::<Player>::ptr_from_keys(self.inst), selector!("location"), self.location,
@@ -187,7 +187,7 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     fn get_room(self: @Player, world: @WorldStorage) -> Option<Entity> {
-        let player_entity: Entity = EntityImpl::get_entity(world, self.inst).unwrap();
+        let player_entity: Entity = EntityImpl::get_entity(world, *self.inst).unwrap();
         let parent = player_entity.get_parent(world);
         if parent.is_none() {
             return Option::None;
@@ -242,7 +242,7 @@ pub impl PlayerImpl of PlayerTrait {
     // Get the player personal inventory container component
     fn get_personal_container(self: @Player, world: @WorldStorage) -> Option<Container> {
         let mut personal_container: Option<Container> = Option::None;
-        match ContainerComponent::get_component(*world, *self.inst) {
+        match ContainerComponent::get_component(world, *self.inst) {
             Option::Some(c) => { personal_container = Option::Some(c); },
             Option::None => {
                 personal_container = Option::None;
@@ -260,31 +260,25 @@ pub impl PlayerImpl of PlayerTrait {
 pub impl PlayerComponent of Component<Player> {
     type ComponentType = Player;
 
-    fn inst(self: @Player) -> @felt252 {
-        self.inst
+    fn entity(self: @Player, world: @WorldStorage) -> Entity {
+        EntityImpl::get_entity(world, Self::inst(self)).unwrap()
     }
 
-    fn has_component(self: @Player, world: WorldStorage, inst: felt252) -> bool {
+    fn inst(self: @Player) -> felt252 {
+        *self.inst
+    }
+
+    fn has_component(world: @WorldStorage, inst: felt252) -> bool {
+        Self::get_component(world, inst).is_some()
+    }
+
+    fn get_component(world: @WorldStorage, inst: felt252) -> Option<Player> {
         let player: Player = world.read_model(inst);
-        player.is_player
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> Player {
-        let mut player: Player = world.read_model(inst);
-        player.inst = inst;
-        player.is_player = true;
-        player.store(ref world);
-        // Return the component
-        player
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<Player> {
-        let player: Player = world.read_model(inst);
-        if (!player.has_component(world, inst)) {
-            return Option::None;
+        if (player.is_player) {
+            Option::Some(player)
+        } else {
+            Option::None
         }
-        let player: Player = world.read_model(inst);
-        Option::Some(player)
     }
 
     fn can_use_command(
@@ -303,6 +297,16 @@ pub impl PlayerComponent of Component<Player> {
     fn store(self: @Player, ref world: WorldStorage) {
         world.write_model(self);
     }
+
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Player {
+        let mut player: Player = world.read_model(inst);
+        player.inst = inst;
+        player.is_player = true;
+        player.store(ref world);
+        // Return the component
+        player
+    }
 }
 
 
@@ -311,8 +315,11 @@ mod tests {
     use dojo::{model::ModelStorage};
     use super::*;
     use lore::{
-        models::player::{PlayerImpl},
         tests::helpers,
+        models::{
+            entity::{Entity, EntityImpl},
+            reactable::{Reactable, ReactableComponent},
+        },
     };
 
     #[test]
@@ -320,6 +327,18 @@ mod tests {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         let player: Player = PlayerImpl::caller_as_player(ref world, player_1);
         assert(player.is_player, 'player is player');
+
+        let entity: Entity = PlayerComponent::entity(@player, @world);
+        assert(entity.inst == player.inst, 'entity.inst == player.inst');
+
+        assert(PlayerComponent::has_component(@world, player.inst), 'has_component()');
+        let component: Option<Player> = PlayerComponent::get_component(@world, player.inst);
+        assert(component.is_some(), 'component.is_some()');
+        assert(component.unwrap().inst() == player.inst, 'component.is_some()');
+
+        let reactable: Option<Reactable> = ReactableComponent::get_component(@world, player.inst);
+        assert(reactable.is_some(), 'reactable.is_some()');
+        assert(reactable.unwrap().inst() == player.inst, 'reactable.is_some()');
     }
 
     #[test]

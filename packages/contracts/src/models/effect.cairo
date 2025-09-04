@@ -61,14 +61,14 @@ pub impl EffectImpl of EffectTrait {
         let mut result: Result::<(), Error> = Result::Err(Error::EffectFailed);
         // Resolve target: use explicit target, fallback to context
         let actual_target = if self.target == @zero {
-            @context.target1
+            context.target1
         } else {
-            self.target
+            *self.target
         };
 
         match self.component {
             ComponentType::Area => {
-                let area_opt = AreaComponent::get_component(world, *actual_target);
+                let area_opt = AreaComponent::get_component(@world, actual_target);
                 if area_opt.is_none() {
                     result = Result::Err(Error::NoAreaComponent);
                 }
@@ -81,7 +81,7 @@ pub impl EffectImpl of EffectTrait {
                 result = result_p;
             },
             ComponentType::Exit => {
-                let exit_opt = ExitComponent::get_component(world, *actual_target);
+                let exit_opt = ExitComponent::get_component(@world, actual_target);
                 if exit_opt.is_none() {
                     result = Result::Err(Error::NoExitComponent);
                 }
@@ -94,7 +94,7 @@ pub impl EffectImpl of EffectTrait {
                 result = result_p;
             },
             ComponentType::Reactable => {
-                let inspect_opt = ReactableComponent::get_component(world, *actual_target);
+                let inspect_opt = ReactableComponent::get_component(@world, actual_target);
                 if inspect_opt.is_none() {
                     result = Result::Err(Error::NoReactableComponent);
                 }
@@ -107,7 +107,7 @@ pub impl EffectImpl of EffectTrait {
                 result = result_p;
             },
             ComponentType::InventoryItem => {
-                let item_opt = InventoryItemComponent::get_component(world, *actual_target);
+                let item_opt = InventoryItemComponent::get_component(@world, actual_target);
                 if item_opt.is_none() {
                     result = Result::Err(Error::NoInventoryItemComponent);
                 }
@@ -127,7 +127,7 @@ pub impl EffectImpl of EffectTrait {
                 result = result_p;
             },
             ComponentType::Container => {
-                let cont_opt = ContainerComponent::get_component(world, *actual_target);
+                let cont_opt = ContainerComponent::get_component(@world, actual_target);
                 if cont_opt.is_none() {
                     result = Result::Err(Error::NoContainerComponent);
                 }
@@ -146,7 +146,7 @@ pub impl EffectImpl of EffectTrait {
                 result = result_p;
             },
             ComponentType::Player => {
-                let player_opt = PlayerComponent::get_component(world, *actual_target);
+                let player_opt = PlayerComponent::get_component(@world, actual_target);
                 if player_opt.is_none() {
                     result = Result::Err(Error::NoPlayerComponent);
                 }
@@ -210,10 +210,9 @@ mod tests {
     fn Effect_test_apply_effect() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         // create door entity
-        let mut door = EntityImpl::create_entity(world);
-        door.name = "door";
+        let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
-        let mut reactable: Reactable = Component::add_component(world, door.inst);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
         reactable.is_reactable = true;
@@ -248,7 +247,7 @@ mod tests {
         let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
 
         // Test description new value
         let new_value: Array<(ByteArray, u32)> = array![

@@ -10,7 +10,7 @@ use lore::{
     },
 };
 
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug, Default)]
 #[dojo::model]
 pub struct Entity {
     #[key]
@@ -49,24 +49,25 @@ pub struct ChildToParent {
 
 #[generate_trait]
 pub impl EntityImpl of EntityTrait {
-    fn create_entity(mut world: WorldStorage) -> Entity {
-        let mut entity: Entity = world.read_model(0);
+    fn create_entity(ref world: WorldStorage, name: ByteArray) -> Entity {
+        let mut entity: Entity = Default::default();
         entity.inst = world.dispatcher.uuid().try_into().unwrap();
         entity.is_entity = true;
+        entity.name = name;
         world.write_model(@entity);
         entity
     }
 
     fn create_player_entity(ref world: WorldStorage, address: ContractAddress) -> Player {
-        let mut entity: Entity = world.read_model(0);
+        let mut entity: Entity = Default::default();
         entity.name = "Player";
         entity.inst = address.into();
         entity.is_entity = true;
         world.write_model(@entity);
-        let mut player: Player = Component::add_component(world, address.into());
+        let mut player: Player = Component::add_component(ref world, address.into());
         player.address = address;
         world.write_model(@player);
-        let mut reactable: Reactable = Component::add_component(world, address.into());
+        let mut reactable: Reactable = Component::add_component(ref world, address.into());
         let descr1 = DescriptionText { inst: address.into(), key: 0, text: "Looks like a visitor" };
         world.write_model(@descr1);
         reactable.description = array![0];
@@ -81,12 +82,12 @@ pub impl EntityImpl of EntityTrait {
         names
     }
 
-    fn name_is(self: Entity, name: ByteArray) -> bool {
-        if (self.name == name) {
+    fn name_is(self: @Entity, name: ByteArray) -> bool {
+        if (self.name == @name) {
             return true;
         }
         let mut has_name = false;
-        for alt_name in self.alt_names {
+        for alt_name in self.alt_names.clone() {
             if (alt_name == name) {
                 has_name = true;
                 break;
@@ -95,16 +96,16 @@ pub impl EntityImpl of EntityTrait {
         has_name
     }
 
-    fn get_entity(world: @WorldStorage, inst: @felt252) -> Option<Entity> {
-        let entity: Entity = world.read_model(*inst);
+    fn get_entity(world: @WorldStorage, inst: felt252) -> Option<Entity> {
+        let entity: Entity = world.read_model(inst);
         if (!entity.is_entity) {
             return Option::None;
         }
         Option::Some(entity)
     }
 
-    fn is_entity(world: @WorldStorage, inst: @felt252) -> bool {
-        let mut entity: Entity = world.read_model(*inst);
+    fn is_entity(world: @WorldStorage, inst: felt252) -> bool {
+        let mut entity: Entity = world.read_model(inst);
         entity.is_entity
     }
 
@@ -134,7 +135,7 @@ pub impl EntityImpl of EntityTrait {
         children
     }
 
-    fn remove_from_parent(self: @Entity, mut world: WorldStorage, parent: @Entity) {
+    fn remove_from_parent(self: @Entity, ref world: WorldStorage, parent: @Entity) {
         let mut parent_relation: ParentToChildren = world.read_model(*parent.inst);
         assert(parent_relation.is_parent, 'Parent is not a parent');
 
@@ -156,9 +157,9 @@ pub impl EntityImpl of EntityTrait {
 
     // @DEV: the cloning and writing in between is very dangerous, this might need a revision and at
     // least good tests
-    fn set_parent(self: @Entity, mut world: WorldStorage, parent: @Entity) {
+    fn set_parent(self: @Entity, ref world: WorldStorage, parent: @Entity) {
         if (self.has_parent(@world)) {
-            self.remove_from_parent(world, @self.get_parent(@world).unwrap());
+            self.remove_from_parent(ref world, @self.get_parent(@world).unwrap());
         }
         let mut parent_relation: ParentToChildren = world.read_model(*parent.inst);
         let mut is_child = false;
