@@ -1,6 +1,7 @@
 import { type ChangeEvent} from "react";
 import {
 		type Player,
+		type PlayerStory,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { Toggle, Input} from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
@@ -33,7 +34,7 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				updatedObject.use_debug = event.target.checked;
 			},
 		},
-	});
+	});	
 
 	if (!componentObject) return <div>Player not found</div>;
 
@@ -60,6 +61,35 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				id="use_debug"
 				value={componentObject.use_debug}
 				onChange={handleInputChange(undefined)}
+			/>
+		</Inspector>
+	);
+};
+
+export const PlayerStoryInspector: ComponentInspector<PlayerStory> = ({
+	componentObject,
+	...props
+}) => {
+	const { handleInputChange, Inspector } = useInspector<PlayerStory>({
+		componentObject,
+		...props,
+		inputHandlers: {
+			story_line: (e, updatedObject) => {
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.story_line = event.target.value;
+			},
+		},
+	});
+
+	if (!componentObject) return <div>PlayerStory not found</div>;
+
+	return (
+		<Inspector>
+			<Input
+				id="story_line"
+				value={componentObject.story_line.toString()}
+				onChange={handleInputChange(undefined)}
+				readOnly={true}
 			/>
 		</Inspector>
 	);
