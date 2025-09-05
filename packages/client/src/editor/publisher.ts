@@ -486,7 +486,7 @@ export const registerPropertyRegistry = async () => {
 	}
 };
 
-export let alreadyDone = false;
+let alreadyDone = false;
 const publishRegisterPropertyRegistry = async () => {
 	if (alreadyDone == false) {
 		let done = true;

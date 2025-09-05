@@ -79,13 +79,6 @@ export const InitDojo = async () => {
 	};
 
 	console.log( {sdk, dojoConfig, provider, query, sub})
-
-	/**
-	 * Register property registry
-	 */
-	if (alreadyDone == false) {
-		await registerPropertyRegistry();
-	}
-
+	
 	return { sdk, dojoConfig, provider, query, sub };
 };

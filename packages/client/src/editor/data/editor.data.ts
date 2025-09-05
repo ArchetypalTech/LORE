@@ -35,7 +35,6 @@ import { tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
-
 import { getPlayerAddress } from "@/editor/lib/components";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
 
@@ -596,6 +595,8 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
+	updateComponent(playerEntity.Entity.inst, "Player", playerEntity.Player);
+	updateComponent(playerEntity.Entity.inst, "PlayerStory", playerEntity.PlayerStory);
 	await tick();
 
 	// parent will be the spawn point	
@@ -621,6 +622,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	const reactable = createDefaultReactableComponent(playerEntity.Entity);
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	reactable.Reactable.new_entry = playerEntity.Entity.name;
 	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
@@ -721,29 +723,44 @@ export const getSpawnPoint = async (): Promise<BigNumberish> => {
  * @returns True if the player exists, false otherwise
  */
 export const getPlayer = async (account: string): Promise<boolean> => {
-	let playerFound = false;
-	try {
-		const { sdk } = await InitDojo();
-		const queryPlayer = () => {
-			const builder = new ToriiQueryBuilder<SchemaType>();
-			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-Player"]);
-			return query;
-		};
-		const result = await sdk.getEntities({ query: queryPlayer() });
-		result.getItems().forEach((item) => {
-			// Get models with type Player
-			const player = item.models?.lore?.Player;
-			// Check the player model inst matches the account
-			if (player?.inst === account) {
-				playerFound = true;
-			}
-		});
-		return playerFound;
-	} catch (error) {
-		console.error("Error fetching player from Torii:", error);
-		throw error;
-	}
-}
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-Player"]);
+
+    const result = await sdk.getEntities({ query });
+
+    return result.getItems().some((item) => {
+      const player = item.models?.lore?.Player;
+      return player?.inst === account;
+    });
+  } catch (error) {
+    console.error("Error fetching player from Torii:", error);
+    throw error;
+  }
+};
+
+export const propertiesRegistered = async (): Promise<boolean> => {
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-PropertyRegistry"]);
+
+    const result = await sdk.getEntities({ query });
+
+    // Just check if we got at least one PropertyRegistry model back
+    return result.getItems().some((item) => !!item.models?.lore?.PropertyRegistry);
+  } catch (error) {
+    console.error("Error fetching properties from Torii:", error);
+    throw error;
+  }
+};
 
 export let playerFound = false;
 export let playerExists = false;

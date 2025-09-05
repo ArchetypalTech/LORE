@@ -8,7 +8,8 @@ import { APP_DATA } from "@/data/app.data";
 import { HELP_TEXTS, HELP_EXITS, HELP_INSPECT, HELP_CONTAINER, HELP_INVENTORY } from "@/data/help.data";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
-import { checkForPlayer } from "@/editor/data/editor.data";
+import { checkForPlayer, propertiesRegistered, } from "@/editor/data/editor.data";
+import {registerPropertyRegistry} from "../editor/publisher";
 
 /**
  * Context object passed to each terminal command handler
@@ -154,8 +155,24 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				useTypewriter: true,
 			});
 		}
+		// Check properties
+		const propertyRegistryFound = await propertiesRegistered();
+		if (!propertyRegistryFound) {
+			await registerPropertyRegistry();
+		}
 		// Call the check for player
+		addTerminalContent({
+			text: "You're getting ready...",
+			format: "hash",
+			useTypewriter: true,
+		});
 		await checkForPlayer();
+		// player created is done or done finding player
+		addTerminalContent({
+			text: "You're ready to continue your journey.",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	wallet: async () => {
 		if(!WalletStore().isConnected) {
