@@ -21,7 +21,7 @@ import { DescriptionTextInspector } from "../components/inspectors/DescriptionIn
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
-import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store"
+import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish } from "starknet";
 import randomName from "@scaleway/random-name";
 
