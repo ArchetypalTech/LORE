@@ -77,12 +77,13 @@ pub impl PlayerImpl of PlayerTrait {
 
         // Set the new story line counter
         story.story_line = new_counter;
-        world
-            .write_member(
-                Model::<PlayerStory>::ptr_from_keys(*self.inst),
-                selector!("story_line"),
-                story.story_line,
-            );
+        // world
+        //     .write_member(
+        //         Model::<PlayerStory>::ptr_from_keys(*self.inst),
+        //         selector!("story_line"),
+        //         story.story_line,
+        //     );
+        world.write_model(@story);
     }
 
 
