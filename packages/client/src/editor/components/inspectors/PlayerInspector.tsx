@@ -28,10 +28,6 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				const event = e as ChangeEvent<HTMLInputElement>;
 				updatedObject.location = event.target.value as unknown as BigNumberish;
 			},
-			story_line: (e, updatedObject) => {
-				const event = e as ChangeEvent<HTMLInputElement>;
-				updatedObject.story_line = event.target.value;
-			},
 			use_debug: (e, updatedObject) => {
 				const event = e as ChangeEvent<HTMLInputElement>;
 				updatedObject.use_debug = event.target.checked;
@@ -59,12 +55,6 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				value={componentObject.location.toString()}
 				onChange={handleInputChange(undefined)}
 				//readOnly={true}
-			/>
-			<Input
-				id="story_line"
-				value={componentObject.story_line.toString()}
-				onChange={handleInputChange(undefined)}
-				// readOnly={true}
 			/>
 			<Toggle
 				id="use_debug"

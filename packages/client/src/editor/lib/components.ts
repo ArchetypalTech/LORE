@@ -75,7 +75,6 @@ export const createPlayerComponent = (
 			inst: playerAddress,
 			is_player: true,
 			address: playerAddress,
-			story_line: 0,
 			location: 0,
 			use_debug: false,
 		},

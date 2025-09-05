@@ -172,8 +172,6 @@ pub struct Player {
     pub address: ContractAddress,
     /// The location of the player
     pub location: felt252,
-    /// Current story line
-    pub story_line: CounterType,
     /// If the player is in debug mode
     pub use_debug: bool,
 }
@@ -184,8 +182,8 @@ pub struct PlayerStory {
     #[key]
     pub inst: felt252,
     /// Properties ///
-    /// Array of story lines (story lines keys)
-    pub story: Array<CounterType>,
+    /// Current story line - latest
+    pub story_line: CounterType,
 }
 
 pub type CounterType = u32;

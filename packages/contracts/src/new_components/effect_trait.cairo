@@ -78,10 +78,7 @@ pub impl EffectImpl of EffectTrait {
                 // Direct modification to component
                 let (result_p, _success_p) =
                     VariablePropertyHelperTrait::set_inventory_item_property(
-                    item,
-                    world,
-                    self,
-                    @property_registry,
+                    item, world, self, @property_registry,
                 );
                 result = result_p;
             },
@@ -156,7 +153,9 @@ mod tests {
         n_value: u32,
         hex_value: felt252,
     ) -> Effect {
-        Effect { inst, key, name, target, effect_type, component, property, value, n_value, hex_value }
+        Effect {
+            inst, key, name, target, effect_type, component, property, value, n_value, hex_value,
+        }
     }
 
     fn create_trigger_context(

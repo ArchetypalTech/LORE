@@ -141,14 +141,13 @@ export interface Player {
 	is_player: boolean;
 	address: string;
 	location: BigNumberish;
-	story_line: BigNumberish;
 	use_debug: boolean;
 }
 
 // Type definition for `lore::models::index::PlayerStory` struct
 export interface PlayerStory {
 	inst: BigNumberish;
-	story: Array<BigNumberish>;
+	story_line: BigNumberish;
 }
 
 // Type definition for `lore::models::index::PropertyRegistry` struct
@@ -597,12 +596,11 @@ export const schema: SchemaType = {
 			is_player: false,
 			address: "",
 			location: 0,
-			story_line: 0,
 			use_debug: false,
 		},
 		PlayerStory: {
 			inst: 0,
-			story: [0],
+			story_line: 0,
 		},
 		PropertyRegistry: {
 		component_type: new CairoCustomEnum({ 

@@ -390,7 +390,9 @@ mod tests {
         n_value: u32,
         hex_value: felt252,
     ) -> Effect {
-        Effect { inst, key, name, target, effect_type, component, property, value, n_value, hex_value }
+        Effect {
+            inst, key, name, target, effect_type, component, property, value, n_value, hex_value,
+        }
     }
 
     fn create_test_action(

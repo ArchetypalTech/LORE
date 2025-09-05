@@ -64,60 +64,48 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     // TODO: improve name and better description
-    fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        let mut player: Player = world.read_model(*self.inst);
-        let mut counter: u32 = player.story_line;
+    fn say(self: @Player, mut world: WorldStorage, text: ByteArray) {
+        let mut story: PlayerStory = world.read_model(*self.inst);
+        // Get the current story line counter
+        let counter: u32 = story.story_line;
         let increase: u32 = 1;
+        // Increase the counter
         let new_counter: u32 = counter + increase;
-
+        // Create a new story line
         let story_line = StoryLine { inst: *self.inst, key: new_counter, line: text };
         world.write_model(@story_line);
 
-        let mut player_story: PlayerStory = world.read_model(*self.inst);
-        player_story.story.append(new_counter);
-        // world
-        //     .write_member(
-        //         Model::<PlayerStory>::ptr_from_keys(*self.inst),
-        //         selector!("story"),
-        //         player_story.story.span(),
-        //     );
-        world.write_model(@player_story);
-
-        // Update the player
-        let mut player: Player = world.read_model(*self.inst);
-        player.story_line = new_counter;
+        // Set the new story line counter
+        story.story_line = new_counter;
         world
             .write_member(
-                Model::<Player>::ptr_from_keys(*self.inst),
+                Model::<PlayerStory>::ptr_from_keys(*self.inst),
                 selector!("story_line"),
-                player.story_line,
+                story.story_line,
             );
-        //player.store(world);
     }
 
 
-    fn add_command_text(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        // read counter from player
-        let mut counter = *self.story_line;
+    fn add_command_text(self: @Player, mut world: WorldStorage, text: ByteArray) {
+        // read counter from PlayerStory
+        let mut story: PlayerStory = world.read_model(*self.inst);
+        let mut counter = story.story_line;
         // increase counter
         let increase: u32 = 1;
-        counter += increase;
+        let new_counter = counter + increase;
         // create new story line
-        let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };
+        let mut story_line = StoryLine { inst: *self.inst, key: new_counter, line: text };
         // write story line to world
         world.write_model(@story_line);
-        // add story line to player story
-        let mut player_story: PlayerStory = world.read_model(*self.inst);
-        player_story.story.append(counter);
-        // update player_story.story
-        world.write_model(@player_story);
-        // let mut playerStory: PlayerStory = world.read_model(*self.inst);
-    // let mut storyLine = playerStory.story.clone();
-    // if (storyLine.len() > 10) {
-    //     let _ = storyLine.pop_front();
-    // }
-    // storyLine.append(format!("> {}", text));
-    // world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
+
+        // update PlayerStory
+        story.story_line = new_counter;
+        world
+            .write_member(
+                Model::<PlayerStory>::ptr_from_keys(*self.inst),
+                selector!("story_line"),
+                story.story_line,
+            );
     }
 
     fn get_room(self: @Player, world: @WorldStorage) -> Option<Entity> {
