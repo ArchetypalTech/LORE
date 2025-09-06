@@ -17,6 +17,7 @@ use lore::{
     lib::{
         a_lexer::CommandImpl,
         utils::ByteArrayTraitExt,
+        game_instance::{GameImpl},
     },
 };
 
@@ -89,7 +90,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<InventoryItem> {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<InventoryItem> {
         let inventory_item: InventoryItem = world.read_game_inst(inst, game_id);
         if (inventory_item.is_component()) {
             Option::Some(inventory_item)
@@ -98,7 +99,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         }
     }
 
-    fn store(self: @InventoryItem, ref world: WorldStorage, game_id: felt252) {
+    fn store(self: @InventoryItem, ref world: WorldStorage, game_id: u128) {
         world.write_game_inst(self, game_id);
     }
 
@@ -181,7 +182,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                             );
                     }
                     let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
-                        action, world, @context,
+                        action, world, @context, *command.game_id,
                     );
                     if *player.use_debug {
                         player.say(world, format!("Trigger result: {:?}", trig_res));
@@ -202,7 +203,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             InventoryItemActions::PickupItem => {
                 // This is for the player's personal inventory container
                 // Ex: "pickup the sword"
-                let personal_container = player.get_personal_container(@world);
+                let personal_container = player.get_personal_container(@world, *command.game_id);
                 if personal_container.is_none() {
                     return Result::Err(Error::NoPersonalContainer);
                 }
@@ -217,7 +218,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             InventoryItemActions::DropItem => {
                 // This is for taking an item from the player's personal inventory
                 // Ex:: "drop the sword"
-                let personal_container = player.get_personal_container(@world);
+                let personal_container = player.get_personal_container(@world, *command.game_id);
                 if personal_container.is_none() {
                     return Result::Err(Error::NoPersonalContainer);
                 }
@@ -232,11 +233,11 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // This is for a specific container
                 // Ex: "put the sword in the bag"
                 // Get the player's container
-                let player_container = get_player_container(@world, player, nouns.clone());
+                let player_container = get_player_container(@world, player, nouns.clone(), *command.game_id);
                 if player_container.is_none() {
                     // if it is not in the player, it means it is in an entity container
                     // that is on the room Ex: "put the sword in the box"
-                    let entity_container = get_entity_container(@world, player, nouns);
+                    let entity_container = get_entity_container(@world, player, nouns, *command.game_id);
                     if entity_container.is_none() {
                         return Result::Err(Error::NoContainer);
                     }
@@ -258,11 +259,11 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // This is for taking an item from a specific container
                 // Ex: "take out the sword from the bag"
                 // Get the player's container
-                let player_container = get_player_container(@world, player, nouns.clone());
+                let player_container = get_player_container(@world, player, nouns.clone(), *command.game_id);
                 if player_container.is_none() {
                     // if it is not in the player, it means it is in an entity container
                     // that is on the room Ex: "take out the sword from the box"
-                    let entity_container = get_entity_container(@world, player, nouns);
+                    let entity_container = get_entity_container(@world, player, nouns, *command.game_id);
                     if entity_container.is_none() {
                         return Result::Err(Error::NoContainer);
                     }
@@ -280,7 +281,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252) -> InventoryItem {
+    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> InventoryItem {
         let mut inventory_item: InventoryItem = world.read_model(inst);
         inventory_item.inst = inst;
         inventory_item.is_inventory_item = true;
@@ -304,7 +305,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     },
                 ];
         inventory_item.already_used = false;
-        inventory_item.store(ref world);
+        inventory_item.store(ref world, game_id);
         // Return the component
         inventory_item
     }
@@ -330,7 +331,7 @@ fn get_action_token(
 // This can be the an entity container attached to the player
 // Ex: a bag in the player's personalinventory
 fn get_player_container(
-    world: @WorldStorage, player: @Player, nouns: Array<Token>,
+    world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
 ) -> Option<Container> {
     let player_entity: Entity = EntityImpl::get_entity(world, *player.inst).unwrap();
     let player_children = player_entity.get_children(world);
@@ -347,7 +348,7 @@ fn get_player_container(
         return Option::None;
     }
     // get container component
-    player_container = ContainerComponent::get_component(world, container.unwrap().inst);
+    player_container = ContainerComponent::get_component(world, container.unwrap().inst, game_id);
     return player_container;
 }
 
@@ -355,7 +356,7 @@ fn get_player_container(
 // This can be the an entity container attached to the room
 // Ex: a chest in the room
 fn get_entity_container(
-    world: @WorldStorage, player: @Player, nouns: Array<Token>,
+    world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
 ) -> Option<Container> {
     // get room
     let room = player.get_room(world);
@@ -377,6 +378,6 @@ fn get_entity_container(
         return Option::None;
     }
     // get container component
-    room_container = ContainerComponent::get_component(world, container.unwrap().inst);
+    room_container = ContainerComponent::get_component(world, container.unwrap().inst, game_id);
     return room_container;
 }

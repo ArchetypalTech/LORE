@@ -152,7 +152,7 @@ pub impl TriggerImpl of TriggerTrait {
         // world.write_model(@trigger);
     }
 
-    fn evaluate_trigger(ref world: WorldStorage, mut trigger: Trigger) -> Result<(), Error> {
+    fn evaluate_trigger(ref world: WorldStorage, mut trigger: Trigger, game_id: u128) -> Result<(), Error> {
         let mut result: Result::<(), Error> = Result::Ok(());
         // Evaluate trigger
         if !trigger.is_enabled {
@@ -176,7 +176,7 @@ pub impl TriggerImpl of TriggerTrait {
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(@world, ent.inst);
+                let area_opt = AreaComponent::get_component(@world, ent.inst, game_id);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
@@ -184,7 +184,7 @@ pub impl TriggerImpl of TriggerTrait {
                 let children = ent.get_children(@world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(@world, child.inst);
+                    let child_player = PlayerComponent::get_component(@world, child.inst, game_id);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -204,7 +204,7 @@ pub impl TriggerImpl of TriggerTrait {
                 }
                 // Check if entity has an area component
                 let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(@world, ent.inst);
+                let area_opt = AreaComponent::get_component(@world, ent.inst, game_id);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
@@ -212,7 +212,7 @@ pub impl TriggerImpl of TriggerTrait {
                 let children = ent.get_children(@world);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(@world, child.inst);
+                    let child_player = PlayerComponent::get_component(@world, child.inst, game_id);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -231,7 +231,7 @@ pub impl TriggerImpl of TriggerTrait {
                 }
                 // Check if entity has an inventory item component
                 let ent = ent_opt.unwrap();
-                let inventory_item_opt = InventoryItemComponent::get_component(@world, ent.inst);
+                let inventory_item_opt = InventoryItemComponent::get_component(@world, ent.inst, game_id);
                 if inventory_item_opt.is_none() {
                     return Result::Err(Error::NoInventoryItemComponent);
                 }
@@ -394,26 +394,27 @@ mod tests {
         let mut room_entity_2 = EntityImpl::create_entity(ref world, "room_entity_2");
 
         // add area component to room entity 1
-        let mut area_component_1 = AreaComponent::add_component(ref world, room_entity_1.inst);
+        let game_id: u128 = 0;
+        let mut area_component_1 = AreaComponent::add_component(ref world, room_entity_1.inst, game_id);
         world.write_model(@area_component_1);
         // add exit component to room entity 1
-        let mut exit_component_1 = ExitComponent::add_component(ref world, room_entity_1.inst);
+        let mut exit_component_1 = ExitComponent::add_component(ref world, room_entity_1.inst, game_id);
         // update exit component
         exit_component_1.leads_to = room_entity_2.inst;
         exit_component_1.direction_type = Direction::North;
         world.write_model(@exit_component_1);
 
         // add area component to room entity 2
-        let mut area_component_2 = AreaComponent::add_component(ref world, room_entity_2.inst);
+        let mut area_component_2 = AreaComponent::add_component(ref world, room_entity_2.inst, game_id);
         world.write_model(@area_component_2);
         // add exit component to room entity 2
-        let mut exit_component_2 = ExitComponent::add_component(ref world, room_entity_2.inst);
+        let mut exit_component_2 = ExitComponent::add_component(ref world, room_entity_2.inst, game_id);
         // update exit component
         exit_component_2.leads_to = room_entity_1.inst;
         exit_component_2.direction_type = Direction::South;
         world.write_model(@exit_component_2);
 
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1);
+        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.location = room_entity_2.inst;
         world.write_model(@player);
 
@@ -432,7 +433,8 @@ mod tests {
         let mut playerR1: Player = world.read_model(player.inst);
         playerR1.move_to_room(world, room_entity_1.inst);
 
-        let result = TriggerImpl::evaluate_trigger(ref world, trigger.clone());
+        let game_id: u128 = 0;
+        let result = TriggerImpl::evaluate_trigger(ref world, trigger.clone(), game_id);
         if result.is_ok() { // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
@@ -441,7 +443,7 @@ mod tests {
         player.move_to_room(world, room_entity_2.inst);
         player_entity.set_parent(ref world, @room_entity_2);
 
-        let result2 = TriggerImpl::evaluate_trigger(ref world, trigger);
+        let result2 = TriggerImpl::evaluate_trigger(ref world, trigger, game_id);
         if result2.is_err() { // println!("Trigger does not jump");
         };
         assert(result2.is_err(), 'Trigger should not jump');

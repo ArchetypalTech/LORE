@@ -43,7 +43,7 @@ pub fn handle_command(
             if player.use_debug {
                 player.say(world, format!("item: {:?}", item));
             }
-            match ReactableComponent::get_component(@world, item.inst) {
+            match ReactableComponent::get_component(@world, item.inst, command.game_id) {
                 Option::Some(c) => {
                     if c.clone().can_use_command(@world, @player, @command) {
                         let res = c.clone().execute_command(ref world, @player, @command);
@@ -61,7 +61,7 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match AreaComponent::get_component(@world, item.inst) {
+            match AreaComponent::get_component(@world, item.inst, command.game_id) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -80,7 +80,7 @@ pub fn handle_command(
                 Option::None => {},
             }
             // @dev: guaranteed there's a noun
-            match ExitComponent::get_component(@world, item.inst) {
+            match ExitComponent::get_component(@world, item.inst, command.game_id) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -98,7 +98,7 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match InventoryItemComponent::get_component(@world, item.inst) {
+            match InventoryItemComponent::get_component(@world, item.inst, command.game_id) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -116,7 +116,7 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match ContainerComponent::get_component(@world, item.inst) {
+            match ContainerComponent::get_component(@world, item.inst, command.game_id) {
                 Option::Some(c) => {
                     if c.can_use_command(@world, @player, @command) {
                         let res = c.execute_command(ref world, @player, @command);
@@ -138,7 +138,7 @@ pub fn handle_command(
     } else if directions.len() > 0 {
         let context = player.get_context(@world);
         for item in context {
-            let exit: Option<Exit> = Component::get_component(@world, item.inst);
+            let exit: Option<Exit> = Component::get_component(@world, item.inst, command.game_id);
             // @dev: not guaranteed there's a noun
             match exit {
                 Option::Some(exit) => {
@@ -179,14 +179,14 @@ pub fn handle_command(
     if command.tokens.len() == 1 {
         let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
         if initialVerb == 'look' {
-            let res = player.describe_room(world);
+            let res = player.describe_room(world, command.game_id);
             if res.is_err() {
                 return Result::Err(res.unwrap_err());
             };
             return Result::Ok(command);
         }
         if initialVerb == 'inventory' {
-            let personal_container = player.get_personal_container(@world);
+            let personal_container = player.get_personal_container(@world, command.game_id);
             if personal_container.is_none() {
                 return Result::Err(Error::NoPersonalContainer);
             }
@@ -206,7 +206,7 @@ pub fn handle_command(
                 let around: ByteArray = "around";
                 let at: ByteArray = "at";
                 if secondToken.text == around {
-                    let res = player.describe_room(world);
+                    let res = player.describe_room(world, command.game_id);
                     if res.is_err() {
                         return Result::Err(res.unwrap_err());
                     };
@@ -263,7 +263,7 @@ fn system_command(
             } else {
                 player.say(world, "+sys+you are no longer in debug mode");
             }
-            modifiedPlayer.store(ref world);
+            modifiedPlayer.store(ref world, command.game_id);
             return Result::Ok(command);
         }
         if (system_command == "g_command") {
@@ -278,7 +278,7 @@ fn system_command(
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
-            let reactable: Reactable = Component::get_component(@world, room.unwrap().inst).unwrap();
+            let reactable: Reactable = Component::get_component(@world, room.unwrap().inst, command.game_id).unwrap();
             player.say(world, format!("+sys+{:?}", reactable));
             return Result::Ok(command);
         }
@@ -289,7 +289,7 @@ fn system_command(
             return Result::Ok(command);
         }
         if (system_command == "g_level") {
-            create_test_level(ref world);
+            create_test_level(ref world, command.game_id);
             player.say(world, "+sys+created test level");
             return Result::Ok(command);
         }
@@ -309,7 +309,7 @@ fn system_command(
             }
             player.say(world, format!("{}", room.unwrap().name));
             for item in context {
-                let reactable: Option<Reactable> = Component::get_component(@world, item.inst);
+                let reactable: Option<Reactable> = Component::get_component(@world, item.inst, command.game_id);
                 if reactable.is_some() {
                     let description = reactable.unwrap().get_random_description(@command, world);
                     player.say(world, format!("{}", description));
@@ -336,8 +336,9 @@ mod tests {
     fn CHandler_test_g_command_handling() {
         // Setup test environment
         let (mut world, _, _, player_1, _) = helpers::setup_core();
-        create_test_level(ref world);
-        let player = PlayerImpl::caller_as_player(ref world, player_1);
+        let game_id: u128 = 0;
+        create_test_level(ref world, game_id);
+        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(world, 2826);
 
         // Create a test command with g_command system token
@@ -363,6 +364,7 @@ mod tests {
                     target: 0,
                 },
             ],
+            game_id,
         };
         // Handle the command
         let result = handle_command(command.clone(), ref world, player.clone());

@@ -11,6 +11,7 @@ use lore::{
         component_type::{ReactableActions, ActionMapReactable},
     },
     constants::errors::Error,
+    lib::game_instance::{GameImpl},
     lib::random,
 };
 
@@ -114,7 +115,7 @@ pub impl ReactableComponent of Component<Reactable> {
         EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Reactable> {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Reactable> {
         let reactable: Reactable = world.read_game_inst(inst, game_id);
         if (reactable.is_component()) {
             Option::Some(reactable)
@@ -123,7 +124,7 @@ pub impl ReactableComponent of Component<Reactable> {
         }
     }
 
-    fn store(self: @Reactable, ref world: WorldStorage, game_id: felt252) {
+    fn store(self: @Reactable, ref world: WorldStorage, game_id: u128) {
         world.write_game_inst(self, game_id);
     }
 
@@ -164,7 +165,7 @@ pub impl ReactableComponent of Component<Reactable> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252) -> Reactable {
+    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Reactable {
         let mut reactable: Reactable = world.read_model(inst);
         reactable.inst = inst;
         reactable.is_reactable = true;
@@ -193,7 +194,7 @@ pub impl ReactableComponent of Component<Reactable> {
                 ];
         reactable.already_shown = false;
         reactable.new_entry = "";
-        reactable.store(ref world);
+        reactable.store(ref world, game_id);
         // Return the component
         reactable
     }
@@ -302,9 +303,10 @@ mod tests {
                     target: 0,
                 },
             ],
+            game_id: 0,
         };
         let (prefab, world, _, _) = Reactable_create_prefab();
-        let read_reactable: Reactable = Component::get_component(@world, prefab.inst).unwrap();
+        let read_reactable: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         // println!("read_reactable: {:?}", read_reactable);
         assert(read_reactable.is_reactable, 'reactable is reactable');
         let mut res = array![];
@@ -317,14 +319,14 @@ mod tests {
     #[test]
     fn Reactable_test_get_component() {
         let (prefab, world, _, _) = Reactable_create_prefab();
-        let i: Reactable = Component::get_component(@world, prefab.inst).unwrap();
+        let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         assert(i.is_reactable, 'reactable is reactable');
     }
 
     #[test]
     fn Reactable_test_read_specific_description() {
         let (prefab, world, _, _) = Reactable_create_prefab();
-        let i: Reactable = Component::get_component(@world, prefab.inst).unwrap();
+        let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
         let res = ReactableImpl::get_specific_description(@i, idx, world);
         assert(res == "the rock is from the moon", 'description should be the moon');

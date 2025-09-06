@@ -8,7 +8,10 @@ use lore::{
     },
     types::{command_type::{Command, Token},
     component_type::{ContainerActions, ActionMapContainer}},
-    lib::{a_lexer::CommandImpl},
+    lib::{
+        a_lexer::CommandImpl,
+        game_instance::{GameImpl},
+    },
     constants::errors::Error,
 };
 
@@ -272,7 +275,7 @@ pub impl ContainerComponent of Component<Container> {
         EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Container> {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Container> {
         let container: Container = world.read_game_inst(inst, game_id);
         if (container.is_component()) {
             Option::Some(container)
@@ -281,7 +284,7 @@ pub impl ContainerComponent of Component<Container> {
         }
     }
 
-    fn store(self: @Container, ref world: WorldStorage, game_id: felt252) {
+    fn store(self: @Container, ref world: WorldStorage, game_id: u128) {
         world.write_game_inst(self, game_id);
     }
 
@@ -336,7 +339,7 @@ pub impl ContainerComponent of Component<Container> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252) -> Container {
+    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Container {
         let mut container: Container = world.read_model(inst);
         container.inst = inst;
         container.is_container = true;
@@ -357,7 +360,7 @@ pub impl ContainerComponent of Component<Container> {
                         action: "check", inst: 0, action_fn: ContainerActions::Check,
                     },
                 ];
-        container.store(ref world);
+        container.store(ref world, game_id);
         // Return the component
         container
     }

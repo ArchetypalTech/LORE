@@ -12,7 +12,11 @@ use lore::{
         action_type::TriggerContext,
         direction_type::{Direction, IntoDirectionByteArray},
     },
-    lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt},
+    lib::{
+        a_lexer::CommandImpl,
+        utils::ByteArrayTraitExt,
+        game_instance::{GameImpl},
+    },
     constants::{
         constants,
         errors::Error,
@@ -78,7 +82,7 @@ pub impl ExitComponent of Component<Exit> {
         EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Exit> {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Exit> {
         let exit: Exit = world.read_game_inst(inst, game_id);
         if (exit.is_component()) {
             Option::Some(exit)
@@ -87,7 +91,7 @@ pub impl ExitComponent of Component<Exit> {
         }
     }
 
-    fn store(self: @Exit, ref world: WorldStorage, game_id: felt252) {
+    fn store(self: @Exit, ref world: WorldStorage, game_id: u128) {
         world.write_game_inst(self, game_id);
     }
 
@@ -176,12 +180,12 @@ pub impl ExitComponent of Component<Exit> {
                         };
 
                         let (_trig_res, _cond_res, _eff_res) = ActionImpl::process_action(
-                            action, world, @context,
+                            action, world, @context, *command.game_id,
                         );
                     };
                 }
                 // Describe room
-                let _ = player.describe_room(world);
+                let _ = player.describe_room(world, *command.game_id);
                 return Result::Ok(());
             },
         }
@@ -189,7 +193,7 @@ pub impl ExitComponent of Component<Exit> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252) -> Exit {
+    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Exit {
         let mut exit: Exit = world.read_model(inst);
         exit.inst = inst;
         exit.is_exit = true;
@@ -200,7 +204,7 @@ pub impl ExitComponent of Component<Exit> {
                     ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];
-        exit.store(ref world);
+        exit.store(ref world, game_id);
         // Return the component
         exit
     }

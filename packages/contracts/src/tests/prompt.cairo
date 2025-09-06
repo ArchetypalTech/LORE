@@ -29,7 +29,9 @@ pub mod prompt {
     pub impl PromptImpl of IPrompt<ContractState> {
         fn prompt(ref self: ContractState, cmd: ByteArray) {
             let mut world: WorldStorage = self.world(@"lore");
-            let player = PlayerImpl::caller_as_player(ref world, get_caller_address());
+            
+            let game_id: u128 = 0;
+            let player = PlayerImpl::caller_as_player(ref world, get_caller_address(), game_id);
 
             //player.add_command_text(world, cmd.clone());
             match (lexer::parse(cmd, world, player)) {

@@ -365,6 +365,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
@@ -390,7 +391,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                 }
             }
-            component.store(ref world);
+            component.store(ref world, game_id);
             break;
         };
         return (result, success);
@@ -402,6 +403,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_exit: ByteArray = "is_exit";
@@ -446,7 +448,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(ref world);
+                component.store(ref world, game_id);
                 break;
             }
         };
@@ -459,6 +461,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
@@ -511,7 +514,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(ref world);
+                component.store(ref world, game_id);
                 break;
             }
         };
@@ -526,6 +529,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
         num_value: @u32,
+        game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
@@ -601,7 +605,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(ref world);
+                component.store(ref world, game_id);
                 break;
             }
         };
@@ -616,6 +620,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
         num_value: @u32,
+        game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_container: ByteArray = "is_container";
@@ -673,11 +678,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 _ => { // Do nothing for now
                                 },
                             }
-                            component.store(ref world);
+                            component.store(ref world, game_id);
                         }
                     },
                 }
-                component.store(ref world);
+                component.store(ref world, game_id);
                 break;
             }
         };
@@ -690,6 +695,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let location: ByteArray = "location";
@@ -710,7 +716,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
-                component.store(ref world);
+                component.store(ref world, game_id);
                 break;
             }
         };

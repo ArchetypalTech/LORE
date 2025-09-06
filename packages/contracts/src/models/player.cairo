@@ -9,6 +9,7 @@ use lore::{
     },
     types::{command_type::Command},
     constants::errors::Error,
+    lib::game_instance::{GameImpl},
 };
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
@@ -58,15 +59,15 @@ pub struct StoryLine {
 //
 #[generate_trait]
 pub impl PlayerImpl of PlayerTrait {
-    fn caller_as_player(ref world: WorldStorage, address: ContractAddress) -> Player {
+    fn caller_as_player(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Player {
         match Self::get_player(@world, address) {
             Option::Some(player) => player,
-            Option::None => Self::create_player(ref world, address),
+            Option::None => Self::create_player(ref world, address, game_id),
         }
     }
 
-    fn create_player(ref world: WorldStorage, address: ContractAddress) -> Player {
-        EntityImpl::create_player_entity(ref world, address)
+    fn create_player(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Player {
+        EntityImpl::create_player_entity(ref world, address, game_id)
     }
 
     fn get_player(world: @WorldStorage, address: ContractAddress) -> Option<Player> {
@@ -78,7 +79,7 @@ pub impl PlayerImpl of PlayerTrait {
         Option::Some(player)
     }
 
-    fn describe_room(mut self: @Player, mut world: WorldStorage) -> Result<(), Error> {
+    fn describe_room(mut self: @Player, mut world: WorldStorage, game_id: u128) -> Result<(), Error> {
         let context = self.get_context(@world);
         let room = self.get_room(@world);
         if room.is_none() {
@@ -90,7 +91,7 @@ pub impl PlayerImpl of PlayerTrait {
             if (item.inst == *self.inst) {
                 continue;
             }
-            let reactable_opt: Option<Reactable> = Component::get_component(@world, item.inst);
+            let reactable_opt: Option<Reactable> = Component::get_component(@world, item.inst, game_id);
             if reactable_opt.is_some() {
                 let mut reactable = reactable_opt.unwrap();
                 if reactable.is_visible {
@@ -106,7 +107,7 @@ pub impl PlayerImpl of PlayerTrait {
                                 selector!("already_shown"),
                                 reactable.already_shown,
                             );
-                        // reactable.store(ref world);
+                        // reactable.store(ref world, game_id);
                     }
                 }
             }
@@ -158,7 +159,7 @@ pub impl PlayerImpl of PlayerTrait {
                 selector!("story_line"),
                 player.story_line,
             );
-        //player.store(ref world);
+        //player.store(ref world, game_id);
     }
 
 
@@ -240,9 +241,9 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     // Get the player personal inventory container component
-    fn get_personal_container(self: @Player, world: @WorldStorage) -> Option<Container> {
+    fn get_personal_container(self: @Player, world: @WorldStorage, game_id: u128) -> Option<Container> {
         let mut personal_container: Option<Container> = Option::None;
-        match ContainerComponent::get_component(world, *self.inst) {
+        match ContainerComponent::get_component(world, *self.inst, game_id) {
             Option::Some(c) => { personal_container = Option::Some(c); },
             Option::None => {
                 personal_container = Option::None;
@@ -280,7 +281,7 @@ pub impl PlayerComponent of Component<Player> {
         EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Player> {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Player> {
         let player: Player = world.read_game_inst(inst, game_id);
         if (player.is_component()) {
             Option::Some(player)
@@ -289,7 +290,7 @@ pub impl PlayerComponent of Component<Player> {
         }
     }
 
-    fn store(self: @Player, ref world: WorldStorage, game_id: felt252) {
+    fn store(self: @Player, ref world: WorldStorage, game_id: u128) {
         world.write_game_inst(self, game_id);
     }
 
@@ -307,11 +308,11 @@ pub impl PlayerComponent of Component<Player> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252) -> Player {
+    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Player {
         let mut player: Player = world.read_model(inst);
         player.inst = inst;
         player.is_player = true;
-        player.store(ref world);
+        player.store(ref world, game_id);
         // Return the component
         player
     }
@@ -333,18 +334,19 @@ mod tests {
     #[test]
     fn Player_test_create_player() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_1);
+        let game_id: u128 = 0;
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         assert(player.is_player, 'player is player');
 
         let entity: Entity = PlayerComponent::entity(@player, @world);
         assert(entity.inst == player.inst, 'entity.inst == player.inst');
 
         assert(PlayerInstance::has_component(@world, player.inst), 'has_component()');
-        let component: Option<Player> = PlayerComponent::get_component(@world, player.inst);
+        let component: Option<Player> = PlayerComponent::get_component(@world, player.inst, 0);
         assert(component.is_some(), 'component.is_some()');
         assert(component.unwrap().inst() == player.inst, 'component.is_some()');
 
-        let reactable: Option<Reactable> = ReactableComponent::get_component(@world, player.inst);
+        let reactable: Option<Reactable> = ReactableComponent::get_component(@world, player.inst, 0);
         assert(reactable.is_some(), 'reactable.is_some()');
         assert(reactable.unwrap().inst() == player.inst, 'reactable.is_some()');
     }
@@ -352,7 +354,8 @@ mod tests {
     #[test]
     fn Player_test_story_time() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_1);
+        let game_id: u128 = 0;
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         assert(player.is_player, 'player is player');
 
         player.say(world, "hello");

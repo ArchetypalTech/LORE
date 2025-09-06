@@ -112,7 +112,7 @@ pub mod lexer {
 
 
     pub fn parse(
-        message: ByteArray, world: WorldStorage, player: Player,
+        message: ByteArray, world: WorldStorage, player: Player, game_id: u128,
     ) -> Result<Command, Error> {
         initialize_dictionary(world);
         let words = message.split_into_words();
@@ -125,6 +125,7 @@ pub mod lexer {
             token_count: tokens.len().try_into().unwrap(),
             action_type: 0,
             tokens,
+            game_id,
         };
         command = match_player_context(world, player, command);
         command = post_process_command(world, player, command);
@@ -229,10 +230,11 @@ mod tests {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
         // println!("promptText: {:?}", promptText);
-        create_test_level(ref world);
-        let player = PlayerImpl::caller_as_player(ref world, player_1);
+        create_test_level(ref world, 0);
+        let game_id: u128 = 0;
+        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(world, 2826);
-        let _command = lexer::parse(promptText, world, player);
+        let _command = lexer::parse(promptText, world, player, game_id);
         // println!("command: {:?}", command);
     // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
@@ -246,12 +248,13 @@ mod tests {
         let expected_verb: ByteArray = "look"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(ref world);
-        let player = PlayerImpl::caller_as_player(ref world, player_1);
+        create_test_level(ref world, 0);
+        let game_id: u128 = 0;
+        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(world, 2826);
 
         // Parse command
-        let g_command = lexer::parse(prompt_text, world, player);
+        let g_command = lexer::parse(prompt_text, world, player, game_id);
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
@@ -270,13 +273,14 @@ mod tests {
         let expected_noun: ByteArray = "ball"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(ref world);
-        let player = PlayerImpl::caller_as_player(ref world, player_1);
+        create_test_level(ref world, 0);
+        let game_id: u128 = 0;
+        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(world, 2826);
         let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);
 
         // Parse command
-        let g_command = lexer::parse(prompt_text, world, player);
+        let g_command = lexer::parse(prompt_text, world, player, game_id);
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command

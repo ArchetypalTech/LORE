@@ -46,14 +46,14 @@ pub struct Condition {
 
 #[generate_trait]
 pub impl ConditionImpl of ConditionTrait {
-    fn evaluate_condition(self: @Condition, world: @WorldStorage, context: TriggerContext) -> bool {
+    fn evaluate_condition(self: @Condition, world: @WorldStorage, context: TriggerContext, game_id: u128) -> bool {
         let target = *self.target;
         let mut component_value: Option<Array<felt252>> = Option::None;
         let mut eval_result: bool = false;
         let property_registry: PropertyRegistry = world.read_model(*self.component);
         match self.component {
             ComponentType::Area => {
-                let container_opt = AreaComponent::get_component(world, target);
+                let container_opt = AreaComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -64,7 +64,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Exit => {
-                let container_opt = ExitComponent::get_component(world, target);
+                let container_opt = ExitComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -75,7 +75,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Reactable => {
-                let reactable_opt = ReactableComponent::get_component(world, target);
+                let reactable_opt = ReactableComponent::get_component(world, target, game_id);
                 if reactable_opt.is_none() {
                     return false;
                 }
@@ -86,7 +86,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::InventoryItem => {
-                let inventory_item_opt = InventoryItemComponent::get_component(world, target);
+                let inventory_item_opt = InventoryItemComponent::get_component(world, target, game_id);
                 if inventory_item_opt.is_none() {
                     return false;
                 }
@@ -98,7 +98,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Container => {
-                let container_opt = ContainerComponent::get_component(world, target);
+                let container_opt = ContainerComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -109,7 +109,7 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Player => {
-                let container_opt = PlayerComponent::get_component(world, target);
+                let container_opt = PlayerComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
@@ -287,8 +287,9 @@ mod tests {
         let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
 
+        let game_id: u128 = 0;
         let new_entry: ByteArray = "A door";
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst, game_id);
         let desc1: DescriptionText = DescriptionText {
             inst: door.inst, key: 0, text: new_entry.clone(),
         };
@@ -314,7 +315,7 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world);
+        reactable.store(ref world, 0);
 
         // Register component variable properties
         VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
@@ -338,7 +339,9 @@ mod tests {
         assert(
             condition
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_reactable should be true',
         );
@@ -362,7 +365,9 @@ mod tests {
         assert(
             !condition2
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_reactable should be false',
         );
@@ -386,7 +391,9 @@ mod tests {
         assert(
             condition3
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_visible should be true',
         );
@@ -410,7 +417,9 @@ mod tests {
         assert(
             !condition4
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_visible should be false',
         );
@@ -434,7 +443,9 @@ mod tests {
         assert(
             condition5
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'should not be equal',
         );
@@ -458,7 +469,9 @@ mod tests {
         assert(
             !condition6
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'should not be false',
         );

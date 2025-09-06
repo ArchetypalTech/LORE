@@ -55,7 +55,7 @@ pub struct Effect {
 #[generate_trait]
 pub impl EffectImpl of EffectTrait {
     fn apply_effect(
-        self: @Effect, mut world: WorldStorage, context: TriggerContext,
+        self: @Effect, mut world: WorldStorage, context: TriggerContext, game_id: u128,
     ) -> Result<(), Error> {
         let zero: felt252 = 0;
         let mut result: Result::<(), Error> = Result::Err(Error::EffectFailed);
@@ -68,7 +68,7 @@ pub impl EffectImpl of EffectTrait {
 
         match self.component {
             ComponentType::Area => {
-                let area_opt = AreaComponent::get_component(@world, actual_target);
+                let area_opt = AreaComponent::get_component(@world, actual_target, game_id);
                 if area_opt.is_none() {
                     result = Result::Err(Error::NoAreaComponent);
                 }
@@ -76,12 +76,12 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_area_property(
-                    area, world, self.property, @property_registry, self.value,
+                    area, world, self.property, @property_registry, self.value, game_id,
                 );
                 result = result_p;
             },
             ComponentType::Exit => {
-                let exit_opt = ExitComponent::get_component(@world, actual_target);
+                let exit_opt = ExitComponent::get_component(@world, actual_target, game_id);
                 if exit_opt.is_none() {
                     result = Result::Err(Error::NoExitComponent);
                 }
@@ -89,12 +89,12 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_exit_property(
-                    exit, world, self.property, @property_registry, self.value,
+                    exit, world, self.property, @property_registry, self.value, game_id,
                 );
                 result = result_p;
             },
             ComponentType::Reactable => {
-                let inspect_opt = ReactableComponent::get_component(@world, actual_target);
+                let inspect_opt = ReactableComponent::get_component(@world, actual_target, game_id);
                 if inspect_opt.is_none() {
                     result = Result::Err(Error::NoReactableComponent);
                 }
@@ -102,12 +102,12 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_reactable_property(
-                    reactable, world, self.property, @property_registry, self.value,
+                    reactable, world, self.property, @property_registry, self.value, game_id,
                 );
                 result = result_p;
             },
             ComponentType::InventoryItem => {
-                let item_opt = InventoryItemComponent::get_component(@world, actual_target);
+                let item_opt = InventoryItemComponent::get_component(@world, actual_target, game_id);
                 if item_opt.is_none() {
                     result = Result::Err(Error::NoInventoryItemComponent);
                 }
@@ -123,11 +123,12 @@ pub impl EffectImpl of EffectTrait {
                     @property_registry,
                     self.value,
                     self.n_value,
+                    game_id,
                 );
                 result = result_p;
             },
             ComponentType::Container => {
-                let cont_opt = ContainerComponent::get_component(@world, actual_target);
+                let cont_opt = ContainerComponent::get_component(@world, actual_target, game_id);
                 if cont_opt.is_none() {
                     result = Result::Err(Error::NoContainerComponent);
                 }
@@ -142,11 +143,12 @@ pub impl EffectImpl of EffectTrait {
                     @property_registry,
                     self.value,
                     self.n_value,
+                    game_id,
                 );
                 result = result_p;
             },
             ComponentType::Player => {
-                let player_opt = PlayerComponent::get_component(@world, actual_target);
+                let player_opt = PlayerComponent::get_component(@world, actual_target, game_id);
                 if player_opt.is_none() {
                     result = Result::Err(Error::NoPlayerComponent);
                 }
@@ -154,7 +156,7 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_player_property(
-                    player, world, self.property, @property_registry, self.value,
+                    player, world, self.property, @property_registry, self.value, game_id,
                 );
                 result = result_p;
             },
@@ -210,9 +212,10 @@ mod tests {
     fn Effect_test_apply_effect() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         // create door entity
+        let game_id: u128 = 0;
         let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst, game_id);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
         reactable.is_reactable = true;
@@ -234,13 +237,14 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world);
+        reactable.store(ref world, game_id);
         let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // Create player
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1);
+        let game_id: u128 = 0;
+        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         world.write_model(@player);
 
         // Create trigger context
@@ -268,7 +272,7 @@ mod tests {
             n_value,
         );
         world.write_model(@effect);
-        let result = effect.apply_effect(world, context);
+        let result = effect.apply_effect(world, context, 0);
 
         let new_reactable: Reactable = world.read_model(door.inst);
         let key: u32 = *new_reactable.description.at(0);

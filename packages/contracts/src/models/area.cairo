@@ -48,7 +48,7 @@ pub impl AreaComponent of Component<Area> {
         EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn get_component(world: @WorldStorage, inst: felt252, game_id: felt252) -> Option<Area> {
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Area> {
         let area: Area = world.read_game_inst(inst, game_id);
         if (area.is_component()) {
             Option::Some(area)
@@ -57,7 +57,7 @@ pub impl AreaComponent of Component<Area> {
         }
     }
 
-    fn store(self: @Area, ref world: WorldStorage, game_id: felt252) {}
+    fn store(self: @Area, ref world: WorldStorage, game_id: u128) {
         // world.write_model(self);
         world.write_game_inst(self, game_id);
     }
@@ -76,11 +76,11 @@ pub impl AreaComponent of Component<Area> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252) -> Area {
+    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Area {
         let mut area: Area = world.read_model(inst);
         area.inst = inst;
         area.is_area = true;
-        world.write_model(@area);
+        area.store(ref world, game_id);
         // Return the component
         area
     }
@@ -103,11 +103,12 @@ mod tests {
     #[test]
     fn test_area_create() {
         let (mut world, _, _, _, _) = helpers::setup_core();
-        let area: Area = AreaComponent::add_component(ref world, 1);
+        let game_id: u128 = 0;
+        let area: Area = AreaComponent::add_component(ref world, 1, game_id);
         assert(area.is_area, 'area is area');
         assert(area.inst == 1, 'area.inst == 1');
         assert(AreaInstance::has_component(@world, area.inst), 'has_component()');
-        let component: Option<Area> = AreaComponent::get_component(@world, area.inst);
+        let component: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
         assert(component.is_some(), 'component.is_some()');
         assert(component.unwrap().inst() == area.inst, 'component.is_some()');
     }
@@ -117,7 +118,7 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
         //
         // create area
-        let area: Area = AreaComponent::add_component(ref world, 1);
+        let area: Area = AreaComponent::add_component(ref world, 1, 0);
         assert!(area.is_area);
         //
         // read game inst version, same as inst
@@ -153,11 +154,11 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
         //
         // create area
-        let area: Area = AreaComponent::add_component(ref world, 1);
+        let area: Area = AreaComponent::add_component(ref world, 1, 0);
         assert!(area.is_area);
         //
         // read game inst version, same as inst
-        let comp_null: Option<Area> = AreaComponent::get_component(@world, 1234);
+        let comp_null: Option<Area> = AreaComponent::get_component(@world, 1234, 0);
         let comp_inst: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
         let comp_game: Option<Area> = AreaComponent::get_component(@world, area.inst, 1);
         assert!(comp_null.is_none(), "null");
@@ -173,8 +174,8 @@ mod tests {
         //
         // save game inst version
         comp_game.is_spawn_point = true;
-        comp_game.store(ref world);
-        comp_inst.store(ref world);
+        comp_game.store(ref world, 1);
+        comp_inst.store(ref world, 0);
         // inst does not change!
         assert_eq!(comp_inst.inst(), area.inst, "saved");
         assert_eq!(comp_game.inst(), area.inst, "saved");
