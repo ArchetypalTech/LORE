@@ -18,7 +18,6 @@ pub mod lib {
     pub mod variable_property;
     pub mod variable_property_helper;
     pub mod errors_texts_output;
-    pub mod game_instance;
 }
 
 pub mod models {
@@ -30,6 +29,7 @@ pub mod models {
     pub mod effect;
     pub mod entity;
     pub mod exit;
+    pub mod game_instance;
     pub mod index;
     pub mod inventory_item;
     pub mod player;

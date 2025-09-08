@@ -2,6 +2,22 @@ use dojo::{world::WorldStorage, model::{Model, ModelStorage}};
 use lore::models::components::{Instance};
 use lore::lib::utils::{HashImpl};
 
+// game instance mapping, for client discovery
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct GameInstanceMap {
+    #[key]
+    pub game_id: u128,
+    #[key]
+    pub inst: felt252,
+    /// game instance key for [inst] in game [game_id]
+    pub game_inst: felt252,
+}
+
+
+//---------------------------------
+// Traits
+//
 
 pub trait GameTrait<M> {
     fn game_inst(inst: felt252, game_id: u128) -> felt252;
@@ -43,6 +59,14 @@ pub impl GameImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameTrait<
         if game_id != 0 {
             // generate game instance key
             let game_inst: felt252 = Self::game_inst(model.inst(), game_id);
+            // create game instance mapping for easy client discovery
+            if !Instance::<M>::has_component(@self, game_inst) {
+                self.write_model(@GameInstanceMap {
+                    game_id,
+                    inst: model.inst(),
+                    game_inst,
+                });
+            }
             // clone model using game instance key
             let mut game_model: M = model.clone();
             game_model.set_inst(game_inst);

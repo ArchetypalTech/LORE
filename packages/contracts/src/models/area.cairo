@@ -3,9 +3,9 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
+        game_instance::{GameImpl},
         player::{Player},
     },
-    lib::game_instance::{GameImpl},
     types::{command_type::Command},
     constants::errors::Error,
 };
@@ -101,8 +101,8 @@ mod tests {
         tests::helpers,
         models::{
             entity::{EntityImpl},
+            game_instance::{GameImpl, GameInstanceMap},
         },
-        lib::game_instance::{GameImpl},
     };
 
     #[test]
@@ -136,6 +136,9 @@ mod tests {
         assert_eq!(comp_inst.inst(), area.inst, "baseline");
         assert_eq!(comp_game.inst(), area.inst, "baseline");
         assert_eq!(comp_game.is_spawn_point, false, "baseline");
+        // GameInstanceMap model does not exist yet
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_eq!(map.game_inst, 0, "baseline");
         //
         // save game inst version
         comp_game.is_spawn_point = true;
@@ -144,6 +147,9 @@ mod tests {
         // inst does not change!
         assert_eq!(comp_inst.inst(), area.inst, "saved");
         assert_eq!(comp_game.inst(), area.inst, "saved");
+        // GameInstanceMap was created
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_ne!(map.game_inst, 0, "saved");
         //
         // read game inst version, updated, original is preserved
         let new_comp_inst: Area = world.read_game_model(area.inst, 0);
@@ -180,6 +186,9 @@ mod tests {
         assert_eq!(comp_inst.inst(), area.inst, "baseline");
         assert_eq!(comp_game.inst(), area.inst, "baseline");
         assert_eq!(comp_game.is_spawn_point, false, "baseline");
+        // GameInstanceMap model does not exist yet
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_eq!(map.game_inst, 0, "baseline");
         //
         // save game inst version
         comp_game.is_spawn_point = true;
@@ -188,6 +197,9 @@ mod tests {
         // inst does not change!
         assert_eq!(comp_inst.inst(), area.inst, "saved");
         assert_eq!(comp_game.inst(), area.inst, "saved");
+        // GameInstanceMap was created
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_ne!(map.game_inst, 0, "saved");
         //
         // read game inst version, updated, original is preserved
         let new_comp_inst: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);

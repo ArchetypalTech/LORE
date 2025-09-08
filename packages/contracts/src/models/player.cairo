@@ -4,12 +4,12 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
+        game_instance::{GameImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
     },
     types::{command_type::Command},
     constants::errors::Error,
-    lib::game_instance::{GameImpl},
 };
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]

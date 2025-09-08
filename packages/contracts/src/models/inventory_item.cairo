@@ -3,6 +3,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
+        game_instance::{GameImpl},
         player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
         area::AreaComponent,
@@ -17,7 +18,6 @@ use lore::{
     lib::{
         a_lexer::CommandImpl,
         utils::ByteArrayTraitExt,
-        game_instance::{GameImpl},
     },
 };
 

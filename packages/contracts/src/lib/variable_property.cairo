@@ -1,6 +1,7 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
+        game_instance::{GameImpl},
         index::{PropertyRegistry},
         area::{Area},
         exit::{Exit},
@@ -17,7 +18,6 @@ use lore::{
     lib::{
         utils::ByteArrayTraitExt,
         variable_property_helper::VariablePropertyHelperTrait,
-        game_instance::GameImpl,
     },
     constants::errors::Error,
 };

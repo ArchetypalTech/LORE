@@ -2,16 +2,16 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage, mo
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{DescriptionText},
         components::{Instance, Component},
+        game_instance::{GameImpl},
         player::{Player, PlayerImpl},
+        index::{DescriptionText},
     },
     types::{
         command_type::{Command, Token},
         component_type::{ReactableActions, ActionMapReactable},
     },
     constants::errors::Error,
-    lib::game_instance::{GameImpl},
     lib::random,
 };
 

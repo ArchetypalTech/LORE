@@ -3,6 +3,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
+        game_instance::{GameImpl},
         player::{Player, PlayerImpl},
         inventory_item::{InventoryItem, InventoryItemImpl},
     },
@@ -10,7 +11,6 @@ use lore::{
     component_type::{ContainerActions, ActionMapContainer}},
     lib::{
         a_lexer::CommandImpl,
-        game_instance::{GameImpl},
     },
     constants::errors::Error,
 };
@@ -397,8 +397,8 @@ mod tests {
         tests::helpers,
         models::{
             entity::{EntityImpl},
+            game_instance::{GameImpl},
         },
-        lib::game_instance::{GameImpl},
     };
 
     #[test]
