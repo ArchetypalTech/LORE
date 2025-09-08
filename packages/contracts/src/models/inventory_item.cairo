@@ -74,6 +74,11 @@ pub impl InventoryItemInstance of Instance<InventoryItem> {
     }
 
     #[inline(always)]
+    fn set_inst(ref self: InventoryItem, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+
+    #[inline(always)]
     fn is_component(self: @InventoryItem) -> bool {
         (*self.is_inventory_item)
     }
@@ -91,7 +96,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     }
 
     fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<InventoryItem> {
-        let inventory_item: InventoryItem = world.read_game_inst(inst, game_id);
+        let inventory_item: InventoryItem = world.read_game_model(inst, game_id);
         if (inventory_item.is_component()) {
             Option::Some(inventory_item)
         } else {
@@ -100,7 +105,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     }
 
     fn store(self: @InventoryItem, ref world: WorldStorage, game_id: u128) {
-        world.write_game_inst(self, game_id);
+        world.write_game_model(self, game_id);
     }
 
     fn can_use_command(

@@ -66,6 +66,11 @@ pub impl ExitInstance of Instance<Exit> {
     }
 
     #[inline(always)]
+    fn set_inst(ref self: Exit, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+
+    #[inline(always)]
     fn is_component(self: @Exit) -> bool {
         (*self.is_exit)
     }
@@ -83,7 +88,7 @@ pub impl ExitComponent of Component<Exit> {
     }
 
     fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Exit> {
-        let exit: Exit = world.read_game_inst(inst, game_id);
+        let exit: Exit = world.read_game_model(inst, game_id);
         if (exit.is_component()) {
             Option::Some(exit)
         } else {
@@ -92,7 +97,7 @@ pub impl ExitComponent of Component<Exit> {
     }
 
     fn store(self: @Exit, ref world: WorldStorage, game_id: u128) {
-        world.write_game_inst(self, game_id);
+        world.write_game_model(self, game_id);
     }
 
     fn can_use_command(

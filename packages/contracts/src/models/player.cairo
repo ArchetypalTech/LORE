@@ -265,6 +265,11 @@ pub impl PlayerInstance of Instance<Player> {
     }
 
     #[inline(always)]
+    fn set_inst(ref self: Player, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+
+    #[inline(always)]
     fn is_component(self: @Player) -> bool {
         (*self.is_player)
     }
@@ -282,7 +287,7 @@ pub impl PlayerComponent of Component<Player> {
     }
 
     fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Player> {
-        let player: Player = world.read_game_inst(inst, game_id);
+        let player: Player = world.read_game_model(inst, game_id);
         if (player.is_component()) {
             Option::Some(player)
         } else {
@@ -291,7 +296,7 @@ pub impl PlayerComponent of Component<Player> {
     }
 
     fn store(self: @Player, ref world: WorldStorage, game_id: u128) {
-        world.write_game_inst(self, game_id);
+        world.write_game_model(self, game_id);
     }
 
     fn can_use_command(

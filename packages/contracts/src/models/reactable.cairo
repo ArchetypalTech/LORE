@@ -99,6 +99,11 @@ pub impl ReactableInstance of Instance<Reactable> {
     }
 
     #[inline(always)]
+    fn set_inst(ref self: Reactable, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+
+    #[inline(always)]
     fn is_component(self: @Reactable) -> bool {
         (*self.is_reactable)
     }
@@ -116,7 +121,7 @@ pub impl ReactableComponent of Component<Reactable> {
     }
 
     fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Reactable> {
-        let reactable: Reactable = world.read_game_inst(inst, game_id);
+        let reactable: Reactable = world.read_game_model(inst, game_id);
         if (reactable.is_component()) {
             Option::Some(reactable)
         } else {
@@ -125,7 +130,7 @@ pub impl ReactableComponent of Component<Reactable> {
     }
 
     fn store(self: @Reactable, ref world: WorldStorage, game_id: u128) {
-        world.write_game_inst(self, game_id);
+        world.write_game_model(self, game_id);
     }
 
     fn can_use_command(

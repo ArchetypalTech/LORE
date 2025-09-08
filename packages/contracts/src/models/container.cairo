@@ -259,6 +259,11 @@ pub impl ContainerInstance of Instance<Container> {
     }
 
     #[inline(always)]
+    fn set_inst(ref self: Container, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+
+    #[inline(always)]
     fn is_component(self: @Container) -> bool {
         (*self.is_container)
     }
@@ -276,7 +281,7 @@ pub impl ContainerComponent of Component<Container> {
     }
 
     fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Container> {
-        let container: Container = world.read_game_inst(inst, game_id);
+        let container: Container = world.read_game_model(inst, game_id);
         if (container.is_component()) {
             Option::Some(container)
         } else {
@@ -285,7 +290,7 @@ pub impl ContainerComponent of Component<Container> {
     }
 
     fn store(self: @Container, ref world: WorldStorage, game_id: u128) {
-        world.write_game_inst(self, game_id);
+        world.write_game_model(self, game_id);
     }
 
     fn can_use_command(
@@ -380,4 +385,82 @@ fn get_action_token(
         }
     };
     action_token
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    // use dojo::{model::ModelStorage};
+    use super::*;
+    use lore::{
+        tests::helpers,
+        models::{
+            entity::{EntityImpl},
+        },
+        lib::game_instance::{GameImpl},
+    };
+
+    #[test]
+    fn test_container_game_comp() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+        //
+        // create container
+        let container: Container = ContainerComponent::add_component(ref world, 111, 0);
+        assert!(container.is_container);
+        assert_eq!(container.inst, 111);
+        //
+        // read game inst version, same as inst
+        let game_id: u128 = 222;
+        let comp_null: Option<Container> = ContainerComponent::get_component(@world, 1234, 0);
+        let comp_inst: Option<Container> = ContainerComponent::get_component(@world, container.inst, 0);
+        let comp_game: Option<Container> = ContainerComponent::get_component(@world, container.inst, 1);
+        assert!(comp_null.is_none(), "null");
+        assert!(comp_inst.is_some(), "baseline");
+        assert!(comp_game.is_some(), "baseline");
+        let mut comp_inst: Container = comp_inst.unwrap();
+        let mut comp_game: Container = comp_game.unwrap();
+        assert!(comp_inst.is_component(), "baseline");
+        assert!(comp_game.is_component(), "baseline");
+        assert_eq!(comp_inst.inst(), container.inst, "baseline");
+        assert_eq!(comp_game.inst(), container.inst, "baseline");
+        assert_eq!(comp_inst.can_be_opened, true, "baseline");
+        assert_eq!(comp_game.can_be_opened, true, "baseline");
+        //
+        // save game inst version
+        comp_inst.num_slots = 20;
+        comp_inst.store(ref world, 0);
+        comp_game.num_slots = 10;
+        comp_game.store(ref world, game_id);
+        // inst does not change!
+        assert_eq!(comp_inst.inst(), container.inst, "saved");
+        assert_eq!(comp_game.inst(), container.inst, "saved");
+        //
+        // read game inst version, updated, original is preserved
+        let new_comp_inst: Container = ContainerComponent::get_component(@world, container.inst, 0).unwrap();
+        let new_comp_game: Container = ContainerComponent::get_component(@world, container.inst, game_id).unwrap();
+        assert_eq!(new_comp_inst.inst(), container.inst, "new_component");
+        assert_eq!(new_comp_game.inst(), container.inst, "new_component");
+        assert_eq!(new_comp_inst.num_slots, 20, "new_component");
+        assert_eq!(new_comp_game.num_slots, 10, "new_component");
+        //
+        // edit some more
+        comp_inst.can_be_opened = true;
+        comp_inst.is_open = false;
+        comp_inst.store(ref world, 0);
+        comp_game.can_be_opened = false;
+        comp_game.is_open = true;
+        comp_game.store(ref world, game_id);
+        // results...
+        let new_comp_inst: Container = ContainerComponent::get_component(@world, container.inst, 0).unwrap();
+        let new_comp_game: Container = ContainerComponent::get_component(@world, container.inst, game_id).unwrap();
+        assert_eq!(new_comp_inst.inst(), container.inst, "newer_component");
+        assert_eq!(new_comp_game.inst(), container.inst, "newer_component");
+        assert_eq!(new_comp_inst.num_slots, 20, "newer_component");
+        assert_eq!(new_comp_inst.can_be_opened, true, "newer_component");
+        assert_eq!(new_comp_inst.is_open, false, "newer_component");
+        assert_eq!(new_comp_game.num_slots, 10, "newer_component");
+        assert_eq!(new_comp_game.can_be_opened, false, "newer_component");
+        assert_eq!(new_comp_game.is_open, true, "newer_component");
+    }
 }
