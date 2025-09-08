@@ -486,13 +486,9 @@ export const registerPropertyRegistry = async () => {
 	}
 };
 
-let alreadyDone = false;
 const publishRegisterPropertyRegistry = async () => {
-	if (alreadyDone == false) {
 		let done = true;
 		await dispatchDesignerCall("register_property_registry", [done]);
-		alreadyDone = true;
-	}
 };
 
 /**

@@ -16,6 +16,8 @@ import { stringCairoEnum } from "@/editor/lib/schemas";
 import { syncPropertyRegistry } from "../../data/editor.data";
 import { BigNumberish } from "starknet";
 import { CollapsibleComponent } from "../CollapsibleComponent";
+import { EntitySelector } from "../EntitySelector";
+import { useEditorData } from "../../data/editor.data";
 
 // Individual Effect Item Component
 const EffectItem = ({
@@ -54,6 +56,8 @@ const EffectItem = ({
     label: name,
   }));
 
+  const { dataPool } = useEditorData();
+
   return (
     <CollapsibleComponent
       key={`${effectObj.inst}-${effectObj.key}`}
@@ -66,10 +70,11 @@ const EffectItem = ({
           value={effectObj.name}
           onChange={handleInputChange(idx)}
         />
-        <Input
+        <EntitySelector
           id="target"
           value={effectObj.target.toString()}
           onChange={handleInputChange(idx)}
+          dataPool={dataPool}
         />
         <CairoEnumSelect
           id="effectType"

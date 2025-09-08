@@ -723,6 +723,13 @@ export const getSpawnPoint = async (): Promise<BigNumberish> => {
  * @returns True if the player exists, false otherwise
  */
 export const getPlayer = async (account: string): Promise<boolean> => {
+  console.log("getPlayer account using", account);
+
+  // Normalize Ethereum addresses (lowercase + remove extra leading zeros)
+  const normalizeAddress = (addr: string) =>
+    addr.replace(/^0x0+/, "0x").toLowerCase();
+  const normalizedAccount = normalizeAddress(account);
+
   try {
     const { sdk } = await InitDojo();
     const query = new ToriiQueryBuilder<SchemaType>()
@@ -735,7 +742,17 @@ export const getPlayer = async (account: string): Promise<boolean> => {
 
     return result.getItems().some((item) => {
       const player = item.models?.lore?.Player;
-      return player?.inst === account;
+      console.log("player", player);
+
+      const playerAddress = player?.address
+        ? normalizeAddress(player.address)
+        : null;
+      console.log("playerAddress", playerAddress);
+
+      if (playerAddress === normalizedAccount) {
+        return true;
+      }
+      return false;
     });
   } catch (error) {
     console.error("Error fetching player from Torii:", error);
@@ -743,7 +760,10 @@ export const getPlayer = async (account: string): Promise<boolean> => {
   }
 };
 
-export const propertiesRegistered = async (): Promise<boolean> => {
+export const propertiesRegistered = async (
+  maxRetries = 5,
+  delayMs = 2000
+): Promise<boolean> => {
   try {
     const { sdk } = await InitDojo();
     const query = new ToriiQueryBuilder<SchemaType>()
@@ -752,10 +772,29 @@ export const propertiesRegistered = async (): Promise<boolean> => {
       .includeHashedKeys()
       .withEntityModels(["lore-PropertyRegistry"]);
 
-    const result = await sdk.getEntities({ query });
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const result = await sdk.getEntities({ query });
+      const items = result.getItems();
+      console.log(
+        `propertiesRegistered attempt ${attempt + 1}: found ${items.length} registries`,
+        items
+      );
 
-    // Just check if we got at least one PropertyRegistry model back
-    return result.getItems().some((item) => !!item.models?.lore?.PropertyRegistry);
+      if (items.length >= 6) {
+        console.log("✅ All 6 PropertyRegistry components are registered");
+        return true;
+      }
+
+      // Wait before retrying
+      if (attempt < maxRetries - 1) {
+        await new Promise((res) => setTimeout(res, delayMs));
+      }
+    }
+
+    console.warn(
+      `⚠️ Properties not fully registered after ${maxRetries} retries`
+    );
+    return false;
   } catch (error) {
     console.error("Error fetching properties from Torii:", error);
     throw error;
@@ -771,6 +810,7 @@ export let playerExists = false;
 export const checkForPlayer = async () => {
 	if (!playerExists) {
 		playerFound = await getPlayer(getPlayerAddress());
+		console.log("playerFound", playerFound);
 		if (playerFound) {
 			playerExists = true;
 		} else {

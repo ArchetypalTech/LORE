@@ -156,9 +156,14 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 		}
 		// Check properties
-		const propertyRegistryFound = await propertiesRegistered();
+		await registerPropertyRegistry();
+
+		let propertyRegistryFound = await propertiesRegistered();
+		// Check properties
 		if (!propertyRegistryFound) {
-			await registerPropertyRegistry();
+			console.log("PropertyRegistry not found");
+		} else {
+			console.log("PropertyRegistry found");
 		}
 		// Call the check for player
 		addTerminalContent({

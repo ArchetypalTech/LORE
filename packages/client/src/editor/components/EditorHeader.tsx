@@ -63,12 +63,15 @@ export const EditorHeader = () => {
 							className="btn btn-sm btn-warning"
 							onClick={async () => {
 								await WalletStore().connectController();
+
+								await registerPropertyRegistry();
+
+								let propertyRegistryFound = await propertiesRegistered();
 								// Check properties
-								const propertyRegistryFound = await propertiesRegistered();
 								if (!propertyRegistryFound) {
-									await registerPropertyRegistry();
+									console.log("PropertyRegistry not found");
 								} else {
-									console.log("Property registry already found");
+									console.log("PropertyRegistry found");
 								}
 							}}
 						>
