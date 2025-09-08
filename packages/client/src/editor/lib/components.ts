@@ -12,7 +12,7 @@ import { InventoryItemInspector } from "../components/inspectors/InventoryItemIn
 import { ReactableInspector } from "../components/inspectors/ReactableInspector";
 import type { ComponentInspector } from "../components/inspectors/useInspector";
 import { ContainerInspector } from "../components/inspectors/ContainerInspector";
-import { PlayerInspector } from "../components/inspectors/PlayerInspector";
+import { PlayerInspector, PlayerStoryInspector } from "../components/inspectors/PlayerInspector";
 import { TriggerInspector } from "../components/inspectors/TriggerInspector";
 import { ConditionInspector } from "../components/inspectors/ConditionInspector";
 import { EffectInspector } from "../components/inspectors/EffectInspector";
@@ -21,7 +21,7 @@ import { DescriptionTextInspector } from "../components/inspectors/DescriptionIn
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
-import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store"
+import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish } from "starknet";
 import randomName from "@scaleway/random-name";
 
@@ -40,7 +40,7 @@ export const createDefaultEntity = (): WithStringEnums<
 
 export const createPlayerEntity = (
 	spawn_location?: BigNumberish
-): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
+): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player" | "PlayerStory">> => {
 	const playerAddress = getPlayerAddress();
 	const playerName = getPlayerName();
 	return {
@@ -50,15 +50,20 @@ export const createPlayerEntity = (
 			inst: playerAddress,
 			is_entity: true,
 			name: playerName,
-			alt_names: [],
+			alt_names: [playerName, "me", "myself"],
 		},
 		Player: {
 			...schema.lore.Player,
 			inst: playerAddress,
 			is_player: true,
 			address: playerAddress,
-			location: spawn_location?.toString() || 0,
+			location: spawn_location!.toString() || 0,
 			use_debug: false,
+		},
+		PlayerStory: {
+			...schema.lore.PlayerStory,
+			inst: playerAddress,
+			story_line: 0,
 		},
 	};
 };
@@ -75,10 +80,22 @@ export const createPlayerComponent = (
 			inst: playerAddress,
 			is_player: true,
 			address: playerAddress,
-			story_line: 0,
 			location: 0,
 			use_debug: false,
 		},
+	};
+};
+
+export const createPlayerStoryComponent = (
+	_entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "PlayerStory">> => {
+	const address = LORE_CONFIG.wallet.address;
+	return { 
+		PlayerStory: {
+			...schema.lore.PlayerStory,
+			inst: address,
+			story_line: 0,
+		}
 	};
 };
 
@@ -294,6 +311,12 @@ export const componentData: {
 		inspector: PlayerInspector,
 		icon: "👤",
 		creator: createPlayerComponent,
+		},
+	PlayerStory: {
+		order: 1,
+		inspector: PlayerStoryInspector,
+		icon: "👤",
+		creator: createPlayerStoryComponent,
 	},
 	Area: {
 		order: 2,
@@ -376,4 +399,4 @@ export const getPlayerName = (): string => {
 		}
 	}
 	return randomName();
-}
+};

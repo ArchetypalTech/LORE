@@ -9,7 +9,6 @@ import {
 	type SchemaType,
 	schema,
 } from "@lib/dojo_bindings/typescript/models.gen";
-import {registerPropertyRegistry, alreadyDone} from "../editor/publisher";
 
 /**
  * ## Initializes the Dojo SDK and configuration
@@ -79,13 +78,6 @@ export const InitDojo = async () => {
 	};
 
 	console.log( {sdk, dojoConfig, provider, query, sub})
-
-	/**
-	 * Register property registry
-	 */
-	if (alreadyDone == false) {
-		await registerPropertyRegistry();
-	}
 
 	return { sdk, dojoConfig, provider, query, sub };
 };

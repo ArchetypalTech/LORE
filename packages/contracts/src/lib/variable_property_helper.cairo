@@ -3,7 +3,7 @@ use lore::{
     models::{
         index::{
             Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Player,
-            PropertyRegistry,
+            PropertyRegistry, Effect,
         },
         area::AreaComponent, exit::ExitComponent, reactable::ReactableComponent,
         inventoryItem::InventoryItemComponent, container::ContainerComponent,
@@ -519,11 +519,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     fn set_inventory_item_property(
         mut component: InventoryItem,
         mut world: WorldStorage,
-        name: @ByteArray,
-        effect_type: @EffectType,
+        effect: @Effect,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
-        num_value: @u32,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
@@ -536,13 +533,13 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if prop.name == effect.property.clone() {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
-                        if name == @owner_id {
-                            let (value, _index) = new_value[0].clone();
-                            component.owner_id = value.to_felt252_word().unwrap();
+                        if effect.property == @owner_id {
+                            let new_owner_id = effect.hex_value.clone();
+                            component.owner_id = new_owner_id;
                             // move item to new owner
                             let new_owner_container: Container = world
                                 .read_model(component.owner_id);
@@ -552,25 +549,25 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             } else {
                                 success = true;
                             }
-                        } else if name == @can_be_picked_up {
-                            let (value, _index) = new_value[0].clone();
+                        } else if effect.property == @can_be_picked_up {
+                            let (value, _index) = effect.value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_picked_up = new_var_value;
                             success = true;
-                        } else if name == @can_go_in_container {
-                            let (value, _index) = new_value[0].clone();
+                        } else if effect.property == @can_go_in_container {
+                            let (value, _index) = effect.value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_go_in_container = new_var_value;
                             success = true;
-                        } else if name == @quantity {
-                            match effect_type.clone() {
+                        } else if effect.property == @quantity {
+                            match effect.effect_type.clone() {
                                 EffectType::AddQuantity => {
-                                    component.quantity += num_value.clone();
+                                    component.quantity += effect.n_value.clone();
                                     success = true;
                                 },
                                 EffectType::RemoveQuantity => {
-                                    if component.quantity >= num_value.clone() {
-                                        component.quantity -= num_value.clone();
+                                    if component.quantity >= effect.n_value.clone() {
+                                        component.quantity -= effect.n_value.clone();
                                         success = true;
                                     } else {
                                         let zero: u32 = 0;
@@ -580,19 +577,19 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 },
                                 EffectType::ModifyProperty => {
                                     // Overwrite the quantity
-                                    component.quantity = num_value.clone();
+                                    component.quantity = effect.n_value.clone();
                                     success = true;
                                 },
                                 _ => { // Do nothing for now
                                 },
                             }
-                        } else if name == @already_used {
-                            let (value, _index) = new_value[0].clone();
+                        } else if effect.property == @already_used {
+                            let (value, _index) = effect.value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.already_used = new_var_value;
                             success = true;
-                        } else if name == @multiple_use {
-                            let (value, _index) = new_value[0].clone();
+                        } else if effect.property == @multiple_use {
+                            let (value, _index) = effect.value[0].clone();
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.multiple_use = new_var_value;
                             success = true;

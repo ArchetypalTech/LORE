@@ -78,13 +78,7 @@ pub impl EffectImpl of EffectTrait {
                 // Direct modification to component
                 let (result_p, _success_p) =
                     VariablePropertyHelperTrait::set_inventory_item_property(
-                    item,
-                    world,
-                    self.property,
-                    self.effect_type,
-                    @property_registry,
-                    self.value,
-                    self.n_value,
+                    item, world, self, @property_registry,
                 );
                 result = result_p;
             },
@@ -157,8 +151,11 @@ mod tests {
         property: ByteArray,
         value: Array<(ByteArray, u32)>,
         n_value: u32,
+        hex_value: felt252,
     ) -> Effect {
-        Effect { inst, key, name, target, effect_type, component, property, value, n_value }
+        Effect {
+            inst, key, name, target, effect_type, component, property, value, n_value, hex_value,
+        }
     }
 
     fn create_trigger_context(
@@ -218,6 +215,7 @@ mod tests {
         let key: felt252 = 1;
         let name: ByteArray = "Effect name";
         let n_value: u32 = 0;
+        let hex_value: felt252 = 0;
         let mut effect = create_test_effect(
             door.inst,
             key,
@@ -228,6 +226,7 @@ mod tests {
             "description",
             new_value.clone(),
             n_value,
+            hex_value,
         );
         world.write_model(@effect);
         let result = effect.apply_effect(world, context);

@@ -99,10 +99,10 @@ mod tests {
         player.say(world, "hello");
         let story: PlayerStory = world.read_model(player.inst);
         // ("story: {:?}", story);
-        assert(story.story.len() == 2, 'story has two entries'); // first entry is intro text
+        let story_key: u32 = 2;
+        assert(story.story_line == 2, 'story has two entries'); // first entry is intro text
         let test_text: ByteArray = "hello";
 
-        let story_key: u32 = *story.story.at(story.story.len() - 1);
         let story_line: StoryLine = world.read_model((story.inst, story_key));
         assert(story_line.line == test_text, 'story has "hello"');
     }

@@ -17,6 +17,8 @@ import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import { syncPropertyRegistry } from "../../data/editor.data";
 import { CollapsibleComponent } from "../CollapsibleComponent";
+import { EntitySelector } from "../EntitySelector";
+import { useEditorData } from "../../data/editor.data";
 
 // Individual Condition Item Component
 const ConditionItem = ({
@@ -56,6 +58,8 @@ const ConditionItem = ({
     label: name,
   }));
 
+  const { dataPool } = useEditorData();
+
   return (
     <CollapsibleComponent
       key={`${conditionObj.inst}-${conditionObj.key}`}
@@ -67,10 +71,11 @@ const ConditionItem = ({
           value={conditionObj.name}
           onChange={handleInputChange(idx)}
         />
-        <Input
+        <EntitySelector
           id="target"
           value={conditionObj.target.toString()}
           onChange={handleInputChange(idx)}
+          dataPool={dataPool}
         />
         <CairoEnumSelect
           id="component"

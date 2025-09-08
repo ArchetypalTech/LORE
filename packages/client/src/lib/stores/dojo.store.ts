@@ -66,34 +66,10 @@ const setStatus = (status: DojoStatus) => set({ status });
 const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	if (!playerStory) return;
 
-	const previousStory = get().playerStory?.story || [];
-	const newStory = playerStory.story;
-	const isNewText = previousStory.length > 0;
-
 	const lastKeyUsed = get().lastKeyUsed ?? -1;
-
 	const printed = get().printedKeys;
 
-	// Get only new keys (greater than last used), sorted ascending, and remove from printed set
-	const rawNewKeys = newStory
-		.map(Number)
-		.filter((key) => key > lastKeyUsed && !printed.has(key));
-
-	if (rawNewKeys.length === 0) return;
-
-	const newKeys = [...new Set(rawNewKeys)].sort((a, b) => a - b);
-	set({ lastKeyUsed: Number(newKeys[newKeys.length - 1]) });
-	// Store last key used in local storage
-	localStorage.setItem("lastKeyUsed", String(newKeys[newKeys.length - 1]));
-	// Add new keys to printed set and persist
-	for (const key of newKeys) {
-		printed.add(Number(key));
-	}
-	// Add printed keys to local storage
-	set({ printedKeys: printed });
-	localStorage.setItem("printedKeys", JSON.stringify(Array.from(printed)));
-
-	// Fetch StoryLine models directly from Torii
+	// Fetch all StoryLines for this player
 	const allStoryLines: StoryLine[] = [];
 	try {
 		const { sdk } = await InitDojo();
@@ -123,90 +99,76 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 		});
 	} catch (error) {
 		console.error("Error fetching StoryLine models from Torii:", error);
-		throw error;
+		return;
 	}
 
-	// Build a map of key => line
-	const storyLineMap = new Map<string, string>();
-	for (const s of allStoryLines) {
-		const keyStr = String(s.key);
-		if (!storyLineMap.has(keyStr)) {
-			storyLineMap.set(keyStr, s.line);
+	// Filter new keys and normalize to number
+	const newLines = allStoryLines
+		.filter((s) => Number(s.key) > lastKeyUsed && !printed.has(Number(s.key)))
+		.sort((a, b) => Number(a.key) - Number(b.key));
+
+	if (newLines.length === 0) return;
+
+	// Update lastKeyUsed and printedKeys
+	const maxKey = Number(newLines[newLines.length - 1].key);
+	set({ lastKeyUsed: maxKey });
+	localStorage.setItem("lastKeyUsed", String(maxKey));
+
+	for (const s of newLines) printed.add(Number(s.key));
+	set({ printedKeys: printed });
+	localStorage.setItem("printedKeys", JSON.stringify(Array.from(printed)));
+
+	// Add lines to terminal
+	for (const s of newLines) {
+		const trimmed = decodeDojoText(s.line.trim());
+		const lines = processWhitespaceTags(trimmed);
+		for (const l of lines) {
+			const sys = l.startsWith("+sys+");
+			const formatted = l.replaceAll("+sys+", "");
+			addTerminalContent({
+				text: formatted,
+				format: sys ? "hash" : l.startsWith("> ") ? "input" : "out",
+				useTypewriter: true,
+			});
 		}
 	}
 
-	// Map new keys to lines
-	const storyLines: string[] = [];
-	for (const key of newKeys) {
-		const line = storyLineMap.get(String(key));
-		if (line) {
-			storyLines.push(line);
-		}
-	}
-
-	if (storyLines.length === 0) return;
-
-	// Remove prompt line if duplicated
-	if (isNewText && storyLines[0]?.startsWith("> ")) {
-		storyLines.shift();
-	}
-
-	const newText = storyLines.join("\n");
-	//console.log("[STORY]:", newText);
-
-	const trimmedNewText = decodeDojoText(newText.trim());
-	const lines = processWhitespaceTags(trimmedNewText);
-
-	set({
-		lastProcessedText: trimmedNewText,
-		playerStory,
-	});
-
-	// Add new lines to terminal
-	for (const line of lines) {
-		const sys = line.startsWith("+sys+");
-		const formatted = line.replaceAll("+sys+", "");
-
-		addTerminalContent({
-			text: formatted,
-			format: sys ? "hash" : line.startsWith("> ") ? "input" : "out",
-			useTypewriter: true,
-		});
-	}
+	set({ lastProcessedText: newLines.map((s) => s.line).join("\n"), playerStory });
 };
 
-const onPlayerStory = (playerStory: Partial<PlayerStory>) => {
+const onPlayerStory = (playerStory: PlayerStory) => {
 	const address = !LORE_CONFIG.useController
 		? LORE_CONFIG.wallet.address
 		: WalletStore().controller?.account?.address;
+	// console.log("[DEBUG] address", address);
+	// console.log("[DEBUG] playerStory1", playerStory);
 	const normalizedPlayerId = num.cleanHex(String(playerStory.inst));
 	const normalizedAddress = num.cleanHex(String(address));
+	// console.log("[DEBUG] normalizedPlayerId", normalizedPlayerId);
+	// console.log("[DEBUG] normalizedAddress", normalizedAddress);
 	if (normalizedPlayerId === normalizedAddress) {
+		// console.log("[DEBUG] onPlayerStory", playerStory);
 		setOutputter(playerStory as PlayerStory);
 		return;
 	}
 };
 
 const onReponseData = (
-	responseData: ParsedEntity<SchemaType>["models"]["lore"],
+    responseData: ParsedEntity<SchemaType>["models"]["lore"],
 ) => {
-	// console.log("[DOJO] onReponseData", responseData);
-	if (responseData.PlayerStory && responseData.PlayerStory.story) {
-		if (get().originalStoryLength === 0) {
-			// Set original length AFTER handling the first story
-			onPlayerStory(responseData.PlayerStory);
-			set({ originalStoryLength: responseData.PlayerStory.story.length });
-		} else {
-			const slicedStory = {
-				...responseData.PlayerStory,
-				story: responseData.PlayerStory.story.slice(get().originalStoryLength),
-			};
-			onPlayerStory(slicedStory);
-		}
-	}
-	EditorData().dojoSync(responseData as EntityCollection, {
-		verbose: true,
-	});
+    // console.log("[DEBUG] onReponseData", responseData);
+
+    // Check if there’s a PlayerStory update
+    if (responseData.PlayerStory && responseData.PlayerStory.story_line !== undefined) {
+        const playerStory = responseData.PlayerStory as PlayerStory;
+        // console.log("[DEBUG] RD playerStory received", playerStory);
+
+        // Pass directly to setOutputter via onPlayerStory
+        onPlayerStory(playerStory);
+    }
+
+    // Always sync EditorData for lore entities
+    EditorData().dojoSync(responseData as EntityCollection, { verbose: true });
 };
 
 // Resets the local storage of the processed text and keys
