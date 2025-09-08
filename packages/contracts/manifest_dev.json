@@ -1,7 +1,7 @@
 {
   "world": {
-    "class_hash": "0x13d92333361bb7049c1232c0a5404e2c19082ededc3a73d75cb33fa952adec7",
-    "address": "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6",
+    "class_hash": "0x7bc7b264612d3ac261df0a6d72a6b73c84b9386ef0095dd340d42afc01bb53c",
+    "address": "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae",
     "seed": "lore",
     "name": ">LORE",
     "entrypoints": [
@@ -11,11 +11,13 @@
       "register_event",
       "register_model",
       "register_contract",
+      "register_external_contract",
       "register_library",
       "init_contract",
       "upgrade_event",
       "upgrade_model",
       "upgrade_contract",
+      "upgrade_external_contract",
       "emit_event",
       "emit_events",
       "set_entity",
@@ -83,6 +85,10 @@
           {
             "name": "Library",
             "type": "(core::starknet::class_hash::ClassHash, core::felt252)"
+          },
+          {
+            "name": "ExternalContract",
+            "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
           }
         ]
       },
@@ -213,6 +219,10 @@
           {
             "name": "Enum",
             "type": "core::array::Span::<dojo::meta::layout::FieldLayout>"
+          },
+          {
+            "name": "FixedArray",
+            "type": "(core::array::Span::<dojo::meta::layout::Layout>, core::integer::u32)"
           }
         ]
       },
@@ -369,6 +379,34 @@
           },
           {
             "type": "function",
+            "name": "register_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
             "name": "register_library",
             "inputs": [
               {
@@ -461,6 +499,30 @@
                 "type": "core::starknet::class_hash::ClassHash"
               }
             ],
+            "state_mutability": "external"
+          },
+          {
+            "type": "function",
+            "name": "upgrade_external_contract",
+            "inputs": [
+              {
+                "name": "namespace",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "instance_name",
+                "type": "core::byte_array::ByteArray"
+              },
+              {
+                "name": "contract_address",
+                "type": "core::starknet::contract_address::ContractAddress"
+              },
+              {
+                "name": "block_number",
+                "type": "core::integer::u64"
+              }
+            ],
+            "outputs": [],
             "state_mutability": "external"
           },
           {
@@ -928,6 +990,85 @@
       },
       {
         "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractRegistered",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
+        "name": "dojo::world::world_contract::world::ExternalContractUpgraded",
+        "kind": "struct",
+        "members": [
+          {
+            "name": "namespace",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "instance_name",
+            "type": "core::byte_array::ByteArray",
+            "kind": "key"
+          },
+          {
+            "name": "contract_selector",
+            "type": "core::felt252",
+            "kind": "key"
+          },
+          {
+            "name": "class_hash",
+            "type": "core::starknet::class_hash::ClassHash",
+            "kind": "data"
+          },
+          {
+            "name": "contract_address",
+            "type": "core::starknet::contract_address::ContractAddress",
+            "kind": "data"
+          },
+          {
+            "name": "block_number",
+            "type": "core::integer::u64",
+            "kind": "data"
+          }
+        ]
+      },
+      {
+        "type": "event",
         "name": "dojo::world::world_contract::world::ModelUpgraded",
         "kind": "struct",
         "members": [
@@ -1258,6 +1399,16 @@
             "kind": "nested"
           },
           {
+            "name": "ExternalContractRegistered",
+            "type": "dojo::world::world_contract::world::ExternalContractRegistered",
+            "kind": "nested"
+          },
+          {
+            "name": "ExternalContractUpgraded",
+            "type": "dojo::world::world_contract::world::ExternalContractUpgraded",
+            "kind": "nested"
+          },
+          {
             "name": "ModelUpgraded",
             "type": "dojo::world::world_contract::world::ModelUpgraded",
             "kind": "nested"
@@ -1328,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0x318730a49a71d0060379a7f81f4ade9085c74815236608e3c7d2dc8a3639c73",
-      "class_hash": "0xafb5718d176cdb950153d719054134745b218c240a0d1fcf9d1265326f808a",
+      "address": "0x2a3bf09bcd147a8ec842a5ef3e4ba072409d09fee693b51c54ab2809d7e7f54",
+      "class_hash": "0x31dbc0ba7fc3dfc724edf7474ec7f8d447693b3b0b1a6ec86f6726f6aeff1bf",
       "abi": [
         {
           "type": "impl",
@@ -1343,7 +1494,7 @@
         },
         {
           "type": "impl",
-          "name": "designer__DeployedContractImpl",
+          "name": "DojoDeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -2692,8 +2843,8 @@
       ]
     },
     {
-      "address": "0x1bc7a4c9a90a440e6b0fdbbedd4d4f64468cde3da9200d17990c476c680e5a9",
-      "class_hash": "0x6891efd9a8a20fdc1fff18f09baa343b6e9171398a5c36240666ec52a1f0c9d",
+      "address": "0x74cd32f1016fb75b4399745ea34945b8c5d41472b5c28437f9c0df59f5ab614",
+      "class_hash": "0xb4c66dfa65330539159cb429bae423e014d1e689f63958373ae62070931061",
       "abi": [
         {
           "type": "impl",
@@ -2707,7 +2858,7 @@
         },
         {
           "type": "impl",
-          "name": "prompt__DeployedContractImpl",
+          "name": "DojoDeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -2896,121 +3047,121 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x40361d82a09aaedf450e42ad956fd1794647041d08c44be030f5bfca5b56fdb",
+      "class_hash": "0x5c8d89459ca6a2f3551cf74ec95f304357c9b72a2643a7f3b707f8ecc141d6d",
       "tag": "lore-Action",
       "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
     },
     {
       "members": [],
-      "class_hash": "0x7c20a169299741cb15f5858f5db06589b0e7763ee041d6a5014e36a676843de",
+      "class_hash": "0x364b99c34790809d24fa10ba987fd89ab13c2d7b5733839e686cca3f314149e",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },
     {
       "members": [],
-      "class_hash": "0x2bf734f4b3cf7681a839fc565677becf877524a5a1e04bf16a96de6da3b1931",
+      "class_hash": "0x6594f9d785fc7bc1d8b6bec79bc0276a81d39ddc0902e1bb6bdaca48b2dd637",
       "tag": "lore-ChildToParent",
       "selector": "0x6c2a358df76ae2ca942ea3cc2f59ade04e5f5ba87ee162b41a10ad5a5755287"
     },
     {
       "members": [],
-      "class_hash": "0x75b8006e4ff009f7be1461be5bb33f98aa0cb860715b39d48ea7f800520d450",
+      "class_hash": "0x55ecc4d26507eb77352af5a85e5b152bf02f632b04776ac5327fb6633c38eea",
       "tag": "lore-ComponentVariable",
       "selector": "0x7ce96a78c69170fe31cf5c816ec24414fd4c354324f8b9537e6830c9177cfe4"
     },
     {
       "members": [],
-      "class_hash": "0x4b5cc9d620bb111af257830584b2108f388ab579421cfd100ef473265ff5c55",
+      "class_hash": "0x63c1e88046e7a8b93951c64d3cad51ac8c00618b095f0c8a77ce655ba0609fa",
       "tag": "lore-Condition",
       "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
     {
       "members": [],
-      "class_hash": "0x44a2e9438a622ecd645805e28a94c1db492c70cd3dab6b0728bec4cd87d3046",
+      "class_hash": "0x49865f1446bfbdcbc282606128b1cc1710876e081d75be92dfdbdad2ed266be",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
     },
     {
       "members": [],
-      "class_hash": "0x3abcef04ec7aa5ad38ccb9ff542c808f976cf5bc8fe66f032a702f37561b629",
+      "class_hash": "0x5a4347ea71a569790379696be3fbaff1fd08291657092e13f8137c39ee78d7b",
       "tag": "lore-DescriptionText",
       "selector": "0x167fb02affa7c5f0c7eb85c605f7030903bcc6887619cc8b1b1898f05c78fd6"
     },
     {
       "members": [],
-      "class_hash": "0x4fc0e779ff3d347b1c55cc85ffbb9a5b079ef237c5b2a6968539de9c1d50a99",
+      "class_hash": "0x329af9dbb1222e86b8c82300cae402a79118af2ac01f53fe3943643cc772812",
       "tag": "lore-Dict",
       "selector": "0x9996c1f71c9e4ac6a9494339f26be5714aa647941449dde8a2feb62a02801"
     },
     {
       "members": [],
-      "class_hash": "0x52d571c0e79fcd1a4e46317029821242832ee45a738182e4a5a94cde5ec0d22",
+      "class_hash": "0x425363e8b8b0dcb11d8ec8748d8a399d0f3b9799f0c0f060ef577fb696b45df",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },
     {
       "members": [],
-      "class_hash": "0x2174170603e87d1089db0c282b42f9ff2a3941d7cc77bcc8971dde7a2ddc72a",
+      "class_hash": "0x7954d0c3de0bc1291448a2e7995ea3ac9641f763976f6e132176b0477835b8f",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
     {
       "members": [],
-      "class_hash": "0x361c4f97448bbf4d18532a2efebbc278ff7d7132489f77dd43b0e9a4c98759b",
+      "class_hash": "0x283af1f0286f1d7152cda13e338b90030b4fd0232474fe4f83e3784bc2fbda8",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
     },
     {
       "members": [],
-      "class_hash": "0x75637d4ecdf3fb01400a13bfd01873bf5bcc8b508783987ce6c5b42b4f79296",
+      "class_hash": "0x2a357c60a2cd580b39264be4201396c4ded31b5c8ae5329e97c5e39d0d016a6",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },
     {
       "members": [],
-      "class_hash": "0x6d7a9c1511cb3e0ab62710782d0dc6814b70c8fa93890b6081979adb27e18e5",
+      "class_hash": "0x65001daab068ad69031a903b0799e2496b46c049f6b68f16d8f45bd7d777a45",
       "tag": "lore-ParentToChildren",
       "selector": "0x6dbfac2c9f2142b49b785d40a8a9408a3d9097687a344f6daf21cddde65412b"
     },
     {
       "members": [],
-      "class_hash": "0x5a83fa359a52c2b2e1a3a0a6ba49e34a4d4fc7669e641ef890f474ff5e4aaa6",
+      "class_hash": "0x758f2e4f1ab031299318122be57b3d61a19d64a61f08b46722c3aef6c5710e",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },
     {
       "members": [],
-      "class_hash": "0x72da72753eb97a49f8f7ce6a3668960b7dcaf41e6652308f88da5aa070244a8",
+      "class_hash": "0x25761e8874b51d44b4dd37226a22cc93613c241b280366aba9d683690fc349a",
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
     },
     {
       "members": [],
-      "class_hash": "0x7ef3371311ee14df227bc9e3944b23dc0da71c1ce0ebf17982532961eb0e411",
+      "class_hash": "0x69cbed9af9687be37ff24bad6ace2ac7ee83e188118631713d660b8ccac4f2",
       "tag": "lore-PropertyRegistry",
       "selector": "0x54d238bab1b146fbb42252f5fba933d9fb90048459d848a6fff3a2528615b59"
     },
     {
       "members": [],
-      "class_hash": "0x14e4af343fbd6e16b31b5e47e78e0abe5148331ec49e0cc579764414398b508",
+      "class_hash": "0x49d7c1966a3fc0c75706b64879f6830879dac12e1310d81602d4b6da4c11e62",
       "tag": "lore-Reactable",
       "selector": "0x13fefc8a36ffca06da26b1726d49465726acb19821a4d3382f5c9420a4a4896"
     },
     {
       "members": [],
-      "class_hash": "0x5dd210188a9073f1ba28798263048e7cd64255dac7b8845902e46286c51dc02",
+      "class_hash": "0x5410712079cce155d94a6c271755191184038fc6a75e3898bce25d615e30316",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
     {
       "members": [],
-      "class_hash": "0x184bfe735d125feab45e8b6ab2aeed0a53f7763ca9d464b476247d526b53fda",
+      "class_hash": "0x3a8c1a0d51fac903bd943d0a77af5dbda7da391054edc8fd8fc7b8641b9637a",
       "tag": "lore-Trigger",
       "selector": "0x8f76987efdbfa10b4f5f6a6ed5450ecc5241301beabc41a889d84c40f87cfa"
     },
     {
       "members": [],
-      "class_hash": "0x23daba7ed06708a30ea083232a8fea65a33eea1faa17c762c99c77bbcff7d81",
+      "class_hash": "0xba436b38a8a38ee4f62d0cea4324fca762999c931aa17e5dd08e7434f609c8",
       "tag": "lore-TriggerIndex",
       "selector": "0x472f592295e556e032f9ea3d00faf9cbd2729afe3a6fc168cf6034c65b7dc6"
     }

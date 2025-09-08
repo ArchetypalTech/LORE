@@ -1,6 +1,6 @@
 // Here you can find the trigger, condition, effect types and structs
 
-#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
 pub struct TriggerContext {
     /// The entity that triggered the action (usually the player)
     pub doer: felt252,
@@ -12,8 +12,9 @@ pub struct TriggerContext {
     pub inventory_object: felt252,
 }
 
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
 pub enum TriggerType {
+    #[default]
     OnEnter,
     OnExit,
     OnInteract,
@@ -23,9 +24,9 @@ pub enum TriggerType {
     OnCondition,
 }
 
-
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
 pub enum ConditionType {
+    #[default]
     HasItem,
     InLocation,
     PropertyEquals,
@@ -34,16 +35,18 @@ pub enum ConditionType {
     Custom,
 }
 
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
 pub enum Operator {
+    #[default]
     Equals,
     NotEquals,
     GreaterThan,
     LessThan,
 }
 
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
 pub enum EffectType {
+    #[default]
     ModifyProperty,
     AddItem,
     RemoveItem,
