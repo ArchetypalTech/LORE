@@ -68,22 +68,22 @@ pub mod designer {
     pub impl DesignerImpl of IDesigner<ContractState> {
         // register
         fn register_property_registry(ref self: ContractState, done: Array<bool>) {
-            let world: WorldStorage = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             for d in done {
                 if d {
-                    VariablePropertyImp::register_component_properties(world, ComponentType::Area);
-                    VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
+                    VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
+                    VariablePropertyImp::register_component_properties(ref world, ComponentType::Exit);
                     VariablePropertyImp::register_component_properties(
-                        world, ComponentType::Reactable,
+                        ref world, ComponentType::Reactable,
                     );
                     VariablePropertyImp::register_component_properties(
-                        world, ComponentType::InventoryItem,
+                        ref world, ComponentType::InventoryItem,
                     );
                     VariablePropertyImp::register_component_properties(
-                        world, ComponentType::Container,
+                        ref world, ComponentType::Container,
                     );
                     VariablePropertyImp::register_component_properties(
-                        world, ComponentType::Player,
+                        ref world, ComponentType::Player,
                     );
                 }
             }
@@ -118,8 +118,8 @@ pub mod designer {
 
         fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
-            let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Player);
+            let mut  worldSt: WorldStorage = self.world(@"lore");
+            VariablePropertyImp::register_component_properties(ref worldSt, ComponentType::Player);
             for o in t {
                 world.write_model(@o);
             }
@@ -128,7 +128,7 @@ pub mod designer {
         fn create_reactable(ref self: ContractState, t: Array<Reactable>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Reactable);
+            VariablePropertyImp::register_component_properties(ref worldSt, ComponentType::Reactable);
             for o in t {
                 world.write_model(@o);
             }
@@ -144,7 +144,7 @@ pub mod designer {
         fn create_area(ref self: ContractState, t: Array<Area>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Area);
+            VariablePropertyImp::register_component_properties(ref worldSt, ComponentType::Area);
             for o in t {
                 world.write_model(@o);
             }
@@ -153,7 +153,7 @@ pub mod designer {
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Exit);
+            VariablePropertyImp::register_component_properties(ref worldSt, ComponentType::Exit);
             for o in t {
                 world.write_model(@o);
             }
@@ -163,7 +163,7 @@ pub mod designer {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyImp::register_component_properties(
-                worldSt, ComponentType::InventoryItem,
+                ref worldSt, ComponentType::InventoryItem,
             );
             for o in t {
                 world.write_model(@o);
@@ -173,7 +173,7 @@ pub mod designer {
         fn create_container(ref self: ContractState, t: Array<Container>) {
             let mut world = self.world(@"lore");
             let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyImp::register_component_properties(worldSt, ComponentType::Container);
+            VariablePropertyImp::register_component_properties(ref worldSt, ComponentType::Container);
             for o in t {
                 world.write_model(@o);
             }

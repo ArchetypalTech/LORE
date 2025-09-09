@@ -23,7 +23,7 @@ use core::traits::{Into};
 #[generate_trait]
 pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     // Register Component Properties
-    fn register_properties(mut world: WorldStorage, component: ComponentType) {
+    fn register_properties(ref world: WorldStorage, component: ComponentType) {
         println!("Attempting to register properties for component: {:?}", component);
         let pos_property_registry: PropertyRegistry = world.read_model(component);
         println!("Pos property registry: {:?}", pos_property_registry);
