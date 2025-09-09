@@ -639,7 +639,7 @@ mod tests {
 
         // EXECUTE ACTION
         // 1. move player to room 2
-        player1.move_to_room(world, room_2.inst);
+        player1.move_to_room(ref world, room_2.inst, game_id);
         // 2. Execute action
         let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context, game_id);
         // // The one below are for testing individually
@@ -834,7 +834,7 @@ mod tests {
         // 1. move player to room 1
         player1.location = room_1.inst;
         player1.store(ref world, game_id);
-        player1.move_to_room(world, room_1.inst);
+        player1.move_to_room(ref world, room_1.inst, game_id);
         let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
 
         // 2. Pickup item
@@ -846,7 +846,7 @@ mod tests {
         // 3. Check if item is owned by player1
         assert(itemInv.owner_id == player_container.inst, 'Item should be owned by player1');
         // 4. Move player to room 2
-        player1.move_to_room(world, room_2.inst);
+        player1.move_to_room(ref world, room_2.inst, game_id);
         // 5. Execute action
         let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context, game_id);
         // // The one below are for testing individually

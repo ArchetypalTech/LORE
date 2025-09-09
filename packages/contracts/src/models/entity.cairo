@@ -49,6 +49,7 @@ pub struct ChildToParent {
 
 #[generate_trait]
 pub impl EntityImpl of EntityTrait {
+    // used for tests
     fn create_entity(ref world: WorldStorage, name: ByteArray) -> Entity {
         let mut entity: Entity = Default::default();
         entity.inst = world.dispatcher.uuid().try_into().unwrap();

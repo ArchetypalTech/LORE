@@ -223,7 +223,7 @@ pub fn get_action_token(
 
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use starknet::ContractAddress;
     use dojo::{world::WorldStorage, model::ModelStorage};
     use super::*;
@@ -236,15 +236,13 @@ mod tests {
         types::{command_type::{Command, Token, TokenType}},
     };
 
-    fn Reactable_create_prefab() -> (Reactable, WorldStorage, ContractAddress, ContractAddress) {
-        let (mut world, _, _, player_1, player_2) = helpers::setup_core();
-
-        let descr1 = DescriptionText { inst: 42, key: 0, text: "hello" };
-        let descr2 = DescriptionText { inst: 42, key: 1, text: "world" };
-        let descr3 = DescriptionText { inst: 42, key: 2, text: "how big is a rock" };
-        let descr4 = DescriptionText { inst: 42, key: 3, text: "what's up with the rock" };
-        let descr5 = DescriptionText { inst: 42, key: 4, text: "let's talk about the rock" };
-        let descr6 = DescriptionText { inst: 42, key: 5, text: "the rock is from the moon" };
+    pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252) -> Reactable {
+        let descr1 = DescriptionText { inst, key: 0, text: "hello" };
+        let descr2 = DescriptionText { inst, key: 1, text: "world" };
+        let descr3 = DescriptionText { inst, key: 2, text: "how big is a rock" };
+        let descr4 = DescriptionText { inst, key: 3, text: "what's up with the rock" };
+        let descr5 = DescriptionText { inst, key: 4, text: "let's talk about the rock" };
+        let descr6 = DescriptionText { inst, key: 5, text: "the rock is from the moon" };
         world.write_model(@descr1);
         world.write_model(@descr2);
         world.write_model(@descr3);
@@ -252,7 +250,7 @@ mod tests {
         world.write_model(@descr5);
         world.write_model(@descr6);
         let prefab = Reactable {
-            inst: 42,
+            inst,
             is_reactable: true,
             is_visible: true,
             description: array![0, 1, 2, 3, 4, 5],
@@ -280,6 +278,12 @@ mod tests {
             new_entry: "",
         };
         world.write_model(@prefab);
+        (prefab)
+    }
+    
+    fn Reactable_create_prefab_world() -> (Reactable, WorldStorage, ContractAddress, ContractAddress) {
+        let (mut world, _, _, player_1, player_2) = helpers::setup_core();
+        let prefab = Reactable_create_prefab(ref world, 42);
         (prefab, world, player_1, player_2)
     }
 
@@ -310,7 +314,7 @@ mod tests {
             ],
             game_id: 0,
         };
-        let (prefab, world, _, _) = Reactable_create_prefab();
+        let (prefab, world, _, _) = Reactable_create_prefab_world();
         let read_reactable: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         // println!("read_reactable: {:?}", read_reactable);
         assert(read_reactable.is_reactable, 'reactable is reactable');
@@ -323,14 +327,14 @@ mod tests {
 
     #[test]
     fn Reactable_test_get_component() {
-        let (prefab, world, _, _) = Reactable_create_prefab();
+        let (prefab, world, _, _) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         assert(i.is_reactable, 'reactable is reactable');
     }
 
     #[test]
     fn Reactable_test_read_specific_description() {
-        let (prefab, world, _, _) = Reactable_create_prefab();
+        let (prefab, world, _, _) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
         let res = ReactableImpl::get_specific_description(@i, idx, world);

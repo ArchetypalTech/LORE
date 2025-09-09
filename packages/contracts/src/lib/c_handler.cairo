@@ -136,7 +136,7 @@ pub fn handle_command(
             };
         };
     } else if directions.len() > 0 {
-        let context = player.get_context(@world);
+        let context = player.get_context(@world, command.game_id);
         for item in context {
             let exit: Option<Exit> = Component::get_component(@world, item.inst, command.game_id);
             // @dev: not guaranteed there's a noun
@@ -179,7 +179,7 @@ pub fn handle_command(
     if command.tokens.len() == 1 {
         let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
         if initialVerb == 'look' {
-            let res = player.describe_room(world, command.game_id);
+            let res = player.describe_room(ref world, command.game_id);
             if res.is_err() {
                 return Result::Err(res.unwrap_err());
             };
@@ -206,7 +206,7 @@ pub fn handle_command(
                 let around: ByteArray = "around";
                 let at: ByteArray = "at";
                 if secondToken.text == around {
-                    let res = player.describe_room(world, command.game_id);
+                    let res = player.describe_room(ref world, command.game_id);
                     if res.is_err() {
                         return Result::Err(res.unwrap_err());
                     };
@@ -272,9 +272,9 @@ fn system_command(
             return Result::Ok(command);
         }
         if (system_command == "g_move") {
-            player.move_to_room(world, 2826);
+            player.move_to_room(ref world, 2826, command.game_id);
             player.say(world, "+sys+forced move command");
-            let room = player.get_room(@world);
+            let room = player.get_room(@world, command.game_id);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
@@ -295,15 +295,15 @@ fn system_command(
         }
         if (system_command == "g_whereami") {
             player.say(world, "+sys+you are here:");
-            let room = player.get_room(@world);
+            let room = player.get_room(@world, command.game_id);
             player.say(world, format!("+sys+{:?}", room));
             player.say(world, format!("+sys+{:?}", player.entity(@world).get_parent(@world)));
             return Result::Ok(command);
         }
         if (system_command == "g_look") {
             player.say(world, "+sys+you see this:");
-            let context = player.get_context(@world);
-            let room = player.get_room(@world);
+            let context = player.get_context(@world, command.game_id);
+            let room = player.get_room(@world, command.game_id);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
@@ -339,7 +339,7 @@ mod tests {
         let game_id: u128 = 0;
         create_test_level(ref world, game_id);
         let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(world, 2826);
+        player.move_to_room(ref world, 2826, game_id);
 
         // Create a test command with g_command system token
         let mut command = Command {

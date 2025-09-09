@@ -431,7 +431,7 @@ mod tests {
 
         // move player to room entity 1
         let mut playerR1: Player = world.read_model(player.inst);
-        playerR1.move_to_room(world, room_entity_1.inst);
+        playerR1.move_to_room(ref world, room_entity_1.inst, game_id);
 
         let game_id: u128 = 0;
         let result = TriggerImpl::evaluate_trigger(ref world, trigger.clone(), game_id);
@@ -440,7 +440,7 @@ mod tests {
         assert(result.is_ok(), 'Trigger should jump');
 
         // move player to room entity 2
-        player.move_to_room(world, room_entity_2.inst);
+        player.move_to_room(ref world, room_entity_2.inst, game_id);
         player_entity.set_parent(ref world, @room_entity_2);
 
         let result2 = TriggerImpl::evaluate_trigger(ref world, trigger, game_id);

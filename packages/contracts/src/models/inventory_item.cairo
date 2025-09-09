@@ -345,7 +345,7 @@ fn get_entity_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
 ) -> Option<Container> {
     // get room
-    let room = player.get_room(world);
+    let room = player.get_room(world, game_id);
     if room.is_none() {
         return Option::None;
     }

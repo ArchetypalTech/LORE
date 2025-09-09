@@ -142,7 +142,7 @@ pub impl ContainerImpl of ContainerTrait {
         }
         // get entities
         let item_entity: Entity = world.read_model(item.inst);
-        let room_entity: Entity = player.get_room(@world).unwrap();
+        let room_entity: Entity = player.get_room(@world, game_id).unwrap();
         // set parent to be the room's entity
         //item_entity.remove_from_parent(ref world, @container); // set_parent() will do this
         item_entity.set_parent(ref world, @room_entity);

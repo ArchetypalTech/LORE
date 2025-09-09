@@ -153,7 +153,7 @@ pub impl ExitComponent of Component<Exit> {
                 }
                 // Move player to room
                 destination_inst = self.leads_to;
-                player.clone().move_to_room(world, destination_inst);
+                player.clone().move_to_room(ref world, destination_inst, *command.game_id);
 
                 // Do action
                 // Check if the entity of the exit has an action
@@ -190,7 +190,7 @@ pub impl ExitComponent of Component<Exit> {
                     };
                 }
                 // Describe room
-                let _ = player.describe_room(world, *command.game_id);
+                let _ = player.describe_room(ref world, *command.game_id);
                 return Result::Ok(());
             },
         }

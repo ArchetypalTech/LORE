@@ -163,7 +163,7 @@ pub mod lexer {
 
     fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
         // get player for their context (room + room objects + inventory)
-        let context = player.get_full_context(@world);
+        let context = player.get_full_context(@world, command.game_id);
         let mut newTokens: Array<Token> = array![];
         for i in 0..command.tokens.len() {
             let mut token = command.tokens.at(i).clone();
@@ -233,7 +233,7 @@ mod tests {
         create_test_level(ref world, 0);
         let game_id: u128 = 0;
         let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(world, 2826);
+        player.move_to_room(ref world, 2826, game_id);
         let _command = lexer::parse(promptText, world, player, game_id);
         // println!("command: {:?}", command);
     // TODO: finish writing test
@@ -251,7 +251,7 @@ mod tests {
         create_test_level(ref world, 0);
         let game_id: u128 = 0;
         let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(world, 2826);
+        player.move_to_room(ref world, 2826, game_id);
 
         // Parse command
         let g_command = lexer::parse(prompt_text, world, player, game_id);
@@ -276,7 +276,7 @@ mod tests {
         create_test_level(ref world, 0);
         let game_id: u128 = 0;
         let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(world, 2826);
+        player.move_to_room(ref world, 2826, game_id);
         let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);
 
         // Parse command
