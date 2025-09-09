@@ -19,15 +19,8 @@ pub struct GameInstanceMap {
 // Traits
 //
 
-pub trait GameTrait<M> {
-    fn game_inst(inst: felt252, game_id: u128) -> felt252;
-    fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M;
-    fn write_game_model(ref self: WorldStorage, model: @M, game_id: u128);
-    // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128);
-}
-
-pub impl GameImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameTrait<M> {
-
+#[generate_trait]
+pub impl GameInstImpl of GameInstTrait {
     // generates a game entity instance ID
     //  * @param {felt252} inst - The LORE instance ID
     //  * @param {felt252} game_id - The game token ID
@@ -40,10 +33,18 @@ pub impl GameImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameTrait<
             (inst)
         }
     }
+}
 
+pub trait GameModelTrait<M> {
+    fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M;
+    fn write_game_model(ref self: WorldStorage, model: @M, game_id: u128);
+    // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128);
+}
+
+pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameModelTrait<M> {
     // reads a game instance model, if it exists
     fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M {
-        let game_inst: felt252 = Self::game_inst(inst, game_id);
+        let game_inst: felt252 = GameInstImpl::game_inst(inst, game_id);
         (if Instance::<M>::has_component(self, game_inst) {
             // read the game instance model
             let mut result: M = self.read_model(game_inst);
@@ -59,7 +60,7 @@ pub impl GameImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameTrait<
     fn write_game_model(ref self: WorldStorage, model: @M, game_id: u128) {
         if game_id != 0 {
             // generate game instance key
-            let game_inst: felt252 = Self::game_inst(model.inst(), game_id);
+            let game_inst: felt252 = GameInstImpl::game_inst(model.inst(), game_id);
             // create game instance mapping for easy client discovery
             if !Instance::<M>::has_component(@self, game_inst) {
                 self.write_model(@GameInstanceMap {
@@ -80,7 +81,7 @@ pub impl GameImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameTrait<
 
     // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128) {
     //     // generate game instance key
-    //     let game_inst: felt252 = Self::game_inst(model.inst(), game_id);
+    //     let game_inst: felt252 = GameInstImpl::game_inst(model.inst(), game_id);
     //     // TODO: clone original model if game model does not exist
     //     // TODO: write GameInstanceMap if non existant
     //     self.write_member(

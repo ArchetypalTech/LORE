@@ -1,7 +1,7 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        game_instance::{GameImpl},
+        game_instance::{GameModelImpl},
         index::{PropertyRegistry},
         area::{Area},
         exit::{Exit},

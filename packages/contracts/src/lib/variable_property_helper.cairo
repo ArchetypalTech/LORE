@@ -11,7 +11,7 @@ use lore::{
         inventory_item::{InventoryItem},
         container::{Container, ContainerImpl},
         player::{Player},
-        game_instance::{GameImpl},
+        game_instance::{GameModelImpl},
     },
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},

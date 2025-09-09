@@ -3,7 +3,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
-        game_instance::{GameImpl},
+        game_instance::{GameModelImpl},
         player::{Player, PlayerImpl},
         inventory_item::{InventoryItem, InventoryItemImpl},
     },
@@ -362,7 +362,7 @@ mod tests {
         tests::helpers,
         models::{
             entity::{EntityImpl},
-            game_instance::{GameImpl},
+            game_instance::{GameModelImpl},
             inventory_item::{InventoryItemComponent},
         },
     };
@@ -442,10 +442,10 @@ mod tests {
         assert!(container.is_open, "baseline");
         container.set_open(ref world, false, 0);
         assert!(!container.is_open, "closed");
-        assert!(!GameImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameImpl::closed");
+        assert!(!GameModelImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameModelImpl::closed");
         container.set_open(ref world, true, 0);
         assert!(container.is_open, "opened");
-        assert!(GameImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameImpl:opened");
+        assert!(GameModelImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameModelImpl:opened");
     }
 
     #[test]

@@ -3,7 +3,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
-        game_instance::{GameImpl},
+        game_instance::{GameModelImpl},
         player::{Player},
     },
     types::{command_type::Command},
@@ -101,7 +101,7 @@ mod tests {
         tests::helpers,
         models::{
             entity::{EntityImpl},
-            game_instance::{GameImpl, GameInstanceMap},
+            game_instance::{GameModelImpl, GameInstanceMap},
         },
     };
 

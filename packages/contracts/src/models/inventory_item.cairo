@@ -3,7 +3,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
-        game_instance::{GameImpl},
+        game_instance::{GameModelImpl},
         player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
         area::AreaComponent,

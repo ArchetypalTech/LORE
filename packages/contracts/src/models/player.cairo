@@ -4,7 +4,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
-        game_instance::{GameImpl},
+        game_instance::{GameModelImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
     },
