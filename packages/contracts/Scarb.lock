@@ -4,7 +4,7 @@ version = 1
 [[package]]
 name = "dojo"
 version = "1.7.0-alpha.2"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.2#a064752fff355f325cf0b00828d236b399333432"
+source = "git+https://github.com/dojoengine/dojo?rev=7f9279141d209f89e01994f1667e3f0ba1a4bef6#7f9279141d209f89e01994f1667e3f0ba1a4bef6"
 dependencies = [
  "dojo_macros",
 ]
@@ -12,7 +12,7 @@ dependencies = [
 [[package]]
 name = "dojo_cairo_test"
 version = "1.7.0-alpha.2"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.2#a064752fff355f325cf0b00828d236b399333432"
+source = "git+https://github.com/dojoengine/dojo?rev=7f9279141d209f89e01994f1667e3f0ba1a4bef6#7f9279141d209f89e01994f1667e3f0ba1a4bef6"
 dependencies = [
  "dojo",
 ]
@@ -20,7 +20,7 @@ dependencies = [
 [[package]]
 name = "dojo_macros"
 version = "1.7.0-alpha.2"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.2#a064752fff355f325cf0b00828d236b399333432"
+source = "git+https://github.com/dojoengine/dojo?rev=7f9279141d209f89e01994f1667e3f0ba1a4bef6#7f9279141d209f89e01994f1667e3f0ba1a4bef6"
 
 [[package]]
 name = "lore"
