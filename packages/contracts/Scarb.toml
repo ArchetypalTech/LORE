@@ -7,6 +7,7 @@ experimental-features = ["associated_item_constraints"]
 
 [cairo]
 sierra-replace-ids = true
+inlining-strategy = "avoid"
 
 [scripts]
 migrate = "sozo build && sozo migrate apply"

@@ -1,7 +1,7 @@
 {
   "world": {
-    "class_hash": "0x7bc7b264612d3ac261df0a6d72a6b73c84b9386ef0095dd340d42afc01bb53c",
-    "address": "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae",
+    "class_hash": "0x68cf97e8b8efaff085e4029d66b06157d41e1fadc43e44dd87355cc537cc9fe",
+    "address": "0x5c6e217e7550235185f65ca00e794d7bfabe7fc526a7a3014a521d88b77861d",
     "seed": "lore",
     "name": ">LORE",
     "entrypoints": [
@@ -1479,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0x270a7facd5024e4f6371ecc154e0e518bec484719d1f4df6afe188d2721d5a3",
-      "class_hash": "0x71585d663d1e870a1ff4fb782928a239cf45904e571af3b397269bf95f55102",
+      "address": "0x685332b5d36ceab52509a2c9cc75e6dc4ae7033ee386105a1910383ffa93db0",
+      "class_hash": "0x584ccddecbf02d737d0d0e4431bbfa51c66f8f5c9d27d58f5f979019a4a3f20",
       "abi": [
         {
           "type": "impl",
@@ -2843,8 +2843,8 @@
       ]
     },
     {
-      "address": "0x74cd32f1016fb75b4399745ea34945b8c5d41472b5c28437f9c0df59f5ab614",
-      "class_hash": "0xb4c66dfa65330539159cb429bae423e014d1e689f63958373ae62070931061",
+      "address": "0x75a897f2407b1cd61647d4c0c95d6ab8014afe7780f278607aa5040f2d6d4c2",
+      "class_hash": "0x6832e338ff18f155bcf392a81b47149d5f42b1679f22755562f86f94fffb827",
       "abi": [
         {
           "type": "impl",
@@ -3047,121 +3047,121 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x5c8d89459ca6a2f3551cf74ec95f304357c9b72a2643a7f3b707f8ecc141d6d",
+      "class_hash": "0x142528da91f9feae67a4ce34ac12e4d6096fd54d496dfa2ee007a03a29864d3",
       "tag": "lore-Action",
       "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
     },
     {
       "members": [],
-      "class_hash": "0x364b99c34790809d24fa10ba987fd89ab13c2d7b5733839e686cca3f314149e",
+      "class_hash": "0x591424460d24d2daa3da407d8b50a70ec6f71d143552f528ea843d3325a280c",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },
     {
       "members": [],
-      "class_hash": "0x6594f9d785fc7bc1d8b6bec79bc0276a81d39ddc0902e1bb6bdaca48b2dd637",
+      "class_hash": "0x314d462d9959d59df3de32c5cb590fe74d2450c5f01029e32edf755403eb7f7",
       "tag": "lore-ChildToParent",
       "selector": "0x6c2a358df76ae2ca942ea3cc2f59ade04e5f5ba87ee162b41a10ad5a5755287"
     },
     {
       "members": [],
-      "class_hash": "0x55ecc4d26507eb77352af5a85e5b152bf02f632b04776ac5327fb6633c38eea",
+      "class_hash": "0x6e359a284d192662e5a5acce080faa07b55bc141025840ae81ce0315c49ce80",
       "tag": "lore-ComponentVariable",
       "selector": "0x7ce96a78c69170fe31cf5c816ec24414fd4c354324f8b9537e6830c9177cfe4"
     },
     {
       "members": [],
-      "class_hash": "0x63c1e88046e7a8b93951c64d3cad51ac8c00618b095f0c8a77ce655ba0609fa",
+      "class_hash": "0x4e58293748c48123772d18b3138ae0982ebbda874464b24ed417673e99505f9",
       "tag": "lore-Condition",
       "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
     {
       "members": [],
-      "class_hash": "0x49865f1446bfbdcbc282606128b1cc1710876e081d75be92dfdbdad2ed266be",
+      "class_hash": "0x2cdff3c1ba3dda4abe6226b4da2743028ef75f2ad2848e2887bcdd7867416b6",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
     },
     {
       "members": [],
-      "class_hash": "0x5a4347ea71a569790379696be3fbaff1fd08291657092e13f8137c39ee78d7b",
+      "class_hash": "0x3ea77b5108b9c906caf0430f39f1f1893cd5376bd0d929085342e0f87b91512",
       "tag": "lore-DescriptionText",
       "selector": "0x167fb02affa7c5f0c7eb85c605f7030903bcc6887619cc8b1b1898f05c78fd6"
     },
     {
       "members": [],
-      "class_hash": "0x329af9dbb1222e86b8c82300cae402a79118af2ac01f53fe3943643cc772812",
+      "class_hash": "0x69c8a9a8026400afe81217d148a23921e3de4d26e9127d0fa18da0635c1b8e9",
       "tag": "lore-Dict",
       "selector": "0x9996c1f71c9e4ac6a9494339f26be5714aa647941449dde8a2feb62a02801"
     },
     {
       "members": [],
-      "class_hash": "0x425363e8b8b0dcb11d8ec8748d8a399d0f3b9799f0c0f060ef577fb696b45df",
+      "class_hash": "0x3eb13f193c703fbaaec35d66ee030b6f6d45d21826f4602814e00dece90747f",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },
     {
       "members": [],
-      "class_hash": "0x7954d0c3de0bc1291448a2e7995ea3ac9641f763976f6e132176b0477835b8f",
+      "class_hash": "0x553888614a25f544c87beaa6be45969375951f770030b3161b6be7b304f7c68",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
     {
       "members": [],
-      "class_hash": "0x283af1f0286f1d7152cda13e338b90030b4fd0232474fe4f83e3784bc2fbda8",
+      "class_hash": "0x5420aa94e9bdca779b62ed5d98dac77f944eef0b3d2d946f8c632a30680e3cf",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
     },
     {
       "members": [],
-      "class_hash": "0x2a357c60a2cd580b39264be4201396c4ded31b5c8ae5329e97c5e39d0d016a6",
+      "class_hash": "0x7e77c48ad691e4e1d1008482f0d1b4b67527648273e0149525087f112614b68",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },
     {
       "members": [],
-      "class_hash": "0x65001daab068ad69031a903b0799e2496b46c049f6b68f16d8f45bd7d777a45",
+      "class_hash": "0x1b877d73740e01ade0c52cb52a86f68541b9c590093087d5ce536f70cd02616",
       "tag": "lore-ParentToChildren",
       "selector": "0x6dbfac2c9f2142b49b785d40a8a9408a3d9097687a344f6daf21cddde65412b"
     },
     {
       "members": [],
-      "class_hash": "0x758f2e4f1ab031299318122be57b3d61a19d64a61f08b46722c3aef6c5710e",
+      "class_hash": "0x1043997a2ce32f5c3d935382b1d1f96b58ad846c64b02f9b0ec1a7bc89b3f82",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },
     {
       "members": [],
-      "class_hash": "0x25761e8874b51d44b4dd37226a22cc93613c241b280366aba9d683690fc349a",
+      "class_hash": "0x5b2b57ff86bdd64434b72a1e56dc2eb3f8195314b82a78347966c116af749cc",
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
     },
     {
       "members": [],
-      "class_hash": "0x69cbed9af9687be37ff24bad6ace2ac7ee83e188118631713d660b8ccac4f2",
+      "class_hash": "0x326979a055ca238add1bb2b8e51ef65e5ef9e021fb32c631796b90cb649ed76",
       "tag": "lore-PropertyRegistry",
       "selector": "0x54d238bab1b146fbb42252f5fba933d9fb90048459d848a6fff3a2528615b59"
     },
     {
       "members": [],
-      "class_hash": "0x49d7c1966a3fc0c75706b64879f6830879dac12e1310d81602d4b6da4c11e62",
+      "class_hash": "0x28f53f221b63d4f575953d3f9539584a65efde0a651eab9ced556ff3af05594",
       "tag": "lore-Reactable",
       "selector": "0x13fefc8a36ffca06da26b1726d49465726acb19821a4d3382f5c9420a4a4896"
     },
     {
       "members": [],
-      "class_hash": "0x5410712079cce155d94a6c271755191184038fc6a75e3898bce25d615e30316",
+      "class_hash": "0x9292c98190d6df1844379b23dcb5aed3633414b7281ad3ddfc93a39f024e02",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
     {
       "members": [],
-      "class_hash": "0x3a8c1a0d51fac903bd943d0a77af5dbda7da391054edc8fd8fc7b8641b9637a",
+      "class_hash": "0x20b4fbf7f2350054cbfe516bbb617a110c5026b19bc0c419974d5e19b7e5ec9",
       "tag": "lore-Trigger",
       "selector": "0x8f76987efdbfa10b4f5f6a6ed5450ecc5241301beabc41a889d84c40f87cfa"
     },
     {
       "members": [],
-      "class_hash": "0xba436b38a8a38ee4f62d0cea4324fca762999c931aa17e5dd08e7434f609c8",
+      "class_hash": "0x2dfb07b35cf4437b314ffdb38fdb56973b6a50e532f5940009c70c56b5ecfa7",
       "tag": "lore-TriggerIndex",
       "selector": "0x472f592295e556e032f9ea3d00faf9cbd2729afe3a6fc168cf6034c65b7dc6"
     }
