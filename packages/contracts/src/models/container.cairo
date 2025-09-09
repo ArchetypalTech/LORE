@@ -41,11 +41,11 @@ pub struct Container {
 //
 #[generate_trait]
 pub impl ContainerImpl of ContainerTrait {
-    fn is_container(self: Container) -> bool {
-        self.is_container
+    fn is_container(self: @Container) -> bool {
+        *self.is_container
     }
 
-    fn get_item_ids(self: Container, world: @WorldStorage) -> Array<felt252> {
+    fn get_item_ids(self: @Container, world: @WorldStorage) -> Array<felt252> {
         let mut item_ids: Array<felt252> = ArrayTrait::new();
         let items = self.entity(world).get_children(world);
         for item in items {
@@ -54,41 +54,31 @@ pub impl ContainerImpl of ContainerTrait {
         item_ids
     }
 
-    fn set_open(self: Container, mut world: WorldStorage, opened: bool) {
-        world
-            .write_member(
-                Model::<Container>::ptr_from_keys(self.inst), selector!("is_open"), opened,
-            );
-        // world.write_model(@model);
+    fn set_open(ref self: Container, ref world: WorldStorage, opened: bool, game_id: u128) {
+        // world.write_game_member<Container>(self, selector!("is_open"), opened, game_id);
+        self.is_open = opened;
+        world.write_game_model(@self, game_id);
     }
 
-    fn set_can_be_opened(self: Container, mut world: WorldStorage, can_be_opened: bool) {
-        world
-            .write_member(
-                Model::<Container>::ptr_from_keys(self.inst),
-                selector!("can_be_opened"),
-                can_be_opened,
-            );
-        // world.write_model(@model);
+    fn set_can_be_opened(ref self: Container, ref world: WorldStorage, can_be_opened: bool, game_id: u128) {
+        // world.write_game_member<Container>(self, selector!("can_be_opened"), can_be_opened, game_id);
+        self.can_be_opened = can_be_opened;
+        world.write_game_model(@self, game_id);
     }
 
-    fn set_can_receive_items(self: Container, mut world: WorldStorage, can_receive_items: bool) {
-        world
-            .write_member(
-                Model::<Container>::ptr_from_keys(self.inst),
-                selector!("can_receive_items"),
-                can_receive_items,
-            );
-        // world.write_model(@model);
+    fn set_can_receive_items(ref self: Container, ref world: WorldStorage, can_receive_items: bool, game_id: u128) {
+        // world.write_game_member<Container>(self, selector!("can_receive_items"), can_receive_items, game_id);
+        self.can_receive_items = can_receive_items;
+        world.write_game_model(@self, game_id);
     }
 
     fn is_full(self: @Container, world: @WorldStorage) -> bool {
-        let itemAmount: u32 = self.clone().get_item_ids(world).len().try_into().unwrap();
+        let itemAmount: u32 = self.get_item_ids(world).len().try_into().unwrap();
         return itemAmount >= *self.num_slots;
     }
 
-    fn is_empty(self: Container, world: @WorldStorage) -> bool {
-        return self.clone().get_item_ids(world).len() == 0;
+    fn is_empty(self: @Container, world: @WorldStorage) -> bool {
+        return self.get_item_ids(world).len() == 0;
     }
 
     fn can_put_item(
@@ -100,7 +90,7 @@ pub impl ContainerImpl of ContainerTrait {
             return (can_put_item, Result::Err(Error::NotOpen));
         }
         // check if container is full
-        if (self.clone().is_full(world)) {
+        if (self.is_full(world)) {
             return (can_put_item, Result::Err(Error::ContainerFull));
         }
         // check if container can receive items
@@ -124,73 +114,48 @@ pub impl ContainerImpl of ContainerTrait {
         (can_put_item, Result::Ok(()))
     }
 
+    // put an item into the container
     fn put_item_in(
-        self: Container, mut world: WorldStorage, mut item: InventoryItem,
+        self: @Container, ref world: WorldStorage, ref item: InventoryItem, game_id: u128,
     ) -> Result<(), Error> {
-        // get container
-        let mut container: Container = world.read_model(self.inst);
-
-        // get item entity
-        let item_entity: Entity = world.read_model(item.inst);
-
         // check if item can be put in container
-        let (result_b, result_c) = container.clone().can_put_item(@world, @item.clone());
+        let (result_b, result_c) = self.can_put_item(@world, @item);
         if (!result_b) {
             return Result::Err(result_c.unwrap_err());
         }
         // set parent to be the container's entity
-        item_entity.set_parent(ref world, @container.entity(@world));
-        item.owner_id = container.inst;
-        // update container
-        world.write_model(@container);
-        // update item
-        world
-            .write_member(
-                Model::<InventoryItem>::ptr_from_keys(item.inst),
-                selector!("owner_id"),
-                item.owner_id,
-            );
-        //world.write_model(@item);
+        let item_entity: Entity = world.read_model(item.inst);
+        item_entity.set_parent(ref world, @self.entity(@world));
+        item.owner_id = *self.inst;
+        world.write_game_model(@item, game_id);
+
         return Result::Ok(());
     }
 
-
+    // put item out of the container, into the room
     fn put_item_out(
-        self: Container, mut world: WorldStorage, mut item: InventoryItem, player: @Player,
+        self: @Container, ref world: WorldStorage, ref item: InventoryItem, player: @Player, game_id: u128,
     ) -> Result<(), Error> {
-        // get container
-        let mut container: Container = world.read_model(self.inst);
-        // get item entity
-        let item_entity: Entity = world.read_model(item.inst);
-        // get room
-        let room: Entity = player.get_room(@world).unwrap();
-
         // check if the item is in the container
-        if (!container.clone().contains(item_entity.inst, @world)) {
+        if (!self.contains(item.inst, @world)) {
             return Result::Err(Error::NotStored);
         }
-        // remove item from container:
+        // get entities
+        let item_entity: Entity = world.read_model(item.inst);
+        let room_entity: Entity = player.get_room(@world).unwrap();
         // set parent to be the room's entity
-        item_entity.set_parent(ref world, @room);
-        item.owner_id = room.inst;
-        //item_entity.remove_from_parent(ref world, @container);
-        // update container
-        world.write_model(@container);
-        // update item
-        world
-            .write_member(
-                Model::<InventoryItem>::ptr_from_keys(item.inst),
-                selector!("owner_id"),
-                item.owner_id,
-            );
-        //world.write_model(@item);
+        //item_entity.remove_from_parent(ref world, @container); // set_parent() will do this
+        item_entity.set_parent(ref world, @room_entity);
+        item.owner_id = room_entity.inst;
+        world.write_game_model(@item, game_id);
+        
         return Result::Ok(());
     }
 
     fn contains(self: @Container, itemID: felt252, world: @WorldStorage) -> bool {
         let mut already_inside = false;
         // check if item is already in container
-        for item_id in self.clone().get_item_ids(world) {
+        for item_id in self.get_item_ids(world) {
             if (item_id == itemID) {
                 already_inside = true;
                 break;
@@ -315,7 +280,7 @@ pub impl ContainerComponent of Component<Container> {
                         );
                 } else {
                     player.say(world, format!("You open {}", self.clone().entity(@world).name));
-                    self.set_open(world, true);
+                    self.set_open(ref world, true, *command.game_id);
                 }
                 return Result::Ok(());
             },
@@ -328,7 +293,7 @@ pub impl ContainerComponent of Component<Container> {
                         );
                 } else {
                     player.say(world, format!("You close {}", self.clone().entity(@world).name));
-                    self.set_open(world, false);
+                    self.set_open(ref world, false, *command.game_id);
                 }
                 return Result::Ok(());
             },
@@ -351,7 +316,7 @@ pub impl ContainerComponent of Component<Container> {
         container.can_be_opened = true;
         container.can_receive_items = true;
         container.is_open = true;
-        container.num_slots = 0;
+        container.num_slots = 10;
         container
             .action_map =
                 array![
@@ -398,6 +363,7 @@ mod tests {
         models::{
             entity::{EntityImpl},
             game_instance::{GameImpl},
+            inventory_item::{InventoryItemComponent},
         },
     };
 
@@ -462,5 +428,69 @@ mod tests {
         assert_eq!(new_comp_game.num_slots, 10, "newer_component");
         assert_eq!(new_comp_game.can_be_opened, false, "newer_component");
         assert_eq!(new_comp_game.is_open, true, "newer_component");
+    }
+
+    #[test]
+    fn test_container_open() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+        //
+        // create container
+        let mut container: Container = ContainerComponent::add_component(ref world, 111, 0);
+        //
+        // open container
+        assert!(container.can_be_opened, "can_be_opened");
+        assert!(container.is_open, "baseline");
+        container.set_open(ref world, false, 0);
+        assert!(!container.is_open, "closed");
+        assert!(!GameImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameImpl::closed");
+        container.set_open(ref world, true, 0);
+        assert!(container.is_open, "opened");
+        assert!(GameImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameImpl:opened");
+    }
+
+    #[test]
+    fn test_container_items() {
+        let (mut world, _, _, _, _) = helpers::setup_core();
+        //
+        // create some items
+        let mut item1_entity = EntityImpl::create_entity(ref world, "item1");
+        let mut item2_entity = EntityImpl::create_entity(ref world, "item2");
+        let mut item1: InventoryItem = InventoryItemComponent::add_component(ref world, item1_entity.inst, 0);
+        let mut item2: InventoryItem = InventoryItemComponent::add_component(ref world, item2_entity.inst, 0);
+        assert!(!item1_entity.has_parent(@world), "!item1.has_parent");
+        assert!(!item2_entity.has_parent(@world), "!item2.has_parent");
+        // create containers
+        let mut container1_entity = EntityImpl::create_entity(ref world, "container1");
+        let mut container2_entity = EntityImpl::create_entity(ref world, "container2");
+        let mut container1: Container = ContainerComponent::add_component(ref world, container1_entity.inst, 0);
+        let mut container2: Container = ContainerComponent::add_component(ref world, container2_entity.inst, 0);
+        assert!(!container1_entity.has_children(@world), "!container1.has_children");
+        assert!(!container2_entity.has_children(@world), "!container2.has_children");
+        //
+        // add items to containers
+        assert_eq!(container1.put_item_in(ref world, ref item1, 0), Result::Ok(()), "item1 > container1");
+        assert_eq!(container2.put_item_in(ref world, ref item2, 0), Result::Ok(()), "item2 > container2");
+        assert!(container1_entity.has_children(@world), "container1.has_children");
+        assert!(container2_entity.has_children(@world), "container2.has_children");
+        assert!(item1_entity.has_parent(@world), "item1.has_parent");
+        assert!(item2_entity.has_parent(@world), "item2.has_parent");
+        assert!(item1_entity.get_parent(@world).unwrap().inst == container1.inst(), "item1.get_parent");
+        assert!(item2_entity.get_parent(@world).unwrap().inst == container2.inst(), "item2.get_parent");
+        //
+        // move an item
+        assert_eq!(container1.put_item_in(ref world, ref item2, 0), Result::Ok(()), "item2 > container1");
+        assert!(container1_entity.has_children(@world), "moved item2 > container1");
+        assert!(!container2_entity.has_children(@world), "moved item2 > container1");
+        assert!(container1_entity.get_children(@world).len() == 2, "moved item2 > container1");
+        assert!(item1_entity.has_parent(@world), "item1.has_parent");
+        assert!(item2_entity.has_parent(@world), "item2.has_parent");
+        assert!(item1_entity.get_parent(@world).unwrap().inst == container1.inst(), "item1.get_parent");
+        assert!(item2_entity.get_parent(@world).unwrap().inst == container1.inst(), "item2.get_parent");
+        //
+        // invalid move
+        container2.set_can_receive_items(ref world, false, 0);
+        assert_eq!(container2.put_item_in(ref world, ref item2, 0), Result::Err(Error::CantStore), "item2 > container2");
+        assert!(!container2_entity.has_children(@world), "invalid move");
+        assert!(item2_entity.get_parent(@world).unwrap().inst == container1.inst(), "item2.get_parent");
     }
 }

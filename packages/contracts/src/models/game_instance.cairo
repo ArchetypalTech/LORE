@@ -23,6 +23,7 @@ pub trait GameTrait<M> {
     fn game_inst(inst: felt252, game_id: u128) -> felt252;
     fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M;
     fn write_game_model(ref self: WorldStorage, model: @M, game_id: u128);
+    // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128);
 }
 
 pub impl GameImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameTrait<M> {
@@ -76,4 +77,17 @@ pub impl GameImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameTrait<
             self.write_model(model);
         }
     }
+
+    // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128) {
+    //     // generate game instance key
+    //     let game_inst: felt252 = Self::game_inst(model.inst(), game_id);
+    //     // TODO: clone original model if game model does not exist
+    //     // TODO: write GameInstanceMap if non existant
+    //     self.write_member(
+    //         Model::<M>::ptr_from_keys(game_inst),
+    //         field_selector,
+    //         value,
+    //     );        
+    // }
+
 }

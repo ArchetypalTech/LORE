@@ -123,6 +123,11 @@ pub impl EntityImpl of EntityTrait {
         return Option::None;
     }
 
+    fn has_children(self: @Entity, world: @WorldStorage) -> bool {
+        let parent_to_children: ParentToChildren = world.read_model(*self.inst);
+        (parent_to_children.is_parent && parent_to_children.children.len() > 0)
+    }
+
     fn get_children(self: @Entity, world: @WorldStorage) -> Array<Entity> {
         let mut children: Array<Entity> = ArrayTrait::<Entity>::new();
         let parent_to_children: ParentToChildren = world.read_model(*self.inst);

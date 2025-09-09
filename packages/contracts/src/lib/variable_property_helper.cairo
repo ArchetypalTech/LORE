@@ -11,6 +11,7 @@ use lore::{
         inventory_item::{InventoryItem},
         container::{Container, ContainerImpl},
         player::{Player},
+        game_instance::{GameImpl},
     },
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
@@ -550,13 +551,15 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             let (value, _index) = new_value[0].clone();
                             component.owner_id = value.to_felt252_word().unwrap();
                             // move item to new owner
-                            let new_owner_container: Container = world
-                                .read_model(component.owner_id);
-                            let res = new_owner_container.put_item_in(world, component.clone());
-                            if res.is_err() {
-                                result = Result::Err(res.unwrap_err());
-                            } else {
-                                success = true;
+                            let new_owner_container: Container = world.read_game_model(component.owner_id, game_id);
+                            let res = new_owner_container.put_item_in(ref world, ref component, game_id);
+                            match res {
+                                Result::Ok(()) => {
+                                    success = true;
+                                },
+                                Result::Err(err) => {
+                                    result = Result::Err(err);
+                                },
                             }
                         } else if name == @can_be_picked_up {
                             let (value, _index) = new_value[0].clone();

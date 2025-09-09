@@ -213,12 +213,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                let res = container_component.put_item_in(world, self.clone());
-                if res.is_err() {
-                    return Result::Err(res.unwrap_err());
-                }
-
-                return Result::Ok(());
+                return container_component.put_item_in(ref world, ref self, *command.game_id);
             },
             InventoryItemActions::DropItem => {
                 // This is for taking an item from the player's personal inventory
@@ -228,11 +223,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                let res = container_component.put_item_out(world, self.clone(), player);
-                if res.is_err() {
-                    return Result::Err(res.unwrap_err());
-                }
-                return Result::Ok(());
+                return container_component.put_item_out(ref world, ref self, player, *command.game_id);
             },
             InventoryItemActions::PutItem => {
                 // This is for a specific container
@@ -247,18 +238,10 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    let res = container_component.put_item_in(world, self.clone());
-                    if res.is_err() {
-                        return Result::Err(res.unwrap_err());
-                    }
-                    return Result::Ok(());
+                    return container_component.put_item_in(ref world, ref self, *command.game_id);
                 }
                 let container_component: Container = player_container.unwrap();
-                let res = container_component.put_item_in(world, self.clone());
-                if res.is_err() {
-                    return Result::Err(res.unwrap_err());
-                }
-                return Result::Ok(());
+                return container_component.put_item_in(ref world, ref self, *command.game_id);
             },
             InventoryItemActions::TakeOutItem => {
                 // This is for taking an item from a specific container
@@ -273,11 +256,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    let res = container_component.put_item_out(world, self.clone(), player);
-                    if res.is_err() {
-                        return Result::Err(res.unwrap_err());
-                    }
-                    return Result::Ok(());
+                    return container_component.put_item_out(ref world, ref self, player, *command.game_id);
                 }
                 return Result::Ok(());
             },
@@ -310,6 +289,8 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     },
                 ];
         inventory_item.already_used = false;
+        inventory_item.can_be_picked_up = true;
+        inventory_item.can_go_in_container = true;
         inventory_item.store(ref world, game_id);
         // Return the component
         inventory_item
