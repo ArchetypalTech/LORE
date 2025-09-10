@@ -16,8 +16,7 @@ use lore::{
     },
     lib::{
         utils::ByteArrayTraitExt,
-        variable_property::{VariablePropertyImp},
-        variable_property_helper::VariablePropertyHelperTrait,
+        variable_property_helper::{VariablePropertyHelper},
     },
     constants::errors::Error,
 };
@@ -55,110 +54,129 @@ pub struct Effect {
 #[generate_trait]
 pub impl EffectImpl of EffectTrait {
     fn apply_effect(
-        self: @Effect, mut world: WorldStorage, context: TriggerContext, game_id: u128,
+        self: @Effect, ref world: WorldStorage, context: @TriggerContext, game_id: u128,
     ) -> Result<(), Error> {
         let zero: felt252 = 0;
         let mut result: Result::<(), Error> = Result::Err(Error::EffectFailed);
         // Resolve target: use explicit target, fallback to context
         let actual_target = if self.target == @zero {
-            context.target1
+            *context.target1
         } else {
             *self.target
         };
 
         match self.component {
             ComponentType::Area => {
-                let area_opt = AreaComponent::get_component(@world, actual_target, game_id);
-                if area_opt.is_none() {
-                    result = Result::Err(Error::NoAreaComponent);
+                let comp = AreaComponent::get_component(@world, actual_target, game_id);
+                match comp {
+                    Option::Some(mut area) => {
+                        let property_registry: PropertyRegistry = world.read_model(*self.component);
+                        // Direct modification to component
+                        let (result_p, _success_p) = VariablePropertyHelper::set_area_property(
+                            ref area, ref world, self.property, @property_registry, self.value, game_id,
+                        );
+                        result = result_p;
+                    },
+                    Option::None => {
+                        result = Result::Err(Error::NoAreaComponent);
+                    }
                 }
-                let mut area = area_opt.unwrap();
-                let property_registry: PropertyRegistry = world.read_model(*self.component);
-                // Direct modification to component
-                let (result_p, _success_p) = VariablePropertyHelperTrait::set_area_property(
-                    area, world, self.property, @property_registry, self.value, game_id,
-                );
-                result = result_p;
             },
             ComponentType::Exit => {
-                let exit_opt = ExitComponent::get_component(@world, actual_target, game_id);
-                if exit_opt.is_none() {
-                    result = Result::Err(Error::NoExitComponent);
+                let comp = ExitComponent::get_component(@world, actual_target, game_id);
+                match comp {
+                    Option::Some(mut exit) => {
+                        let property_registry: PropertyRegistry = world.read_model(*self.component);
+                        // Direct modification to component
+                        let (result_p, _success_p) = VariablePropertyHelper::set_exit_property(
+                            ref exit, ref world, self.property, @property_registry, self.value, game_id,
+                        );
+                        result = result_p;
+                    },
+                    Option::None => {
+                        result = Result::Err(Error::NoExitComponent);
+                    }
                 }
-                let mut exit = exit_opt.unwrap();
-                let property_registry: PropertyRegistry = world.read_model(*self.component);
-                // Direct modification to component
-                let (result_p, _success_p) = VariablePropertyHelperTrait::set_exit_property(
-                    exit, world, self.property, @property_registry, self.value, game_id,
-                );
-                result = result_p;
             },
             ComponentType::Reactable => {
-                let inspect_opt = ReactableComponent::get_component(@world, actual_target, game_id);
-                if inspect_opt.is_none() {
-                    result = Result::Err(Error::NoReactableComponent);
+                let comp = ReactableComponent::get_component(@world, actual_target, game_id);
+                match comp {
+                    Option::Some(mut reactable) => {
+                        let property_registry: PropertyRegistry = world.read_model(*self.component);
+                        // Direct modification to component
+                        let (result_p, _success_p) = VariablePropertyHelper::set_reactable_property(
+                            ref reactable, ref world, self.property, @property_registry, self.value, game_id,
+                        );
+                        result = result_p;
+                    },
+                    Option::None => {
+                        result = Result::Err(Error::NoReactableComponent);
+                    }
                 }
-                let mut reactable = inspect_opt.unwrap();
-                let property_registry: PropertyRegistry = world.read_model(*self.component);
-                // Direct modification to component
-                let (result_p, _success_p) = VariablePropertyHelperTrait::set_reactable_property(
-                    reactable, world, self.property, @property_registry, self.value, game_id,
-                );
-                result = result_p;
             },
             ComponentType::InventoryItem => {
-                let item_opt = InventoryItemComponent::get_component(@world, actual_target, game_id);
-                if item_opt.is_none() {
-                    result = Result::Err(Error::NoInventoryItemComponent);
+                let comp = InventoryItemComponent::get_component(@world, actual_target, game_id);
+                match comp {
+                    Option::Some(mut item) => {
+                        let property_registry: PropertyRegistry = world.read_model(*self.component);
+                        // Direct modification to component
+                        let (result_p, _success_p) =
+                            VariablePropertyHelper::set_inventory_item_property(
+                                ref item,
+                                ref world,
+                                self.property,
+                                self.effect_type,
+                                @property_registry,
+                                self.value,
+                                self.n_value,
+                                game_id,
+                            );
+                        result = result_p;
+                    },
+                    Option::None => {
+                        result = Result::Err(Error::NoInventoryItemComponent);
+                    }
                 }
-                let mut item = item_opt.unwrap();
-                let property_registry: PropertyRegistry = world.read_model(*self.component);
-                // Direct modification to component
-                let (result_p, _success_p) =
-                    VariablePropertyHelperTrait::set_inventory_item_property(
-                    item,
-                    world,
-                    self.property,
-                    self.effect_type,
-                    @property_registry,
-                    self.value,
-                    self.n_value,
-                    game_id,
-                );
-                result = result_p;
             },
             ComponentType::Container => {
-                let cont_opt = ContainerComponent::get_component(@world, actual_target, game_id);
-                if cont_opt.is_none() {
-                    result = Result::Err(Error::NoContainerComponent);
+                let comp = ContainerComponent::get_component(@world, actual_target, game_id);
+                match comp {
+                    Option::Some(mut container) => {
+                        let property_registry: PropertyRegistry = world.read_model(*self.component);
+                        // Direct modification to component
+                        let (result_p, _success_p) =
+                            VariablePropertyHelper::set_container_property(
+                                ref container,
+                                ref world,
+                                self.property,
+                                self.effect_type,
+                                @property_registry,
+                                self.value,
+                                self.n_value,
+                                game_id,
+                            );
+                        result = result_p;
+                    },
+                    Option::None => {
+                        result = Result::Err(Error::NoContainerComponent);
+                    }
                 }
-                let mut container = cont_opt.unwrap();
-                let property_registry: PropertyRegistry = world.read_model(*self.component);
-                // Direct modification to component
-                let (result_p, _success_p) = VariablePropertyHelperTrait::set_container_property(
-                    container,
-                    world,
-                    self.property,
-                    self.effect_type,
-                    @property_registry,
-                    self.value,
-                    self.n_value,
-                    game_id,
-                );
-                result = result_p;
             },
             ComponentType::Player => {
-                let player_opt = PlayerComponent::get_component(@world, actual_target, game_id);
-                if player_opt.is_none() {
-                    result = Result::Err(Error::NoPlayerComponent);
+                let comp = PlayerComponent::get_component(@world, actual_target, game_id);
+                match comp {
+                    Option::Some(mut player) => {
+                        let property_registry: PropertyRegistry = world.read_model(*self.component);
+                        // Direct modification to component
+                        let (result_p, _success_p) = VariablePropertyHelper::set_player_property(
+                            ref player, ref world, self.property, @property_registry, self.value, game_id,
+                        );
+                        result = result_p;
+                    },
+                    Option::None => {
+                        result = Result::Err(Error::NoPlayerComponent);
+                    }
                 }
-                let mut player = player_opt.unwrap();
-                let property_registry: PropertyRegistry = world.read_model(*self.component);
-                // Direct modification to component
-                let (result_p, _success_p) = VariablePropertyHelperTrait::set_player_property(
-                    player, world, self.property, @property_registry, self.value, game_id,
-                );
-                result = result_p;
             },
             _ => { result = Result::Err(Error::NoComponent); },
         }
@@ -185,7 +203,9 @@ mod tests {
             action_type::{TriggerContext, EffectType},
             component_type::{ComponentType, ActionMapReactable, ReactableActions},
         },
-        lib::{variable_property::VariablePropertyImp},
+        lib::{
+            variable_property_helper::{VariablePropertyHelper},
+        },
     };
 
     fn create_test_effect(
@@ -251,7 +271,7 @@ mod tests {
         let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
 
         // Test description new value
         let new_value: Array<(ByteArray, u32)> = array![
@@ -272,7 +292,7 @@ mod tests {
             n_value,
         );
         world.write_model(@effect);
-        let result = effect.apply_effect(world, context, 0);
+        let result = effect.apply_effect(ref world, @context, game_id);
 
         let new_reactable: Reactable = world.read_model(door.inst);
         let key: u32 = *new_reactable.description.at(0);

@@ -17,7 +17,7 @@ use lore::{
     },
     lib::{
         utils::ByteArrayTraitExt,
-        variable_property_helper::VariablePropertyHelperTrait,
+        variable_property_helper::{VariablePropertyHelper},
     },
 };
 
@@ -62,8 +62,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let area = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_area_property(
-                    area, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_area_property(
+                    @area, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -73,8 +73,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let exit = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_exit_property(
-                    exit, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_exit_property(
+                    @exit, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -84,8 +84,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let reactable = OptionTrait::unwrap(reactable_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_reactable_property(
-                    reactable, self.property, @property_registry, *world,
+                let (b_component_value, _) = VariablePropertyHelper::get_reactable_property(
+                    @reactable, self.property, @property_registry, *world,
                 );
                 component_value = b_component_value;
             },
@@ -96,8 +96,8 @@ pub impl ConditionImpl of ConditionTrait {
                 }
                 let inventory_item = OptionTrait::unwrap(inventory_item_opt);
                 let (b_component_value, _) =
-                    VariablePropertyHelperTrait::get_inventory_item_property(
-                    inventory_item, self.property, @property_registry,
+                    VariablePropertyHelper::get_inventory_item_property(
+                    @inventory_item, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -107,8 +107,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_container_property(
-                    container, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_container_property(
+                    @container, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -118,8 +118,8 @@ pub impl ConditionImpl of ConditionTrait {
                     return false;
                 }
                 let player = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_player_property(
-                    player, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_player_property(
+                    @player, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -267,8 +267,12 @@ mod tests {
             components::{Component},
             reactable::ReactableComponent,
         },
-        types::{component_type::{ComponentType, ActionMapReactable, ReactableActions}},
-        lib::{variable_property::VariablePropertyImp},
+        types::{
+            component_type::{ComponentType, ActionMapReactable, ReactableActions},
+        },
+        lib::{
+            variable_property_helper::{VariablePropertyHelper},
+        },
     };
 
     fn create_test_condition(
@@ -322,7 +326,7 @@ mod tests {
         reactable.store(ref world, 0);
 
         // Register component variable properties
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
 
         // Test: is_reactable == true (should pass)
         let key2: felt252 = 2;

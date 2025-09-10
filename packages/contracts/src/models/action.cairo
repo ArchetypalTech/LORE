@@ -10,7 +10,7 @@ use lore::{
     types::action_type::{TriggerContext},
     lib::{
         utils::ByteArrayTraitExt,
-        variable_property::{VariablePropertyImp},
+        variable_property_helper::{VariablePropertyHelper},
     },
     constants::{errors::Error},
 };
@@ -169,7 +169,7 @@ pub impl ActionImpl of ActionTrait {
         if result_t.is_ok() && result {
             for effect_key in self.effects.clone() {
                 let effect: Effect = world.read_model(effect_key);
-                let result_pos = effect.apply_effect(world, *context, game_id);
+                let result_pos = effect.apply_effect(ref world, context, game_id);
                 if *player.use_debug {
                     player
                         .say(
@@ -267,7 +267,7 @@ mod tests {
             direction_type::Direction,
         },
         lib::{
-            variable_property::VariablePropertyImp,
+            variable_property_helper::{VariablePropertyHelper},
             utils::ByteArrayTraitExt,
         },
     };
@@ -488,15 +488,15 @@ mod tests {
     }
 
     fn register_variable_properties(ref world: WorldStorage) {
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Exit);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::InventoryItem);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Container);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Player);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Container);
-        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::InventoryItem);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Container);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Player);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Container);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
     }
 
     #[test]
@@ -661,8 +661,8 @@ mod tests {
         // // The one below are for testing individually
         //let trig_res = trigger.evaluate_trigger(ref world, game_id);
         //let cond_res = condition.evaluate_condition(@world, context);
-        //let eff_res1 = effect.apply_effect(world, context, 0);
-        //let eff_res2 = effect2.apply_effect(world, context, 0);
+        //let eff_res1 = effect.apply_effect(ref world, context, game_id);
+        //let eff_res2 = effect2.apply_effect(ref world, context, game_id);
 
         // ASSERT //
         // 1. Trigger should jump
@@ -869,8 +869,8 @@ mod tests {
         // // The one below are for testing individually
         //let trig_res = trigger.evaluate_trigger(ref world, game_id);
         //let cond_res = condition.evaluate_condition(@world, context);
-        //let eff_res1 = effect.apply_effect(world, context, 0);
-        //let eff_res2 = effect2.apply_effect(world, context, 0);
+        //let eff_res1 = effect.apply_effect(ref world, context, game_id);
+        //let eff_res2 = effect2.apply_effect(ref world, context, game_id);
 
         // ASSERT //
         // 1. Trigger should jump

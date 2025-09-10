@@ -25,6 +25,11 @@ use core::traits::{Into};
 
 #[generate_trait]
 pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
+    
+    fn register_component_properties(ref world: WorldStorage, component: ComponentType) {
+        Self::register_properties(ref world, component);
+    }
+    
     // Register Component Properties
     fn register_properties(ref world: WorldStorage, component: ComponentType) {
         let pos_property_registry: PropertyRegistry = world.read_model(component);
@@ -171,9 +176,12 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
 
-    // GET PROPERTIES
+    //--------------------------------
+    // GETTERS
+    //
+
     fn get_area_property(
-        component: Area, name: @ByteArray, property: @PropertyRegistry,
+        component: @Area, name: @ByteArray, property: @PropertyRegistry,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_area: ByteArray = "is_area";
@@ -183,11 +191,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
-                let mut arr: Array<felt252> = ArrayTrait::new();
+                let mut arr: Array<felt252> = array![];
                 if name == @is_area {
-                    arr.append(component.is_area.into());
+                    arr.append((*component.is_area).into());
                 } else if name == @is_spawn_point {
-                    arr.append(component.is_spawn_point.into());
+                    arr.append((*component.is_spawn_point).into());
                 }
                 value = Option::Some(arr);
                 access = Option::Some(prop.access_flags);
@@ -198,7 +206,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn get_exit_property(
-        component: Exit, name: @ByteArray, property: @PropertyRegistry,
+        component: @Exit, name: @ByteArray, property: @PropertyRegistry,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_exit: ByteArray = "is_exit";
@@ -210,17 +218,17 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
-                let mut arr: Array<felt252> = ArrayTrait::new();
+                let mut arr: Array<felt252> = array![];
                 if name == @is_exit {
-                    arr.append(component.is_exit.into());
+                    arr.append((*component.is_exit).into());
                 } else if name == @is_enterable {
-                    arr.append(component.is_enterable.into());
+                    arr.append((*component.is_enterable).into());
                 } else if name == @leads_to {
-                    arr.append(component.leads_to);
+                    arr.append((*component.leads_to));
                 } else if name == @direction_type {
                     arr
                         .append(
-                            ByteArrayTraitExt::to_felt252_word(@component.direction_type.into())
+                            ByteArrayTraitExt::to_felt252_word(@(*component.direction_type).into())
                                 .unwrap(),
                         );
                 }
@@ -233,7 +241,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn get_reactable_property(
-        component: Reactable, name: @ByteArray, property: @PropertyRegistry, world: WorldStorage,
+        component: @Reactable, name: @ByteArray, property: @PropertyRegistry, world: WorldStorage,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
@@ -244,16 +252,16 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
-                let mut arr: Array<felt252> = ArrayTrait::new();
+                let mut arr: Array<felt252> = array![];
                 if name == @is_visible {
-                    arr.append(component.is_visible.into());
+                    arr.append((*component.is_visible).into());
                 } else if name == @is_reactable {
-                    arr.append(component.is_reactable.into());
+                    arr.append((*component.is_reactable).into());
                 } else if name == @description {
                     let desc = component.description;
                     for i in 0..desc.len() {
                         let key: u32 = desc.at(i).clone();
-                        let descText: DescriptionText = world.read_model((component.inst, key));
+                        let descText: DescriptionText = world.read_model((*component.inst, key),);
                         let felt = ByteArrayTraitExt::to_felt252_word(@descText.text).unwrap();
                         arr.append(felt);
                     }
@@ -267,7 +275,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn get_inventory_item_property(
-        component: InventoryItem, name: @ByteArray, property: @PropertyRegistry,
+        component: @InventoryItem, name: @ByteArray, property: @PropertyRegistry,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let owner_id: ByteArray = "owner_id";
@@ -281,19 +289,19 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
-                let mut arr: Array<felt252> = ArrayTrait::new();
+                let mut arr: Array<felt252> = array![];
                 if name == @owner_id {
-                    arr.append(component.owner_id);
+                    arr.append((*component.owner_id));
                 } else if name == @can_be_picked_up {
-                    arr.append(component.can_be_picked_up.into());
+                    arr.append((*component.can_be_picked_up).into());
                 } else if name == @can_go_in_container {
-                    arr.append(component.can_go_in_container.into());
+                    arr.append((*component.can_go_in_container).into());
                 } else if name == @quantity {
-                    arr.append(component.quantity.into());
+                    arr.append((*component.quantity).into());
                 } else if name == @already_used {
-                    arr.append(component.already_used.into());
+                    arr.append((*component.already_used).into());
                 } else if name == @multiple_use {
-                    arr.append(component.multiple_use.into());
+                    arr.append((*component.multiple_use).into());
                 }
                 value = Option::Some(arr);
                 access = Option::Some(prop.access_flags);
@@ -304,7 +312,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn get_container_property(
-        component: Container, name: @ByteArray, property: @PropertyRegistry,
+        component: @Container, name: @ByteArray, property: @PropertyRegistry,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_container: ByteArray = "is_container";
@@ -317,17 +325,17 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
-                let mut arr: Array<felt252> = ArrayTrait::new();
+                let mut arr: Array<felt252> = array![];
                 if name == @is_container {
-                    arr.append(component.is_container.into());
+                    arr.append((*component.is_container).into());
                 } else if name == @can_be_opened {
-                    arr.append(component.can_be_opened.into());
+                    arr.append((*component.can_be_opened).into());
                 } else if name == @can_receive_items {
-                    arr.append(component.can_receive_items.into());
+                    arr.append((*component.can_receive_items).into());
                 } else if name == @is_open {
-                    arr.append(component.is_open.into());
+                    arr.append((*component.is_open).into());
                 } else if name == @num_slots {
-                    arr.append(component.num_slots.into());
+                    arr.append((*component.num_slots).into());
                 }
                 value = Option::Some(arr);
                 access = Option::Some(prop.access_flags);
@@ -338,7 +346,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn get_player_property(
-        component: Player, name: @ByteArray, property: @PropertyRegistry,
+        component: @Player, name: @ByteArray, property: @PropertyRegistry,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let location: ByteArray = "location";
@@ -347,9 +355,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
         for prop in property.properties.clone() {
             if prop.name == name.clone() {
-                let mut arr: Array<felt252> = ArrayTrait::new();
+                let mut arr: Array<felt252> = array![];
                 if name == @location {
-                    arr.append(component.location.into());
+                    arr.append((*component.location).into());
                 }
                 value = Option::Some(arr);
                 access = Option::Some(prop.access_flags);
@@ -359,10 +367,14 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         return (value, access);
     }
 
-    // SET PROPERTIES
+
+    //--------------------------------
+    // SETTERS
+    //
+
     fn set_area_property(
-        mut component: Area,
-        mut world: WorldStorage,
+        ref component: Area,
+        ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
@@ -399,8 +411,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn set_exit_property(
-        mut component: Exit,
-        mut world: WorldStorage,
+        ref component: Exit,
+        ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
@@ -457,8 +469,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn set_reactable_property(
-        mut component: Reactable,
-        mut world: WorldStorage,
+        ref component: Reactable,
+        ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
@@ -523,8 +535,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn set_inventory_item_property(
-        mut component: InventoryItem,
-        mut world: WorldStorage,
+        ref component: InventoryItem,
+        ref world: WorldStorage,
         name: @ByteArray,
         effect_type: @EffectType,
         property: @PropertyRegistry,
@@ -616,8 +628,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn set_container_property(
-        mut component: Container,
-        mut world: WorldStorage,
+        ref component: Container,
+        ref world: WorldStorage,
         name: @ByteArray,
         effect_type: @EffectType,
         property: @PropertyRegistry,
@@ -693,8 +705,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn set_player_property(
-        mut component: Player,
-        mut world: WorldStorage,
+        ref component: Player,
+        ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
