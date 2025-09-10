@@ -5,6 +5,7 @@ use lore::{
     models::{
         index::{DescriptionText},
         components::{Component},
+        game_instance::{GameModelImpl, GameInstImpl},
         player::{Player, PlayerImpl},
         reactable::{Reactable},
     },
@@ -59,28 +60,39 @@ pub impl EntityImpl of EntityTrait {
         entity
     }
 
-    fn create_player_entity(ref world: WorldStorage, address: ContractAddress) -> Player {
+    // mainly for tests
+    // the game world should have a player component
+    fn create_player_entity(ref world: WorldStorage, inst: felt252, address: ContractAddress) -> Player {
         // create player entity
         let mut entity: Entity = Default::default();
-        entity.name = "Player";
-        entity.inst = address.into();
+        entity.inst = inst;
         entity.is_entity = true;
+        entity.name = "Player";
         world.write_model(@entity);
         // create the player component
-        let mut player: Player = Component::add_component(ref world, address.into(), 0);
+        let mut player: Player = Component::add_component(ref world, entity.inst, 0);
         player.address = address;
         player.store(ref world, 0);
         // create the reactable
-        let mut reactable: Reactable = Component::add_component(ref world, address.into(), 0);
+        let mut reactable: Reactable = Component::add_component(ref world, entity.inst, 0);
         reactable.description = array![0];
         reactable.store(ref world, 0);
         // (reactable) player description
-        let descr1 = DescriptionText { inst: address.into(), key: 0, text: "Looks like a visitor" };
+        let descr1 = DescriptionText { inst: entity.inst, key: 0, text: "Looks like a visitor" };
         world.write_model(@descr1);
         // initialize player story
         player.say(ref world, 0, "You feel light, and shiny, in the head");
         // return the player
         (player)
+    }
+
+    fn create_player_game_instance(ref world: WorldStorage, player: @Player, game_id: u128) -> Player {
+        // clone a new game instance player
+        world.write_game_model(player, game_id);
+        // initialize player story
+        player.say(ref world, game_id, "You feel light, and shiny, in the head");
+        // return the player
+        (player.clone())
     }
 
     fn get_names(self: @Entity) -> Array<ByteArray> {

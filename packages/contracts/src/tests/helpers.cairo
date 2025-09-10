@@ -10,6 +10,7 @@ use lore::{
         designer::{designer, IDesignerDispatcher},
         prompt::{prompt, IPromptDispatcher}},
     models,
+    models::entity::{EntityImpl},
     types::{command_type::IntoTokenTypeFelt252}, constants::{errors::{}},
     lib::{dictionary::{initialize_dictionary}, utils::{ByteArrayTraitExt}},
 };
@@ -103,6 +104,9 @@ pub fn setup_core() -> (
     // Setup players
     let player_1 = contract_address_const::<0x69>();
     let player_2 = contract_address_const::<0x42>();
+
+    // burn entity 0 value
+    EntityImpl::create_entity(ref world, "entity_0");
 
     initialize_dictionary(world);
 
