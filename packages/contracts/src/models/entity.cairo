@@ -59,22 +59,28 @@ pub impl EntityImpl of EntityTrait {
         entity
     }
 
-    fn create_player_entity(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Player {
+    fn create_player_entity(ref world: WorldStorage, address: ContractAddress) -> Player {
+        // create player entity
         let mut entity: Entity = Default::default();
         entity.name = "Player";
         entity.inst = address.into();
         entity.is_entity = true;
         world.write_model(@entity);
-        let mut player: Player = Component::add_component(ref world, address.into(), game_id);
+        // create the player component
+        let mut player: Player = Component::add_component(ref world, address.into(), 0);
         player.address = address;
-        world.write_model(@player);
-        let mut reactable: Reactable = Component::add_component(ref world, address.into(), game_id);
+        player.store(ref world, 0);
+        // create the reactable
+        let mut reactable: Reactable = Component::add_component(ref world, address.into(), 0);
+        reactable.description = array![0];
+        reactable.store(ref world, 0);
+        // (reactable) player description
         let descr1 = DescriptionText { inst: address.into(), key: 0, text: "Looks like a visitor" };
         world.write_model(@descr1);
-        reactable.description = array![0];
-        world.write_model(@reactable);
-        player.say(world, "You feel light, and shiny, in the head");
-        player
+        // initialize player story
+        player.say(ref world, 0, "You feel light, and shiny, in the head");
+        // return the player
+        (player)
     }
 
     fn get_names(self: @Entity) -> Array<ByteArray> {

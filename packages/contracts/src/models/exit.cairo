@@ -64,17 +64,14 @@ pub impl ExitInstance of Instance<Exit> {
     fn inst(self: @Exit) -> felt252 {
         (*self.inst)
     }
-
     #[inline(always)]
     fn set_inst(ref self: Exit, new_inst: felt252) {
         self.inst = new_inst;
     }
-
     #[inline(always)]
     fn is_component(self: @Exit) -> bool {
         (*self.is_exit)
     }
-
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Exit>::ptr_from_keys(inst), selector!("is_exit")))
     }
@@ -117,7 +114,7 @@ pub impl ExitComponent of Component<Exit> {
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
-                    player.say(world, format!("You go to {:?}", self));
+                    player.say(ref world, *command.game_id, format!("You go to {:?}", self));
                 }
 
                 let mut matchesName = false;
@@ -185,7 +182,7 @@ pub impl ExitComponent of Component<Exit> {
                         };
 
                         let (_trig_res, _cond_res, _eff_res) = ActionImpl::process_action(
-                            action, world, @context, *command.game_id,
+                            action, ref world, @context, *command.game_id,
                         );
                     };
                 }

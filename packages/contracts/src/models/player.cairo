@@ -4,7 +4,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        game_instance::{GameModelImpl, GameInstImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
     },
@@ -36,11 +36,13 @@ pub struct Player {
 pub struct PlayerStory {
     #[key]
     pub inst: felt252,
+    pub is_story: bool,
     /// Properties ///
     /// Array of story lines (story lines keys)
     pub story: Array<CounterType>,
 }
 
+// stored by game instance always
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct StoryLine {
@@ -69,7 +71,12 @@ pub impl PlayerImpl of PlayerTrait {
         };
         // if playing game instance
         if (game_id != 0) {
-            player = world.read_game_model(player.inst, game_id);
+            if (!GameModelImpl::<Player>::has_game_model(@world, player.inst, game_id)) {
+                // creste a new game instance player
+                player = Self::create_player(ref world, address, game_id);
+            } else {
+                player = world.read_game_model(player.inst, game_id);
+            }
         }
         (player)
     }
@@ -93,7 +100,7 @@ pub impl PlayerImpl of PlayerTrait {
         if room.is_none() {
             return Result::Err(Error::NoRoom);
         }
-        self.say(world, format!("{}", room.unwrap().name));
+        self.say(ref world, game_id, format!("{}", room.unwrap().name));
         for item in context {
             // Don't add the player to the description
             if (item.inst == *self.inst) {
@@ -104,10 +111,10 @@ pub impl PlayerImpl of PlayerTrait {
                 Option::Some(mut reactable) => {
                     if reactable.is_visible {
                         if reactable.already_shown {
-                            self.say(world, format!("{}", reactable.new_entry));
+                            self.say(ref world, game_id, format!("{}", reactable.new_entry));
                         } else {
                             let description = reactable.get_first_description(world);
-                            self.say(world, format!("{}", description));
+                            self.say(ref world, game_id, format!("{}", description));
                             reactable.already_shown = true;
                             reactable.store(ref world, game_id);
                         }
@@ -127,65 +134,50 @@ pub impl PlayerImpl of PlayerTrait {
         self.store(ref world, game_id);
         //world.write_model(@self);
         if self.use_debug {
-            self.clone().say(world, format!("You {:?} enter {:?}", player_entity, room_entity));
+            self.say(ref world, game_id, format!("You {:?} enter {:?}", player_entity, room_entity));
         }
     }
 
     // TODO: improve name and better description
-    fn say(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        let mut player: Player = world.read_model(*self.inst);
-        let mut counter: u32 = player.story_line;
-        let increase: u32 = 1;
-        let new_counter: u32 = counter + increase;
+    fn say(self: @Player, ref world: WorldStorage, game_id: u128, text: ByteArray) {
+        let increase: CounterType = 1;
+        let new_counter: CounterType = *self.story_line + increase;
 
-        let story_line = StoryLine { inst: *self.inst, key: new_counter, line: text };
-        world.write_model(@story_line);
+        // StoryLine is saved by game instance only
+        world.write_model(@StoryLine {
+            inst: GameInstImpl::game_inst(*self.inst, game_id),
+            key: new_counter,
+            line: text,
+        });
 
-        let mut player_story: PlayerStory = world.read_model(*self.inst);
+        // PlayerStory is a regular model, with alternative game instance
+        let mut player_story: PlayerStory = world.read_game_model(*self.inst, game_id);
+        player_story.is_story = true;
         player_story.story.append(new_counter);
-        // world
-        //     .write_member(
-        //         Model::<PlayerStory>::ptr_from_keys(*self.inst),
-        //         selector!("story"),
-        //         player_story.story.span(),
-        //     );
-        world.write_model(@player_story);
+        world.write_game_model(@player_story, game_id);
 
         // Update the player
-        let mut player: Player = world.read_model(*self.inst);
+        let mut player: Player = world.read_game_model(*self.inst, game_id);
         player.story_line = new_counter;
-        world
-            .write_member(
-                Model::<Player>::ptr_from_keys(*self.inst),
-                selector!("story_line"),
-                player.story_line,
-            );
-        //player.store(ref world, game_id);
+        world.write_game_model(@player, game_id);
     }
 
 
-    fn add_command_text(mut self: @Player, mut world: WorldStorage, text: ByteArray) {
-        // read counter from player
-        let mut counter = *self.story_line;
-        // increase counter
-        let increase: u32 = 1;
-        counter += increase;
-        // create new story line
-        let mut story_line = StoryLine { inst: *self.inst, key: counter, line: text };
-        // write story line to world
-        world.write_model(@story_line);
-        // add story line to player story
-        let mut player_story: PlayerStory = world.read_model(*self.inst);
-        player_story.story.append(counter);
-        // update player_story.story
-        world.write_model(@player_story);
-        // let mut playerStory: PlayerStory = world.read_model(*self.inst);
-    // let mut storyLine = playerStory.story.clone();
-    // if (storyLine.len() > 10) {
-    //     let _ = storyLine.pop_front();
-    // }
-    // storyLine.append(format!("> {}", text));
-    // world.write_model(@PlayerStory { inst: *self.inst, story: storyLine });
+    fn add_command_text(self: @Player, ref world: WorldStorage, game_id: u128, text: ByteArray) {
+        let increase: CounterType = 1;
+        let new_counter: CounterType = *self.story_line + increase;
+        // StoryLine is saved by game instance only
+        world.write_model(@StoryLine {
+            inst: GameInstImpl::game_inst(*self.inst, game_id),
+            key: new_counter,
+            line: text,
+        });
+
+        // PlayerStory is a regular model, with alternative game instance
+        let mut player_story: PlayerStory = world.read_game_model(*self.inst, game_id);
+        player_story.is_story = true;
+        player_story.story.append(new_counter);
+        world.write_game_model(@player_story, game_id);
     }
 
     fn get_room(self: @Player, world: @WorldStorage, game_id: u128) -> Option<Entity> {
@@ -242,13 +234,13 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     // Get the player personal inventory container component
-    fn get_personal_container(self: @Player, world: @WorldStorage, game_id: u128) -> Option<Container> {
-        (match ContainerComponent::get_component(world, *self.inst, game_id) {
+    fn get_personal_container(self: @Player, ref world: WorldStorage, game_id: u128) -> Option<Container> {
+        (match ContainerComponent::get_component(@world, *self.inst, game_id) {
             Option::Some(c) => {
                 (Option::Some(c))
             },
             Option::None => {
-                self.say(*world, format!("You don't have a personal inventory container"));
+                self.say(ref world, game_id, format!("You don't have a personal inventory container"));
                 (Option::None)
             },
         })
@@ -259,22 +251,37 @@ pub impl PlayerImpl of PlayerTrait {
 //---------------------------------
 // Component
 //
+pub impl PlayerStoryInstance of Instance<PlayerStory> {
+    #[inline(always)]
+    fn inst(self: @PlayerStory) -> felt252 {
+        (*self.inst)
+    }
+    #[inline(always)]
+    fn set_inst(ref self: PlayerStory, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+    #[inline(always)]
+    fn is_component(self: @PlayerStory) -> bool {
+        (*self.is_story)
+    }
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<PlayerStory>::ptr_from_keys(inst), selector!("is_story")))
+    }
+}
+
 pub impl PlayerInstance of Instance<Player> {
     #[inline(always)]
     fn inst(self: @Player) -> felt252 {
         (*self.inst)
     }
-
     #[inline(always)]
     fn set_inst(ref self: Player, new_inst: felt252) {
         self.inst = new_inst;
     }
-
     #[inline(always)]
     fn is_component(self: @Player) -> bool {
         (*self.is_player)
     }
-
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Player>::ptr_from_keys(inst), selector!("is_player")))
     }
@@ -360,20 +367,20 @@ mod tests {
     }
 
     #[test]
-    fn test_player_story_time() {
+    fn test_player_story_line() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         let game_id: u128 = 0;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         assert(player.is_player, 'player is player');
 
-        player.say(world, "hello");
-        let story: PlayerStory = world.read_model(player.inst);
+        player.say(ref world, game_id, "hello");
+        let story: PlayerStory = world.read_game_model(player.inst, game_id);
         // ("story: {:?}", story);
         assert(story.story.len() == 2, 'story has two entries'); // first entry is intro text
         let test_text: ByteArray = "hello";
 
         let story_key: u32 = *story.story.at(story.story.len() - 1);
-        let story_line: StoryLine = world.read_model((story.inst, story_key));
+        let story_line: StoryLine = world.read_model((story.inst, story_key),);
         assert(story_line.line == test_text, 'story has "hello"');
     }
 
@@ -390,11 +397,11 @@ mod tests {
         assert!(player_1_game.is_player, "player_1_game is player");
         assert!(player_2_game.is_player, "player_2_game is player");
         // create some rooms
-        let room_0_entity: Entity = EntityImpl::create_entity(ref world, "room_0"); // burn entity 0 value
+        let _room_0_entity: Entity = EntityImpl::create_entity(ref world, "room_0"); // burn entity 0 value
         let room_1_entity: Entity = EntityImpl::create_entity(ref world, "room_1");
         let room_2_entity: Entity = EntityImpl::create_entity(ref world, "room_2");
-        let room_1_reactable: Reactable = Reactable_create_prefab(ref world, room_1_entity.inst);
-        let room_2_reactable: Reactable = Reactable_create_prefab(ref world, room_2_entity.inst);
+        let _room_1_reactable: Reactable = Reactable_create_prefab(ref world, room_1_entity.inst);
+        let _room_2_reactable: Reactable = Reactable_create_prefab(ref world, room_2_entity.inst);
         assert_ne!(room_1_entity.inst, 0, "room_1_entity.inst > 0");
         assert_ne!(room_2_entity.inst, 0, "room_2_entity.inst > 0");
         assert_ne!(room_1_entity.inst, room_2_entity.inst, "room_1_entity.inst != room_2_entity.inst");
@@ -424,5 +431,51 @@ mod tests {
         assert_eq!(player_2.get_room(@world, 0).unwrap().inst, room_2_entity.inst, "moved game inst");
         assert_eq!(player_1.get_room(@world, game_id).unwrap().inst, room_2_entity.inst, "moved game inst");
         assert_eq!(player_2.get_room(@world, game_id).unwrap().inst, room_1_entity.inst, "moved game inst");
+    }
+
+    fn _story_len(world: @WorldStorage, inst: felt252, game_id: u128) -> u32 {
+        GameModelImpl::<PlayerStory>::read_game_model(world, inst, game_id).story.len()
+    }
+
+    #[test]
+    fn test_player_say() {
+        let (mut world, _, _, player_address_1, player_address_2) = helpers::setup_core();
+        let game_id: u128 = 123;
+        let player_1: Player = PlayerImpl::caller_as_player(ref world, player_address_1, 0);
+        let player_2: Player = PlayerImpl::caller_as_player(ref world, player_address_2, 0);
+        let _player_1_game: Player = PlayerImpl::caller_as_player(ref world, player_address_1, game_id);
+        let _player_2_game: Player = PlayerImpl::caller_as_player(ref world, player_address_2, game_id);
+        assert_eq!(_story_len(@world, player_1.inst, 0), 1, "story_start");
+        assert_eq!(_story_len(@world, player_2.inst, 0), 1, "story_start");
+        assert_eq!(_story_len(@world, player_1.inst, game_id), 1, "story_start");
+        assert_eq!(_story_len(@world, player_2.inst, game_id), 1, "story_start");
+        assert_eq!(_story_len(@world, player_2.inst, game_id+1), 0, "story_start");
+        // say something...
+        player_1.say(ref world, 0, "hello");
+        player_2.say(ref world, 0, "hellow");
+        player_1.say(ref world, game_id, "world");
+        player_2.say(ref world, game_id, "people");
+        assert_eq!(_story_len(@world, player_1.inst, 0), 2, "story_len");
+        assert_eq!(_story_len(@world, player_2.inst, 0), 2, "story_len");
+        assert_eq!(_story_len(@world, player_1.inst, game_id), 3, "story_len");
+        assert_eq!(_story_len(@world, player_2.inst, game_id), 3, "story_len");
+        assert_eq!(_story_len(@world, player_2.inst, game_id+1), 0, "story_len");
+        // creante new player
+        let _player_22_game: Player = PlayerImpl::caller_as_player(ref world, player_address_2, game_id+1);
+        assert_eq!(_story_len(@world, player_2.inst, game_id+1), 1, "story_len");
+        // say more...
+        player_1.say(ref world, 0, "hello");
+        player_1.say(ref world, 0, "hello");
+        player_1.say(ref world, 0, "hello");
+        player_1.say(ref world, 0, "hello");
+        player_1.say(ref world, game_id, "world");
+        player_2.say(ref world, game_id, "people");
+        player_2.say(ref world, game_id, "people");
+        player_2.say(ref world, game_id+1, "world");
+        assert_eq!(_story_len(@world, player_1.inst, 0), 6, "story_len2");
+        assert_eq!(_story_len(@world, player_2.inst, 0), 2, "story_len2");
+        assert_eq!(_story_len(@world, player_1.inst, game_id), 4, "story_len2");
+        assert_eq!(_story_len(@world, player_2.inst, game_id), 5, "story_len2");
+        assert_eq!(_story_len(@world, player_2.inst, game_id+1), 2, "story_len2");
     }
 }

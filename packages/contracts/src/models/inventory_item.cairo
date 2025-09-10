@@ -72,17 +72,14 @@ pub impl InventoryItemInstance of Instance<InventoryItem> {
     fn inst(self: @InventoryItem) -> felt252 {
         (*self.inst)
     }
-
     #[inline(always)]
     fn set_inst(ref self: InventoryItem, new_inst: felt252) {
         self.inst = new_inst;
     }
-
     #[inline(always)]
     fn is_component(self: @InventoryItem) -> bool {
         (*self.is_inventory_item)
     }
-
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<InventoryItem>::ptr_from_keys(inst), selector!("is_inventory_item")))
     }
@@ -123,7 +120,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         match action.action_fn {
             InventoryItemActions::UseItem => {
                 if *player.use_debug {
-                    player.say(world, format!("You are trying to use: {}", nouns[0].text));
+                    player.say(ref world, *command.game_id, format!("You are trying to use: {}", nouns[0].text));
                 }
                 let mut resultUse: Result<(), Error> = Result::Ok(());
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
@@ -132,7 +129,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // V: Use, N1: key, N2: door (target)
                 // Get target entity to get the actions and execute it
                 if *player.use_debug {
-                    player.say(world, format!("Your target is: {}", nouns[1].text));
+                    player.say(ref world, *command.game_id, format!("Your target is: {}", nouns[1].text));
                 }
 
                 let target_entity = EntityImpl::get_entity(@world, *nouns[1].target);
@@ -168,7 +165,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     if *player.use_debug {
                         player
                             .say(
-                                world,
+                                ref world, *command.game_id,
                                 format!(
                                     "Using {} trigger's something at {}",
                                     nouns[0].text,
@@ -177,7 +174,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                             );
                         player
                             .say(
-                                world,
+                                ref world, *command.game_id,
                                 format!(
                                     "Using: {:?} trigger's the action: {:?} at: {:?} as the target",
                                     nouns[0].text,
@@ -187,12 +184,12 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                             );
                     }
                     let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
-                        action, world, @context, *command.game_id,
+                        action, ref world, @context, *command.game_id,
                     );
                     if *player.use_debug {
-                        player.say(world, format!("Trigger result: {:?}", trig_res));
-                        player.say(world, format!("Condition result: {:?}", cond_res));
-                        player.say(world, format!("Effect result: {:?}", eff_res));
+                        player.say(ref world, *command.game_id, format!("Trigger result: {:?}", trig_res));
+                        player.say(ref world, *command.game_id, format!("Condition result: {:?}", cond_res));
+                        player.say(ref world, *command.game_id, format!("Effect result: {:?}", eff_res));
                     }
                     // If all are ok, set used to true
                     if trig_res.is_ok() && cond_res && eff_res.is_ok() {
@@ -208,7 +205,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             InventoryItemActions::PickupItem => {
                 // This is for the player's personal inventory container
                 // Ex: "pickup the sword"
-                let personal_container = player.get_personal_container(@world, *command.game_id);
+                let personal_container = player.get_personal_container(ref world, *command.game_id);
                 if personal_container.is_none() {
                     return Result::Err(Error::NoPersonalContainer);
                 }
@@ -218,7 +215,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             InventoryItemActions::DropItem => {
                 // This is for taking an item from the player's personal inventory
                 // Ex:: "drop the sword"
-                let personal_container = player.get_personal_container(@world, *command.game_id);
+                let personal_container = player.get_personal_container(ref world, *command.game_id);
                 if personal_container.is_none() {
                     return Result::Err(Error::NoPersonalContainer);
                 }

@@ -97,17 +97,14 @@ pub impl ReactableInstance of Instance<Reactable> {
     fn inst(self: @Reactable) -> felt252 {
         (*self.inst)
     }
-
     #[inline(always)]
     fn set_inst(ref self: Reactable, new_inst: felt252) {
         self.inst = new_inst;
     }
-
     #[inline(always)]
     fn is_component(self: @Reactable) -> bool {
         (*self.is_reactable)
     }
-
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Reactable>::ptr_from_keys(inst), selector!("is_reactable")))
     }
@@ -151,18 +148,18 @@ pub impl ReactableComponent of Component<Reactable> {
                 return Result::Ok(());
             },
             ReactableActions::ReadRandomDescription => {
-                player.say(world, self.get_random_description(command, world));
+                player.say(ref world, *command.game_id, self.get_random_description(command, world));
                 return Result::Ok(());
             },
             ReactableActions::ReadFirstDescription => {
-                player.say(world, self.get_first_description(world));
+                player.say(ref world, *command.game_id, self.get_first_description(world));
                 return Result::Ok(());
             },
             ReactableActions::ReadSpecificDescription => {
                 // Get idxs from the action map entrypoints
                 let (idx1, _idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
                 // Say the description
-                player.say(world, ReactableImpl::get_specific_description(@self, idx1, world));
+                player.say(ref world, *command.game_id, ReactableImpl::get_specific_description(@self, idx1, world));
                 return Result::Ok(());
             },
         }

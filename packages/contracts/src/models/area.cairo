@@ -30,17 +30,14 @@ pub impl AreaInstance of Instance<Area> {
     fn inst(self: @Area) -> felt252 {
         (*self.inst)
     }
-
     #[inline(always)]
     fn set_inst(ref self: Area, new_inst: felt252) {
         self.inst = new_inst;
     }
-
     #[inline(always)]
     fn is_component(self: @Area) -> bool {
         (*self.is_area)
     }
-
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Area>::ptr_from_keys(inst), selector!("is_area")))
     }

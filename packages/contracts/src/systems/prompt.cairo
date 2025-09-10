@@ -43,17 +43,17 @@ pub mod prompt {
 
             let player = PlayerImpl::caller_as_player(ref world, get_caller_address(), game_id);
 
-            player.add_command_text(world, cmd.clone());
+            player.add_command_text(ref world, game_id, cmd.clone());
             match (lexer::parse(cmd, world, player, game_id)) {
                 Result::Ok(result) => {
-                    let res = handle_command(result, ref world, player);
+                    let res = handle_command(@result, ref world, player);
                     if !res.is_ok() {
                         let error = res.unwrap_err();
                         // println!("Error: {:?}", error);
-                        ErrorOutputterImpl::output_error(error, player, world);
+                        ErrorOutputterImpl::output_error(error, player, ref world, game_id);
                     }
                 },
-                Result::Err(_r) => { player.say(world, random_text(world, random_error())); },
+                Result::Err(_r) => { player.say(ref world, game_id, random_text(world, random_error())); },
             }
         }
     }

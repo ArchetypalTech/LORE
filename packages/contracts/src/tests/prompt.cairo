@@ -33,15 +33,15 @@ pub mod prompt {
             let game_id: u128 = 0;
             let player = PlayerImpl::caller_as_player(ref world, get_caller_address(), game_id);
 
-            //player.add_command_text(world, cmd.clone());
+            //player.add_command_text(world, game_id, cmd.clone());
             match (lexer::parse(cmd, world, player)) {
                 Result::Ok(result) => {
                     let res = handle_command(result, world, player);
                     if !res.is_ok() {
-                        player.say(world, random_text(world, random_error()));
+                        player.say(ref world, game_id, random_text(world, random_error()));
                     }
                 },
-                Result::Err(_r) => { player.say(world, random_text(world, random_error())); },
+                Result::Err(_r) => { player.say(ref world, game_id, random_text(world, random_error())); },
             }
         }
     }

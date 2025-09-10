@@ -36,12 +36,19 @@ pub impl GameInstImpl of GameInstTrait {
 }
 
 pub trait GameModelTrait<M> {
+    fn has_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> bool;
     fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M;
     fn write_game_model(ref self: WorldStorage, model: @M, game_id: u128);
     // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128);
 }
 
 pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameModelTrait<M> {
+    // check if an entity has a game instance model
+    fn has_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> bool {
+        let game_inst: felt252 = GameInstImpl::game_inst(inst, game_id);
+        (Instance::<M>::has_component(self, game_inst))
+    }
+    
     // reads a game instance model, if it exists
     fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M {
         let game_inst: felt252 = GameInstImpl::game_inst(inst, game_id);

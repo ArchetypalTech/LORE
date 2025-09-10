@@ -7,7 +7,7 @@ use lore::{
 
 #[generate_trait]
 pub impl ErrorOutputterImpl of ErrorOutputterTrait {
-    fn output_error(self: Error, player: Player, world: WorldStorage) {
+    fn output_error(self: Error, player: Player, ref world: WorldStorage, game_id: u128) {
         let texts = match self {
             Error::Unimplemented => array!["This is not ready yet"],
             Error::NameNotMatch => array![
@@ -112,7 +112,7 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
         };
 
         if texts.len() > 0 {
-            player.say(world, random_text(world, texts));
+            player.say(ref world, game_id, random_text(world, texts));
         }
     }
 }

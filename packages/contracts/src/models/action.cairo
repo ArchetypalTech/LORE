@@ -100,7 +100,7 @@ pub impl ActionImpl of ActionTrait {
     }
 
     fn process_action(
-        mut action: Action, mut world: WorldStorage, context: @TriggerContext, game_id: u128,
+        mut action: Action, ref world: WorldStorage, context: @TriggerContext, game_id: u128,
     ) -> (Result<(), Error>, bool, Result<(), Error>) {
         let player_inst: felt252 = *context.doer;
         let player: Player = world.read_model(player_inst);
@@ -108,14 +108,14 @@ pub impl ActionImpl of ActionTrait {
             // Action has already been executed, don't do anything
             // return condition as false.
             if player.use_debug {
-                player.say(world, format!("Action has already been executed"));
+                player.say(ref world, game_id, format!("Action has already been executed"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
         // Check if the action is called by the correct entity
         if action.executor != *context.inventory_object {
             if player.use_debug {
-                player.say(world, format!("Action is not called by the correct entity"));
+                player.say(ref world, game_id, format!("Action is not called by the correct entity"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
@@ -132,7 +132,7 @@ pub impl ActionImpl of ActionTrait {
             let result_opt = TriggerImpl::evaluate_trigger(ref world, trigger.clone(), game_id);
             if player.use_debug {
                 player
-                    .say(world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
+                    .say(ref world, game_id, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
             }
             if result_opt.is_err() {
                 result_t = result_opt;
@@ -146,7 +146,7 @@ pub impl ActionImpl of ActionTrait {
             result = condition.evaluate_condition(@world, context.clone(), game_id);
             if player.use_debug {
                 player
-                    .say(world, format!("Result for condition: {:?}, is: {:?}", condition, result));
+                    .say(ref world, game_id, format!("Result for condition: {:?}, is: {:?}", condition, result));
             }
             if !result {
                 break; // If a single condition fails, break out of the loop
@@ -161,7 +161,7 @@ pub impl ActionImpl of ActionTrait {
                 if player.use_debug {
                     player
                         .say(
-                            world, format!("Result for effect: {:?}, is: {:?}", effect, result_pos),
+                            ref world, game_id, format!("Result for effect: {:?}, is: {:?}", effect, result_pos),
                         );
                 }
                 if result_pos.is_err() {
@@ -185,11 +185,11 @@ pub impl ActionImpl of ActionTrait {
                 );
             // world.write_model(@action);
             for response in action.success_response.clone() {
-                player.say(world, response);
+                player.say(ref world, game_id, response);
             }
         } else {
             for response in action.failing_response.clone() {
-                player.say(world, response);
+                player.say(ref world, game_id, response);
             }
         }
         (result_t, result, result_e)
@@ -641,7 +641,7 @@ mod tests {
         // 1. move player to room 2
         player1.move_to_room(ref world, room_2.inst, game_id);
         // 2. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context, game_id);
+        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, ref world, @context, game_id);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
@@ -848,7 +848,7 @@ mod tests {
         // 4. Move player to room 2
         player1.move_to_room(ref world, room_2.inst, game_id);
         // 5. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, world, @context, game_id);
+        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, ref world, @context, game_id);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);

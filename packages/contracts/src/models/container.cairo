@@ -165,47 +165,47 @@ pub impl ContainerImpl of ContainerTrait {
     }
 
     fn check_container(
-        self: Container, world: @WorldStorage, player: @Player, object: @ByteArray,
+        self: Container, ref world: WorldStorage, player: @Player, object: @ByteArray, game_id: u128,
     ) -> bool {
         // check if container is open
         // we also check if the container is the player's personal inventory
         if (!self.is_open) {
             if (self.inst == *player.inst) {
-                player.say(*world, format!("{} personal inventory is close", object));
+                player.say(ref world, game_id, format!("{} personal inventory is close", object));
                 return true;
             } else {
-                player.say(*world, format!("The {} is closed", object));
+                player.say(ref world, game_id, format!("The {} is closed", object));
                 return true;
             }
         } else {
             if (self.inst == *player.inst) {
-                player.say(*world, format!("{} personal inventory is open", object));
+                player.say(ref world, game_id, format!("{} personal inventory is open", object));
             } else {
-                player.say(*world, format!("{} is open", object));
+                player.say(ref world, game_id, format!("{} is open", object));
             }
         }
         // check if container is full
-        if (self.clone().is_full(world)) {
-            player.say(*world, ("It is full."));
+        if (self.is_full(@world)) {
+            player.say(ref world, game_id, ("It is full."));
         } else {
-            player.say(*world, ("It is not full."));
+            player.say(ref world, game_id, ("It is not full."));
         }
         // check if container can receive items
         if (!self.can_receive_items) {
-            player.say(*world, ("It cannot receive items"));
+            player.say(ref world, game_id, ("It cannot receive items"));
         } else {
-            player.say(*world, ("It can receive items"));
+            player.say(ref world, game_id, ("It can receive items"));
         }
         // check if container is empty
-        if (self.clone().is_empty(world)) {
-            player.say(*world, ("It is empty."));
+        if (self.is_empty(@world)) {
+            player.say(ref world, game_id, ("It is empty."));
         } else {
             // Say what it contains
-            player.say(*world, format!("It contains:"));
-            let items_id = self.get_item_ids(world);
+            player.say(ref world, game_id, format!("It contains:"));
+            let items_id = self.get_item_ids(@world);
             for item_id in items_id {
-                let item = EntityImpl::get_entity(world, item_id).unwrap();
-                player.say(*world, format!("{}", item.name));
+                let item = EntityImpl::get_entity(@world, item_id).unwrap();
+                player.say(ref world, game_id, format!("{}", item.name));
             };
         }
 
@@ -222,17 +222,14 @@ pub impl ContainerInstance of Instance<Container> {
     fn inst(self: @Container) -> felt252 {
         (*self.inst)
     }
-
     #[inline(always)]
     fn set_inst(ref self: Container, new_inst: felt252) {
         self.inst = new_inst;
     }
-
     #[inline(always)]
     fn is_component(self: @Container) -> bool {
         (*self.is_container)
     }
-
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Container>::ptr_from_keys(inst), selector!("is_container")))
     }
@@ -275,11 +272,11 @@ pub impl ContainerComponent of Component<Container> {
                 if (self.is_open) {
                     player
                         .say(
-                            world,
-                            format!("The {} is already open.", self.clone().entity(@world).name),
+                            ref world, *command.game_id,
+                            format!("The {} is already open.", self.entity(@world).name),
                         );
                 } else {
-                    player.say(world, format!("You open {}", self.clone().entity(@world).name));
+                    player.say(ref world, *command.game_id, format!("You open {}", self.entity(@world).name));
                     self.set_open(ref world, true, *command.game_id);
                 }
                 return Result::Ok(());
@@ -288,18 +285,18 @@ pub impl ContainerComponent of Component<Container> {
                 if (!self.is_open) {
                     player
                         .say(
-                            world,
-                            format!("The {} is already closed.", self.clone().entity(@world).name),
+                            ref world, *command.game_id,
+                            format!("The {} is already closed.", self.entity(@world).name),
                         );
                 } else {
-                    player.say(world, format!("You close {}", self.clone().entity(@world).name));
+                    player.say(ref world, *command.game_id, format!("You close {}", self.entity(@world).name));
                     self.set_open(ref world, false, *command.game_id);
                 }
                 return Result::Ok(());
             },
             ContainerActions::Check => {
                 // Check container status
-                let doneChecking = self.check_container(@world, player, nouns[0].text);
+                let doneChecking = self.check_container(ref world, player, nouns[0].text, *command.game_id);
                 if (doneChecking) {
                     return Result::Ok(());
                 }
