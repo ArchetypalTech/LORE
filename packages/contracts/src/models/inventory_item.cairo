@@ -261,7 +261,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> InventoryItem {
+    fn add_component(ref world: WorldStorage, inst: felt252) -> InventoryItem {
         let mut inventory_item: InventoryItem = world.read_model(inst);
         inventory_item.inst = inst;
         inventory_item.is_inventory_item = true;
@@ -287,7 +287,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         inventory_item.already_used = false;
         inventory_item.can_be_picked_up = true;
         inventory_item.can_go_in_container = true;
-        inventory_item.store(ref world, game_id);
+        inventory_item.store(ref world, 0);
         // Return the component
         inventory_item
     }

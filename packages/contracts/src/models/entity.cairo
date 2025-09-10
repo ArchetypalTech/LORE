@@ -70,11 +70,11 @@ pub impl EntityImpl of EntityTrait {
         entity.name = "Player";
         world.write_model(@entity);
         // create the player component
-        let mut player: Player = Component::add_component(ref world, entity.inst, 0);
+        let mut player: Player = Component::add_component(ref world, entity.inst);
         player.address = address;
         player.store(ref world, 0);
         // create the reactable
-        let mut reactable: Reactable = Component::add_component(ref world, entity.inst, 0);
+        let mut reactable: Reactable = Component::add_component(ref world, entity.inst);
         reactable.description = array![0];
         reactable.store(ref world, 0);
         // (reactable) player description

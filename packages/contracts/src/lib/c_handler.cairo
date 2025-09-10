@@ -291,7 +291,7 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_level") {
-            create_test_level(ref world, *command.game_id);
+            create_test_level(ref world);
             player.say(ref world, *command.game_id, "+sys+created test level");
             return Result::Ok(());
         }
@@ -338,8 +338,8 @@ mod tests {
     fn CHandler_test_g_command_handling() {
         // Setup test environment
         let (mut world, _, _, player_1, _) = helpers::setup_core();
+        create_test_level(ref world);
         let game_id: u128 = 0;
-        create_test_level(ref world, game_id);
         let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(ref world, 2826, game_id);
 

@@ -272,7 +272,7 @@ mod tests {
         },
     };
 
-    fn create_rooms(ref world: WorldStorage, game_id: u128) -> (Entity, Entity) {
+    fn create_rooms(ref world: WorldStorage) -> (Entity, Entity) {
         // create room entity 1
         let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");
         world.write_model(@room_entity_1);
@@ -282,32 +282,32 @@ mod tests {
 
         // ROOM 1 //
         // add area component to room entity 1
-        let mut area_component: Area = Component::add_component(ref world, room_entity_1.inst, game_id);
+        let mut area_component: Area = Component::add_component(ref world, room_entity_1.inst);
         area_component.is_area = true;
-        area_component.store(ref world, game_id);
+        area_component.store(ref world, 0);
         // add exit component to room entity
-        let mut exit_component_1: Exit = Component::add_component(ref world, room_entity_1.inst, game_id);
+        let mut exit_component_1: Exit = Component::add_component(ref world, room_entity_1.inst);
         exit_component_1.is_enterable = true;
         exit_component_1.leads_to = room_entity_2.inst;
         exit_component_1.direction_type = Direction::North;
-        exit_component_1.store(ref world, game_id);
+        exit_component_1.store(ref world, 0);
 
         // ROOM 2 //
         // add area component to room entity 2
-        let mut area_component_2: Area = Component::add_component(ref world, room_entity_2.inst, game_id);
+        let mut area_component_2: Area = Component::add_component(ref world, room_entity_2.inst);
         area_component_2.is_area = true;
-        area_component_2.store(ref world, game_id);
+        area_component_2.store(ref world, 0);
 
         // return room entities
         (room_entity_1, room_entity_2)
     }
 
-    fn create_door(ref world: WorldStorage, leads_to: felt252, direction: Direction, game_id: u128) -> Entity {
+    fn create_door(ref world: WorldStorage, leads_to: felt252, direction: Direction) -> Entity {
         // create door entity
         let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
         // add reactable component to door
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst, game_id);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
         reactable.is_reactable = true;
@@ -329,9 +329,9 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world, game_id);
+        reactable.store(ref world, 0);
         // add exit component to door
-        let mut exit_component: Exit = Component::add_component(ref world, door.inst, game_id);
+        let mut exit_component: Exit = Component::add_component(ref world, door.inst);
         exit_component.is_exit = true;
         exit_component.is_enterable = false;
         exit_component.leads_to = leads_to;
@@ -343,19 +343,19 @@ mod tests {
                     ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];
-        exit_component.store(ref world, game_id);
+        exit_component.store(ref world, 0);
 
         // return door entity
         door
     }
 
-    fn create_item(ref world: WorldStorage, owner_id: felt252, game_id: u128) -> Entity {
+    fn create_item(ref world: WorldStorage, owner_id: felt252) -> Entity {
         // create item entity
         let mut item = EntityImpl::create_entity(ref world, "ball");
         item.alt_names = array!["ball"];
         world.write_model(@item);
         // add reactable component to item
-        let mut reactable: Reactable = Component::add_component(ref world, item.inst, game_id);
+        let mut reactable: Reactable = Component::add_component(ref world, item.inst);
         let desc1: DescriptionText = DescriptionText { inst: item.inst, key: 0, text: "A ball" };
         world.write_model(@desc1);
         reactable.is_reactable = true;
@@ -377,9 +377,9 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world, game_id);
+        reactable.store(ref world, 0);
         // add inventory item component to item
-        let mut inventory_item: InventoryItem = Component::add_component(ref world, item.inst, game_id);
+        let mut inventory_item: InventoryItem = Component::add_component(ref world, item.inst);
         inventory_item.owner_id = owner_id;
         inventory_item.is_inventory_item = true;
         inventory_item.can_be_picked_up = true;
@@ -405,7 +405,7 @@ mod tests {
                 ];
         inventory_item.already_used = false;
         inventory_item.multiple_use = true;
-        inventory_item.store(ref world, game_id);
+        inventory_item.store(ref world, 0);
 
         // return item entity
         item
@@ -510,22 +510,21 @@ mod tests {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
-        let game_id: u128 = 0;
-        let (room_1, room_2) = create_rooms(ref world, game_id);
+        let (room_1, room_2) = create_rooms(ref world);
 
         // create door entity in room 2 that leads to room 1 via south
-        let mut door = create_door(ref world, room_1.inst, Direction::South, game_id);
+        let mut door = create_door(ref world, room_1.inst, Direction::South);
         door.set_parent(ref world, @room_2);
         let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // create item that is in room 1
-        let game_id: u128 = 123;
-        let mut item = create_item(ref world, room_1.inst, game_id);
+        let mut item = create_item(ref world, room_1.inst);
         item.set_parent(ref world, @room_1);
 
         // create player
+        let game_id: u128 = 123;
         let mut player1 = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         world.write_model(@player1);
 
@@ -700,17 +699,16 @@ mod tests {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
-        let game_id: u128 = 0;
-        let (room_1, room_2) = create_rooms(ref world, game_id);
+        let (room_1, room_2) = create_rooms(ref world);
 
         // create door entity in room 2 that leads to room 1 via south
-        let mut door = create_door(ref world, room_1.inst, Direction::South, game_id);
+        let mut door = create_door(ref world, room_1.inst, Direction::South);
         door.set_parent(ref world, @room_2);
         let _old_reactable: Reactable = world.read_model(door.inst);
         let _old_exit: Exit = world.read_model(door.inst);
 
         // create item that is in room 1
-        let mut item = create_item(ref world, room_1.inst, game_id);
+        let mut item = create_item(ref world, room_1.inst);
         item.set_parent(ref world, @room_1);
 
         // create player
@@ -718,7 +716,7 @@ mod tests {
         let mut player1 = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         world.write_model(@player1);
         let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
-        let mut player_container: Container = Component::add_component(ref world, player_entity.inst, 0);
+        let mut player_container: Container = Component::add_component(ref world, player_entity.inst);
         player_container.is_container = true;
         player_container.can_be_opened = true;
         player_container.can_receive_items = true;

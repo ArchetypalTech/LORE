@@ -192,7 +192,7 @@ pub impl ExitComponent of Component<Exit> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Exit {
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Exit {
         let mut exit: Exit = world.read_model(inst);
         exit.inst = inst;
         exit.is_exit = true;
@@ -203,7 +203,7 @@ pub impl ExitComponent of Component<Exit> {
                     ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
                     ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
                 ];
-        exit.store(ref world, game_id);
+        exit.store(ref world, 0);
         // Return the component
         exit
     }

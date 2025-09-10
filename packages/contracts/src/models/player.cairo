@@ -275,11 +275,11 @@ pub impl PlayerComponent of Component<Player> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Player {
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Player {
         let mut player: Player = world.read_model(inst);
         player.inst = inst;
         player.is_player = true;
-        player.store(ref world, game_id);
+        player.store(ref world, 0);
         // Return the component
         player
     }

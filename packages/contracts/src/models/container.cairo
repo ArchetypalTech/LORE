@@ -306,7 +306,7 @@ pub impl ContainerComponent of Component<Container> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Container {
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Container {
         let mut container: Container = world.read_model(inst);
         container.inst = inst;
         container.is_container = true;
@@ -327,7 +327,7 @@ pub impl ContainerComponent of Component<Container> {
                         action: "check", inst: 0, action_fn: ContainerActions::Check,
                     },
                 ];
-        container.store(ref world, game_id);
+        container.store(ref world, 0);
         // Return the component
         container
     }
@@ -369,7 +369,7 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
         //
         // create container
-        let container: Container = ContainerComponent::add_component(ref world, 111, 0);
+        let container: Container = ContainerComponent::add_component(ref world, 111);
         assert!(container.is_container);
         assert_eq!(container.inst, 111);
         //
@@ -432,7 +432,7 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
         //
         // create container
-        let mut container: Container = ContainerComponent::add_component(ref world, 111, 0);
+        let mut container: Container = ContainerComponent::add_component(ref world, 11);
         //
         // open container
         assert!(container.can_be_opened, "can_be_opened");
@@ -452,15 +452,15 @@ mod tests {
         // create some items
         let mut item1_entity = EntityImpl::create_entity(ref world, "item1");
         let mut item2_entity = EntityImpl::create_entity(ref world, "item2");
-        let mut item1: InventoryItem = InventoryItemComponent::add_component(ref world, item1_entity.inst, 0);
-        let mut item2: InventoryItem = InventoryItemComponent::add_component(ref world, item2_entity.inst, 0);
+        let mut item1: InventoryItem = InventoryItemComponent::add_component(ref world, item1_entity.inst);
+        let mut item2: InventoryItem = InventoryItemComponent::add_component(ref world, item2_entity.inst);
         assert!(!item1_entity.has_parent(@world), "!item1.has_parent");
         assert!(!item2_entity.has_parent(@world), "!item2.has_parent");
         // create containers
         let mut container1_entity = EntityImpl::create_entity(ref world, "container1");
         let mut container2_entity = EntityImpl::create_entity(ref world, "container2");
-        let mut container1: Container = ContainerComponent::add_component(ref world, container1_entity.inst, 0);
-        let mut container2: Container = ContainerComponent::add_component(ref world, container2_entity.inst, 0);
+        let mut container1: Container = ContainerComponent::add_component(ref world, container1_entity.inst);
+        let mut container2: Container = ContainerComponent::add_component(ref world, container2_entity.inst);
         assert!(!container1_entity.has_children(@world), "!container1.has_children");
         assert!(!container2_entity.has_children(@world), "!container2.has_children");
         //

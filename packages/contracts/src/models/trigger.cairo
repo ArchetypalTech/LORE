@@ -394,26 +394,26 @@ mod tests {
         let mut room_entity_2 = EntityImpl::create_entity(ref world, "room_entity_2");
 
         // add area component to room entity 1
-        let game_id: u128 = 0;
-        let mut area_component_1 = AreaComponent::add_component(ref world, room_entity_1.inst, game_id);
+        let mut area_component_1 = AreaComponent::add_component(ref world, room_entity_1.inst);
         world.write_model(@area_component_1);
         // add exit component to room entity 1
-        let mut exit_component_1 = ExitComponent::add_component(ref world, room_entity_1.inst, game_id);
+        let mut exit_component_1 = ExitComponent::add_component(ref world, room_entity_1.inst);
         // update exit component
         exit_component_1.leads_to = room_entity_2.inst;
         exit_component_1.direction_type = Direction::North;
         world.write_model(@exit_component_1);
 
         // add area component to room entity 2
-        let mut area_component_2 = AreaComponent::add_component(ref world, room_entity_2.inst, game_id);
+        let mut area_component_2 = AreaComponent::add_component(ref world, room_entity_2.inst);
         world.write_model(@area_component_2);
         // add exit component to room entity 2
-        let mut exit_component_2 = ExitComponent::add_component(ref world, room_entity_2.inst, game_id);
+        let mut exit_component_2 = ExitComponent::add_component(ref world, room_entity_2.inst);
         // update exit component
         exit_component_2.leads_to = room_entity_1.inst;
         exit_component_2.direction_type = Direction::South;
         world.write_model(@exit_component_2);
 
+        let game_id: u128 = 0;
         let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.location = room_entity_2.inst;
         world.write_model(@player);
@@ -433,7 +433,6 @@ mod tests {
         let mut playerR1: Player = world.read_model(player.inst);
         playerR1.move_to_room(ref world, room_entity_1.inst, game_id);
 
-        let game_id: u128 = 0;
         let result = TriggerImpl::evaluate_trigger(ref world, trigger.clone(), game_id);
         if result.is_ok() { // println!("Trigger jumps successfully");
         };

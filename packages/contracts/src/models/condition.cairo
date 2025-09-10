@@ -289,7 +289,7 @@ mod tests {
 
         let game_id: u128 = 0;
         let new_entry: ByteArray = "A door";
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst, game_id);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText {
             inst: door.inst, key: 0, text: new_entry.clone(),
         };

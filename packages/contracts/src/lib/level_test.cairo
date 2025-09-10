@@ -10,12 +10,12 @@ use lore::{
     },
 };
 
-pub fn create_test_level(ref world: WorldStorage, game_id: u128) {
-    room_start(ref world, game_id);
-    room_two(ref world, game_id);
+pub fn create_test_level(ref world: WorldStorage) {
+    room_start(ref world);
+    room_two(ref world);
 }
 
-fn room_start(ref world: WorldStorage, game_id: u128) {
+fn room_start(ref world: WorldStorage) {
     let obj = Entity {
         inst: 2826,
         is_entity: true,
@@ -24,7 +24,7 @@ fn room_start(ref world: WorldStorage, game_id: u128) {
         actions_keys: array![],
     };
     world.write_model(@obj);
-    let mut reactable: Reactable = Component::add_component(ref world, obj.inst, game_id);
+    let mut reactable: Reactable = Component::add_component(ref world, obj.inst);
     let descr1 = DescriptionText {
         inst: 2826,
         key: 0,
@@ -34,12 +34,12 @@ fn room_start(ref world: WorldStorage, game_id: u128) {
     world.write_model(@descr1);
     world.write_model(@descr2);
     reactable.description = array![0, 1];
-    reactable.store(ref world, game_id);
-    let _: Area = Component::add_component(ref world, obj.inst, game_id);
-    object_room_one(ref world, obj, game_id);
+    reactable.store(ref world, 0);
+    let _: Area = Component::add_component(ref world, obj.inst);
+    object_room_one(ref world, obj);
 }
 
-fn object_room_one(ref world: WorldStorage, parent: Entity, game_id: u128) {
+fn object_room_one(ref world: WorldStorage, parent: Entity) {
     let obj = Entity {
         inst: 9999,
         is_entity: true,
@@ -48,7 +48,7 @@ fn object_room_one(ref world: WorldStorage, parent: Entity, game_id: u128) {
         actions_keys: array![],
     };
     world.write_model(@obj);
-    let mut reactable: Reactable = Component::add_component(ref world, obj.inst, game_id);
+    let mut reactable: Reactable = Component::add_component(ref world, obj.inst);
     let descr1 = DescriptionText { inst: 9999, key: 0, text: "A portal" };
     let descr2 = DescriptionText {
         inst: 9999, key: 1, text: "A swirling circle of colors, it doesn't seem solid",
@@ -56,19 +56,19 @@ fn object_room_one(ref world: WorldStorage, parent: Entity, game_id: u128) {
     world.write_model(@descr1);
     world.write_model(@descr2);
     reactable.description = array![0, 1];
-    reactable.store(ref world, game_id);
-    let mut exit: Exit = Component::add_component(ref world, obj.inst, game_id);
+    reactable.store(ref world, 0);
+    let mut exit: Exit = Component::add_component(ref world, obj.inst);
     exit.leads_to = 1234;
-    exit.store(ref world, game_id);
+    exit.store(ref world, 0);
     obj.set_parent(ref world, @parent);
 }
 
-fn room_two(ref world: WorldStorage, game_id: u128) {
+fn room_two(ref world: WorldStorage) {
     let mut entity = EntityImpl::create_entity(ref world, "Idyllic garden");
     entity.inst = 1234;
     entity.alt_names = array!["garden"];
     world.write_model(@entity);
-    let mut reactable: Reactable = Component::add_component(ref world, entity.inst, game_id);
+    let mut reactable: Reactable = Component::add_component(ref world, entity.inst);
     let descr1 = DescriptionText {
         inst: 1234, key: 0, text: "Just suddenly it's all flowers and trees and grass",
     };
@@ -78,6 +78,6 @@ fn room_two(ref world: WorldStorage, game_id: u128) {
     world.write_model(@descr1);
     world.write_model(@descr2);
     reactable.description = array![0, 1];
-    reactable.store(ref world, game_id);
-    let _: Area = Component::add_component(ref world, entity.inst, game_id);
+    reactable.store(ref world, 0);
+    let _: Area = Component::add_component(ref world, entity.inst);
 }

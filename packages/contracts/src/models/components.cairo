@@ -29,5 +29,5 @@ pub trait Component<M, +Drop<M>, +Model<M>> {
     fn execute_command(self: M, ref world: WorldStorage, player: @Player, command: @Command) -> Result<(), Error>;
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> M;
+    fn add_component(ref world: WorldStorage, inst: felt252) -> M;
 }

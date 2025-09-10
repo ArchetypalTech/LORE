@@ -77,11 +77,11 @@ pub impl AreaComponent of Component<Area> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Area {
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Area {
         let mut area: Area = world.read_model(inst);
         area.inst = inst;
         area.is_area = true;
-        area.store(ref world, game_id);
+        area.store(ref world, 0);
         // Return the component
         area
     }
@@ -104,8 +104,7 @@ mod tests {
     #[test]
     fn test_area_create() {
         let (mut world, _, _, _, _) = helpers::setup_core();
-        let game_id: u128 = 0;
-        let area: Area = AreaComponent::add_component(ref world, 1, game_id);
+        let area: Area = AreaComponent::add_component(ref world, 1);
         assert(area.is_area, 'area is area');
         assert(area.inst == 1, 'area.inst == 1');
         assert(AreaInstance::has_component(@world, area.inst), 'has_component()');
@@ -119,7 +118,7 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
         //
         // create area
-        let area: Area = AreaComponent::add_component(ref world, 111, 0);
+        let area: Area = AreaComponent::add_component(ref world, 111);
         assert!(area.is_area);
         assert_eq!(area.inst, 111);
         //
@@ -163,7 +162,7 @@ mod tests {
         let (mut world, _, _, _, _) = helpers::setup_core();
         //
         // create area
-        let area: Area = AreaComponent::add_component(ref world, 111, 0);
+        let area: Area = AreaComponent::add_component(ref world, 111);
         assert!(area.is_area);
         assert_eq!(area.inst, 111);
         //

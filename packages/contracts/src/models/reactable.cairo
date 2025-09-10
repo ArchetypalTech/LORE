@@ -167,7 +167,7 @@ pub impl ReactableComponent of Component<Reactable> {
     }
 
     // used for tests only
-    fn add_component(ref world: WorldStorage, inst: felt252, game_id: u128) -> Reactable {
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Reactable {
         let mut reactable: Reactable = world.read_model(inst);
         reactable.inst = inst;
         reactable.is_reactable = true;
@@ -196,7 +196,7 @@ pub impl ReactableComponent of Component<Reactable> {
                 ];
         reactable.already_shown = false;
         reactable.new_entry = "";
-        reactable.store(ref world, game_id);
+        reactable.store(ref world, 0);
         // Return the component
         reactable
     }

@@ -213,10 +213,9 @@ mod tests {
     fn Effect_test_apply_effect() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
         // create door entity
-        let game_id: u128 = 0;
         let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst, game_id);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
         world.write_model(@desc1);
         reactable.is_reactable = true;
@@ -238,7 +237,7 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world, game_id);
+        reactable.store(ref world, 0);
         let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let old_txt: DescriptionText = world.read_model((door.inst, old_key));
