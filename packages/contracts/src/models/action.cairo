@@ -140,8 +140,8 @@ pub impl ActionImpl of ActionTrait {
 
         // First check if the trigger/s are valid
         for trigger_key in self.trigger.clone() {
-            let trigger: Trigger = world.read_model(trigger_key);
-            let result_opt = TriggerImpl::evaluate_trigger(ref world, trigger.clone(), game_id);
+            let trigger: @Trigger = @world.read_model(trigger_key);
+            let result_opt = trigger.evaluate_trigger(ref world, game_id);
             if *player.use_debug {
                 player
                     .say(ref world, game_id, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
@@ -421,7 +421,6 @@ mod tests {
             trigger_type,
             is_enabled: true,
             is_once: false,
-            was_triggered: false,
         }
     }
 
@@ -534,10 +533,10 @@ mod tests {
         // TRIGGER that jumps when an action is executed
         let t_key: felt252 = 1;
         // create trigger for when entering room 2
-        let mut trigger = create_test_trigger(
+        let mut trigger = @create_test_trigger(
             room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(ref world, trigger.clone());
+        let _result = TriggerImpl::register_trigger(ref world, trigger);
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
@@ -619,7 +618,7 @@ mod tests {
         let mut triggers: Array<(felt252, felt252)> = ArrayTrait::new();
         let mut conditions: Array<(felt252, felt252)> = ArrayTrait::new();
         let mut effects: Array<(felt252, felt252)> = ArrayTrait::new();
-        triggers.append((trigger.inst, trigger.key));
+        triggers.append((*trigger.inst, *trigger.key));
         conditions.append((condition.inst, condition.key));
         effects.append((effect.inst, effect.key));
         effects.append((effect2.inst, effect2.key));
@@ -660,7 +659,7 @@ mod tests {
         // 2. Execute action
         let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context, game_id);
         // // The one below are for testing individually
-        //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
+        //let trig_res = trigger.evaluate_trigger(ref world, game_id);
         //let cond_res = condition.evaluate_condition(@world, context);
         //let eff_res1 = effect.apply_effect(world, context, 0);
         //let eff_res2 = effect2.apply_effect(world, context, 0);
@@ -730,10 +729,10 @@ mod tests {
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2
         let t_key: felt252 = 1;
-        let mut trigger = create_test_trigger(
+        let mut trigger = @create_test_trigger(
             room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(ref world, trigger.clone());
+        let _result = TriggerImpl::register_trigger(ref world, trigger);
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
@@ -814,7 +813,7 @@ mod tests {
         let mut triggers: Array<(felt252, felt252)> = ArrayTrait::new();
         let mut conditions: Array<(felt252, felt252)> = ArrayTrait::new();
         let mut effects: Array<(felt252, felt252)> = ArrayTrait::new();
-        triggers.append((trigger.inst, trigger.key));
+        triggers.append((*trigger.inst, *trigger.key));
         conditions.append((condition.inst, condition.key));
         effects.append((effect.inst, effect.key));
         effects.append((effect2.inst, effect2.key));
@@ -868,7 +867,7 @@ mod tests {
         // 5. Execute action
         let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context, game_id);
         // // The one below are for testing individually
-        //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
+        //let trig_res = trigger.evaluate_trigger(ref world, game_id);
         //let cond_res = condition.evaluate_condition(@world, context);
         //let eff_res1 = effect.apply_effect(world, context, 0);
         //let eff_res2 = effect2.apply_effect(world, context, 0);

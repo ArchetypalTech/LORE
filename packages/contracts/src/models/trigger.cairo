@@ -28,8 +28,6 @@ pub struct Trigger {
     pub is_enabled: bool,
     /// Whether the trigger only triggers once
     pub is_once: bool,
-    /// Whether the trigger has already been triggered
-    pub was_triggered: bool,
 }
 
 #[derive(Clone, Drop, Serde, Debug)]
@@ -40,17 +38,38 @@ pub struct TriggerIndex {
     pub trigger_id: Array<(felt252, felt252)> // (inst, key)
 }
 
+// Action execution status per game instance
+#[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct TriggerExecuted {
+    /// The game instance
+    #[key]
+    pub game_id: u128,
+    /// Action identifier
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the action
+    #[key]
+    pub key: felt252,
+    /// Properties ///
+    pub is_executed: bool,
+}
+
+
+//---------------------------------
+// Model Trait
+//
 #[generate_trait]
 pub impl TriggerImpl of TriggerTrait {
-    fn register_trigger(ref world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
+    fn register_trigger(ref world: WorldStorage, trigger: @Trigger) -> Result<(), Error> {
         // 0. Check if trigger is already in the index
-        let maybe_index = Self::get_triggerIndex(@world, @trigger.trigger_type);
+        let maybe_index = Self::get_triggerIndex(@world, trigger.trigger_type);
         match maybe_index {
             Option::Some(mut trigger_index) => {
                 // Check if trigger is already registered
                 let mut found = false;
                 for pos_trigger in trigger_index.trigger_id.clone() {
-                    if ((trigger.inst, trigger.key) == (pos_trigger)) {
+                    if ((*trigger.inst, *trigger.key) == (pos_trigger)) {
                         found = true;
                         break;
                     }
@@ -58,7 +77,7 @@ pub impl TriggerImpl of TriggerTrait {
                 if found {
                     // If found just update the trigger
                     // println!("Trigger already registered, updating");
-                    world.write_model(@trigger);
+                    world.write_model(trigger);
                     return Result::Ok(());
                 }
             },
@@ -66,14 +85,14 @@ pub impl TriggerImpl of TriggerTrait {
         }
         // 1. Register trigger
         // Optional check: ensure name is short enough
-        if (trigger.name.clone().len() >= 31) {
+        if (trigger.name.len() >= 31) {
             return Result::Err(Error::NameTooLong);
         }
         // Store in Dojo world state
-        world.write_model(@trigger);
+        world.write_model(trigger);
 
         // 2. Update trigger index
-        let result: Result = Self::update_triggerIndex(ref world, trigger.clone());
+        let result: Result = Self::update_triggerIndex(ref world, trigger);
         if result.is_err() {
             return Result::Err(Error::FailedToUpdateTriggerIndex);
         }
@@ -81,9 +100,9 @@ pub impl TriggerImpl of TriggerTrait {
         Result::Ok(())
     }
 
-    fn unregister_trigger(ref world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
+    fn unregister_trigger(ref world: WorldStorage, trigger: @Trigger) -> Result<(), Error> {
         // 1. Remove the trigger
-        world.erase_model(@trigger);
+        world.erase_model(trigger);
         Result::Ok(())
     }
 
@@ -96,27 +115,28 @@ pub impl TriggerImpl of TriggerTrait {
         Option::Some(trigger_index)
     }
 
-    fn update_triggerIndex(ref world: WorldStorage, trigger: Trigger) -> Result<(), Error> {
+    fn update_triggerIndex(ref world: WorldStorage, trigger: @Trigger) -> Result<(), Error> {
         // Get the trigger index option
-        let maybe_index = Self::get_triggerIndex(@world, @trigger.trigger_type);
+        let maybe_index = Self::get_triggerIndex(@world, trigger.trigger_type);
 
         match maybe_index {
             Option::None => {
                 // Create new trigger index
                 let mut trigger_ids = ArrayTrait::<(felt252, felt252)>::new();
-                trigger_ids.append((trigger.inst, trigger.key));
+                trigger_ids.append((*trigger.inst, *trigger.key));
                 let trigger_index = TriggerIndex {
-                    trigger_type: trigger.trigger_type, trigger_id: trigger_ids,
+                    trigger_type: *trigger.trigger_type,
+                    trigger_id: trigger_ids,
                 };
                 world.write_model(@trigger_index);
                 Result::Ok(())
             },
             Option::Some(mut trigger_index) => {
                 // Append trigger key to trigger index
-                trigger_index.trigger_id.append((trigger.inst, trigger.key));
+                trigger_index.trigger_id.append((*trigger.inst, *trigger.key));
                 world
                     .write_member(
-                        Model::<TriggerIndex>::ptr_from_keys(trigger.trigger_type),
+                        Model::<TriggerIndex>::ptr_from_keys(*trigger.trigger_type),
                         selector!("trigger_id"),
                         trigger_index.trigger_id,
                     );
@@ -152,25 +172,25 @@ pub impl TriggerImpl of TriggerTrait {
         // world.write_model(@trigger);
     }
 
-    fn evaluate_trigger(ref world: WorldStorage, mut trigger: Trigger, game_id: u128) -> Result<(), Error> {
+    fn evaluate_trigger(self: @Trigger, ref world: WorldStorage, game_id: u128) -> Result<(), Error> {
         let mut result: Result::<(), Error> = Result::Ok(());
         // Evaluate trigger
-        if !trigger.is_enabled {
+        if !*self.is_enabled {
             return result; // If not enable is not an error.
         }
 
         // Check if trigger is only triggered once
-        if trigger.is_once.clone() {
+        if *self.is_once {
             // Check if it has already been triggered
-            if trigger.was_triggered.clone() {
+            if self.is_executed(@world, game_id) {
                 return Result::Err(Error::OnceUseOnly);
             }
         }
 
-        match trigger.trigger_type {
+        match *self.trigger_type {
             TriggerType::OnEnter => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, *self.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
@@ -191,14 +211,12 @@ pub impl TriggerImpl of TriggerTrait {
                     }
                 };
                 if !player_found {
-                    result = Result::Err(Error::TriggerNotMeetConditions);
-                    return result;
+                    return Result::Err(Error::TriggerNotMeetConditions);
                 }
-                return result;
             },
             TriggerType::OnExit => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, *self.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
@@ -221,11 +239,10 @@ pub impl TriggerImpl of TriggerTrait {
                 if player_found {
                     return Result::Err(Error::TriggerNotMeetConditions);
                 }
-                return result;
             },
             TriggerType::OnUse => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, trigger.inst);
+                let ent_opt = EntityImpl::get_entity(@world, *self.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
@@ -239,29 +256,31 @@ pub impl TriggerImpl of TriggerTrait {
                 // Check that item has not been used
                 if inventory_item.already_used {
                     // If used check if multiple use is allowed
-                    if inventory_item.multiple_use {
-                        // If allowed, return ok
-                        return Result::Ok(());
+                    if !inventory_item.multiple_use {
+                        return Result::Err(Error::OnceUseOnly);
                     }
-                    return Result::Err(Error::OnceUseOnly);
                 }
-                // If not used, return ok
-                return Result::Ok(());
             },
             _ => { // Do nothing
             },
         }
         // Set trigger as triggered
-        trigger.was_triggered = true;
-        world
-            .write_member(
-                Model::<Trigger>::ptr_from_keys((trigger.inst, trigger.key)),
-                selector!("was_triggered"),
-                trigger.was_triggered,
-            );
-        // world.write_model(@trigger);
+        self.set_executed(ref world, game_id, true);
         // Return result
         result
+    }
+
+    fn is_executed(self: @Trigger, world: @WorldStorage, game_id: u128) -> bool {
+        (world.read_member(Model::<TriggerExecuted>::ptr_from_keys((game_id, *self.inst, *self.key),), selector!("is_executed")))
+    }
+
+    fn set_executed(self: @Trigger, ref world: WorldStorage, game_id: u128, is_executed: bool) {
+        world.write_model(@TriggerExecuted {
+            game_id,
+            inst: *self.inst,
+            key: *self.key,
+            is_executed,
+        });
     }
 }
 
@@ -282,15 +301,14 @@ mod tests {
 
     fn create_test_trigger(
         inst: felt252, key: felt252, nameT: ByteArray, trigger_type: TriggerType,
-    ) -> Trigger {
-        Trigger {
+    ) -> @Trigger {
+        @Trigger {
             inst,
             key,
             name: nameT,
             trigger_type,
             is_enabled: true,
             is_once: false,
-            was_triggered: false,
         }
     }
 
@@ -301,18 +319,18 @@ mod tests {
         let key: felt252 = 1;
         let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnEnter);
 
-        let result = TriggerImpl::register_trigger(ref world, trigger.clone());
+        let result = TriggerImpl::register_trigger(ref world, trigger);
         assert(result.is_ok(), 'Trig not register successfully');
 
-        let stored: Trigger = world.read_model(trigger.clone());
+        let stored: Trigger = world.read_model((*trigger.inst, *trigger.key));
         assert(stored.inst == 1, 'Trigger inst should match');
         assert(stored.name == "TestTrigger", 'Trigger name should match');
 
-        let _key: felt252 = trigger.trigger_type.clone().into();
-        let index: TriggerIndex = world.read_model(trigger.trigger_type);
+        let _key: felt252 = (*trigger.trigger_type).into();
+        let index: TriggerIndex = world.read_model(*trigger.trigger_type);
         assert(index.trigger_id.len() == 1, 'Trig index should have one ID');
         assert(
-            index.trigger_id[0] == @(trigger.inst.clone(), trigger.key.clone()),
+            *index.trigger_id[0] == (*trigger.inst, *trigger.key),
             'Idx must have the trigger keys',
         );
     }
@@ -329,7 +347,7 @@ mod tests {
         // Create trigger
         let key: felt252 = 2;
         let trigger = create_test_trigger(1, key, long_name, TriggerType::OnExit);
-        world.write_model(@trigger);
+        world.write_model(trigger);
 
         let result = TriggerImpl::register_trigger(ref world, trigger);
         assert(result.is_err(), 'Trig name too long should fail');
@@ -341,16 +359,16 @@ mod tests {
 
         // Create trigger
         let key: felt252 = 3;
-        let mut trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnExit);
-        world.write_model(@trigger);
+        let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnExit);
+        world.write_model(trigger);
 
-        TriggerImpl::enable_trigger(ref world, (trigger.inst.clone(), trigger.key.clone()));
-        let enable_trigger: Trigger = world.read_model((trigger.inst.clone(), trigger.key.clone()));
+        TriggerImpl::enable_trigger(ref world, (*trigger.inst, *trigger.key));
+        let enable_trigger: Trigger = world.read_model((*trigger.inst, *trigger.key));
         assert(enable_trigger.is_enabled, 'Trigger should be enabled');
 
-        TriggerImpl::disable_trigger(ref world, (trigger.inst.clone(), trigger.key.clone()));
+        TriggerImpl::disable_trigger(ref world, (*trigger.inst, *trigger.key));
         let disable_trigger: Trigger = world
-            .read_model((trigger.inst.clone(), trigger.key.clone()));
+            .read_model((*trigger.inst, *trigger.key));
         assert_eq!(disable_trigger.is_enabled, false, "Trigger should be disabled");
     }
 
@@ -363,11 +381,11 @@ mod tests {
         let trigger1 = create_test_trigger(1, id_1, "TestTrigger", TriggerType::OnEnter);
         let trigger2 = create_test_trigger(2, id_2, "TestTrigger", TriggerType::OnEnter);
 
-        let result1 = TriggerImpl::update_triggerIndex(ref world, trigger1.clone());
+        let result1 = TriggerImpl::update_triggerIndex(ref world, trigger1);
         // message: 1st trigger index insert didn't succeed
         assert(result1.is_ok(), '1 trig idx insert nt succ');
 
-        let result2 = TriggerImpl::update_triggerIndex(ref world, trigger2.clone());
+        let result2 = TriggerImpl::update_triggerIndex(ref world, trigger2);
         // message: 2nd trigger index insert didn't succeed
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
@@ -413,7 +431,7 @@ mod tests {
         exit_component_2.direction_type = Direction::South;
         world.write_model(@exit_component_2);
 
-        let game_id: u128 = 0;
+        let game_id: u128 = 123;
         let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.location = room_entity_2.inst;
         world.write_model(@player);
@@ -424,27 +442,76 @@ mod tests {
 
         // set trigger to room entity 1
         let key: felt252 = 1;
-        let mut trigger = create_test_trigger(
+        let trigger = create_test_trigger(
             room_entity_1.inst, key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(ref world, trigger.clone());
+        let _result = TriggerImpl::register_trigger(ref world, trigger);
 
         // move player to room entity 1
         let mut playerR1: Player = world.read_model(player.inst);
         playerR1.move_to_room(ref world, room_entity_1.inst, game_id);
 
-        let result = TriggerImpl::evaluate_trigger(ref world, trigger.clone(), game_id);
+        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
+        let result = trigger.evaluate_trigger(ref world, game_id);
         if result.is_ok() { // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
+        assert(trigger.is_executed(@world, game_id), 'trigger executed');
 
         // move player to room entity 2
         player.move_to_room(ref world, room_entity_2.inst, game_id);
         player_entity.set_parent(ref world, @room_entity_2);
 
-        let result2 = TriggerImpl::evaluate_trigger(ref world, trigger, game_id);
-        if result2.is_err() { // println!("Trigger does not jump");
-        };
+        let result2 = trigger.evaluate_trigger(ref world, game_id);
         assert(result2.is_err(), 'Trigger should not jump');
+    }
+
+
+    #[test]
+    fn test_evaluate_trigger_once() {
+        let (mut world, _, _, player_1, player_2) = helpers::setup_core();
+
+        // create room entity 1
+        let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");
+
+        let game_id: u128 = 123;
+        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        world.write_model(@player);
+
+        // set trigger to room entity
+        let key: felt252 = 1;
+        let mut trigger = create_test_trigger(
+            room_entity_1.inst, key, "TestTrigger", TriggerType::OnInspect,
+        ).clone();
+        trigger.is_once = true;
+        let _result = TriggerImpl::register_trigger(ref world, @trigger);
+
+        // move player to room entity
+        let mut playerR1: Player = world.read_model(player.inst);
+        playerR1.move_to_room(ref world, room_entity_1.inst, game_id);
+
+        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
+        let result = trigger.evaluate_trigger(ref world, game_id);
+        assert(result.is_ok(), 'Trigger should jump');
+        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+
+        // again...
+        let result = trigger.evaluate_trigger(ref world, game_id);
+        assert(result.is_err(), 'Trigger should not jump');
+
+        // try another player...
+        let game_id: u128 = 456;
+        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_2, game_id);
+        world.write_model(@player);
+
+        // can trigger in this other game...
+        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
+        let result = trigger.evaluate_trigger(ref world, game_id);
+        assert(result.is_ok(), 'Trigger should jump');
+        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+
+        // again...
+        let result = trigger.evaluate_trigger(ref world, game_id);
+        assert(result.is_err(), 'Trigger should not jump');
     }
 }

@@ -202,7 +202,7 @@ pub mod designer {
         fn create_trigger(ref self: ContractState, t: Array<Trigger>) {
             let mut world: WorldStorage = self.world(@"lore");
             for o in t {
-                let _result = TriggerImpl::register_trigger(ref world, o.clone());
+                let _result = TriggerImpl::register_trigger(ref world, @o);
                 // if result.is_err() {
             //     println!(
             //         "Trigger: {:?} failed to register with error: {:?}", o,
@@ -325,7 +325,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world(@"lore");
             for inst in ids {
                 let model: Trigger = world.read_model(inst);
-                let _result = TriggerImpl::unregister_trigger(ref world, model.clone());
+                let _result = TriggerImpl::unregister_trigger(ref world, @model);
                 // if result.is_err() {
             //     println!(
             //         "Trigger: {:?} failed to unregister with error: {:?}",

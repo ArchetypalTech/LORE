@@ -56,6 +56,7 @@ pub struct StoryLine {
 
 const SINGLETON_PLAYER_INST: felt252 = 'Player';
 
+
 //---------------------------------
 // Model Trait
 //

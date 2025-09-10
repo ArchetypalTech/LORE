@@ -44,6 +44,10 @@ pub struct Condition {
     pub value: Array<felt252>,
 }
 
+
+//---------------------------------
+// Model Trait
+//
 #[generate_trait]
 pub impl ConditionImpl of ConditionTrait {
     fn evaluate_condition(self: @Condition, world: @WorldStorage, context: @TriggerContext, game_id: u128) -> bool {

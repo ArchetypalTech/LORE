@@ -54,6 +54,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::entity::m_ChildToParent::TEST_CLASS_HASH),
             TestResource::Model(models::trigger::m_Trigger::TEST_CLASS_HASH),
             TestResource::Model(models::trigger::m_TriggerIndex::TEST_CLASS_HASH),
+            TestResource::Model(models::trigger::m_TriggerExecuted::TEST_CLASS_HASH),
             TestResource::Model(models::condition::m_Condition::TEST_CLASS_HASH),
             TestResource::Model(models::index::m_PropertyRegistry::TEST_CLASS_HASH),
             TestResource::Model(models::effect::m_Effect::TEST_CLASS_HASH),
