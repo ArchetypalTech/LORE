@@ -29,23 +29,24 @@ pub struct Player {
     pub use_debug: bool,
 }
 
+// story by game instance
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
 pub struct PlayerStory {
     #[key]
-    pub inst: felt252,
+    pub game_id: u128,
     /// Properties ///
     /// Array of story lines (story lines keys)
     pub story_line: CounterType,
 }
 
-// stored by game instance always
+// story by game instance
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
 #[dojo::model]
 pub struct StoryLine {
     /// Unique identifier (Player or PlayerStory)
     #[key]
-    pub inst: felt252,
+    pub game_id: u128,
     /// Unique identifier of the line
     #[key]
     pub key: CounterType,
@@ -53,7 +54,7 @@ pub struct StoryLine {
     pub line: ByteArray,
 }
 
-const SINGLETON_PLAYER_INST: felt252 = 'player';
+const SINGLETON_PLAYER_INST: felt252 = 'Player';
 
 //---------------------------------
 // Model Trait
@@ -135,15 +136,14 @@ pub impl PlayerImpl of PlayerTrait {
     fn say(self: @Player, ref world: WorldStorage, game_id: u128, text: ByteArray) {
         let increase: CounterType = 1;
         
-        // StoryLine is saved by player instance
-        let game_inst: felt252 = GameInstImpl::game_inst(*self.inst, game_id);
-        let mut player_story: PlayerStory = world.read_model(game_inst);
+        // PlayerStory is saved by player instance
+        let mut player_story: PlayerStory = world.read_model(game_id);
         player_story.story_line += increase;
         world.write_model(@player_story);
 
         // StoryLine is saved by player instance
         world.write_model(@StoryLine {
-            inst: game_inst,
+            game_id,
             key: player_story.story_line,
             line: text,
         });
@@ -324,17 +324,18 @@ mod tests {
     #[test]
     fn test_player_story_line() {
         let (mut world, _, _, player_1, _) = helpers::setup_core();
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, 0);
+        let game_id: u128 = 123;
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         assert(player.is_player, 'player is player');
 
-        player.say(ref world, 0, "hello");
-        let story: PlayerStory = world.read_model(player.inst);
+        player.say(ref world, game_id, "hello");
+        let story: PlayerStory = world.read_model(game_id);
         // ("story: {:?}", story);
         assert(story.story_line == 2, 'story has two entries'); // first entry is intro text
         let test_text: ByteArray = "hello";
 
         let story_key: u32 = story.story_line;
-        let story_line: StoryLine = world.read_model((story.inst, story_key),);
+        let story_line: StoryLine = world.read_model((game_id, story_key),);
         assert(story_line.line == test_text, 'story has "hello"');
     }
 
@@ -386,9 +387,8 @@ mod tests {
         assert_eq!(player_2.get_room(@world, game_id).unwrap().inst, room_1_entity.inst, "moved game inst");
     }
 
-    fn _story_len(world: @WorldStorage, inst: felt252, game_id: u128) -> u32 {
-        let game_inst: felt252 = GameInstImpl::game_inst(inst, game_id);
-        let story: PlayerStory = world.read_model(game_inst);
+    fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {
+        let story: PlayerStory = world.read_model(game_id);
         (story.story_line)
     }
 
@@ -399,19 +399,19 @@ mod tests {
         let game_id_2: u128 = 456;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_address, 0);
         let _player_1: Player = PlayerImpl::caller_as_player(ref world, player_address, game_id_1);
-        assert_eq!(_story_len(@world, player.inst, 0), 1, "story_start");
-        assert_eq!(_story_len(@world, player.inst, game_id_1), 1, "story_start");
-        assert_eq!(_story_len(@world, player.inst, game_id_2), 0, "story_start");
+        assert_eq!(_story_len(@world, 0), 1, "story_start");
+        assert_eq!(_story_len(@world, game_id_1), 1, "story_start");
+        assert_eq!(_story_len(@world, game_id_2), 0, "story_start");
         // say something...
         player.say(ref world, 0, "hello");
         player.say(ref world, game_id_1, "world");
         player.say(ref world, game_id_1, "world");
-        assert_eq!(_story_len(@world, player.inst, 0), 2, "said");
-        assert_eq!(_story_len(@world, player.inst, game_id_1), 3, "said");
-        assert_eq!(_story_len(@world, player.inst, game_id_2), 0, "said");
+        assert_eq!(_story_len(@world, 0), 2, "said");
+        assert_eq!(_story_len(@world, game_id_1), 3, "said");
+        assert_eq!(_story_len(@world, game_id_2), 0, "said");
         // create new player
         let _player_2: Player = PlayerImpl::caller_as_player(ref world, player_address, game_id_2);
-        assert_eq!(_story_len(@world, player.inst, game_id_2), 1, "new_player");
+        assert_eq!(_story_len(@world, game_id_2), 1, "new_player");
         // say more...
         player.say(ref world, game_id_1, "burp");
         player.say(ref world, game_id_2, "burp");
@@ -419,8 +419,8 @@ mod tests {
         player.say(ref world, game_id_2, "blah");
         player.say(ref world, game_id_2, "blah");
         player.say(ref world, game_id_2, "blah");
-        assert_eq!(_story_len(@world, player.inst, 0), 2, "said_more");
-        assert_eq!(_story_len(@world, player.inst, game_id_1), 4, "said_more");
-        assert_eq!(_story_len(@world, player.inst, game_id_2), 6, "said_more");
+        assert_eq!(_story_len(@world, 0), 2, "said_more");
+        assert_eq!(_story_len(@world, game_id_1), 4, "said_more");
+        assert_eq!(_story_len(@world, game_id_2), 6, "said_more");
     }
 }
