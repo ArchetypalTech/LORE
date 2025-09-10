@@ -60,7 +60,6 @@ pub impl AreaComponent of Component<Area> {
     }
 
     fn store(self: @Area, ref world: WorldStorage, game_id: u128) {
-        // world.write_model(self);
         world.write_game_model(self, game_id);
     }
 

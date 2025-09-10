@@ -1,4 +1,4 @@
-use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
+use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},

@@ -1,4 +1,4 @@
-use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::ModelStorage, model::Model};
+use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::{ModelStorage, Model}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
@@ -144,7 +144,7 @@ pub impl ReactableComponent of Component<Reactable> {
         match action.action_fn {
             ReactableActions::SetVisible => {
                 self.is_visible = !self.is_visible;
-                world.write_model(@self);
+                self.store(ref world, *command.game_id);
                 return Result::Ok(());
             },
             ReactableActions::ReadRandomDescription => {

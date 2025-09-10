@@ -229,7 +229,7 @@ pub mod designer {
         fn create_action(ref self: ContractState, t: Array<Action>) {
             let mut world: WorldStorage = self.world(@"lore");
             for o in t {
-                let _result = ActionImpl::register_action(ref world, o.clone());
+                let _result = ActionImpl::register_action(ref world, @o);
                 // if result.is_err() {
             //     println!(
             //         "Action: {:?} failed to register with error: {:?}", o,
@@ -356,7 +356,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world(@"lore");
             for inst in ids {
                 let model: Action = world.read_model(inst);
-                let _result = ActionImpl::unregister_action(ref world, model.clone());
+                let _result = ActionImpl::unregister_action(ref world, @model);
                 // if result.is_err() {
             //     println!(
             //         "Action: {:?} failed to unregister with error: {:?}",

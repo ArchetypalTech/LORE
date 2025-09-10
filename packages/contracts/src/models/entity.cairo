@@ -124,8 +124,7 @@ pub impl EntityImpl of EntityTrait {
     }
 
     fn is_entity(world: @WorldStorage, inst: felt252) -> bool {
-        let mut entity: Entity = world.read_model(inst);
-        entity.is_entity
+        (Self::get_entity(world, inst).is_some())
     }
 
     fn has_parent(self: @Entity, world: @WorldStorage) -> bool {

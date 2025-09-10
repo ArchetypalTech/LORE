@@ -1,4 +1,4 @@
-use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
+use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
@@ -46,12 +46,12 @@ pub struct Exit {
 //
 #[generate_trait]
 pub impl ExitImpl of ExitTrait {
-    fn is_exit(self: Exit) -> bool {
-        self.is_exit
+    fn is_exit(self: @Exit) -> bool {
+        (*self.is_exit)
     }
 
-    fn can_player_enter(self: Exit) -> bool {
-        self.is_enterable
+    fn can_player_enter(self: @Exit) -> bool {
+        (*self.is_enterable)
     }
 }
 
@@ -110,7 +110,6 @@ pub impl ExitComponent of Component<Exit> {
         let (action, _token) = get_action_token(@self, @world, command).unwrap();
         let direction_tokens = command.get_directions();
 
-        let mut destination_inst: felt252 = 0;
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
@@ -136,21 +135,19 @@ pub impl ExitComponent of Component<Exit> {
                 }
 
                 // we need to either match by name or by direction
-                if (!(matchesName || matchesDirection)) {
-                    if !matchesDirection {
-                        return Result::Err(Error::DirectionNotMatch);
-                    }
-                    if !matchesName {
-                        return Result::Err(Error::NameNotMatch);
-                    }
+                if !matchesDirection {
+                    return Result::Err(Error::DirectionNotMatch);
+                }
+                if !matchesName {
+                    return Result::Err(Error::NameNotMatch);
                 }
                 // if the exit is not enterable, we can't go there
-                if (!self.clone().can_player_enter()) {
+                if (!self.can_player_enter()) {
                     return Result::Err(Error::Unenterable);
                 }
+
                 // Move player to room
-                destination_inst = self.leads_to;
-                player.clone().move_to_room(ref world, destination_inst, *command.game_id);
+                player.clone().move_to_room(ref world, self.leads_to, *command.game_id);
 
                 // Do action
                 // Check if the entity of the exit has an action
@@ -181,8 +178,8 @@ pub impl ExitComponent of Component<Exit> {
                             inventory_object: self.inst,
                         };
 
-                        let (_trig_res, _cond_res, _eff_res) = ActionImpl::process_action(
-                            action, ref world, @context, *command.game_id,
+                        let (_trig_res, _cond_res, _eff_res) = action.process_action(
+                            ref world, player, @context, *command.game_id,
                         );
                     };
                 }

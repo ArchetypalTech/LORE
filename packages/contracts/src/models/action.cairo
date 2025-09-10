@@ -1,5 +1,4 @@
-use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
-
+use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
@@ -42,12 +41,27 @@ pub struct Action {
     pub effects: Array<(felt252, felt252)>,
     /// For searching/filtering
     pub tags: Array<ByteArray>,
-    /// Whether the action has been executed
-    pub executed: bool,
     /// In case action fails, need a response
     pub failing_response: Array<ByteArray>,
     /// In case action succeeds, need a response
     pub success_response: Array<ByteArray>,
+}
+
+// Action execution status per game instance
+#[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct ActionExecuted {
+    /// The game instance
+    #[key]
+    pub game_id: u128,
+    /// Action identifier
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the action
+    #[key]
+    pub key: felt252,
+    /// Properties ///
+    pub is_executed: bool,
 }
 
 
@@ -56,30 +70,30 @@ pub struct Action {
 //
 #[generate_trait]
 pub impl ActionImpl of ActionTrait {
-    fn register_action(ref world: WorldStorage, action: Action) -> Result<(), Error> {
+    fn register_action(ref world: WorldStorage, action: @Action) -> Result<(), Error> {
         // 0. Check if action is already in the entity array
-        let maybe_entity = EntityImpl::get_entity(@world, action.inst);
+        let maybe_entity = EntityImpl::get_entity(@world, *action.inst);
         match maybe_entity {
             Option::Some(mut entity) => {
                 // Check if action is already registered
                 let mut found = false;
                 for pos_action in entity.actions_keys.clone() {
-                    if (action.key == pos_action) {
+                    if (*action.key == pos_action) {
                         found = true;
                         break;
                     }
                 };
                 if found {
                     // If found just update the action
-                    world.write_model(@action);
+                    world.write_model(action);
                     return Result::Ok(());
                 }
             },
             Option::None => {},
         }
         // 1. Register action key in the entity
-        let mut entity: Entity = EntityImpl::get_entity(@world, action.inst).unwrap();
-        entity.actions_keys.append(action.key);
+        let mut entity: Entity = EntityImpl::get_entity(@world, *action.inst).unwrap();
+        entity.actions_keys.append(*action.key);
         // 2. Update the entity
         world
             .write_member(
@@ -89,32 +103,30 @@ pub impl ActionImpl of ActionTrait {
             );
         // world.write_model(@entity);
         // 3. Write the action
-        world.write_model(@action);
+        world.write_model(action);
         Result::Ok(())
     }
 
-    fn unregister_action(ref world: WorldStorage, action: Action) -> Result<(), Error> {
+    fn unregister_action(ref world: WorldStorage, action: @Action) -> Result<(), Error> {
         // 1. Remove the action
-        world.erase_model(@action);
+        world.erase_model(action);
         Result::Ok(())
     }
 
     fn process_action(
-        mut action: Action, ref world: WorldStorage, context: @TriggerContext, game_id: u128,
+        mut self: Action, ref world: WorldStorage, player: @Player, context: @TriggerContext, game_id: u128,
     ) -> (Result<(), Error>, bool, Result<(), Error>) {
-        let player_inst: felt252 = *context.doer;
-        let player: Player = world.read_model(player_inst);
-        if action.executed {
+        if self.is_executed(@world, game_id) {
             // Action has already been executed, don't do anything
             // return condition as false.
-            if player.use_debug {
+            if *player.use_debug {
                 player.say(ref world, game_id, format!("Action has already been executed"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
         // Check if the action is called by the correct entity
-        if action.executor != *context.inventory_object {
-            if player.use_debug {
+        if self.executor != *context.inventory_object {
+            if *player.use_debug {
                 player.say(ref world, game_id, format!("Action is not called by the correct entity"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
@@ -127,10 +139,10 @@ pub impl ActionImpl of ActionTrait {
         let mut result_e: Result<(), Error> = Result::Ok(());
 
         // First check if the trigger/s are valid
-        for trigger_key in action.trigger.clone() {
+        for trigger_key in self.trigger.clone() {
             let trigger: Trigger = world.read_model(trigger_key);
             let result_opt = TriggerImpl::evaluate_trigger(ref world, trigger.clone(), game_id);
-            if player.use_debug {
+            if *player.use_debug {
                 player
                     .say(ref world, game_id, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
             }
@@ -141,10 +153,10 @@ pub impl ActionImpl of ActionTrait {
         };
 
         // Then evaluate all conditions
-        for condition_key in action.conditions.clone() {
+        for condition_key in self.conditions.clone() {
             let condition: Condition = world.read_model(condition_key);
-            result = condition.evaluate_condition(@world, context.clone(), game_id);
-            if player.use_debug {
+            result = condition.evaluate_condition(@world, context, game_id);
+            if *player.use_debug {
                 player
                     .say(ref world, game_id, format!("Result for condition: {:?}, is: {:?}", condition, result));
             }
@@ -155,10 +167,10 @@ pub impl ActionImpl of ActionTrait {
 
         // Finally execute all effects if triggers and conditions are met
         if result_t.is_ok() && result {
-            for effect_key in action.effects.clone() {
+            for effect_key in self.effects.clone() {
                 let effect: Effect = world.read_model(effect_key);
                 let result_pos = effect.apply_effect(world, *context, game_id);
-                if player.use_debug {
+                if *player.use_debug {
                     player
                         .say(
                             ref world, game_id, format!("Result for effect: {:?}, is: {:?}", effect, result_pos),
@@ -176,46 +188,52 @@ pub impl ActionImpl of ActionTrait {
         }
         // If all conditions are met, mark action as executed
         if (result_t.is_ok() && result && result_e.is_ok()) {
-            action.executed = true;
-            world
-                .write_member(
-                    Model::<Action>::ptr_from_keys((action.inst, action.key)),
-                    selector!("executed"),
-                    action.executed,
-                );
-            // world.write_model(@action);
-            for response in action.success_response.clone() {
+            self.set_executed(ref world, game_id, true);
+            for response in self.success_response.clone() {
                 player.say(ref world, game_id, response);
             }
         } else {
-            for response in action.failing_response.clone() {
+            for response in self.failing_response.clone() {
                 player.say(ref world, game_id, response);
             }
         }
         (result_t, result, result_e)
     }
 
-    fn enable_action(mut self: Action, mut world: WorldStorage) {
-        self.is_enabled = true;
-        world
-            .write_member(
-                Model::<Action>::ptr_from_keys((self.inst, self.key)),
-                selector!("is_enabled"),
-                self.is_enabled,
-            );
-        // world.write_model(@self);
+    fn is_executed(self: @Action, world: @WorldStorage, game_id: u128) -> bool {
+        (world.read_member(Model::<ActionExecuted>::ptr_from_keys((game_id, *self.inst, *self.key),), selector!("is_executed")))
     }
 
-    fn disable_action(mut self: Action, mut world: WorldStorage) {
-        self.is_enabled = false;
-        world
-            .write_member(
-                Model::<Action>::ptr_from_keys((self.inst, self.key)),
-                selector!("is_enabled"),
-                self.is_enabled,
-            );
-        // world.write_model(@self);
+    fn set_executed(self: @Action, ref world: WorldStorage, game_id: u128, is_executed: bool) {
+        world.write_model(@ActionExecuted {
+            game_id,
+            inst: *self.inst,
+            key: *self.key,
+            is_executed,
+        });
     }
+
+    // fn enable_action(mut self: Action, mut world: WorldStorage) {
+    //     self.is_enabled = true;
+    //     world
+    //         .write_member(
+    //             Model::<Action>::ptr_from_keys((self.inst, self.key)),
+    //             selector!("is_enabled"),
+    //             self.is_enabled,
+    //         );
+    //     // world.write_model(@self);
+    // }
+
+    // fn disable_action(mut self: Action, mut world: WorldStorage) {
+    //     self.is_enabled = false;
+    //     world
+    //         .write_member(
+    //             Model::<Action>::ptr_from_keys((self.inst, self.key)),
+    //             selector!("is_enabled"),
+    //             self.is_enabled,
+    //         );
+    //     // world.write_model(@self);
+    // }
 }
 
 #[cfg(test)]
@@ -238,6 +256,7 @@ mod tests {
             trigger::{Trigger, TriggerImpl},
             condition::{Condition},
             effect::{Effect, EffectImpl},
+            game_instance::{GameModelImpl},
         },
         types::{
             component_type::{
@@ -444,7 +463,6 @@ mod tests {
         conditions: Array<(felt252, felt252)>,
         effects: Array<(felt252, felt252)>,
         tags: Array<ByteArray>,
-        executed: bool,
         failing_response: Array<ByteArray>,
         success_response: Array<ByteArray>,
     ) -> Action {
@@ -459,7 +477,6 @@ mod tests {
             conditions,
             effects,
             tags,
-            executed,
             failing_response,
             success_response,
         }
@@ -504,11 +521,11 @@ mod tests {
         let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // create item that is in room 1
+        let game_id: u128 = 123;
         let mut item = create_item(ref world, room_1.inst, game_id);
         item.set_parent(ref world, @room_1);
 
         // create player
-        let game_id: u128 = 0;
         let mut player1 = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         world.write_model(@player1);
 
@@ -614,7 +631,8 @@ mod tests {
         let mut success_response: Array<ByteArray> = array![
             "Testing success response", "Testing success response 2",
         ];
-        let mut action = create_test_action(
+
+        let mut action = @create_test_action(
             room_2.inst,
             a_key,
             act_name,
@@ -625,12 +643,12 @@ mod tests {
             conditions,
             effects,
             tags,
-            false,
             failing_response,
             success_response,
         );
         // Register the action
-        let _res = ActionImpl::register_action(ref world, action.clone());
+        let _res = ActionImpl::register_action(ref world, action);
+        assert(!action.is_executed(@world, game_id), 'action not executed yet');
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -641,7 +659,7 @@ mod tests {
         // 1. move player to room 2
         player1.move_to_room(ref world, room_2.inst, game_id);
         // 2. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, ref world, @context, game_id);
+        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context, game_id);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
@@ -657,10 +675,12 @@ mod tests {
         assert(eff_res.is_err(), 'Effects should fail');
         //assert(eff_res1.is_err(), 'Effects should fail');
         //assert(eff_res2.is_err(), 'Effects2 shoul fail');
+        // 4. failed, not executed
+        assert(!action.is_executed(@world, game_id), 'action executed');
 
         // 3. Effects should not be update
-        let upd_door: Reactable = world.read_model(door.inst);
-        let upd_door_exit: Exit = world.read_model(door.inst);
+        let upd_door: Reactable = world.read_game_model(door.inst, game_id);
+        let upd_door_exit: Exit = world.read_game_model(door.inst, game_id);
         let key1: u32 = *upd_door.description.at(0);
         // let key2: u32 = *new_description.at(1);
         let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));
@@ -694,17 +714,17 @@ mod tests {
         item.set_parent(ref world, @room_1);
 
         // create player
-        let game_id: u128 = 0;  
+        let game_id: u128 = 456;
         let mut player1 = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         world.write_model(@player1);
         let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
-        let mut player_container: Container = Component::add_component(ref world, player_entity.inst, game_id);
+        let mut player_container: Container = Component::add_component(ref world, player_entity.inst, 0);
         player_container.is_container = true;
         player_container.can_be_opened = true;
         player_container.can_receive_items = true;
         player_container.is_open = true;
         player_container.num_slots = 2;
-        player_container.store(ref world, game_id);
+        player_container.store(ref world, 0);
 
         // Register variable properties
         register_variable_properties(ref world);
@@ -807,7 +827,7 @@ mod tests {
         let mut success_response: Array<ByteArray> = array![
             "Testing success response", "Testing success response 2",
         ];
-        let mut action = create_test_action(
+        let mut action = @create_test_action(
             room_1.inst,
             a_key,
             act_name,
@@ -818,12 +838,11 @@ mod tests {
             conditions,
             effects,
             tags,
-            false,
             failing_response,
             success_response,
         );
         // Register the action
-        let _result = ActionImpl::register_action(ref world, action.clone());
+        let _result = ActionImpl::register_action(ref world, action);
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -836,6 +855,7 @@ mod tests {
         player1.store(ref world, game_id);
         player1.move_to_room(ref world, room_1.inst, game_id);
         let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
+        assert(!action.is_executed(@world, game_id), 'action not executed yet');
 
         // 2. Pickup item
         item.set_parent(ref world, @player_entity);
@@ -848,7 +868,7 @@ mod tests {
         // 4. Move player to room 2
         player1.move_to_room(ref world, room_2.inst, game_id);
         // 5. Execute action
-        let (trig_res, cond_res, eff_res) = ActionImpl::process_action(action, ref world, @context, game_id);
+        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context, game_id);
         // // The one below are for testing individually
         //let trig_res = TriggerImpl::evaluate_trigger(ref world, @trigger);
         //let cond_res = condition.evaluate_condition(@world, context);
@@ -864,10 +884,12 @@ mod tests {
         assert(eff_res.is_ok(), 'Effects should pass');
         //assert(eff_res1.is_err(), 'Effects should fail');
         //assert(eff_res2.is_err(), 'Effects2 shoul fail');
+        // 4. success, executed
+        assert(action.is_executed(@world, game_id), 'action executed');
 
         // 3. Effects should be update
-        let upd_door: Reactable = world.read_model(door.inst);
-        let upd_door_exit: Exit = world.read_model(door.inst);
+        let upd_door: Reactable = world.read_game_model(door.inst, game_id);
+        let upd_door_exit: Exit = world.read_game_model(door.inst, game_id);
         let key1: u32 = *upd_door.description.at(0);
         let key2: u32 = *upd_door.description.at(1);
         let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));

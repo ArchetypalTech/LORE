@@ -1,4 +1,4 @@
-use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
+use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
@@ -50,8 +50,8 @@ pub struct InventoryItem {
 //
 #[generate_trait]
 pub impl InventoryItemImpl of InventoryItemTrait {
-    fn is_inventory_item(self: InventoryItem) -> bool {
-        self.is_inventory_item
+    fn is_inventory_item(self: @InventoryItem) -> bool {
+        (*self.is_inventory_item)
     }
 
     fn set_can_be_picked_up(ref self: InventoryItem, can_be_picked_up: bool) {
@@ -183,8 +183,8 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                                 ),
                             );
                     }
-                    let (trig_res, cond_res, eff_res) = ActionImpl::process_action(
-                        action, ref world, @context, *command.game_id,
+                    let (trig_res, cond_res, eff_res) = action.process_action(
+                        ref world, player, @context, *command.game_id,
                     );
                     if *player.use_debug {
                         player.say(ref world, *command.game_id, format!("Trigger result: {:?}", trig_res));
@@ -193,9 +193,8 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     }
                     // If all are ok, set used to true
                     if trig_res.is_ok() && cond_res && eff_res.is_ok() {
-                        let mut updated_invItem: InventoryItem = world.read_model(self.inst);
-                        updated_invItem.already_used = true;
-                        world.write_model(@updated_invItem);
+                        self.already_used = true;
+                        self.store(ref world, *command.game_id);
                         resultUse = Result::Ok(());
                         break;
                     }

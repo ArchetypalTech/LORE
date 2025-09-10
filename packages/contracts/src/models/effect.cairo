@@ -202,6 +202,7 @@ mod tests {
         Effect { inst, key, name, target, effect_type, component, property, value, n_value }
     }
 
+    // used for tests
     fn create_trigger_context(
         doer: felt252, target1: felt252, target2: felt252, inventory_object: felt252,
     ) -> TriggerContext {

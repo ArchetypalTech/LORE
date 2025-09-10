@@ -3,6 +3,7 @@
 #[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect)]
 pub struct TriggerContext {
     /// The entity that triggered the action (usually the player)
+    /// (currently not used)
     pub doer: felt252,
     /// Primary target of the action (e.g., item being picked up, area being entered)
     pub target1: felt252,

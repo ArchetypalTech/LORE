@@ -1,4 +1,4 @@
-use dojo::{world::WorldStorage, model::ModelStorage, model::Model};
+use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use starknet::ContractAddress;
 use lore::{
     models::{
@@ -126,7 +126,6 @@ pub impl PlayerImpl of PlayerTrait {
         let room_entity: Entity = EntityImpl::get_entity(@world, room_id).unwrap();
         player_entity.set_parent(ref world, @room_entity);
         self.store(ref world, game_id);
-        //world.write_model(@self);
         if self.use_debug {
             self.say(ref world, game_id, format!("You {:?} enter {:?}", player_entity, room_entity));
         }

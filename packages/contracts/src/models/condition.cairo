@@ -46,7 +46,7 @@ pub struct Condition {
 
 #[generate_trait]
 pub impl ConditionImpl of ConditionTrait {
-    fn evaluate_condition(self: @Condition, world: @WorldStorage, context: TriggerContext, game_id: u128) -> bool {
+    fn evaluate_condition(self: @Condition, world: @WorldStorage, context: @TriggerContext, game_id: u128) -> bool {
         let target = *self.target;
         let mut component_value: Option<Array<felt252>> = Option::None;
         let mut eval_result: bool = false;
@@ -340,7 +340,7 @@ mod tests {
             condition
                 .evaluate_condition(
                     @world,
-                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
             'is_reactable should be true',
@@ -366,7 +366,7 @@ mod tests {
             !condition2
                 .evaluate_condition(
                     @world,
-                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
             'is_reactable should be false',
@@ -392,7 +392,7 @@ mod tests {
             condition3
                 .evaluate_condition(
                     @world,
-                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
             'is_visible should be true',
@@ -418,7 +418,7 @@ mod tests {
             !condition4
                 .evaluate_condition(
                     @world,
-                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
             'is_visible should be false',
@@ -444,7 +444,7 @@ mod tests {
             condition5
                 .evaluate_condition(
                     @world,
-                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
             'should not be equal',
@@ -470,7 +470,7 @@ mod tests {
             !condition6
                 .evaluate_condition(
                     @world,
-                    TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
             'should not be false',
