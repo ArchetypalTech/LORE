@@ -1479,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0x575fb65fa9877148ed77bf4844306745cfcbf37b7a1d84b8a91aa1cce97185e",
-      "class_hash": "0x16c36320ca6149d59c1feb1275164683d9a16ec1785535eb6c312af5324d0d0",
+      "address": "0x3162b530904315f19b7b9192f4390bad4cb0aa221a03ede89054eeaa2b0218e",
+      "class_hash": "0x6d5f37eb4468e18cc08a78b191f1b1feb2660bc83ef0ac93c2409861d573cba",
       "abi": [
         {
           "type": "impl",

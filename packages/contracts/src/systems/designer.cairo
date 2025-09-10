@@ -71,17 +71,23 @@ pub mod designer {
             let mut world: WorldStorage = self.world(@"lore");
             for d in done {
                 if d {
+                    println!("Registering properties for component: {:?}", ComponentType::Area);
                     VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
+                    println!("Registering properties for component: {:?}", ComponentType::Exit);
                     VariablePropertyImp::register_component_properties(ref world, ComponentType::Exit);
+                    println!("Registering properties for component: {:?}", ComponentType::Reactable);
                     VariablePropertyImp::register_component_properties(
                         ref world, ComponentType::Reactable,
                     );
+                    println!("Registering properties for component: {:?}", ComponentType::InventoryItem);
                     VariablePropertyImp::register_component_properties(
                         ref world, ComponentType::InventoryItem,
                     );
+                    println!("Registering properties for component: {:?}", ComponentType::Container);
                     VariablePropertyImp::register_component_properties(
                         ref world, ComponentType::Container,
                     );
+                    println!("Registering properties for component: {:?}", ComponentType::Player);
                     VariablePropertyImp::register_component_properties(
                         ref world, ComponentType::Player,
                     );
