@@ -155,18 +155,20 @@ pub impl EntityImpl of EntityTrait {
         }
     }
 
-    fn remove_from_parent(self: @Entity, ref world: WorldStorage, parent_entity: @Entity, game_id: u128) {
-        // validate parent
-        let mut parent: ParentToChildren = world.read_game_model(*parent_entity.inst, game_id);
-        assert(parent.is_parent, 'remove_from_parent() not parent');
-        // update parent
-        parent._remove_child(ref world, *self.inst, game_id);
+    fn remove_from_parent(self: @Entity, ref world: WorldStorage, game_id: u128) {
         // update child
         let mut child: ChildToParent = world.read_game_model(*self.inst, game_id);
-        child._set_parent(ref world, 0, game_id);
+        if (child.parent != 0) {
+            // update parent
+            let mut parent: ParentToChildren = world.read_game_model(child.parent, game_id);
+            parent._remove_child(ref world, *self.inst, game_id);
+            // update child
+            child._set_parent(ref world, 0, game_id);
+        }
     }
 
     fn set_parent(self: @Entity, ref world: WorldStorage, parent_entity: @Entity, game_id: u128) {
+        assert(self.inst != parent_entity.inst, 'set_parent() parent self');
         // check if the entity is already a child
         let mut child: ChildToParent = world.read_game_model(*self.inst, game_id);
         if (@child.parent != parent_entity.inst) {
@@ -190,11 +192,11 @@ pub impl EntityImpl of EntityTrait {
         let mut new_children: Array<felt252> = array![];
         for i in self.children.span() {
             if (*i != child_inst) {
-                self.children.append(*i);
+                new_children.append(*i);
             }
         };
         self.children = new_children;
-        self.is_parent = false;
+        self.is_parent = true;
         world.write_game_model(@self, game_id);
     }
     fn _add_child(ref self: ParentToChildren, ref world: WorldStorage, child_inst: felt252, game_id: u128) {

@@ -375,18 +375,31 @@ mod tests {
         assert(story_line.line == test_text, 'story has "hello"');
     }
 
+    fn _player_location(world: @WorldStorage, player: @Player, game_id: u128) -> felt252 {
+        let player: Player = world.read_game_model(*player.inst, game_id);
+        (player.location)
+    }
+
     #[test]
     fn test_player_room() {
         let (mut world, _, _, player_address_1, player_address_2) = helpers::setup_core();
-        let game_id: u128 = 123;
-        let player_1: Player = PlayerImpl::caller_as_player(ref world, player_address_1, 0);
-        let player_2: Player = PlayerImpl::caller_as_player(ref world, player_address_2, 0);
-        let player_1_game: Player = PlayerImpl::caller_as_player(ref world, player_address_1, game_id);
-        let player_2_game: Player = PlayerImpl::caller_as_player(ref world, player_address_2, game_id);
-        assert!(player_1.is_player, "player_1 is player");
-        assert!(player_2.is_player, "player_2 is player");
-        assert!(player_1_game.is_player, "player_1_game is player");
-        assert!(player_2_game.is_player, "player_2_game is player");
+        let game_id_1: u128 = 123;
+        let game_id_2: u128 = 456;
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_address_1, 0);
+        let player_1: Player = PlayerImpl::caller_as_player(ref world, player_address_1, game_id_1);
+        let player_2: Player = PlayerImpl::caller_as_player(ref world, player_address_2, game_id_2);
+        assert!(player.is_player, "is_player");
+        assert!(player_1.is_player, "is_player");
+        assert!(player_2.is_player, "is_player");
+        assert_eq!(player.inst, 'Player');
+        assert_eq!(player.inst, player_1.inst);
+        assert_eq!(player.inst, player_2.inst);
+        assert_eq!(_player_location(@world, @player, 0), 0, "before move");
+        assert_eq!(_player_location(@world, @player, game_id_1), 0, "before move");
+        assert_eq!(_player_location(@world, @player, game_id_2), 0, "before move");
+        assert!(player.get_room(@world, 0).is_none(), "before move");
+        assert!(player.get_room(@world, game_id_1).is_none(), "before move");
+        assert!(player.get_room(@world, game_id_2).is_none(), "before move");
         // create some rooms
         let room_1_entity: Entity = EntityImpl::create_entity(ref world, "room_1");
         let room_2_entity: Entity = EntityImpl::create_entity(ref world, "room_2");
@@ -398,29 +411,15 @@ mod tests {
         // change room 2 description
         world.write_model(@DescriptionText { inst: room_2_entity.inst, key: 0, text: "something else" });
         //
-        // move to rooms
-        player_1.move_to_room(ref world, room_1_entity.inst, 0);
-        player_2.move_to_room(ref world, room_2_entity.inst, 0);
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_1.inst, 0).location, room_1_entity.inst, "moved inst");
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_2.inst, 0).location, room_2_entity.inst, "moved inst");
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_1.inst, game_id).location, room_1_entity.inst, "moved inst");
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_2.inst, game_id).location, room_2_entity.inst, "moved inst");
-        assert_eq!(player_1.get_room(@world, 0).unwrap().inst, room_1_entity.inst, "moved inst");
-        assert_eq!(player_2.get_room(@world, 0).unwrap().inst, room_2_entity.inst, "moved inst");
-        assert_eq!(player_1.get_room(@world, game_id).unwrap().inst, room_1_entity.inst, "moved inst");
-        assert_eq!(player_2.get_room(@world, game_id).unwrap().inst, room_2_entity.inst, "moved inst");
-        //
         // move game instance players
-        player_1.move_to_room(ref world, room_2_entity.inst, game_id);
-        player_2.move_to_room(ref world, room_1_entity.inst, game_id);
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_1.inst, 0).location, room_1_entity.inst, "moved game inst");
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_2.inst, 0).location, room_2_entity.inst, "moved game inst");
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_1.inst, game_id).location, room_2_entity.inst, "moved game inst");
-        assert_eq!(GameModelImpl::<Player>::read_game_model(@world, player_2.inst, game_id).location, room_1_entity.inst, "moved game inst");
-        assert_eq!(player_1.get_room(@world, 0).unwrap().inst, room_1_entity.inst, "moved game inst");
-        assert_eq!(player_2.get_room(@world, 0).unwrap().inst, room_2_entity.inst, "moved game inst");
-        assert_eq!(player_1.get_room(@world, game_id).unwrap().inst, room_2_entity.inst, "moved game inst");
-        assert_eq!(player_2.get_room(@world, game_id).unwrap().inst, room_1_entity.inst, "moved game inst");
+        player.move_to_room(ref world, room_2_entity.inst, game_id_1);
+        player.move_to_room(ref world, room_1_entity.inst, game_id_2);
+        assert_eq!(_player_location(@world, @player, 0), 0, "moved game inst");
+        assert_eq!(_player_location(@world, @player, game_id_1), room_2_entity.inst, "moved game inst");
+        assert_eq!(_player_location(@world, @player, game_id_2), room_1_entity.inst, "moved game inst");
+        assert_eq!(player.get_room(@world, 0).is_none(), true, "moved game inst");
+        assert_eq!(player.get_room(@world, game_id_1).unwrap().inst, room_2_entity.inst, "moved game inst");
+        assert_eq!(player.get_room(@world, game_id_2).unwrap().inst, room_1_entity.inst, "moved game inst");
     }
 
     fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {
