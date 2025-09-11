@@ -301,8 +301,8 @@ mod tests {
 
     fn create_test_trigger(
         inst: felt252, key: felt252, nameT: ByteArray, trigger_type: TriggerType,
-    ) -> @Trigger {
-        @Trigger {
+    ) -> Trigger {
+        Trigger {
             inst,
             key,
             name: nameT,
@@ -319,18 +319,18 @@ mod tests {
         let key: felt252 = 1;
         let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnEnter);
 
-        let result = TriggerImpl::register_trigger(ref world, trigger);
+        let result = TriggerImpl::register_trigger(ref world, @trigger);
         assert(result.is_ok(), 'Trig not register successfully');
 
-        let stored: Trigger = world.read_model((*trigger.inst, *trigger.key));
+        let stored: Trigger = world.read_model((trigger.inst, trigger.key));
         assert(stored.inst == 1, 'Trigger inst should match');
         assert(stored.name == "TestTrigger", 'Trigger name should match');
 
-        let _key: felt252 = (*trigger.trigger_type).into();
-        let index: TriggerIndex = world.read_model(*trigger.trigger_type);
+        let _key: felt252 = (trigger.trigger_type).into();
+        let index: TriggerIndex = world.read_model(trigger.trigger_type);
         assert(index.trigger_id.len() == 1, 'Trig index should have one ID');
         assert(
-            *index.trigger_id[0] == (*trigger.inst, *trigger.key),
+            *index.trigger_id[0] == (trigger.inst, trigger.key),
             'Idx must have the trigger keys',
         );
     }
@@ -347,9 +347,9 @@ mod tests {
         // Create trigger
         let key: felt252 = 2;
         let trigger = create_test_trigger(1, key, long_name, TriggerType::OnExit);
-        world.write_model(trigger);
+        world.write_model(@trigger);
 
-        let result = TriggerImpl::register_trigger(ref world, trigger);
+        let result = TriggerImpl::register_trigger(ref world, @trigger);
         assert(result.is_err(), 'Trig name too long should fail');
     }
 
@@ -360,15 +360,15 @@ mod tests {
         // Create trigger
         let key: felt252 = 3;
         let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnExit);
-        world.write_model(trigger);
+        world.write_model(@trigger);
 
-        TriggerImpl::enable_trigger(ref world, (*trigger.inst, *trigger.key));
-        let enable_trigger: Trigger = world.read_model((*trigger.inst, *trigger.key));
+        TriggerImpl::enable_trigger(ref world, (trigger.inst, trigger.key));
+        let enable_trigger: Trigger = world.read_model((trigger.inst, trigger.key));
         assert(enable_trigger.is_enabled, 'Trigger should be enabled');
 
-        TriggerImpl::disable_trigger(ref world, (*trigger.inst, *trigger.key));
+        TriggerImpl::disable_trigger(ref world, (trigger.inst, trigger.key));
         let disable_trigger: Trigger = world
-            .read_model((*trigger.inst, *trigger.key));
+            .read_model((trigger.inst, trigger.key));
         assert_eq!(disable_trigger.is_enabled, false, "Trigger should be disabled");
     }
 
@@ -381,11 +381,11 @@ mod tests {
         let trigger1 = create_test_trigger(1, id_1, "TestTrigger", TriggerType::OnEnter);
         let trigger2 = create_test_trigger(2, id_2, "TestTrigger", TriggerType::OnEnter);
 
-        let result1 = TriggerImpl::update_triggerIndex(ref world, trigger1);
+        let result1 = TriggerImpl::update_triggerIndex(ref world, @trigger1);
         // message: 1st trigger index insert didn't succeed
         assert(result1.is_ok(), '1 trig idx insert nt succ');
 
-        let result2 = TriggerImpl::update_triggerIndex(ref world, trigger2);
+        let result2 = TriggerImpl::update_triggerIndex(ref world, @trigger2);
         // message: 2nd trigger index insert didn't succeed
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
@@ -445,7 +445,7 @@ mod tests {
         let trigger = create_test_trigger(
             room_entity_1.inst, key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(ref world, trigger);
+        let _result = TriggerImpl::register_trigger(ref world, @trigger);
 
         // move player to room entity 1
         let mut playerR1: Player = world.read_model(player.inst);

@@ -308,6 +308,15 @@ pub impl HashImpl of HashTrait {
         }
         (state.finalize())
     }
+    fn make_block_hash() -> felt252 {
+        let block_info = starknet::get_block_info().unbox();
+        let hash: felt252 = Self::hash_values([
+            block_info.block_number.into(),
+            block_info.block_timestamp.into(),
+            block_info.sequencer_address.into(),
+        ].span());
+        (hash)
+    }
 }
 
 
