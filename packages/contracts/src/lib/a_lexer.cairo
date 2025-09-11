@@ -170,7 +170,7 @@ pub mod lexer {
             for item in context.clone() {
                 let names = item.get_names();
                 for name in names {
-                    if token.text == name {
+                    if @token.text == name {
                         token.target = item.inst;
                         token.token_type = TokenType::Noun;
                         token.token_value = i.into();

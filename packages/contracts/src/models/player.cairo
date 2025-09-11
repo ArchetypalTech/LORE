@@ -7,6 +7,7 @@ use lore::{
         game_instance::{GameModelImpl, GameInstImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
+        index::{DescriptionText},
     },
     types::{command_type::Command},
     constants::errors::Error,
@@ -66,14 +67,14 @@ pub impl PlayerImpl of PlayerTrait {
     // used by prompt() and tests
     fn caller_as_player(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Player {
         // make sure base player exists
-        let mut player: Player = match Self::get_player(@world, 0) {
+        let mut player: Player = match Self::get_player(@world, SINGLETON_PLAYER_INST, 0) {
             Option::Some(player) => player,
-            Option::None => EntityImpl::create_player_entity(ref world, SINGLETON_PLAYER_INST, address),
+            Option::None => Self::create_player_entity(ref world, SINGLETON_PLAYER_INST, address),
         };
         // if playing game instance
         if (game_id != 0) {
             if (!GameModelImpl::<Player>::has_game_model(@world, player.inst, game_id)) {
-                player = EntityImpl::create_player_game_instance(ref world, @player, game_id);
+                player = Self::create_player_game_instance(ref world, @player, game_id);
             } else {
                 player = world.read_game_model(player.inst, game_id);
             }
@@ -81,12 +82,47 @@ pub impl PlayerImpl of PlayerTrait {
         (player)
     }
 
-    fn get_player(world: @WorldStorage, game_id: u128) -> Option<Player> {
-        let player: Player = world.read_game_model(SINGLETON_PLAYER_INST, game_id);
+    fn get_player(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Player> {
+        let player: Player = world.read_game_model(inst, game_id);
         if (!player.is_player) {
             return Option::None;
         }
         Option::Some(player)
+    }
+
+    // mainly for tests
+    // the game world should have a player component
+    fn create_player_entity(ref world: WorldStorage, inst: felt252, address: ContractAddress) -> Player {
+        // create player entity
+        let mut entity: Entity = Default::default();
+        entity.inst = inst;
+        entity.is_entity = true;
+        entity.name = "Player";
+        world.write_model(@entity);
+        // create the player component
+        let mut player: Player = Component::add_component(ref world, entity.inst);
+        player.address = address;
+        player.store(ref world, 0);
+        // create the reactable
+        let mut reactable: Reactable = Component::add_component(ref world, entity.inst);
+        reactable.description = array![0];
+        reactable.store(ref world, 0);
+        // (reactable) player description
+        let descr1 = DescriptionText { inst: entity.inst, key: 0, text: "Looks like a visitor" };
+        world.write_model(@descr1);
+        // initialize player story
+        player.say(ref world, 0, "You feel light, and shiny, in the head");
+        // return the player
+        (player)
+    }
+
+    fn create_player_game_instance(ref world: WorldStorage, player: @Player, game_id: u128) -> Player {
+        // clone a new game instance player
+        world.write_game_model(player, game_id);
+        // initialize player story
+        player.say(ref world, game_id, "You feel light, and shiny, in the head");
+        // return the player
+        (player.clone())
     }
 
     fn describe_room(self: @Player, ref world: WorldStorage, game_id: u128) -> Result<(), Error> {
@@ -125,7 +161,7 @@ pub impl PlayerImpl of PlayerTrait {
         self.location = room_id;
         let player_entity: Entity = EntityImpl::get_entity(@world, self.inst).unwrap();
         let room_entity: Entity = EntityImpl::get_entity(@world, room_id).unwrap();
-        player_entity.set_parent(ref world, @room_entity);
+        player_entity.set_parent(ref world, @room_entity, game_id);
         self.store(ref world, game_id);
         if self.use_debug {
             self.say(ref world, game_id, format!("You {:?} enter {:?}", player_entity, room_entity));
@@ -155,7 +191,7 @@ pub impl PlayerImpl of PlayerTrait {
 
     fn get_room(self: @Player, world: @WorldStorage, game_id: u128) -> Option<Entity> {
         let player_entity: Entity = EntityImpl::get_entity(world, *self.inst).unwrap();
-        let parent = player_entity.get_parent(world);
+        let parent = player_entity.get_parent(world, game_id);
         if parent.is_none() {
             return Option::None;
         }
@@ -168,9 +204,9 @@ pub impl PlayerImpl of PlayerTrait {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children = room.get_children(world);
+                let children = room.get_children(world, game_id);
                 // Go over 1st level children
-                for child in children.clone() {
+                for child in children {
                     context.append(child.clone());
                 };
                 context
@@ -185,18 +221,18 @@ pub impl PlayerImpl of PlayerTrait {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children = room.get_children(world);
+                let children = room.get_children(world, game_id);
                 // Go over 1st level children
-                for child in children.clone() {
+                for child in children {
                     context.append(child.clone());
                     // Go over 2nd level children
-                    let children_2 = child.get_children(world);
+                    let children_2 = child.get_children(world, game_id);
                     for child_2 in children_2 {
                         context.append(child_2.clone());
                         // Go over 3rd level children
-                        let children_3 = child_2.get_children(world);
+                        let children_3 = child_2.get_children(world, game_id);
                         for child_3 in children_3 {
-                            context.append(child_3);
+                            context.append(child_3.clone());
                         }
                     };
                 };

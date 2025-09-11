@@ -60,7 +60,7 @@ fn object_room_one(ref world: WorldStorage, parent: Entity) {
     let mut exit: Exit = Component::add_component(ref world, obj.inst);
     exit.leads_to = 1234;
     exit.store(ref world, 0);
-    obj.set_parent(ref world, @parent);
+    obj.set_parent(ref world, @parent, 0);
 }
 
 fn room_two(ref world: WorldStorage) {

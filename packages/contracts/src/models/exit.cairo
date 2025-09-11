@@ -120,8 +120,8 @@ pub impl ExitComponent of Component<Exit> {
                 let nouns = command.get_nouns();
                 let names = self.entity(@world).get_names();
                 for noun in nouns {
-                    for name in names.clone() {
-                        if noun.text == name {
+                    for name in names {
+                        if @noun.text == name {
                             matchesName = true;
                             break;
                         }

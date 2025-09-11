@@ -299,7 +299,7 @@ fn system_command(
             player.say(ref world, *command.game_id, "+sys+you are here:");
             let room = player.get_room(@world, *command.game_id);
             player.say(ref world, *command.game_id, format!("+sys+{:?}", room));
-            player.say(ref world, *command.game_id, format!("+sys+{:?}", player.entity(@world).get_parent(@world)));
+            player.say(ref world, *command.game_id, format!("+sys+{:?}", player.entity(@world).get_parent(@world, *command.game_id)));
             return Result::Ok(());
         }
         if (system_command == "g_look") {

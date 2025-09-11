@@ -289,7 +289,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         inventory_item.can_go_in_container = true;
         inventory_item.store(ref world, 0);
         // Return the component
-        inventory_item
+        (inventory_item)
     }
 }
 
@@ -306,7 +306,7 @@ fn get_action_token(
             }
         }
     };
-    action_token
+    (action_token)
 }
 
 // @dev: wip get player's container
@@ -316,22 +316,26 @@ fn get_player_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
 ) -> Option<Container> {
     let player_entity: Entity = EntityImpl::get_entity(world, *player.inst).unwrap();
-    let player_children = player_entity.get_children(world);
-    let mut container: Option<Entity> = Option::None;
-    let mut player_container: Option<Container> = Option::None;
+    let player_children = player_entity.get_children(world, game_id);
+    let mut container: Option<@Entity> = Option::None;
     // match the noun wth the child name or alt_name
     for child in player_children {
-        if (@child.name == nouns[1].text || child.clone().name_is(nouns[1].text.clone())) {
+        let text = nouns.at(1).text;
+        if (child.name == text || child.name_is(text)) {
             container = Option::Some(child);
             break;
         }
     };
-    if container.is_none() {
-        return Option::None;
-    }
-    // get container component
-    player_container = ContainerComponent::get_component(world, container.unwrap().inst, game_id);
-    return player_container;
+    (match container {
+        Option::Some(container) => {
+            // get container component
+            let player_container = ContainerComponent::get_component(world, *container.inst, game_id);
+            (player_container)
+        },
+        Option::None => {
+            return Option::None;
+        },
+    })
 }
 
 // @dev: wip get entity's container
@@ -346,20 +350,24 @@ fn get_entity_container(
         return Option::None;
     }
     let room_entity: Entity = EntityImpl::get_entity(world, room.unwrap().inst).unwrap();
-    let room_children = room_entity.get_children(world);
-    let mut container: Option<Entity> = Option::None;
-    let mut room_container: Option<Container> = Option::None;
+    let room_children = room_entity.get_children(world, game_id);
+    let mut container: Option<@Entity> = Option::None;
     // match the noun wth the child name or alt_name
     for child in room_children {
-        if (@child.name == nouns[1].text || child.clone().name_is(nouns[1].text.clone())) {
+        let text = nouns.at(1).text;
+        if (child.name == text || child.name_is(text)) {
             container = Option::Some(child);
             break;
         }
     };
-    if container.is_none() {
-        return Option::None;
-    }
-    // get container component
-    room_container = ContainerComponent::get_component(world, container.unwrap().inst, game_id);
-    return room_container;
+    (match container {
+        Option::Some(container) => {
+            // get container component
+            let room_container = ContainerComponent::get_component(world, *container.inst, game_id);
+            (room_container)
+        },
+        Option::None => {
+            return Option::None;
+        },
+    })
 }

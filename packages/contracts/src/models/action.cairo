@@ -513,14 +513,14 @@ mod tests {
 
         // create door entity in room 2 that leads to room 1 via south
         let mut door = create_door(ref world, room_1.inst, Direction::South);
-        door.set_parent(ref world, @room_2);
+        door.set_parent(ref world, @room_2, 0);
         let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
         let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // create item that is in room 1
         let mut item = create_item(ref world, room_1.inst);
-        item.set_parent(ref world, @room_1);
+        item.set_parent(ref world, @room_1, 0);
 
         // create player
         let game_id: u128 = 123;
@@ -702,13 +702,13 @@ mod tests {
 
         // create door entity in room 2 that leads to room 1 via south
         let mut door = create_door(ref world, room_1.inst, Direction::South);
-        door.set_parent(ref world, @room_2);
+        door.set_parent(ref world, @room_2, 0);
         let _old_reactable: Reactable = world.read_model(door.inst);
         let _old_exit: Exit = world.read_model(door.inst);
 
         // create item that is in room 1
         let mut item = create_item(ref world, room_1.inst);
-        item.set_parent(ref world, @room_1);
+        item.set_parent(ref world, @room_1, 0);
 
         // create player
         let game_id: u128 = 456;
@@ -855,7 +855,7 @@ mod tests {
         assert(!action.is_executed(@world, game_id), 'action not executed yet');
 
         // 2. Pickup item
-        item.set_parent(ref world, @player_entity);
+        item.set_parent(ref world, @player_entity, 0);
         let player_container: Container = world.read_model(player1.inst);
         let mut itemInv: InventoryItem = world.read_model(item.inst);
         itemInv.owner_id = player_container.inst;

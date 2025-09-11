@@ -201,10 +201,10 @@ pub impl TriggerImpl of TriggerTrait {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if entity has player as a child
-                let children = ent.get_children(@world);
+                let children = ent.get_children(@world, game_id);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(@world, child.inst, game_id);
+                    let child_player = PlayerComponent::get_component(@world, *child.inst, game_id);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -227,10 +227,10 @@ pub impl TriggerImpl of TriggerTrait {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if the entity does not have a player as a child
-                let children = ent.get_children(@world);
+                let children = ent.get_children(@world, game_id);
                 let mut player_found = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(@world, child.inst, game_id);
+                    let child_player = PlayerComponent::get_component(@world, *child.inst, game_id);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -438,7 +438,7 @@ mod tests {
 
         let mut player_entity: Entity = EntityImpl::get_entity(@world, player.inst).unwrap();
         // add player to room entity 2
-        player_entity.set_parent(ref world, @room_entity_2);
+        player_entity.set_parent(ref world, @room_entity_2, game_id);
 
         // set trigger to room entity 1
         let key: felt252 = 1;
@@ -460,7 +460,7 @@ mod tests {
 
         // move player to room entity 2
         player.move_to_room(ref world, room_entity_2.inst, game_id);
-        player_entity.set_parent(ref world, @room_entity_2);
+        player_entity.set_parent(ref world, @room_entity_2, game_id);
 
         let result2 = trigger.evaluate_trigger(ref world, game_id);
         assert(result2.is_err(), 'Trigger should not jump');
