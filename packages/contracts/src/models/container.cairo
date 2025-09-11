@@ -114,7 +114,7 @@ pub impl ContainerImpl of ContainerTrait {
             return Result::Err(result_c.unwrap_err());
         }
         // set parent to be the container's entity
-        let item_entity: Entity = world.read_model(item.inst);
+        let item_entity: Entity = EntityImpl::get_entity(@world, item.inst).unwrap();
         item_entity.set_parent(ref world, @self.entity(@world), game_id);
         item.owner_id = *self.inst;
         world.write_game_model(@item, game_id);
@@ -131,8 +131,8 @@ pub impl ContainerImpl of ContainerTrait {
             return Result::Err(Error::NotStored);
         }
         // get entities
-        let item_entity: Entity = world.read_model(item.inst);
-        let room_entity: Entity = player.get_room(@world, game_id).unwrap();
+        let item_entity: Entity = EntityImpl::get_entity(@world, item.inst).unwrap();
+        let room_entity: Entity = player.get_room_entity(@world, game_id).unwrap();
         // set parent to be the room's entity
         item_entity.set_parent(ref world, @room_entity, game_id);
         item.owner_id = room_entity.inst;

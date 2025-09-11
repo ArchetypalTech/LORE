@@ -315,7 +315,7 @@ fn get_action_token(
 fn get_player_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
 ) -> Option<Container> {
-    let player_entity: Entity = EntityImpl::get_entity(world, *player.inst).unwrap();
+    let player_entity: Entity = player.entity(world);
     let player_children = player_entity.get_children(world, game_id);
     let mut container: Option<@Entity> = Option::None;
     // match the noun wth the child name or alt_name
@@ -345,7 +345,7 @@ fn get_entity_container(
     world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
 ) -> Option<Container> {
     // get room
-    let room = player.get_room(world, game_id);
+    let room = player.get_room_entity(world, game_id);
     if room.is_none() {
         return Option::None;
     }

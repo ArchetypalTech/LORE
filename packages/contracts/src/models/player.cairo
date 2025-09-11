@@ -127,7 +127,7 @@ pub impl PlayerImpl of PlayerTrait {
 
     fn describe_room(self: @Player, ref world: WorldStorage, game_id: u128) -> Result<(), Error> {
         let context = self.get_context(@world, game_id);
-        let room = self.get_room(@world, game_id);
+        let room = self.get_room_entity(@world, game_id);
         if room.is_none() {
             return Result::Err(Error::NoRoom);
         }
@@ -159,7 +159,7 @@ pub impl PlayerImpl of PlayerTrait {
 
     fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252, game_id: u128) {
         self.location = room_id;
-        let player_entity: Entity = EntityImpl::get_entity(@world, self.inst).unwrap();
+        let player_entity: Entity = self.entity(@world);
         let room_entity: Entity = EntityImpl::get_entity(@world, room_id).unwrap();
         player_entity.set_parent(ref world, @room_entity, game_id);
         self.store(ref world, game_id);
@@ -189,8 +189,8 @@ pub impl PlayerImpl of PlayerTrait {
         Self::say(self, ref world, game_id, text);
     }
 
-    fn get_room(self: @Player, world: @WorldStorage, game_id: u128) -> Option<Entity> {
-        let player_entity: Entity = EntityImpl::get_entity(world, *self.inst).unwrap();
+    fn get_room_entity(self: @Player, world: @WorldStorage, game_id: u128) -> Option<Entity> {
+        let player_entity: Entity = self.entity(world);
         let parent = player_entity.get_parent(world, game_id);
         if parent.is_none() {
             return Option::None;
@@ -200,7 +200,7 @@ pub impl PlayerImpl of PlayerTrait {
 
     // Get the 1st level context of the room
     fn get_context(self: @Player, world: @WorldStorage, game_id: u128) -> Array<Entity> {
-        match self.get_room(world, game_id) {
+        match self.get_room_entity(world, game_id) {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
@@ -217,7 +217,7 @@ pub impl PlayerImpl of PlayerTrait {
 
     // Get the full context of the room
     fn get_full_context(self: @Player, world: @WorldStorage, game_id: u128) -> Array<Entity> {
-        match self.get_room(world, game_id) {
+        match self.get_room_entity(world, game_id) {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
@@ -397,9 +397,9 @@ mod tests {
         assert_eq!(_player_location(@world, @player, 0), 0, "before move");
         assert_eq!(_player_location(@world, @player, game_id_1), 0, "before move");
         assert_eq!(_player_location(@world, @player, game_id_2), 0, "before move");
-        assert!(player.get_room(@world, 0).is_none(), "before move");
-        assert!(player.get_room(@world, game_id_1).is_none(), "before move");
-        assert!(player.get_room(@world, game_id_2).is_none(), "before move");
+        assert!(player.get_room_entity(@world, 0).is_none(), "before move");
+        assert!(player.get_room_entity(@world, game_id_1).is_none(), "before move");
+        assert!(player.get_room_entity(@world, game_id_2).is_none(), "before move");
         // create some rooms
         let room_1_entity: Entity = EntityImpl::create_entity(ref world, "room_1");
         let room_2_entity: Entity = EntityImpl::create_entity(ref world, "room_2");
@@ -417,9 +417,9 @@ mod tests {
         assert_eq!(_player_location(@world, @player, 0), 0, "moved game inst");
         assert_eq!(_player_location(@world, @player, game_id_1), room_2_entity.inst, "moved game inst");
         assert_eq!(_player_location(@world, @player, game_id_2), room_1_entity.inst, "moved game inst");
-        assert_eq!(player.get_room(@world, 0).is_none(), true, "moved game inst");
-        assert_eq!(player.get_room(@world, game_id_1).unwrap().inst, room_2_entity.inst, "moved game inst");
-        assert_eq!(player.get_room(@world, game_id_2).unwrap().inst, room_1_entity.inst, "moved game inst");
+        assert_eq!(player.get_room_entity(@world, 0).is_none(), true, "moved game inst");
+        assert_eq!(player.get_room_entity(@world, game_id_1).unwrap().inst, room_2_entity.inst, "moved game inst");
+        assert_eq!(player.get_room_entity(@world, game_id_2).unwrap().inst, room_1_entity.inst, "moved game inst");
     }
 
     fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {

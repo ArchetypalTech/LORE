@@ -68,7 +68,7 @@ pub impl TriggerImpl of TriggerTrait {
             Option::Some(mut trigger_index) => {
                 // Check if trigger is already registered
                 let mut found = false;
-                for pos_trigger in trigger_index.trigger_id.clone() {
+                for pos_trigger in trigger_index.trigger_id {
                     if ((*trigger.inst, *trigger.key) == (pos_trigger)) {
                         found = true;
                         break;
@@ -107,7 +107,7 @@ pub impl TriggerImpl of TriggerTrait {
     }
 
     fn get_triggerIndex(world: @WorldStorage, trigger_type: @TriggerType) -> Option<TriggerIndex> {
-        let inst: felt252 = trigger_type.clone().into();
+        let inst: felt252 = (*trigger_type).into();
         let trigger_index: TriggerIndex = world.read_model(inst);
         if trigger_index.trigger_id.len() == 0 {
             return Option::None;
@@ -393,12 +393,12 @@ mod tests {
         assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
         assert_eq!(
             index.trigger_id[0],
-            @(trigger1.inst.clone(), trigger1.key.clone()),
+            @(trigger1.inst, trigger1.key),
             "First ID should match",
         );
         assert_eq!(
             index.trigger_id[1],
-            @(trigger2.inst.clone(), trigger2.key.clone()),
+            @(trigger2.inst, trigger2.key),
             "Second ID should match",
         );
     }
@@ -436,7 +436,7 @@ mod tests {
         player.location = room_entity_2.inst;
         world.write_model(@player);
 
-        let mut player_entity: Entity = EntityImpl::get_entity(@world, player.inst).unwrap();
+        let mut player_entity: Entity = player.entity(@world);
         // add player to room entity 2
         player_entity.set_parent(ref world, @room_entity_2, game_id);
 
@@ -482,7 +482,7 @@ mod tests {
         let key: felt252 = 1;
         let mut trigger = create_test_trigger(
             room_entity_1.inst, key, "TestTrigger", TriggerType::OnInspect,
-        ).clone();
+        );
         trigger.is_once = true;
         let _result = TriggerImpl::register_trigger(ref world, @trigger);
 

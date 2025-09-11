@@ -190,7 +190,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 let mut arr: Array<felt252> = array![];
                 if name == @is_area {
                     arr.append((*component.is_area).into());
@@ -217,7 +217,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 let mut arr: Array<felt252> = array![];
                 if name == @is_exit {
                     arr.append((*component.is_exit).into());
@@ -251,7 +251,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 let mut arr: Array<felt252> = array![];
                 if name == @is_visible {
                     arr.append((*component.is_visible).into());
@@ -288,7 +288,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 let mut arr: Array<felt252> = array![];
                 if name == @owner_id {
                     arr.append((*component.owner_id));
@@ -324,7 +324,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 let mut arr: Array<felt252> = array![];
                 if name == @is_container {
                     arr.append((*component.is_container).into());
@@ -354,7 +354,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut access: Option<PropertyAccess> = Option::None;
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 let mut arr: Array<felt252> = array![];
                 if name == @location {
                     arr.append((*component.location).into());
@@ -387,7 +387,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => {
                         if name == @is_area {
@@ -427,7 +427,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
@@ -483,7 +483,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Ok(());
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
@@ -555,7 +555,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
@@ -647,7 +647,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
@@ -718,7 +718,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if prop.name == name.clone() {
+            if @prop.name == name {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {

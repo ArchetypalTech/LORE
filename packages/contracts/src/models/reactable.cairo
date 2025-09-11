@@ -59,7 +59,7 @@ pub impl ReactableImpl of ReactableTrait {
                 if random_idx >= self.description.len().try_into().unwrap() {
                     return ""; // avoid out-of-bounds access
                 }
-                let key: u32 = self.description.at(random_idx).clone();
+                let key: u32 = *self.description.at(random_idx);
                 let descriptionText: DescriptionText = world.read_model((*self.inst, key));
                 descriptionText.text
             },
@@ -71,8 +71,8 @@ pub impl ReactableImpl of ReactableTrait {
         if self.description.len() == 0 {
             return "";
         }
-        let key: u32 = self.description.at(0).clone();
-        let descriptionText: DescriptionText = world.read_model((self.inst.clone(), key));
+        let key: u32 = *self.description.at(0);
+        let descriptionText: DescriptionText = world.read_model((*self.inst, key));
         descriptionText.text
     }
 
@@ -82,8 +82,8 @@ pub impl ReactableImpl of ReactableTrait {
         if reactable.description.len() == 0 {
             return "";
         }
-        let key: u32 = reactable.description.at(index).clone();
-        let descriptionText: DescriptionText = world.read_model((reactable.inst.clone(), key));
+        let key: u32 = *reactable.description.at(index);
+        let descriptionText: DescriptionText = world.read_model((*reactable.inst, key));
         descriptionText.text
     }
 }
@@ -317,7 +317,7 @@ pub mod tests {
         assert(read_reactable.is_reactable, 'reactable is reactable');
         let mut res = array![];
         for _ in 0..10_u8 {
-            res.append(read_reactable.clone().get_random_description(@command, world));
+            res.append(read_reactable.get_random_description(@command, world));
         };
         // println!("reactable: {:?}", res);
     }

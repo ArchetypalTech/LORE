@@ -276,7 +276,7 @@ fn system_command(
         if (system_command == "g_move") {
             player.move_to_room(ref world, 2826, *command.game_id);
             player.say(ref world, *command.game_id, "+sys+forced move command");
-            let room = player.get_room(@world, *command.game_id);
+            let room = player.get_room_entity(@world, *command.game_id);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
@@ -297,7 +297,7 @@ fn system_command(
         }
         if (system_command == "g_whereami") {
             player.say(ref world, *command.game_id, "+sys+you are here:");
-            let room = player.get_room(@world, *command.game_id);
+            let room = player.get_room_entity(@world, *command.game_id);
             player.say(ref world, *command.game_id, format!("+sys+{:?}", room));
             player.say(ref world, *command.game_id, format!("+sys+{:?}", player.entity(@world).get_parent(@world, *command.game_id)));
             return Result::Ok(());
@@ -305,7 +305,7 @@ fn system_command(
         if (system_command == "g_look") {
             player.say(ref world, *command.game_id, "+sys+you see this:");
             let context = player.get_context(@world, *command.game_id);
-            let room = player.get_room(@world, *command.game_id);
+            let room = player.get_room_entity(@world, *command.game_id);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }

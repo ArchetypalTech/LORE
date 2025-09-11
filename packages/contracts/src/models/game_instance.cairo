@@ -86,16 +86,4 @@ pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameM
         }
     }
 
-    // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128) {
-    //     // generate game instance key
-    //     let game_inst: felt252 = GameInstImpl::game_inst(model.inst(), game_id);
-    //     // TODO: clone original model if game model does not exist
-    //     // TODO: write GameInstanceMap if non existant
-    //     self.write_member(
-    //         Model::<M>::ptr_from_keys(game_inst),
-    //         field_selector,
-    //         value,
-    //     );        
-    // }
-
 }
