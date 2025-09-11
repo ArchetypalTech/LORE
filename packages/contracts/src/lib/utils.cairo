@@ -161,7 +161,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         found
     }
 
-    fn to_lowercase(self: ByteArray) -> ByteArray {
+    fn to_lowercase(self: @ByteArray) -> ByteArray {
         let mut result: ByteArray = "";
         for i in 0..self.len() {
             let byte: felt252 = self.clone().felt252_at(i);
@@ -216,7 +216,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         }
     }
 
-    fn bool_from_byte_array(value: ByteArray) -> bool {
+    fn bool_from_byte_array(value: @ByteArray) -> bool {
         let true_byte: ByteArray = "true";
         let false_byte: ByteArray = "false";
         if value.equals(@true_byte) {
@@ -232,7 +232,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         value.try_into().unwrap()
     }
 
-    fn u32_from_byte_array(value: ByteArray) -> u32 {
+    fn u32_from_byte_array(value: @ByteArray) -> u32 {
         value.to_felt252_word().unwrap().try_into().unwrap()
     }
 
@@ -456,7 +456,7 @@ mod tests {
         expected_w.append(expected_w3);
 
         // Apply map
-        let result_array = words.map(|word| word.to_lowercase());
+        let result_array = words.map(|word| (@word).to_lowercase());
 
         // Assert the transformation worked
         assert_eq!(result_array, expected_w, "should convert to lowercase");

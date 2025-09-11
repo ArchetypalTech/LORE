@@ -22,7 +22,7 @@ pub impl CommandImpl of CommandTrait {
     // let list = command.get_targets();
     // let amount = list.len();
 
-    fn get_verbs(self: @Command) -> Array<Token> {
+    fn get_verbs(self: @Command) -> Span<Token> {
         let mut verbs: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -33,10 +33,10 @@ pub impl CommandImpl of CommandTrait {
             }
             verbs.append(token.clone());
         };
-        verbs
+        (verbs.span())
     }
 
-    fn get_nouns(self: @Command) -> Array<Token> {
+    fn get_nouns(self: @Command) -> Span<Token> {
         let mut nouns: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -47,10 +47,10 @@ pub impl CommandImpl of CommandTrait {
             }
             nouns.append(token.clone());
         };
-        nouns
+        (nouns.span())
     }
 
-    fn get_directions(self: @Command) -> Array<Token> {
+    fn get_directions(self: @Command) -> Span<Token> {
         let mut directions: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -61,10 +61,10 @@ pub impl CommandImpl of CommandTrait {
             }
             directions.append(token.clone());
         };
-        directions
+        (directions.span())
     }
 
-    fn get_Targets(self: @Command) -> Array<Token> {
+    fn get_Targets(self: @Command) -> Span<Token> {
         let mut targets: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -79,7 +79,7 @@ pub impl CommandImpl of CommandTrait {
 
             targets.append(token.clone());
         };
-        targets
+        (targets.span())
     }
 
     fn pretty_print(self: @Command) {

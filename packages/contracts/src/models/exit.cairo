@@ -121,7 +121,7 @@ pub impl ExitComponent of Component<Exit> {
                 let names = self.entity(@world).get_names();
                 for noun in nouns {
                     for name in names {
-                        if @noun.text == name {
+                        if noun.text == name {
                             matchesName = true;
                             break;
                         }
@@ -130,7 +130,7 @@ pub impl ExitComponent of Component<Exit> {
 
                 let mut matchesDirection = false;
                 if (direction_tokens.len() > 0
-                    && matches_direction(@self, world, player, @direction_tokens).is_some()) {
+                    && matches_direction(@self, world, player, direction_tokens).is_some()) {
                     matchesDirection = true;
                 }
 
@@ -211,7 +211,7 @@ pub impl ExitComponent of Component<Exit> {
 
 
 fn matches_direction(
-    self: @Exit, world: WorldStorage, player: @Player, directions_token: @Array<Token>,
+    self: @Exit, world: WorldStorage, player: @Player, directions_token: Span<Token>,
 ) -> Option<felt252> {
     if (directions_token.len() == 0) {
         return Option::None;

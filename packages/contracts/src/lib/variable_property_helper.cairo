@@ -260,9 +260,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 } else if name == @description {
                     let desc = component.description;
                     for i in 0..desc.len() {
-                        let key: u32 = desc.at(i).clone();
-                        let descText: DescriptionText = world.read_model((*component.inst, key),);
-                        let felt = ByteArrayTraitExt::to_felt252_word(@descText.text).unwrap();
+                        let key: u32 = *desc.at(i);
+                        let desc_text: DescriptionText = world.read_model((*component.inst, key),);
+                        let felt = ByteArrayTraitExt::to_felt252_word(@desc_text.text).unwrap();
                         arr.append(felt);
                     }
                 }
@@ -377,7 +377,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
+        new_value: Span<(ByteArray, u32)>,
         game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
@@ -396,7 +396,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     },
                     PropertyAccess::ReadWrite => {
                         if name == @is_spawn_point {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_spawn_point = new_var_value;
                             success = true;
@@ -415,7 +415,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
+        new_value: Span<(ByteArray, u32)>,
         game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
@@ -432,22 +432,22 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @is_exit {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_exit = new_var_value;
                             success = true;
                         } else if name == @is_enterable {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_enterable = new_var_value;
                             success = true;
                         } else if name == @leads_to {
-                            let (value, _index) = new_value[0].clone();
-                            let new_var_value = ByteArrayTraitExt::to_felt252_word(@value).unwrap();
+                            let (value, _index) = new_value[0];
+                            let new_var_value = ByteArrayTraitExt::to_felt252_word(value).unwrap();
                             component.leads_to = new_var_value;
                             success = true;
                         } else if name == @direction_type {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let lowercased = ByteArrayTraitExt::to_lowercase(value);
                             let to_felt252_direction = ByteArrayTraitExt::to_felt252_word(
                                 @lowercased,
@@ -473,7 +473,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
+        new_value: Span<(ByteArray, u32)>,
         game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
@@ -488,27 +488,27 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @is_visible {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_visible = new_var_value;
                             success = true;
                         } else if name == @is_reactable {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_reactable = new_var_value;
                             success = true;
                         } else if name == @description {
-                            for (value, index) in new_value.clone() {
+                            for (value, index) in new_value {
                                 let mut found: bool = false;
 
                                 // Check if index is already in component.description
                                 for key in component.description.clone() {
-                                    if key == index {
+                                    if key == *index {
                                         // Update existing description
-                                        let mut descText: DescriptionText = world
-                                            .read_model((component.inst.clone(), index));
-                                        descText.text = value.clone();
-                                        world.write_model(@descText);
+                                        let mut desc_text: DescriptionText = world
+                                            .read_model((component.inst, *index));
+                                        desc_text.text = value.clone();
+                                        world.write_model(@desc_text);
                                         found = true;
                                         break;
                                     }
@@ -517,10 +517,10 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 if !found {
                                     // Add new description
                                     let new_desc = DescriptionText {
-                                        inst: component.inst, key: index, text: value,
+                                        inst: component.inst, key: *index, text: value.clone(),
                                     };
                                     world.write_model(@new_desc);
-                                    component.description.append(index);
+                                    component.description.append(*index);
                                 };
                             };
                             success = true;
@@ -540,8 +540,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         name: @ByteArray,
         effect_type: @EffectType,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
-        num_value: @u32,
+        new_value: Span<(ByteArray, u32)>,
+        num_value: u32,
         game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
@@ -560,7 +560,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @owner_id {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             component.owner_id = value.to_felt252_word().unwrap();
                             // move item to new owner
                             let new_owner_container: Container = world.read_game_model(component.owner_id, game_id);
@@ -574,24 +574,24 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 },
                             }
                         } else if name == @can_be_picked_up {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_picked_up = new_var_value;
                             success = true;
                         } else if name == @can_go_in_container {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_go_in_container = new_var_value;
                             success = true;
                         } else if name == @quantity {
                             match effect_type.clone() {
                                 EffectType::AddQuantity => {
-                                    component.quantity += num_value.clone();
+                                    component.quantity += num_value;
                                     success = true;
                                 },
                                 EffectType::RemoveQuantity => {
-                                    if component.quantity >= num_value.clone() {
-                                        component.quantity -= num_value.clone();
+                                    if component.quantity >= num_value {
+                                        component.quantity -= num_value;
                                         success = true;
                                     } else {
                                         let zero: u32 = 0;
@@ -601,19 +601,19 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 },
                                 EffectType::ModifyProperty => {
                                     // Overwrite the quantity
-                                    component.quantity = num_value.clone();
+                                    component.quantity = num_value;
                                     success = true;
                                 },
                                 _ => { // Do nothing for now
                                 },
                             }
                         } else if name == @already_used {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.already_used = new_var_value;
                             success = true;
                         } else if name == @multiple_use {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.multiple_use = new_var_value;
                             success = true;
@@ -633,8 +633,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         name: @ByteArray,
         effect_type: @EffectType,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
-        num_value: @u32,
+        new_value: Span<(ByteArray, u32)>,
+        num_value: u32,
         game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
@@ -652,38 +652,38 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @is_container {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_container = new_var_value;
                             success = true;
                         } else if name == @can_be_opened {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_opened = new_var_value;
                             success = true;
                         } else if name == @can_receive_items {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_receive_items = new_var_value;
                             success = true;
                         } else if name == @is_open {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_open = new_var_value;
                             success = true;
                         } else if name == @num_slots {
-                            match effect_type.clone() {
+                            match effect_type {
                                 EffectType::ModifyProperty => {
-                                    component.num_slots = num_value.clone();
+                                    component.num_slots = num_value;
                                     success = true;
                                 },
                                 EffectType::AddQuantity => {
-                                    component.num_slots += num_value.clone();
+                                    component.num_slots += num_value;
                                     success = true;
                                 },
                                 EffectType::RemoveQuantity => {
-                                    if component.num_slots >= num_value.clone() {
-                                        component.num_slots -= num_value.clone();
+                                    if component.num_slots >= num_value {
+                                        component.num_slots -= num_value;
                                         success = true;
                                     } else {
                                         component.num_slots = 0;
@@ -709,7 +709,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         ref world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
+        new_value: Span<(ByteArray, u32)>,
         game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
@@ -723,9 +723,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @location {
-                            let (value, _index) = new_value[0].clone();
+                            let (value, _index) = new_value[0];
                             component
-                                .location = ByteArrayTraitExt::to_felt252_word(@value)
+                                .location = ByteArrayTraitExt::to_felt252_word(value)
                                 .unwrap();
                             success = true;
                         }

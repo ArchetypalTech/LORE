@@ -39,7 +39,7 @@ pub fn handle_command(
     let mut result: Result::<(), Error> = Result::Err(Error::ActionFailed);
     if nouns.len() > 0 {
         for noun in nouns {
-            let item: Entity = EntityImpl::get_entity(@world, noun.target).unwrap();
+            let item: Entity = EntityImpl::get_entity(@world, *noun.target).unwrap();
             if player.use_debug {
                 player.say(ref world, *command.game_id, format!("item: {:?}", item));
             }

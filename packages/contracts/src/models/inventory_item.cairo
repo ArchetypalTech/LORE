@@ -225,7 +225,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // This is for a specific container
                 // Ex: "put the sword in the bag"
                 // Get the player's container
-                let player_container = get_player_container(@world, player, nouns.clone(), *command.game_id);
+                let player_container = get_player_container(@world, player, nouns, *command.game_id);
                 if player_container.is_none() {
                     // if it is not in the player, it means it is in an entity container
                     // that is on the room Ex: "put the sword in the box"
@@ -243,7 +243,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // This is for taking an item from a specific container
                 // Ex: "take out the sword from the bag"
                 // Get the player's container
-                let player_container = get_player_container(@world, player, nouns.clone(), *command.game_id);
+                let player_container = get_player_container(@world, player, nouns, *command.game_id);
                 if player_container.is_none() {
                     // if it is not in the player, it means it is in an entity container
                     // that is on the room Ex: "take out the sword from the box"
@@ -313,7 +313,7 @@ fn get_action_token(
 // This can be the an entity container attached to the player
 // Ex: a bag in the player's personalinventory
 fn get_player_container(
-    world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
+    world: @WorldStorage, player: @Player, nouns: Span<Token>, game_id: u128,
 ) -> Option<Container> {
     let player_entity: Entity = player.entity(world);
     let player_children = player_entity.get_children(world, game_id);
@@ -342,7 +342,7 @@ fn get_player_container(
 // This can be the an entity container attached to the room
 // Ex: a chest in the room
 fn get_entity_container(
-    world: @WorldStorage, player: @Player, nouns: Array<Token>, game_id: u128,
+    world: @WorldStorage, player: @Player, nouns: Span<Token>, game_id: u128,
 ) -> Option<Container> {
     // get room
     let room = player.get_room_entity(world, game_id);
