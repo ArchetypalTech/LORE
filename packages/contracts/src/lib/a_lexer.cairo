@@ -227,7 +227,7 @@ mod tests {
 
     #[test]
     fn Lexer_test_prompt() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
         // println!("promptText: {:?}", promptText);
         create_test_level(ref world);
@@ -243,7 +243,7 @@ mod tests {
 
     #[test]
     fn test_get_verbs() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let prompt_text: ByteArray = "look at the magic circle";
         let expected_verb: ByteArray = "look"; // Correctly set verb as a ByteArray
 
@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn test_get_nouns() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let prompt_text: ByteArray = "look at the ball";
         let expected_noun: ByteArray = "ball"; // Correctly set verb as a ByteArray
 

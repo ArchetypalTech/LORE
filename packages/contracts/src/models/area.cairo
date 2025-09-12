@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_area_create() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         let area: Area = AreaComponent::add_component(ref world, 1);
         assert(area.is_area, 'area is area');
         assert(area.inst == 1, 'area.inst == 1');
@@ -115,7 +115,7 @@ mod tests {
 
     #[test]
     fn test_area_game_inst() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         //
         // create area
         let area: Area = AreaComponent::add_component(ref world, 111);
@@ -159,7 +159,7 @@ mod tests {
 
     #[test]
     fn test_area_game_comp() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         //
         // create area
         let area: Area = AreaComponent::add_component(ref world, 111);

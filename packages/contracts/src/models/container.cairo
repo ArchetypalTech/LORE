@@ -346,7 +346,7 @@ mod tests {
 
     #[test]
     fn test_container_game_comp() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         //
         // create container
         let container: Container = ContainerComponent::add_component(ref world, 111);
@@ -409,7 +409,7 @@ mod tests {
 
     #[test]
     fn test_container_open() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         //
         // create container
         let mut container: Container = ContainerComponent::add_component(ref world, 11);
@@ -427,7 +427,7 @@ mod tests {
 
     #[test]
     fn test_container_items() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         //
         // create some items
         let game_id: u128 = 0;

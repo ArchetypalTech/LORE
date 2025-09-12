@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn test_entity_parent_child_basic() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         let (mut parent, _, mut child, _, _) = _setup_entities(ref world);
 
         // Set parent-child relationship
@@ -75,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_entity_hierarchy() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         let (mut parent1, mut parent2, mut child1, mut child2, mut child3) = _setup_entities(ref world);
 
         // Set relationships
@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn test_entity_game_instance() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         let (mut parent1, mut parent2, mut child1, mut child2, mut child3) = _setup_entities(ref world);
 
         let game_id: u128 = 0;
@@ -196,7 +196,7 @@ mod tests {
     #[test]
     #[should_panic(expected: ('set_parent() parent self',))]
     fn test_parent_self() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         let (_, _, mut child1, _, _) = _setup_entities(ref world);
         // Set relationships
         let game_id: u128 = 0;

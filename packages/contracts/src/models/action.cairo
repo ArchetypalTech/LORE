@@ -506,7 +506,7 @@ mod tests {
     // However player1 does not have item
     // Result: door description and exit.is_enterable should not be updated
     fn test_enter_room_without_item() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
         let (room_1, room_2) = create_rooms(ref world);
@@ -695,7 +695,7 @@ mod tests {
     // Condition: player1 has item
     // Effect: door description and exit.is_enterable changes
     fn test_enter_room_with_item() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
         let (room_1, room_2) = create_rooms(ref world);

@@ -314,7 +314,7 @@ mod tests {
 
     #[test]
     fn test_trigger_register_and_index() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
 
         let key: felt252 = 1;
         let trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnEnter);
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn test_trigger_name_too_long() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         let long_name = "Aakldjflkajdflkjldafljaldfjldjsdfdfdf";
 
         // Create entity
@@ -355,7 +355,7 @@ mod tests {
 
     #[test]
     fn test_trigger_enable_disable() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
 
         // Create trigger
         let key: felt252 = 3;
@@ -374,7 +374,7 @@ mod tests {
 
     #[test]
     fn test_trigger_index_append_multiple() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         let id_1: felt252 = 10;
         let id_2: felt252 = 11;
 
@@ -405,7 +405,7 @@ mod tests {
 
     #[test]
     fn test_evaluate_trigger() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         // create room entity 1
         let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");
         // create room entity 2
@@ -469,7 +469,7 @@ mod tests {
 
     #[test]
     fn test_evaluate_trigger_once() {
-        let (mut world, _, _, player_1, player_2) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, player_2) = helpers::setup_core();
 
         // create room entity 1
         let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");

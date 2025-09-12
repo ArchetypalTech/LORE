@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn Effect_test_apply_effect() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         // create door entity
         let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);

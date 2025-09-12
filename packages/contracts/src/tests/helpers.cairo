@@ -1,4 +1,4 @@
-use dojo::{world::{IWorldDispatcherTrait, WorldStorage, WorldStorageTrait}};
+use dojo::{world::{IWorldDispatcherTrait, WorldStorage}};
 
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
@@ -8,31 +8,44 @@ use dojo_cairo_test::{
 use lore::{
     systems::{
         designer::{designer, IDesignerDispatcher},
-        prompt::{prompt, IPromptDispatcher}},
+        prompt::{prompt, IPromptDispatcher},
+        game_token::{game_token, IGameTokenDispatcher},
+    },
     models,
     models::entity::{EntityImpl},
     types::{command_type::IntoTokenTypeFelt252}, constants::{errors::{}},
-    lib::{dictionary::{initialize_dictionary}, utils::{ByteArrayTraitExt}},
+    lib::{
+        dictionary::{initialize_dictionary},
+        utils::{ByteArrayTraitExt},
+        dns::{DnsTrait},
+    },
 };
 
 
-use starknet::{ContractAddress, contract_address_const};
+use starknet::{ContractAddress, contract_address_const, testing};
 
 pub fn set_caller(caller: ContractAddress) {
-    starknet::testing::set_account_contract_address(caller);
-    starknet::testing::set_contract_address(caller);
+    starknet::testing::set_account_contract_address(caller);    // starknet::get_execution_info().tx_info.account_contract_address
+    starknet::testing::set_contract_address(caller);            // starknet::get_execution_info().contract_address
 }
 
-pub fn ZERO_ADDRESS() -> ContractAddress {
-    contract_address_const::<0x0>()
-}
+pub fn ZERO()      -> ContractAddress { starknet::contract_address_const::<0x0>() }
+pub fn OWNER()     -> ContractAddress { starknet::contract_address_const::<0x1>() } // mock owner of duelists 1-2
+pub fn OTHER()     -> ContractAddress { starknet::contract_address_const::<0x3>() } // mock owner of duelists 3-4
+pub fn RECIPIENT() -> ContractAddress { starknet::contract_address_const::<0x222>() }
+
+
+
+//-----------------------------------
+// deploy test contrac
+//
 
 pub fn setup_core_initialized() -> (
-    WorldStorage, IDesignerDispatcher, IPromptDispatcher, ContractAddress, ContractAddress,
+    WorldStorage, IDesignerDispatcher, IPromptDispatcher, IGameTokenDispatcher, ContractAddress, ContractAddress,
 ) {
-    let (world, designer, prompt, player_1, player_2) = setup_core();
+    let (world, designer, prompt, token, player_1, player_2) = setup_core();
 
-    (world, designer, prompt, player_1, player_2)
+    (world, designer, prompt, token, player_1, player_2)
 }
 
 fn namespace_def() -> NamespaceDef {
@@ -61,9 +74,15 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::action::m_Action::TEST_CLASS_HASH),
             TestResource::Model(models::action::m_ActionExecuted::TEST_CLASS_HASH),
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH),
+            // game_token
+            TestResource::Model(models::token_config::m_ContractConfig::TEST_CLASS_HASH),
+            TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH),
+            TestResource::Model(models::token_config::m_GameTokenInfo::TEST_CLASS_HASH),
+            TestResource::Event(models::token_config::e_GameCreatedEvent::TEST_CLASS_HASH),
             // TestResource::Event(),
             TestResource::Contract(prompt::TEST_CLASS_HASH),
             TestResource::Contract(designer::TEST_CLASS_HASH),
+            TestResource::Contract(game_token::TEST_CLASS_HASH),
         ]
             .span(),
     };
@@ -77,31 +96,43 @@ fn core_contract_defs() -> Span<ContractDef> {
             .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span()),
         ContractDefTrait::new(@"lore", @"prompt")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span()),
+        ContractDefTrait::new(@"lore", @"game_token")
+            .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
+            .with_init_calldata([].span()),
     ]
         .span()
 }
 
 
 pub fn setup_core() -> (
-    WorldStorage, IDesignerDispatcher, IPromptDispatcher, ContractAddress, ContractAddress,
+    WorldStorage, IDesignerDispatcher, IPromptDispatcher, IGameTokenDispatcher, ContractAddress, ContractAddress,
 ) {
+    set_caller(OWNER());
+
     let mut world = spawn_test_world([namespace_def()].span());
 
     world.sync_perms_and_inits(core_contract_defs());
 
-    let (designer_address, _) = world.dns(@"designer").unwrap();
-    let (prompt_address, _) = world.dns(@"prompt").unwrap();
-    let designer = IDesignerDispatcher { contract_address: designer_address };
-    let prompt = IPromptDispatcher { contract_address: prompt_address };
+    world.dispatcher.grant_owner(dojo::utils::bytearray_hash(@"lore"), OWNER());
+    world.dispatcher.grant_owner(selector_from_tag!("lore-designer"), OWNER());
+    world.dispatcher.grant_owner(selector_from_tag!("lore-prompt"), OWNER());
+    world.dispatcher.grant_owner(selector_from_tag!("lore-game_token"), OWNER());
+
+    let designer = IDesignerDispatcher { contract_address: world.designer_address() };
+    let prompt = IPromptDispatcher { contract_address: world.prompt_address() };
+    let game_token = IGameTokenDispatcher { contract_address: world.game_token_address() };
 
     // FIXME: Setup permissions
-    world.dispatcher.grant_writer(selector_from_tag!("lore-Dict"), prompt_address);
+    world.dispatcher.grant_writer(selector_from_tag!("lore-Dict"), world.prompt_address());
 
     // world.grant_writer(selector_from_tag!("pixelaw-AppName"), core_actions_address);
     // world.grant_writer(selector_from_tag!("pixelaw-CoreActionsAddress"), core_actions_address);
     // world.grant_writer(selector_from_tag!("pixelaw-Pixel"), core_actions_address);
     // world.grant_writer(selector_from_tag!("pixelaw-RTree"), core_actions_address);
     // world.grant_writer(selector_from_tag!("pixelaw-Area"), core_actions_address);
+
+    testing::set_block_number(1);
+    testing::set_block_timestamp(1);
 
     // Setup players
     let player_1 = contract_address_const::<0x69>();
@@ -112,7 +143,7 @@ pub fn setup_core() -> (
 
     initialize_dictionary(world);
 
-    (world, designer, prompt, player_1, player_2)
+    (world, designer, prompt, game_token, player_1, player_2)
 }
 
 

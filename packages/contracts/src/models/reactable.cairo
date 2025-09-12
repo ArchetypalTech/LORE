@@ -279,7 +279,7 @@ pub mod tests {
     }
     
     fn Reactable_create_prefab_world() -> (Reactable, WorldStorage, ContractAddress, ContractAddress) {
-        let (mut world, _, _, player_1, player_2) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, player_2) = helpers::setup_core();
         let prefab = Reactable_create_prefab(ref world, 42);
         (prefab, world, player_1, player_2)
     }

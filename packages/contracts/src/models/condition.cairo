@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn Condition_test_evaluate_condition() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         // Create entity and attach ReactableComponent
         let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);

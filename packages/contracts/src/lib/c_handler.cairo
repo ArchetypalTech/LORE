@@ -337,7 +337,7 @@ mod tests {
     #[test]
     fn CHandler_test_g_command_handling() {
         // Setup test environment
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         create_test_level(ref world);
         let game_id: u128 = 0;
         let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);

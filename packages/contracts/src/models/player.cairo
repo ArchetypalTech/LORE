@@ -339,7 +339,7 @@ mod tests {
 
     #[test]
     fn test_player_create() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let game_id: u128 = 0;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         assert(player.is_player, 'player is player');
@@ -359,7 +359,7 @@ mod tests {
 
     #[test]
     fn test_player_story_line() {
-        let (mut world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let game_id: u128 = 123;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         assert(player.is_player, 'player is player');
@@ -382,7 +382,7 @@ mod tests {
 
     #[test]
     fn test_player_room() {
-        let (mut world, _, _, player_address_1, player_address_2) = helpers::setup_core();
+        let (mut world, _, _, _, player_address_1, player_address_2) = helpers::setup_core();
         let game_id_1: u128 = 123;
         let game_id_2: u128 = 456;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_address_1, 0);
@@ -429,7 +429,7 @@ mod tests {
 
     #[test]
     fn test_player_say() {
-        let (mut world, _, _, player_address, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_address, _) = helpers::setup_core();
         let game_id_1: u128 = 123;
         let game_id_2: u128 = 456;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_address, 0);

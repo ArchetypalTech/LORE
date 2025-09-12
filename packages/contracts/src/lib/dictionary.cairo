@@ -203,7 +203,7 @@ mod tests {
 
     #[test]
     fn Dictionary_test_init() {
-        let (world, _, _, _, _) = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         let entry_1 = get_dict_entry(world, "look").unwrap();
         let entry_2 = get_dict_entry(world, "beautiful").unwrap();
         // println!("entry_1: {:?}", entry_1);
@@ -214,7 +214,7 @@ mod tests {
 
     #[test]
     fn Dictionary_test_add_to_dictionary() {
-        let (world, _, _, _, _) = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         add_to_dictionary(world, "something", TokenType::Verb, 1).unwrap();
         let entry_1 = get_dict_entry(world, "something").unwrap();
         assert(entry_1.tokenType == TokenType::Verb, 'beautiful is verb');

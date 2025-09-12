@@ -52,5 +52,6 @@ pub mod types {
 #[cfg(test)]
 pub mod tests {
     pub mod entity_test;
+    pub mod game_token_test;
     pub mod helpers;
 }
