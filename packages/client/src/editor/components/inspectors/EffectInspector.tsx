@@ -108,10 +108,11 @@ const EffectItem = ({
           value={effectObj.n_value.toString()}
           onChange={handleInputChange(idx)}
         />
-        <Input
+        <EntitySelector
           id="hex_value"
           value={effectObj.hex_value.toString()}
           onChange={handleInputChange(idx)}
+          dataPool={dataPool}
         />
       </Inspector>
     </CollapsibleComponent>
