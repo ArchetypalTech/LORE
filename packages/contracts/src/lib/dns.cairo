@@ -2,9 +2,9 @@ use starknet::{ContractAddress};
 use dojo::world::{WorldStorage, WorldStorageTrait};
 
 pub use lore::systems::{
-    game_token::{IGameTokenDispatcher},
-    prompt::{IPromptDispatcher},
-    designer::{IDesignerDispatcher},
+    game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
+    prompt::{IPromptDispatcher, IPromptDispatcherTrait},
+    designer::{IDesignerDispatcher, IDesignerDispatcherTrait},
 };
 
 pub mod SELECTORS {

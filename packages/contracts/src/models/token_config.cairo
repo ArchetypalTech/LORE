@@ -71,7 +71,9 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
     }
     fn switch_game_id(ref world: WorldStorage, address: ContractAddress, game_id: u128) {
         let mut account: PlayerAccount = world.read_model(address);
-        account.current_game_id = game_id;
-        world.write_model(@account);
+        if (account.current_game_id != game_id && game_id != 0) {
+            account.current_game_id = game_id;
+            world.write_model(@account);
+        }
     }
 }

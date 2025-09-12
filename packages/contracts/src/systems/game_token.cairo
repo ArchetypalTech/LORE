@@ -121,9 +121,9 @@ pub mod game_token {
     //-----------------------------------
 
     use lore::models::token_config::{
-        ContractConfig, ContractConfigImpl,
+        ContractConfig, ContractConfigTrait,
         GameTokenInfo,
-        PlayerAccountImpl,
+        PlayerAccountTrait,
         GameCreatedEvent,
     };
     use lore::constants::{token as constants};
@@ -134,8 +134,7 @@ pub mod game_token {
     use nft_combo::utils::renderer::{Attribute};
 
     mod Errors {
-        pub const CALLER_IS_NOT_OWNER: felt252      = 'ORUG: caller is not owner';
-        pub const CALLER_IS_NOT_ADMIN: felt252      = 'ORUG: caller is not admin';
+        pub const INVALID_CALLER: felt252   = 'ORUG: Invalid caller';
     }
 
     fn dojo_init(ref self: ContractState) {
@@ -197,7 +196,7 @@ pub mod game_token {
             });
 
             // switch to this game
-            PlayerAccountImpl::switch_game_id(ref world, recipient, token_id);
+            PlayerAccountTrait::switch_game_id(ref world, recipient, token_id);
 
             // event...
             world.emit_event(@GameCreatedEvent{
@@ -218,24 +217,28 @@ pub mod game_token {
         // admin
         //
         fn set_paused(ref self: ContractState, is_paused: bool) {
-            self._assert_caller_is_admin();
+            let world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
             self.erc721_combo._set_minting_paused(is_paused);
         }
         fn set_admin(ref self: ContractState, admin_address: ContractAddress) {
-            self._assert_caller_is_admin();
             let mut world: WorldStorage = self.world_default();
-            ContractConfigImpl::set_admin(ref world, starknet::get_contract_address(), admin_address);
+            self._assert_caller_is_admin(@world);
+            ContractConfigTrait::set_admin(ref world, starknet::get_contract_address(), admin_address);
         }
         fn update_token_metadata(ref self: ContractState, token_id: u256) {
-            // self._assert_caller_is_admin();
+            // let mut world: WorldStorage = self.world_default();
+            // self._assert_caller_is_admin(@world);
             self.erc721_combo._emit_metadata_update(token_id);
         }
         fn update_tokens_metadata(ref self: ContractState, from_token_id: u256, to_token_id: u256) {
-            self._assert_caller_is_admin();
+            let world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
             self.erc721_combo._emit_batch_metadata_update(from_token_id, to_token_id);
         }
         fn update_contract_metadata(ref self: ContractState) {
-            self._assert_caller_is_admin();
+            let world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
             self.erc721_combo._emit_contract_uri_updated();
         }
     }
@@ -247,20 +250,21 @@ pub mod game_token {
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         #[inline(always)]
-        fn _assert_caller_is_owner(self: @ContractState) {
-            assert(self._caller_is_owner(), Errors::CALLER_IS_NOT_OWNER);
+        fn _assert_caller_is_owner(self: @ContractState, world: @WorldStorage) {
+            assert(self._caller_is_owner(world), Errors::INVALID_CALLER);
         }
         #[inline(always)]
-        fn _assert_caller_is_admin(self: @ContractState) {
-            assert(self._caller_is_owner() || self._caller_is_admin(), Errors::CALLER_IS_NOT_ADMIN);
+        fn _assert_caller_is_admin(self: @ContractState, world: @WorldStorage) {
+            assert(self._caller_is_admin(world), Errors::INVALID_CALLER);
         }
-        #[inline(always)]
-        fn _caller_is_owner(self: @ContractState) -> bool {
-            (self.world_default().dispatcher.is_owner(SELECTORS::GAME_TOKEN, starknet::get_caller_address()))
+        fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
+            ((*world.dispatcher).is_owner(SELECTORS::GAME_TOKEN, starknet::get_caller_address()))
         }
-        #[inline(always)]
-        fn _caller_is_admin(self: @ContractState) -> bool {
-            (ContractConfigImpl::is_admin(@self.world_default(), starknet::get_contract_address(), starknet::get_caller_address()))
+        fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
+            (
+                self._caller_is_owner(world) ||
+                ContractConfigTrait::is_admin(world, starknet::get_contract_address(), starknet::get_caller_address())
+            )
         }
     }
 

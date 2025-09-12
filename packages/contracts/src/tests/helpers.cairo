@@ -1,4 +1,7 @@
-use dojo::{world::{IWorldDispatcherTrait, WorldStorage}};
+use dojo::{
+    world::{IWorldDispatcherTrait, WorldStorage},
+    model::{ModelStorage},
+};
 
 use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
@@ -12,8 +15,14 @@ use lore::{
         game_token::{game_token, IGameTokenDispatcher},
     },
     models,
-    models::entity::{EntityImpl},
-    types::{command_type::IntoTokenTypeFelt252}, constants::{errors::{}},
+    models::{
+        entity::{EntityImpl},
+        player::{PlayerStory, StoryLine},
+    },
+    types::{
+        command_type::{IntoTokenTypeFelt252},
+    },
+    constants::{errors::{}},
     lib::{
         dictionary::{initialize_dictionary},
         utils::{ByteArrayTraitExt},
@@ -83,8 +92,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Contract(prompt::TEST_CLASS_HASH),
             TestResource::Contract(designer::TEST_CLASS_HASH),
             TestResource::Contract(game_token::TEST_CLASS_HASH),
-        ]
-            .span(),
+        ].span(),
     };
 
     ndef
@@ -99,8 +107,7 @@ fn core_contract_defs() -> Span<ContractDef> {
         ContractDefTrait::new(@"lore", @"game_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
             .with_init_calldata([].span()),
-    ]
-        .span()
+    ].span()
 }
 
 
@@ -135,8 +142,8 @@ pub fn setup_core() -> (
     testing::set_block_timestamp(1);
 
     // Setup players
-    let player_1 = contract_address_const::<0x69>();
-    let player_2 = contract_address_const::<0x42>();
+    let player_1 = contract_address_const::<0x69>(); // 105
+    let player_2 = contract_address_const::<0x42>(); // 66
 
     // burn entity 0 value
     EntityImpl::create_entity(ref world, "entity_0");
@@ -191,3 +198,22 @@ pub fn drop_all_events(address: ContractAddress) {
         };
     }
 }
+
+
+//
+// misc functions
+//
+
+pub fn player_story_len(world: @WorldStorage, game_id: u128) -> u32 {
+    let story: PlayerStory = world.read_model(game_id);
+    (story.story_line)
+}
+pub fn player_story_last_line(world: @WorldStorage, game_id: u128) -> ByteArray {
+    let story: PlayerStory = world.read_model(game_id);
+    let story_line: StoryLine = world.read_model((game_id, story.story_line),);
+    (story_line.line)
+}
+pub fn print_player_story_last_line(world: @WorldStorage, game_id: u128) {
+    println!("___output: {:?}", player_story_last_line(world, game_id));
+}
+

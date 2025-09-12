@@ -1,22 +1,25 @@
-use starknet::ContractAddress;
-use dojo::{model::ModelStorage};
-use lore::{
-    systems::{
-        game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
-    },
-    models::{
-        token_config::{ContractConfig, GameTokenInfo, PlayerAccount},
-    },
-    constants::{token as constants},
-    tests::{
-        helpers,
-        helpers::{OWNER, OTHER, RECIPIENT},
-    },
-};
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use starknet::ContractAddress;
+    use dojo::{
+        // world::{WorldStorage},
+        model::{ModelStorage},
+    };
+    use lore::{
+        systems::{
+            game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
+            prompt::{IPromptDispatcherTrait},
+        },
+        models::{
+            token_config::{ContractConfig, GameTokenInfo, PlayerAccount},
+            player::{Player, PlayerImpl},
+        },
+        constants::{token as constants},
+        tests::{
+            helpers,
+            helpers::{ZERO, OWNER, OTHER, RECIPIENT},
+        },
+    };
 
     fn _mint_token(token: IGameTokenDispatcher, recipient: ContractAddress) {
         helpers::set_caller(recipient);
@@ -83,6 +86,15 @@ mod tests {
     }
 
     #[test]
+    fn test_token_token_uri() {
+        let (mut _world, _, _, token, _, _) = helpers::setup_core();
+        _mint_token(token, OWNER());
+        let uri: ByteArray = token.token_uri(1);
+        assert_gt!(uri.len(), 1000, "token_uri.len()");
+        println!("TOKEN URI: [{}]", uri);
+    }
+
+    #[test]
     fn test_token_set_paused() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OWNER());
@@ -104,7 +116,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('ORUG: caller is not admin','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
     fn test_token_set_paused_not_admin() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OTHER());
@@ -127,12 +139,133 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('ORUG: caller is not admin','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
     fn test_token_set_admin_not_admin() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OTHER());
         token.set_admin(RECIPIENT());
     }
 
+    #[test]
+    fn test_prompt_mint_game() {
+        let (mut world, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
+        //
+        // player_1 say something...
+        let game_id_1: u128 = 1;
+        helpers::set_caller(player_address_1);
+        prompt.prompt("", Option::None);
+        // game was minted
+        assert_eq!(token.total_supply(), 1, "total_supply()");
+        assert_eq!(token.owner_of(game_id_1.into()), player_address_1, "owner_of()");
+        // player was created
+        let player_1: Player = PlayerImpl::get_player(@world, game_id_1).unwrap();
+        assert_eq!(player_1.address, player_address_1, "player_1.address");
+        assert_eq!(player_1.game_id, game_id_1, "player_1.game_id");
+// helpers::print_player_story_last_line(@world, game_id_1);
+        assert_eq!(helpers::player_story_len(@world, game_id_1), 1, "player_1.story");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_1), "You feel light, and shiny, in the head", "player_1.story");
+        // player zero was created too
+        let player_0: Player = PlayerImpl::get_player(@world, 0).unwrap();
+        assert_eq!(player_0.address, ZERO(), "player_0.address");
+        assert_eq!(player_0.game_id, 0, "player_0.game_id");
+        // system command: g_game_id
+        prompt.prompt("g_game_id", Option::None);
+// helpers::print_player_story_last_line(@world, game_id_1);
+        assert_eq!(helpers::player_story_len(@world, game_id_1), 3, "said");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_1), "+sys+1");
+        //
+        // player_2 say something...
+        let game_id_2: u128 = 2;
+        helpers::set_caller(player_address_2);
+        prompt.prompt("", Option::None);
+        // game was minted
+        assert_eq!(token.total_supply(), 2, "total_supply()");
+        assert_eq!(token.owner_of(game_id_2.into()), player_address_2, "owner_of()");
+        // player was created
+        let player_2: Player = PlayerImpl::get_player(@world, game_id_2).unwrap();
+        assert_eq!(player_2.address, player_address_2, "player_2.address");
+        assert_eq!(player_2.game_id, game_id_2, "player_2.game_id");
+// helpers::print_player_story_last_line(@world, game_id_2);
+        assert_eq!(helpers::player_story_len(@world, game_id_2), 1, "player_2.story");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_2), "You feel light, and shiny, in the head", "player_2.story");
+        // system command: g_game_id
+        prompt.prompt("g_game_id", Option::None);
+// helpers::print_player_story_last_line(@world, game_id_2);
+        assert_eq!(helpers::player_story_len(@world, game_id_2), 3, "said");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_2), "+sys+2");
+        //
+        // player 1 can play their own game by id...
+        helpers::set_caller(player_address_1);
+        prompt.prompt("hello", Option::Some(game_id_1));
+        // no new game was minted
+        assert_eq!(token.total_supply(), 2, "total_supply()");
+        // more story was added
+        assert_eq!(helpers::player_story_len(@world, game_id_1), 5, "said");
+        //
+        // ADMIN can play their someone else's game for debugging
+        helpers::set_caller(OWNER());
+        prompt.prompt("hello", Option::Some(game_id_2));
+        // no new game was minted
+        assert_eq!(token.total_supply(), 2, "total_supply()");
+        // more story was added
+        assert_eq!(helpers::player_story_len(@world, game_id_2), 5, "said");
+    }
 
+    #[test]
+    #[should_panic(expected: ('PROMPT: Not your game','ENTRYPOINT_FAILED'))]
+    fn test_prompt_unknown_game() {
+        let (_, _, prompt, _, player_address_1, _) = helpers::setup_core();
+        //
+        // player_1 say something...
+        helpers::set_caller(player_address_1);
+        prompt.prompt("", Option::Some(1212));
+    }
+
+    #[test]
+    #[should_panic(expected: ('PROMPT: Not your game','ENTRYPOINT_FAILED'))]
+    fn test_prompt_not_your_game() {
+        let (_, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
+        //
+        // player_1 say something...
+        let game_id_1: u128 = 1;
+        helpers::set_caller(player_address_1);
+        prompt.prompt("", Option::None);
+        assert_eq!(token.total_supply(), 1, "total_supply()");
+        assert_eq!(token.owner_of(game_id_1.into()), player_address_1, "owner_of()");
+        //
+        // player_2 say something...
+        helpers::set_caller(player_address_2);
+        prompt.prompt("", Option::Some(game_id_1));
+    }
+
+    #[test]
+    fn test_prompt_editor() {
+        let (mut world, _, prompt, token, _, _) = helpers::setup_core();
+        //
+        // owner say something...
+        let game_id_0: u128 = 0;
+        helpers::set_caller(OWNER());
+        prompt.prompt("", Option::Some(game_id_0));
+        // no game was minted
+        assert_eq!(token.total_supply(), 0, "total_supply()");
+        // player zero was created
+        let player_0: Player = PlayerImpl::get_player(@world, 0).unwrap();
+        assert_eq!(player_0.address, ZERO(), "player_0.address");
+        assert_eq!(player_0.game_id, 0, "player_0.game_id");
+        // system command: g_game_id
+        prompt.prompt("g_game_id", Option::Some(game_id_0));
+// helpers::print_player_story_last_line(@world, game_id_0);
+        assert_eq!(helpers::player_story_len(@world, game_id_0), 3, "said");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_0), "+sys+0");
+    }
+
+    #[test]
+    #[should_panic(expected: ('PROMPT: Invalid caller','ENTRYPOINT_FAILED'))]
+    fn test_prompt_editor_not_admin() {
+        let (_, _, prompt, _, player_address_1, _) = helpers::setup_core();
+        //
+        // player_1 say something...
+        helpers::set_caller(player_address_1);
+        prompt.prompt("hello", Option::Some(0));
+    }
 }

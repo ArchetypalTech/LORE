@@ -2,59 +2,131 @@ use core::option::{OptionTraitImpl};
 
 #[starknet::interface]
 pub trait IPrompt<T> {
-    fn prompt(ref self: T, cmd: ByteArray);
+    fn prompt(ref self: T, cmd: ByteArray, game_id: Option<u128>);
 }
 
 #[dojo::contract]
 pub mod prompt {
     use super::{IPrompt};
-    use starknet::{get_caller_address};
-    use dojo::{world::{WorldStorage}};
+    use starknet::{ContractAddress, get_caller_address};
+    use dojo::{
+        world::{WorldStorage, IWorldDispatcherTrait}
+    };
     use lore::{
         models::{
-            player::{PlayerImpl}
+            player::{Player, PlayerImpl},
+            token_config::{
+                PlayerAccountTrait,
+                ContractConfigTrait,
+            },
         },
         lib::{
             a_lexer::{lexer},
-            random::{random_text},
             c_handler::{handle_command},
+            random::{random_text},
             errors_texts_output::{ErrorOutputterImpl},
+            dns::{DnsTrait, IGameTokenDispatcherTrait},
+            dns::{SELECTORS},
         },
     };
 
-    #[constructor]
-    fn constructor(
-        ref self: ContractState,
-    ) { // TODO:  Panicked with ("Contract `prompt` does NOT have WRITER role on model (or its
-    // namespace) `Dict`", 0x454e545259504f494e545f4641494c4544 ('ENTRYPOINT_FAILED'),
-    // 0x434f4e5354525543544f525f4641494c4544 ('CONSTRUCTOR_FAILED'), caused in helper, need to fix
-    // test permissions let mut world: WorldStorage = self.world(@"lore");
-    // init_dictionary(world);
+    mod Errors {
+        pub const INVALID_CALLER: felt252   = 'PROMPT: Invalid caller';
+        pub const NOT_YOUR_GAME: felt252    = 'PROMPT: Not your game';
+    }
+
+    fn dojo_init(ref self: ContractState) {
+        // TODO: move initializations here
+        // let mut world: WorldStorage = self.world(@"lore");
+        // init_dictionary(world);
     }
 
     #[abi(embed_v0)]
     pub impl PromptImpl of IPrompt<ContractState> {
-        fn prompt(ref self: ContractState, cmd: ByteArray) {
+        fn prompt(ref self: ContractState, cmd: ByteArray, game_id: Option<u128>) {
             let mut world: WorldStorage = self.world(@"lore");
 
-            // TODO: get from prompt()
-            // TODO: validate ownership
-            let game_id: u128 = 0;
+            let player = self.get_player(ref world, game_id);
 
-            let player = PlayerImpl::caller_as_player(ref world, get_caller_address(), game_id);
-
-            player.add_command_text(ref world, game_id, cmd.clone());
-            match (lexer::parse(cmd, world, player, game_id)) {
-                Result::Ok(result) => {
-                    let res = handle_command(@result, ref world, player);
-                    if !res.is_ok() {
-                        let error = res.unwrap_err();
-                        // println!("Error: {:?}", error);
-                        ErrorOutputterImpl::output_error(error, player, ref world, game_id);
-                    }
-                },
-                Result::Err(_r) => { player.say(ref world, game_id, random_text(world, random_error())); },
+            // empty prompt, do nothing (good to initialize a game)
+            if (cmd.len() > 0) {
+                player.add_command_text(ref world, cmd.clone());
+                match (lexer::parse(cmd, world, player)) {
+                    Result::Ok(result) => {
+                        let res = handle_command(@result, ref world, @player);
+                        if !res.is_ok() {
+                            let error = res.unwrap_err();
+                            // println!("Error: {:?}", error);
+                            ErrorOutputterImpl::output_error(error, player, ref world);
+                        }
+                    },
+                    Result::Err(_r) => { player.say(ref world, random_text(world, random_error())); },
+                }
             }
+        }
+    }
+
+
+    //-----------------------------------
+    // Internal
+    //
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        fn get_player(self: @ContractState, ref world: WorldStorage, game_id: Option<u128>) -> Player {
+            let player_address: ContractAddress = get_caller_address();
+            let game_id: u128 = match game_id {
+                Option::Some(game_id) => {
+                    // player was provided
+                    if game_id == 0 {
+                        // Editor mode: admin only
+                        self._assert_caller_is_admin(@world);
+                    } else {
+                        // validate ownership
+                        assert(
+                            world.game_token_dispatcher().is_owner_of(player_address, game_id.into())
+                            || self._caller_is_admin(@world),
+                            Errors::NOT_YOUR_GAME
+                        );
+                        // set as current
+                        PlayerAccountTrait::switch_game_id(ref world, player_address, game_id);
+                    }
+                    // ok to play...
+                    (game_id)
+                },
+                Option::None => {
+                    // player was not provided
+                    // get current game
+                    let mut game_id: u128 = PlayerAccountTrait::current_game_id(@world, player_address);
+                    if game_id == 0 {
+                        // create new game
+                        game_id = world.game_token_dispatcher().create_game(player_address);
+                    }
+                    (game_id)
+                }
+            };
+            let player = PlayerImpl::caller_as_player(ref world, player_address, game_id);
+            (player)
+        }
+
+        //
+        // assertions
+        //
+        #[inline(always)]
+        fn _assert_caller_is_owner(self: @ContractState, world: @WorldStorage) {
+            assert(self._caller_is_owner(world), Errors::INVALID_CALLER);
+        }
+        #[inline(always)]
+        fn _assert_caller_is_admin(self: @ContractState, world: @WorldStorage) {
+            assert(self._caller_is_admin(world), Errors::INVALID_CALLER);
+        }
+        fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
+            ((*world.dispatcher).is_owner(SELECTORS::PROMPT, starknet::get_caller_address()))
+        }
+        fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
+            (
+                self._caller_is_owner(world) ||
+                ContractConfigTrait::is_admin(world, starknet::get_contract_address(), starknet::get_caller_address())
+            )
         }
     }
 
