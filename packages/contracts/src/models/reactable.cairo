@@ -144,22 +144,22 @@ pub impl ReactableComponent of Component<Reactable> {
         match action.action_fn {
             ReactableActions::SetVisible => {
                 self.is_visible = !self.is_visible;
-                self.store(ref world, *command.game_id);
+                self.store(ref world, *player.game_id);
                 return Result::Ok(());
             },
             ReactableActions::ReadRandomDescription => {
-                player.say(ref world, *command.game_id, self.get_random_description(command, world));
+                player.say(ref world, self.get_random_description(command, world));
                 return Result::Ok(());
             },
             ReactableActions::ReadFirstDescription => {
-                player.say(ref world, *command.game_id, self.get_first_description(world));
+                player.say(ref world, self.get_first_description(world));
                 return Result::Ok(());
             },
             ReactableActions::ReadSpecificDescription => {
                 // Get idxs from the action map entrypoints
                 let (idx1, _idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
                 // Say the description
-                player.say(ref world, *command.game_id, ReactableImpl::get_specific_description(@self, idx1, world));
+                player.say(ref world, ReactableImpl::get_specific_description(@self, idx1, world));
                 return Result::Ok(());
             },
         }
@@ -309,7 +309,6 @@ pub mod tests {
                     target: 0,
                 },
             ],
-            game_id: 0,
         };
         let (prefab, world, _, _) = Reactable_create_prefab_world();
         let read_reactable: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();

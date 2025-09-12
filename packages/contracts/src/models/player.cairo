@@ -24,6 +24,8 @@ pub struct Player {
     /// Properties ///
     /// The address of the player
     pub address: ContractAddress,
+    /// The game instance being played
+    pub game_id: u128,
     /// The location of the player
     pub location: felt252,
     /// If the player is in debug mode
@@ -67,14 +69,14 @@ pub impl PlayerImpl of PlayerTrait {
     // used by prompt() and tests
     fn caller_as_player(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Player {
         // make sure base player exists
-        let mut player: Player = match Self::get_player(@world, SINGLETON_PLAYER_INST, 0) {
+        let mut player: Player = match Self::get_player(@world, 0) {
             Option::Some(player) => player,
-            Option::None => Self::create_player_entity(ref world, SINGLETON_PLAYER_INST, address),
+            Option::None => Self::create_player_entity(ref world),
         };
         // if playing game instance
         if (game_id != 0) {
             if (!GameModelImpl::<Player>::has_game_model(@world, player.inst, game_id)) {
-                player = Self::create_player_game_instance(ref world, @player, game_id);
+                player = Self::create_player_game_instance(ref world, @player, address, game_id);
             } else {
                 player = world.read_game_model(player.inst, game_id);
             }
@@ -82,7 +84,8 @@ pub impl PlayerImpl of PlayerTrait {
         (player)
     }
 
-    fn get_player(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Player> {
+    fn get_player(world: @WorldStorage, game_id: u128) -> Option<Player> {
+        let inst: felt252 = SINGLETON_PLAYER_INST;
         let player: Player = world.read_game_model(inst, game_id);
         if (!player.is_player) {
             return Option::None;
@@ -92,16 +95,17 @@ pub impl PlayerImpl of PlayerTrait {
 
     // mainly for tests
     // the game world should have a player component
-    fn create_player_entity(ref world: WorldStorage, inst: felt252, address: ContractAddress) -> Player {
+    fn create_player_entity(ref world: WorldStorage) -> Player {
         // create player entity
         let mut entity: Entity = Default::default();
-        entity.inst = inst;
+        entity.inst = SINGLETON_PLAYER_INST;
         entity.is_entity = true;
         entity.name = "Player";
         world.write_model(@entity);
         // create the player component
         let mut player: Player = Component::add_component(ref world, entity.inst);
-        player.address = address;
+        // player.address = address; // ideally, should be the deployer
+        player.game_id = 0;
         player.store(ref world, 0);
         // create the reactable
         let mut reactable: Reactable = Component::add_component(ref world, entity.inst);
@@ -111,43 +115,46 @@ pub impl PlayerImpl of PlayerTrait {
         let descr1 = DescriptionText { inst: entity.inst, key: 0, text: "Looks like a visitor" };
         world.write_model(@descr1);
         // initialize player story
-        player.say(ref world, 0, "You feel light, and shiny, in the head");
+        player.say(ref world, "You feel light, and shiny, in the head");
         // return the player
         (player)
     }
 
-    fn create_player_game_instance(ref world: WorldStorage, player: @Player, game_id: u128) -> Player {
+    fn create_player_game_instance(ref world: WorldStorage, base_player: @Player, address: ContractAddress, game_id: u128) -> Player {
         // clone a new game instance player
-        world.write_game_model(player, game_id);
+        let mut new_player: Player = base_player.clone();
+        new_player.address = address;
+        new_player.game_id = game_id;
+        world.write_game_model(@new_player, game_id);
         // initialize player story
-        player.say(ref world, game_id, "You feel light, and shiny, in the head");
+        new_player.say(ref world, "You feel light, and shiny, in the head");
         // return the player
-        (player.clone())
+        (new_player)
     }
 
-    fn describe_room(self: @Player, ref world: WorldStorage, game_id: u128) -> Result<(), Error> {
-        let context = self.get_context(@world, game_id);
-        let room = self.get_room_entity(@world, game_id);
+    fn describe_room(self: @Player, ref world: WorldStorage) -> Result<(), Error> {
+        let context = self.get_context(@world);
+        let room = self.get_room_entity(@world);
         if room.is_none() {
             return Result::Err(Error::NoRoom);
         }
-        self.say(ref world, game_id, format!("{}", room.unwrap().name));
+        self.say(ref world, format!("{}", room.unwrap().name));
         for item in context {
             // Don't add the player to the description
             if (item.inst == *self.inst) {
                 continue;
             }
-            let reactable: Option<Reactable> = Component::get_component(@world, item.inst, game_id);
+            let reactable: Option<Reactable> = Component::get_component(@world, item.inst, *self.game_id);
             match reactable {
                 Option::Some(mut reactable) => {
                     if reactable.is_visible {
                         if reactable.already_shown {
-                            self.say(ref world, game_id, format!("{}", reactable.new_entry));
+                            self.say(ref world, format!("{}", reactable.new_entry));
                         } else {
                             let description = reactable.get_first_description(world);
-                            self.say(ref world, game_id, format!("{}", description));
+                            self.say(ref world, format!("{}", description));
                             reactable.already_shown = true;
-                            reactable.store(ref world, game_id);
+                            reactable.store(ref world, *self.game_id);
                         }
                     }
                 },
@@ -157,41 +164,41 @@ pub impl PlayerImpl of PlayerTrait {
         Result::Ok(())
     }
 
-    fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252, game_id: u128) {
+    fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252) {
         self.location = room_id;
         let player_entity: Entity = self.entity(@world);
         let room_entity: Entity = EntityImpl::get_entity(@world, room_id).unwrap();
-        player_entity.set_parent(ref world, @room_entity, game_id);
-        self.store(ref world, game_id);
+        player_entity.set_parent(ref world, @room_entity, self.game_id);
+        self.store(ref world, self.game_id);
         if self.use_debug {
-            self.say(ref world, game_id, format!("You {:?} enter {:?}", player_entity, room_entity));
+            self.say(ref world, format!("You {:?} enter {:?}", player_entity, room_entity));
         }
     }
 
     // TODO: improve name and better description
-    fn say(self: @Player, ref world: WorldStorage, game_id: u128, text: ByteArray) {
+    fn say(self: @Player, ref world: WorldStorage, text: ByteArray) {
         let increase: CounterType = 1;
         
         // PlayerStory is saved by player instance
-        let mut player_story: PlayerStory = world.read_model(game_id);
+        let mut player_story: PlayerStory = world.read_model(*self.game_id);
         player_story.story_line += increase;
         world.write_model(@player_story);
 
         // StoryLine is saved by player instance
         world.write_model(@StoryLine {
-            game_id,
+            game_id: *self.game_id,
             key: player_story.story_line,
             line: text,
         });
     }
 
-    fn add_command_text(self: @Player, ref world: WorldStorage, game_id: u128, text: ByteArray) {
-        Self::say(self, ref world, game_id, text);
+    fn add_command_text(self: @Player, ref world: WorldStorage, text: ByteArray) {
+        Self::say(self, ref world, text);
     }
 
-    fn get_room_entity(self: @Player, world: @WorldStorage, game_id: u128) -> Option<Entity> {
+    fn get_room_entity(self: @Player, world: @WorldStorage) -> Option<Entity> {
         let player_entity: Entity = self.entity(world);
-        let parent = player_entity.get_parent(world, game_id);
+        let parent = player_entity.get_parent(world, *self.game_id);
         if parent.is_none() {
             return Option::None;
         }
@@ -199,12 +206,12 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     // Get the 1st level context of the room
-    fn get_context(self: @Player, world: @WorldStorage, game_id: u128) -> Array<Entity> {
-        match self.get_room_entity(world, game_id) {
+    fn get_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
+        match self.get_room_entity(world) {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children = room.get_children(world, game_id);
+                let children = room.get_children(world, *self.game_id);
                 // Go over 1st level children
                 for child in children {
                     context.append(child.clone());
@@ -216,21 +223,21 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     // Get the full context of the room
-    fn get_full_context(self: @Player, world: @WorldStorage, game_id: u128) -> Array<Entity> {
-        match self.get_room_entity(world, game_id) {
+    fn get_full_context(self: @Player, world: @WorldStorage) -> Array<Entity> {
+        match self.get_room_entity(world) {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children = room.get_children(world, game_id);
+                let children = room.get_children(world, *self.game_id);
                 // Go over 1st level children
                 for child in children {
                     context.append(child.clone());
                     // Go over 2nd level children
-                    let children_2 = child.get_children(world, game_id);
+                    let children_2 = child.get_children(world, *self.game_id);
                     for child_2 in children_2 {
                         context.append(child_2.clone());
                         // Go over 3rd level children
-                        let children_3 = child_2.get_children(world, game_id);
+                        let children_3 = child_2.get_children(world, *self.game_id);
                         for child_3 in children_3 {
                             context.append(child_3.clone());
                         }
@@ -243,13 +250,13 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     // Get the player personal inventory container component
-    fn get_personal_container(self: @Player, ref world: WorldStorage, game_id: u128) -> Option<Container> {
-        (match ContainerComponent::get_component(@world, *self.inst, game_id) {
+    fn get_personal_container(self: @Player, ref world: WorldStorage) -> Option<Container> {
+        (match ContainerComponent::get_component(@world, *self.inst, *self.game_id) {
             Option::Some(c) => {
                 (Option::Some(c))
             },
             Option::None => {
-                self.say(ref world, game_id, format!("You don't have a personal inventory container"));
+                self.say(ref world, format!("You don't have a personal inventory container"));
                 (Option::None)
             },
         })
@@ -364,7 +371,7 @@ mod tests {
         let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         assert(player.is_player, 'player is player');
 
-        player.say(ref world, game_id, "hello");
+        player.say(ref world, "hello");
         let story: PlayerStory = world.read_model(game_id);
         // ("story: {:?}", story);
         assert(story.story_line == 2, 'story has two entries'); // first entry is intro text
@@ -375,8 +382,8 @@ mod tests {
         assert(story_line.line == test_text, 'story has "hello"');
     }
 
-    fn _player_location(world: @WorldStorage, player: @Player, game_id: u128) -> felt252 {
-        let player: Player = world.read_game_model(*player.inst, game_id);
+    fn _player_location(world: @WorldStorage, player: @Player) -> felt252 {
+        let player: Player = world.read_game_model(*player.inst, *player.game_id);
         (player.location)
     }
 
@@ -394,12 +401,12 @@ mod tests {
         assert_eq!(player.inst, 'Player');
         assert_eq!(player.inst, player_1.inst);
         assert_eq!(player.inst, player_2.inst);
-        assert_eq!(_player_location(@world, @player, 0), 0, "before move");
-        assert_eq!(_player_location(@world, @player, game_id_1), 0, "before move");
-        assert_eq!(_player_location(@world, @player, game_id_2), 0, "before move");
-        assert!(player.get_room_entity(@world, 0).is_none(), "before move");
-        assert!(player.get_room_entity(@world, game_id_1).is_none(), "before move");
-        assert!(player.get_room_entity(@world, game_id_2).is_none(), "before move");
+        assert_eq!(_player_location(@world, @player), 0, "before move");
+        assert_eq!(_player_location(@world, @player_1), 0, "before move");
+        assert_eq!(_player_location(@world, @player_2), 0, "before move");
+        assert!(player.get_room_entity(@world).is_none(), "before move");
+        assert!(player_1.get_room_entity(@world).is_none(), "before move");
+        assert!(player_2.get_room_entity(@world).is_none(), "before move");
         // create some rooms
         let room_1_entity: Entity = EntityImpl::create_entity(ref world, "room_1");
         let room_2_entity: Entity = EntityImpl::create_entity(ref world, "room_2");
@@ -412,14 +419,14 @@ mod tests {
         world.write_model(@DescriptionText { inst: room_2_entity.inst, key: 0, text: "something else" });
         //
         // move game instance players
-        player.move_to_room(ref world, room_2_entity.inst, game_id_1);
-        player.move_to_room(ref world, room_1_entity.inst, game_id_2);
-        assert_eq!(_player_location(@world, @player, 0), 0, "moved game inst");
-        assert_eq!(_player_location(@world, @player, game_id_1), room_2_entity.inst, "moved game inst");
-        assert_eq!(_player_location(@world, @player, game_id_2), room_1_entity.inst, "moved game inst");
-        assert_eq!(player.get_room_entity(@world, 0).is_none(), true, "moved game inst");
-        assert_eq!(player.get_room_entity(@world, game_id_1).unwrap().inst, room_2_entity.inst, "moved game inst");
-        assert_eq!(player.get_room_entity(@world, game_id_2).unwrap().inst, room_1_entity.inst, "moved game inst");
+        player_1.move_to_room(ref world, room_2_entity.inst);
+        player_2.move_to_room(ref world, room_1_entity.inst);
+        assert_eq!(_player_location(@world, @player), 0, "moved game inst");
+        assert_eq!(_player_location(@world, @player_1), room_2_entity.inst, "moved game inst");
+        assert_eq!(_player_location(@world, @player_2), room_1_entity.inst, "moved game inst");
+        assert_eq!(player.get_room_entity(@world).is_none(), true, "moved game inst");
+        assert_eq!(player_1.get_room_entity(@world).unwrap().inst, room_2_entity.inst, "moved game inst");
+        assert_eq!(player_2.get_room_entity(@world).unwrap().inst, room_1_entity.inst, "moved game inst");
     }
 
     fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {
@@ -430,31 +437,35 @@ mod tests {
     #[test]
     fn test_player_say() {
         let (mut world, _, _, _, player_address, _) = helpers::setup_core();
+        let game_id_0: u128 = 0;
         let game_id_1: u128 = 123;
         let game_id_2: u128 = 456;
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_address, 0);
-        let _player_1: Player = PlayerImpl::caller_as_player(ref world, player_address, game_id_1);
-        assert_eq!(_story_len(@world, 0), 1, "story_start");
+        let player_0: Player = PlayerImpl::caller_as_player(ref world, player_address, 0);
+        let player_1: Player = PlayerImpl::caller_as_player(ref world, player_address, game_id_1);
+        assert_eq!(player_0.game_id, game_id_0, "story_start");
+        assert_eq!(player_1.game_id, game_id_1, "story_start");
+        assert_eq!(_story_len(@world, game_id_0), 1, "story_start");
         assert_eq!(_story_len(@world, game_id_1), 1, "story_start");
         assert_eq!(_story_len(@world, game_id_2), 0, "story_start");
         // say something...
-        player.say(ref world, 0, "hello");
-        player.say(ref world, game_id_1, "world");
-        player.say(ref world, game_id_1, "world");
-        assert_eq!(_story_len(@world, 0), 2, "said");
+        player_0.say(ref world, "hello");
+        player_1.say(ref world, "world");
+        player_1.say(ref world, "world");
+        assert_eq!(_story_len(@world, game_id_0), 2, "said");
         assert_eq!(_story_len(@world, game_id_1), 3, "said");
         assert_eq!(_story_len(@world, game_id_2), 0, "said");
         // create new player
-        let _player_2: Player = PlayerImpl::caller_as_player(ref world, player_address, game_id_2);
+        let player_2: Player = PlayerImpl::caller_as_player(ref world, player_address, game_id_2);
+        assert_eq!(player_2.game_id, game_id_2, "story_start");
         assert_eq!(_story_len(@world, game_id_2), 1, "new_player");
         // say more...
-        player.say(ref world, game_id_1, "burp");
-        player.say(ref world, game_id_2, "burp");
-        player.say(ref world, game_id_2, "blah");
-        player.say(ref world, game_id_2, "blah");
-        player.say(ref world, game_id_2, "blah");
-        player.say(ref world, game_id_2, "blah");
-        assert_eq!(_story_len(@world, 0), 2, "said_more");
+        player_1.say(ref world, "burp");
+        player_2.say(ref world, "blah");
+        player_2.say(ref world, "blah");
+        player_2.say(ref world, "blah");
+        player_2.say(ref world, "blah");
+        player_2.say(ref world, "blah");
+        assert_eq!(_story_len(@world, game_id_0), 2, "said_more");
         assert_eq!(_story_len(@world, game_id_1), 4, "said_more");
         assert_eq!(_story_len(@world, game_id_2), 6, "said_more");
     }

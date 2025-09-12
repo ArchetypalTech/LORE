@@ -38,10 +38,10 @@ pub mod prompt {
                 Result::Ok(result) => {
                     let res = handle_command(result, world, player);
                     if !res.is_ok() {
-                        player.say(ref world, game_id, random_text(world, random_error()));
+                        player.say(ref world, random_text(world, random_error()));
                     }
                 },
-                Result::Err(_r) => { player.say(ref world, game_id, random_text(world, random_error())); },
+                Result::Err(_r) => { player.say(ref world, random_text(world, random_error())); },
             }
         }
     }

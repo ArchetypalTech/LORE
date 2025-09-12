@@ -448,8 +448,8 @@ mod tests {
         let _result = TriggerImpl::register_trigger(ref world, @trigger);
 
         // move player to room entity 1
-        let mut playerR1: Player = world.read_model(player.inst);
-        playerR1.move_to_room(ref world, room_entity_1.inst, game_id);
+        let mut player_r1: Player = world.read_model(player.inst);
+        player_r1.move_to_room(ref world, room_entity_1.inst);
 
         assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
         let result = trigger.evaluate_trigger(ref world, game_id);
@@ -459,7 +459,7 @@ mod tests {
         assert(trigger.is_executed(@world, game_id), 'trigger executed');
 
         // move player to room entity 2
-        player.move_to_room(ref world, room_entity_2.inst, game_id);
+        player.move_to_room(ref world, room_entity_2.inst);
         player_entity.set_parent(ref world, @room_entity_2, game_id);
 
         let result2 = trigger.evaluate_trigger(ref world, game_id);
@@ -487,8 +487,8 @@ mod tests {
         let _result = TriggerImpl::register_trigger(ref world, @trigger);
 
         // move player to room entity
-        let mut playerR1: Player = world.read_model(player.inst);
-        playerR1.move_to_room(ref world, room_entity_1.inst, game_id);
+        let mut player_r1: Player = world.read_model(player.inst);
+        player_r1.move_to_room(ref world, room_entity_1.inst);
 
         assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
         let result = trigger.evaluate_trigger(ref world, game_id);

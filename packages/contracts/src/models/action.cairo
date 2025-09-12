@@ -114,20 +114,20 @@ pub impl ActionImpl of ActionTrait {
     }
 
     fn process_action(
-        mut self: Action, ref world: WorldStorage, player: @Player, context: @TriggerContext, game_id: u128,
+        mut self: Action, ref world: WorldStorage, player: @Player, context: @TriggerContext,
     ) -> (Result<(), Error>, bool, Result<(), Error>) {
-        if self.is_executed(@world, game_id) {
+        if self.is_executed(@world, *player.game_id) {
             // Action has already been executed, don't do anything
             // return condition as false.
             if *player.use_debug {
-                player.say(ref world, game_id, format!("Action has already been executed"));
+                player.say(ref world, format!("Action has already been executed"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
         // Check if the action is called by the correct entity
         if self.executor != *context.inventory_object {
             if *player.use_debug {
-                player.say(ref world, game_id, format!("Action is not called by the correct entity"));
+                player.say(ref world, format!("Action is not called by the correct entity"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
@@ -141,10 +141,10 @@ pub impl ActionImpl of ActionTrait {
         // First check if the trigger/s are valid
         for trigger_key in self.trigger.clone() {
             let trigger: @Trigger = @world.read_model(trigger_key);
-            let result_opt = trigger.evaluate_trigger(ref world, game_id);
+            let result_opt = trigger.evaluate_trigger(ref world, *player.game_id);
             if *player.use_debug {
                 player
-                    .say(ref world, game_id, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
+                    .say(ref world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
             }
             if result_opt.is_err() {
                 result_t = result_opt;
@@ -155,10 +155,10 @@ pub impl ActionImpl of ActionTrait {
         // Then evaluate all conditions
         for condition_key in self.conditions.clone() {
             let condition: Condition = world.read_model(condition_key);
-            result = condition.evaluate_condition(@world, context, game_id);
+            result = condition.evaluate_condition(@world, context, *player.game_id);
             if *player.use_debug {
                 player
-                    .say(ref world, game_id, format!("Result for condition: {:?}, is: {:?}", condition, result));
+                    .say(ref world, format!("Result for condition: {:?}, is: {:?}", condition, result));
             }
             if !result {
                 break; // If a single condition fails, break out of the loop
@@ -169,11 +169,11 @@ pub impl ActionImpl of ActionTrait {
         if result_t.is_ok() && result {
             for effect_key in self.effects.clone() {
                 let effect: Effect = world.read_model(effect_key);
-                let result_pos = effect.apply_effect(ref world, context, game_id);
+                let result_pos = effect.apply_effect(ref world, context, *player.game_id);
                 if *player.use_debug {
                     player
                         .say(
-                            ref world, game_id, format!("Result for effect: {:?}, is: {:?}", effect, result_pos),
+                            ref world, format!("Result for effect: {:?}, is: {:?}", effect, result_pos),
                         );
                 }
                 if result_pos.is_err() {
@@ -188,13 +188,13 @@ pub impl ActionImpl of ActionTrait {
         }
         // If all conditions are met, mark action as executed
         if (result_t.is_ok() && result && result_e.is_ok()) {
-            self.set_executed(ref world, game_id, true);
+            self.set_executed(ref world, *player.game_id, true);
             for response in self.success_response.clone() {
-                player.say(ref world, game_id, response);
+                player.say(ref world, response);
             }
         } else {
             for response in self.failing_response.clone() {
-                player.say(ref world, game_id, response);
+                player.say(ref world, response);
             }
         }
         (result_t, result, result_e)
@@ -655,9 +655,9 @@ mod tests {
 
         // EXECUTE ACTION
         // 1. move player to room 2
-        player1.move_to_room(ref world, room_2.inst, game_id);
+        player1.move_to_room(ref world, room_2.inst);
         // 2. Execute action
-        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context, game_id);
+        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context);
         // // The one below are for testing individually
         //let trig_res = trigger.evaluate_trigger(ref world, game_id);
         //let cond_res = condition.evaluate_condition(@world, context);
@@ -850,7 +850,7 @@ mod tests {
         // 1. move player to room 1
         player1.location = room_1.inst;
         player1.store(ref world, game_id);
-        player1.move_to_room(ref world, room_1.inst, game_id);
+        player1.move_to_room(ref world, room_1.inst);
         let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
         assert(!action.is_executed(@world, game_id), 'action not executed yet');
 
@@ -863,9 +863,9 @@ mod tests {
         // 3. Check if item is owned by player1
         assert(itemInv.owner_id == player_container.inst, 'Item should be owned by player1');
         // 4. Move player to room 2
-        player1.move_to_room(ref world, room_2.inst, game_id);
+        player1.move_to_room(ref world, room_2.inst);
         // 5. Execute action
-        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context, game_id);
+        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context);
         // // The one below are for testing individually
         //let trig_res = trigger.evaluate_trigger(ref world, game_id);
         //let cond_res = condition.evaluate_condition(@world, context);

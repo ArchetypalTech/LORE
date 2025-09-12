@@ -14,8 +14,6 @@ pub struct Command {
     pub action_type: u8,
     /// Array of tokens in the command
     pub tokens: Array<Token>,
-    /// Game ID
-    pub game_id: u128,
 }
 
 #[derive(Clone, Drop, Serde, Debug)]

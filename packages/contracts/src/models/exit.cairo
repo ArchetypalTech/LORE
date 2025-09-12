@@ -113,7 +113,7 @@ pub impl ExitComponent of Component<Exit> {
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
-                    player.say(ref world, *command.game_id, format!("You go to {:?}", self));
+                    player.say(ref world, format!("You go to {:?}", self));
                 }
 
                 let mut matchesName = false;
@@ -147,7 +147,7 @@ pub impl ExitComponent of Component<Exit> {
                 }
 
                 // Move player to room
-                player.clone().move_to_room(ref world, self.leads_to, *command.game_id);
+                player.clone().move_to_room(ref world, self.leads_to);
 
                 // Do action
                 // Check if the entity of the exit has an action
@@ -179,12 +179,12 @@ pub impl ExitComponent of Component<Exit> {
                         };
 
                         let (_trig_res, _cond_res, _eff_res) = action.process_action(
-                            ref world, player, @context, *command.game_id,
+                            ref world, player, @context,
                         );
                     };
                 }
                 // Describe room
-                let _ = player.describe_room(ref world, *command.game_id);
+                let _ = player.describe_room(ref world);
                 return Result::Ok(());
             },
         }
