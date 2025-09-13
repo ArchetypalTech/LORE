@@ -447,8 +447,11 @@ mod tests {
         property: ByteArray,
         value: Array<(ByteArray, u32)>,
         n_value: u32,
+        hex_value: felt252,
     ) -> Effect {
-        Effect { inst, key, name, target, effect_type, component, property, value, n_value }
+        Effect {
+            inst, key, name, target, effect_type, component, property, value, n_value, hex_value,
+        }
     }
 
     fn create_test_action(
@@ -584,6 +587,7 @@ mod tests {
 
         let name: ByteArray = "Effect name";
         let name2: ByteArray = "Effect name2";
+        let hex_value: felt252 = 0;
 
         // Create effects
         let mut effect = create_test_effect(
@@ -596,6 +600,7 @@ mod tests {
             property,
             new_description.clone(),
             0,
+            hex_value,
         );
         let mut effect2 = create_test_effect(
             door.inst,
@@ -607,6 +612,7 @@ mod tests {
             property2,
             new_enterable,
             0,
+            hex_value,
         );
         world.write_model(@effect);
         world.write_model(@effect2);
@@ -779,6 +785,7 @@ mod tests {
         let e_key2: felt252 = 2;
         let name: ByteArray = "Effect name";
         let name2: ByteArray = "Effect name2";
+        let hex_value: felt252 = 0;
 
         // Create effects
         let mut effect = create_test_effect(
@@ -791,6 +798,7 @@ mod tests {
             property,
             new_description.clone(),
             0,
+            hex_value,
         );
         let mut effect2 = create_test_effect(
             door.inst,
@@ -802,6 +810,7 @@ mod tests {
             property2,
             new_enterable.clone(),
             0,
+            hex_value,
         );
         world.write_model(@effect);
         world.write_model(@effect2);

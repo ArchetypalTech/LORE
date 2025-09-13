@@ -87,6 +87,7 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "play", TokenType::Verb, 40).unwrap();
     add_to_dictionary(world, "validate", TokenType::Verb, 41).unwrap();
     add_to_dictionary(world, "approach", TokenType::Verb, 42).unwrap();
+    add_to_dictionary(world, "praise", TokenType::Verb, 43).unwrap();
 
     // directions
     add_to_dictionary(world, "north", TokenType::Direction, 1).unwrap();

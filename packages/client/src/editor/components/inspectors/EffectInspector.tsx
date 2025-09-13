@@ -16,6 +16,8 @@ import { stringCairoEnum } from "@/editor/lib/schemas";
 import { syncPropertyRegistry } from "../../data/editor.data";
 import { BigNumberish } from "starknet";
 import { CollapsibleComponent } from "../CollapsibleComponent";
+import { EntitySelector } from "../EntitySelector";
+import { useEditorData } from "../../data/editor.data";
 
 // Individual Effect Item Component
 const EffectItem = ({
@@ -54,6 +56,8 @@ const EffectItem = ({
     label: name,
   }));
 
+  const { dataPool } = useEditorData();
+
   return (
     <CollapsibleComponent
       key={`${effectObj.inst}-${effectObj.key}`}
@@ -66,10 +70,11 @@ const EffectItem = ({
           value={effectObj.name}
           onChange={handleInputChange(idx)}
         />
-        <Input
+        <EntitySelector
           id="target"
           value={effectObj.target.toString()}
           onChange={handleInputChange(idx)}
+          dataPool={dataPool}
         />
         <CairoEnumSelect
           id="effectType"
@@ -102,6 +107,12 @@ const EffectItem = ({
           id="numeric_value"
           value={effectObj.n_value.toString()}
           onChange={handleInputChange(idx)}
+        />
+        <EntitySelector
+          id="hex_value"
+          value={effectObj.hex_value.toString()}
+          onChange={handleInputChange(idx)}
+          dataPool={dataPool}
         />
       </Inspector>
     </CollapsibleComponent>
@@ -139,6 +150,9 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       },
       numeric_value: (e, updatedObject) => {
         updatedObject.n_value = e.target.value;
+      },
+      hex_value: (e, updatedObject) => {
+        updatedObject.hex_value = e.target.value;
       },
     },
   });

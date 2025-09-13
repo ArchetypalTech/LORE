@@ -159,7 +159,6 @@ const publishPlayer = async (player: Player) => {
 		player.is_player ?? true,
 		player.address ? num.toBigInt(player.address.toString()) : num.toBigInt(getPlayerAddress().toString()),
 		player.location ? num.toBigInt(player.location.toString()) : num.toBigInt("0"),
-		player.story_line ? num.toBigInt(player.story_line.toString()) : num.toBigInt("0"),
 		player.use_debug ?? false,
 	];
 	await dispatchDesignerCall("create_player", [playerData]);
@@ -328,6 +327,7 @@ const publishEffect = async (
 				num.toBigInt(i.toString() ?? 0),
 			]),
 			num.toBigInt(effect.n_value.toString() ?? 0),
+			num.toBigInt(effect.hex_value.toString() ?? num.toBigInt("0")),
 		];
 		await dispatchDesignerCall("create_effect", [preparedEffect]);
 	}
@@ -486,13 +486,9 @@ export const registerPropertyRegistry = async () => {
 	}
 };
 
-export let alreadyDone = false;
 const publishRegisterPropertyRegistry = async () => {
-	if (alreadyDone == false) {
 		let done = true;
 		await dispatchDesignerCall("register_property_registry", [done]);
-		alreadyDone = true;
-	}
 };
 
 /**

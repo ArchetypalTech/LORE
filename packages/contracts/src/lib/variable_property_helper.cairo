@@ -2,8 +2,8 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         index::{
-            DescriptionText,
-            PropertyRegistry,
+            Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Player,
+            PropertyRegistry, Effect,
         },
         area::{Area, AreaComponent},
         exit::{Exit},
@@ -537,11 +537,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     fn set_inventory_item_property(
         ref component: InventoryItem,
         ref world: WorldStorage,
-        name: @ByteArray,
-        effect_type: @EffectType,
+        effect: @Effect,
         property: @PropertyRegistry,
-        new_value: Span<(ByteArray, u32)>,
-        num_value: u32,
         game_id: u128,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
@@ -555,13 +552,13 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if @prop.name == name {
+            if prop.name == effect.property {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
-                        if name == @owner_id {
-                            let (value, _index) = new_value[0];
-                            component.owner_id = value.to_felt252_word().unwrap();
+                        if effect.property == @owner_id {
+                            let new_owner_id = effect.hex_value.clone();
+                            component.owner_id = new_owner_id;
                             // move item to new owner
                             let new_owner_container: Container = world.read_game_model(component.owner_id, game_id);
                             let res = new_owner_container.put_item_in(ref world, ref component, game_id);
@@ -573,25 +570,25 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                     result = Result::Err(err);
                                 },
                             }
-                        } else if name == @can_be_picked_up {
-                            let (value, _index) = new_value[0];
+                        } else if effect.property == @can_be_picked_up {
+                            let (value, _index) = effect.value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_picked_up = new_var_value;
                             success = true;
-                        } else if name == @can_go_in_container {
-                            let (value, _index) = new_value[0];
+                        } else if effect.property == @can_go_in_container {
+                            let (value, _index) = effect.value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_go_in_container = new_var_value;
                             success = true;
-                        } else if name == @quantity {
-                            match effect_type.clone() {
+                        } else if effect.property == @quantity {
+                            match effect.effect_type.clone() {
                                 EffectType::AddQuantity => {
-                                    component.quantity += num_value;
+                                    component.quantity += effect.n_value;
                                     success = true;
                                 },
                                 EffectType::RemoveQuantity => {
-                                    if component.quantity >= num_value {
-                                        component.quantity -= num_value;
+                                    if component.quantity >= effect.n_value {
+                                        component.quantity -= effect.n_value;
                                         success = true;
                                     } else {
                                         let zero: u32 = 0;
@@ -601,19 +598,19 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 },
                                 EffectType::ModifyProperty => {
                                     // Overwrite the quantity
-                                    component.quantity = num_value;
+                                    component.quantity = effect.n_value;
                                     success = true;
                                 },
                                 _ => { // Do nothing for now
                                 },
                             }
-                        } else if name == @already_used {
-                            let (value, _index) = new_value[0];
+                        } else if effect.property == @already_used {
+                            let (value, _index) = effect.value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.already_used = new_var_value;
                             success = true;
-                        } else if name == @multiple_use {
-                            let (value, _index) = new_value[0];
+                        } else if effect.property == @multiple_use {
+                            let (value, _index) = effect.value[0];
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.multiple_use = new_var_value;
                             success = true;

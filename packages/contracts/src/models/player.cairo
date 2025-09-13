@@ -39,7 +39,7 @@ pub struct PlayerStory {
     #[key]
     pub game_id: u128,
     /// Properties ///
-    /// Array of story lines (story lines keys)
+    /// Current story line - latest
     pub story_line: CounterType,
 }
 
@@ -374,11 +374,11 @@ mod tests {
         player.say(ref world, "hello");
         let story: PlayerStory = world.read_model(game_id);
         // ("story: {:?}", story);
+        let story_key: u32 = 2;
         assert(story.story_line == 2, 'story has two entries'); // first entry is intro text
         let test_text: ByteArray = "hello";
 
-        let story_key: u32 = story.story_line;
-        let story_line: StoryLine = world.read_model((game_id, story_key),);
+        let story_line: StoryLine = world.read_model((story.inst, story_key));
         assert(story_line.line == test_text, 'story has "hello"');
     }
 
