@@ -22,6 +22,8 @@ import {
 	createDefaultContainerComponent,
 	createDefaultParentToChildrenComponent,
 	createPlayerEntity,
+	getPlayerSingletonInst,
+	getPlayerAddress,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -35,7 +37,6 @@ import { tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
-import { getPlayerAddress } from "@/editor/lib/components";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
 
 
@@ -583,6 +584,13 @@ const newEntity = async () => {
  * @returns The new player entity
  */
 export const newPlayer = async (): Promise<EntityCollection | undefined> => {
+	let existingPlayerEntity = getEntity(getPlayerSingletonInst())
+	if (existingPlayerEntity) {
+		console.warn("Player singleton already exists");
+		selectEntity(existingPlayerEntity.Entity.inst);
+		return existingPlayerEntity;
+	}
+
 	const spawnPoint = await getSpawnPoint();
 	if (spawnPoint === undefined) {
 		console.error("No spawn point found");
@@ -596,7 +604,6 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Player", playerEntity.Player);
-	updateComponent(playerEntity.Entity.inst, "PlayerStory", playerEntity.PlayerStory);
 	await tick();
 
 	// parent will be the spawn point	
@@ -689,8 +696,8 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
  * This handles fetching the spawn point from the first entity with an area component with is_spawn_point set to true
  * @returns The spawn point entity inst
  */
-export const getSpawnPoint = async (): Promise<BigNumberish> => {
-	let areaInst: BigNumberish;
+export const getSpawnPoint = async (): Promise<BigNumberish | undefined> => {
+	let areaInst: BigNumberish | undefined;
 	try {
 		const { sdk } = await InitDojo();
 		const querySpawnPoint = () => {
@@ -703,7 +710,7 @@ export const getSpawnPoint = async (): Promise<BigNumberish> => {
 			// Get models with type area
 			const area = item.models?.lore?.Area;
 			// Check if area is a spawn point
-			if (area?.is_spawn_point) {
+			if (area?.is_spawn_point && area?.inst) {
 				// Return the spawn point entity inst
 				// This will only work if there is only one spawn point
 				// If there are multiple spawn points, this will return the first one

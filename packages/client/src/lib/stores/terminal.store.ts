@@ -14,7 +14,7 @@ export type TerminalContentItem = {
 	useTypewriter?: boolean;
 	speed?: number;
 	style?: HTMLAttributes<HTMLDivElement>["style"];
-	isPrinting: boolean;
+	isPrinting?: boolean;
 };
 
 const {

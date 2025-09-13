@@ -22,7 +22,7 @@ import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
 import WalletStore from "@/lib/stores/wallet.store"
-import { BigNumberish } from "starknet";
+import { BigNumberish, ec, num, shortString } from "starknet";
 import randomName from "@scaleway/random-name";
 
 export const createDefaultEntity = (): WithStringEnums<
@@ -40,30 +40,27 @@ export const createDefaultEntity = (): WithStringEnums<
 
 export const createPlayerEntity = (
 	spawn_location?: BigNumberish
-): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player" | "PlayerStory">> => {
+): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
+	const playerInst = getPlayerSingletonInst(); // singleton
 	const playerAddress = getPlayerAddress();
-	const playerName = getPlayerName();
+	// const playerName = getPlayerName();
+	const playerName = "Player";
 	return {
 		// Adding the Entity as we need to set the inst to be the address
 		Entity: {
 			...schema.lore.Entity,
-			inst: playerAddress,
+			inst: playerInst,
 			is_entity: true,
 			name: playerName,
 			alt_names: [playerName, "me", "myself"],
 		},
 		Player: {
 			...schema.lore.Player,
-			inst: playerAddress,
+			inst: playerInst,
 			is_player: true,
 			address: playerAddress,
 			location: spawn_location!.toString() || 0,
 			use_debug: false,
-		},
-		PlayerStory: {
-			...schema.lore.PlayerStory,
-			inst: playerAddress,
-			story_line: 0,
 		},
 	};
 };
@@ -388,6 +385,14 @@ export const getPlayerAddress = (): string => {
 		}
 	}
 	return LORE_CONFIG.wallet.address;
+};
+
+export const getPlayerSingletonInst = (game_id?: string): string => {
+	return getGameInst(shortString.encodeShortString("Player"), game_id);
+};
+
+export const getGameInst = (inst: string, game_id?: string): string => {
+	return (!game_id ? inst : ec.starkCurve.poseidonHashMany([BigInt(inst), BigInt(game_id)]).toString());
 };
 
 export const getPlayerName = (): string => {
