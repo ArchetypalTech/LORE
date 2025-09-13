@@ -2,8 +2,8 @@ use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
         index::{
-            Area, Exit, Reactable, DescriptionText, InventoryItem, Container, Player,
-            PropertyRegistry, Effect,
+            DescriptionText,
+            PropertyRegistry,
         },
         area::{Area, AreaComponent},
         exit::{Exit},
@@ -12,6 +12,7 @@ use lore::{
         container::{Container, ContainerImpl},
         player::{Player},
         game_instance::{GameModelImpl},
+        effect::{Effect},
     },
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
@@ -552,7 +553,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut result: Result::<(), Error> = Result::Ok(());
 
         for prop in property.properties.clone() {
-            if prop.name == effect.property {
+            if @prop.name == effect.property {
                 match prop.access_flags {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
@@ -583,12 +584,12 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         } else if effect.property == @quantity {
                             match effect.effect_type.clone() {
                                 EffectType::AddQuantity => {
-                                    component.quantity += effect.n_value;
+                                    component.quantity += *effect.n_value;
                                     success = true;
                                 },
                                 EffectType::RemoveQuantity => {
-                                    if component.quantity >= effect.n_value {
-                                        component.quantity -= effect.n_value;
+                                    if component.quantity >= *effect.n_value {
+                                        component.quantity -= *effect.n_value;
                                         success = true;
                                     } else {
                                         let zero: u32 = 0;
@@ -598,7 +599,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 },
                                 EffectType::ModifyProperty => {
                                     // Overwrite the quantity
-                                    component.quantity = effect.n_value;
+                                    component.quantity = *effect.n_value;
                                     success = true;
                                 },
                                 _ => { // Do nothing for now

@@ -378,7 +378,7 @@ mod tests {
         assert(story.story_line == 2, 'story has two entries'); // first entry is intro text
         let test_text: ByteArray = "hello";
 
-        let story_line: StoryLine = world.read_model((story.inst, story_key));
+        let story_line: StoryLine = world.read_model((story.game_id, story_key));
         assert(story_line.line == test_text, 'story has "hello"');
     }
 
