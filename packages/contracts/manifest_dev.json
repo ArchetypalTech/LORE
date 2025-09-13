@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x318730a49a71d0060379a7f81f4ade9085c74815236608e3c7d2dc8a3639c73",
-      "class_hash": "0xafb5718d176cdb950153d719054134745b218c240a0d1fcf9d1265326f808a",
+      "address": "0x7f64c2ca3479f87c522730201981ef41b12d31d66255b4b9ee2f6d992941fd7",
+      "class_hash": "0x6ece423f824f35f52de8580a62bbe80907f3613711e7edb1751c929ef6c2cec",
       "abi": [
         {
           "type": "impl",
@@ -1402,7 +1402,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Player",
+          "name": "lore::models::player::Player",
           "members": [
             {
               "name": "inst",
@@ -1417,6 +1417,10 @@
               "type": "core::starknet::contract_address::ContractAddress"
             },
             {
+              "name": "game_id",
+              "type": "core::integer::u128"
+            },
+            {
               "name": "location",
               "type": "core::felt252"
             },
@@ -1428,7 +1432,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Entity",
+          "name": "lore::models::entity::Entity",
           "members": [
             {
               "name": "inst",
@@ -1498,7 +1502,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Reactable",
+          "name": "lore::models::reactable::Reactable",
           "members": [
             {
               "name": "inst",
@@ -1550,7 +1554,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Area",
+          "name": "lore::models::area::Area",
           "members": [
             {
               "name": "inst",
@@ -1642,7 +1646,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Exit",
+          "name": "lore::models::exit::Exit",
           "members": [
             {
               "name": "inst",
@@ -1716,7 +1720,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::InventoryItem",
+          "name": "lore::models::inventory_item::InventoryItem",
           "members": [
             {
               "name": "inst",
@@ -1794,7 +1798,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Container",
+          "name": "lore::models::container::Container",
           "members": [
             {
               "name": "inst",
@@ -1862,7 +1866,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Trigger",
+          "name": "lore::models::trigger::Trigger",
           "members": [
             {
               "name": "inst",
@@ -1886,10 +1890,6 @@
             },
             {
               "name": "is_once",
-              "type": "core::bool"
-            },
-            {
-              "name": "was_triggered",
               "type": "core::bool"
             }
           ]
@@ -1972,7 +1972,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Condition",
+          "name": "lore::models::condition::Condition",
           "members": [
             {
               "name": "inst",
@@ -2048,7 +2048,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Effect",
+          "name": "lore::models::effect::Effect",
           "members": [
             {
               "name": "inst",
@@ -2094,7 +2094,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::Action",
+          "name": "lore::models::action::Action",
           "members": [
             {
               "name": "inst",
@@ -2137,10 +2137,6 @@
               "type": "core::array::Array::<core::byte_array::ByteArray>"
             },
             {
-              "name": "executed",
-              "type": "core::bool"
-            },
-            {
               "name": "failing_response",
               "type": "core::array::Array::<core::byte_array::ByteArray>"
             },
@@ -2152,7 +2148,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::ParentToChildren",
+          "name": "lore::models::entity::ParentToChildren",
           "members": [
             {
               "name": "inst",
@@ -2170,7 +2166,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::ChildToParent",
+          "name": "lore::models::entity::ChildToParent",
           "members": [
             {
               "name": "inst",
@@ -2196,7 +2192,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Player>"
+                  "type": "core::array::Array::<lore::models::player::Player>"
                 }
               ],
               "outputs": [],
@@ -2208,7 +2204,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Entity>"
+                  "type": "core::array::Array::<lore::models::entity::Entity>"
                 }
               ],
               "outputs": [],
@@ -2220,7 +2216,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Reactable>"
+                  "type": "core::array::Array::<lore::models::reactable::Reactable>"
                 }
               ],
               "outputs": [],
@@ -2244,7 +2240,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Area>"
+                  "type": "core::array::Array::<lore::models::area::Area>"
                 }
               ],
               "outputs": [],
@@ -2256,7 +2252,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Exit>"
+                  "type": "core::array::Array::<lore::models::exit::Exit>"
                 }
               ],
               "outputs": [],
@@ -2268,7 +2264,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::InventoryItem>"
+                  "type": "core::array::Array::<lore::models::inventory_item::InventoryItem>"
                 }
               ],
               "outputs": [],
@@ -2280,7 +2276,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Container>"
+                  "type": "core::array::Array::<lore::models::container::Container>"
                 }
               ],
               "outputs": [],
@@ -2292,7 +2288,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Trigger>"
+                  "type": "core::array::Array::<lore::models::trigger::Trigger>"
                 }
               ],
               "outputs": [],
@@ -2304,7 +2300,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Condition>"
+                  "type": "core::array::Array::<lore::models::condition::Condition>"
                 }
               ],
               "outputs": [],
@@ -2316,7 +2312,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Effect>"
+                  "type": "core::array::Array::<lore::models::effect::Effect>"
                 }
               ],
               "outputs": [],
@@ -2328,7 +2324,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::Action>"
+                  "type": "core::array::Array::<lore::models::action::Action>"
                 }
               ],
               "outputs": [],
@@ -2340,7 +2336,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::ParentToChildren>"
+                  "type": "core::array::Array::<lore::models::entity::ParentToChildren>"
                 }
               ],
               "outputs": [],
@@ -2352,7 +2348,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::ChildToParent>"
+                  "type": "core::array::Array::<lore::models::entity::ChildToParent>"
                 }
               ],
               "outputs": [],
@@ -2692,8 +2688,1136 @@
       ]
     },
     {
-      "address": "0x1bc7a4c9a90a440e6b0fdbbedd4d4f64468cde3da9200d17990c476c680e5a9",
-      "class_hash": "0x6891efd9a8a20fdc1fff18f09baa343b6e9171398a5c36240666ec52a1f0c9d",
+      "address": "0x12ab404ed9e5d9fb38b4e529de1111a3fdc15fbd4399953475521f5d3791af0",
+      "class_hash": "0x23611c8e4e4690322f3a859c7cb15c4ea3cd92361cfd45eb1f3fc6b738fc535",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "game_token__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "game_token__DeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "impl",
+          "name": "GameTokenPublicImpl",
+          "interface_name": "lore::systems::game_token::IGameTokenPublic"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::integer::u256",
+          "members": [
+            {
+              "name": "low",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "high",
+              "type": "core::integer::u128"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "lore::systems::game_token::IGameTokenPublic",
+          "items": [
+            {
+              "type": "function",
+              "name": "create_game",
+              "inputs": [
+                {
+                  "name": "recipient",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u128"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_paused",
+              "inputs": [
+                {
+                  "name": "is_paused",
+                  "type": "core::bool"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_admin",
+              "inputs": [
+                {
+                  "name": "admin_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_token_metadata",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_tokens_metadata",
+              "inputs": [
+                {
+                  "name": "from_token_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "to_token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "update_contract_metadata",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "ERC721ComboMixinImpl",
+          "interface_name": "nft_combo::erc721::interface::IERC721ComboABI"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::felt252>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "nft_combo::erc721::interface::IERC721ComboABI",
+          "items": [
+            {
+              "type": "function",
+              "name": "supports_interface",
+              "inputs": [
+                {
+                  "name": "interface_id",
+                  "type": "core::felt252"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "balance_of",
+              "inputs": [
+                {
+                  "name": "account",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "owner_of",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "safe_transfer_from",
+              "inputs": [
+                {
+                  "name": "from",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "to",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "data",
+                  "type": "core::array::Span::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "transfer_from",
+              "inputs": [
+                {
+                  "name": "from",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "to",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "approve",
+              "inputs": [
+                {
+                  "name": "to",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_approval_for_all",
+              "inputs": [
+                {
+                  "name": "operator",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "approved",
+                  "type": "core::bool"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "get_approved",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "is_approved_for_all",
+              "inputs": [
+                {
+                  "name": "owner",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "operator",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "balanceOf",
+              "inputs": [
+                {
+                  "name": "account",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "ownerOf",
+              "inputs": [
+                {
+                  "name": "tokenId",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "safeTransferFrom",
+              "inputs": [
+                {
+                  "name": "from",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "to",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "tokenId",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "data",
+                  "type": "core::array::Span::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "transferFrom",
+              "inputs": [
+                {
+                  "name": "from",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "to",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "tokenId",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "setApprovalForAll",
+              "inputs": [
+                {
+                  "name": "operator",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "approved",
+                  "type": "core::bool"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "getApproved",
+              "inputs": [
+                {
+                  "name": "tokenId",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "isApprovedForAll",
+              "inputs": [
+                {
+                  "name": "owner",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "operator",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "symbol",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "token_uri",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "tokenURI",
+              "inputs": [
+                {
+                  "name": "tokenId",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "max_supply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "reserved_supply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "available_supply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "minted_supply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "total_supply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "last_token_id",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "is_minting_paused",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "is_minted_out",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "is_owner_of",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "token_exists",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "maxSupply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "reservedSupply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "availableSupply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "mintedSupply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "totalSupply",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "contract_uri",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "contractURI",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "royalty_info",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "sale_price",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "(core::starknet::contract_address::ContractAddress, core::integer::u256)"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "default_royalty",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "token_royalty",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "royaltyInfo",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "sale_price",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "(core::starknet::contract_address::ContractAddress, core::integer::u256)"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "defaultRoyalty",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "tokenRoyalty",
+              "inputs": [
+                {
+                  "name": "token_id",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "openzeppelin_introspection::src5::SRC5Component::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "from",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "to",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "token_id",
+              "type": "core::integer::u256",
+              "kind": "key"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "owner",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "approved",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "token_id",
+              "type": "core::integer::u256",
+              "kind": "key"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "owner",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "operator",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "approved",
+              "type": "core::bool",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Transfer",
+              "type": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
+              "kind": "nested"
+            },
+            {
+              "name": "Approval",
+              "type": "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
+              "kind": "nested"
+            },
+            {
+              "name": "ApprovalForAll",
+              "type": "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::ContractURIUpdated",
+          "kind": "struct",
+          "members": []
+        },
+        {
+          "type": "event",
+          "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::MetadataUpdate",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256",
+              "kind": "key"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::BatchMetadataUpdate",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "from_token_id",
+              "type": "core::integer::u256",
+              "kind": "key"
+            },
+            {
+              "name": "to_token_id",
+              "type": "core::integer::u256",
+              "kind": "key"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "ContractURIUpdated",
+              "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::ContractURIUpdated",
+              "kind": "nested"
+            },
+            {
+              "name": "MetadataUpdate",
+              "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::MetadataUpdate",
+              "kind": "nested"
+            },
+            {
+              "name": "BatchMetadataUpdate",
+              "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::BatchMetadataUpdate",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "lore::systems::game_token::game_token::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "SRC5Event",
+              "type": "openzeppelin_introspection::src5::SRC5Component::Event",
+              "kind": "flat"
+            },
+            {
+              "name": "ERC721Event",
+              "type": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+              "kind": "flat"
+            },
+            {
+              "name": "ERC721ComboEvent",
+              "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
+              "kind": "flat"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [],
+      "tag": "lore-game_token",
+      "selector": "0x2adab97907d314525d887110241680f5c7f23628376ca6922e03920a4fc108a",
+      "systems": [
+        "dojo_init",
+        "create_game",
+        "set_paused",
+        "set_admin",
+        "update_token_metadata",
+        "update_tokens_metadata",
+        "update_contract_metadata",
+        "upgrade",
+        "safe_transfer_from",
+        "transfer_from",
+        "approve",
+        "set_approval_for_all",
+        "safeTransferFrom",
+        "transferFrom",
+        "setApprovalForAll"
+      ]
+    },
+    {
+      "address": "0x47fac165aac77faf9cf3c8d608bee693f493c4990d6b7ef35c8f0c5f3de13d0",
+      "class_hash": "0x57610e18f9a74c38fd8718463283ffaf1366f77814ea655fc02e9dc6afb423a",
       "abi": [
         {
           "type": "impl",
@@ -2746,9 +3870,30 @@
           ]
         },
         {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
           "type": "impl",
           "name": "PromptImpl",
           "interface_name": "lore::systems::prompt::IPrompt"
+        },
+        {
+          "type": "enum",
+          "name": "core::option::Option::<core::integer::u128>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
         },
         {
           "type": "interface",
@@ -2761,19 +3906,16 @@
                 {
                   "name": "cmd",
                   "type": "core::byte_array::ByteArray"
+                },
+                {
+                  "name": "game_id",
+                  "type": "core::option::Option::<core::integer::u128>"
                 }
               ],
               "outputs": [],
               "state_mutability": "external"
             }
           ]
-        },
-        {
-          "type": "function",
-          "name": "dojo_init",
-          "inputs": [],
-          "outputs": [],
-          "state_mutability": "view"
         },
         {
           "type": "impl",
@@ -2887,6 +4029,7 @@
       "tag": "lore-prompt",
       "selector": "0x7ce185ac93eb5e2a28b27a6bab8ce1cc608744ef663badb20489547ed1d20a0",
       "systems": [
+        "dojo_init",
         "prompt",
         "upgrade"
       ]
@@ -2896,19 +4039,25 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x40361d82a09aaedf450e42ad956fd1794647041d08c44be030f5bfca5b56fdb",
+      "class_hash": "0x11eb9c413ddd99145b3a7eb7fc65b12bbc1628683f5225165240eaba70c6c50",
       "tag": "lore-Action",
       "selector": "0x335b7e7c2600cd5e8515ecfaace2c4f8143e9bdd00ae87e9259e0b684899663"
     },
     {
       "members": [],
-      "class_hash": "0x7c20a169299741cb15f5858f5db06589b0e7763ee041d6a5014e36a676843de",
+      "class_hash": "0x220db060a52bb8bf3e1bc54e2e4c6fd0cf4f36ad27c46623e5feb4081c8b269",
+      "tag": "lore-ActionExecuted",
+      "selector": "0x3a3437d42df43929f7bb30a2eb2352715d40718492466f72556db614fa83f63"
+    },
+    {
+      "members": [],
+      "class_hash": "0x730a261e88ade5d59e9e27a5e98c675291c0d18d23cbe3d0fd17591b66cd9c8",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },
     {
       "members": [],
-      "class_hash": "0x2bf734f4b3cf7681a839fc565677becf877524a5a1e04bf16a96de6da3b1931",
+      "class_hash": "0x20275b8baf9fc61ad62dc9b77322879b05dc753ad881d3240212d9050e520f6",
       "tag": "lore-ChildToParent",
       "selector": "0x6c2a358df76ae2ca942ea3cc2f59ade04e5f5ba87ee162b41a10ad5a5755287"
     },
@@ -2920,15 +4069,21 @@
     },
     {
       "members": [],
-      "class_hash": "0x4b5cc9d620bb111af257830584b2108f388ab579421cfd100ef473265ff5c55",
+      "class_hash": "0xe8272f36446aaeb6662dfbc1d4286c4d89613ff66cf69bdbe6ae20b1dc7fd7",
       "tag": "lore-Condition",
       "selector": "0x5bbdd55e45e4652ea208fdaaa18d4e019a153d45ed0c8810ee6b42091a89b25"
     },
     {
       "members": [],
-      "class_hash": "0x44a2e9438a622ecd645805e28a94c1db492c70cd3dab6b0728bec4cd87d3046",
+      "class_hash": "0x2d34739eb4ef5122c854b5cbc3e4d67d0d9b9f2f91c8afa9050a7a62bb3e22f",
       "tag": "lore-Container",
       "selector": "0x65216593d0c7b5ff416ba9bc0773cb0ffe2729720b2de66dc4613e1a9e26662"
+    },
+    {
+      "members": [],
+      "class_hash": "0x652fb1a7b9ed08ab1bab3ae39e5fe5913f212aee66614ed9a9fb6fe696bbd81",
+      "tag": "lore-ContractConfig",
+      "selector": "0x6eab58fa82fd758e1191536c40b226a706d255f1a6179aa6e68d86dd2053ae7"
     },
     {
       "members": [],
@@ -2944,43 +4099,61 @@
     },
     {
       "members": [],
-      "class_hash": "0x52d571c0e79fcd1a4e46317029821242832ee45a738182e4a5a94cde5ec0d22",
+      "class_hash": "0x88f569df3c3a1ca3698e5aabdb378896d8b572300d6160c45480facea7026e",
       "tag": "lore-Effect",
       "selector": "0x753486095174e7622f7115f0ba45a0401d64fad9adb37d3cd8e115a0b86a5f9"
     },
     {
       "members": [],
-      "class_hash": "0x2174170603e87d1089db0c282b42f9ff2a3941d7cc77bcc8971dde7a2ddc72a",
+      "class_hash": "0x1f05439fc4f975851be21bede06ef1b0e94f72dae0df825c4c804a7c5e54ff8",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
     {
       "members": [],
-      "class_hash": "0x361c4f97448bbf4d18532a2efebbc278ff7d7132489f77dd43b0e9a4c98759b",
+      "class_hash": "0x4efb2c371928438c644d1535b36ab4b773f066934d5f4e4e3a5fe3a8ed31f32",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
     },
     {
       "members": [],
-      "class_hash": "0x75637d4ecdf3fb01400a13bfd01873bf5bcc8b508783987ce6c5b42b4f79296",
+      "class_hash": "0x76c539807dd1c099725a2ec165a3d98f6a39a0589fa1e08056e2a751fd16962",
+      "tag": "lore-GameInstanceMap",
+      "selector": "0x63b2d9b2ec9e7a42b037b7ff5bf410a8b4df1110906c2ecd418ca67f2af4a25"
+    },
+    {
+      "members": [],
+      "class_hash": "0x5fa5cb96f00dfe3d6ffdc08b0938024e3670cc835ee3b4bff4d1aa287e606fc",
+      "tag": "lore-GameTokenInfo",
+      "selector": "0x69902599c28937f5cf61bc8f361f8cdcf9a259fc7505bd73223e9710feb75e7"
+    },
+    {
+      "members": [],
+      "class_hash": "0x412ec1a01cf1ba16dac4bf011ea3d9d3e38d509e5e3c532975507617782b217",
       "tag": "lore-InventoryItem",
       "selector": "0x39dcb7f28daa7084ab53831eef53e661b8c314a425a0ba7339156aa825e3606"
     },
     {
       "members": [],
-      "class_hash": "0x6d7a9c1511cb3e0ab62710782d0dc6814b70c8fa93890b6081979adb27e18e5",
+      "class_hash": "0x47f77ebefbe89de4ecc741f1c73e54972462909946180fe13ff46af5ccda7d1",
       "tag": "lore-ParentToChildren",
       "selector": "0x6dbfac2c9f2142b49b785d40a8a9408a3d9097687a344f6daf21cddde65412b"
     },
     {
       "members": [],
-      "class_hash": "0x5a83fa359a52c2b2e1a3a0a6ba49e34a4d4fc7669e641ef890f474ff5e4aaa6",
+      "class_hash": "0x5092fd0e6d6632c01da3b1f90f37215f0a52fb5420abbee9dbc8e996db29860",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },
     {
       "members": [],
-      "class_hash": "0x72da72753eb97a49f8f7ce6a3668960b7dcaf41e6652308f88da5aa070244a8",
+      "class_hash": "0x261c8d344b3c631ccb11260f8c58a0a5b9e8e1996622f8438a87d4dfb94d01f",
+      "tag": "lore-PlayerAccount",
+      "selector": "0x2b50757eca813b1465cfe02b99f2775166d22356c7329e434bd6880d4d5ca0"
+    },
+    {
+      "members": [],
+      "class_hash": "0x334b76962b5b12053289748d5d017db2ab85c7860582dd11fef147b2eb4556c",
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
     },
@@ -2992,29 +4165,42 @@
     },
     {
       "members": [],
-      "class_hash": "0x14e4af343fbd6e16b31b5e47e78e0abe5148331ec49e0cc579764414398b508",
+      "class_hash": "0x205d1a835436dea1f1b9cfd6c39f118f44e3105671b0b1f191ffd3bdc9bced8",
       "tag": "lore-Reactable",
       "selector": "0x13fefc8a36ffca06da26b1726d49465726acb19821a4d3382f5c9420a4a4896"
     },
     {
       "members": [],
-      "class_hash": "0x5dd210188a9073f1ba28798263048e7cd64255dac7b8845902e46286c51dc02",
+      "class_hash": "0x299d1deecefdcd8165b7ec94b2f7395b50c0bf51e56bdef4e2571f9b6f3d9bd",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
     {
       "members": [],
-      "class_hash": "0x184bfe735d125feab45e8b6ab2aeed0a53f7763ca9d464b476247d526b53fda",
+      "class_hash": "0x78fa3e2dce3dea50e1b8dae14fa2c551a0093c4d4e9206dc4fac36d8cf05102",
       "tag": "lore-Trigger",
       "selector": "0x8f76987efdbfa10b4f5f6a6ed5450ecc5241301beabc41a889d84c40f87cfa"
     },
     {
       "members": [],
-      "class_hash": "0x23daba7ed06708a30ea083232a8fea65a33eea1faa17c762c99c77bbcff7d81",
+      "class_hash": "0x561205bf249f6cf0bfd8147561882f6e426f37aa080defd962cefc86e9ae5da",
+      "tag": "lore-TriggerExecuted",
+      "selector": "0x6f47cc931562357a42ffbb7345eb1f944e1e1abb7e71941102526d26215eead"
+    },
+    {
+      "members": [],
+      "class_hash": "0x1621911094729c0758fe607bfffc602fd37ccfdf59182c00c5d0bb8d88bfb29",
       "tag": "lore-TriggerIndex",
       "selector": "0x472f592295e556e032f9ea3d00faf9cbd2729afe3a6fc168cf6034c65b7dc6"
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "members": [],
+      "class_hash": "0x31d22f168175bea8d8516c3a3e4263f8ca137db84917457c64210d0458f9b2",
+      "tag": "lore-GameCreatedEvent",
+      "selector": "0x7c6e3d3f9f2744660619ece25fc28118c70258d3be961f615157fee354aaf39"
+    }
+  ],
   "external_contracts": []
 }
