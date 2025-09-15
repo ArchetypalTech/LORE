@@ -31,8 +31,9 @@ pub mod prompt {
     };
 
     mod Errors {
-        pub const INVALID_CALLER: felt252   = 'PROMPT: Invalid caller';
-        pub const NOT_YOUR_GAME: felt252    = 'PROMPT: Not your game';
+        pub const INVALID_CALLER: felt252       = 'PROMPT: Invalid caller';
+        pub const NOT_YOUR_GAME: felt252        = 'PROMPT: Not your game';
+        pub const NO_PLAYER_COMPONENT: felt252  = 'PROMPT: No player component';
     }
 
     fn dojo_init(ref self: ContractState) {
@@ -60,7 +61,9 @@ pub mod prompt {
                             ErrorOutputterImpl::output_error(error, player, ref world);
                         }
                     },
-                    Result::Err(_r) => { player.say(ref world, random_text(world, random_error())); },
+                    Result::Err(_r) => {
+                        player.say(ref world, random_text(world, random_error()));
+                    },
                 }
             }
         }
@@ -101,11 +104,13 @@ pub mod prompt {
                         // create new game
                         game_id = world.game_token_dispatcher().create_game(player_address);
                     }
+                    // ok to play...
                     (game_id)
                 }
             };
-            let player = PlayerImpl::caller_as_player(ref world, player_address, game_id);
-            (player)
+            let player = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
+            assert(player.is_some(), Errors::NO_PLAYER_COMPONENT);
+            (player.unwrap())
         }
 
         //

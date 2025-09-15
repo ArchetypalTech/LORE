@@ -67,21 +67,27 @@ const SINGLETON_PLAYER_INST: felt252 = 'Player';
 pub impl PlayerImpl of PlayerTrait {
 
     // used by prompt() and tests
-    fn caller_as_player(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Player {
-        // make sure base player exists
-        let mut player: Player = match Self::get_player(@world, 0) {
-            Option::Some(player) => player,
-            Option::None => Self::create_player_entity(ref world),
-        };
-        // if playing game instance
-        if (game_id != 0) {
-            if (!GameModelImpl::<Player>::has_game_model(@world, player.inst, game_id)) {
-                player = Self::create_player_game_instance(ref world, @player, address, game_id);
-            } else {
-                player = world.read_game_model(player.inst, game_id);
-            }
-        }
-        (player)
+    fn get_player_for_account(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Option<Player> {
+        // find player singleton
+       (match Self::get_player(@world, 0) {
+            Option::Some(singleton_player) => {
+                Option::Some(
+                    if (game_id == 0) {
+                        // requesting singleton player
+                        (singleton_player)
+                    } else if (!GameModelImpl::<Player>::has_game_model(@world, SINGLETON_PLAYER_INST, game_id)) {
+                        // create new game instance player
+                        (Self::create_player_game_instance(ref world, @singleton_player, address, game_id))
+                    } else {
+                        // read existing game instance player
+                        (world.read_game_model(SINGLETON_PLAYER_INST, game_id))
+                    }
+                )
+            },
+            Option::None => {
+                (Option::None)
+            },
+        })
     }
 
     fn get_player(world: @WorldStorage, game_id: u128) -> Option<Player> {
@@ -93,8 +99,14 @@ pub impl PlayerImpl of PlayerTrait {
         Option::Some(player)
     }
 
-    // mainly for tests
-    // the game world should have a player component
+    // used by test only!!!
+    fn caller_as_player(ref world: WorldStorage, address: ContractAddress, game_id: u128) -> Player {
+        // make sure base player exists
+        if Self::get_player(@world, 0).is_none() {
+            Self::create_player_entity(ref world);
+        }
+        (Self::get_player_for_account(ref world, address, game_id).unwrap())
+    }
     fn create_player_entity(ref world: WorldStorage) -> Player {
         // create player entity
         let mut entity: Entity = Default::default();

@@ -149,6 +149,8 @@ mod tests {
     #[test]
     fn test_prompt_mint_game() {
         let (mut world, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
+        // initialize player singleton
+        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
         //
         // player_1 say anything... (will create a game)
         let game_id_1: u128 = 1;
@@ -250,6 +252,8 @@ mod tests {
     #[test]
     fn test_prompt_editor() {
         let (mut world, _, prompt, token, _, _) = helpers::setup_core();
+        // initialize player singleton
+        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
         //
         // owner say something...
         let game_id_0: u128 = 0;
@@ -271,7 +275,9 @@ mod tests {
     #[test]
     #[should_panic(expected: ('PROMPT: Invalid caller','ENTRYPOINT_FAILED'))]
     fn test_prompt_editor_not_admin() {
-        let (_, _, prompt, _, player_address_1, _) = helpers::setup_core();
+        let (mut world, _, prompt, _, player_address_1, _) = helpers::setup_core();
+        // initialize player singleton
+        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
         //
         // player_1 say something...
         helpers::set_caller(player_address_1);
