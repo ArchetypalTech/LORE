@@ -158,6 +158,7 @@ const publishPlayer = async (player: Player) => {
 		num.toBigInt((player.inst ?? getPlayerAddress()).toString()),
 		player.is_player ?? true,
 		player.address ? num.toBigInt(player.address.toString()) : num.toBigInt(getPlayerAddress().toString()),
+		player.game_id ? num.toBigInt(player.game_id.toString()) : num.toBigInt("0"),
 		player.location ? num.toBigInt(player.location.toString()) : num.toBigInt("0"),
 		player.use_debug ?? false,
 	];

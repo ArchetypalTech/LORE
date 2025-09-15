@@ -46,6 +46,12 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				onChange={handleInputChange(undefined)}
 			/>
 			<Input 
+				id="game_id" 
+				value={componentObject.game_id.toString()} 
+				onChange={handleInputChange(undefined)} 
+				readOnly={true}
+			/>
+			<Input 
 				id="address" 
 				value={componentObject.address} 
 				onChange={handleInputChange(undefined)} 

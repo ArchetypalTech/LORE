@@ -59,6 +59,7 @@ export const createPlayerEntity = (
 			inst: playerInst,
 			is_player: true,
 			address: playerAddress,
+			game_id: 0,
 			location: spawn_location!.toString() || 0,
 			use_debug: false,
 		},
