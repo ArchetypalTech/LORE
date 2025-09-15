@@ -70,9 +70,10 @@ export const InitDojo = async () => {
 			data?: StandardizedQueryResult<SchemaType> | undefined;
 			error?: Error;
 		}) => void,
+		sub_query?: ToriiQueryBuilder<SchemaType>,
 	) => {
 		return await sdk.subscribeEntityQuery({
-			query: query(),
+			query: sub_query ?? query(),
 			callback,
 		});
 	};

@@ -10,6 +10,7 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
 import { checkForPlayer, propertiesRegistered, } from "@/editor/data/editor.data";
 import {registerPropertyRegistry} from "../editor/publisher";
+import GameStore from "@/lib/stores/game.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -57,7 +58,7 @@ type commandContext = {
  *
  *   // 4. Perform any other logic needed for your command
  *   // - Access wallet with WalletStore()
- *   // - Forward to contract commands with sendCommand(command, bypass)
+ *   // - Forward to contract commands with sendCommand(command, null, bypass)
  *   // - Clear terminal with clearTerminalContent()
  * };
  */
@@ -70,6 +71,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				sendCommand("_connect_wallet");
 			} else {
 				sendCommand("_welcome_back");
+				sendCommand("_current_game");
 			}
 		}
 
@@ -122,6 +124,13 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	_welcome_back: () => {
 		addTerminalContent({
 			text: `welcome back ${WalletStore().username}`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	_current_game: () => {
+		addTerminalContent({
+			text: GameStore().gameId != undefined ? `resuming game #${GameStore().gameId}` : `new game`,
 			format: "hash",
 			useTypewriter: true,
 		});
@@ -209,7 +218,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_bypass: ({ command }) => {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
-		sendCommand(command, true);
+		sendCommand(command, null, true);
 	},
 	help:() => {
 		const header = "Entities/Objects might have the following properties that can be that allow you to interact with them:";

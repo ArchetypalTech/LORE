@@ -1,8 +1,8 @@
 import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 
 import { InitDojo } from "@lib/dojo";
-import { ToriiQueryBuilder} from "@dojoengine/sdk";
-import { num } from "starknet";
+import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
+import { addAddressPadding, num } from "starknet";
 import EditorData from "@/editor/data/editor.data";
 import type { EntityCollection } from "@/editor/lib/types";
 import { LORE_CONFIG } from "../config";
@@ -18,7 +18,7 @@ import { decodeDojoText, processWhitespaceTags } from "../utils/utils";
 import { addTerminalContent } from "./terminal.store";
 import WalletStore from "./wallet.store";
 import type { Subscription } from "rxjs";
-import type { DojoStatus } from "./types";
+import GameStore from "./game.store";
 
 /**
  * Represents the current status of the Dojo system.
@@ -78,20 +78,27 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 			.withCursor("")
 			.withLimit(3000)
 			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().keys(
+					["lore-StoryLine"],
+					[addAddressPadding(playerStory.game_id)]
+				).build()
+			)
 			.withEntityModels(["lore-StoryLine"]);
 
 		const result = await sdk.getEntities({ query });
+		console.log("[DEBUG:STORY_LINES] result", result);
 		result.getItems().forEach((entity) => {
 			const model = entity.models?.lore?.StoryLine;
 			if (
 				model &&
-				model.inst &&
+				model.game_id &&
 				model.key !== undefined &&
 				model.line &&
-				String(model.inst) === String(playerStory.inst)
+				String(model.game_id) === String(playerStory.game_id)
 			) {
 				allStoryLines.push({
-					inst: model.inst,
+					game_id: model.game_id,
 					key: model.key,
 					line: model.line,
 				});
@@ -137,17 +144,13 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 };
 
 const onPlayerStory = (playerStory: PlayerStory) => {
-	const address = !LORE_CONFIG.useController
-		? LORE_CONFIG.wallet.address
-		: WalletStore().controller?.account?.address;
-	// console.log("[DEBUG] address", address);
-	// console.log("[DEBUG] playerStory1", playerStory);
-	const normalizedPlayerId = num.cleanHex(String(playerStory.inst));
-	const normalizedAddress = num.cleanHex(String(address));
-	// console.log("[DEBUG] normalizedPlayerId", normalizedPlayerId);
-	// console.log("[DEBUG] normalizedAddress", normalizedAddress);
-	if (normalizedPlayerId === normalizedAddress) {
-		// console.log("[DEBUG] onPlayerStory", playerStory);
+	const gameId = GameStore().gameId;
+	const normalizedStoryId = num.cleanHex(String(playerStory.game_id));
+	const normalizedGameId = gameId ? num.cleanHex(String(gameId)) : null;
+	// console.log("[DEBUG:STORY] normalizedStoryId", normalizedStoryId);
+	// console.log("[DEBUG:STORY] normalizedGameId", normalizedGameId, gameId);
+	if (normalizedStoryId === normalizedGameId) {
+		// console.log("[DEBUG:STORY] onPlayerStory", playerStory);
 		setOutputter(playerStory as PlayerStory);
 		return;
 	}

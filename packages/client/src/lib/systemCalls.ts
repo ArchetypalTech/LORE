@@ -1,6 +1,6 @@
 import { LORE_CONFIG } from "@lib/config";
 import JSONbig from "json-bigint";
-import { byteArray, CallData, type RawArgsArray } from "starknet";
+import { BigNumberish, byteArray, CairoOption, CairoOptionVariant, CallData, type RawArgsArray } from "starknet";
 import { toCairoArray } from "@/editor/editor.utils";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
@@ -12,7 +12,7 @@ import { sendCommand } from "./terminalCommands/commandHandler";
  * @param {string} command - The command to send
  * @returns {Promise<void>}
  */
-async function execCommand(command: string): Promise<void> {
+async function execCommand(command: string, game_id?: BigNumberish | null | undefined): Promise<void> {
 	// if using slot, send to controller
 	if (LORE_CONFIG.useController) {
 		if (!WalletStore().isConnected) {
@@ -27,9 +27,12 @@ async function execCommand(command: string): Promise<void> {
 		formData.append("route", "sendMessage");
 		console.time("calltime");
 		console.log(command);
-		const calldata = CallData.compile([byteArray.byteArrayFromString(command)]);
+		const calldata = CallData.compile([
+			byteArray.byteArrayFromString(command),
+			game_id ? new CairoOption(CairoOptionVariant.Some, game_id) : new CairoOption(CairoOptionVariant.None)
+		]);
 		if (LORE_CONFIG.useController) {
-			console.log("[CONTROLLER] execControllerCommand", command);
+			console.log("[CONTROLLER] execControllerCommand:", command, game_id, calldata);
 			WalletStore().controller?.account?.execute([
 				{
 					contractAddress: LORE_CONFIG.contracts.entity.address,
