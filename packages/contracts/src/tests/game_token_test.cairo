@@ -150,8 +150,9 @@ mod tests {
     fn test_prompt_mint_game() {
         let (mut world, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
         //
-        // player_1 say something...
+        // player_1 say anything... (will create a game)
         let game_id_1: u128 = 1;
+        let mut story_len_1: u32 = 0;
         helpers::set_caller(player_address_1);
         prompt.prompt("", Option::None);
         // game was minted
@@ -159,10 +160,11 @@ mod tests {
         assert_eq!(token.owner_of(game_id_1.into()), player_address_1, "owner_of()");
         // player was created
         let player_1: Player = PlayerImpl::get_player(@world, game_id_1).unwrap();
+        story_len_1 += 1;
         assert_eq!(player_1.address, player_address_1, "player_1.address");
         assert_eq!(player_1.game_id, game_id_1, "player_1.game_id");
 // helpers::print_player_story_last_line(@world, game_id_1);
-        assert_eq!(helpers::player_story_len(@world, game_id_1), 1, "player_1.story");
+        assert_eq!(helpers::player_story_len(@world, game_id_1), story_len_1, "player_1.story");
         assert_eq!(helpers::player_story_last_line(@world, game_id_1), "You feel light, and shiny, in the head", "player_1.story");
         // player zero was created too
         let player_0: Player = PlayerImpl::get_player(@world, 0).unwrap();
@@ -170,14 +172,17 @@ mod tests {
         assert_eq!(player_0.game_id, 0, "player_0.game_id");
         // system command: g_game_id
         prompt.prompt("g_game_id", Option::None);
+        story_len_1 += 2;
 // helpers::print_player_story_last_line(@world, game_id_1);
-        assert_eq!(helpers::player_story_len(@world, game_id_1), 3, "said");
-        assert_eq!(helpers::player_story_last_line(@world, game_id_1), "+sys+1");
+        assert_eq!(helpers::player_story_len(@world, game_id_1), story_len_1, "said");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_1), "+sys+game #1");
         //
-        // player_2 say something...
+        // player_2 say ask to create a game...
         let game_id_2: u128 = 2;
+        let mut story_len_2: u32 = 0;
         helpers::set_caller(player_address_2);
         prompt.prompt("", Option::None);
+        story_len_2 += 1;
         // game was minted
         assert_eq!(token.total_supply(), 2, "total_supply()");
         assert_eq!(token.owner_of(game_id_2.into()), player_address_2, "owner_of()");
@@ -186,29 +191,33 @@ mod tests {
         assert_eq!(player_2.address, player_address_2, "player_2.address");
         assert_eq!(player_2.game_id, game_id_2, "player_2.game_id");
 // helpers::print_player_story_last_line(@world, game_id_2);
-        assert_eq!(helpers::player_story_len(@world, game_id_2), 1, "player_2.story");
+        assert_eq!(helpers::player_story_len(@world, game_id_2), story_len_2, "player_2.story");
         assert_eq!(helpers::player_story_last_line(@world, game_id_2), "You feel light, and shiny, in the head", "player_2.story");
+        // assert_eq!(helpers::player_story_last_line(@world, game_id_2), "+sys+game #2", "player_2.story");
         // system command: g_game_id
         prompt.prompt("g_game_id", Option::None);
+        story_len_2 += 2;
 // helpers::print_player_story_last_line(@world, game_id_2);
-        assert_eq!(helpers::player_story_len(@world, game_id_2), 3, "said");
-        assert_eq!(helpers::player_story_last_line(@world, game_id_2), "+sys+2");
+        assert_eq!(helpers::player_story_len(@world, game_id_2), story_len_2, "said");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_2), "+sys+game #2");
         //
         // player 1 can play their own game by id...
         helpers::set_caller(player_address_1);
         prompt.prompt("hello", Option::Some(game_id_1));
+        story_len_1 += 2;
         // no new game was minted
         assert_eq!(token.total_supply(), 2, "total_supply()");
         // more story was added
-        assert_eq!(helpers::player_story_len(@world, game_id_1), 5, "said");
+        assert_eq!(helpers::player_story_len(@world, game_id_1), story_len_1, "said");
         //
         // ADMIN can play their someone else's game for debugging
         helpers::set_caller(OWNER());
         prompt.prompt("hello", Option::Some(game_id_2));
+        story_len_2 += 2;
         // no new game was minted
         assert_eq!(token.total_supply(), 2, "total_supply()");
         // more story was added
-        assert_eq!(helpers::player_story_len(@world, game_id_2), 5, "said");
+        assert_eq!(helpers::player_story_len(@world, game_id_2), story_len_2, "said");
     }
 
     #[test]
@@ -256,7 +265,7 @@ mod tests {
         prompt.prompt("g_game_id", Option::Some(game_id_0));
 // helpers::print_player_story_last_line(@world, game_id_0);
         assert_eq!(helpers::player_story_len(@world, game_id_0), 3, "said");
-        assert_eq!(helpers::player_story_last_line(@world, game_id_0), "+sys+0");
+        assert_eq!(helpers::player_story_last_line(@world, game_id_0), "+sys+game #0");
     }
 
     #[test]

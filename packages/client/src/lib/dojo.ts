@@ -26,7 +26,6 @@ export const InitDojo = async () => {
 			manifest,
 			rpcUrl,
 			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			relayUrl: "/ip4/127.0.0.1/tcp/9090/tcp/80",
 			masterAddress: LORE_CONFIG.wallet.address,
 			masterPrivateKey: LORE_CONFIG.wallet.private_key,
 			accountClassHash: LORE_CONFIG.manifest.world.class_hash,
@@ -37,7 +36,6 @@ export const InitDojo = async () => {
 		client: {
 			rpcUrl,
 			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			relayUrl: "/ip4/127.0.0.1/tcp/9090/tcp/80",
 			worldAddress: dojoConfig.manifest.world.address,
 		},
 		// Those values are used

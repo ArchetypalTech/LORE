@@ -321,7 +321,7 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_game_id") {
-            player.say(ref world, format!("+sys+{:?}", *player.game_id));
+            player.say(ref world, format!("+sys+game #{:?}", *player.game_id));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);

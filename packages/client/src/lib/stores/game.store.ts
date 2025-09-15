@@ -5,7 +5,7 @@ import { useWalletStore } from "./wallet.store";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
 import { InitDojo } from "../dojo";
-import type { SchemaType } from "../dojo_bindings/typescript/models.gen";
+import type { SchemaType, PlayerAccount } from "../dojo_bindings/typescript/models.gen";
 import * as torii from "@dojoengine/torii-client";
 
 const {
@@ -29,8 +29,8 @@ const {
  */
 const GameStore = createFactory({
 	setEditorGameId: (gameId: BigNumberish | undefined) => {
-		let editorGameId = gameId ? num.toBigInt(gameId) : undefined;
-		const isCurrent = (editorGameId !== undefined)
+		const isCurrent = (gameId !== undefined)
+		let editorGameId = (isCurrent ? num.toBigInt(gameId) : undefined);
 		set({ editorGameId });
 		if (isCurrent) {
 			set({ gameId: editorGameId });
@@ -38,7 +38,7 @@ const GameStore = createFactory({
 		console.log("GameStore.setEditorGameId:", gameId, isCurrent?"(CURRENT)":"");
 	},
 	setPlayerGameId: (gameId: BigNumberish | undefined) => {
-		let playerGameId = gameId ? num.toBigInt(gameId) : undefined;
+		let playerGameId = (gameId ? num.toBigInt(gameId) : undefined);
 		const isCurrent = (playerGameId !== undefined && get().editorGameId === undefined)
 		set({ playerGameId });
 		if (isCurrent) {
@@ -59,9 +59,7 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	// use game_id for the connected player
 	const { walletAddress, isConnected } = useWalletStore();
 	useEffect(() => {
-		let _subscription: torii.Subscription | undefined;
 		const _fetch = async (address: bigint) => {
-
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			const query = builder
 				.withCursor("")
@@ -76,24 +74,14 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				.withEntityModels(["lore-PlayerAccount"]);
 
 			try {
-				const { sub } = await InitDojo();
-				const [initialEntities, subscription] = await sub((response: {
-					data?: StandardizedQueryResult<SchemaType> | undefined;
-					error?: Error;
-				}) => {
-					if (response.error) {
-						console.error("useSyncGameId() sync error:", response.error);
-						return;
-					}
-					for (const responseData of response?.data || []) {
-						GameStore().setPlayerGameId(responseData.models?.lore?.PlayerAccount?.current_game_id);
-						sendCommand("_current_game");
-					}
-				}, query);
-				// store the subscription to cancel when unmounted
-				_subscription = subscription;
-				// store the player game id
-				GameStore().setPlayerGameId(initialEntities?.getItems()[0]?.models?.lore?.PlayerAccount?.current_game_id);
+				const { sdk } = await InitDojo();
+				const result = await sdk.getEntities({ query });
+				const playerAccount: PlayerAccount | undefined = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount;
+				if (playerAccount) {
+					GameStore().setPlayerGameId(playerAccount.current_game_id);
+				} else {
+					sendCommand(`_create_game`);
+				}
 			} catch (e) {
 				// const status = {
 				// 	status: "error",
@@ -109,9 +97,6 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 		const address = BigInt(walletAddress || 0);
 		if (address != 0n && isConnected) {
 			_fetch(address);
-		}
-		return () => {
-			_subscription?.cancel();
 		}
 	}, [walletAddress, isConnected]);
 

@@ -11,13 +11,14 @@ import type {
 	PlayerStory,
 	StoryLine,
 	SchemaType,
+	PlayerAccount,
 } from "../dojo_bindings/typescript/models.gen";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
 import { decodeDojoText, processWhitespaceTags } from "../utils/utils";
 import { addTerminalContent } from "./terminal.store";
-import WalletStore from "./wallet.store";
-import type { Subscription } from "rxjs";
+import { getPlayerAddress } from "@/editor/lib/components";
+import * as torii from "@dojoengine/torii-client";
 import GameStore from "./game.store";
 
 /**
@@ -49,7 +50,7 @@ const {
 	config: undefined as Awaited<ReturnType<typeof InitDojo>> | undefined,
 	lastProcessedText: "",
 	originalStoryLength: 0,
-	existingSubscription: undefined as Subscription | undefined,
+	existingSubscription: undefined as torii.Subscription | undefined,
 	// printedKeys: new Set<number>(),
 	printedKeys: new Set<number>(
 		JSON.parse(localStorage.getItem("printedKeys") || "[]")
@@ -162,12 +163,19 @@ const onReponseData = (
     // console.log("[DEBUG] onReponseData", responseData);
 
     // Check if there’s a PlayerStory update
-    if (responseData.PlayerStory && responseData.PlayerStory.story_line !== undefined) {
-        const playerStory = responseData.PlayerStory as PlayerStory;
+		const playerStory: PlayerStory | undefined = responseData.PlayerStory as PlayerStory;
+    if (playerStory && playerStory.story_line !== undefined) {
         // console.log("[DEBUG] RD playerStory received", playerStory);
-
         // Pass directly to setOutputter via onPlayerStory
         onPlayerStory(playerStory);
+    }
+
+		// if the player's game was created or has changed
+		const playerAccount: PlayerAccount = responseData.PlayerAccount as PlayerAccount;
+    if (playerAccount && playerAccount.current_game_id !== undefined) {
+			if (BigInt(playerAccount.address) === BigInt(getPlayerAddress())) {
+				GameStore().setPlayerGameId(playerAccount.current_game_id);
+			}
     }
 
     // Always sync EditorData for lore entities

@@ -123,17 +123,21 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_welcome_back: () => {
 		addTerminalContent({
-			text: `welcome back ${WalletStore().username}`,
+			text: `Welcome back ${WalletStore().username}`,
 			format: "hash",
 			useTypewriter: true,
 		});
 	},
 	_current_game: () => {
 		addTerminalContent({
-			text: GameStore().gameId != undefined ? `resuming game #${GameStore().gameId}` : `new game`,
+			text: GameStore().gameId != undefined ? `You are playing game #${GameStore().gameId}...` : `New game...`,
 			format: "hash",
 			useTypewriter: true,
 		});
+	},
+	_create_game: () => {
+		// an empty command will create a game if not already created
+		sendCommand(``);
 	},
 	_fatal_error: () => {
 		addTerminalContent({
@@ -187,6 +191,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		sendCommand("_current_game");
 	},
 	wallet: async () => {
 		if(!WalletStore().isConnected) {
