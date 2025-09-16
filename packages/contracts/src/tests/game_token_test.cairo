@@ -11,13 +11,14 @@ mod tests {
             prompt::{IPromptDispatcherTrait},
         },
         models::{
-            token_config::{ContractConfig, GameTokenInfo, PlayerAccount},
+            token_config::{GameTokenInfo, PlayerAccount},
+            admin::{AccountPermissions, AccountPermissionsTrait},
             player::{Player, PlayerImpl},
         },
         constants::{token as constants},
         tests::{
             helpers,
-            helpers::{ZERO, OWNER, OTHER, RECIPIENT},
+            helpers::{ZERO, OWNER, OTHER, ADMIN, RECIPIENT},
         },
     };
 
@@ -37,8 +38,16 @@ mod tests {
         assert_eq!(token.name(), constants::TOKEN_NAME(), "wrong name");
         assert_eq!(token.symbol(), constants::TOKEN_SYMBOL(), "wrong symbol");
 
-        let contract_config: ContractConfig = world.read_model(token.contract_address);
-        assert_eq!(contract_config.admin_address, OWNER(), "wrong admin address");
+        let permissions: AccountPermissions = world.read_model(OWNER());
+        assert_eq!(permissions.is_admin, true, "wrong admin OWNER");
+        assert_eq!(permissions.is_editor, true, "wrong editor OWNER");
+        assert!(AccountPermissionsTrait::is_admin(@world, OWNER()), "admin OWNER");
+        assert!(AccountPermissionsTrait::is_editor(@world, OWNER()), "editor OWNER");
+        let permissions: AccountPermissions = world.read_model(ADMIN());
+        assert_eq!(permissions.is_admin, true, "wrong admin ADMIN");
+        assert_eq!(permissions.is_editor, true, "wrong editor ADMIN");
+        assert!(AccountPermissionsTrait::is_admin(@world, ADMIN()), "admin ADMIN");
+        assert!(AccountPermissionsTrait::is_editor(@world, ADMIN()), "editor ADMIN");
     }
 
     #[test]
@@ -124,26 +133,64 @@ mod tests {
     }
 
     #[test]
-    fn test_token_set_admin() {
-        let (mut world, _, _, token, _, _) = helpers::setup_core();
-        // OWNER set admin to OTHER
-        helpers::set_caller(OWNER());
-        token.set_admin(OTHER());
-        let contract_config: ContractConfig = world.read_model(token.contract_address);
-        assert_eq!(contract_config.admin_address, OTHER(), "wrong admin address");
-        // OTHER set admin to RECIPIENT
-        helpers::set_caller(OTHER());
-        token.set_admin(RECIPIENT());
-        let contract_config: ContractConfig = world.read_model(token.contract_address);
-        assert_eq!(contract_config.admin_address, RECIPIENT(), "wrong admin address");
-    }
-
-    #[test]
     #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
     fn test_token_set_admin_not_admin() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OTHER());
-        token.set_admin(RECIPIENT());
+        token.set_admin(OTHER(), true);
+    }
+
+    #[test]
+    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
+    fn test_token_set_editor_not_admin() {
+        let (_, _, _, token, _, _) = helpers::setup_core();
+        helpers::set_caller(OTHER());
+        token.set_editor(OTHER(), true);
+    }
+
+    #[test]
+    fn test_token_set_admin_editor() {
+        let (mut world, _, _, token, _, _) = helpers::setup_core();
+        // OWNER set admin to OTHER
+        helpers::set_caller(OWNER());
+        token.set_admin(OTHER(), true);
+        let permissions: AccountPermissions = world.read_model(OTHER());
+        assert_eq!(permissions.is_admin, true, "wrong admin OTHER");
+        assert_eq!(permissions.is_editor, false, "wrong editor OTHER");
+        assert!(AccountPermissionsTrait::is_admin(@world, OTHER()), "admin OTHER");
+        assert!(AccountPermissionsTrait::is_editor(@world, OTHER()), "editor OTHER");
+        // OTHER set admin to RECIPIENT
+        helpers::set_caller(OTHER());
+        token.set_admin(RECIPIENT(), true);
+        let permissions: AccountPermissions = world.read_model(RECIPIENT());
+        assert_eq!(permissions.is_admin, true, "wrong admin RECIPIENT 1");
+        assert_eq!(permissions.is_editor, false, "wrong editor RECIPIENT 1");
+        assert!(AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 1");
+        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 1");
+        // OTHER set editor to RECIPIENT
+        helpers::set_caller(OTHER());
+        token.set_editor(RECIPIENT(), true);
+        let permissions: AccountPermissions = world.read_model(RECIPIENT());
+        assert_eq!(permissions.is_admin, true, "wrong admin RECIPIENT 2");
+        assert_eq!(permissions.is_editor, true, "wrong editor RECIPIENT 2");
+        assert!(AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 2");
+        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 2");
+        // OTHER set editor to RECIPIENT
+        helpers::set_caller(OTHER());
+        token.set_admin(RECIPIENT(), false);
+        let permissions: AccountPermissions = world.read_model(RECIPIENT());
+        assert_eq!(permissions.is_admin, false, "wrong admin RECIPIENT 3");
+        assert_eq!(permissions.is_editor, true, "wrong editor RECIPIENT 3");
+        assert!(!AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 3");
+        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 3");
+        // OTHER set editor to RECIPIENT
+        helpers::set_caller(OTHER());
+        token.set_editor(RECIPIENT(), false);
+        let permissions: AccountPermissions = world.read_model(RECIPIENT());
+        assert_eq!(permissions.is_admin, false, "wrong admin RECIPIENT 4");
+        assert_eq!(permissions.is_editor, false, "wrong editor RECIPIENT 4");
+        assert!(!AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 4");
+        assert!(!AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 4");
     }
 
     #[test]
@@ -235,7 +282,9 @@ mod tests {
     #[test]
     #[should_panic(expected: ('PROMPT: Not your game','ENTRYPOINT_FAILED'))]
     fn test_prompt_not_your_game() {
-        let (_, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
+        let (mut world, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
+        // initialize player singleton
+        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
         //
         // player_1 say something...
         let game_id_1: u128 = 1;

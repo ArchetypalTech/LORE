@@ -3,15 +3,6 @@ use starknet::ContractAddress;
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
-pub struct ContractConfig {
-    #[key]
-    pub contract_address: ContractAddress,
-    /// Properties ///
-    pub admin_address: ContractAddress,
-}
-
-#[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
-#[dojo::model]
 pub struct GameTokenInfo {
     #[key]
     pub game_id: u128,
@@ -48,20 +39,6 @@ pub struct PlayerAccount {
 //---------------------------------
 // Model Traits
 //
-// use lib::dns::{DnsTrait};
-
-#[generate_trait]
-pub impl ContractConfigImpl of ContractConfigTrait {
-    fn is_admin(world: @WorldStorage, contract_address: ContractAddress, address: ContractAddress) -> bool {
-        let config: ContractConfig = world.read_model(contract_address);
-        (config.admin_address == address)
-    }
-    fn set_admin(ref world: WorldStorage, contract_address: ContractAddress, address: ContractAddress) {
-        let mut config: ContractConfig = world.read_model(contract_address);
-        config.admin_address = address;
-        world.write_model(@config);
-    }
-}
 
 #[generate_trait]
 pub impl PlayerAccountImpl of PlayerAccountTrait {

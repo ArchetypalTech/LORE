@@ -15,10 +15,8 @@ pub mod prompt {
     use lore::{
         models::{
             player::{Player, PlayerImpl},
-            token_config::{
-                PlayerAccountTrait,
-                ContractConfigTrait,
-            },
+            token_config::{PlayerAccountTrait},
+            admin::{AccountPermissionsTrait},
         },
         lib::{
             a_lexer::{lexer},
@@ -33,7 +31,7 @@ pub mod prompt {
     mod Errors {
         pub const INVALID_CALLER: felt252       = 'PROMPT: Invalid caller';
         pub const NOT_YOUR_GAME: felt252        = 'PROMPT: Not your game';
-        pub const NO_PLAYER_COMPONENT: felt252  = 'PROMPT: No player component';
+        pub const NO_PLAYER_COMPONENT: felt252  = 'PROMPT: No Player component';
     }
 
     fn dojo_init(ref self: ContractState) {
@@ -130,7 +128,7 @@ pub mod prompt {
         fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
             (
                 self._caller_is_owner(world) ||
-                ContractConfigTrait::is_admin(world, starknet::get_contract_address(), starknet::get_caller_address())
+                AccountPermissionsTrait::is_admin(world, starknet::get_caller_address())
             )
         }
     }

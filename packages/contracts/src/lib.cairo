@@ -39,6 +39,7 @@ pub mod models {
     pub mod reactable;
     pub mod trigger;
     pub mod token_config;
+    pub mod admin;
 }
 
 pub mod types {

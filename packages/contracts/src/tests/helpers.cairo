@@ -25,7 +25,7 @@ use lore::{
     constants::{errors::{}},
     lib::{
         dictionary::{initialize_dictionary},
-        utils::{ByteArrayTraitExt},
+        utils::{ByteArrayTraitExt, SerializedAppend},
         dns::{DnsTrait},
     },
 };
@@ -40,8 +40,9 @@ pub fn set_caller(caller: ContractAddress) {
 
 pub fn ZERO()      -> ContractAddress { starknet::contract_address_const::<0x0>() }
 pub fn OWNER()     -> ContractAddress { starknet::contract_address_const::<0x1>() } // mock owner of duelists 1-2
-pub fn OTHER()     -> ContractAddress { starknet::contract_address_const::<0x3>() } // mock owner of duelists 3-4
-pub fn RECIPIENT() -> ContractAddress { starknet::contract_address_const::<0x222>() }
+pub fn OTHER()     -> ContractAddress { starknet::contract_address_const::<0x2>() } // mock owner of duelists 3-4
+pub fn ADMIN()     -> ContractAddress { starknet::contract_address_const::<0x3>() } // mock owner of duelists 3-4
+pub fn RECIPIENT() -> ContractAddress { starknet::contract_address_const::<0x4>() }
 
 
 
@@ -84,7 +85,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::action::m_ActionExecuted::TEST_CLASS_HASH),
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH),
             // game_token
-            TestResource::Model(models::token_config::m_ContractConfig::TEST_CLASS_HASH),
+            TestResource::Model(models::admin::m_AccountPermissions::TEST_CLASS_HASH),
             TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH),
             TestResource::Model(models::token_config::m_GameTokenInfo::TEST_CLASS_HASH),
             TestResource::Event(models::token_config::e_GameCreatedEvent::TEST_CLASS_HASH),
@@ -99,6 +100,9 @@ fn namespace_def() -> NamespaceDef {
 }
 
 fn core_contract_defs() -> Span<ContractDef> {
+    let mut game_token_init_calldata: Array<felt252> = array![];
+    let admin_accounts: Span<felt252> = array![ADMIN().into()].span();
+    game_token_init_calldata.append_serde(admin_accounts);
     [
         ContractDefTrait::new(@"lore", @"designer")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span()),
@@ -106,7 +110,7 @@ fn core_contract_defs() -> Span<ContractDef> {
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span()),
         ContractDefTrait::new(@"lore", @"game_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
-            .with_init_calldata([].span()),
+            .with_init_calldata(game_token_init_calldata.span()),
     ].span()
 }
 

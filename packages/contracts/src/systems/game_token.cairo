@@ -55,7 +55,8 @@ pub trait IGameToken<TState> {
     fn create_game(ref self: TState, recipient: ContractAddress) -> u128;
     // fn burn(ref self: TState, token_id: u256);
     fn set_paused(ref self: TState, is_paused: bool);
-    fn set_admin(ref self: TState, admin_address: ContractAddress);
+    fn set_admin(ref self: TState, account_address: ContractAddress, is_admin: bool);
+    fn set_editor(ref self: TState, account_address: ContractAddress, is_editor: bool);
     fn update_token_metadata(ref self: TState, token_id: u256);
     fn update_tokens_metadata(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract_metadata(ref self: TState);
@@ -67,7 +68,8 @@ pub trait IGameTokenPublic<TState> {
     // fn burn(ref self: TState, token_id: u256);
     // admin
     fn set_paused(ref self: TState, is_paused: bool);
-    fn set_admin(ref self: TState, admin_address: ContractAddress);
+    fn set_admin(ref self: TState, account_address: ContractAddress, is_admin: bool);
+    fn set_editor(ref self: TState, account_address: ContractAddress, is_editor: bool);
     fn update_token_metadata(ref self: TState, token_id: u256);
     fn update_tokens_metadata(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract_metadata(ref self: TState);
@@ -120,11 +122,13 @@ pub mod game_token {
     // ERC721 end
     //-----------------------------------
 
-    use lore::models::token_config::{
-        ContractConfig, ContractConfigTrait,
-        GameTokenInfo,
-        PlayerAccountTrait,
-        GameCreatedEvent,
+    use lore::models::{
+        admin::{AccountPermissionsTrait},
+        token_config::{
+            GameTokenInfo,
+            PlayerAccountTrait,
+            GameCreatedEvent,
+        },
     };
     use lore::constants::{token as constants};
     use lore::lib::{
@@ -137,7 +141,7 @@ pub mod game_token {
         pub const INVALID_CALLER: felt252   = 'ORUG: Invalid caller';
     }
 
-    fn dojo_init(ref self: ContractState) {
+    fn dojo_init(ref self: ContractState, admin_accounts: Array<ContractAddress>) {
         // initialize ERC721
         self.erc721_combo.initializer(
             constants::TOKEN_NAME(),
@@ -147,12 +151,16 @@ pub mod game_token {
             Option::None, // infinite supply
         );
 
-        // create token config
+        // set deployer as admin
         let mut world: WorldStorage = self.world_default();
-        world.write_model(@ContractConfig {
-            contract_address: starknet::get_contract_address(),
-            admin_address: starknet::get_execution_info().tx_info.account_contract_address,
-        });
+        let deployer_address: ContractAddress = starknet::get_execution_info().tx_info.account_contract_address;
+        AccountPermissionsTrait::set_is_admin(ref world, deployer_address, true);
+        AccountPermissionsTrait::set_is_editor(ref world, deployer_address, true);
+        // set admin accounts
+        for account_address in admin_accounts {
+            AccountPermissionsTrait::set_is_admin(ref world, account_address, true);
+            AccountPermissionsTrait::set_is_editor(ref world, account_address, true);
+        };
     }
 
     #[generate_trait]
@@ -221,10 +229,15 @@ pub mod game_token {
             self._assert_caller_is_admin(@world);
             self.erc721_combo._set_minting_paused(is_paused);
         }
-        fn set_admin(ref self: ContractState, admin_address: ContractAddress) {
+        fn set_admin(ref self: ContractState, account_address: ContractAddress, is_admin: bool) {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_admin(@world);
-            ContractConfigTrait::set_admin(ref world, starknet::get_contract_address(), admin_address);
+            AccountPermissionsTrait::set_is_admin(ref world, account_address, is_admin);
+        }
+        fn set_editor(ref self: ContractState, account_address: ContractAddress, is_editor: bool) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            AccountPermissionsTrait::set_is_editor(ref world, account_address, is_editor);
         }
         fn update_token_metadata(ref self: ContractState, token_id: u256) {
             // let mut world: WorldStorage = self.world_default();
@@ -263,7 +276,7 @@ pub mod game_token {
         fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
             (
                 self._caller_is_owner(world) ||
-                ContractConfigTrait::is_admin(world, starknet::get_contract_address(), starknet::get_caller_address())
+                AccountPermissionsTrait::is_admin(world, starknet::get_caller_address())
             )
         }
     }
