@@ -58,6 +58,7 @@ pub mod designer {
     use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::{
         models::{
+            admin::{AccountPermissionsTrait},
             entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
             index::{
                 DescriptionText,
@@ -84,11 +85,16 @@ pub mod designer {
         },
     };
 
+    mod Errors {
+        pub const NOT_EDITOR: felt252       = 'DESIGNER: Not editor';
+    }
+
     #[abi(embed_v0)]
     pub impl DesignerImpl of IDesigner<ContractState> {
         // register
         fn register_property_registry(ref self: ContractState, done: Array<bool>) {
             let mut world: WorldStorage = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for d in done {
                 if d {
                     VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
@@ -112,6 +118,7 @@ pub mod designer {
         // create
         fn create_entity(ref self: ContractState, t: Array<Entity>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             let mut worldSt: WorldStorage = self.world(@"lore");
             for o in t {
                 for alt_name in o.alt_names.clone() {
@@ -138,6 +145,7 @@ pub mod designer {
 
         fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Player);
             for o in t {
@@ -147,6 +155,7 @@ pub mod designer {
 
         fn create_reactable(ref self: ContractState, t: Array<Reactable>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Reactable);
             for o in t {
@@ -156,6 +165,7 @@ pub mod designer {
 
         fn create_description_text(ref self: ContractState, t: Array<DescriptionText>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for o in t {
                 world.write_model(@o);
             }
@@ -163,6 +173,7 @@ pub mod designer {
 
         fn create_area(ref self: ContractState, t: Array<Area>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Area);
             for o in t {
@@ -172,6 +183,7 @@ pub mod designer {
 
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Exit);
             for o in t {
@@ -181,6 +193,7 @@ pub mod designer {
 
         fn create_inventory_item(ref self: ContractState, t: Array<InventoryItem>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyHelper::register_component_properties(
                 ref worldSt, ComponentType::InventoryItem,
@@ -192,6 +205,7 @@ pub mod designer {
 
         fn create_container(ref self: ContractState, t: Array<Container>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Container);
             for o in t {
@@ -201,6 +215,7 @@ pub mod designer {
 
         fn create_trigger(ref self: ContractState, t: Array<Trigger>) {
             let mut world: WorldStorage = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for o in t {
                 let _result = TriggerImpl::register_trigger(ref world, @o);
                 // if result.is_err() {
@@ -214,6 +229,7 @@ pub mod designer {
 
         fn create_condition(ref self: ContractState, t: Array<Condition>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for o in t {
                 world.write_model(@o);
             }
@@ -221,6 +237,7 @@ pub mod designer {
 
         fn create_effect(ref self: ContractState, t: Array<Effect>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for o in t {
                 world.write_model(@o);
             }
@@ -228,6 +245,7 @@ pub mod designer {
 
         fn create_action(ref self: ContractState, t: Array<Action>) {
             let mut world: WorldStorage = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for o in t {
                 let _result = ActionImpl::register_action(ref world, @o);
                 // if result.is_err() {
@@ -241,6 +259,7 @@ pub mod designer {
 
         fn create_parent(ref self: ContractState, t: Array<ParentToChildren>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for o in t {
                 world.write_model(@o);
             }
@@ -248,6 +267,7 @@ pub mod designer {
 
         fn create_child(ref self: ContractState, t: Array<ChildToParent>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for o in t {
                 world.write_model(@o);
             }
@@ -256,6 +276,7 @@ pub mod designer {
         // delete
         fn delete_entity(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
@@ -267,6 +288,7 @@ pub mod designer {
 
         fn delete_player(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Player = world.read_model(inst);
                 world.erase_model(@model);
@@ -275,6 +297,7 @@ pub mod designer {
 
         fn delete_reactable(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Reactable = world.read_model(inst);
                 world.erase_model(@model);
@@ -283,6 +306,7 @@ pub mod designer {
 
         fn delete_description_text(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: DescriptionText = world.read_model(inst);
                 world.erase_model(@model);
@@ -291,6 +315,7 @@ pub mod designer {
 
         fn delete_area(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Area = world.read_model(inst);
                 world.erase_model(@model);
@@ -299,6 +324,7 @@ pub mod designer {
 
         fn delete_exit(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Exit = world.read_model(inst);
                 world.erase_model(@model);
@@ -307,6 +333,7 @@ pub mod designer {
 
         fn delete_inventory_item(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: InventoryItem = world.read_model(inst);
                 world.erase_model(@model);
@@ -315,6 +342,7 @@ pub mod designer {
 
         fn delete_container(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Container = world.read_model(inst);
                 world.erase_model(@model);
@@ -323,6 +351,7 @@ pub mod designer {
 
         fn delete_trigger(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world: WorldStorage = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Trigger = world.read_model(inst);
                 let _result = TriggerImpl::unregister_trigger(ref world, @model);
@@ -338,6 +367,7 @@ pub mod designer {
 
         fn delete_condition(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Condition = world.read_model(inst);
                 world.erase_model(@model);
@@ -346,6 +376,7 @@ pub mod designer {
 
         fn delete_effect(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Effect = world.read_model(inst);
                 world.erase_model(@model);
@@ -354,6 +385,7 @@ pub mod designer {
 
         fn delete_action(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world: WorldStorage = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: Action = world.read_model(inst);
                 let _result = ActionImpl::unregister_action(ref world, @model);
@@ -369,6 +401,7 @@ pub mod designer {
 
         fn delete_parent(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            self._assert_caller_is_editor(@world);
             for inst in ids {
                 let model: ParentToChildren = world.read_model(inst);
                 world.erase_model(@model);
@@ -381,6 +414,17 @@ pub mod designer {
                 let model: ChildToParent = world.read_model(inst);
                 world.erase_model(@model);
             }
+        }
+    }
+
+    //-----------------------------------
+    // Internal
+    //
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        #[inline(always)]
+        fn _assert_caller_is_editor(self: @ContractState, world: @WorldStorage) {
+            assert(AccountPermissionsTrait::is_editor(world, starknet::get_caller_address()), Errors::NOT_EDITOR);
         }
     }
 }
