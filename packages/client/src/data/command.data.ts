@@ -191,7 +191,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
-		sendCommand("_current_game");
 	},
 	wallet: async () => {
 		if(!WalletStore().isConnected) {

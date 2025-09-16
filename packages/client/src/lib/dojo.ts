@@ -76,7 +76,7 @@ export const InitDojo = async () => {
 		});
 	};
 
-	console.log( {sdk, dojoConfig, provider, query, sub})
+	// console.log( {sdk, dojoConfig, provider, query, sub})
 
 	return { sdk, dojoConfig, provider, query, sub };
 };

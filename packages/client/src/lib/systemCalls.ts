@@ -29,7 +29,7 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 		console.log(command);
 		const calldata = CallData.compile([
 			byteArray.byteArrayFromString(command),
-			game_id ? new CairoOption(CairoOptionVariant.Some, game_id) : new CairoOption(CairoOptionVariant.None)
+			game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
 		]);
 		if (LORE_CONFIG.useController) {
 			console.log("[CONTROLLER] execControllerCommand:", command, game_id, calldata);
@@ -46,7 +46,7 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 		}
 		console.timeEnd("calltime");
 	} catch (error) {
-		console.error("Error sending command:", error as Error);
+		console.error("Error sending command:", game_id, error as Error);
 	}
 }
 

@@ -88,12 +88,12 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 			.withEntityModels(["lore-StoryLine"]);
 
 		const result = await sdk.getEntities({ query });
-		console.log("[DEBUG:STORY_LINES] result", result);
+		// console.log("[DEBUG:OUTPUTTER] result", result);
 		result.getItems().forEach((entity) => {
 			const model = entity.models?.lore?.StoryLine;
 			if (
 				model &&
-				model.game_id &&
+				model.game_id !== undefined &&
 				model.key !== undefined &&
 				model.line &&
 				String(model.game_id) === String(playerStory.game_id)
@@ -147,7 +147,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 const onPlayerStory = (playerStory: PlayerStory) => {
 	const gameId = GameStore().gameId;
 	const normalizedStoryId = num.cleanHex(String(playerStory.game_id));
-	const normalizedGameId = gameId ? num.cleanHex(String(gameId)) : null;
+	const normalizedGameId = (gameId != null ? num.cleanHex(String(gameId)) : null);
 	// console.log("[DEBUG:STORY] normalizedStoryId", normalizedStoryId);
 	// console.log("[DEBUG:STORY] normalizedGameId", normalizedGameId, gameId);
 	if (normalizedStoryId === normalizedGameId) {
@@ -175,6 +175,7 @@ const onReponseData = (
     if (playerAccount && playerAccount.current_game_id !== undefined) {
 			if (BigInt(playerAccount.address) === BigInt(getPlayerAddress())) {
 				GameStore().setPlayerGameId(playerAccount.current_game_id);
+				sendCommand("_current_game");
 			}
     }
 

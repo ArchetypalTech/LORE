@@ -31,7 +31,7 @@ export default function Terminal({
 		status: { status },
 	} = useDojoStore();
 	const { terminalContent, activeTypewriterLine } = useTerminalStore();
-	const { originalStoryLength } = useDojoStore();
+	// const { originalStoryLength } = useDojoStore();
 
 	useEffect(() => {
 		// Focus input on mount
