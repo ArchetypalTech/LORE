@@ -15,7 +15,7 @@ pub struct AccountPermissions {
 //---------------------------------
 // Model Traits
 //
-// use lib::dns::{DnsTrait};
+use lore::models::token_config::{PlayerAccountTrait, GameTokenInfoTrait};
 
 #[generate_trait]
 pub impl AccountPermissionsImpl of AccountPermissionsTrait {
@@ -35,6 +35,12 @@ pub impl AccountPermissionsImpl of AccountPermissionsTrait {
     }
     fn is_editor(world: @WorldStorage, account_address: ContractAddress) -> bool {
         let config: AccountPermissions = world.read_model(account_address);
-        (config.is_admin || config.is_editor)
+        if (config.is_admin || config.is_editor) {
+            (true)
+        } else {
+            // get current game id
+            let game_id: u128 = PlayerAccountTrait::current_game_id(world, account_address);
+            (GameTokenInfoTrait::is_completed(world, game_id))
+        }
     }
 }

@@ -8,11 +8,12 @@ mod tests {
     use lore::{
         systems::{
             game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
+            designer::{IDesignerDispatcherTrait},
             prompt::{IPromptDispatcherTrait},
         },
         models::{
             entity::{Entity},
-            token_config::{GameTokenInfo, PlayerAccount},
+            token_config::{GameTokenInfo, GameTokenInfoTrait, PlayerAccount},
             admin::{AccountPermissions, AccountPermissionsTrait},
             player::{Player, PlayerImpl},
         },
@@ -192,6 +193,26 @@ mod tests {
         assert_eq!(permissions.is_editor, false, "wrong editor RECIPIENT 4");
         assert!(!AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 4");
         assert!(!AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 4");
+    }
+
+    #[test]
+    fn test_token_winners_can_edit() {
+        let (mut world, designer, prompt, token, _, _) = helpers::setup_core();
+        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
+        // mint game token
+        let game_id_1: u128 = 1;
+        helpers::set_caller(OTHER());
+        prompt.prompt("", Option::None);
+        assert_eq!(token.owner_of(game_id_1.into()), OTHER(), "owner_of()");
+        // set editor
+        helpers::set_caller(OWNER());
+        assert!(!AccountPermissionsTrait::is_editor(@world, OTHER()), "!editor");
+        // finish game -- granted editor
+        GameTokenInfoTrait::set_progress(ref world, game_id_1, 100);
+        assert!(AccountPermissionsTrait::is_editor(@world, OTHER()), "editor");
+        // can edit...
+        helpers::set_caller(OTHER());
+        designer.create_entity(array![helpers::create_new_entity(1, "entity_1")]);
     }
 
     #[test]
