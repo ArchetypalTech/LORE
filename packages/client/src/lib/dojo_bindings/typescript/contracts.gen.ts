@@ -969,19 +969,40 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_token_setAdmin_calldata = (adminAddress: string): DojoCall => {
+	const build_game_token_setAdmin_calldata = (accountAddress: string, isAdmin: boolean): DojoCall => {
 		return {
 			contractName: "game_token",
 			entrypoint: "set_admin",
-			calldata: [adminAddress],
+			calldata: [accountAddress, isAdmin],
 		};
 	};
 
-	const game_token_setAdmin = async (snAccount: Account | AccountInterface, adminAddress: string) => {
+	const game_token_setAdmin = async (snAccount: Account | AccountInterface, accountAddress: string, isAdmin: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_game_token_setAdmin_calldata(adminAddress),
+				build_game_token_setAdmin_calldata(accountAddress, isAdmin),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_game_token_setEditor_calldata = (accountAddress: string, isEditor: boolean): DojoCall => {
+		return {
+			contractName: "game_token",
+			entrypoint: "set_editor",
+			calldata: [accountAddress, isEditor],
+		};
+	};
+
+	const game_token_setEditor = async (snAccount: Account | AccountInterface, accountAddress: string, isEditor: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_token_setEditor_calldata(accountAddress, isEditor),
 				"lore",
 			);
 		} catch (error) {
@@ -1324,6 +1345,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetApprovalForAllCalldata: build_game_token_setApprovalForAll_calldata,
 			setAdmin: game_token_setAdmin,
 			buildSetAdminCalldata: build_game_token_setAdmin_calldata,
+			setEditor: game_token_setEditor,
+			buildSetEditorCalldata: build_game_token_setEditor_calldata,
 			setPaused: game_token_setPaused,
 			buildSetPausedCalldata: build_game_token_setPaused_calldata,
 			supportsInterface: game_token_supportsInterface,

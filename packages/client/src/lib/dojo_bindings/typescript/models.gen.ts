@@ -26,6 +26,13 @@ export interface ActionExecuted {
 	is_executed: boolean;
 }
 
+// Type definition for `lore::models::admin::AccountPermissions` struct
+export interface AccountPermissions {
+	account_address: string;
+	is_admin: boolean;
+	is_editor: boolean;
+}
+
 // Type definition for `lore::models::area::Area` struct
 export interface Area {
 	inst: BigNumberish;
@@ -189,19 +196,13 @@ export interface Reactable {
 	new_entry: string;
 }
 
-// Type definition for `lore::models::token_config::ContractConfig` struct
-export interface ContractConfig {
-	contract_address: string;
-	admin_address: string;
-}
-
 // Type definition for `lore::models::token_config::GameTokenInfo` struct
 export interface GameTokenInfo {
 	game_id: BigNumberish;
 	minter_address: string;
 	seed: BigNumberish;
 	act_number: BigNumberish;
-	room_inst: BigNumberish;
+	room_name: string;
 	progress: BigNumberish;
 	completed: boolean;
 }
@@ -431,6 +432,7 @@ export interface SchemaType extends ISchemaType {
 	lore: {
 		Action: Action,
 		ActionExecuted: ActionExecuted,
+		AccountPermissions: AccountPermissions,
 		Area: Area,
 		Condition: Condition,
 		Container: Container,
@@ -449,7 +451,6 @@ export interface SchemaType extends ISchemaType {
 		PlayerStory: PlayerStory,
 		StoryLine: StoryLine,
 		Reactable: Reactable,
-		ContractConfig: ContractConfig,
 		GameTokenInfo: GameTokenInfo,
 		PlayerAccount: PlayerAccount,
 		Trigger: Trigger,
@@ -484,6 +485,11 @@ export const schema: SchemaType = {
 			inst: 0,
 			key: 0,
 			is_executed: false,
+		},
+		AccountPermissions: {
+			account_address: "",
+			is_admin: false,
+			is_editor: false,
 		},
 		Area: {
 			inst: 0,
@@ -717,16 +723,12 @@ export const schema: SchemaType = {
 			already_shown: false,
 		new_entry: "",
 		},
-		ContractConfig: {
-			contract_address: "",
-			admin_address: "",
-		},
 		GameTokenInfo: {
 			game_id: 0,
 			minter_address: "",
 			seed: 0,
 			act_number: 0,
-			room_inst: 0,
+		room_name: "",
 			progress: 0,
 			completed: false,
 		},
@@ -826,6 +828,7 @@ export const schema: SchemaType = {
 export enum ModelsMapping {
 	Action = 'lore-Action',
 	ActionExecuted = 'lore-ActionExecuted',
+	AccountPermissions = 'lore-AccountPermissions',
 	Area = 'lore-Area',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
@@ -844,7 +847,6 @@ export enum ModelsMapping {
 	PlayerStory = 'lore-PlayerStory',
 	StoryLine = 'lore-StoryLine',
 	Reactable = 'lore-Reactable',
-	ContractConfig = 'lore-ContractConfig',
 	GameTokenInfo = 'lore-GameTokenInfo',
 	PlayerAccount = 'lore-PlayerAccount',
 	Trigger = 'lore-Trigger',
