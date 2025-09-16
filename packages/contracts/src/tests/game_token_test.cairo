@@ -126,7 +126,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('TOT: Invalid caller','ENTRYPOINT_FAILED'))]
     fn test_token_set_paused_not_admin() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OTHER());
@@ -134,7 +134,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('TOT: Invalid caller','ENTRYPOINT_FAILED'))]
     fn test_token_set_admin_not_admin() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OTHER());
@@ -142,7 +142,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('TOT: Invalid caller','ENTRYPOINT_FAILED'))]
     fn test_token_set_editor_not_admin() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OTHER());
