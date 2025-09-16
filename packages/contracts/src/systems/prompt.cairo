@@ -10,7 +10,7 @@ pub mod prompt {
     use super::{IPrompt};
     use starknet::{ContractAddress, get_caller_address};
     use dojo::{
-        world::{WorldStorage, IWorldDispatcherTrait}
+        world::{WorldStorage}
     };
     use lore::{
         models::{
@@ -24,13 +24,13 @@ pub mod prompt {
             random::{random_text},
             errors_texts_output::{ErrorOutputterImpl},
             dns::{DnsTrait, IGameTokenDispatcherTrait},
-            dns::{SELECTORS},
         },
     };
 
     mod Errors {
         pub const INVALID_CALLER: felt252       = 'PROMPT: Invalid caller';
         pub const NOT_YOUR_GAME: felt252        = 'PROMPT: Not your game';
+        pub const NOT_EDITOR: felt252           = 'PROMPT: Not editor';
         pub const NO_PLAYER_COMPONENT: felt252  = 'PROMPT: No Player component';
     }
 
@@ -79,15 +79,16 @@ pub mod prompt {
                 Option::Some(game_id) => {
                     // player was provided
                     if game_id == 0 {
-                        // Editor mode: admin only
-                        self._assert_caller_is_admin(@world);
+                        // only editors can play game #0
+                        assert(AccountPermissionsTrait::is_editor(@world, player_address), Errors::NOT_EDITOR);
                     } else {
                         // validate ownership
-                        assert(
+                        assert((
+                            // only owner can play
                             world.game_token_dispatcher().is_owner_of(player_address, game_id.into())
-                            || self._caller_is_admin(@world),
-                            Errors::NOT_YOUR_GAME
-                        );
+                            /// or admins for debugging
+                            || AccountPermissionsTrait::is_admin(@world, player_address)
+                        ), Errors::NOT_YOUR_GAME);
                         // set as current
                         PlayerAccountTrait::switch_game_id(ref world, player_address, game_id);
                     }
@@ -109,27 +110,6 @@ pub mod prompt {
             let player = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
             assert(player.is_some(), Errors::NO_PLAYER_COMPONENT);
             (player.unwrap())
-        }
-
-        //
-        // assertions
-        //
-        #[inline(always)]
-        fn _assert_caller_is_owner(self: @ContractState, world: @WorldStorage) {
-            assert(self._caller_is_owner(world), Errors::INVALID_CALLER);
-        }
-        #[inline(always)]
-        fn _assert_caller_is_admin(self: @ContractState, world: @WorldStorage) {
-            assert(self._caller_is_admin(world), Errors::INVALID_CALLER);
-        }
-        fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
-            ((*world.dispatcher).is_owner(SELECTORS::PROMPT, starknet::get_caller_address()))
-        }
-        fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
-            (
-                self._caller_is_owner(world) ||
-                AccountPermissionsTrait::is_admin(world, starknet::get_caller_address())
-            )
         }
     }
 

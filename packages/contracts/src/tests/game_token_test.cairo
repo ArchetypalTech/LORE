@@ -194,7 +194,7 @@ mod tests {
     }
 
     #[test]
-    fn test_prompt_mint_game() {
+    fn test_prompt_mint_game_ok() {
         let (mut world, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
         // initialize player singleton
         PlayerImpl::caller_as_player(ref world, OWNER(), 0);
@@ -293,13 +293,13 @@ mod tests {
         assert_eq!(token.total_supply(), 1, "total_supply()");
         assert_eq!(token.owner_of(game_id_1.into()), player_address_1, "owner_of()");
         //
-        // player_2 say something...
+        // player_2 tries to play player_1's game...
         helpers::set_caller(player_address_2);
         prompt.prompt("", Option::Some(game_id_1));
     }
 
     #[test]
-    fn test_prompt_editor() {
+    fn test_prompt_game_zero_ok() {
         let (mut world, _, prompt, token, _, _) = helpers::setup_core();
         // initialize player singleton
         PlayerImpl::caller_as_player(ref world, OWNER(), 0);
@@ -322,14 +322,29 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('PROMPT: Invalid caller','ENTRYPOINT_FAILED'))]
-    fn test_prompt_editor_not_admin() {
-        let (mut world, _, prompt, _, player_address_1, _) = helpers::setup_core();
+    fn test_prompt_game_zero_new_editor() {
+        let (mut world, _, prompt, token, _, _) = helpers::setup_core();
+        // initialize player singleton
+        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
+        //
+        // create new editor
+        helpers::set_caller(OWNER());
+        token.set_editor(OTHER(), true);
+        //
+        // player_1 say something...
+        helpers::set_caller(OTHER());
+        prompt.prompt("hello", Option::Some(0));
+    }
+
+    #[test]
+    #[should_panic(expected: ('PROMPT: Not editor','ENTRYPOINT_FAILED'))]
+    fn test_prompt_game_zero_not_editor() {
+        let (mut world, _, prompt, _, _, _) = helpers::setup_core();
         // initialize player singleton
         PlayerImpl::caller_as_player(ref world, OWNER(), 0);
         //
         // player_1 say something...
-        helpers::set_caller(player_address_1);
+        helpers::set_caller(OTHER());
         prompt.prompt("hello", Option::Some(0));
     }
 }
