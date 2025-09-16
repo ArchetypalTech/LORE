@@ -8,6 +8,7 @@ use lore::{
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
         index::{DescriptionText},
+        token_config::{GameTokenInfoTrait},
     },
     types::{command_type::Command},
     constants::errors::Error,
@@ -118,6 +119,7 @@ pub impl PlayerImpl of PlayerTrait {
         let mut player: Player = Component::add_component(ref world, entity.inst);
         // player.address = address; // ideally, should be the deployer
         player.game_id = 0;
+        player.location = 700111;
         player.store(ref world, 0);
         // create the reactable
         let mut reactable: Reactable = Component::add_component(ref world, entity.inst);
@@ -140,6 +142,8 @@ pub impl PlayerImpl of PlayerTrait {
         world.write_game_model(@new_player, game_id);
         // initialize player story
         new_player.say(ref world, "You feel light, and shiny, in the head");
+        // Save player progress
+        GameTokenInfoTrait::set_room(ref world, game_id, 1, new_player.location);
         // return the player
         (new_player)
     }
@@ -185,6 +189,10 @@ pub impl PlayerImpl of PlayerTrait {
         if self.use_debug {
             self.say(ref world, format!("You {:?} enter {:?}", player_entity, room_entity));
         }
+        // Save player progress
+        // TODO: find act number
+        let act_number: u8 = 1;
+        GameTokenInfoTrait::set_room(ref world, self.game_id, act_number, room_entity.inst);
     }
 
     // TODO: improve name and better description
@@ -350,6 +358,7 @@ mod tests {
         tests::helpers,
         models::{
             entity::{Entity, EntityImpl},
+            token_config::{GameTokenInfo},
             reactable::{Reactable, ReactableComponent},
             index::{DescriptionText},
         },
@@ -404,6 +413,7 @@ mod tests {
         let (mut world, _, _, _, player_address_1, player_address_2) = helpers::setup_core();
         let game_id_1: u128 = 123;
         let game_id_2: u128 = 456;
+        let default_room_id: felt252 = 700111;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_address_1, 0);
         let player_1: Player = PlayerImpl::caller_as_player(ref world, player_address_1, game_id_1);
         let player_2: Player = PlayerImpl::caller_as_player(ref world, player_address_2, game_id_2);
@@ -413,9 +423,9 @@ mod tests {
         assert_eq!(player.inst, 'Player');
         assert_eq!(player.inst, player_1.inst);
         assert_eq!(player.inst, player_2.inst);
-        assert_eq!(_player_location(@world, @player), 0, "before move");
-        assert_eq!(_player_location(@world, @player_1), 0, "before move");
-        assert_eq!(_player_location(@world, @player_2), 0, "before move");
+        assert_eq!(_player_location(@world, @player), default_room_id, "before move");
+        assert_eq!(_player_location(@world, @player_1), default_room_id, "before move");
+        assert_eq!(_player_location(@world, @player_2), default_room_id, "before move");
         assert!(player.get_room_entity(@world).is_none(), "before move");
         assert!(player_1.get_room_entity(@world).is_none(), "before move");
         assert!(player_2.get_room_entity(@world).is_none(), "before move");
@@ -433,12 +443,17 @@ mod tests {
         // move game instance players
         player_1.move_to_room(ref world, room_2_entity.inst);
         player_2.move_to_room(ref world, room_1_entity.inst);
-        assert_eq!(_player_location(@world, @player), 0, "moved game inst");
+        assert_eq!(_player_location(@world, @player), default_room_id, "moved game inst");
         assert_eq!(_player_location(@world, @player_1), room_2_entity.inst, "moved game inst");
         assert_eq!(_player_location(@world, @player_2), room_1_entity.inst, "moved game inst");
         assert_eq!(player.get_room_entity(@world).is_none(), true, "moved game inst");
         assert_eq!(player_1.get_room_entity(@world).unwrap().inst, room_2_entity.inst, "moved game inst");
         assert_eq!(player_2.get_room_entity(@world).unwrap().inst, room_1_entity.inst, "moved game inst");
+        // player token room
+        let token_info_1: GameTokenInfo = world.read_model(game_id_1);
+        let token_info_2: GameTokenInfo = world.read_model(game_id_2);
+        assert_eq!(token_info_1.room_name, room_2_entity.name.clone(), "new act");
+        assert_eq!(token_info_2.room_name, room_1_entity.name.clone(), "new act");
     }
 
     fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {

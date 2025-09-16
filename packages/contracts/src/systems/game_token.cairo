@@ -198,7 +198,7 @@ pub mod game_token {
                 minter_address: recipient,
                 seed,
                 act_number: 1,
-                room_inst: 0,
+                room_name: "The Void",
                 progress: 0,
                 completed: false,
             });
@@ -311,10 +311,10 @@ pub mod game_token {
                     key: "Act",
                     value: format!("{}", token_info.act_number),
                 },
-                // Attribute {
-                //     key: "Room",
-                //     value: format!("{}", token_info.room_inst),
-                // },
+                Attribute {
+                    key: "Room",
+                    value: token_info.room_name.clone(),
+                },
                 Attribute {
                     key: "Progress",
                     value: format!("{}%", token_info.progress),

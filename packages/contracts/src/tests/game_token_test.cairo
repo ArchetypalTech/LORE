@@ -11,6 +11,7 @@ mod tests {
             prompt::{IPromptDispatcherTrait},
         },
         models::{
+            entity::{Entity},
             token_config::{GameTokenInfo, PlayerAccount},
             admin::{AccountPermissions, AccountPermissionsTrait},
             player::{Player, PlayerImpl},
@@ -198,6 +199,8 @@ mod tests {
         let (mut world, _, prompt, token, player_address_1, player_address_2) = helpers::setup_core();
         // initialize player singleton
         PlayerImpl::caller_as_player(ref world, OWNER(), 0);
+        let room_entity: @Entity = @helpers::create_new_entity(700111, "Room 700111");
+        world.write_model(room_entity);
         //
         // player_1 say anything... (will create a game)
         let game_id_1: u128 = 1;
@@ -235,6 +238,9 @@ mod tests {
         // game was minted
         assert_eq!(token.total_supply(), 2, "total_supply()");
         assert_eq!(token.owner_of(game_id_2.into()), player_address_2, "owner_of()");
+        // player token room was initialized
+        let token_info_2: GameTokenInfo = world.read_model(game_id_2);
+        assert_eq!(token_info_2.room_name, room_entity.name.clone(), "token room name");
         // player was created
         let player_2: Player = PlayerImpl::get_player(@world, game_id_2).unwrap();
         assert_eq!(player_2.address, player_address_2, "player_2.address");

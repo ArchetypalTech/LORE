@@ -16,7 +16,7 @@ use lore::{
     },
     models,
     models::{
-        entity::{EntityImpl},
+        entity::{Entity, EntityImpl},
         player::{PlayerStory, StoryLine},
     },
     types::{
@@ -221,3 +221,12 @@ pub fn print_player_story_last_line(world: @WorldStorage, game_id: u128) {
     println!("___output: {:?}", player_story_last_line(world, game_id));
 }
 
+pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {
+    (Entity {
+        inst,
+        is_entity: true,
+        name,
+        alt_names: array![],
+        actions_keys: array![],
+    })
+}
