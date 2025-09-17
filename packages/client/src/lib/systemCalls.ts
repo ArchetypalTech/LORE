@@ -1,6 +1,6 @@
 import { LORE_CONFIG } from "@lib/config";
 import JSONbig from "json-bigint";
-import { BigNumberish, byteArray, CairoOption, CairoOptionVariant, CallData, type RawArgsArray } from "starknet";
+import { BigNumberish, byteArray, CairoOption, CairoOptionVariant, CallData, InvokeFunctionResponse, type RawArgsArray, Call } from "starknet";
 import { toCairoArray } from "@/editor/editor.utils";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
@@ -33,13 +33,18 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 		]);
 		if (LORE_CONFIG.useController) {
 			console.log("[CONTROLLER] execControllerCommand:", command, game_id, calldata);
-			WalletStore().controller?.account?.execute([
-				{
+			let calls: Call[] = [{
 					contractAddress: LORE_CONFIG.contracts.entity.address,
 					entrypoint: "prompt",
 					calldata,
-				},
-			]);
+				}];
+			const response: InvokeFunctionResponse | undefined = await WalletStore().controller?.account?.execute(calls);
+			// wait for transaction async
+			if (response) {
+				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+					validateReceiptStatus(receipt, calls); // just log!
+				});
+			}
 		} else {
 			console.log("[KATANA-DEV] execControllerCommand", command);
 			await LORE_CONFIG.contracts.entity.invoke("prompt", [calldata]);
@@ -102,22 +107,28 @@ async function execDesignerCall(props: DesignerCallProps) {
 		const data = toCairoArray(args).flat() as RawArgsArray;
 		const calldata = CallData.compile(data);
 
-		let response: unknown;
+		let response: InvokeFunctionResponse | undefined;
 		if (LORE_CONFIG.useController) {
 			if (!WalletStore().isConnected) {
 				throw new Error("Wallet not connected");
 			}
 			console.log("[CONTROLLER DESIGNERCALL]", call, args);
-			response = await WalletStore().controller?.account?.execute([
-				{
+			let calls: Call[] = [{
 					contractAddress: LORE_CONFIG.contracts.designer.address,
 					entrypoint: call,
 					calldata,
-				},
-			]);
+				}];
+			response = await WalletStore().controller?.account?.execute(calls);
+			// wait for transaction async
+			if (response) {
+				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+					validateReceiptStatus(receipt, calls); // just log!
+				});
+			}
 		} else {
 			response = await LORE_CONFIG.contracts.designer.invoke(call, calldata);
 		}
+
 		// we do a manual wait because the waitForTransaction is super slow
 		await new Promise((r) => setTimeout(r, 500));
 
@@ -133,6 +144,19 @@ async function execDesignerCall(props: DesignerCallProps) {
 		);
 	}
 }
+
+function validateReceiptStatus(receipt: any, calls: Call[]): boolean {
+  if (receipt.execution_status != 'SUCCEEDED') {
+    if (receipt.execution_status == 'REVERTED') {
+      console.error(`Transaction reverted:`, calls, receipt.revert_reason)
+    } else {
+      console.error(`Transaction error [${receipt.execution_status}]:`, calls, receipt)
+    }
+    return false
+  }
+  return true
+}
+
 
 /**
  * SystemCalls object that exports all the functions for external use.
