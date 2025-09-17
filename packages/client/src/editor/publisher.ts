@@ -283,7 +283,6 @@ const publishTrigger = async (
 			toEnumIndex(trigger.trigger_type, triggerType),
 			trigger.is_enabled,
 			trigger.is_once,
-			trigger.was_triggered,
 		];
 		await dispatchDesignerCall("create_trigger", [preparedTrigger]);
 	}
@@ -360,7 +359,6 @@ const publishAction = async (
 				num.toBigInt(b.toString()),
 			]),
 			action.tags.map((x) => byteArray.byteArrayFromString(x)),
-			action.executed ?? false,
 			action.failing_response.length > 0
 				? action.failing_response
 					.filter((x) => x.length > 0)
