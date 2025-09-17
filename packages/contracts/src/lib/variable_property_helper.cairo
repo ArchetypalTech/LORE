@@ -9,7 +9,7 @@ use lore::{
         inventoryItem::InventoryItemComponent, container::ContainerComponent,
         player::PlayerComponent,
     },
-    new_components::{container_trait::ContainerImpl},
+    new_components::{container_trait::ContainerImpl, player_trait::PlayerImpl},
     types::{
         property_type::{ComponentProperty, PropertyType, PropertyAccess},
         component_type::ComponentType,
@@ -400,6 +400,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         name: @ByteArray,
         property: @PropertyRegistry,
         new_value: @Array<(ByteArray, u32)>,
+        hex_value: @felt252,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let is_exit: ByteArray = "is_exit";
@@ -425,9 +426,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.is_enterable = new_var_value;
                             success = true;
                         } else if name == @leads_to {
-                            let (value, _index) = new_value[0].clone();
-                            let new_var_value = ByteArrayTraitExt::to_felt252_word(@value).unwrap();
-                            component.leads_to = new_var_value;
+                            let new_destination = hex_value.clone();
+                            component.leads_to = new_destination;
                             success = true;
                         } else if name == @direction_type {
                             let (value, _index) = new_value[0].clone();
@@ -462,6 +462,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let is_visible: ByteArray = "is_visible";
         let is_reactable: ByteArray = "is_reactable";
         let description: ByteArray = "description";
+        let new_entry: ByteArray = "new_entry";
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Ok(());
         for prop in property.properties.clone() {
@@ -505,6 +506,10 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                     component.description.append(index);
                                 };
                             };
+                            success = true;
+                        } else if name == @new_entry {
+                            let (value, _index) = new_value[0].clone();
+                            component.new_entry = value;
                             success = true;
                         }
                     },
@@ -684,7 +689,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         mut world: WorldStorage,
         name: @ByteArray,
         property: @PropertyRegistry,
-        new_value: @Array<(ByteArray, u32)>,
+        hex_value: @felt252,
     ) -> (Result::<(), Error>, bool) {
         // Define expected property names
         let location: ByteArray = "location";
@@ -697,15 +702,19 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @location {
-                            let (value, _index) = new_value[0].clone();
-                            component
-                                .location = ByteArrayTraitExt::to_felt252_word(@value)
-                                .unwrap();
+                            let new_location = hex_value.clone();
+                            // move player to new location
+                            component.move_to_room(world, new_location);
+                            // describe room
+                            let _ = component.describe_room(world);
                             success = true;
                         }
                     },
                 }
-                component.store(world);
+                // get player
+                let player: Player = world.read_model(component.inst);
+                // store player? not sure if needed
+                player.store(world);
                 break;
             }
         };
