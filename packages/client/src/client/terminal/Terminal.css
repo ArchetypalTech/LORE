@@ -42,6 +42,7 @@ input#terminal-input {
 /* Terminal line styling */
 .terminal-line {
 	font-size: 1.02em;
+	overflow-x: hidden;
 }
 
 .terminal-line.hash {

@@ -85,7 +85,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 			speed: 4,
-			style: { textAlign: "center" },
 		});
 	},
 	_description: () => {
@@ -94,19 +93,19 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 			speed: 4,
-			style: { textAlign: "center" },
 		});
 	},
+
 	_hint: () => {
 		addTerminalContent({
-			text: 'type [command] [target], or type "help"',
+			text: 'type [command] [target], or type "help" | "ls"',
 			format: "input",
 			useTypewriter: true,
 		});
 	},
 	_connect_wallet: () => {
 		addTerminalContent({
-			text: "type [connect] to connect",
+			text: "type [connect] and be able to [load] games or [create] a new one",
 			format: "hash",
 			useTypewriter: true,
 		});
@@ -121,7 +120,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	_welcome_back: () => {
 		addTerminalContent({
 			text: `welcome back ${WalletStore().username}`,
-			format: "hash",
+			format: "shog",
 			useTypewriter: true,
 		});
 	},
@@ -145,7 +144,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			return;
 		}
 		const res = await WalletStore().connectController();
-		console.log(res);
+		// console.log(res);
 		if (WalletStore().isConnected) {
 			const { username, walletAddress } = WalletStore();
 			addTerminalContent({
@@ -189,6 +188,31 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, true);
 	},
+	load: () => {
+		const text = [`██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████
+██░░░░░░░░░░░░░░░░░░░░░░░░▓▓▒▒░░▓▓░░░░▓▓░░░░▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓
+██░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▒
+██▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒▓▓░░▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓░░░░▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▒▒▓▓▒▒▓▓▓▓▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓░░░░░░▓▓▒▒▓▓▒▒░░░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓▒
+██▓▓▒▒▒▒░░██▓▓▒▒▒▒▒▒▒▒░░▒▒░░░░▓▓▒▒▒▒▓▓▓▓░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▓▓▒▒░░▓▓▒▒▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▓
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒░░▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓░░▒▒▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▒▒▒▒▓▓▒▒▒▒▓▓▒▒▒▒▓▓▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒
+██▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▒▒▒▒▒▒░░▓▓▒▒░░▒▒▓▓▓▓▒▒░░▒▒▓▓▒▒▓▓▓▓▓▓▒▒▒▒▒▒░
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████`, 
+"GAME LOADED"].join("\n")
+addTerminalContent({
+			text,
+			format: "out",
+			useTypewriter: true,
+			speed: 1
+		});
+	},
 	help:() => {
 		const header = "Entities/Objects might have the following properties that can be that allow you to interact with them:";
 		// Handle help command
@@ -198,6 +222,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 					`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`
 				)
 				.join("\n\n"),
+			format: "hash",
+			useTypewriter: true
+		});
+	},
+	ls:() => {
+		const text = ["load [game]","create [game]","","your existing games:", "> game-1", "> orug-2"].join("\n")
+		// Handle help command
+		addTerminalContent({
+			text,
 			format: "hash",
 			useTypewriter: true,
 		});

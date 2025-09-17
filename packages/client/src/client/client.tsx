@@ -25,7 +25,7 @@ export const Client = () => {
 			id="client-root"
 			className="relative flex h-screen w-screen items-center justify-center "
 		>
-			<div className="crt buzzing flex h-full max-h-[70%] w-full items-center justify-center">
+			<div className="crt buzzing flex h-full max-h-[100dvh] md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
 			</div>
 		</div>

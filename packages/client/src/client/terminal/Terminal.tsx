@@ -45,7 +45,7 @@ export default function Terminal() {
 
 	// Split handleKeyDown to reduce complexity
 	const handleUpArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-		console.log(e, inputHistoryIndex, inputHistory);
+		// console.log(e, inputHistoryIndex, inputHistory);
 		e.preventDefault();
 		if (inputHistoryIndex === 0) {
 			setOriginalInputValue(inputValue);
@@ -57,7 +57,7 @@ export default function Terminal() {
 	};
 
 	const handleDownArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-		console.log(e, inputHistoryIndex);
+		// console.log(e, inputHistoryIndex);
 		e.preventDefault();
 		if (inputHistoryIndex > 0) {
 			setInputHistoryIndex(inputHistoryIndex - 1);
@@ -121,7 +121,7 @@ export default function Terminal() {
 					onClick={focusInput}
 					aria-label="Terminal"
 					id="terminal"
-					className="shadow-2xl shadow-emerald-950 buzzing h-full w-full rounded-md overflow-y-auto border bg-black text-green-500"
+					className="shadow-2xl shadow-emerald-950 buzzing h-full w-full rounded-md overflow-y-auto md:border bg-black text-green-500"
 					style={{
 						borderColor:
 							status === "error" ? "var(--terminal-error)" : "var(--terminal-system)",
@@ -145,8 +145,8 @@ export default function Terminal() {
 								</div>
 							)}
 						</div>
-						<div className="sticky text-[1rem] bottom-16 h-1 w-full backdrop-blur-lg"></div>
-						<div className="flex flex-row p-4 pt-2 sticky bottom-0 z-10 theme-primary-background items-center">
+						<div className="sticky text-[1rem] z-10 bottom-[4.5em] md:bottom-[3.8rem] h-4 w-full backdrop-blur-lg"></div>
+						<div className="flex flex-row p-4 pb-6 md:pb-4 sticky bottom-0 z-10 theme-primary-background items-center">
 							{useTerminalStore().isPrinting && <LoadingMessage />}
 							{!useTerminalStore().isPrinting && <span className="text-2xl">&#x3e;</span>}
 							<textarea
