@@ -54,19 +54,18 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
         let area: Option<Area> = AreaComponent::get_component(@world, room_inst, game_id);
         // update token info
         let mut game_info: GameTokenInfo = world.read_model(game_id);
+        game_info.room_name = room_entity.name;
         match area {
             Option::Some(area) => {
                 let act_number: u8 =
                     if (area.progress_percentage < 33) {1}
                     else if (area.progress_percentage < 66) {2}
                     else {3};
-                game_info.room_name = room_entity.name;
                 game_info.act_number = core::cmp::max(game_info.act_number, act_number);
                 game_info.progress = core::cmp::min(core::cmp::max(game_info.progress, area.progress_percentage), 100);
                 game_info.completed = (game_info.progress == 100);
             },
             Option::None => {
-                game_info.room_name = "?";
                 game_info.act_number = 0;
                 game_info.progress = 0;
                 game_info.completed = false;

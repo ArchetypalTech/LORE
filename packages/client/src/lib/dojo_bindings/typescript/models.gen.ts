@@ -184,6 +184,7 @@ export interface StoryLine {
 	game_id: BigNumberish;
 	key: BigNumberish;
 	line: string;
+	line_type: StoryLineTypeEnum;
 }
 
 // Type definition for `lore::models::reactable::Reactable` struct
@@ -280,6 +281,16 @@ export interface GameCreatedEvent {
 	game_id: BigNumberish;
 	recipient: string;
 }
+
+// Type definition for `lore::models::player::StoryLineType` enum
+export const storyLineType = [
+	'Undefined',
+	'Command',
+	'Response',
+	'SysResponse',
+] as const;
+export type StoryLineType = { [key in typeof storyLineType[number]]: string };
+export type StoryLineTypeEnum = CairoCustomEnum;
 
 // Type definition for `lore::types::action_type::EffectType` enum
 export const effectType = [
@@ -711,6 +722,11 @@ export const schema: SchemaType = {
 			game_id: 0,
 			key: 0,
 		line: "",
+		line_type: new CairoCustomEnum({ 
+					Undefined: "",
+				Command: undefined,
+				Response: undefined,
+				SysResponse: undefined, }),
 		},
 		Reactable: {
 			inst: 0,
@@ -848,6 +864,7 @@ export enum ModelsMapping {
 	Player = 'lore-Player',
 	PlayerStory = 'lore-PlayerStory',
 	StoryLine = 'lore-StoryLine',
+	StoryLineType = 'lore-StoryLineType',
 	Reactable = 'lore-Reactable',
 	GameTokenInfo = 'lore-GameTokenInfo',
 	PlayerAccount = 'lore-PlayerAccount',

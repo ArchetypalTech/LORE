@@ -56,6 +56,17 @@ pub struct StoryLine {
     pub key: CounterType,
     /// Story line
     pub line: ByteArray,
+    /// Line type
+    pub line_type: StoryLineType,
+}
+
+#[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
+pub enum StoryLineType {
+    #[default]
+    Undefined,
+    Command,
+    Response,
+    SysResponse,
 }
 
 const SINGLETON_PLAYER_INST: felt252 = 'Player';
@@ -194,11 +205,23 @@ pub impl PlayerImpl of PlayerTrait {
         GameTokenInfoTrait::set_room(ref world, self.game_id, room_entity.inst);
     }
 
-    // TODO: improve name and better description
     fn say(self: @Player, ref world: WorldStorage, text: ByteArray) {
-        let increase: CounterType = 1;
-        
+        Self::_log_story_line(self, ref world, text, StoryLineType::Response);
+    }
+
+    fn log_command(self: @Player, ref world: WorldStorage, text: ByteArray) {
+        Self::_log_story_line(self, ref world, text, StoryLineType::Command);
+    }
+
+    fn log_sys(self: @Player, ref world: WorldStorage, text: ByteArray) {
+        Self::_log_story_line(self, ref world, text, StoryLineType::SysResponse);
+    }
+
+    fn _log_story_line(self: @Player, ref world: WorldStorage, text: ByteArray, line_type: StoryLineType) {
+        if text == "" { return; }
+
         // PlayerStory is saved by player instance
+        let increase: CounterType = 1;
         let mut player_story: PlayerStory = world.read_model(*self.game_id);
         player_story.story_line += increase;
         world.write_model(@player_story);
@@ -208,11 +231,8 @@ pub impl PlayerImpl of PlayerTrait {
             game_id: *self.game_id,
             key: player_story.story_line,
             line: text,
+            line_type,
         });
-    }
-
-    fn add_command_text(self: @Player, ref world: WorldStorage, text: ByteArray) {
-        Self::say(self, ref world, text);
     }
 
     fn get_room_entity(self: @Player, world: @WorldStorage) -> Option<Entity> {
@@ -355,6 +375,7 @@ mod tests {
     use super::*;
     use lore::{
         tests::helpers,
+        systems::prompt::{IPromptDispatcherTrait},
         models::{
             entity::{Entity, EntityImpl},
             token_config::{GameTokenInfo},
@@ -400,6 +421,7 @@ mod tests {
 
         let story_line: StoryLine = world.read_model((story.game_id, story_key));
         assert(story_line.line == test_text, 'story has "hello"');
+        assert(story_line.line_type == StoryLineType::Response, 'command has "hello"');
     }
 
     fn _player_location(world: @WorldStorage, player: @Player) -> felt252 {
@@ -409,25 +431,7 @@ mod tests {
 
     #[test]
     fn test_player_room() {
-        let (mut world, _, _, _, player_address_1, player_address_2) = helpers::setup_core();
-        let game_id_1: u128 = 123;
-        let game_id_2: u128 = 456;
-        let default_room_id: felt252 = 700111;
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_address_1, 0);
-        let player_1: Player = PlayerImpl::caller_as_player(ref world, player_address_1, game_id_1);
-        let player_2: Player = PlayerImpl::caller_as_player(ref world, player_address_2, game_id_2);
-        assert!(player.is_player, "is_player");
-        assert!(player_1.is_player, "is_player");
-        assert!(player_2.is_player, "is_player");
-        assert_eq!(player.inst, 'Player');
-        assert_eq!(player.inst, player_1.inst);
-        assert_eq!(player.inst, player_2.inst);
-        assert_eq!(_player_location(@world, @player), default_room_id, "before move");
-        assert_eq!(_player_location(@world, @player_1), default_room_id, "before move");
-        assert_eq!(_player_location(@world, @player_2), default_room_id, "before move");
-        assert!(player.get_room_entity(@world).is_none(), "before move");
-        assert!(player_1.get_room_entity(@world).is_none(), "before move");
-        assert!(player_2.get_room_entity(@world).is_none(), "before move");
+        let (mut world, _, prompt, _, player_address_1, player_address_2) = helpers::setup_core();
         // create some rooms
         let room_1_entity: Entity = EntityImpl::create_entity(ref world, "room_1");
         let room_2_entity: Entity = EntityImpl::create_entity(ref world, "room_2");
@@ -436,6 +440,33 @@ mod tests {
         assert_ne!(room_1_entity.inst, 0, "room_1_entity.inst > 0");
         assert_ne!(room_2_entity.inst, 0, "room_2_entity.inst > 0");
         assert_ne!(room_1_entity.inst, room_2_entity.inst, "room_1_entity.inst != room_2_entity.inst");
+        // create base player
+        let default_room_id: felt252 = 700111;
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_address_1, 0);
+        helpers::set_caller(player_address_1);
+        // mint game instance for players
+        let game_id_1: u128 = 1;
+        let game_id_2: u128 = 2;
+        prompt.prompt("", Option::None);
+        helpers::set_caller(player_address_2);
+        prompt.prompt("", Option::None);
+        helpers::set_caller(helpers::OWNER());
+        let player_1: Player = PlayerImpl::get_player(@world, game_id_1).unwrap();
+        let player_2: Player = PlayerImpl::get_player(@world, game_id_2).unwrap();
+        assert!(player.is_player, "is_player");
+        assert!(player_1.is_player, "is_player");
+        assert!(player_2.is_player, "is_player");
+        assert_eq!(player.inst, 'Player');
+        assert_eq!(player.inst, player_1.inst);
+        assert_eq!(player.inst, player_2.inst);
+        assert_eq!(player_1.game_id, game_id_1);
+        assert_eq!(player_2.game_id, game_id_2);
+        assert_eq!(_player_location(@world, @player), default_room_id, "before move");
+        assert_eq!(_player_location(@world, @player_1), default_room_id, "before move");
+        assert_eq!(_player_location(@world, @player_2), default_room_id, "before move");
+        assert!(player.get_room_entity(@world).is_none(), "before move");
+        assert!(player_1.get_room_entity(@world).is_none(), "before move");
+        assert!(player_2.get_room_entity(@world).is_none(), "before move");
         // change room 2 description
         world.write_model(@DescriptionText { inst: room_2_entity.inst, key: 0, text: "something else" });
         //

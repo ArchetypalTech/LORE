@@ -49,7 +49,7 @@ pub mod prompt {
 
             // empty prompt, do nothing (good to initialize a game)
             if (cmd.len() > 0) {
-                player.add_command_text(ref world, cmd.clone());
+                player.log_command(ref world, cmd.clone());
                 match (lexer::parse(cmd, world, player)) {
                     Result::Ok(result) => {
                         let res = handle_command(@result, ref world, @player);

@@ -262,66 +262,66 @@ fn system_command(
             let mut modified_player = player.clone();
             modified_player.use_debug = !*player.use_debug;
             if modified_player.use_debug {
-                player.say(ref world, "+sys+you are in debug mode");
+                player.log_sys(ref world, "+sys+you are in debug mode");
             } else {
-                player.say(ref world, "+sys+you are no longer in debug mode");
+                player.log_sys(ref world, "+sys+you are no longer in debug mode");
             }
             modified_player.store(ref world, *player.game_id);
             return Result::Ok(());
         }
         if (system_command == "g_command") {
             // println!("g_command: {:?}", system_command);
-            player.say(ref world, format!("+sys+{:?}", command));
+            player.log_sys(ref world, format!("+sys+{:?}", command));
             return Result::Ok(());
         }
         if (system_command == "g_move") {
             player.clone().move_to_room(ref world, 2826);
-            player.say(ref world, "+sys+forced move command");
+            player.log_sys(ref world, "+sys+forced move command");
             let room = player.get_room_entity(@world);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
             let reactable: Reactable = Component::get_component(@world, room.unwrap().inst, *player.game_id).unwrap();
-            player.say(ref world, format!("+sys+{:?}", reactable));
+            player.log_sys(ref world, format!("+sys+{:?}", reactable));
             return Result::Ok(());
         }
         if (system_command == "g_init_dict") {
             init_dictionary(world);
             init_system_dictionary(world);
-            player.say(ref world, "+sys+dictionary re-initialized");
+            player.log_sys(ref world, "+sys+dictionary re-initialized");
             return Result::Ok(());
         }
         if (system_command == "g_level") {
             create_test_level(ref world);
-            player.say(ref world, "+sys+created test level");
+            player.log_sys(ref world, "+sys+created test level");
             return Result::Ok(());
         }
         if (system_command == "g_whereami") {
-            player.say(ref world, "+sys+you are here:");
+            player.log_sys(ref world, "+sys+you are here:");
             let room = player.get_room_entity(@world);
-            player.say(ref world, format!("+sys+{:?}", room));
-            player.say(ref world, format!("+sys+{:?}", player.entity(@world).get_parent(@world, *player.game_id)));
+            player.log_sys(ref world, format!("+sys+{:?}", room));
+            player.log_sys(ref world, format!("+sys+{:?}", player.entity(@world).get_parent(@world, *player.game_id)));
             return Result::Ok(());
         }
         if (system_command == "g_look") {
-            player.say(ref world, "+sys+you see this:");
+            player.log_sys(ref world, "+sys+you see this:");
             let context = player.get_context(@world);
             let room = player.get_room_entity(@world);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
-            player.say(ref world, format!("{}", room.unwrap().name));
+            player.log_sys(ref world, format!("{}", room.unwrap().name));
             for item in context {
                 let reactable: Option<Reactable> = Component::get_component(@world, item.inst, *player.game_id);
                 if reactable.is_some() {
                     let description = reactable.unwrap().get_random_description(command, world);
-                    player.say(ref world, format!("{}", description));
+                    player.log_sys(ref world, format!("{}", description));
                 }
             };
             return Result::Ok(());
         }
         if (system_command == "g_game_id") {
-            player.say(ref world, format!("+sys+game #{:?}", *player.game_id));
+            player.log_sys(ref world, format!("+sys+game #{:?}", *player.game_id));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);
