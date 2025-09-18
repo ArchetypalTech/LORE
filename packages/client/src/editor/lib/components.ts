@@ -105,6 +105,7 @@ export const createDefaultAreaComponent = (
 		inst: entity.inst,
 		is_area: true,
 		is_spawn_point: false,
+		progress_percentage: 0,
 	},
 });
 

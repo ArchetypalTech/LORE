@@ -1218,7 +1218,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_prompt_prompt_calldata = (cmd: string, gameId: CairoOption<BigNumberish>): DojoCall => {
+	const build_prompt_prompt_calldata = (cmd: string, gameId: option): DojoCall => {
 		return {
 			contractName: "prompt",
 			entrypoint: "prompt",
@@ -1226,7 +1226,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const prompt_prompt = async (snAccount: Account | AccountInterface, cmd: string, gameId: CairoOption<BigNumberish>) => {
+	const prompt_prompt = async (snAccount: Account | AccountInterface, cmd: string, gameId: option) => {
 		try {
 			return await provider.execute(
 				snAccount,

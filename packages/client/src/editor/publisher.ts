@@ -208,6 +208,7 @@ const publishArea = async (area: Area) => {
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
 		area.is_spawn_point,
+		Number(area.progress_percentage ?? '0'),
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };
@@ -327,7 +328,7 @@ const publishEffect = async (
 				num.toBigInt(i.toString() ?? 0),
 			]),
 			num.toBigInt(effect.n_value.toString() ?? 0),
-			num.toBigInt(effect.hex_value.toString() ?? num.toBigInt("0")),
+			num.toBigInt(effect.hex_value?.toString() ?? num.toBigInt("0")),
 		];
 		await dispatchDesignerCall("create_effect", [preparedEffect]);
 	}

@@ -110,7 +110,7 @@ const EffectItem = ({
         />
         <EntitySelector
           id="hex_value"
-          value={effectObj.hex_value.toString()}
+          value={effectObj.hex_value?.toString() || "0"}
           onChange={handleInputChange(idx)}
           dataPool={dataPool}
         />

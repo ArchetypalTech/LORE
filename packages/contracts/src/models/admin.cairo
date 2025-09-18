@@ -40,7 +40,7 @@ pub impl AccountPermissionsImpl of AccountPermissionsTrait {
         } else {
             // get current game id
             let game_id: u128 = PlayerAccountTrait::current_game_id(world, account_address);
-            (GameTokenInfoTrait::is_completed(world, game_id))
+            (GameTokenInfoTrait::has_finished_game(world, game_id))
         }
     }
 }

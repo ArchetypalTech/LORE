@@ -143,7 +143,7 @@ pub impl PlayerImpl of PlayerTrait {
         // initialize player story
         new_player.say(ref world, "You feel light, and shiny, in the head");
         // Save player progress
-        GameTokenInfoTrait::set_room(ref world, game_id, 1, new_player.location);
+        GameTokenInfoTrait::set_room(ref world, game_id, new_player.location);
         // return the player
         (new_player)
     }
@@ -191,8 +191,7 @@ pub impl PlayerImpl of PlayerTrait {
         }
         // Save player progress
         // TODO: find act number
-        let act_number: u8 = 1;
-        GameTokenInfoTrait::set_room(ref world, self.game_id, act_number, room_entity.inst);
+        GameTokenInfoTrait::set_room(ref world, self.game_id, room_entity.inst);
     }
 
     // TODO: improve name and better description

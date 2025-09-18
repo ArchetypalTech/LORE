@@ -16,6 +16,7 @@ mod tests {
             token_config::{GameTokenInfo, GameTokenInfoTrait, PlayerAccount},
             admin::{AccountPermissions, AccountPermissionsTrait},
             player::{Player, PlayerImpl},
+            area::{Area, AreaComponent},
         },
         constants::{token as constants},
         tests::{
@@ -199,6 +200,12 @@ mod tests {
     fn test_token_winners_can_edit() {
         let (mut world, designer, prompt, token, _, _) = helpers::setup_core();
         PlayerImpl::caller_as_player(ref world, OWNER(), 0);
+        // create an end room
+        let room_entity_1: @Entity = @helpers::create_new_entity(1, "Room 1");
+        let mut area_1: Area = AreaComponent::add_component(ref world, *room_entity_1.inst);
+        world.write_model(room_entity_1);
+        area_1.progress_percentage = 100;
+        world.write_model(@area_1);
         // mint game token
         let game_id_1: u128 = 1;
         helpers::set_caller(OTHER());
@@ -208,7 +215,8 @@ mod tests {
         helpers::set_caller(OWNER());
         assert!(!AccountPermissionsTrait::is_editor(@world, OTHER()), "!editor");
         // finish game -- granted editor
-        GameTokenInfoTrait::set_progress(ref world, game_id_1, 100);
+        GameTokenInfoTrait::set_room(ref world, game_id_1, *room_entity_1.inst);
+        assert!(GameTokenInfoTrait::has_finished_game(@world, game_id_1), "has_finished_game");
         assert!(AccountPermissionsTrait::is_editor(@world, OTHER()), "editor");
         // can edit...
         helpers::set_caller(OTHER());

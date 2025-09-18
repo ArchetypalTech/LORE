@@ -19,6 +19,8 @@ pub struct Area {
     /// Properties ///
     /// If the area is a spawn point for players
     pub is_spawn_point: bool,
+    /// progress percentage when entering this area
+    pub progress_percentage: u8, // 0-100
 }
 
 
@@ -81,6 +83,7 @@ pub impl AreaComponent of Component<Area> {
         let mut area: Area = world.read_model(inst);
         area.inst = inst;
         area.is_area = true;
+        area.progress_percentage = 0;
         area.store(ref world, 0);
         // Return the component
         area
