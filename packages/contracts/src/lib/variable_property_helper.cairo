@@ -729,9 +729,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         if name == @location {
                             let new_location = hex_value.clone();
                             // move player to new location
-                            component.move_to_room(world, new_location);
+                            component.move_to_room(ref world, new_location);
                             // describe room
-                            let _ = component.describe_room(world);
+                            let _ = component.describe_room(ref world);
                             success = true;
                         }
                     },

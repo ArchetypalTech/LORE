@@ -91,7 +91,7 @@ pub impl EffectImpl of EffectTrait {
                         let property_registry: PropertyRegistry = world.read_model(*self.component);
                         // Direct modification to component
                         let (result_p, _success_p) = VariablePropertyHelper::set_exit_property(
-                            ref exit, ref world, self.property, @property_registry, self.value.span(), game_id,
+                            ref exit, ref world, self.property, @property_registry, self.value.span(), self.hex_value, game_id,
                         );
                         result = result_p;
                     },
@@ -164,7 +164,7 @@ pub impl EffectImpl of EffectTrait {
                         let property_registry: PropertyRegistry = world.read_model(*self.component);
                         // Direct modification to component
                         let (result_p, _success_p) = VariablePropertyHelper::set_player_property(
-                            ref player, ref world, self.property, @property_registry, self.value.span(), game_id,
+                            ref player, ref world, self.property, @property_registry, self.value.span(), self.hex_value, game_id,
                         );
                         result = result_p;
                     },
