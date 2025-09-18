@@ -163,7 +163,7 @@ pub impl ReactableComponent of Component<Reactable> {
                 return Result::Ok(());
             },
         }
-        Result::Err(Error::ActionFailed)
+        // Result::Err(Error::ActionFailed) // Unreachable code
     }
 
     // used for tests only

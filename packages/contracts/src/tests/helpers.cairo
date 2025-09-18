@@ -31,18 +31,18 @@ use lore::{
 };
 
 
-use starknet::{ContractAddress, contract_address_const, testing};
+use starknet::{ContractAddress, testing};
 
 pub fn set_caller(caller: ContractAddress) {
     starknet::testing::set_account_contract_address(caller);    // starknet::get_execution_info().tx_info.account_contract_address
     starknet::testing::set_contract_address(caller);            // starknet::get_execution_info().contract_address
 }
 
-pub fn ZERO()      -> ContractAddress { starknet::contract_address_const::<0x0>() }
-pub fn OWNER()     -> ContractAddress { starknet::contract_address_const::<0x1>() } // mock owner of duelists 1-2
-pub fn OTHER()     -> ContractAddress { starknet::contract_address_const::<0x2>() } // mock owner of duelists 3-4
-pub fn ADMIN()     -> ContractAddress { starknet::contract_address_const::<0x3>() } // mock owner of duelists 3-4
-pub fn RECIPIENT() -> ContractAddress { starknet::contract_address_const::<0x4>() }
+pub fn ZERO()      -> ContractAddress { 0x0.try_into().unwrap() }
+pub fn OWNER()     -> ContractAddress { 0x1.try_into().unwrap() } // mock owner of duelists 1-2
+pub fn OTHER()     -> ContractAddress { 0x2.try_into().unwrap() } // mock owner of duelists 3-4
+pub fn ADMIN()     -> ContractAddress { 0x3.try_into().unwrap() } // mock owner of duelists 3-4
+pub fn RECIPIENT() -> ContractAddress { 0x4.try_into().unwrap() }
 
 
 
@@ -62,37 +62,37 @@ fn namespace_def() -> NamespaceDef {
     let ndef = NamespaceDef {
         namespace: "lore",
         resources: [
-            TestResource::Model(models::index::m_Dict::TEST_CLASS_HASH),
-            TestResource::Model(models::player::m_Player::TEST_CLASS_HASH),
-            TestResource::Model(models::player::m_PlayerStory::TEST_CLASS_HASH),
-            TestResource::Model(models::player::m_StoryLine::TEST_CLASS_HASH),
-            TestResource::Model(models::entity::m_Entity::TEST_CLASS_HASH),
-            TestResource::Model(models::reactable::m_Reactable::TEST_CLASS_HASH),
-            TestResource::Model(models::index::m_DescriptionText::TEST_CLASS_HASH),
-            TestResource::Model(models::area::m_Area::TEST_CLASS_HASH),
-            TestResource::Model(models::exit::m_Exit::TEST_CLASS_HASH),
-            TestResource::Model(models::container::m_Container::TEST_CLASS_HASH),
-            TestResource::Model(models::inventory_item::m_InventoryItem::TEST_CLASS_HASH),
-            TestResource::Model(models::entity::m_ParentToChildren::TEST_CLASS_HASH),
-            TestResource::Model(models::entity::m_ChildToParent::TEST_CLASS_HASH),
-            TestResource::Model(models::trigger::m_Trigger::TEST_CLASS_HASH),
-            TestResource::Model(models::trigger::m_TriggerIndex::TEST_CLASS_HASH),
-            TestResource::Model(models::trigger::m_TriggerExecuted::TEST_CLASS_HASH),
-            TestResource::Model(models::condition::m_Condition::TEST_CLASS_HASH),
-            TestResource::Model(models::index::m_PropertyRegistry::TEST_CLASS_HASH),
-            TestResource::Model(models::effect::m_Effect::TEST_CLASS_HASH),
-            TestResource::Model(models::action::m_Action::TEST_CLASS_HASH),
-            TestResource::Model(models::action::m_ActionExecuted::TEST_CLASS_HASH),
-            TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH),
+            TestResource::Model(models::index::m_Dict::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::player::m_Player::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::player::m_PlayerStory::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::player::m_StoryLine::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::entity::m_Entity::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::reactable::m_Reactable::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::index::m_DescriptionText::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::area::m_Area::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::exit::m_Exit::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::container::m_Container::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::inventory_item::m_InventoryItem::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::entity::m_ParentToChildren::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::entity::m_ChildToParent::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::trigger::m_Trigger::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::trigger::m_TriggerIndex::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::trigger::m_TriggerExecuted::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::condition::m_Condition::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::index::m_PropertyRegistry::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::effect::m_Effect::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::action::m_Action::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::action::m_ActionExecuted::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
             // game_token
-            TestResource::Model(models::admin::m_AccountPermissions::TEST_CLASS_HASH),
-            TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH),
-            TestResource::Model(models::token_config::m_GameTokenInfo::TEST_CLASS_HASH),
-            TestResource::Event(models::token_config::e_GameCreatedEvent::TEST_CLASS_HASH),
+            TestResource::Model(models::admin::m_AccountPermissions::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::token_config::m_GameTokenInfo::TEST_CLASS_HASH.into()),
+            TestResource::Event(models::token_config::e_GameCreatedEvent::TEST_CLASS_HASH.into()),
             // TestResource::Event(),
-            TestResource::Contract(prompt::TEST_CLASS_HASH),
-            TestResource::Contract(designer::TEST_CLASS_HASH),
-            TestResource::Contract(game_token::TEST_CLASS_HASH),
+            TestResource::Contract(prompt::TEST_CLASS_HASH.into()),
+            TestResource::Contract(designer::TEST_CLASS_HASH.into()),
+            TestResource::Contract(game_token::TEST_CLASS_HASH.into()),
         ].span(),
     };
 
@@ -146,8 +146,8 @@ pub fn setup_core() -> (
     testing::set_block_timestamp(1);
 
     // Setup players
-    let player_1 = contract_address_const::<0x69>(); // 105
-    let player_2 = contract_address_const::<0x42>(); // 66
+    let player_1 = 0x69.try_into().unwrap(); // 105
+    let player_2 = 0x42.try_into().unwrap(); // 66
 
     // burn entity 0 value
     EntityImpl::create_entity(ref world, "entity_0");

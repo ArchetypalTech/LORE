@@ -23,7 +23,7 @@ pub impl DnsImpl of DnsTrait {
                 (contract_address)
             },
             Option::None => {
-                (starknet::contract_address_const::<0x0>())
+                (0x0.try_into().unwrap())
             },
         }
     }

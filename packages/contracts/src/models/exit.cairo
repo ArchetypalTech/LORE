@@ -188,7 +188,7 @@ pub impl ExitComponent of Component<Exit> {
                 return Result::Ok(());
             },
         }
-        Result::Err(Error::ActionFailed)
+        // Result::Err(Error::ActionFailed) // Unreachable code
     }
 
     // used for tests only

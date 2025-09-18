@@ -257,7 +257,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 return Result::Ok(());
             },
         }
-        Result::Err(Error::ActionFailed)
+        // Result::Err(Error::ActionFailed) // Unreachable code
     }
 
     // used for tests only

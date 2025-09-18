@@ -38,7 +38,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         // println!("Pos property registry: {:?}", pos_property_registry);
         if pos_property_registry.properties.len() > 0 {
             // Registry already exists, skip
-            println!("Registry already exists, skipping");
+            // println!("Registry already exists, skipping");
             return;
         }
 
@@ -175,7 +175,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
         if props.len() > 0 {
             let mut registry = PropertyRegistry { component_type: component, properties: props };
-            println!("Writing registry: {:?}", registry);
+            // println!("Writing registry: {:?}", registry);
             world.write_model(@registry);
         }
     }

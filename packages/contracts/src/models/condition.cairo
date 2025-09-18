@@ -166,7 +166,7 @@ pub impl ConditionImpl of ConditionTrait {
                 }
 
                 // If we get here, all elements matched, so return true.
-                return result;
+                (result)
             },
             Operator::NotEquals => {
                 // First, check if the lengths of the two arrays are equal.
@@ -188,7 +188,7 @@ pub impl ConditionImpl of ConditionTrait {
 
                 // If all elements matched and lengths are equal, arrays are equal,
                 // so return false for NotEquals.
-                return result;
+                (result)
             },
             Operator::GreaterThan => {
                 // First, check if the lengths of the two arrays are equal.
@@ -216,7 +216,7 @@ pub impl ConditionImpl of ConditionTrait {
                 }
 
                 // If all elements matches length and they are greater than, return true
-                return result;
+                (result)
             },
             Operator::LessThan => {
                 // First, check if the lengths of the two arrays are equal.
@@ -244,13 +244,11 @@ pub impl ConditionImpl of ConditionTrait {
                 }
 
                 // If all elements matches length and they are less than, return true
-                return result;
-            },
-            _ => { // Do nothing
+                (result)
             },
         }
-        result
     }
+    // (result) // Unreachable code
 }
 
 #[cfg(test)]
