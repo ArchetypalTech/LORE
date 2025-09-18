@@ -11,6 +11,8 @@ import {
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
+import { EntitySelector } from "../EntitySelector";
+import { useEditorData } from "../../data/editor.data";
 
 export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 	componentObject,
@@ -48,6 +50,8 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 
 	if (!componentObject) return <div>InventoryItem not found</div>;
 
+	const { dataPool } = useEditorData();
+
 	return (
 		<Inspector>
 			<Toggle
@@ -70,10 +74,11 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 				value={componentObject.quantity.toString()}
 				onChange={handleInputChange(undefined)}
 			/>
-			<Input
+			<EntitySelector
 				id="owner_id"
 				value={componentObject.owner_id.toString()}
 				onChange={handleInputChange(undefined)}
+				dataPool={dataPool}
 				//readOnly={true}
 			/>
 			<ActionMapEditor

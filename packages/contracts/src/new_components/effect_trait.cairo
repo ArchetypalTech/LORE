@@ -51,7 +51,7 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_exit_property(
-                    exit, world, self.property, @property_registry, self.value,
+                    exit, world, self.property, @property_registry, self.value, self.hex_value,
                 );
                 result = result_p;
             },
@@ -110,7 +110,7 @@ pub impl EffectImpl of EffectTrait {
                 let property_registry: PropertyRegistry = world.read_model(*self.component);
                 // Direct modification to component
                 let (result_p, _success_p) = VariablePropertyHelperTrait::set_player_property(
-                    player, world, self.property, @property_registry, self.value,
+                    player, world, self.property, @property_registry, self.hex_value,
                 );
                 result = result_p;
             },
