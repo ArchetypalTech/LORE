@@ -25,9 +25,6 @@ manifests
 katana_local_db
 torii_local_db
 
-# asdf
-.tool-versions
-
 # ssl
 packages/client/ssl/*
 !packages/client/ssl/.gitkeep

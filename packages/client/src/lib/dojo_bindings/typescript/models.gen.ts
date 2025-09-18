@@ -2,13 +2,6 @@ import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
 import { CairoCustomEnum, type BigNumberish } from 'starknet';
 
-// Type definition for `lore::lib::relations::ChildToParent` struct
-export interface ChildToParent {
-	inst: BigNumberish;
-	is_child: boolean;
-	parent: BigNumberish;
-}
-
 // Type definition for `lore::models::index::Action` struct
 export interface Action {
 	inst: BigNumberish;
@@ -31,6 +24,13 @@ export interface Area {
 	inst: BigNumberish;
 	is_area: boolean;
 	is_spawn_point: boolean;
+}
+
+// Type definition for `lore::models::index::ChildToParent` struct
+export interface ChildToParent {
+	inst: BigNumberish;
+	is_child: boolean;
+	parent: BigNumberish;
 }
 
 // Type definition for `lore::models::index::ComponentVariable` struct
@@ -377,9 +377,9 @@ export type PropertyTypeEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
 	lore: {
-		ChildToParent: ChildToParent,
 		Action: Action,
 		Area: Area,
+		ChildToParent: ChildToParent,
 		ComponentVariable: ComponentVariable,
 		Condition: Condition,
 		Container: Container,
@@ -406,11 +406,6 @@ export interface SchemaType extends ISchemaType {
 }
 export const schema: SchemaType = {
 	lore: {
-		ChildToParent: {
-			inst: 0,
-			is_child: false,
-			parent: 0,
-		},
 		Action: {
 			inst: 0,
 			key: 0,
@@ -430,6 +425,11 @@ export const schema: SchemaType = {
 			inst: 0,
 			is_area: false,
 			is_spawn_point: false,
+		},
+		ChildToParent: {
+			inst: 0,
+			is_child: false,
+			parent: 0,
 		},
 		ComponentVariable: {
 			inst: 0,
@@ -727,9 +727,9 @@ export const schema: SchemaType = {
 	},
 };
 export enum ModelsMapping {
-	ChildToParent = 'lore-ChildToParent',
 	Action = 'lore-Action',
 	Area = 'lore-Area',
+	ChildToParent = 'lore-ChildToParent',
 	ComponentVariable = 'lore-ComponentVariable',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',

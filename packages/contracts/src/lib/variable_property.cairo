@@ -13,8 +13,8 @@ use lore::{
 
 #[generate_trait]
 pub impl VariablePropertyImp of VariablePropertyTrait {
-    fn register_component_properties(world: WorldStorage, component: ComponentType) {
-        VariablePropertyHelperTrait::register_properties(world, component);
+    fn register_component_properties(ref world: WorldStorage, component: ComponentType) {
+        VariablePropertyHelperTrait::register_properties(ref world, component);
     }
 
     fn get_property(

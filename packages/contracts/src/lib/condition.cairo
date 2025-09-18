@@ -237,7 +237,7 @@ mod tests {
         inspectable.store(world);
 
         // Register component variable properties
-        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+        VariablePropertyImp::register_component_properties(ref world, Components::Inspectable);
 
         // Test: is_inspectable == true (should pass)
         let key2: felt252 = 2;

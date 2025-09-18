@@ -348,7 +348,7 @@ mod tests {
         let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
-        VariablePropertyImp::register_component_properties(world, Components::Inspectable);
+        VariablePropertyImp::register_component_properties(ref world, Components::Inspectable);
 
         // Test description new value
         let new_value: Array<ByteArray> = array![
