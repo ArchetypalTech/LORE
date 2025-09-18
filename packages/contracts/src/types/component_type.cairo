@@ -2,8 +2,9 @@
 // As well the components structs as well their corresponding action types.
 
 // Components //
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop,Debug, PartialEq, Introspect, DojoStore, Default)]
 pub enum ComponentType {
+    #[default]
     None,
     Area,
     Container,
@@ -19,7 +20,7 @@ pub enum ComponentType {
 }
 
 // Reactable //
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub struct ActionMapReactable {
     /// The action verb
     pub action: ByteArray,
@@ -31,8 +32,9 @@ pub struct ActionMapReactable {
     pub entrypoints: (u32, u32),
 }
 
-#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
+#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub enum ReactableActions {
+    #[default]
     SetVisible,
     ReadRandomDescription,
     ReadFirstDescription,
@@ -41,7 +43,7 @@ pub enum ReactableActions {
 
 
 // Exit //
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub struct ActionMapExit {
     /// The action verb
     pub action: ByteArray,
@@ -51,13 +53,14 @@ pub struct ActionMapExit {
     pub action_fn: ExitActions,
 }
 
-#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
+#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub enum ExitActions {
+    #[default]
     UseExit,
 }
 
 // Container //
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub struct ActionMapContainer {
     /// The action verb
     pub action: ByteArray,
@@ -67,15 +70,16 @@ pub struct ActionMapContainer {
     pub action_fn: ContainerActions,
 }
 
-#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
+#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub enum ContainerActions {
+    #[default]
     Open,
     Close,
     Check,
 }
 
 // InventoryItem //
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub struct ActionMapInventoryItem {
     /// The action verb
     pub action: ByteArray,
@@ -85,8 +89,9 @@ pub struct ActionMapInventoryItem {
     pub action_fn: InventoryItemActions,
 }
 
-#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
+#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub enum InventoryItemActions {
+    #[default]
     UseItem,
     PickupItem,
     DropItem,

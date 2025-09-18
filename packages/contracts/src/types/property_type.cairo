@@ -1,15 +1,16 @@
 // Here you can find the ComponentProperty struct,
 // the property types and the property access types
 
-#[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
+#[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq, DojoStore, Default)]
 pub struct ComponentProperty {
     pub name: ByteArray,
     pub property_type: PropertyType,
     pub access_flags: PropertyAccess,
 }
 
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect, DojoStore, Default)]
 pub enum PropertyType {
+    #[default]
     Boolean,
     Felt252,
     U8,
@@ -21,8 +22,9 @@ pub enum PropertyType {
     ArrayByteArray,
 }
 
-#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect)]
+#[derive(Serde, Copy, Drop, Debug, PartialEq, Introspect, DojoStore, Default)]
 pub enum PropertyAccess {
+    #[default]
     ReadOnly,
     ReadWrite,
 }

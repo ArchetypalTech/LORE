@@ -1,6 +1,6 @@
 // Here you can find the command, token structs and token types.
 
-#[derive(Clone, Drop, Serde, Debug)]
+#[derive(Clone, Drop, Debug, Introspect, DojoStore, Default)]
 pub struct Command {
     #[key]
     pub command_id: felt252, // Unique ID of this command
@@ -16,7 +16,7 @@ pub struct Command {
     pub tokens: Array<Token>,
 }
 
-#[derive(Clone, Drop, Serde, Debug)]
+#[derive(Clone, Drop, Debug, Introspect, DojoStore, Default)]
 pub struct Token {
     /// Token position in the command
     pub position: u32,
@@ -31,8 +31,9 @@ pub struct Token {
 }
 
 
-#[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug)]
+#[derive(Copy, Drop, Serde, Debug, Introspect, PartialEq, DojoStore, Default)]
 pub enum TokenType {
+    #[default]
     Unknown,
     Verb, // go, take, drop, look, inventory, spawn
     Direction, // north, south, east, west

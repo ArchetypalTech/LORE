@@ -1,7 +1,8 @@
 // Here you can find the direction type
 
-#[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
+#[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq, DojoStore, Default)]
 pub enum Direction {
+    #[default]
     North,
     South,
     East,

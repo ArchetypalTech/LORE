@@ -97,17 +97,23 @@ pub mod designer {
             self._assert_caller_is_editor(@world);
             for d in done {
                 if d {
+                    // println!("Registering properties for component: {:?}", ComponentType::Area);
                     VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
+                    // println!("Registering properties for component: {:?}", ComponentType::Exit);
                     VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
+                    // println!("Registering properties for component: {:?}", ComponentType::Reactable);
                     VariablePropertyHelper::register_component_properties(
                         ref world, ComponentType::Reactable,
                     );
+                    // println!("Registering properties for component: {:?}", ComponentType::InventoryItem);
                     VariablePropertyHelper::register_component_properties(
                         ref world, ComponentType::InventoryItem,
                     );
+                    // println!("Registering properties for component: {:?}", ComponentType::Container);
                     VariablePropertyHelper::register_component_properties(
                         ref world, ComponentType::Container,
                     );
+                    // println!("Registering properties for component: {:?}", ComponentType::Player);
                     VariablePropertyHelper::register_component_properties(
                         ref world, ComponentType::Player,
                     );

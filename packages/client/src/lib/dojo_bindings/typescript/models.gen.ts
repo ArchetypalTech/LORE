@@ -2,7 +2,7 @@ import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
 import { CairoCustomEnum, type BigNumberish } from 'starknet';
 
-// Type definition for `lore::models::action::Action` struct
+// Type definition for `lore::models::index::Action` struct
 export interface Action {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -14,107 +14,23 @@ export interface Action {
 	conditions: Array<[BigNumberish, BigNumberish]>;
 	effects: Array<[BigNumberish, BigNumberish]>;
 	tags: Array<string>;
+	executed: boolean;
 	failing_response: Array<string>;
 	success_response: Array<string>;
 }
 
-// Type definition for `lore::models::action::ActionExecuted` struct
-export interface ActionExecuted {
-	game_id: BigNumberish;
-	inst: BigNumberish;
-	key: BigNumberish;
-	is_executed: boolean;
-}
-
-// Type definition for `lore::models::admin::AccountPermissions` struct
-export interface AccountPermissions {
-	account_address: string;
-	is_admin: boolean;
-	is_editor: boolean;
-}
-
-// Type definition for `lore::models::area::Area` struct
+// Type definition for `lore::models::index::Area` struct
 export interface Area {
 	inst: BigNumberish;
 	is_area: boolean;
 	is_spawn_point: boolean;
 }
 
-// Type definition for `lore::models::condition::Condition` struct
-export interface Condition {
-	inst: BigNumberish;
-	key: BigNumberish;
-	name: string;
-	target: BigNumberish;
-	component: ComponentTypeEnum;
-	property: string;
-	operator: OperatorEnum;
-	value: Array<BigNumberish>;
-}
-
-// Type definition for `lore::models::container::Container` struct
-export interface Container {
-	inst: BigNumberish;
-	is_container: boolean;
-	can_be_opened: boolean;
-	can_receive_items: boolean;
-	is_open: boolean;
-	num_slots: BigNumberish;
-	action_map: Array<ActionMapContainer>;
-}
-
-// Type definition for `lore::models::effect::Effect` struct
-export interface Effect {
-	inst: BigNumberish;
-	key: BigNumberish;
-	name: string;
-	target: BigNumberish;
-	effect_type: EffectTypeEnum;
-	component: ComponentTypeEnum;
-	property: string;
-	value: Array<[string, BigNumberish]>;
-	n_value: BigNumberish;
-	hex_value: BigNumberish;
-}
-
-// Type definition for `lore::models::entity::ChildToParent` struct
+// Type definition for `lore::models::index::ChildToParent` struct
 export interface ChildToParent {
 	inst: BigNumberish;
 	is_child: boolean;
 	parent: BigNumberish;
-}
-
-// Type definition for `lore::models::entity::Entity` struct
-export interface Entity {
-	inst: BigNumberish;
-	is_entity: boolean;
-	name: string;
-	alt_names: Array<string>;
-	actions_keys: Array<BigNumberish>;
-}
-
-// Type definition for `lore::models::entity::ParentToChildren` struct
-export interface ParentToChildren {
-	inst: BigNumberish;
-	is_parent: boolean;
-	children: Array<BigNumberish>;
-}
-
-// Type definition for `lore::models::exit::Exit` struct
-export interface Exit {
-	inst: BigNumberish;
-	is_exit: boolean;
-	is_enterable: boolean;
-	leads_to: BigNumberish;
-	direction_type: DirectionEnum;
-	action_map: Array<ActionMapExit>;
-}
-
-// Type definition for `lore::models::game_instance::GameInstanceMap` struct
-export interface GameInstanceMap {
-	game_id: BigNumberish;
-	inst: BigNumberish;
-	game_inst: BigNumberish;
 }
 
 // Type definition for `lore::models::index::ComponentVariable` struct
@@ -126,6 +42,29 @@ export interface ComponentVariable {
 	property_name: string;
 	value: string;
 	last_updated: BigNumberish;
+}
+
+// Type definition for `lore::models::index::Condition` struct
+export interface Condition {
+	inst: BigNumberish;
+	key: BigNumberish;
+	name: string;
+	target: BigNumberish;
+	component: ComponentTypeEnum;
+	property: string;
+	operator: OperatorEnum;
+	value: Array<BigNumberish>;
+}
+
+// Type definition for `lore::models::index::Container` struct
+export interface Container {
+	inst: BigNumberish;
+	is_container: boolean;
+	can_be_opened: boolean;
+	can_receive_items: boolean;
+	is_open: boolean;
+	num_slots: BigNumberish;
+	action_map: Array<ActionMapContainer>;
 }
 
 // Type definition for `lore::models::index::DescriptionText` struct
@@ -143,13 +82,40 @@ export interface Dict {
 	n_value: BigNumberish;
 }
 
-// Type definition for `lore::models::index::PropertyRegistry` struct
-export interface PropertyRegistry {
-	component_type: ComponentTypeEnum;
-	properties: Array<ComponentProperty>;
+// Type definition for `lore::models::index::Effect` struct
+export interface Effect {
+	inst: BigNumberish;
+	key: BigNumberish;
+	name: string;
+	target: BigNumberish;
+	effect_type: EffectTypeEnum;
+	component: ComponentTypeEnum;
+	property: string;
+	value: Array<[string, BigNumberish]>;
+	n_value: BigNumberish;
+	hex_value: BigNumberish;
 }
 
-// Type definition for `lore::models::inventory_item::InventoryItem` struct
+// Type definition for `lore::models::index::Entity` struct
+export interface Entity {
+	inst: BigNumberish;
+	is_entity: boolean;
+	name: string;
+	alt_names: Array<string>;
+	actions_keys: Array<BigNumberish>;
+}
+
+// Type definition for `lore::models::index::Exit` struct
+export interface Exit {
+	inst: BigNumberish;
+	is_exit: boolean;
+	is_enterable: boolean;
+	leads_to: BigNumberish;
+	direction_type: DirectionEnum;
+	action_map: Array<ActionMapExit>;
+}
+
+// Type definition for `lore::models::index::InventoryItem` struct
 export interface InventoryItem {
 	inst: BigNumberish;
 	is_inventory_item: boolean;
@@ -162,30 +128,35 @@ export interface InventoryItem {
 	multiple_use: boolean;
 }
 
-// Type definition for `lore::models::player::Player` struct
+// Type definition for `lore::models::index::ParentToChildren` struct
+export interface ParentToChildren {
+	inst: BigNumberish;
+	is_parent: boolean;
+	children: Array<BigNumberish>;
+}
+
+// Type definition for `lore::models::index::Player` struct
 export interface Player {
 	inst: BigNumberish;
 	is_player: boolean;
 	address: string;
-	game_id: BigNumberish;
 	location: BigNumberish;
 	use_debug: boolean;
 }
 
-// Type definition for `lore::models::player::PlayerStory` struct
+// Type definition for `lore::models::index::PlayerStory` struct
 export interface PlayerStory {
-	game_id: BigNumberish;
+	inst: BigNumberish;
 	story_line: BigNumberish;
 }
 
-// Type definition for `lore::models::player::StoryLine` struct
-export interface StoryLine {
-	game_id: BigNumberish;
-	key: BigNumberish;
-	line: string;
+// Type definition for `lore::models::index::PropertyRegistry` struct
+export interface PropertyRegistry {
+	component_type: ComponentTypeEnum;
+	properties: Array<ComponentProperty>;
 }
 
-// Type definition for `lore::models::reactable::Reactable` struct
+// Type definition for `lore::models::index::Reactable` struct
 export interface Reactable {
 	inst: BigNumberish;
 	is_reactable: boolean;
@@ -196,24 +167,14 @@ export interface Reactable {
 	new_entry: string;
 }
 
-// Type definition for `lore::models::token_config::GameTokenInfo` struct
-export interface GameTokenInfo {
-	game_id: BigNumberish;
-	minter_address: string;
-	seed: BigNumberish;
-	act_number: BigNumberish;
-	room_name: string;
-	progress: BigNumberish;
-	completed: boolean;
+// Type definition for `lore::models::index::StoryLine` struct
+export interface StoryLine {
+	inst: BigNumberish;
+	key: BigNumberish;
+	line: string;
 }
 
-// Type definition for `lore::models::token_config::PlayerAccount` struct
-export interface PlayerAccount {
-	address: string;
-	current_game_id: BigNumberish;
-}
-
-// Type definition for `lore::models::trigger::Trigger` struct
+// Type definition for `lore::models::index::Trigger` struct
 export interface Trigger {
 	inst: BigNumberish;
 	key: BigNumberish;
@@ -221,17 +182,10 @@ export interface Trigger {
 	trigger_type: TriggerTypeEnum;
 	is_enabled: boolean;
 	is_once: boolean;
+	was_triggered: boolean;
 }
 
-// Type definition for `lore::models::trigger::TriggerExecuted` struct
-export interface TriggerExecuted {
-	game_id: BigNumberish;
-	inst: BigNumberish;
-	key: BigNumberish;
-	is_executed: boolean;
-}
-
-// Type definition for `lore::models::trigger::TriggerIndex` struct
+// Type definition for `lore::models::index::TriggerIndex` struct
 export interface TriggerIndex {
 	trigger_type: TriggerTypeEnum;
 	trigger_id: Array<[BigNumberish, BigNumberish]>;
@@ -271,13 +225,6 @@ export interface ComponentProperty {
 	name: string;
 	property_type: PropertyTypeEnum;
 	access_flags: PropertyAccessEnum;
-}
-
-// Type definition for `lore::models::token_config::GameCreatedEvent` struct
-export interface GameCreatedEvent {
-	contract_address: string;
-	game_id: BigNumberish;
-	recipient: string;
 }
 
 // Type definition for `lore::types::action_type::EffectType` enum
@@ -431,37 +378,30 @@ export type PropertyTypeEnum = CairoCustomEnum;
 export interface SchemaType extends ISchemaType {
 	lore: {
 		Action: Action,
-		ActionExecuted: ActionExecuted,
-		AccountPermissions: AccountPermissions,
 		Area: Area,
+		ChildToParent: ChildToParent,
+		ComponentVariable: ComponentVariable,
 		Condition: Condition,
 		Container: Container,
-		Effect: Effect,
-		ChildToParent: ChildToParent,
-		Entity: Entity,
-		ParentToChildren: ParentToChildren,
-		Exit: Exit,
-		GameInstanceMap: GameInstanceMap,
-		ComponentVariable: ComponentVariable,
 		DescriptionText: DescriptionText,
 		Dict: Dict,
-		PropertyRegistry: PropertyRegistry,
+		Effect: Effect,
+		Entity: Entity,
+		Exit: Exit,
 		InventoryItem: InventoryItem,
+		ParentToChildren: ParentToChildren,
 		Player: Player,
 		PlayerStory: PlayerStory,
-		StoryLine: StoryLine,
+		PropertyRegistry: PropertyRegistry,
 		Reactable: Reactable,
-		GameTokenInfo: GameTokenInfo,
-		PlayerAccount: PlayerAccount,
+		StoryLine: StoryLine,
 		Trigger: Trigger,
-		TriggerExecuted: TriggerExecuted,
 		TriggerIndex: TriggerIndex,
 		ActionMapContainer: ActionMapContainer,
 		ActionMapExit: ActionMapExit,
 		ActionMapInventoryItem: ActionMapInventoryItem,
 		ActionMapReactable: ActionMapReactable,
 		ComponentProperty: ComponentProperty,
-		GameCreatedEvent: GameCreatedEvent,
 	},
 }
 export const schema: SchemaType = {
@@ -477,24 +417,40 @@ export const schema: SchemaType = {
 			conditions: [[0, 0]],
 			effects: [[0, 0]],
 			tags: [""],
+			executed: false,
 			failing_response: [""],
 			success_response: [""],
-		},
-		ActionExecuted: {
-			game_id: 0,
-			inst: 0,
-			key: 0,
-			is_executed: false,
-		},
-		AccountPermissions: {
-			account_address: "",
-			is_admin: false,
-			is_editor: false,
 		},
 		Area: {
 			inst: 0,
 			is_area: false,
 			is_spawn_point: false,
+		},
+		ChildToParent: {
+			inst: 0,
+			is_child: false,
+			parent: 0,
+		},
+		ComponentVariable: {
+			inst: 0,
+			key: 0,
+			id: 0,
+		component_type: new CairoCustomEnum({ 
+					None: "",
+				Area: undefined,
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Reactable: undefined,
+				InventoryItem: undefined,
+				Player: undefined,
+				Trigger: undefined,
+				Condition: undefined,
+				Effect: undefined,
+				Action: undefined, }),
+		property_name: "",
+		value: "",
+			last_updated: 0,
 		},
 		Condition: {
 			inst: 0,
@@ -534,6 +490,28 @@ export const schema: SchemaType = {
 				Close: undefined,
 				Check: undefined, }), }],
 		},
+		DescriptionText: {
+			inst: 0,
+			key: 0,
+		text: "",
+		},
+		Dict: {
+			dict_key: 0,
+		word: "",
+		tokenType: new CairoCustomEnum({ 
+					Unknown: "",
+				Verb: undefined,
+				Direction: undefined,
+				Article: undefined,
+				Preposition: undefined,
+				Pronoun: undefined,
+				Adjective: undefined,
+				Noun: undefined,
+				Quantifier: undefined,
+				Interrogative: undefined,
+				System: undefined, }),
+			n_value: 0,
+		},
 		Effect: {
 			inst: 0,
 			key: 0,
@@ -566,22 +544,12 @@ export const schema: SchemaType = {
 			n_value: 0,
 			hex_value: 0,
 		},
-		ChildToParent: {
-			inst: 0,
-			is_child: false,
-			parent: 0,
-		},
 		Entity: {
 			inst: 0,
 			is_entity: false,
 		name: "",
 			alt_names: [""],
 			actions_keys: [0],
-		},
-		ParentToChildren: {
-			inst: 0,
-			is_parent: false,
-			children: [0],
 		},
 		Exit: {
 			inst: 0,
@@ -602,53 +570,37 @@ export const schema: SchemaType = {
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					UseExit: "", }), }],
 		},
-		GameInstanceMap: {
-			game_id: 0,
+		InventoryItem: {
 			inst: 0,
-			game_inst: 0,
+			is_inventory_item: false,
+			owner_id: 0,
+			can_be_picked_up: false,
+			can_go_in_container: false,
+			quantity: 0,
+			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }), }],
+			already_used: false,
+			multiple_use: false,
 		},
-		ComponentVariable: {
+		ParentToChildren: {
 			inst: 0,
-			key: 0,
-			id: 0,
-		component_type: new CairoCustomEnum({ 
-					None: "",
-				Area: undefined,
-				Container: undefined,
-				Entity: undefined,
-				Exit: undefined,
-				Reactable: undefined,
-				InventoryItem: undefined,
-				Player: undefined,
-				Trigger: undefined,
-				Condition: undefined,
-				Effect: undefined,
-				Action: undefined, }),
-		property_name: "",
-		value: "",
-			last_updated: 0,
+			is_parent: false,
+			children: [0],
 		},
-		DescriptionText: {
+		Player: {
 			inst: 0,
-			key: 0,
-		text: "",
+			is_player: false,
+			address: "",
+			location: 0,
+			use_debug: false,
 		},
-		Dict: {
-			dict_key: 0,
-		word: "",
-		tokenType: new CairoCustomEnum({ 
-					Unknown: "",
-				Verb: undefined,
-				Direction: undefined,
-				Article: undefined,
-				Preposition: undefined,
-				Pronoun: undefined,
-				Adjective: undefined,
-				Noun: undefined,
-				Quantifier: undefined,
-				Interrogative: undefined,
-				System: undefined, }),
-			n_value: 0,
+		PlayerStory: {
+			inst: 0,
+			story_line: 0,
 		},
 		PropertyRegistry: {
 		component_type: new CairoCustomEnum({ 
@@ -677,39 +629,6 @@ export const schema: SchemaType = {
 					ReadOnly: "",
 				ReadWrite: undefined, }), }],
 		},
-		InventoryItem: {
-			inst: 0,
-			is_inventory_item: false,
-			owner_id: 0,
-			can_be_picked_up: false,
-			can_go_in_container: false,
-			quantity: 0,
-			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
-					UseItem: "",
-				PickupItem: undefined,
-				DropItem: undefined,
-				PutItem: undefined,
-				TakeOutItem: undefined, }), }],
-			already_used: false,
-			multiple_use: false,
-		},
-		Player: {
-			inst: 0,
-			is_player: false,
-			address: "",
-			game_id: 0,
-			location: 0,
-			use_debug: false,
-		},
-		PlayerStory: {
-			game_id: 0,
-			story_line: 0,
-		},
-		StoryLine: {
-			game_id: 0,
-			key: 0,
-		line: "",
-		},
 		Reactable: {
 			inst: 0,
 			is_reactable: false,
@@ -723,18 +642,10 @@ export const schema: SchemaType = {
 			already_shown: false,
 		new_entry: "",
 		},
-		GameTokenInfo: {
-			game_id: 0,
-			minter_address: "",
-			seed: 0,
-			act_number: 0,
-		room_name: "",
-			progress: 0,
-			completed: false,
-		},
-		PlayerAccount: {
-			address: "",
-			current_game_id: 0,
+		StoryLine: {
+			inst: 0,
+			key: 0,
+		line: "",
 		},
 		Trigger: {
 			inst: 0,
@@ -750,12 +661,7 @@ export const schema: SchemaType = {
 				OnCondition: undefined, }),
 			is_enabled: false,
 			is_once: false,
-		},
-		TriggerExecuted: {
-			game_id: 0,
-			inst: 0,
-			key: 0,
-			is_executed: false,
+			was_triggered: false,
 		},
 		TriggerIndex: {
 		trigger_type: new CairoCustomEnum({ 
@@ -818,39 +724,28 @@ export const schema: SchemaType = {
 					ReadOnly: "",
 				ReadWrite: undefined, }),
 		},
-		GameCreatedEvent: {
-			contract_address: "",
-			game_id: 0,
-			recipient: "",
-		},
 	},
 };
 export enum ModelsMapping {
 	Action = 'lore-Action',
-	ActionExecuted = 'lore-ActionExecuted',
-	AccountPermissions = 'lore-AccountPermissions',
 	Area = 'lore-Area',
+	ChildToParent = 'lore-ChildToParent',
+	ComponentVariable = 'lore-ComponentVariable',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
-	Effect = 'lore-Effect',
-	ChildToParent = 'lore-ChildToParent',
-	Entity = 'lore-Entity',
-	ParentToChildren = 'lore-ParentToChildren',
-	Exit = 'lore-Exit',
-	GameInstanceMap = 'lore-GameInstanceMap',
-	ComponentVariable = 'lore-ComponentVariable',
 	DescriptionText = 'lore-DescriptionText',
 	Dict = 'lore-Dict',
-	PropertyRegistry = 'lore-PropertyRegistry',
+	Effect = 'lore-Effect',
+	Entity = 'lore-Entity',
+	Exit = 'lore-Exit',
 	InventoryItem = 'lore-InventoryItem',
+	ParentToChildren = 'lore-ParentToChildren',
 	Player = 'lore-Player',
 	PlayerStory = 'lore-PlayerStory',
-	StoryLine = 'lore-StoryLine',
+	PropertyRegistry = 'lore-PropertyRegistry',
 	Reactable = 'lore-Reactable',
-	GameTokenInfo = 'lore-GameTokenInfo',
-	PlayerAccount = 'lore-PlayerAccount',
+	StoryLine = 'lore-StoryLine',
 	Trigger = 'lore-Trigger',
-	TriggerExecuted = 'lore-TriggerExecuted',
 	TriggerIndex = 'lore-TriggerIndex',
 	EffectType = 'lore-EffectType',
 	Operator = 'lore-Operator',
@@ -869,5 +764,4 @@ export enum ModelsMapping {
 	ComponentProperty = 'lore-ComponentProperty',
 	PropertyAccess = 'lore-PropertyAccess',
 	PropertyType = 'lore-PropertyType',
-	GameCreatedEvent = 'lore-GameCreatedEvent',
 }
