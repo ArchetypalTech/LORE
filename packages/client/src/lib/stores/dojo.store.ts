@@ -2,7 +2,7 @@ import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 
 import { InitDojo } from "@lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
-import { addAddressPadding, num } from "starknet";
+import { addAddressPadding, num, CairoCustomEnum } from "starknet";
 import EditorData from "@/editor/data/editor.data";
 import type { EntityCollection } from "@/editor/lib/types";
 import { LORE_CONFIG } from "../config";
@@ -102,6 +102,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 					game_id: model.game_id,
 					key: model.key,
 					line: model.line,
+					line_type: model.line_type as CairoCustomEnum,
 				});
 			}
 		});
@@ -128,6 +129,9 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 
 	// Add lines to terminal
 	for (const s of newLines) {
+		if (s.line_type.toString() == "Command") {
+			continue;
+		}
 		const trimmed = decodeDojoText(s.line.trim());
 		const lines = processWhitespaceTags(trimmed);
 		for (const l of lines) {
