@@ -808,6 +808,50 @@ export const propertiesRegistered = async (
   }
 };
 
+export const queryCoinsEntity = async (): Promise<BigNumberish> => {
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-Entity"]);
+
+    const result = await sdk.getEntities({ query });
+
+    const coinsEntity = result.getItems().find((item) => {
+      return item.models?.lore?.Entity?.name === "Coins";
+    });
+
+    return coinsEntity?.models?.lore?.Entity?.inst ?? 0; // fallback if not found
+  } catch (error) {
+    console.error("Error fetching coins entity from Torii:", error);
+    throw error;
+  }
+};
+
+export const queryGameCoinsBalance = async (inst: BigNumberish): Promise<BigNumberish> => {
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-InventoryItem"]);
+
+    const result = await sdk.getEntities({ query });
+
+    const coinsEntity = result.getItems().find((item) => {
+      return item.models?.lore?.InventoryItem?.inst === inst;
+    });
+
+    return coinsEntity?.models?.lore?.InventoryItem?.quantity ?? 0; // fallback if not found
+  } catch (error) {
+    console.error("Error fetching coins balance from Torii:", error);
+    throw error;
+  }
+};
+
 export let playerFound = false;
 export let playerExists = false;
 

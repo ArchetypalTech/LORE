@@ -10,6 +10,7 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
 import { checkForPlayer, propertiesRegistered, } from "@/editor/data/editor.data";
 import {registerPropertyRegistry} from "../editor/publisher";
+import { queryCoinsEntity, queryGameCoinsBalance } from "@/editor/data/editor.data";
 import GameStore from "@/lib/stores/game.store";
 
 /**
@@ -273,6 +274,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			text: `available commands:\n\n${Object.entries(HELP_INVENTORY)
 				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
 				.join("\n\n")}`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	coins_balance: async () => {
+		const coinsEntity = await queryCoinsEntity();
+		const coinsBalance = await queryGameCoinsBalance(coinsEntity);
+		addTerminalContent({
+			text: `You have ${coinsBalance} Usants coins`,
 			format: "hash",
 			useTypewriter: true,
 		});
