@@ -24,9 +24,9 @@ use core::traits::{Into};
 pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     // Register Component Properties
     fn register_properties(ref world: WorldStorage, component: ComponentType) {
-        println!("Attempting to register properties for component: {:?}", component);
+        // println!("Attempting to register properties for component: {:?}", component);
         let pos_property_registry: PropertyRegistry = world.read_model(component);
-        println!("Pos property registry: {:?}", pos_property_registry);
+        // println!("Pos property registry: {:?}", pos_property_registry);
         if pos_property_registry.properties.len() > 0 {
             // Registry already exists, skip
             println!("Registry already exists, skipping");
