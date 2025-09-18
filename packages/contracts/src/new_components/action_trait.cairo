@@ -433,16 +433,16 @@ mod tests {
         TriggerContext { doer, target1, target2, inventory_object }
     }
 
-    fn register_variable_properties(world: WorldStorage) {
-        VariablePropertyImp::register_component_properties(world, ComponentType::Area);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Exit);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
-        VariablePropertyImp::register_component_properties(world, ComponentType::InventoryItem);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Container);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Player);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Area);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Container);
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
+    fn register_variable_properties(ref world: WorldStorage) {
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Exit);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::InventoryItem);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Container);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Player);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Area);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Container);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
     }
 
     #[test]
@@ -473,7 +473,7 @@ mod tests {
         world.write_model(@player1);
 
         // Register variable properties
-        register_variable_properties(world);
+        register_variable_properties(ref world);
 
         // TRIGGER that jumps when an action is executed
         let t_key: felt252 = 1;
@@ -668,7 +668,7 @@ mod tests {
         player_container.store(world);
 
         // Register variable properties
-        register_variable_properties(world);
+        register_variable_properties(ref world);
 
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2

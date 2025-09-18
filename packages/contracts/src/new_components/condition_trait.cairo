@@ -281,7 +281,7 @@ mod tests {
         reactable.store(world);
 
         // Register component variable properties
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
+        VariablePropertyImp::register_component_properties(ref world, ComponentType::Reactable);
 
         // Test: is_reactable == true (should pass)
         let key2: felt252 = 2;
