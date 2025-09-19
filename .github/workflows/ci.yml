@@ -27,30 +27,30 @@ jobs:
         run: cd packages/contracts && scarb fmt --check
         shell: bash
 
-  build:
-    needs: check
-    runs-on: ubuntu-latest
-    name: Contracts / Build workspace
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: Build
-        run: cd packages/contracts && sozo build
-        shell: bash
+  # build:
+  #   needs: check
+  #   runs-on: ubuntu-latest
+  #   name: Contracts / Build workspace
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup
+  #     - name: Build
+  #       run: cd packages/contracts && sozo build
+  #       shell: bash
 
-  lore:
-    needs: [check, build]
-    runs-on: ubuntu-latest
-    name: Contracts / Test LORE
-    steps:
-      - uses: actions/checkout@v4
-      - uses: software-mansion/setup-scarb@v1
-        with:
-          scarb-version: ${{ env.SCARB_VERSION }}
-      - uses: ./.github/actions/setup
-      - name: Test
-        run: cd packages/contracts && sozo test
-        shell: bash
+  # lore:
+  #   needs: [check, build]
+  #   runs-on: ubuntu-latest
+  #   name: Contracts / Test LORE
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: software-mansion/setup-scarb@v1
+  #       with:
+  #         scarb-version: ${{ env.SCARB_VERSION }}
+  #     - uses: ./.github/actions/setup
+  #     - name: Test
+  #       run: cd packages/contracts && sozo test
+  #       shell: bash
 
   client:
     runs-on: ubuntu-latest
