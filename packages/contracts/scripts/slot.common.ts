@@ -1,6 +1,8 @@
 import { log } from "@clack/prompts";
 import { bgDarkGray, bgGreen, white } from "ansicolor";
 import { config, runCommands } from "./common";
+import { getContractByName } from "@dojoengine/core";
+import manifest_slot from '../manifest_slot.json';
 
 export const worldAddress = config.dojo_config?.env?.world_address as string;
 export const rpcUrl = config.dojo_config?.env?.rpc_url as string;
@@ -20,9 +22,11 @@ const defaultVersion = config.scarb.dependencies.dojo.tag;
 // const katanaVersion = config.katana_version || defaultVersion;
 // const toriiVersion = config.torii_version || defaultVersion;
 
+export const gameTokenAddress = getContractByName(manifest_slot, 'lore', 'game_token').address;
+
 export const cmd_deploy_slot = [
 	`slot deployments create ${slotName} katana`,
-	`slot deployments create ${slotName} torii --world ${worldAddress} --rpc ${rpcUrl}`,
+	`slot deployments create ${slotName} torii --world ${worldAddress} --rpc ${rpcUrl} --indexing.transactions --indexing.contracts erc721:${gameTokenAddress}`,
 	`slot deployments list`,
 ];
 export const cmd_view_slot = [`slot deployments list`];

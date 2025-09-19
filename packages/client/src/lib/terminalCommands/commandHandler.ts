@@ -3,11 +3,13 @@ import { addTerminalContent } from "@lib/stores/terminal.store";
 import WalletStore from "@lib/stores/wallet.store";
 import { SystemCalls } from "@lib/systemCalls";
 import { TERMINAL_SYSTEM_COMMANDS } from "../../data/command.data";
+import { BigNumberish } from "starknet";
 
 /**
  * Handles terminal commands entered by the user
  *
  * @param {string} command - The full command string entered by the user
+ * @param {BigNumberish | null} game_id - The game id. Not necessary for gameplay. Must be 0 on the editor.
  * @param {boolean} bypassSystem - When true, bypasses system commands and sends directly to contract
  * @returns {Promise<void>}
  */
@@ -15,6 +17,7 @@ export const sendCommand = async <
 	T extends keyof typeof TERMINAL_SYSTEM_COMMANDS,
 >(
 	_command: T,
+	game_id: BigNumberish | null = null,
 	bypassSystem = false,
 ) => {
 	const command = _command.toString().trim().toLowerCase();
@@ -57,7 +60,7 @@ export const sendCommand = async <
 	}
 
 	try {
-		return await SystemCalls.execCommand(command);
+		return await SystemCalls.execCommand(command, game_id);
 	} catch (error) {
 		console.error("Error sending command:", error);
 	}

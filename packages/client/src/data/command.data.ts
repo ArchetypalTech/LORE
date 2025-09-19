@@ -8,7 +8,10 @@ import { APP_DATA } from "@/data/app.data";
 import { HELP_TEXTS, HELP_EXITS, HELP_INSPECT, HELP_CONTAINER, HELP_INVENTORY } from "@/data/help.data";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
-import { checkForPlayer } from "@/editor/data/editor.data";
+import { checkForPlayer, propertiesRegistered, } from "@/editor/data/editor.data";
+import {registerPropertyRegistry} from "../editor/publisher";
+import { queryCoinsEntity, queryGameCoinsBalance } from "@/editor/data/editor.data";
+import GameStore from "@/lib/stores/game.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -56,7 +59,7 @@ type commandContext = {
  *
  *   // 4. Perform any other logic needed for your command
  *   // - Access wallet with WalletStore()
- *   // - Forward to contract commands with sendCommand(command, bypass)
+ *   // - Forward to contract commands with sendCommand(command, null, bypass)
  *   // - Clear terminal with clearTerminalContent()
  * };
  */
@@ -69,6 +72,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				sendCommand("_connect_wallet");
 			} else {
 				sendCommand("_welcome_back");
+				sendCommand("_current_game");
 			}
 		}
 
@@ -120,10 +124,21 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_welcome_back: () => {
 		addTerminalContent({
-			text: `welcome back ${WalletStore().username}`,
+			text: `Welcome back ${WalletStore().username}`,
 			format: "hash",
 			useTypewriter: true,
 		});
+	},
+	_current_game: () => {
+		addTerminalContent({
+			text: GameStore().gameId != undefined ? `You are playing game #${GameStore().gameId}...` : `New game...`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	_create_game: () => {
+		// an empty command will create a game if not already created
+		sendCommand(``);
 	},
 	_fatal_error: () => {
 		addTerminalContent({
@@ -154,8 +169,29 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				useTypewriter: true,
 			});
 		}
+		// Check properties
+		await registerPropertyRegistry();
+
+		let propertyRegistryFound = await propertiesRegistered();
+		// Check properties
+		if (!propertyRegistryFound) {
+			console.log("PropertyRegistry not found");
+		} else {
+			console.log("PropertyRegistry found");
+		}
 		// Call the check for player
+		addTerminalContent({
+			text: "You're getting ready...",
+			format: "hash",
+			useTypewriter: true,
+		});
 		await checkForPlayer();
+		// player created is done or done finding player
+		addTerminalContent({
+			text: "You're ready to continue your journey.",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	wallet: async () => {
 		if(!WalletStore().isConnected) {
@@ -185,9 +221,18 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		return;
 	},
+	controller: () => {
+		if (LORE_CONFIG.useController) {
+			if (WalletStore().isConnected) {
+				WalletStore().controller?.openProfile("inventory");
+			} else {
+				sendCommand("_not_yet_connected");
+			}
+		}
+	},
 	_bypass: ({ command }) => {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
-		sendCommand(command, true);
+		sendCommand(command, null, true);
 	},
 	help:() => {
 		const header = "Entities/Objects might have the following properties that can be that allow you to interact with them:";
@@ -238,6 +283,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			text: `available commands:\n\n${Object.entries(HELP_INVENTORY)
 				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
 				.join("\n\n")}`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	coins_balance: async () => {
+		const coinsEntity = await queryCoinsEntity();
+		const coinsBalance = await queryGameCoinsBalance(coinsEntity);
+		addTerminalContent({
+			text: `You have ${coinsBalance} Usants coins`,
 			format: "hash",
 			useTypewriter: true,
 		});

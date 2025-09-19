@@ -1,54 +1,46 @@
 pub mod systems {
     pub mod designer;
     pub mod prompt;
+    pub mod game_token;
 }
 
-// pub mod components;
-
-pub mod constants;
+pub mod constants {
+    pub mod constants;
+    pub mod errors;
+    pub mod token;
+}
 
 pub mod lib {
     pub mod a_lexer;
     pub mod dictionary;
     pub mod c_handler;
-    //pub mod entity;
     pub mod random;
-    pub mod relations;
     pub mod utils;
+    pub mod dns;
     pub mod level_test;
-    //pub mod trigger;
-    //pub mod condition;
-    pub mod variable_property;
-    pub mod variable_property_helper;
     pub mod errors_texts_output;
-    //pub mod effect;
-//pub mod actions;
+    pub mod variable_property_helper;
+    // pub mod variable_property;
 }
 
 pub mod models {
-    pub mod index;
-    pub mod components;
-    pub mod container;
+    pub mod action;
     pub mod area;
+    pub mod components;
+    pub mod condition;
+    pub mod container;
+    pub mod effect;
+    pub mod entity;
     pub mod exit;
-    pub mod reactable;
-    pub mod inventoryItem;
+    pub mod game_instance;
+    pub mod index;
+    pub mod inventory_item;
     pub mod player;
+    pub mod reactable;
+    pub mod trigger;
+    pub mod token_config;
+    pub mod admin;
 }
-
-pub mod new_components {
-    pub mod action_trait;
-    pub mod condition_trait;
-    pub mod container_trait;
-    pub mod effect_trait;
-    pub mod entity_trait;
-    pub mod exit_trait;
-    pub mod reactable_trait;
-    pub mod inventoryItem_trait;
-    pub mod player_trait;
-    pub mod trigger_trait;
-}
-
 
 pub mod types {
     pub mod action_type;
@@ -60,6 +52,8 @@ pub mod types {
 
 #[cfg(test)]
 pub mod tests {
+    pub mod designer_test;
     pub mod entity_test;
+    pub mod game_token_test;
     pub mod helpers;
 }

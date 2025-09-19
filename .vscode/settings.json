@@ -41,9 +41,9 @@
 	// ],
 	"cairo1.enableLanguageServer": true,
 	"cairo1.enableScarb": true,
-	"cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.3.1/bin/dojo-language-server",
+	// "cairo1.languageServerPath": "${userHome}/.asdf/installs/dojo/1.3.1/bin/dojo-language-server",
 	"cairo1.preferScarbLanguageServer": false,
-	"cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.9.2/bin/scarb",
+	// "cairo1.scarbPath": "${userHome}/.asdf/installs/scarb/2.9.2/bin/scarb",
 	"editor.codeActionsOnSave": {
 		"source.organizeImports.biome": "explicit",
 		"source.action.useSortedAttributes.biome": "explicit",

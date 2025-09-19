@@ -117,7 +117,7 @@ export const Editor = () => {
 								"relative col-span-2 h-screen max-h-[calc(100vh-10rem)] opacity-50 hover:opacity-100",
 							)}
 						>
-							<Terminal />
+							<Terminal gameId={0} />
 						</div>
 					</div>
 				);

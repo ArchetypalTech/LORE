@@ -1,87 +1,125 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{Condition, PropertyRegistry}, area::AreaComponent, exit::ExitComponent,
-        reactable::ReactableComponent, inventoryItem::InventoryItemComponent,
-        container::ContainerComponent, player::PlayerComponent,
+        entity::{EntityImpl},
+        index::{PropertyRegistry},
+        area::{AreaComponent},
+        exit::{ExitComponent},
+        reactable::{ReactableComponent},
+        inventory_item::{InventoryItemComponent},
+        container::{ContainerComponent},
+        player::{PlayerComponent},
+        trigger::{TriggerImpl},
     },
-    new_components::{entity_trait::EntityImpl, trigger_trait::TriggerImpl},
-    types::{component_type::ComponentType, action_type::{TriggerContext, Operator}},
-    lib::{utils::ByteArrayTraitExt, variable_property_helper::VariablePropertyHelperTrait},
+    types::{
+        component_type::ComponentType,
+        action_type::{TriggerContext, Operator},
+    },
+    lib::{
+        utils::ByteArrayTraitExt,
+        variable_property_helper::{VariablePropertyHelper},
+    },
 };
 
+#[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
+#[dojo::model]
+pub struct Condition {
+    /// Unique identifier attached to the entity
+    #[key]
+    pub inst: felt252,
+    /// Unique identifier of the condition
+    #[key]
+    pub key: felt252,
+    /// Condition name
+    pub name: ByteArray,
+    /// The target inst.
+    pub target: felt252,
+    /// Which component to check
+    pub component: ComponentType,
+    /// Which property of the component to check
+    pub property: ByteArray,
+    /// How to compare the values
+    pub operator: Operator,
+    /// Value to compare against
+    pub value: Array<felt252>,
+}
+
+
+//---------------------------------
+// Model Trait
+//
 #[generate_trait]
 pub impl ConditionImpl of ConditionTrait {
-    fn evaluate_condition(self: @Condition, world: @WorldStorage, context: TriggerContext) -> bool {
+    fn evaluate_condition(self: @Condition, world: @WorldStorage, context: @TriggerContext, game_id: u128) -> bool {
         let target = *self.target;
         let mut component_value: Option<Array<felt252>> = Option::None;
         let mut eval_result: bool = false;
         let property_registry: PropertyRegistry = world.read_model(*self.component);
         match self.component {
             ComponentType::Area => {
-                let container_opt = AreaComponent::get_component(*world, target);
+                let container_opt = AreaComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
                 let area = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_area_property(
-                    area, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_area_property(
+                    @area, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
             ComponentType::Exit => {
-                let container_opt = ExitComponent::get_component(*world, target);
+                let container_opt = ExitComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
                 let exit = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_exit_property(
-                    exit, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_exit_property(
+                    @exit, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
             ComponentType::Reactable => {
-                let reactable_opt = ReactableComponent::get_component(*world, target);
+                let reactable_opt = ReactableComponent::get_component(world, target, game_id);
                 if reactable_opt.is_none() {
                     return false;
                 }
                 let reactable = OptionTrait::unwrap(reactable_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_reactable_property(
-                    reactable, self.property, @property_registry, *world,
+                let (b_component_value, _) = VariablePropertyHelper::get_reactable_property(
+                    @reactable, self.property, @property_registry, *world,
                 );
                 component_value = b_component_value;
             },
             ComponentType::InventoryItem => {
-                let inventoryItem_opt = InventoryItemComponent::get_component(*world, target);
-                if inventoryItem_opt.is_none() {
+                let inventory_item_opt = InventoryItemComponent::get_component(world, target, game_id);
+                if inventory_item_opt.is_none() {
                     return false;
                 }
-                let inventoryItem = OptionTrait::unwrap(inventoryItem_opt);
+                let inventory_item = OptionTrait::unwrap(inventory_item_opt);
                 let (b_component_value, _) =
-                    VariablePropertyHelperTrait::get_inventory_item_property(
-                    inventoryItem, self.property, @property_registry,
+                    VariablePropertyHelper::get_inventory_item_property(
+                    @inventory_item, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
             ComponentType::Container => {
-                let container_opt = ContainerComponent::get_component(*world, target);
+                let container_opt = ContainerComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
                 let container = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_container_property(
-                    container, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_container_property(
+                    @container, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
             ComponentType::Player => {
-                let container_opt = PlayerComponent::get_component(*world, target);
+                let container_opt = PlayerComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
                 let player = OptionTrait::unwrap(container_opt);
-                let (b_component_value, _) = VariablePropertyHelperTrait::get_player_property(
-                    player, self.property, @property_registry,
+                let (b_component_value, _) = VariablePropertyHelper::get_player_property(
+                    @player, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
@@ -128,7 +166,7 @@ pub impl ConditionImpl of ConditionTrait {
                 }
 
                 // If we get here, all elements matched, so return true.
-                return result;
+                (result)
             },
             Operator::NotEquals => {
                 // First, check if the lengths of the two arrays are equal.
@@ -150,7 +188,7 @@ pub impl ConditionImpl of ConditionTrait {
 
                 // If all elements matched and lengths are equal, arrays are equal,
                 // so return false for NotEquals.
-                return result;
+                (result)
             },
             Operator::GreaterThan => {
                 // First, check if the lengths of the two arrays are equal.
@@ -178,7 +216,7 @@ pub impl ConditionImpl of ConditionTrait {
                 }
 
                 // If all elements matches length and they are greater than, return true
-                return result;
+                (result)
             },
             Operator::LessThan => {
                 // First, check if the lengths of the two arrays are equal.
@@ -206,13 +244,11 @@ pub impl ConditionImpl of ConditionTrait {
                 }
 
                 // If all elements matches length and they are less than, return true
-                return result;
-            },
-            _ => { // Do nothing
+                (result)
             },
         }
-        result
     }
+    // (result) // Unreachable code
 }
 
 #[cfg(test)]
@@ -222,12 +258,19 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{Reactable, DescriptionText, Condition}, components::Component,
+            entity::{EntityImpl},
+            index::{DescriptionText},
+            reactable::{Reactable},
+            condition::{Condition},
+            components::{Component},
             reactable::ReactableComponent,
         },
-        new_components::entity_trait::EntityImpl,
-        types::{component_type::{ComponentType, ActionMapReactable, ReactableActions}},
-        lib::{variable_property::VariablePropertyImp},
+        types::{
+            component_type::{ComponentType, ActionMapReactable, ReactableActions},
+        },
+        lib::{
+            variable_property_helper::{VariablePropertyHelper},
+        },
     };
 
     fn create_test_condition(
@@ -245,14 +288,14 @@ mod tests {
 
     #[test]
     fn Condition_test_evaluate_condition() {
-        let (mut world, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         // Create entity and attach ReactableComponent
-        let mut door = EntityImpl::create_entity(world);
-        door.name = "door";
+        let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
 
+        let game_id: u128 = 0;
         let new_entry: ByteArray = "A door";
-        let mut reactable: Reactable = Component::add_component(world, door.inst);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText {
             inst: door.inst, key: 0, text: new_entry.clone(),
         };
@@ -278,10 +321,10 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(world);
+        reactable.store(ref world, 0);
 
         // Register component variable properties
-        VariablePropertyImp::register_component_properties(world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
 
         // Test: is_reactable == true (should pass)
         let key2: felt252 = 2;
@@ -302,7 +345,9 @@ mod tests {
         assert(
             condition
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_reactable should be true',
         );
@@ -326,7 +371,9 @@ mod tests {
         assert(
             !condition2
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_reactable should be false',
         );
@@ -350,7 +397,9 @@ mod tests {
         assert(
             condition3
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_visible should be true',
         );
@@ -374,7 +423,9 @@ mod tests {
         assert(
             !condition4
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'is_visible should be false',
         );
@@ -398,7 +449,9 @@ mod tests {
         assert(
             condition5
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'should not be equal',
         );
@@ -422,7 +475,9 @@ mod tests {
         assert(
             !condition6
                 .evaluate_condition(
-                    @world, TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    @world,
+                    @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
+                    game_id,
                 ),
             'should not be false',
         );

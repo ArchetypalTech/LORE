@@ -1,6 +1,8 @@
 use core::traits::{TryInto, Into, DivRem};
 use core::result::{Result};
 use lore::types::direction_type::Direction;
+use core::poseidon::{PoseidonTrait, HashState};
+use core::hash::HashStateTrait;
 
 #[generate_trait]
 pub impl ByteArrayTraitExt of ByteArrayTrait {
@@ -159,7 +161,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         found
     }
 
-    fn to_lowercase(self: ByteArray) -> ByteArray {
+    fn to_lowercase(self: @ByteArray) -> ByteArray {
         let mut result: ByteArray = "";
         for i in 0..self.len() {
             let byte: felt252 = self.clone().felt252_at(i);
@@ -214,7 +216,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         }
     }
 
-    fn bool_from_byte_array(value: ByteArray) -> bool {
+    fn bool_from_byte_array(value: @ByteArray) -> bool {
         let true_byte: ByteArray = "true";
         let false_byte: ByteArray = "false";
         if value.equals(@true_byte) {
@@ -230,7 +232,7 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         value.try_into().unwrap()
     }
 
-    fn u32_from_byte_array(value: ByteArray) -> u32 {
+    fn u32_from_byte_array(value: @ByteArray) -> u32 {
         value.to_felt252_word().unwrap().try_into().unwrap()
     }
 
@@ -286,6 +288,34 @@ pub impl ClousureTraitImp of ClousureTrait {
             output.append(f(elem));
         };
         output
+    }
+}
+
+#[generate_trait]
+pub impl HashImpl of HashTrait {
+    fn hash_values(values: Span<felt252>) -> felt252 {
+        assert(values.len() > 0, 'hash_values() has no values!');
+        let mut state: HashState = PoseidonTrait::new();
+        state = state.update(*values[0]);
+        if (values.len() == 1) {
+            state = state.update(*values[0]);
+        } else {
+            let mut index: usize = 1;
+            while (index < values.len()) {
+                state = state.update(*values[index]);
+                index += 1;
+            };
+        }
+        (state.finalize())
+    }
+    fn make_block_hash() -> felt252 {
+        let block_info = starknet::get_block_info().unbox();
+        let hash: felt252 = Self::hash_values([
+            block_info.block_number.into(),
+            block_info.block_timestamp.into(),
+            block_info.sequencer_address.into(),
+        ].span());
+        (hash)
     }
 }
 
@@ -435,7 +465,7 @@ mod tests {
         expected_w.append(expected_w3);
 
         // Apply map
-        let result_array = words.map(|word| word.to_lowercase());
+        let result_array = words.map(|word| (@word).to_lowercase());
 
         // Assert the transformation worked
         assert_eq!(result_array, expected_w, "should convert to lowercase");
@@ -492,6 +522,19 @@ mod tests {
         // convert felt252 to byte array
         let byte_array_1: ByteArray = ByteArrayTraitExt::byte_array_from_felt252(felt252_1);
         assert_eq!(byte_array_1, original_str1, "results should be equal");
+    }
+}
+
+
+//---------------------------------
+// Serializer
+//
+pub trait SerializedAppend<T> {
+    fn append_serde(ref self: Array<felt252>, value: T);
+}
+impl SerializedAppendImpl<T, impl TSerde: Serde<T>, impl TDrop: Drop<T>> of SerializedAppend<T> {
+    fn append_serde(ref self: Array<felt252>, value: T) {
+        value.serialize(ref self);
     }
 }
 

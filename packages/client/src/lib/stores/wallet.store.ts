@@ -71,10 +71,6 @@ const setupController = async () => {
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
 				{
-					entrypoint: "create_description_text",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
 					entrypoint: "create_area",
 					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 				},
@@ -202,6 +198,132 @@ const setupController = async () => {
 						{
 							entrypoint: "transfer_from", // The actual method name
 							description: "Transfer a TOT Token",
+						},
+					],
+				},
+				[LORE_CONFIG.manifest.designer.address]: {
+					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
+					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
+					methods: [
+						{
+							entrypoint: "register_property_registry",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_player",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_entity",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_reactable",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_description_text",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_area",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_exit",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_inventory_item",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_container",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_parent",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_condition",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_effect",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_action",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_trigger",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_child",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_player",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_entity",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_reactable",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_description_text",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_description_text",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_area",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_exit",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_condition",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_inventory_item",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_trigger",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_effect",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_action",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_container",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_parent",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_child",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
 						},
 					],
 				},

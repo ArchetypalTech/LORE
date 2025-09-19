@@ -9,7 +9,6 @@ import {
 	type SchemaType,
 	schema,
 } from "@lib/dojo_bindings/typescript/models.gen";
-import {registerPropertyRegistry, alreadyDone} from "../editor/publisher";
 
 /**
  * ## Initializes the Dojo SDK and configuration
@@ -27,7 +26,6 @@ export const InitDojo = async () => {
 			manifest,
 			rpcUrl,
 			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			relayUrl: "/ip4/127.0.0.1/tcp/9090/tcp/80",
 			masterAddress: LORE_CONFIG.wallet.address,
 			masterPrivateKey: LORE_CONFIG.wallet.private_key,
 			accountClassHash: LORE_CONFIG.manifest.world.class_hash,
@@ -38,7 +36,6 @@ export const InitDojo = async () => {
 		client: {
 			rpcUrl,
 			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			relayUrl: "/ip4/127.0.0.1/tcp/9090/tcp/80",
 			worldAddress: dojoConfig.manifest.world.address,
 		},
 		// Those values are used
@@ -71,21 +68,15 @@ export const InitDojo = async () => {
 			data?: StandardizedQueryResult<SchemaType> | undefined;
 			error?: Error;
 		}) => void,
+		sub_query?: ToriiQueryBuilder<SchemaType>,
 	) => {
 		return await sdk.subscribeEntityQuery({
-			query: query(),
+			query: sub_query ?? query(),
 			callback,
 		});
 	};
 
-	console.log( {sdk, dojoConfig, provider, query, sub})
-
-	/**
-	 * Register property registry
-	 */
-	if (alreadyDone == false) {
-		await registerPropertyRegistry();
-	}
+	// console.log( {sdk, dojoConfig, provider, query, sub})
 
 	return { sdk, dojoConfig, provider, query, sub };
 };

@@ -7,8 +7,16 @@ import Typewriter from "./Typewriter";
 import LoadingMessage from "./loader"
 import "./Terminal.css";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
+import { BigNumberish } from "starknet";
+import { useSyncGameId } from "@/lib/stores/game.store";
 
-export default function Terminal() {
+export default function Terminal({
+	gameId: inputGameId,
+}: {
+	gameId?: BigNumberish;
+}) {
+	const gameId = useSyncGameId(inputGameId);
+	
 	const [inputValue, setInputValue] = useState("");
 	const [originalInputValue, setOriginalInputValue] = useState("");
 	const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -23,7 +31,7 @@ export default function Terminal() {
 		status: { status },
 	} = useDojoStore();
 	const { terminalContent, activeTypewriterLine } = useTerminalStore();
-	const { originalStoryLength } = useDojoStore();
+	// const { originalStoryLength } = useDojoStore();
 
 	useEffect(() => {
 		// Focus input on mount
@@ -104,7 +112,7 @@ export default function Terminal() {
 		printingStatus(true);
 		
 		if(textAnchorRef.current && terminalFormRef.current) terminalFormRef.current.scrollTo({ top: scroller.current?.clientHeight, left: 0, behavior: "smooth"});
-		setTimeout(async () => await sendCommand(command), 1000)
+		setTimeout(async () => await sendCommand(command, gameId), 1000)
 	};
 
 	const focusInput = () => {

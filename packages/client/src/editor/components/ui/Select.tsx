@@ -86,9 +86,8 @@ const SelectContent = React.forwardRef<
 			<SelectScrollUpButton />
 			<SelectPrimitive.Viewport
 				className={cn(
-					"p-1",
-					position === "popper" &&
-						"h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
+					"p-1 overflow-y-auto max-h-60", // max-h-60 = ~15rem, adjust as needed
+					"w-full min-w-[var(--radix-select-trigger-width)]"
 				)}
 			>
 				{children}
@@ -148,81 +147,81 @@ SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 export type SelectInputRef = { getValue: () => string | undefined };
 
 const SelectInput = React.forwardRef<
-	SelectInputRef,
-	React.HTMLAttributes<HTMLSelectElement> & {
-		value?: string;
-		defaultValue?: string;
-		disabled?: boolean;
-		className?: string;
-		onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-		options: Array<{ value: string; label: string }> | OptionType[];
-	}
+  SelectInputRef,
+  React.HTMLAttributes<HTMLSelectElement> & {
+    value?: string;
+    defaultValue?: string;
+    disabled?: boolean;
+    className?: string;
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    options: Array<{ value: string; label: string }> | OptionType[];
+  }
 >(({ id, value, defaultValue, onChange, options, disabled }, ref) => {
-	const [internalValue, setInternalValue] = React.useState<string | undefined>(
-		value || (defaultValue as string | undefined),
-	);
-	const triggerRef = React.useRef<React.ElementRef<typeof SelectTrigger>>(null);
+  const [internalValue, setInternalValue] = React.useState<string | undefined>(
+    value || (defaultValue as string | undefined)
+  );
+  const triggerRef = React.useRef<React.ElementRef<typeof SelectTrigger>>(null);
 
-	React.useImperativeHandle(ref, () => ({
-		getValue: () => internalValue,
-	}));
+  React.useImperativeHandle(ref, () => ({
+    getValue: () => internalValue,
+  }));
 
-	const handleValueChange = (newValue: string) => {
-		setInternalValue(newValue);
+  const handleValueChange = (newValue: string) => {
+    setInternalValue(newValue);
 
-		// Create a synthetic event object that mimics a native select change event
-		const syntheticEvent = {
-			target: {
-				value: newValue,
-				name: id,
-				id: id,
-			},
-			currentTarget: {
-				value: newValue,
-				name: id,
-				id: id,
-			},
-			bubbles: true,
-			cancelable: true,
-			defaultPrevented: false,
-			preventDefault: () => {},
-			stopPropagation: () => {},
-			isPropagationStopped: () => false,
-			persist: () => {},
-			// Type info for TypeScript
-			nativeEvent: new Event("input"),
-		} as unknown as React.ChangeEvent<HTMLSelectElement>;
+    const syntheticEvent = {
+      target: { value: newValue, name: id, id: id },
+      currentTarget: { value: newValue, name: id, id: id },
+      bubbles: true,
+      cancelable: true,
+      defaultPrevented: false,
+      preventDefault: () => {},
+      stopPropagation: () => {},
+      isPropagationStopped: () => false,
+      persist: () => {},
+      nativeEvent: new Event("input"),
+    } as unknown as React.ChangeEvent<HTMLSelectElement>;
 
-		onChange(syntheticEvent);
-	};
+    onChange(syntheticEvent);
+  };
 
-	// Update internal value when prop changes
-	React.useEffect(() => {
-		if (value !== undefined && value !== internalValue) {
-			setInternalValue(value);
-		}
-	}, [value, internalValue]);
-	return (
-		<Select
-			value={internalValue}
-			defaultValue={defaultValue || undefined}
-			disabled={disabled}
-			onValueChange={handleValueChange}
-		>
-			<SelectTrigger ref={triggerRef}>
-				<SelectValue />
-			</SelectTrigger>
-			<SelectContent>
-				<SelectGroup>
-					{options?.map((option) => (
-						<SelectItem key={option.value} value={option.value}>
-							{option.label}
-						</SelectItem>
-					))}
-				</SelectGroup>
-			</SelectContent>
-		</Select>
-	);
+  React.useEffect(() => {
+    if (value !== undefined && value !== internalValue) {
+      setInternalValue(value);
+    }
+  }, [value, internalValue]);
+
+  return (
+    <Select
+      value={internalValue}
+      defaultValue={defaultValue || undefined}
+      disabled={disabled}
+      onValueChange={handleValueChange}
+    >
+      <SelectTrigger ref={triggerRef}>
+        <SelectValue />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectGroup>
+          {options?.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              ref={(el) => {
+                // scroll selected item into view for arrow keys
+                if (el && option.value === internalValue) {
+                  el.scrollIntoView({ block: "nearest" });
+                }
+              }}
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
 });
 
 export {

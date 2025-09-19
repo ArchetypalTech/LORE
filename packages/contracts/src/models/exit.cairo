@@ -1,83 +1,126 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use lore::{
-    models::{index::{Entity, Exit, Player, Action}, components::Component},
-    new_components::{
-        entity_trait::EntityImpl, exit_trait::ExitImpl, player_trait::PlayerImpl,
-        action_trait::ActionImpl,
+    models::{
+        entity::{Entity, EntityImpl},
+        components::{Instance, Component},
+        game_instance::{GameModelImpl},
+        player::{Player, PlayerImpl},
+        action::{Action, ActionImpl},
     },
     types::{
-        component_type::{ExitActions, ActionMapExit}, command_type::{Command, Token},
-        action_type::TriggerContext, direction_type::{IntoDirectionByteArray},
+        component_type::{ExitActions, ActionMapExit},
+        command_type::{Command, Token},
+        action_type::TriggerContext,
+        direction_type::{Direction, IntoDirectionByteArray},
     },
-    lib::{a_lexer::CommandImpl, utils::ByteArrayTraitExt}, constants::errors::Error, constants,
+    lib::{
+        a_lexer::CommandImpl,
+        utils::ByteArrayTraitExt,
+    },
+    constants::{
+        constants,
+        errors::Error,
+    },
 };
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct Exit {
+    #[key]
+    pub inst: felt252,
+    pub is_exit: bool,
+    /// Properties ///
+    /// If the exit is enterable
+    pub is_enterable: bool,
+    /// The leads to entity
+    pub leads_to: felt252,
+    /// The direction type
+    pub direction_type: Direction,
+    /// Array of action maps for the exit
+    pub action_map: Array<ActionMapExit>,
+}
+
+
+//---------------------------------
+// Model Trait
+//
+#[generate_trait]
+pub impl ExitImpl of ExitTrait {
+    fn is_exit(self: @Exit) -> bool {
+        (*self.is_exit)
+    }
+
+    fn can_player_enter(self: @Exit) -> bool {
+        (*self.is_enterable)
+    }
+}
+
+
+//---------------------------------
+// Component
+//
+pub impl ExitInstance of Instance<Exit> {
+    #[inline(always)]
+    fn inst(self: @Exit) -> felt252 {
+        (*self.inst)
+    }
+    #[inline(always)]
+    fn set_inst(ref self: Exit, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+    #[inline(always)]
+    fn is_component(self: @Exit) -> bool {
+        (*self.is_exit)
+    }
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<Exit>::ptr_from_keys(inst), selector!("is_exit")))
+    }
+}
 
 pub impl ExitComponent of Component<Exit> {
     type ComponentType = Exit;
 
-    fn inst(self: @Exit) -> @felt252 {
-        self.inst
-    }
-
     fn entity(self: @Exit, world: @WorldStorage) -> Entity {
-        EntityImpl::get_entity(world, self.inst).unwrap()
+        EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn has_component(self: @Exit, world: WorldStorage, inst: felt252) -> bool {
-        let exit: Exit = world.read_model(inst);
-        exit.is_exit
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> Exit {
-        let mut exit: Exit = world.read_model(inst);
-        exit.inst = inst;
-        exit.is_exit = true;
-        exit
-            .action_map =
-                array![
-                    ActionMapExit { action: "go", inst: 0, action_fn: ExitActions::UseExit },
-                    ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
-                    ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
-                ];
-        exit.store(world);
-        // Return the component
-        exit
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<Exit> {
-        let exit: Exit = world.read_model(inst);
-        if (!exit.has_component(world, inst)) {
-            return Option::None;
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Exit> {
+        let exit: Exit = world.read_game_model(inst, game_id);
+        if (exit.is_component()) {
+            Option::Some(exit)
+        } else {
+            Option::None
         }
-        let exit: Exit = world.read_model(inst);
-        Option::Some(exit)
+    }
+
+    fn store(self: @Exit, ref world: WorldStorage, game_id: u128) {
+        world.write_game_model(self, game_id);
     }
 
     fn can_use_command(
-        self: @Exit, world: WorldStorage, player: @Player, command: @Command,
+        self: @Exit, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         get_action_token(self, world, command).is_some()
     }
 
     fn execute_command(
-        mut self: Exit, mut world: WorldStorage, player: @Player, command: @Command,
+        mut self: Exit, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("Exit execute_command");
-        let (action, _token) = get_action_token(@self, world, command).unwrap();
+        let (action, _token) = get_action_token(@self, @world, command).unwrap();
         let direction_tokens = command.get_directions();
 
-        let mut destination_inst: felt252 = 0;
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
-                    player.say(world, format!("You go to {:?}", self));
+                    player.say(ref world, format!("You go to {:?}", self));
                 }
 
                 let mut matchesName = false;
                 let nouns = command.get_nouns();
                 let names = self.entity(@world).get_names();
                 for noun in nouns {
-                    for name in names.clone() {
+                    for name in names {
                         if noun.text == name {
                             matchesName = true;
                             break;
@@ -87,30 +130,28 @@ pub impl ExitComponent of Component<Exit> {
 
                 let mut matchesDirection = false;
                 if (direction_tokens.len() > 0
-                    && matches_direction(@self, world, player, @direction_tokens).is_some()) {
+                    && matches_direction(@self, world, player, direction_tokens).is_some()) {
                     matchesDirection = true;
                 }
 
                 // we need to either match by name or by direction
-                if (!(matchesName || matchesDirection)) {
-                    if !matchesDirection {
-                        return Result::Err(Error::DirectionNotMatch);
-                    }
-                    if !matchesName {
-                        return Result::Err(Error::NameNotMatch);
-                    }
+                if !matchesDirection {
+                    return Result::Err(Error::DirectionNotMatch);
+                }
+                if !matchesName {
+                    return Result::Err(Error::NameNotMatch);
                 }
                 // if the exit is not enterable, we can't go there
-                if (!self.clone().can_player_enter()) {
+                if (!self.can_player_enter()) {
                     return Result::Err(Error::Unenterable);
                 }
+
                 // Move player to room
-                destination_inst = self.leads_to;
-                player.clone().move_to_room(world, destination_inst);
+                player.clone().move_to_room(ref world, self.leads_to);
 
                 // Do action
                 // Check if the entity of the exit has an action
-                let pos_entity = EntityImpl::get_entity(@world, @self.inst);
+                let pos_entity = EntityImpl::get_entity(@world, self.inst);
                 if pos_entity.is_none() {
                     return Result::Err(Error::NoTargetEntity);
                 }
@@ -137,27 +178,40 @@ pub impl ExitComponent of Component<Exit> {
                             inventory_object: self.inst,
                         };
 
-                        let (_trig_res, _cond_res, _eff_res) = ActionImpl::process_action(
-                            action, world, @context,
+                        let (_trig_res, _cond_res, _eff_res) = action.process_action(
+                            ref world, player, @context,
                         );
                     };
                 }
                 // Describe room
-                let _ = player.describe_room(world);
+                let _ = player.describe_room(ref world);
                 return Result::Ok(());
             },
         }
-        Result::Err(Error::ActionFailed)
+        // Result::Err(Error::ActionFailed) // Unreachable code
     }
 
-    fn store(self: @Exit, mut world: WorldStorage) {
-        world.write_model(self);
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Exit {
+        let mut exit: Exit = world.read_model(inst);
+        exit.inst = inst;
+        exit.is_exit = true;
+        exit
+            .action_map =
+                array![
+                    ActionMapExit { action: "go", inst: 0, action_fn: ExitActions::UseExit },
+                    ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
+                    ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
+                ];
+        exit.store(ref world, 0);
+        // Return the component
+        exit
     }
 }
 
 
 fn matches_direction(
-    self: @Exit, world: WorldStorage, player: @Player, directions_token: @Array<Token>,
+    self: @Exit, world: WorldStorage, player: @Player, directions_token: Span<Token>,
 ) -> Option<felt252> {
     if (directions_token.len() == 0) {
         return Option::None;
@@ -173,7 +227,7 @@ fn matches_direction(
 
 // @dev: wip how to access tokens
 fn get_action_token(
-    self: @Exit, world: WorldStorage, command: @Command,
+    self: @Exit, world: @WorldStorage, command: @Command,
 ) -> Option<(ActionMapExit, Token)> {
     let mut action_token: Option<(ActionMapExit, Token)> = Option::None;
     for token in command.tokens.clone() {
