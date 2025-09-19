@@ -24,7 +24,7 @@ const env = cleanEnv(import.meta.env, {
 	VITE_TORII_WS_RPC: str(),
 	VITE_BURNER_ADDRESS: str(),
 	VITE_BURNER_PRIVATE_KEY: str(),
-	VITE_SLOT: str(),
+	// VITE_SLOT: str(),
 	...slotEnv,
 });
 
@@ -107,7 +107,7 @@ export const LORE_CONFIG = {
 		erc721: ["0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649"],
 	},
 	useController: true,
-	// import.meta.env.MODE === "slot",
+	//import.meta.env.MODE === "slot",
 	env: env,
 	LOCALHOST: isLocalhost,
 	EDITOR_MODE: isEditor,
