@@ -125,12 +125,11 @@ pub mod designer {
         fn create_entity(ref self: ContractState, t: Array<Entity>) {
             let mut world = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            let mut worldSt: WorldStorage = self.world(@"lore");
             for o in t {
                 for alt_name in o.alt_names.clone() {
-                    let pos_entry = get_dict_entry(worldSt, alt_name.clone());
+                    let pos_entry = get_dict_entry(world, alt_name.clone());
                     if pos_entry.is_none() {
-                        add_to_dictionary(worldSt, alt_name.clone(), TokenType::Noun, 1).unwrap();
+                        add_to_dictionary(world, alt_name.clone(), TokenType::Noun, 1).unwrap();
                     }
                 };
                 // TODO LATER ON
@@ -138,9 +137,9 @@ pub mod designer {
                 //     let words = ByteArrayTraitExt::split_into_words(@o.name);
                 //     for word in words {
                 //         let lowercased = ByteArrayTraitExt::to_lowercase(word.clone());
-                //         let pos_entry = get_dict_entry(worldSt, lowercased.clone());
+                //         let pos_entry = get_dict_entry(world, lowercased.clone());
                 //         if pos_entry.is_none() {
-                //             add_to_dictionary(worldSt, lowercased.clone(), TokenType::Noun,
+                //             add_to_dictionary(world, lowercased.clone(), TokenType::Noun,
                 //             1).unwrap();
                 //         }
                 //     };
@@ -152,8 +151,7 @@ pub mod designer {
         fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Player);
+            VariablePropertyHelper::register_component_properties(ref world, ComponentType::Player);
             for o in t {
                 world.write_model(@o);
             }
@@ -162,8 +160,7 @@ pub mod designer {
         fn create_reactable(ref self: ContractState, t: Array<Reactable>) {
             let mut world = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Reactable);
+            VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
             for o in t {
                 world.write_model(@o);
             }
@@ -180,8 +177,7 @@ pub mod designer {
         fn create_area(ref self: ContractState, t: Array<Area>) {
             let mut world = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Area);
+            VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
             for o in t {
                 world.write_model(@o);
             }
@@ -190,8 +186,7 @@ pub mod designer {
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
             let mut world = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Exit);
+            VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
             for o in t {
                 world.write_model(@o);
             }
@@ -200,9 +195,8 @@ pub mod designer {
         fn create_inventory_item(ref self: ContractState, t: Array<InventoryItem>) {
             let mut world = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            let mut worldSt: WorldStorage = self.world(@"lore");
             VariablePropertyHelper::register_component_properties(
-                ref worldSt, ComponentType::InventoryItem,
+                ref world, ComponentType::InventoryItem,
             );
             for o in t {
                 world.write_model(@o);
@@ -212,8 +206,7 @@ pub mod designer {
         fn create_container(ref self: ContractState, t: Array<Container>) {
             let mut world = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            let mut worldSt: WorldStorage = self.world(@"lore");
-            VariablePropertyHelper::register_component_properties(ref worldSt, ComponentType::Container);
+            VariablePropertyHelper::register_component_properties(ref world, ComponentType::Container);
             for o in t {
                 world.write_model(@o);
             }
