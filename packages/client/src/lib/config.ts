@@ -11,7 +11,7 @@ const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	return value;
 };
 
-// const slotEnv = import.meta.env.MODE === "slot" ? { VITE_SLOT: str() } : {};
+const slotEnv = import.meta.env.MODE === "slot" ? { VITE_SLOT: str() } : {};
 const isLocalhost = window.location.hostname === "localhost";
 const isEditor = window.location.pathname.startsWith("/editor");
 
@@ -25,7 +25,7 @@ const env = cleanEnv(import.meta.env, {
 	VITE_BURNER_ADDRESS: str(),
 	VITE_BURNER_PRIVATE_KEY: str(),
 	VITE_SLOT: str(),
-	//...slotEnv,
+	...slotEnv,
 });
 
 const endpoints = {
@@ -104,6 +104,7 @@ export const LORE_CONFIG = {
 		// Contract address
 		contract_address: env.VITE_TOKEN_CONTRACT_ADDRESS,
 		erc20: ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],
+		erc721: ["0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649"],
 	},
 	useController: true,
 	// import.meta.env.MODE === "slot",
