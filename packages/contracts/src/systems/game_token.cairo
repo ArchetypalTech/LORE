@@ -138,7 +138,7 @@ pub mod game_token {
     use nft_combo::utils::renderer::{Attribute};
 
     mod Errors {
-        pub const INVALID_CALLER: felt252   = 'TOT: Invalid caller';
+        pub const INVALID_CALLER: felt252   = 'ORUG: Invalid caller';
     }
 
     fn dojo_init(ref self: ContractState, admin_accounts: Array<ContractAddress>) {

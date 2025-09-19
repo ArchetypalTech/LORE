@@ -1,7 +1,7 @@
 
 // token metadata
 pub fn TOKEN_NAME() -> ByteArray {"The O'Ruggin Trail Game"}
-pub fn TOKEN_SYMBOL() -> ByteArray {"TOT"}
+pub fn TOKEN_SYMBOL() -> ByteArray {"ORUG"}
 
 // contract metadata
 pub fn METADATA_DESCRIPTION() -> ByteArray {"A satirical interactive fiction about survival, bureaucracy, and impossible choices. Step into the boots of a licensed Trail Guide and lead a ragged band of pilgrims, outlaws, and opportunists across a fractured wasteland toward the fortified city-state of Usants."}
