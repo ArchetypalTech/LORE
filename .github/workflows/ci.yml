@@ -9,8 +9,8 @@ on:
   pull_request:
 
 env:
-  DOJO_VERSION: 1.6.1
-  SCARB_VERSION: 2.10.1
+  DOJO_VERSION: 1.7.0-alpha.4
+  SCARB_VERSION: 2.12.2
   # KATANA_VERSION: 1.6.3
   # TORII_VERSION: 1.6.0
 
