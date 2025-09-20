@@ -61,16 +61,17 @@ const manifest = {
 	world: manifestJson.world,
 };
 
+const address = getOrFail(env.VITE_BURNER_ADDRESS, "VITE_BURNER_ADDRESS");
+const privateKey = getOrFail(env.VITE_BURNER_PRIVATE_KEY, "VITE_BURNER_PRIVATE_KEY");
+
 const wallet = (() => {
-	const address = env.VITE_BURNER_ADDRESS;
-	const private_key = env.VITE_BURNER_PRIVATE_KEY;
-	const account = new Account(katanaProvider, address, private_key);
-	return {
-		address,
-		private_key,
-		account,
-	};
-})();
+	console.log("address", address);
+	console.log("privateKey", privateKey);
+	console.log("katanaProvider", katanaProvider);
+  const account = new Account(katanaProvider, address, privateKey);
+	console.log("account", account);
+  return { address, privateKey, account };
+})()
 
 const entity = new Contract(
 	manifest.entity.abi,
