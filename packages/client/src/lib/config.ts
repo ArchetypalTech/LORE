@@ -11,7 +11,7 @@ const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	return value;
 };
 
-const slotEnv = import.meta.env.MODE === "slot" ? { VITE_SLOT: str() } : {};
+// const slotEnv = import.meta.env.MODE === "slot" ? { VITE_SLOT: str() } : {};
 const isLocalhost = window.location.hostname === "localhost";
 const isEditor = window.location.pathname.startsWith("/editor");
 
@@ -24,8 +24,8 @@ const env = cleanEnv(import.meta.env, {
 	VITE_TORII_WS_RPC: str(),
 	VITE_BURNER_ADDRESS: str(),
 	VITE_BURNER_PRIVATE_KEY: str(),
-	// VITE_SLOT: str(),
-	...slotEnv,
+	VITE_SLOT: str(),
+	//...slotEnv,
 });
 
 const katanaGoF = getOrFail(env.VITE_KATANA_HTTP_RPC, "VITE_KATANA_HTTP_RPC");
@@ -39,10 +39,11 @@ const endpoints = {
 
 const katanaProvider = new RpcProvider({
 	nodeUrl: isLocalhost ? "/katana" : katanaGoF,
-	retries: 5,
-  headers: {
-    "Access-Control-Allow-Origin": "*",
-  },
+	headers: {
+		//nocors
+		"Access-Control-Allow-Origin": "*",
+		mode: "no-cors",
+	},
 });
 
 // @dev: for future ref we can dynamically import manifest as well
@@ -68,6 +69,9 @@ const wallet = (() => {
 	console.log("address", address);
 	console.log("privateKey", privateKey);
 	console.log("katanaProvider", katanaProvider);
+	console.log("env", env);
+	console.log("katanaGoF", katanaGoF);
+	console.log("endpoints", endpoints);
   const account = new Account(katanaProvider, address, privateKey);
 	console.log("account", account);
   return { address, privateKey, account };
