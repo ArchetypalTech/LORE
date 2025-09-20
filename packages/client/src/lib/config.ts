@@ -39,6 +39,7 @@ const endpoints = {
 
 const katanaProvider = new RpcProvider({
 	nodeUrl: isLocalhost ? "/katana" : katanaGoF,
+	chainId: "0x57505f4c4f52455f5633",
 	headers: {
 		//nocors
 		"Access-Control-Allow-Origin": "*",
