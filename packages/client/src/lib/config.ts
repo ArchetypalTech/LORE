@@ -28,8 +28,9 @@ const env = cleanEnv(import.meta.env, {
 	...slotEnv,
 });
 
+const katanaGoF = getOrFail(env.VITE_KATANA_HTTP_RPC, "VITE_KATANA_HTTP_RPC");
 const endpoints = {
-	katana: isLocalhost ? "/katana" : env.VITE_KATANA_HTTP_RPC,
+	katana: isLocalhost ? "/katana" : katanaGoF,
 	torii: {
 		http: env.VITE_TORII_HTTP_RPC,
 		ws: env.VITE_TORII_WS_RPC,
@@ -37,12 +38,11 @@ const endpoints = {
 };
 
 const katanaProvider = new RpcProvider({
-	nodeUrl: isLocalhost ? "/katana" : env.VITE_KATANA_HTTP_RPC,
-	headers: {
-		//nocors
-		"Access-Control-Allow-Origin": "*",
-		mode: "no-cors",
-	},
+	nodeUrl: isLocalhost ? "/katana" : katanaGoF,
+	retries: 5,
+  headers: {
+    "Access-Control-Allow-Origin": "*",
+  },
 });
 
 // @dev: for future ref we can dynamically import manifest as well
