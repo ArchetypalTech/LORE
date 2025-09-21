@@ -2,7 +2,7 @@ import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_dev.json";
 import { cleanEnv, str, url } from "envalid";
-import { Account, Contract, RpcProvider, provider } from "starknet";
+import { Account, Contract, RpcProvider, provider, Signer } from "starknet";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	if (value === undefined || value === null) {
@@ -73,26 +73,30 @@ const wallet = (() => {
 	console.log("env", env);
 	console.log("katanaGoF", katanaGoF);
 	console.log("endpoints", endpoints);
-  const account = new Account(katanaProvider, address, privateKey);
+  const account = new Account({
+		provider: katanaProvider,
+		address,
+		signer: new Signer(privateKey),
+	});
 	console.log("account", account);
   return { address, privateKey, account };
 })()
 
-const entity = new Contract(
-	manifest.entity.abi,
-	manifest.entity.address,
-	katanaProvider,
-);
+const entity = new Contract({
+	abi: manifest.entity.abi,
+	address: manifest.entity.address,
+	providerOrAccount: katanaProvider,
+});
 
-entity.connect(wallet.account);
+entity.attach(wallet.account.address);
 
-const designer = new Contract(
-	manifest.designer.abi,
-	manifest.designer.address,
-	katanaProvider,
-);
+const designer = new Contract({
+	abi: manifest.designer.abi,
+	address: manifest.designer.address,
+	providerOrAccount: katanaProvider,
+});
 
-designer.connect(wallet.account);
+designer.attach(wallet.account.address);
 
 export const LORE_CONFIG = {
 	endpoints,
