@@ -5,13 +5,29 @@ import {
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
-import { HELP_TEXTS, HELP_EXITS, HELP_INSPECT, HELP_CONTAINER, HELP_INVENTORY } from "@/data/help.data";
+import {
+	HELP_CONTAINER,
+	HELP_EXITS,
+	HELP_INSPECT,
+	HELP_INVENTORY,
+	HELP_TEXTS,
+} from "@/data/help.data";
+import {
+	checkForPlayer,
+	propertiesRegistered,
+} from "@/editor/data/editor.data";
+import {
+	queryCoinsEntity,
+	queryGameCoinsBalance,
+} from "@/editor/data/editor.data";
 import DojoStore from "@/lib/stores/dojo.store";
-import WalletStore from "../lib/stores/wallet.store";
+import WalletStore from "@/lib/stores/wallet.store";
 import { checkForPlayer, propertiesRegistered, queryOwnedGameTokens, } from "@/editor/data/editor.data";
 import {registerPropertyRegistry} from "../editor/publisher";
 import { queryCoinsEntity, queryGameCoinsBalance } from "@/editor/data/editor.data";
 import GameStore from "@/lib/stores/game.store";
+import { registerPropertyRegistry } from "../editor/publisher";
+import WalletStore from "../lib/stores/wallet.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -89,7 +105,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 			speed: 4,
-			style: { textAlign: "center" },
 		});
 	},
 	_description: () => {
@@ -98,19 +113,19 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 			speed: 4,
-			style: { textAlign: "center" },
 		});
 	},
+
 	_hint: () => {
 		addTerminalContent({
-			text: 'type [command] [target], or type "help"| "ls"',
+			text: 'type [command] [target], or type "help" | "ls"',
 			format: "input",
 			useTypewriter: true,
 		});
 	},
 	_connect_wallet: () => {
 		addTerminalContent({
-			text: "type [connect] to connect",
+			text: "type [connect] and be able to [load] games or [create] a new one",
 			format: "hash",
 			useTypewriter: true,
 		});
@@ -124,14 +139,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_welcome_back: () => {
 		addTerminalContent({
-			text: `Welcome back ${WalletStore().username}`,
-			format: "hash",
+			text: `welcome back ${WalletStore().username}`,
+			format: "shog",
 			useTypewriter: true,
 		});
 	},
 	_current_game: () => {
 		addTerminalContent({
-			text: GameStore().gameId != undefined ? `You are playing game-${GameStore().gameId}...` : `New game...`,
+			text:
+				GameStore().gameId != undefined
+					? `You are playing game-${GameStore().gameId}...`
+					: `New game...`,
 			format: "hash",
 			useTypewriter: true,
 		});
@@ -183,7 +201,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			return;
 		}
 		const res = await WalletStore().connectController();
-		console.log(res);
+		// console.log(res);
 		if (WalletStore().isConnected) {
 			const { username, walletAddress } = WalletStore();
 			addTerminalContent({
@@ -249,15 +267,63 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, null, true);
 	},
-	help:() => {
-		const header = "Entities/Objects might have the following properties that can be that allow you to interact with them:";
+	load: () => {
+		const text = [
+			`██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████
+██░░░░░░░░░░░░░░░░░░░░░░░░▓▓▒▒░░▓▓░░░░▓▓░░░░▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓
+██░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▒
+██▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒▓▓░░▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓░░░░▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▒▒▓▓▒▒▓▓▓▓▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓░░░░░░▓▓▒▒▓▓▒▒░░░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓▒
+██▓▓▒▒▒▒░░██▓▓▒▒▒▒▒▒▒▒░░▒▒░░░░▓▓▒▒▒▒▓▓▓▓░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▓▓▒▒░░▓▓▒▒▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▓
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒░░▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓░░▒▒▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▒▒▒▒▓▓▒▒▒▒▓▓▒▒▒▒▓▓▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒
+██▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▒▒▒▒▒▒░░▓▓▒▒░░▒▒▓▓▓▓▒▒░░▒▒▓▓▒▒▓▓▓▓▓▓▒▒▒▒▒▒░
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████`,
+			"GAME LOADED",
+		].join("\n");
+		addTerminalContent({
+			text,
+			format: "out",
+			useTypewriter: true,
+			speed: 1,
+		});
+	},
+	help: () => {
+		const header =
+			"Entities/Objects might have the following properties that can be that allow you to interact with them:";
 		// Handle help command
 		addTerminalContent({
-			text: header + "\n\n" + Object.entries(HELP_TEXTS)
-				.map(([cmd, content]) => 
-					`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`
-				)
-				.join("\n\n"),
+			text:
+				header +
+				"\n\n" +
+				Object.entries(HELP_TEXTS)
+					.map(
+						([cmd, content]) =>
+							`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`,
+					)
+					.join("\n\n"),
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
+	ls: () => {
+		const text = [
+			"load [game]",
+			"create [game]",
+			"",
+			"your existing games:",
+			"> game-1",
+			"> orug-2",
+		].join("\n");
+		// Handle help command
+		addTerminalContent({
+			text,
 			format: "hash",
 			useTypewriter: true,
 		});
@@ -266,7 +332,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_INSPECT)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
@@ -276,7 +345,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_EXITS)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
@@ -286,7 +358,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_CONTAINER)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
@@ -296,7 +371,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_INVENTORY)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
