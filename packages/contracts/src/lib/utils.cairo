@@ -39,6 +39,24 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         Result::Ok(result)
     }
 
+    #[inline]
+    fn to_felt252_decimal(self: @ByteArray) -> Result<felt252, felt252> {
+        if (self.len() >= 31) {
+            return Result::Err(0);
+        }
+        let mut multiplier: felt252 = 1;
+        let mut result: felt252 = 0;
+        for c in 0..self.len() {
+            let b: u8 = self.at(self.len() - c - 1).unwrap();
+            if (b < '0' || b > '9') {
+                return Result::Err(0);
+            }
+            result = result + ((b.into() - '0'.into()) * multiplier);
+            multiplier *= 10;
+        };
+        Result::Ok(result)
+    }
+
     fn split_into_words(self: @ByteArray) -> Array<ByteArray> {
         let mut words: Array<ByteArray> = ArrayTrait::new();
         let mut current_word: ByteArray = "";
@@ -343,6 +361,49 @@ mod tests {
         assert(a_converted == 'extravaganza'.into(), 'a_converted == "extravaganza"');
         assert(b_converted == 'hello'.into(), 'b_converted == "hello"');
         assert(c_converted == 'cairo'.into(), 'c_converted == "cairo"');
+    }
+
+    #[test]
+    fn ByteArrayExt_to_felt252_decimal() {
+        assert_eq!((@"").to_felt252_decimal().unwrap(), 0);
+        assert_eq!((@"0").to_felt252_decimal().unwrap(), 0);
+        assert_eq!((@"1").to_felt252_decimal().unwrap(), 1);
+        assert_eq!((@"2").to_felt252_decimal().unwrap(), 2);
+        assert_eq!((@"3").to_felt252_decimal().unwrap(), 3);
+        assert_eq!((@"4").to_felt252_decimal().unwrap(), 4);
+        assert_eq!((@"5").to_felt252_decimal().unwrap(), 5);
+        assert_eq!((@"6").to_felt252_decimal().unwrap(), 6);
+        assert_eq!((@"7").to_felt252_decimal().unwrap(), 7);
+        assert_eq!((@"8").to_felt252_decimal().unwrap(), 8);
+        assert_eq!((@"9").to_felt252_decimal().unwrap(), 9);
+        assert_eq!((@"11").to_felt252_decimal().unwrap(), 11);
+        assert_eq!((@"12").to_felt252_decimal().unwrap(), 12);
+        assert_eq!((@"13").to_felt252_decimal().unwrap(), 13);
+        assert_eq!((@"14").to_felt252_decimal().unwrap(), 14);
+        assert_eq!((@"15").to_felt252_decimal().unwrap(), 15);
+        assert_eq!((@"16").to_felt252_decimal().unwrap(), 16);
+        assert_eq!((@"17").to_felt252_decimal().unwrap(), 17);
+        assert_eq!((@"18").to_felt252_decimal().unwrap(), 18);
+        assert_eq!((@"19").to_felt252_decimal().unwrap(), 19);
+        assert_eq!((@"20").to_felt252_decimal().unwrap(), 20);
+        assert_eq!((@"30").to_felt252_decimal().unwrap(), 30);
+        assert_eq!((@"40").to_felt252_decimal().unwrap(), 40);
+        assert_eq!((@"50").to_felt252_decimal().unwrap(), 50);
+        assert_eq!((@"60").to_felt252_decimal().unwrap(), 60);
+        assert_eq!((@"70").to_felt252_decimal().unwrap(), 70);
+        assert_eq!((@"80").to_felt252_decimal().unwrap(), 80);
+        assert_eq!((@"90").to_felt252_decimal().unwrap(), 90);
+        assert_eq!((@"100").to_felt252_decimal().unwrap(), 100);
+        assert_eq!((@"110").to_felt252_decimal().unwrap(), 110);
+        assert_eq!((@"00000").to_felt252_decimal().unwrap(), 0);
+        assert_eq!((@"00010").to_felt252_decimal().unwrap(), 10);
+        assert_eq!((@"10000").to_felt252_decimal().unwrap(), 10000);
+        assert_eq!((@"1234567890").to_felt252_decimal().unwrap(), 1234567890);
+        assert_eq!((@"10203040506070809").to_felt252_decimal().unwrap(), 10203040506070809);
+        assert!((@"cairo").to_felt252_decimal().is_err());
+        assert!((@" 10").to_felt252_decimal().is_err());
+        assert!((@"1a").to_felt252_decimal().is_err());
+        assert!((@"a1").to_felt252_decimal().is_err());
     }
 
     #[test]

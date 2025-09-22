@@ -131,7 +131,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_current_game: () => {
 		addTerminalContent({
-			text: GameStore().gameId != undefined ? `You are playing game #${GameStore().gameId}...` : `New game...`,
+			text: GameStore().gameId != undefined ? `You are playing game-${GameStore().gameId}...` : `New game...`,
 			format: "hash",
 			useTypewriter: true,
 		});

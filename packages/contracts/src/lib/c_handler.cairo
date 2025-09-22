@@ -1,3 +1,4 @@
+use starknet::{ContractAddress, get_caller_address};
 use dojo::{world::WorldStorage};
 use lore::{
     models::{
@@ -11,6 +12,7 @@ use lore::{
         components::{Component},
         action::{ActionImpl},
         condition::{ConditionImpl},
+        token_config::{PlayerAccountTrait},
     },
     types::command_type::{Command, TokenType, Token},
     lib::{
@@ -18,6 +20,7 @@ use lore::{
         utils::ByteArrayTraitExt,
         dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level},
+        dns::{DnsTrait, IGameTokenDispatcherTrait},
     },
     constants::errors::Error,
 };
@@ -240,6 +243,8 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_create_game", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_load_game", TokenType::System, 2).unwrap();
 }
 
 fn system_command(
@@ -321,7 +326,31 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_game_id") {
-            player.log_sys(ref world, format!("+sys+game #{:?}", *player.game_id));
+            player.log_sys(ref world, format!("+sys+game-{:?}", *player.game_id));
+            return Result::Ok(());
+        }
+        if (system_command == "g_create_game") {
+            let player_address: ContractAddress = get_caller_address();
+            let game_id: u128 = world.game_token_dispatcher().create_game(player_address);
+            player.log_sys(ref world, format!("+sys+created game-{:?}", game_id));
+            // force create new player
+            let player = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
+            if (player.is_none()) {
+                return Result::Err(Error::NoPlayerComponent);
+            }
+            return Result::Ok(());
+        }
+        if (system_command == "g_load_game") {
+            let player_address: ContractAddress = get_caller_address();
+            let game_id: u256 = tokens.at(1).text.to_felt252_decimal().unwrap().into();
+            // validate ownership
+            if (!world.game_token_dispatcher().is_owner_of(player_address, game_id)) {
+                player.log_sys(ref world, format!("+sys+not your game"));
+                return Result::Err(Error::NotYourGame);
+            }
+            // switch game...
+            PlayerAccountTrait::switch_game_id(ref world, player_address, game_id.low);
+            player.log_sys(ref world, format!("+sys+loaded game-{:?}", game_id));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);
