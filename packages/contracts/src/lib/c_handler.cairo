@@ -331,7 +331,7 @@ fn system_command(
         if (system_command == "g_create_game") {
             let player_address: ContractAddress = get_caller_address();
             let game_id: u128 = world.game_token_dispatcher().create_game(player_address);
-            player.log_sys(ref world, format!("+sys+created game-{:?}", game_id));
+            player.log_sys(ref world, format!("+sys+Created game-{:?}", game_id));
             // force create new player
             let player = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
             if (player.is_none()) {
@@ -344,12 +344,12 @@ fn system_command(
             let game_id: u256 = tokens.at(1).text.to_felt252_decimal().unwrap().into();
             // validate ownership
             if (!world.game_token_dispatcher().is_owner_of(player_address, game_id)) {
-                player.log_sys(ref world, format!("+sys+not your game"));
+                player.log_sys(ref world, format!("+sys+Not your game!"));
                 return Result::Err(Error::NotYourGame);
             }
             // switch game...
             PlayerAccountTrait::switch_game_id(ref world, player_address, game_id.low);
-            player.log_sys(ref world, format!("+sys+loaded game-{:?}", game_id));
+            player.log_sys(ref world, format!("+sys+Loaded game-{:?}", game_id));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);

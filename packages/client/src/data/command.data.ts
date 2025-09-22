@@ -151,9 +151,80 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	_create_game: () => {
+	create: (context: commandContext) => {
 		// an empty command will create a game if not already created
-		// sendCommand(``);
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		if (context.args[0] === "game") {
+			// "create game"
+			sendCommand(`g_create_game`);
+		} else {
+			addTerminalContent({
+				text: `Did you mean [create game]?`,
+				format: "hash",
+				useTypewriter: true,
+			});
+		}
+	},
+	load: async (context: commandContext) => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		// allow "game-123" or "123"
+		let game_id = Number(context.args[0].split("-").at(-1));
+		if (isNaN(game_id)) {
+			addTerminalContent({
+				text: `Did you mean [load game_name]?`,
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+		// current game?
+		if(GameStore().gameId != undefined && game_id == Number(GameStore().gameId)) {
+			sendCommand("_current_game");
+			return;
+		}
+		// check ownership...
+		const tokens = await queryOwnedGameTokens(WalletStore().walletAddress || 0n);
+		if (!tokens.find((token) => token.token_id === game_id)) {
+			addTerminalContent({
+				text: `Not your game!`,
+				format: "hash",
+				useTypewriter: true,
+			});
+			return;
+		}
+		// load...
+		sendCommand(`g_load_game ${game_id}`);
+		const text = [
+			`██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████
+██░░░░░░░░░░░░░░░░░░░░░░░░▓▓▒▒░░▓▓░░░░▓▓░░░░▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓
+██░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▒
+██▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒▓▓░░▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓░░░░▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▒▒▓▓▒▒▓▓▓▓▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓░░░░░░▓▓▒▒▓▓▒▒░░░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓▒
+██▓▓▒▒▒▒░░██▓▓▒▒▒▒▒▒▒▒░░▒▒░░░░▓▓▒▒▒▒▓▓▓▓░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▓▓▒▒░░▓▓▒▒▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▓
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒░░▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓░░▒▒▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▒▒▒▒▓▓▒▒▒▒▓▓▒▒▒▒▓▓▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒
+██▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▒▒▒▒▒▒░░▓▓▒▒░░▒▒▓▓▓▓▒▒░░▒▒▓▓▒▒▓▓▓▓▓▓▒▒▒▒▒▒░
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████`,
+			"GAME LOADED",
+		].join("\n");
+		addTerminalContent({
+			text,
+			format: "out",
+			useTypewriter: true,
+			speed: 1,
+		});
 	},
 	ls: async () => {
 		if (!WalletStore().isConnected) {
@@ -162,15 +233,16 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		const tokens = await queryOwnedGameTokens(WalletStore().walletAddress || 0n);
 		const text: string[] = [];
-		
+
 		if (tokens.length === 0) {
-			text.push("You have no games. Type [create_game] to start a new a game");
+			text.push("You have no games. Type [create game] to start a new a game");
 		} else {
 			text.push(`Found ${tokens.length} games:`);
 			tokens.forEach((token) => {
-				text.push(`- ${token.name}`);
+				text.push(`> ${token.name} ${BigInt(token.token_id) == GameStore().gameId ? "(CURRENT)" : ""}`);
 			});
 			text.push(`Type [load game_name] to resume a game`);
+			text.push(`Type [create game] to start a new a game`);
 		}
 		addTerminalContent({
 			text: text.join("\n"),
@@ -264,33 +336,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, null, true);
 	},
-	load: () => {
-		const text = [
-			`██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████
-██░░░░░░░░░░░░░░░░░░░░░░░░▓▓▒▒░░▓▓░░░░▓▓░░░░▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓
-██░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▒
-██▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
-██▓▓▒▒▒▒▓▓░░▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
-██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓░░░░▓▓▒▒▓▓▓▓▓
-██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▒▒▓▓▒▒▓▓▓▓▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
-██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓░░░░░░▓▓▒▒▓▓▒▒░░░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓▒
-██▓▓▒▒▒▒░░██▓▓▒▒▒▒▒▒▒▒░░▒▒░░░░▓▓▒▒▒▒▓▓▓▓░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
-██▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▓▓▒▒░░▓▓▒▒▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▓
-██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒░░▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
-██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
-██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓░░▒▒▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▒▒▒▒▒
-██▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▒▒▒▒▓▓▒▒▒▒▓▓▒▒▒▒▓▓▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒
-██▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▒▒▒▒▒▒░░▓▓▒▒░░▒▒▓▓▓▓▒▒░░▒▒▓▓▒▒▓▓▓▓▓▓▒▒▒▒▒▒░
-██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████`,
-			"GAME LOADED",
-		].join("\n");
-		addTerminalContent({
-			text,
-			format: "out",
-			useTypewriter: true,
-			speed: 1,
-		});
-	},
 	help: () => {
 		const header =
 			"Entities/Objects might have the following properties that can be that allow you to interact with them:";
@@ -305,22 +350,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 							`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`,
 					)
 					.join("\n\n"),
-			format: "hash",
-			useTypewriter: true,
-		});
-	},
-	ls: () => {
-		const text = [
-			"load [game]",
-			"create [game]",
-			"",
-			"your existing games:",
-			"> game-1",
-			"> orug-2",
-		].join("\n");
-		// Handle help command
-		addTerminalContent({
-			text,
 			format: "hash",
 			useTypewriter: true,
 		});
