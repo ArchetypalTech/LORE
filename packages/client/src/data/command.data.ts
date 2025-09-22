@@ -217,23 +217,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 	wallet: async () => {
-		if(!WalletStore().isConnected) {
-			addTerminalContent({
-				text: "not connected, connect first",
-				format: "hash",
-				useTypewriter: true,
-			});
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
 			return;
 		}
 		await WalletStore().openUserProfile();
 	},
 	disconnect: async () => {
 		if (!WalletStore().isConnected) {
-			addTerminalContent({
-				text: "not connected, use [connect] to connect",
-				format: "hash",
-				useTypewriter: true,
-			});
+			sendCommand("_not_yet_connected");
 			return;
 		}
 		await WalletStore().disconnectController();
