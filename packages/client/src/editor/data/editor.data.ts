@@ -22,6 +22,8 @@ import {
 	createDefaultContainerComponent,
 	createDefaultParentToChildrenComponent,
 	createPlayerEntity,
+	getPlayerSingletonInst,
+	getPlayerAddress,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -35,8 +37,6 @@ import { tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
-
-import { getPlayerAddress } from "@/editor/lib/components";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
 
 
@@ -584,6 +584,13 @@ const newEntity = async () => {
  * @returns The new player entity
  */
 export const newPlayer = async (): Promise<EntityCollection | undefined> => {
+	let existingPlayerEntity = getEntity(getPlayerSingletonInst())
+	if (existingPlayerEntity) {
+		console.warn("Player singleton already exists");
+		selectEntity(existingPlayerEntity.Entity.inst);
+		return existingPlayerEntity;
+	}
+
 	const spawnPoint = await getSpawnPoint();
 	if (spawnPoint === undefined) {
 		console.error("No spawn point found");
@@ -596,6 +603,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	const playerEntity = createPlayerEntity(spawnPoint.toString());
 	syncItem(playerEntity);
 	updateComponent(playerEntity.Entity.inst, "Entity", playerEntity.Entity);
+	updateComponent(playerEntity.Entity.inst, "Player", playerEntity.Player);
 	await tick();
 
 	// parent will be the spawn point	
@@ -621,6 +629,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 	const reactable = createDefaultReactableComponent(playerEntity.Entity);
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	reactable.Reactable.new_entry = playerEntity.Entity.name;
 	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
@@ -687,8 +696,8 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
  * This handles fetching the spawn point from the first entity with an area component with is_spawn_point set to true
  * @returns The spawn point entity inst
  */
-export const getSpawnPoint = async (): Promise<BigNumberish> => {
-	let areaInst: BigNumberish;
+export const getSpawnPoint = async (): Promise<BigNumberish | undefined> => {
+	let areaInst: BigNumberish | undefined;
 	try {
 		const { sdk } = await InitDojo();
 		const querySpawnPoint = () => {
@@ -701,7 +710,7 @@ export const getSpawnPoint = async (): Promise<BigNumberish> => {
 			// Get models with type area
 			const area = item.models?.lore?.Area;
 			// Check if area is a spawn point
-			if (area?.is_spawn_point) {
+			if (area?.is_spawn_point && area?.inst) {
 				// Return the spawn point entity inst
 				// This will only work if there is only one spawn point
 				// If there are multiple spawn points, this will return the first one
@@ -721,29 +730,127 @@ export const getSpawnPoint = async (): Promise<BigNumberish> => {
  * @returns True if the player exists, false otherwise
  */
 export const getPlayer = async (account: string): Promise<boolean> => {
-	let playerFound = false;
-	try {
-		const { sdk } = await InitDojo();
-		const queryPlayer = () => {
-			const builder = new ToriiQueryBuilder<SchemaType>();
-			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-Player"]);
-			return query;
-		};
-		const result = await sdk.getEntities({ query: queryPlayer() });
-		result.getItems().forEach((item) => {
-			// Get models with type Player
-			const player = item.models?.lore?.Player;
-			// Check the player model inst matches the account
-			if (player?.inst === account) {
-				playerFound = true;
-			}
-		});
-		return playerFound;
-	} catch (error) {
-		console.error("Error fetching player from Torii:", error);
-		throw error;
-	}
-}
+  console.log("getPlayer account using", account);
+
+  // Normalize Ethereum addresses (lowercase + remove extra leading zeros)
+  const normalizeAddress = (addr: string) =>
+    addr.replace(/^0x0+/, "0x").toLowerCase();
+  const normalizedAccount = normalizeAddress(account);
+
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-Player"]);
+
+    const result = await sdk.getEntities({ query });
+
+    return result.getItems().some((item) => {
+      const player = item.models?.lore?.Player;
+      console.log("player", player);
+
+      const playerAddress = player?.address
+        ? normalizeAddress(player.address)
+        : null;
+      console.log("playerAddress", playerAddress);
+
+      if (playerAddress === normalizedAccount) {
+        return true;
+      }
+      return false;
+    });
+  } catch (error) {
+    console.error("Error fetching player from Torii:", error);
+    throw error;
+  }
+};
+
+export const propertiesRegistered = async (
+  maxRetries = 5,
+  delayMs = 2000
+): Promise<boolean> => {
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-PropertyRegistry"]);
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const result = await sdk.getEntities({ query });
+      const items = result.getItems();
+      console.log(
+        `propertiesRegistered attempt ${attempt + 1}: found ${items.length} registries`,
+        items
+      );
+
+      if (items.length >= 6) {
+        console.log("✅ All 6 PropertyRegistry components are registered");
+        return true;
+      }
+
+      // Wait before retrying
+      if (attempt < maxRetries - 1) {
+        await new Promise((res) => setTimeout(res, delayMs));
+      }
+    }
+
+    console.warn(
+      `⚠️ Properties not fully registered after ${maxRetries} retries`
+    );
+    return false;
+  } catch (error) {
+    console.error("Error fetching properties from Torii:", error);
+    throw error;
+  }
+};
+
+export const queryCoinsEntity = async (): Promise<BigNumberish> => {
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-Entity"]);
+
+    const result = await sdk.getEntities({ query });
+
+    const coinsEntity = result.getItems().find((item) => {
+      return item.models?.lore?.Entity?.name === "Coins";
+    });
+
+    return coinsEntity?.models?.lore?.Entity?.inst ?? 0; // fallback if not found
+  } catch (error) {
+    console.error("Error fetching coins entity from Torii:", error);
+    throw error;
+  }
+};
+
+export const queryGameCoinsBalance = async (inst: BigNumberish): Promise<BigNumberish> => {
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-InventoryItem"]);
+
+    const result = await sdk.getEntities({ query });
+
+    const coinsEntity = result.getItems().find((item) => {
+      return item.models?.lore?.InventoryItem?.inst === inst;
+    });
+
+    return coinsEntity?.models?.lore?.InventoryItem?.quantity ?? 0; // fallback if not found
+  } catch (error) {
+    console.error("Error fetching coins balance from Torii:", error);
+    throw error;
+  }
+};
 
 export let playerFound = false;
 export let playerExists = false;
@@ -754,6 +861,7 @@ export let playerExists = false;
 export const checkForPlayer = async () => {
 	if (!playerExists) {
 		playerFound = await getPlayer(getPlayerAddress());
+		console.log("playerFound", playerFound);
 		if (playerFound) {
 			playerExists = true;
 		} else {

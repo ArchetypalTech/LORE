@@ -1,12 +1,13 @@
 use dojo::world::WorldStorage;
 use lore::{
-    models::index::Player, new_components::player_trait::PlayerImpl, constants::errors::Error,
+    models::player::{Player, PlayerImpl},
+    constants::errors::Error,
     lib::random::random_text,
 };
 
 #[generate_trait]
 pub impl ErrorOutputterImpl of ErrorOutputterTrait {
-    fn output_error(self: Error, player: Player, world: WorldStorage) {
+    fn output_error(self: Error, player: Player, ref world: WorldStorage) {
         let texts = match self {
             Error::Unimplemented => array!["This is not ready yet"],
             Error::NameNotMatch => array![
@@ -111,7 +112,7 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
         };
 
         if texts.len() > 0 {
-            player.say(world, random_text(world, texts));
+            player.say(ref world, random_text(world, texts));
         }
     }
 }

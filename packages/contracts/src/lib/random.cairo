@@ -33,7 +33,7 @@ mod tests {
 
     #[test]
     fn Random_test_random_u8() {
-        let (world, _, _, _, _) = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         let mut num = array![];
         for _ in 0..10_u8 {
             let seed: felt252 = world.dispatcher.uuid().try_into().unwrap();
@@ -45,7 +45,7 @@ mod tests {
 
     #[test]
     fn Random_test_random_u16() {
-        let (world, _, _, _, _) = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         let mut num = array![];
         for _ in 0..10_u8 {
             let seed: felt252 = world.dispatcher.uuid().try_into().unwrap();

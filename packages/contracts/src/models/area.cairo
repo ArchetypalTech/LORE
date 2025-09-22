@@ -1,53 +1,216 @@
-use dojo::{world::WorldStorage, model::ModelStorage};
+use dojo::{world::WorldStorage, model::{Model, ModelStorage}};
 use lore::{
-    models::{index::{Area, Player}, components::Component}, types::{command_type::Command},
+    models::{
+        entity::{Entity, EntityImpl},
+        components::{Instance, Component},
+        game_instance::{GameModelImpl},
+        player::{Player},
+    },
+    types::{command_type::Command},
     constants::errors::Error,
 };
+
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct Area {
+    #[key]
+    pub inst: felt252,
+    pub is_area: bool,
+    /// Properties ///
+    /// If the area is a spawn point for players
+    pub is_spawn_point: bool,
+    /// progress percentage when entering this area
+    pub progress_percentage: u8, // 0-100
+}
+
+
+//---------------------------------
+// Component
+//
+pub impl AreaInstance of Instance<Area> {
+    #[inline(always)]
+    fn inst(self: @Area) -> felt252 {
+        (*self.inst)
+    }
+    #[inline(always)]
+    fn set_inst(ref self: Area, new_inst: felt252) {
+        self.inst = new_inst;
+    }
+    #[inline(always)]
+    fn is_component(self: @Area) -> bool {
+        (*self.is_area)
+    }
+    fn has_component(self: @WorldStorage, inst: felt252) -> bool {
+        (inst != 0 && self.read_member(Model::<Area>::ptr_from_keys(inst), selector!("is_area")))
+    }
+}
 
 pub impl AreaComponent of Component<Area> {
     type ComponentType = Area;
 
-    fn inst(self: @Area) -> @felt252 {
-        self.inst
+    fn entity(self: @Area, world: @WorldStorage) -> Entity {
+        EntityImpl::get_entity(world, self.inst()).unwrap()
     }
 
-    fn has_component(self: @Area, world: WorldStorage, inst: felt252) -> bool {
-        let area: Area = world.read_model(inst);
-        area.is_area
-    }
-
-    fn add_component(mut world: WorldStorage, inst: felt252) -> Area {
-        let mut area: Area = world.read_model(inst);
-        area.inst = inst;
-        area.is_area = true;
-        world.write_model(@area);
-        // Return the component
-        area
-    }
-
-    fn get_component(world: WorldStorage, inst: felt252) -> Option<Area> {
-        let area: Area = world.read_model(inst);
-        if (!area.has_component(world, inst)) {
-            return Option::None;
+    fn get_component(world: @WorldStorage, inst: felt252, game_id: u128) -> Option<Area> {
+        let area: Area = world.read_game_model(inst, game_id);
+        if (area.is_component()) {
+            Option::Some(area)
+        } else {
+            Option::None
         }
-        let area: Area = world.read_model(inst);
-        Option::Some(area)
+    }
+
+    fn store(self: @Area, ref world: WorldStorage, game_id: u128) {
+        world.write_game_model(self, game_id);
     }
 
     fn can_use_command(
-        self: @Area, world: WorldStorage, player: @Player, command: @Command,
+        self: @Area, world: @WorldStorage, player: @Player, command: @Command,
     ) -> bool {
         true
     }
 
     fn execute_command(
-        self: Area, world: WorldStorage, player: @Player, command: @Command,
+        self: Area, ref world: WorldStorage, player: @Player, command: @Command,
     ) -> Result<(), Error> {
         // println!("Area execute_command");
         Result::Err(Error::Unimplemented)
     }
 
-    fn store(self: @Area, mut world: WorldStorage) {
-        world.write_model(self);
+    // used for tests only
+    fn add_component(ref world: WorldStorage, inst: felt252) -> Area {
+        let mut area: Area = world.read_model(inst);
+        area.inst = inst;
+        area.is_area = true;
+        area.progress_percentage = 0;
+        area.store(ref world, 0);
+        // Return the component
+        area
+    }
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    // use dojo::{model::ModelStorage};
+    use super::*;
+    use lore::{
+        tests::helpers,
+        models::{
+            entity::{EntityImpl},
+            game_instance::{GameModelImpl, GameInstanceMap},
+        },
+    };
+
+    #[test]
+    fn test_area_create() {
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let area: Area = AreaComponent::add_component(ref world, 1);
+        assert(area.is_area, 'area is area');
+        assert(area.inst == 1, 'area.inst == 1');
+        assert(AreaInstance::has_component(@world, area.inst), 'has_component()');
+        let component: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
+        assert(component.is_some(), 'component.is_some()');
+        assert(component.unwrap().inst() == area.inst, 'component.is_some()');
+    }
+
+    #[test]
+    fn test_area_game_inst() {
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        //
+        // create area
+        let area: Area = AreaComponent::add_component(ref world, 111);
+        assert!(area.is_area);
+        assert_eq!(area.inst, 111);
+        //
+        // read game inst version, same as inst
+        let game_id: u128 = 222;
+        let comp_inst: Area = world.read_game_model(area.inst, 0);
+        let mut comp_game: Area = world.read_game_model(area.inst, game_id);
+        assert!(comp_inst.is_component(), "baseline");
+        assert!(comp_game.is_component(), "baseline");
+        assert_eq!(comp_inst.inst(), area.inst, "baseline");
+        assert_eq!(comp_game.inst(), area.inst, "baseline");
+        assert_eq!(comp_game.is_spawn_point, false, "baseline");
+        // GameInstanceMap model does not exist yet
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_eq!(map.game_inst, 0, "baseline");
+        //
+        // save game inst version
+        comp_game.is_spawn_point = true;
+        world.write_game_model(@comp_game, game_id);
+        world.write_game_model(@comp_inst, 0);
+        // inst does not change!
+        assert_eq!(comp_inst.inst(), area.inst, "saved");
+        assert_eq!(comp_game.inst(), area.inst, "saved");
+        // GameInstanceMap was created
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_ne!(map.game_inst, 0, "saved");
+        //
+        // read game inst version, updated, original is preserved
+        let new_comp_inst: Area = world.read_game_model(area.inst, 0);
+        let new_comp_game: Area = world.read_game_model(area.inst, game_id);
+        assert!(new_comp_inst.is_component(), "new_component");
+        assert!(new_comp_game.is_component(), "new_component");
+        assert_eq!(new_comp_inst.inst(), area.inst, "new_component");
+        assert_eq!(new_comp_game.inst(), area.inst, "new_component");
+        assert_eq!(new_comp_inst.is_spawn_point, false, "new_component");
+        assert_eq!(new_comp_game.is_spawn_point, true, "new_component");
+    }
+
+    #[test]
+    fn test_area_game_comp() {
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        //
+        // create area
+        let area: Area = AreaComponent::add_component(ref world, 111);
+        assert!(area.is_area);
+        assert_eq!(area.inst, 111);
+        //
+        // read game inst version, same as inst
+        let game_id: u128 = 222;
+        let comp_null: Option<Area> = AreaComponent::get_component(@world, 1234, 0);
+        let comp_inst: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
+        let comp_game: Option<Area> = AreaComponent::get_component(@world, area.inst, game_id);
+        assert!(comp_null.is_none(), "null");
+        assert!(comp_inst.is_some(), "baseline");
+        assert!(comp_game.is_some(), "baseline");
+        let comp_inst: Area = comp_inst.unwrap();
+        let mut comp_game: Area = comp_game.unwrap();
+        assert!(comp_inst.is_component(), "baseline");
+        assert!(comp_game.is_component(), "baseline");
+        assert_eq!(comp_inst.inst(), area.inst, "baseline");
+        assert_eq!(comp_game.inst(), area.inst, "baseline");
+        assert_eq!(comp_game.is_spawn_point, false, "baseline");
+        // GameInstanceMap model does not exist yet
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_eq!(map.game_inst, 0, "baseline");
+        //
+        // save game inst version
+        comp_game.is_spawn_point = true;
+        comp_game.store(ref world, game_id);
+        comp_inst.store(ref world, 0);
+        // inst does not change!
+        assert_eq!(comp_inst.inst(), area.inst, "saved");
+        assert_eq!(comp_game.inst(), area.inst, "saved");
+        // GameInstanceMap was created
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
+        assert_ne!(map.game_inst, 0, "saved");
+        //
+        // read game inst version, updated, original is preserved
+        let new_comp_inst: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
+        let new_comp_game: Option<Area> = AreaComponent::get_component(@world, area.inst, game_id);
+        assert!(new_comp_inst.is_some(), "new_component");
+        assert!(new_comp_game.is_some(), "new_component");
+        let new_comp_inst: Area = new_comp_inst.unwrap();
+        let new_comp_game: Area = new_comp_game.unwrap();
+        assert!(new_comp_inst.is_component(), "new_component");
+        assert!(new_comp_game.is_component(), "new_component");
+        assert_eq!(new_comp_inst.inst(), area.inst, "new_component");
+        assert_eq!(new_comp_game.inst(), area.inst, "new_component");
+        assert_eq!(new_comp_inst.is_spawn_point, false, "new_component");
+        assert_eq!(new_comp_game.is_spawn_point, true, "new_component");
     }
 }

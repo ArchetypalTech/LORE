@@ -42,9 +42,7 @@ export const HierarchyTreeItem = ({
 
 	const icons = useMemo(() => {
 		return Object.entries(componentData)
-			.filter(([key]) => {
-				return entity[key as keyof typeof entity] !== undefined;
-			})
+			.filter(([key]) => entity[key as keyof typeof entity] !== undefined)
 			.sort((a, b) => a[1].order - b[1].order)
 			.slice(0, 2);
 	}, [entity]);
@@ -54,7 +52,7 @@ export const HierarchyTreeItem = ({
 			<div
 				className={cn(
 					"relative flex flex-row overflow-visible opacity-80",
-					isSelected && " font-bold text-white opacity-100",
+					isSelected && "font-bold text-white opacity-100",
 				)}
 				style={{
 					paddingLeft: `${depth * 1}rem`,
@@ -74,12 +72,13 @@ export const HierarchyTreeItem = ({
 				>
 					{!isDragging && (
 						<>
+							{/* Smaller drag handle (only left-side) */}
 							<button
 								{...otherHandleProps}
 								onPointerDown={(event) => {
 									event.stopPropagation();
-
 									EditorData().selectEntity(node.id.toString());
+
 									const t = setTimeout(() => {
 										onPointerDown?.(event);
 										clearTimeout(timer);
@@ -91,32 +90,43 @@ export const HierarchyTreeItem = ({
 									clearTimeout(timer);
 									setTimer(undefined);
 								}}
-								className="absolute top-0 left-0 h-full w-full cursor-pointer"
+								className="absolute top-0 left-0 h-7 w-full cursor-pointer"
 							/>
+
+							{/* Highlight when selected */}
 							{isSelected && (
 								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg] bg-black/20" />
 							)}
+
+							{/* Collapse toggle button */}
 							{isCollapsible && (
 								<button
-									className="cursor-pointer p-1"
-									onClick={onCollapse}
+									className="cursor-pointer z-20 text-xl"
+									onClick={(e) => {
+										e.stopPropagation();
+										onCollapse?.();
+									}}
 									type="button"
 								>
-									XX
+									▾
 								</button>
 							)}
-							<div className="flex-grow-1">{entity.Entity.name} </div>
+
+							{/* Entity name */}
+							<div className="flex-grow ml-2">{entity.Entity.name}</div>
+
+							{/* Icons */}
 							<div className="absolute left-[100%] ml-2 opacity-50 hover:opacity-100">
-								{icons.map(([key, value]) => {
-									if (value.icon) {
-										return (
-											<span key={key} title={key}>
-												{value.icon}
-											</span>
-										);
-									}
-								})}
+								{icons.map(([key, value]) =>
+									value.icon ? (
+										<span key={key} title={key}>
+											{value.icon}
+										</span>
+									) : null,
+								)}
 							</div>
+
+							{/* Clone child count badge */}
 							{clone && childCount > 0 && (
 								<div className="absolute top-[-12px] right-[-12px] flex h-[25px] w-[25px] rotate-[2deg] items-center justify-center rounded-xs bg-black font-xs text-white">
 									{childCount}
@@ -205,10 +215,10 @@ export const HierarchyTree = () => {
 				<PersonStanding />
 				New Player
 			</Button>
-			<div className="flex h-full max-h-[500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
+			<div className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}
-					collapsible={false}
+					collapsible={true}
 					value={data}
 					onChange={setData}
 					onMove={(action) => {

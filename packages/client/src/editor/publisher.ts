@@ -158,8 +158,8 @@ const publishPlayer = async (player: Player) => {
 		num.toBigInt((player.inst ?? getPlayerAddress()).toString()),
 		player.is_player ?? true,
 		player.address ? num.toBigInt(player.address.toString()) : num.toBigInt(getPlayerAddress().toString()),
+		player.game_id ? num.toBigInt(player.game_id.toString()) : num.toBigInt("0"),
 		player.location ? num.toBigInt(player.location.toString()) : num.toBigInt("0"),
-		player.story_line ? num.toBigInt(player.story_line.toString()) : num.toBigInt("0"),
 		player.use_debug ?? false,
 	];
 	await dispatchDesignerCall("create_player", [playerData]);
@@ -208,6 +208,7 @@ const publishArea = async (area: Area) => {
 		num.toBigInt(area.inst.toString()),
 		area.is_area,
 		area.is_spawn_point,
+		Number(area.progress_percentage ?? '0'),
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };
@@ -283,7 +284,6 @@ const publishTrigger = async (
 			toEnumIndex(trigger.trigger_type, triggerType),
 			trigger.is_enabled,
 			trigger.is_once,
-			trigger.was_triggered,
 		];
 		await dispatchDesignerCall("create_trigger", [preparedTrigger]);
 	}
@@ -328,6 +328,7 @@ const publishEffect = async (
 				num.toBigInt(i.toString() ?? 0),
 			]),
 			num.toBigInt(effect.n_value.toString() ?? 0),
+			num.toBigInt(effect.hex_value?.toString() ?? num.toBigInt("0")),
 		];
 		await dispatchDesignerCall("create_effect", [preparedEffect]);
 	}
@@ -359,7 +360,6 @@ const publishAction = async (
 				num.toBigInt(b.toString()),
 			]),
 			action.tags.map((x) => byteArray.byteArrayFromString(x)),
-			action.executed ?? false,
 			action.failing_response.length > 0
 				? action.failing_response
 					.filter((x) => x.length > 0)
@@ -486,13 +486,9 @@ export const registerPropertyRegistry = async () => {
 	}
 };
 
-export let alreadyDone = false;
 const publishRegisterPropertyRegistry = async () => {
-	if (alreadyDone == false) {
 		let done = true;
 		await dispatchDesignerCall("register_property_registry", [done]);
-		alreadyDone = true;
-	}
 };
 
 /**

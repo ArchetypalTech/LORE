@@ -1,6 +1,6 @@
 # This file is for local, for being able to use the cairo extension language tool
 [world]
-seed = "lo
+seed = "lore"
 name = ">LORE"
 description = "> get started with LORE"
 
@@ -15,4 +15,9 @@ private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4
 world_address = "0x3ea2fa8bf5649c0e6fdec0482a23bdf760ec1add97c464c518b4e4bd9ab9f08" # dojo version 1.3.1
 
 [writers]
-"lore" = ["lore-prompt", "lore-designer"]
+"lore" = ["lore-prompt", "lore-designer", "lore-game_token"]
+
+[init_call_args]
+"lore-game_token" = [
+  "arr:0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7,0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae,0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F", # admins (tal-valdar, awtnmy, mataleone)
+]

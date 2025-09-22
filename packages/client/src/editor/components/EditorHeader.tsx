@@ -5,6 +5,8 @@ import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store";
 import { Config } from "../lib/config";
 import { publishConfigToContract } from "../publisher";
 import { Button } from "./ui/Button";
+import { registerPropertyRegistry } from "../publisher";
+import { propertiesRegistered } from "../data/editor.data";
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +63,16 @@ export const EditorHeader = () => {
 							className="btn btn-sm btn-warning"
 							onClick={async () => {
 								await WalletStore().connectController();
+
+								await registerPropertyRegistry();
+
+								let propertyRegistryFound = await propertiesRegistered();
+								// Check properties
+								if (!propertyRegistryFound) {
+									console.log("PropertyRegistry not found");
+								} else {
+									console.log("PropertyRegistry found");
+								}
 							}}
 						>
 							Connect Controller

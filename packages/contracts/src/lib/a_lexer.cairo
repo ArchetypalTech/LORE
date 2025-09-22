@@ -1,7 +1,8 @@
 use core::array::{ArrayTrait, ArrayImpl, Array};
 
 use lore::{
-    new_components::player_trait::PlayerImpl, types::command_type::{Command, Token, TokenType},
+    models::player::PlayerImpl,
+    types::command_type::{Command, Token, TokenType},
 };
 
 
@@ -21,7 +22,7 @@ pub impl CommandImpl of CommandTrait {
     // let list = command.get_targets();
     // let amount = list.len();
 
-    fn get_verbs(self: @Command) -> Array<Token> {
+    fn get_verbs(self: @Command) -> Span<Token> {
         let mut verbs: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -32,10 +33,10 @@ pub impl CommandImpl of CommandTrait {
             }
             verbs.append(token.clone());
         };
-        verbs
+        (verbs.span())
     }
 
-    fn get_nouns(self: @Command) -> Array<Token> {
+    fn get_nouns(self: @Command) -> Span<Token> {
         let mut nouns: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -46,10 +47,10 @@ pub impl CommandImpl of CommandTrait {
             }
             nouns.append(token.clone());
         };
-        nouns
+        (nouns.span())
     }
 
-    fn get_directions(self: @Command) -> Array<Token> {
+    fn get_directions(self: @Command) -> Span<Token> {
         let mut directions: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -60,10 +61,10 @@ pub impl CommandImpl of CommandTrait {
             }
             directions.append(token.clone());
         };
-        directions
+        (directions.span())
     }
 
-    fn get_Targets(self: @Command) -> Array<Token> {
+    fn get_Targets(self: @Command) -> Span<Token> {
         let mut targets: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token = self.tokens.at(i).clone();
@@ -78,7 +79,7 @@ pub impl CommandImpl of CommandTrait {
 
             targets.append(token.clone());
         };
-        targets
+        (targets.span())
     }
 
     fn pretty_print(self: @Command) {
@@ -97,9 +98,12 @@ pub mod lexer {
     use dojo::{world::WorldStorage};
 
     use lore::{
-        models::index::{Player},
-        new_components::{entity_trait::EntityImpl, player_trait::PlayerImpl},
-        types::command_type::{Command, Token, TokenType}, constants::errors::Error,
+        models::{
+            entity::{EntityImpl},
+            player::{Player, PlayerImpl},
+        },
+        types::command_type::{Command, Token, TokenType},
+        constants::errors::Error,
         lib::{
             utils::{ByteArrayTraitExt, ClousureTraitImp},
             dictionary::{get_dict_entry, initialize_dictionary},
@@ -165,7 +169,7 @@ pub mod lexer {
             for item in context.clone() {
                 let names = item.get_names();
                 for name in names {
-                    if token.text == name {
+                    if @token.text == name {
                         token.target = item.inst;
                         token.token_type = TokenType::Noun;
                         token.token_value = i.into();
@@ -211,19 +215,24 @@ mod tests {
     use super::lexer;
     use super::CommandImpl;
     use lore::{
-        models::player::caller_as_player, new_components::player_trait::PlayerImpl,
-        types::command_type::{TokenType, IntoTokenTypeFelt252}, tests::helpers,
-        lib::{level_test::create_test_level, dictionary::{add_to_dictionary}},
+        models::player::{PlayerImpl},
+        types::command_type::{TokenType, IntoTokenTypeFelt252},
+        tests::helpers,
+        lib::{
+            level_test::create_test_level,
+            dictionary::{add_to_dictionary},
+        },
     };
 
     #[test]
     fn Lexer_test_prompt() {
-        let (world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
         // println!("promptText: {:?}", promptText);
-        create_test_level(world);
-        let player = caller_as_player(world, player_1);
-        player.move_to_room(world, 2826);
+        create_test_level(ref world);
+        let game_id: u128 = 0;
+        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        player.move_to_room(ref world, 2826);
         let _command = lexer::parse(promptText, world, player);
         // println!("command: {:?}", command);
     // TODO: finish writing test
@@ -233,14 +242,15 @@ mod tests {
 
     #[test]
     fn test_get_verbs() {
-        let (world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let prompt_text: ByteArray = "look at the magic circle";
         let expected_verb: ByteArray = "look"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(world);
-        let player = caller_as_player(world, player_1);
-        player.move_to_room(world, 2826);
+        create_test_level(ref world);
+        let game_id: u128 = 0;
+        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        player.move_to_room(ref world, 2826);
 
         // Parse command
         let g_command = lexer::parse(prompt_text, world, player);
@@ -257,14 +267,15 @@ mod tests {
 
     #[test]
     fn test_get_nouns() {
-        let (world, _, _, player_1, _) = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         let prompt_text: ByteArray = "look at the ball";
         let expected_noun: ByteArray = "ball"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(world);
-        let player = caller_as_player(world, player_1);
-        player.move_to_room(world, 2826);
+        create_test_level(ref world);
+        let game_id: u128 = 0;
+        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        player.move_to_room(ref world, 2826);
         let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);
 
         // Parse command

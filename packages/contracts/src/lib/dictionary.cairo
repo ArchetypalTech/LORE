@@ -87,6 +87,20 @@ pub fn init_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "play", TokenType::Verb, 40).unwrap();
     add_to_dictionary(world, "validate", TokenType::Verb, 41).unwrap();
     add_to_dictionary(world, "approach", TokenType::Verb, 42).unwrap();
+    add_to_dictionary(world, "praise", TokenType::Verb, 43).unwrap();
+    add_to_dictionary(world, "pin", TokenType::Verb, 44).unwrap();
+    add_to_dictionary(world, "hack", TokenType::Verb, 45).unwrap();
+    add_to_dictionary(world, "hang", TokenType::Verb, 46).unwrap();
+    add_to_dictionary(world, "feed", TokenType::Verb, 47).unwrap();
+    add_to_dictionary(world, "ring", TokenType::Verb, 48).unwrap();
+    add_to_dictionary(world, "test", TokenType::Verb, 49).unwrap();
+    add_to_dictionary(world, "free", TokenType::Verb, 50).unwrap();
+    add_to_dictionary(world, "leave", TokenType::Verb, 51).unwrap();
+    add_to_dictionary(world, "scan", TokenType::Verb, 52).unwrap();
+    add_to_dictionary(world, "present", TokenType::Verb, 53).unwrap();
+    add_to_dictionary(world, "make", TokenType::Verb, 54).unwrap();
+    add_to_dictionary(world, "rescue", TokenType::Verb, 55).unwrap();
+    add_to_dictionary(world, "sign", TokenType::Verb, 56).unwrap();
 
     // directions
     add_to_dictionary(world, "north", TokenType::Direction, 1).unwrap();
@@ -203,7 +217,7 @@ mod tests {
 
     #[test]
     fn Dictionary_test_init() {
-        let (world, _, _, _, _) = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         let entry_1 = get_dict_entry(world, "look").unwrap();
         let entry_2 = get_dict_entry(world, "beautiful").unwrap();
         // println!("entry_1: {:?}", entry_1);
@@ -214,7 +228,7 @@ mod tests {
 
     #[test]
     fn Dictionary_test_add_to_dictionary() {
-        let (world, _, _, _, _) = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         add_to_dictionary(world, "something", TokenType::Verb, 1).unwrap();
         let entry_1 = get_dict_entry(world, "something").unwrap();
         assert(entry_1.tokenType == TokenType::Verb, 'beautiful is verb');

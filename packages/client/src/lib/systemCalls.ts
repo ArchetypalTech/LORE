@@ -1,6 +1,6 @@
 import { LORE_CONFIG } from "@lib/config";
 import JSONbig from "json-bigint";
-import { byteArray, CallData, type RawArgsArray } from "starknet";
+import { BigNumberish, byteArray, CairoOption, CairoOptionVariant, CallData, InvokeFunctionResponse, type RawArgsArray, Call } from "starknet";
 import { toCairoArray } from "@/editor/editor.utils";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
@@ -12,7 +12,7 @@ import { sendCommand } from "./terminalCommands/commandHandler";
  * @param {string} command - The command to send
  * @returns {Promise<void>}
  */
-async function execCommand(command: string): Promise<void> {
+async function execCommand(command: string, game_id?: BigNumberish | null | undefined): Promise<void> {
 	// if using slot, send to controller
 	if (LORE_CONFIG.useController) {
 		if (!WalletStore().isConnected) {
@@ -27,23 +27,31 @@ async function execCommand(command: string): Promise<void> {
 		formData.append("route", "sendMessage");
 		console.time("calltime");
 		console.log(command);
-		const calldata = CallData.compile([byteArray.byteArrayFromString(command)]);
+		const calldata = CallData.compile([
+			byteArray.byteArrayFromString(command),
+			game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
+		]);
 		if (LORE_CONFIG.useController) {
-			console.log("[CONTROLLER] execControllerCommand", command);
-			WalletStore().controller?.account?.execute([
-				{
+			console.log("[CONTROLLER] execControllerCommand:", command, game_id, calldata);
+			let calls: Call[] = [{
 					contractAddress: LORE_CONFIG.contracts.entity.address,
 					entrypoint: "prompt",
 					calldata,
-				},
-			]);
+				}];
+			const response: InvokeFunctionResponse | undefined = await WalletStore().controller?.account?.execute(calls);
+			// wait for transaction async
+			if (response) {
+				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+					validateReceiptStatus(receipt, calls); // just log!
+				});
+			}
 		} else {
 			console.log("[KATANA-DEV] execControllerCommand", command);
 			await LORE_CONFIG.contracts.entity.invoke("prompt", [calldata]);
 		}
 		console.timeEnd("calltime");
 	} catch (error) {
-		console.error("Error sending command:", error as Error);
+		console.error("Error sending command:", game_id, error as Error);
 	}
 }
 
@@ -99,22 +107,28 @@ async function execDesignerCall(props: DesignerCallProps) {
 		const data = toCairoArray(args).flat() as RawArgsArray;
 		const calldata = CallData.compile(data);
 
-		let response: unknown;
+		let response: InvokeFunctionResponse | undefined;
 		if (LORE_CONFIG.useController) {
 			if (!WalletStore().isConnected) {
 				throw new Error("Wallet not connected");
 			}
 			console.log("[CONTROLLER DESIGNERCALL]", call, args);
-			response = await WalletStore().controller?.account?.execute([
-				{
+			let calls: Call[] = [{
 					contractAddress: LORE_CONFIG.contracts.designer.address,
 					entrypoint: call,
 					calldata,
-				},
-			]);
+				}];
+			response = await WalletStore().controller?.account?.execute(calls);
+			// wait for transaction async
+			if (response) {
+				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+					validateReceiptStatus(receipt, calls); // just log!
+				});
+			}
 		} else {
 			response = await LORE_CONFIG.contracts.designer.invoke(call, calldata);
 		}
+
 		// we do a manual wait because the waitForTransaction is super slow
 		await new Promise((r) => setTimeout(r, 500));
 
@@ -130,6 +144,19 @@ async function execDesignerCall(props: DesignerCallProps) {
 		);
 	}
 }
+
+function validateReceiptStatus(receipt: any, calls: Call[]): boolean {
+  if (receipt.execution_status != 'SUCCEEDED') {
+    if (receipt.execution_status == 'REVERTED') {
+      console.error(`Transaction reverted:`, calls, receipt.revert_reason)
+    } else {
+      console.error(`Transaction error [${receipt.execution_status}]:`, calls, receipt)
+    }
+    return false
+  }
+  return true
+}
+
 
 /**
  * SystemCalls object that exports all the functions for external use.

@@ -19,6 +19,7 @@ import { EffectSelector } from "../EffectsSelector";
 import { BigNumberish } from "starknet";
 import { useEditorData } from "../../data/editor.data";
 import { CollapsibleComponent } from "../CollapsibleComponent";
+import { EntitySelector } from "../EntitySelector";
 
 export const ActionInspector: ComponentInspector<Action> = ({
   componentObject,
@@ -141,10 +142,11 @@ export const ActionInspector: ComponentInspector<Action> = ({
                 value={componentObj.is_enabled}
                 onChange={handleInputChange(idx)}
               />
-              <Input
+              <EntitySelector
                 id="executor"
                 value={componentObj.executor.toString()}
                 onChange={handleInputChange(idx)}
+                dataPool={dataPool}
               />
               <TriggerSelector
                 id="triggers"
