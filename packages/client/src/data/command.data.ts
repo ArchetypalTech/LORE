@@ -8,7 +8,7 @@ import { APP_DATA } from "@/data/app.data";
 import { HELP_TEXTS, HELP_EXITS, HELP_INSPECT, HELP_CONTAINER, HELP_INVENTORY } from "@/data/help.data";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "../lib/stores/wallet.store";
-import { checkForPlayer, propertiesRegistered, } from "@/editor/data/editor.data";
+import { checkForPlayer, propertiesRegistered, queryOwnedGameTokens, } from "@/editor/data/editor.data";
 import {registerPropertyRegistry} from "../editor/publisher";
 import { queryCoinsEntity, queryGameCoinsBalance } from "@/editor/data/editor.data";
 import GameStore from "@/lib/stores/game.store";
@@ -103,7 +103,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_hint: () => {
 		addTerminalContent({
-			text: 'type [command] [target], or type "help"',
+			text: 'type [command] [target], or type "help"| "ls"',
 			format: "input",
 			useTypewriter: true,
 		});
@@ -138,7 +138,30 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_create_game: () => {
 		// an empty command will create a game if not already created
-		sendCommand(``);
+		// sendCommand(``);
+	},
+	ls: async () => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		const tokens = await queryOwnedGameTokens(WalletStore().walletAddress || 0n);
+		const text: string[] = [];
+		
+		if (tokens.length === 0) {
+			text.push("You have no games. Type [create_game] to start a new a game");
+		} else {
+			text.push(`Found ${tokens.length} games:`);
+			tokens.forEach((token) => {
+				text.push(`- ${token.name}`);
+			});
+			text.push(`Type [load game_name] to resume a game`);
+		}
+		addTerminalContent({
+			text: text.join("\n"),
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_fatal_error: () => {
 		addTerminalContent({
@@ -223,11 +246,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	controller: () => {
 		if (LORE_CONFIG.useController) {
-			if (WalletStore().isConnected) {
-				WalletStore().controller?.openProfile("inventory");
-			} else {
+			if (!WalletStore().isConnected) {
 				sendCommand("_not_yet_connected");
+				return;
 			}
+			WalletStore().controller?.openProfile("inventory");
 		}
 	},
 	_bypass: ({ command }) => {

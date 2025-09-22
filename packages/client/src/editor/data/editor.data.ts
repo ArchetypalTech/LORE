@@ -1,6 +1,8 @@
 import JSONbig from "json-bigint";
+import { LORE_CONFIG } from "@lib/config";
 import { toast } from "sonner";
-import { type BigNumberish, num } from "starknet";
+import { addAddressPadding, type BigNumberish, num } from "starknet";
+import type { TokenBalances } from "@dojoengine/torii-client";
 import type {
 	Entity,
 	ParentToChildren,
@@ -848,6 +850,32 @@ export const queryGameCoinsBalance = async (inst: BigNumberish): Promise<BigNumb
     return coinsEntity?.models?.lore?.InventoryItem?.quantity ?? 0; // fallback if not found
   } catch (error) {
     console.error("Error fetching coins balance from Torii:", error);
+    throw error;
+  }
+};
+
+export type GameToken = {
+	token_id: number;
+	name: string;
+};
+export const queryOwnedGameTokens = async (ownerAddress: BigNumberish): Promise<GameToken[]> => {
+  try {
+    const { sdk } = await InitDojo();
+		// get all tokens owned by the address
+    const tokens: TokenBalances = await sdk.getTokenBalances({
+			contractAddresses: [addAddressPadding(LORE_CONFIG.manifest.game_token.address)],
+			accountAddresses: [addAddressPadding(ownerAddress)],
+		});
+		const result: GameToken[] = tokens.items
+			.filter((item) => BigInt(item.balance) > 0n)
+			.filter((item) => item.token_id !== undefined)
+			.map((item) => ({
+				token_id: Number(BigInt(item.token_id ?? 0)),
+				name: `game-${BigInt(item.token_id ?? 0).toString()}`,
+			}));
+		return result;
+  } catch (error) {
+    console.error("Error fetching owned game tokens from Torii:", error);
     throw error;
   }
 };

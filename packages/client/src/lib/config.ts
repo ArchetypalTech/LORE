@@ -54,12 +54,16 @@ const katanaProvider = new RpcProvider({
 const manifest = {
 	default: manifestJson as typeof manifestJsonType,
 	entity: getOrFail(
-		manifestJson.contracts.find((c) => c.tag === "lore-prompt"),
+		manifestJson.contracts.find((c: any) => c.tag === "lore-prompt"),
 		"lore-prompt",
 	),
 	designer: getOrFail(
-		manifestJson.contracts.find((c) => c.tag === "lore-designer"),
+		manifestJson.contracts.find((c: any) => c.tag === "lore-designer"),
 		"lore-designer",
+	),
+	game_token: getOrFail(
+		manifestJson.contracts.find((c: any) => c.tag === "lore-game_token"),
+		"lore-game_token",
 	),
 	world: manifestJson.world,
 };
