@@ -1,6 +1,7 @@
 import { useHead } from "@unhead/react";
 import { APP_SEO } from "@/data/app.data";
 import Terminal from "./terminal/Terminal";
+import bg from "../assets/782.webp";
 
 export const Client = () => {
 	useHead({
@@ -25,6 +26,9 @@ export const Client = () => {
 			id="client-root"
 			className="relative flex h-screen w-screen items-center justify-center "
 		>
+			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
+				<img src={bg} alt="oruggin-background" />
+			</div>
 			<div className="crt buzzing flex h-full max-h-[100dvh] md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
 			</div>
