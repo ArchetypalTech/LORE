@@ -1,3 +1,4 @@
+import { EntityEditor } from "@/editor/components/EntityEditor";
 import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_dev.json";
@@ -73,7 +74,12 @@ const wallet = (() => {
 	console.log("env", env);
 	console.log("katanaGoF", katanaGoF);
 	console.log("endpoints", endpoints);
-  const account = new Account({
+  // const account = new Account(
+	// 	katanaProvider,
+	// 	address,
+	// 	privateKey,
+	// );
+	const account = new Account({
 		provider: katanaProvider,
 		address,
 		signer: new Signer(privateKey),
@@ -82,21 +88,31 @@ const wallet = (() => {
   return { address, privateKey, account };
 })()
 
+// const ent_abi = manifest.entity.abi;
+// const ent_address = manifest.entity.address;
+// const ent_provOrAcc = katanaProvider;
+// const entity = new Contract(ent_abi, ent_address, ent_provOrAcc);
 const entity = new Contract({
 	abi: manifest.entity.abi,
 	address: manifest.entity.address,
 	providerOrAccount: katanaProvider,
 });
 
-entity.attach(wallet.account.address);
+// entity.attach(wallet.account.address);
+entity.connect(wallet.account);
 
+// const designer_abi = manifest.designer.abi;
+// const designer_address = manifest.designer.address;
+// const designer_provOrAcc = katanaProvider;
+// const designer = new Contract(designer_abi, designer_address, designer_provOrAcc);
 const designer = new Contract({
 	abi: manifest.designer.abi,
 	address: manifest.designer.address,
 	providerOrAccount: katanaProvider,
 });
 
-designer.attach(wallet.account.address);
+// designer.attach(wallet.account.address); 
+designer.connect(wallet.account);
 
 export const LORE_CONFIG = {
 	endpoints,
