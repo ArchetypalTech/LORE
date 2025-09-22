@@ -95,11 +95,11 @@ const wallet = (() => {
 const entity = new Contract({
 	abi: manifest.entity.abi,
 	address: manifest.entity.address,
-	providerOrAccount: katanaProvider,
+	providerOrAccount: wallet.account,
 });
 
 // entity.attach(wallet.account.address);
-entity.connect(wallet.account);
+// entity.connect(wallet.account.address);
 
 // const designer_abi = manifest.designer.abi;
 // const designer_address = manifest.designer.address;
@@ -108,11 +108,11 @@ entity.connect(wallet.account);
 const designer = new Contract({
 	abi: manifest.designer.abi,
 	address: manifest.designer.address,
-	providerOrAccount: katanaProvider,
+	providerOrAccount: wallet.account,
 });
 
 // designer.attach(wallet.account.address); 
-designer.connect(wallet.account);
+// designer.connect(wallet.account);
 
 export const LORE_CONFIG = {
 	endpoints,
