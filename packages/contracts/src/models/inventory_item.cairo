@@ -120,7 +120,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
         match action.action_fn {
             InventoryItemActions::UseItem => {
                 if *player.use_debug {
-                    player.say(ref world, format!("You are trying to use: {}", nouns[0].text));
+                    player.log_debug(ref world, format!("You are trying to use: {}", nouns[0].text));
                 }
                 let mut resultUse: Result<(), Error> = Result::Ok(());
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
@@ -129,7 +129,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // V: Use, N1: key, N2: door (target)
                 // Get target entity to get the actions and execute it
                 if *player.use_debug {
-                    player.say(ref world, format!("Your target is: {}", nouns[1].text));
+                    player.log_debug(ref world, format!("Your target is: {}", nouns[1].text));
                 }
 
                 let target_entity = EntityImpl::get_entity(@world, *nouns[1].target);
@@ -164,7 +164,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
 
                     if *player.use_debug {
                         player
-                            .say(
+                            .log_debug(
                                 ref world,
                                 format!(
                                     "Using {} trigger's something at {}",
@@ -173,7 +173,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                                 ),
                             );
                         player
-                            .say(
+                            .log_debug(
                                 ref world,
                                 format!(
                                     "Using: {:?} trigger's the action: {:?} at: {:?} as the target",
@@ -187,9 +187,9 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         ref world, player, @context,
                     );
                     if *player.use_debug {
-                        player.say(ref world, format!("Trigger result: {:?}", trig_res));
-                        player.say(ref world, format!("Condition result: {:?}", cond_res));
-                        player.say(ref world, format!("Effect result: {:?}", eff_res));
+                        player.log_debug(ref world, format!("Trigger result: {:?}", trig_res));
+                        player.log_debug(ref world, format!("Condition result: {:?}", cond_res));
+                        player.log_debug(ref world, format!("Effect result: {:?}", eff_res));
                     }
                     // If all are ok, set used to true
                     if trig_res.is_ok() && cond_res && eff_res.is_ok() {

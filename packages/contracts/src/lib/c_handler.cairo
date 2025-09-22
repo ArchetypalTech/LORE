@@ -26,11 +26,11 @@ use lore::{
 };
 
 pub fn handle_command(
-    command: @Command, ref world: WorldStorage, player: @Player,
+    command: @Command, ref world: WorldStorage, ref player: Player,
 ) -> Result<(), Error> {
     let sys_command = command.is_system_command();
     if sys_command {
-        return system_command(command, ref world, player);
+        return system_command(command, ref world, ref player);
     }
     let verbs = command.get_verbs();
     if verbs.len() == 0 {
@@ -43,13 +43,13 @@ pub fn handle_command(
     if nouns.len() > 0 {
         for noun in nouns {
             let item: Entity = EntityImpl::get_entity(@world, *noun.target).unwrap();
-            if *player.use_debug {
-                player.say(ref world, format!("item: {:?}", item));
+            if player.use_debug {
+                player.log_debug(ref world, format!("item: {:?}", item));
             }
-            match ReactableComponent::get_component(@world, item.inst, *player.game_id) {
+            match ReactableComponent::get_component(@world, item.inst, player.game_id) {
                 Option::Some(c) => {
-                    if c.clone().can_use_command(@world, player, command) {
-                        let res = c.clone().execute_command(ref world, player, command);
+                    if c.clone().can_use_command(@world, @player, command) {
+                        let res = c.clone().execute_command(ref world, @player, command);
                         match res {
                             Result::Ok(()) => {
                                 executed = Option::Some(true);
@@ -64,10 +64,10 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match AreaComponent::get_component(@world, item.inst, *player.game_id) {
+            match AreaComponent::get_component(@world, item.inst, player.game_id) {
                 Option::Some(c) => {
-                    if c.can_use_command(@world, player, command) {
-                        let res = c.execute_command(ref world, player, command);
+                    if c.can_use_command(@world, @player, command) {
+                        let res = c.execute_command(ref world, @player, command);
                         match res {
                             Result::Ok(()) => {
                                 executed = Option::Some(true);
@@ -83,10 +83,10 @@ pub fn handle_command(
                 Option::None => {},
             }
             // @dev: guaranteed there's a noun
-            match ExitComponent::get_component(@world, item.inst, *player.game_id) {
+            match ExitComponent::get_component(@world, item.inst, player.game_id) {
                 Option::Some(c) => {
-                    if c.can_use_command(@world, player, command) {
-                        let res = c.execute_command(ref world, player, command);
+                    if c.can_use_command(@world, @player, command) {
+                        let res = c.execute_command(ref world, @player, command);
                         match res {
                             Result::Ok(()) => {
                                 executed = Option::Some(true);
@@ -101,10 +101,10 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match InventoryItemComponent::get_component(@world, item.inst, *player.game_id) {
+            match InventoryItemComponent::get_component(@world, item.inst, player.game_id) {
                 Option::Some(c) => {
-                    if c.can_use_command(@world, player, command) {
-                        let res = c.execute_command(ref world, player, command);
+                    if c.can_use_command(@world, @player, command) {
+                        let res = c.execute_command(ref world, @player, command);
                         match res {
                             Result::Ok(()) => {
                                 executed = Option::Some(true);
@@ -119,10 +119,10 @@ pub fn handle_command(
                 },
                 Option::None => {},
             }
-            match ContainerComponent::get_component(@world, item.inst, *player.game_id) {
+            match ContainerComponent::get_component(@world, item.inst, player.game_id) {
                 Option::Some(c) => {
-                    if c.can_use_command(@world, player, command) {
-                        let res = c.execute_command(ref world, player, command);
+                    if c.can_use_command(@world, @player, command) {
+                        let res = c.execute_command(ref world, @player, command);
                         match res {
                             Result::Ok(()) => {
                                 executed = Option::Some(true);
@@ -141,12 +141,12 @@ pub fn handle_command(
     } else if directions.len() > 0 {
         let context = player.get_context(@world);
         for item in context {
-            let exit: Option<Exit> = Component::get_component(@world, item.inst, *player.game_id);
+            let exit: Option<Exit> = Component::get_component(@world, item.inst, player.game_id);
             // @dev: not guaranteed there's a noun
             match exit {
                 Option::Some(exit) => {
-                    if exit.can_use_command(@world, player, command) {
-                        let res = exit.execute_command(ref world, player, command);
+                    if exit.can_use_command(@world, @player, command) {
+                        let res = exit.execute_command(ref world, @player, command);
                         match res {
                             Result::Ok(()) => {
                                 executed = Option::Some(true);
@@ -196,7 +196,7 @@ pub fn handle_command(
             }
             let container_component: Container = personal_container.unwrap();
             let noun: ByteArray = "Your";
-            let done = container_component.check_container(ref world, player, @noun);
+            let done = container_component.check_container(ref world, @player, @noun);
             if !done {
                 return Result::Err(Error::ActionFailed);
             }
@@ -248,7 +248,7 @@ pub fn init_system_dictionary(world: WorldStorage) {
 }
 
 fn system_command(
-    command: @Command, ref world: WorldStorage, player: @Player,
+    command: @Command, ref world: WorldStorage, ref player: Player,
 ) -> Result<(), Error> {
     let mut system_command: ByteArray = "";
     let tokens = command.tokens.clone().span();
@@ -264,14 +264,13 @@ fn system_command(
             return Result::Err(Error::TestError);
         }
         if (system_command == "g_debug") {
-            let mut modified_player = player.clone();
-            modified_player.use_debug = !*player.use_debug;
-            if modified_player.use_debug {
+            player.use_debug = !player.use_debug;
+            if player.use_debug {
                 player.log_sys(ref world, "+sys+you are in debug mode");
             } else {
                 player.log_sys(ref world, "+sys+you are no longer in debug mode");
             }
-            modified_player.store(ref world, *player.game_id);
+            player.store(ref world, player.game_id);
             return Result::Ok(());
         }
         if (system_command == "g_command") {
@@ -280,13 +279,13 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_move") {
-            player.clone().move_to_room(ref world, 2826);
+            player.move_to_room(ref world, 2826);
             player.log_sys(ref world, "+sys+forced move command");
             let room = player.get_room_entity(@world);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
-            let reactable: Reactable = Component::get_component(@world, room.unwrap().inst, *player.game_id).unwrap();
+            let reactable: Reactable = Component::get_component(@world, room.unwrap().inst, player.game_id).unwrap();
             player.log_sys(ref world, format!("+sys+{:?}", reactable));
             return Result::Ok(());
         }
@@ -305,7 +304,7 @@ fn system_command(
             player.log_sys(ref world, "+sys+you are here:");
             let room = player.get_room_entity(@world);
             player.log_sys(ref world, format!("+sys+{:?}", room));
-            player.log_sys(ref world, format!("+sys+{:?}", player.entity(@world).get_parent(@world, *player.game_id)));
+            player.log_sys(ref world, format!("+sys+{:?}", player.entity(@world).get_parent(@world, player.game_id)));
             return Result::Ok(());
         }
         if (system_command == "g_look") {
@@ -317,7 +316,7 @@ fn system_command(
             }
             player.log_sys(ref world, format!("{}", room.unwrap().name));
             for item in context {
-                let reactable: Option<Reactable> = Component::get_component(@world, item.inst, *player.game_id);
+                let reactable: Option<Reactable> = Component::get_component(@world, item.inst, player.game_id);
                 if reactable.is_some() {
                     let description = reactable.unwrap().get_random_description(command, world);
                     player.log_sys(ref world, format!("{}", description));
@@ -326,7 +325,7 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_game_id") {
-            player.log_sys(ref world, format!("+sys+game-{:?}", *player.game_id));
+            player.log_sys(ref world, format!("+sys+game-{:?}", player.game_id));
             return Result::Ok(());
         }
         if (system_command == "g_create_game") {
@@ -374,8 +373,8 @@ mod tests {
         let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         create_test_level(ref world);
         let game_id: u128 = 0;
-        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.clone().move_to_room(ref world, 2826);
+        let mut player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        player.move_to_room(ref world, 2826);
 
         // Create a test command with g_command system token
         let mut command = Command {

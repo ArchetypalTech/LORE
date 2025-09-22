@@ -120,14 +120,14 @@ pub impl ActionImpl of ActionTrait {
             // Action has already been executed, don't do anything
             // return condition as false.
             if *player.use_debug {
-                player.say(ref world, format!("Action has already been executed"));
+                player.log_debug(ref world, format!("Action has already been executed"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
         // Check if the action is called by the correct entity
         if self.executor != *context.inventory_object {
             if *player.use_debug {
-                player.say(ref world, format!("Action is not called by the correct entity"));
+                player.log_debug(ref world, format!("Action is not called by the correct entity"));
             }
             return (Result::Ok(()), false, Result::Ok(()));
         }
@@ -144,7 +144,7 @@ pub impl ActionImpl of ActionTrait {
             let result_opt = trigger.evaluate_trigger(ref world, *player.game_id);
             if *player.use_debug {
                 player
-                    .say(ref world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
+                    .log_debug(ref world, format!("Result for trigger: {:?}, is: {:?}", trigger, result_opt));
             }
             if result_opt.is_err() {
                 result_t = result_opt;
@@ -158,7 +158,7 @@ pub impl ActionImpl of ActionTrait {
             result = condition.evaluate_condition(@world, context, *player.game_id);
             if *player.use_debug {
                 player
-                    .say(ref world, format!("Result for condition: {:?}, is: {:?}", condition, result));
+                    .log_debug(ref world, format!("Result for condition: {:?}, is: {:?}", condition, result));
             }
             if !result {
                 break; // If a single condition fails, break out of the loop
@@ -172,7 +172,7 @@ pub impl ActionImpl of ActionTrait {
                 let result_pos = effect.apply_effect(ref world, context, *player.game_id);
                 if *player.use_debug {
                     player
-                        .say(
+                        .log_debug(
                             ref world, format!("Result for effect: {:?}, is: {:?}", effect, result_pos),
                         );
                 }
