@@ -1,8 +1,9 @@
+import { EntityEditor } from "@/editor/components/EntityEditor";
 import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_dev.json";
 import { cleanEnv, str, url } from "envalid";
-import { Account, Contract, RpcProvider, provider } from "starknet";
+import { Account, Contract, RpcProvider, provider, Signer } from "starknet";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	if (value === undefined || value === null) {
@@ -28,8 +29,9 @@ const env = cleanEnv(import.meta.env, {
 	//...slotEnv,
 });
 
+const katanaGoF = getOrFail(env.VITE_KATANA_HTTP_RPC, "VITE_KATANA_HTTP_RPC");
 const endpoints = {
-	katana: isLocalhost ? "/katana" : env.VITE_KATANA_HTTP_RPC,
+	katana: isLocalhost ? "/katana" : katanaGoF,
 	torii: {
 		http: env.VITE_TORII_HTTP_RPC,
 		ws: env.VITE_TORII_WS_RPC,
@@ -37,7 +39,8 @@ const endpoints = {
 };
 
 const katanaProvider = new RpcProvider({
-	nodeUrl: isLocalhost ? "/katana" : env.VITE_KATANA_HTTP_RPC,
+	nodeUrl: isLocalhost ? "/katana" : katanaGoF,
+	chainId: "0x57505f4c4f52455f5633",
 	headers: {
 		//nocors
 		"Access-Control-Allow-Origin": "*",
@@ -61,32 +64,55 @@ const manifest = {
 	world: manifestJson.world,
 };
 
+const address = getOrFail(env.VITE_BURNER_ADDRESS, "VITE_BURNER_ADDRESS");
+const privateKey = getOrFail(env.VITE_BURNER_PRIVATE_KEY, "VITE_BURNER_PRIVATE_KEY");
+
 const wallet = (() => {
-	const address = env.VITE_BURNER_ADDRESS;
-	const private_key = env.VITE_BURNER_PRIVATE_KEY;
-	const account = new Account(katanaProvider, address, private_key);
-	return {
+	console.log("address", address);
+	console.log("privateKey", privateKey);
+	console.log("katanaProvider", katanaProvider);
+	console.log("env", env);
+	console.log("katanaGoF", katanaGoF);
+	console.log("endpoints", endpoints);
+  // const account = new Account(
+	// 	katanaProvider,
+	// 	address,
+	// 	privateKey,
+	// );
+	const account = new Account({
+		provider: katanaProvider,
 		address,
-		private_key,
-		account,
-	};
-})();
+		signer: new Signer(privateKey),
+	});
+	console.log("account", account);
+  return { address, privateKey, account };
+})()
 
-const entity = new Contract(
-	manifest.entity.abi,
-	manifest.entity.address,
-	katanaProvider,
-);
+// const ent_abi = manifest.entity.abi;
+// const ent_address = manifest.entity.address;
+// const ent_provOrAcc = katanaProvider;
+// const entity = new Contract(ent_abi, ent_address, ent_provOrAcc);
+const entity = new Contract({
+	abi: manifest.entity.abi,
+	address: manifest.entity.address,
+	providerOrAccount: wallet.account,
+});
 
-entity.connect(wallet.account);
+// entity.attach(wallet.account.address);
+// entity.connect(wallet.account.address);
 
-const designer = new Contract(
-	manifest.designer.abi,
-	manifest.designer.address,
-	katanaProvider,
-);
+// const designer_abi = manifest.designer.abi;
+// const designer_address = manifest.designer.address;
+// const designer_provOrAcc = katanaProvider;
+// const designer = new Contract(designer_abi, designer_address, designer_provOrAcc);
+const designer = new Contract({
+	abi: manifest.designer.abi,
+	address: manifest.designer.address,
+	providerOrAccount: wallet.account,
+});
 
-designer.connect(wallet.account);
+// designer.attach(wallet.account.address); 
+// designer.connect(wallet.account);
 
 export const LORE_CONFIG = {
 	endpoints,
@@ -104,9 +130,10 @@ export const LORE_CONFIG = {
 		// Contract address
 		contract_address: env.VITE_TOKEN_CONTRACT_ADDRESS,
 		erc20: ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],
+		erc721: ["0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649"],
 	},
 	useController: true,
-	// import.meta.env.MODE === "slot",
+	//import.meta.env.MODE === "slot",
 	env: env,
 	LOCALHOST: isLocalhost,
 	EDITOR_MODE: isEditor,

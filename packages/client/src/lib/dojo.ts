@@ -56,7 +56,7 @@ export const InitDojo = async () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
 
-			const query = builder.withCursor("").withLimit(1000).includeHashedKeys();
+			const query = builder.withCursor("").withLimit(90000).includeHashedKeys();
 			return query;
 		};
 
