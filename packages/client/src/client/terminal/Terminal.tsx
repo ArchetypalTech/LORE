@@ -56,6 +56,7 @@ export default function Terminal({
 		return () => clearTimeout(timeout);
 	}, [status]);
 
+	// update cursor position
 	useEffect(() => {
 		const updateCursorPos = () => {
 			if (terminalInputRef.current) {
@@ -78,7 +79,6 @@ export default function Terminal({
 
 	// Split handleKeyDown to reduce complexity
 	const handleUpArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-		// console.log(e, inputHistoryIndex, inputHistory);
 		e.preventDefault();
 		if (inputHistoryIndex === 0) {
 			setOriginalInputValue(inputValue);
@@ -205,13 +205,12 @@ export default function Terminal({
 							onKeyDown={handleKeyDown}
 						></textarea>
 						<div
-							className="crt-text fadeInOut"
+							className="crt-text fadeInOut absolute pointer-none top-[1.35em]"
 							style={{
-								position: "absolute",
-								top: "1.35em",
-								left: `calc(${cursorPos}ch + 1.75rem)`,
-								pointerEvents: "none",
-								fontSize: "inherit",
+								left: `calc(${cursorPos}ch + 1.85rem)`,
+								visibility: useTerminalStore().isPrinting
+									? "hidden"
+									: "visible",
 							}}
 						>
 							{"\u2588"}
