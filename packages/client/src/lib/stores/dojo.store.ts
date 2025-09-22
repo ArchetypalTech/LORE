@@ -188,17 +188,17 @@ const onReponseData = (
 };
 
 // Resets the local storage of the processed text and keys
-const resetDojoState = () => {
-	set({
-		lastKeyUsed: -1,
-		originalStoryLength: 0,
-		printedKeys: new Set<number>(),
-		playerStory: undefined,
-		lastProcessedText: "",
-	});
-	localStorage.removeItem("lastKeyUsed");
-	localStorage.removeItem("printedKeys");
-};
+// const resetDojoState = () => {
+// 	set({
+// 		lastKeyUsed: -1,
+// 		originalStoryLength: 0,
+// 		printedKeys: new Set<number>(),
+// 		playerStory: undefined,
+// 		lastProcessedText: "",
+// 	});
+// 	localStorage.removeItem("lastKeyUsed");
+// 	localStorage.removeItem("printedKeys");
+// };
 
 /*
 	onSubscription is a callback function that is passed to the sub function in the config object.

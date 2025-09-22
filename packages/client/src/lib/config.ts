@@ -1,9 +1,8 @@
-import { EntityEditor } from "@/editor/components/EntityEditor";
 import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_dev.json";
 import { cleanEnv, str, url } from "envalid";
-import { Account, Contract, RpcProvider, provider, Signer } from "starknet";
+import { Account, Contract, RpcProvider, Signer } from "starknet";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	if (value === undefined || value === null) {

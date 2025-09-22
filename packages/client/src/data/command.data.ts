@@ -15,19 +15,16 @@ import {
 import {
 	checkForPlayer,
 	propertiesRegistered,
+	queryOwnedGameTokens,
 } from "@/editor/data/editor.data";
 import {
 	queryCoinsEntity,
 	queryGameCoinsBalance,
 } from "@/editor/data/editor.data";
+import { registerPropertyRegistry } from "@/editor/publisher";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
-import { checkForPlayer, propertiesRegistered, queryOwnedGameTokens, } from "@/editor/data/editor.data";
-import {registerPropertyRegistry} from "../editor/publisher";
-import { queryCoinsEntity, queryGameCoinsBalance } from "@/editor/data/editor.data";
 import GameStore from "@/lib/stores/game.store";
-import { registerPropertyRegistry } from "../editor/publisher";
-import WalletStore from "../lib/stores/wallet.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -200,7 +197,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 			return;
 		}
-		const res = await WalletStore().connectController();
+		await WalletStore().connectController();
 		// console.log(res);
 		if (WalletStore().isConnected) {
 			const { username, walletAddress } = WalletStore();

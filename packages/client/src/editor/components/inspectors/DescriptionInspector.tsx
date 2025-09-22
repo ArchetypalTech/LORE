@@ -29,7 +29,7 @@ export const DescriptionTextInspector: ComponentInspector<DescriptionText> = ({
     ? componentObject
     : [componentObject];
 
-  const sortedComponents = componentsArray.length > 1 ? [...componentsArray].sort((a, b) => a.key - b.key) : componentsArray
+  // const sortedComponents = componentsArray.length > 1 ? [...componentsArray].sort((a, b) => a.key - b.key) : componentsArray
   return (
     <>
       {componentsArray.map((componentObj, idx) => {
