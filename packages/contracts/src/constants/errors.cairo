@@ -59,4 +59,5 @@ pub enum Error {
     NotStored,
     // Player
     NoRoom,
+    NotYourGame,
 }

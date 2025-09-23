@@ -113,7 +113,7 @@ pub impl ExitComponent of Component<Exit> {
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
-                    player.say(ref world, format!("You go to {:?}", self));
+                    player.log_debug(ref world, format!("You go to {:?}", self));
                 }
 
                 let mut matchesName = false;

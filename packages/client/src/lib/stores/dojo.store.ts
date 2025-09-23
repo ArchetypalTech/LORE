@@ -2,7 +2,7 @@ import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 
 import { InitDojo } from "@lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
-import { addAddressPadding, num, CairoCustomEnum } from "starknet";
+import { addAddressPadding, num, CairoCustomEnum, BigNumberish } from "starknet";
 import EditorData from "@/editor/data/editor.data";
 import type { EntityCollection } from "@/editor/lib/types";
 import { LORE_CONFIG } from "../config";
@@ -34,6 +34,8 @@ export type DojoStatus = {
 
 let connectionTimeout: Timer | undefined;
 
+const _lastKeyUsedName = (game_id: BigNumberish) => (`lastKeyUsed_${BigInt(game_id).toString()}`);
+
 const {
 	get,
 	set,
@@ -46,15 +48,17 @@ const {
 	} as DojoStatus,
 	playerStory: undefined as PlayerStory | undefined,
 	playerLine: undefined as StoryLine | undefined,
-	lastKeyUsed: Number(localStorage.getItem("lastKeyUsed") ?? "-1"),
 	config: undefined as Awaited<ReturnType<typeof InitDojo>> | undefined,
 	lastProcessedText: "",
 	originalStoryLength: 0,
 	existingSubscription: undefined as torii.Subscription | undefined,
 	// printedKeys: new Set<number>(),
-	printedKeys: new Set<number>(
-		JSON.parse(localStorage.getItem("printedKeys") || "[]")
+	getLastKeyUsed: (game_id: BigNumberish) => (
+		Number(localStorage.getItem(_lastKeyUsedName(game_id)) || "-1")
 	),
+	setLastKeyUsed: (game_id: BigNumberish, key: number) => {
+		localStorage.setItem(_lastKeyUsedName(game_id), String(key));
+	},
 });
 
 const setStatus = (status: DojoStatus) => set({ status });
@@ -67,8 +71,7 @@ const setStatus = (status: DojoStatus) => set({ status });
 const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	if (!playerStory) return;
 
-	const lastKeyUsed = get().lastKeyUsed ?? -1;
-	const printed = get().printedKeys;
+	const lastKeyUsed: number = get().getLastKeyUsed(playerStory.game_id);
 
 	// Fetch all StoryLines for this player
 	const allStoryLines: StoryLine[] = [];
@@ -112,20 +115,28 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	}
 
 	// Filter new keys and normalize to number
-	const newLines = allStoryLines
-		.filter((s) => Number(s.key) > lastKeyUsed && !printed.has(Number(s.key)))
-		.sort((a, b) => Number(a.key) - Number(b.key));
+	let newLines: StoryLine[] = allStoryLines.sort((a, b) => Number(a.key) - Number(b.key));
+	
+	if (lastKeyUsed !== -1) {
+		newLines = newLines.filter((s) => Number(s.key) > lastKeyUsed);
+	} else {
+		// get responses from last command
+		for (let i = newLines.length - 1; i >= 0; i--) {
+			if (newLines[i].line_type.toString() === "Command") {
+				newLines = newLines.slice(i + 1);
+				break;
+			}
+		}
+	}
+
+	// console.log("[DEBUG:OUTPUTTER] allStoryLines:", allStoryLines);
+	// console.log("[DEBUG:OUTPUTTER] newLines:", newLines);
 
 	if (newLines.length === 0) return;
 
 	// Update lastKeyUsed and printedKeys
 	const maxKey = Number(newLines[newLines.length - 1].key);
-	set({ lastKeyUsed: maxKey });
-	localStorage.setItem("lastKeyUsed", String(maxKey));
-
-	for (const s of newLines) printed.add(Number(s.key));
-	set({ printedKeys: printed });
-	localStorage.setItem("printedKeys", JSON.stringify(Array.from(printed)));
+	get().setLastKeyUsed(playerStory.game_id, maxKey);
 
 	// Add lines to terminal
 	for (const s of newLines) {
@@ -150,10 +161,10 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 
 const onPlayerStory = (playerStory: PlayerStory) => {
 	const gameId = GameStore().gameId;
-	const normalizedStoryId = num.cleanHex(String(playerStory.game_id));
-	const normalizedGameId = (gameId != null ? num.cleanHex(String(gameId)) : null);
+	const normalizedStoryId: bigint = BigInt(playerStory.game_id);
+	const normalizedGameId: bigint | null = (gameId != null ? gameId : null);
 	// console.log("[DEBUG:STORY] normalizedStoryId", normalizedStoryId);
-	// console.log("[DEBUG:STORY] normalizedGameId", normalizedGameId, gameId);
+	// console.log("[DEBUG:STORY] normalizedGameId", normalizedGameId);
 	if (normalizedStoryId === normalizedGameId) {
 		// console.log("[DEBUG:STORY] onPlayerStory", playerStory);
 		setOutputter(playerStory as PlayerStory);
@@ -188,17 +199,17 @@ const onReponseData = (
 };
 
 // Resets the local storage of the processed text and keys
-const resetDojoState = () => {
-	set({
-		lastKeyUsed: -1,
-		originalStoryLength: 0,
-		printedKeys: new Set<number>(),
-		playerStory: undefined,
-		lastProcessedText: "",
-	});
-	localStorage.removeItem("lastKeyUsed");
-	localStorage.removeItem("printedKeys");
-};
+// const resetDojoState = () => {
+// 	set({
+// 		lastKeyUsed: -1,
+// 		originalStoryLength: 0,
+// 		printedKeys: new Set<number>(),
+// 		playerStory: undefined,
+// 		lastProcessedText: "",
+// 	});
+// 	localStorage.removeItem("lastKeyUsed");
+// 	localStorage.removeItem("printedKeys");
+// };
 
 /*
 	onSubscription is a callback function that is passed to the sub function in the config object.

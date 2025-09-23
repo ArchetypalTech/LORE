@@ -5,12 +5,25 @@ import {
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
-import { HELP_TEXTS, HELP_EXITS, HELP_INSPECT, HELP_CONTAINER, HELP_INVENTORY } from "@/data/help.data";
+import {
+	HELP_CONTAINER,
+	HELP_EXITS,
+	HELP_INSPECT,
+	HELP_INVENTORY,
+	HELP_TEXTS,
+} from "@/data/help.data";
+import {
+	checkForPlayer,
+	propertiesRegistered,
+	queryOwnedGameTokens,
+} from "@/editor/data/editor.data";
+import {
+	queryCoinsEntity,
+	queryGameCoinsBalance,
+} from "@/editor/data/editor.data";
+import { registerPropertyRegistry } from "@/editor/publisher";
 import DojoStore from "@/lib/stores/dojo.store";
-import WalletStore from "../lib/stores/wallet.store";
-import { checkForPlayer, propertiesRegistered, } from "@/editor/data/editor.data";
-import {registerPropertyRegistry} from "../editor/publisher";
-import { queryCoinsEntity, queryGameCoinsBalance } from "@/editor/data/editor.data";
+import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 
 /**
@@ -89,7 +102,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 			speed: 4,
-			style: { textAlign: "center" },
 		});
 	},
 	_description: () => {
@@ -98,19 +110,19 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 			speed: 4,
-			style: { textAlign: "center" },
 		});
 	},
+
 	_hint: () => {
 		addTerminalContent({
-			text: 'type [command] [target], or type "help"',
+			text: 'type [command] [target], or type "help" | "ls"',
 			format: "input",
 			useTypewriter: true,
 		});
 	},
 	_connect_wallet: () => {
 		addTerminalContent({
-			text: "type [connect] to connect",
+			text: "type [connect] and be able to [load] games or [create] a new one",
 			format: "hash",
 			useTypewriter: true,
 		});
@@ -124,21 +136,119 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_welcome_back: () => {
 		addTerminalContent({
-			text: `Welcome back ${WalletStore().username}`,
-			format: "hash",
+			text: `welcome back ${WalletStore().username}`,
+			format: "shog",
 			useTypewriter: true,
 		});
 	},
 	_current_game: () => {
 		addTerminalContent({
-			text: GameStore().gameId != undefined ? `You are playing game #${GameStore().gameId}...` : `New game...`,
+			text:
+				GameStore().gameId != undefined
+					? `You are playing game-${GameStore().gameId}...`
+					: `New game...`,
 			format: "hash",
 			useTypewriter: true,
 		});
 	},
-	_create_game: () => {
+	create: (context: commandContext) => {
 		// an empty command will create a game if not already created
-		sendCommand(``);
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		if (context.args[0] === "game") {
+			// "create game"
+			sendCommand(`g_create_game`);
+		} else {
+			addTerminalContent({
+				text: `Did you mean [create game]?`,
+				format: "hash",
+				useTypewriter: true,
+			});
+		}
+	},
+	load: async (context: commandContext) => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		// allow "game-123" or "123"
+		let game_id = Number(context.args[0].split("-").at(-1));
+		if (isNaN(game_id)) {
+			addTerminalContent({
+				text: `Did you mean [load game_name]?`,
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+		// current game?
+		if(GameStore().gameId != undefined && game_id == Number(GameStore().gameId)) {
+			sendCommand("_current_game");
+			return;
+		}
+		// check ownership...
+		const tokens = await queryOwnedGameTokens(WalletStore().walletAddress || 0n);
+		if (!tokens.find((token) => token.token_id === game_id)) {
+			addTerminalContent({
+				text: `Not your game!`,
+				format: "hash",
+				useTypewriter: true,
+			});
+			return;
+		}
+		// load...
+		sendCommand(`g_load_game ${game_id}`);
+		const text = [
+			`██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████
+██░░░░░░░░░░░░░░░░░░░░░░░░▓▓▒▒░░▓▓░░░░▓▓░░░░▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓
+██░░░░░░░░░░░░░░░░░░░░░░░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▓▓░░░░▒
+██▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒▓▓░░▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓░░░░▓▓▒▒▓▓▓▓▓
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▒▒▓▓▒▒▓▓▓▓▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒░░░░▒▒▒▒▒▒▒▒▓▓▓▓░░░░░░▓▓▒▒▓▓▒▒░░░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓▒
+██▓▓▒▒▒▒░░██▓▓▒▒▒▒▒▒▒▒░░▒▒░░░░▓▓▒▒▒▒▓▓▓▓░░░░▓▓▒▒▓▓░░░░▒▒▓▓▒▒▓▓▓▓░
+██▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▓▓▓▓▒▒▓▓▓▓▓▓▒▒░░▓▓▒▒▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▓
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒░░▓▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓▒▒▒▒▒▒▓▓░░▒▒▓▓▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒▒▒▒▒▒
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░▓▓▒▒▓▓▒▒▒▒▒▒▓▓▒▒▒▒▓▓▒▒▒▒▓▓▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒
+██▓▓▓▓▓▓▓▓▓▓░░▒▒▒▒▓▓▓▓▒▒▒▒▒▒░░▓▓▒▒░░▒▒▓▓▓▓▒▒░░▒▒▓▓▒▒▓▓▓▓▓▓▒▒▒▒▒▒░
+██▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████████`,
+			"GAME LOADED",
+		].join("\n");
+		addTerminalContent({
+			text,
+			format: "out",
+			useTypewriter: true,
+			speed: 1,
+		});
+	},
+	ls: async () => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		const tokens = await queryOwnedGameTokens(WalletStore().walletAddress || 0n);
+		const text: string[] = [];
+
+		if (tokens.length === 0) {
+			text.push("You have no games. Type [create game] to start a new a game");
+		} else {
+			text.push(`Found ${tokens.length} games:`);
+			tokens.forEach((token) => {
+				text.push(`> ${token.name} ${BigInt(token.token_id) == GameStore().gameId ? "(CURRENT)" : ""}`);
+			});
+			text.push(`Type [load game_name] to resume a game`);
+			text.push(`Type [create game] to start a new a game`);
+		}
+		addTerminalContent({
+			text: text.join("\n"),
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_fatal_error: () => {
 		addTerminalContent({
@@ -159,8 +269,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 			return;
 		}
-		const res = await WalletStore().connectController();
-		console.log(res);
+		await WalletStore().connectController();
+		// console.log(res);
 		if (WalletStore().isConnected) {
 			const { username, walletAddress } = WalletStore();
 			addTerminalContent({
@@ -194,23 +304,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 	wallet: async () => {
-		if(!WalletStore().isConnected) {
-			addTerminalContent({
-				text: "not connected, connect first",
-				format: "hash",
-				useTypewriter: true,
-			});
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
 			return;
 		}
 		await WalletStore().openUserProfile();
 	},
 	disconnect: async () => {
 		if (!WalletStore().isConnected) {
-			addTerminalContent({
-				text: "not connected, use [connect] to connect",
-				format: "hash",
-				useTypewriter: true,
-			});
+			sendCommand("_not_yet_connected");
 			return;
 		}
 		await WalletStore().disconnectController();
@@ -223,26 +325,31 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	controller: () => {
 		if (LORE_CONFIG.useController) {
-			if (WalletStore().isConnected) {
-				WalletStore().controller?.openProfile("inventory");
-			} else {
+			if (!WalletStore().isConnected) {
 				sendCommand("_not_yet_connected");
+				return;
 			}
+			WalletStore().controller?.openProfile("inventory");
 		}
 	},
 	_bypass: ({ command }) => {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, null, true);
 	},
-	help:() => {
-		const header = "Entities/Objects might have the following properties that can be that allow you to interact with them:";
+	help: () => {
+		const header =
+			"Entities/Objects might have the following properties that can be that allow you to interact with them:";
 		// Handle help command
 		addTerminalContent({
-			text: header + "\n\n" + Object.entries(HELP_TEXTS)
-				.map(([cmd, content]) => 
-					`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`
-				)
-				.join("\n\n"),
+			text:
+				header +
+				"\n\n" +
+				Object.entries(HELP_TEXTS)
+					.map(
+						([cmd, content]) =>
+							`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`,
+					)
+					.join("\n\n"),
 			format: "hash",
 			useTypewriter: true,
 		});
@@ -251,7 +358,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_INSPECT)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
@@ -261,7 +371,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_EXITS)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
@@ -271,7 +384,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_CONTAINER)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,
@@ -281,7 +397,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// Handle help inspect command
 		addTerminalContent({
 			text: `available commands:\n\n${Object.entries(HELP_INVENTORY)
-				.map(([cmd, content]) => `> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`)
+				.map(
+					([cmd, content]) =>
+						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
+				)
 				.join("\n\n")}`,
 			format: "hash",
 			useTypewriter: true,

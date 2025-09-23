@@ -1,12 +1,11 @@
 import { useEffect } from "react";
 import { addAddressPadding, BigNumberish, num } from "starknet";
-import { ClauseBuilder, StandardizedQueryResult, ToriiQueryBuilder } from "@dojoengine/sdk";
+import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { useWalletStore } from "./wallet.store";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
 import { InitDojo } from "../dojo";
 import type { SchemaType, PlayerAccount } from "../dojo_bindings/typescript/models.gen";
-import * as torii from "@dojoengine/torii-client";
 
 const {
 	get,

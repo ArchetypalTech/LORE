@@ -32,7 +32,7 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 			game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
 		]);
 		if (LORE_CONFIG.useController) {
-			console.log("[CONTROLLER] execControllerCommand:", command, game_id, calldata);
+			console.log("[CONTROLLER] execControllerCommand:", game_id, command, calldata);
 			let calls: Call[] = [{
 					contractAddress: LORE_CONFIG.contracts.entity.address,
 					entrypoint: "prompt",

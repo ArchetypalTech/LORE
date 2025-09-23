@@ -22,7 +22,7 @@ import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
 import WalletStore from "@/lib/stores/wallet.store"
-import { BigNumberish, ec, num, shortString } from "starknet";
+import { BigNumberish, ec, shortString } from "starknet";
 import randomName from "@scaleway/random-name";
 
 export const createDefaultEntity = (): WithStringEnums<

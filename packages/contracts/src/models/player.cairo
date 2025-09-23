@@ -67,6 +67,7 @@ pub enum StoryLineType {
     Command,
     Response,
     SysResponse,
+    Debug,
 }
 
 const SINGLETON_PLAYER_INST: felt252 = 'Player';
@@ -211,6 +212,10 @@ pub impl PlayerImpl of PlayerTrait {
 
     fn log_command(self: @Player, ref world: WorldStorage, text: ByteArray) {
         Self::_log_story_line(self, ref world, text, StoryLineType::Command);
+    }
+
+    fn log_debug(self: @Player, ref world: WorldStorage, text: ByteArray) {
+        Self::_log_story_line(self, ref world, text, StoryLineType::Debug);
     }
 
     fn log_sys(self: @Player, ref world: WorldStorage, text: ByteArray) {

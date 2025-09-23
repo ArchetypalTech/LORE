@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/semver": "^7.7.0",
+    "@types/semver": "^7.7.1",
     "ansicolor": "^2.0.3",
     "mprocs": "^0.7.3",
     "semver": "^7.7.2",

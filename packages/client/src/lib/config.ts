@@ -1,9 +1,8 @@
-import { EntityEditor } from "@/editor/components/EntityEditor";
 import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_dev.json";
 import { cleanEnv, str, url } from "envalid";
-import { Account, Contract, RpcProvider, provider, Signer } from "starknet";
+import { Account, Contract, RpcProvider, Signer } from "starknet";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	if (value === undefined || value === null) {
@@ -54,12 +53,16 @@ const katanaProvider = new RpcProvider({
 const manifest = {
 	default: manifestJson as typeof manifestJsonType,
 	entity: getOrFail(
-		manifestJson.contracts.find((c) => c.tag === "lore-prompt"),
+		manifestJson.contracts.find((c: any) => c.tag === "lore-prompt"),
 		"lore-prompt",
 	),
 	designer: getOrFail(
-		manifestJson.contracts.find((c) => c.tag === "lore-designer"),
+		manifestJson.contracts.find((c: any) => c.tag === "lore-designer"),
 		"lore-designer",
+	),
+	game_token: getOrFail(
+		manifestJson.contracts.find((c: any) => c.tag === "lore-game_token"),
+		"lore-game_token",
 	),
 	world: manifestJson.world,
 };

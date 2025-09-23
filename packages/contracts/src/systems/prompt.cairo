@@ -10,11 +10,12 @@ pub mod prompt {
     use super::{IPrompt};
     use starknet::{ContractAddress, get_caller_address};
     use dojo::{
-        world::{WorldStorage}
+        world::{WorldStorage},
+        model::{ModelStorage},
     };
     use lore::{
         models::{
-            player::{Player, PlayerImpl},
+            player::{Player, PlayerImpl, PlayerStory},
             token_config::{PlayerAccountTrait},
             admin::{AccountPermissionsTrait},
         },
@@ -45,14 +46,14 @@ pub mod prompt {
         fn prompt(ref self: ContractState, cmd: ByteArray, game_id: Option<u128>) {
             let mut world: WorldStorage = self.world(@"lore");
 
-            let player = self.get_player(ref world, game_id);
+            let mut player = self.get_player(ref world, game_id);
 
             // empty prompt, do nothing (good to initialize a game)
             if (cmd.len() > 0) {
                 player.log_command(ref world, cmd.clone());
                 match (lexer::parse(cmd, world, player)) {
                     Result::Ok(result) => {
-                        let res = handle_command(@result, ref world, @player);
+                        let res = handle_command(@result, ref world, ref player);
                         if !res.is_ok() {
                             let error = res.unwrap_err();
                             // println!("Error: {:?}", error);
@@ -62,6 +63,10 @@ pub mod prompt {
                     Result::Err(_r) => {
                         player.say(ref world, random_text(world, random_error()));
                     },
+                }
+                if player.use_debug {
+                    let player_story: PlayerStory = world.read_model(player.game_id);
+                    player.log_debug(ref world, format!("(game-{}, {} lines)", player.game_id, player_story.story_line));
                 }
             }
         }
