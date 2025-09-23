@@ -9,6 +9,7 @@ import {
 	type SchemaType,
 	schema,
 } from "@lib/dojo_bindings/typescript/models.gen";
+import { addAddressPadding } from "starknet";
 
 /**
  * ## Initializes the Dojo SDK and configuration
@@ -26,8 +27,8 @@ export const InitDojo = async () => {
 			manifest,
 			rpcUrl,
 			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			masterAddress: LORE_CONFIG.wallet.address,
-			masterPrivateKey: LORE_CONFIG.wallet.private_key,
+			masterAddress: addAddressPadding(LORE_CONFIG.wallet.address),
+			masterPrivateKey: LORE_CONFIG.wallet.privateKey,
 			accountClassHash: LORE_CONFIG.manifest.world.class_hash,
 			feeTokenAddress: LORE_CONFIG.manifest.world.fee_token_address,
 		});
@@ -36,7 +37,7 @@ export const InitDojo = async () => {
 		client: {
 			rpcUrl,
 			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			worldAddress: dojoConfig.manifest.world.address,
+			worldAddress: addAddressPadding(dojoConfig.manifest.world.address),
 		},
 		// Those values are used
 		domain: {

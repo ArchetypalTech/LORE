@@ -2,7 +2,7 @@ import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
 import type manifestJsonType from "@lore/contracts/manifest_slot.json";
 import { cleanEnv, str, url } from "envalid";
-import { Account, Contract, RpcProvider, Signer } from "starknet";
+import { Account, Contract, RpcProvider, Signer, addAddressPadding } from "starknet";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	if (value === undefined || value === null) {
@@ -67,7 +67,7 @@ const manifest = {
 	world: manifestJson.world,
 };
 
-const address = getOrFail(env.VITE_BURNER_ADDRESS, "VITE_BURNER_ADDRESS");
+const address = addAddressPadding(getOrFail(env.VITE_BURNER_ADDRESS, "VITE_BURNER_ADDRESS"));
 const privateKey = getOrFail(env.VITE_BURNER_PRIVATE_KEY, "VITE_BURNER_PRIVATE_KEY");
 
 const wallet = (() => {

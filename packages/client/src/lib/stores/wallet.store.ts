@@ -1,6 +1,6 @@
 import Controller, { type ControllerOptions } from "@cartridge/controller";
 import { LORE_CONFIG } from "@lib/config";
-import type { WalletAccount } from "starknet";
+import { WalletAccount, addAddressPadding } from "starknet";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
 
@@ -177,7 +177,7 @@ const setupController = async () => {
 		namespace: "lore",
 		policies: {
 			contracts: {
-				[LORE_CONFIG.manifest.entity.address]: {
+				[addAddressPadding(LORE_CONFIG.manifest.entity.address)]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
@@ -202,7 +202,7 @@ const setupController = async () => {
 				// 		},
 				// 	],
 				// },
-				[LORE_CONFIG.manifest.designer.address]: {
+				[addAddressPadding(LORE_CONFIG.manifest.designer.address)]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
 					methods: [
@@ -380,7 +380,7 @@ const connectController = async () => {
 		const data = {
 			account: res,
 			username: await controller.username(),
-			walletAddress: res.address,
+			walletAddress: addAddressPadding(res.address),	
 			isConnected: true,
 			isLoading: false,
 			controller,

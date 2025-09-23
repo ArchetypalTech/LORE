@@ -4,6 +4,7 @@ import { BigNumberish, byteArray, CairoOption, CairoOptionVariant, CallData, Inv
 import { toCairoArray } from "@/editor/editor.utils";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
+import { addAddressPadding } from "starknet";
 
 /**
  * Sends a command to the entity contract.
@@ -34,7 +35,7 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 		if (LORE_CONFIG.useController) {
 			console.log("[CONTROLLER] execControllerCommand:", game_id, command, calldata);
 			let calls: Call[] = [{
-					contractAddress: LORE_CONFIG.contracts.entity.address,
+					contractAddress: addAddressPadding(LORE_CONFIG.contracts.entity.address),
 					entrypoint: "prompt",
 					calldata,
 				}];
@@ -114,7 +115,7 @@ async function execDesignerCall(props: DesignerCallProps) {
 			}
 			console.log("[CONTROLLER DESIGNERCALL]", call, args);
 			let calls: Call[] = [{
-					contractAddress: LORE_CONFIG.contracts.designer.address,
+					contractAddress: addAddressPadding(LORE_CONFIG.contracts.designer.address),
 					entrypoint: call,
 					calldata,
 				}];
