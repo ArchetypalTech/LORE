@@ -32,7 +32,7 @@ COPY . .
 # Build the client package
 WORKDIR /app/packages/client
 RUN bun install
-RUN bun run build
+RUN bun run build:slot
 
 # Runtime Stage
 FROM oven/bun:slim as serve
