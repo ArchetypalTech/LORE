@@ -174,6 +174,7 @@ const setupController = async () => {
 	// 	},
 	// };
 	const controllerConfig: ControllerOptions = {
+		namespace: "lore",
 		policies: {
 			contracts: {
 				[LORE_CONFIG.manifest.entity.address]: {
