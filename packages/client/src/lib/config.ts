@@ -130,10 +130,10 @@ export const LORE_CONFIG = {
 	token: {
 		provider: env.VITE_TOKEN_HTTP_RPC,
 		chainId: env.VITE_CONTROLLER_CHAINID,
-		// Contract address
+		// // Contract address
 		contract_address: env.VITE_TOKEN_CONTRACT_ADDRESS,
-		erc20: ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],
-		erc721: ["0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649"],
+		// erc20: ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],
+		// erc721: ["0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649"],
 	},
 	useController: true,
 	//import.meta.env.MODE === "slot",

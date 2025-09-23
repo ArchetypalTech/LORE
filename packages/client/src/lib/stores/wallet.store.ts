@@ -44,135 +44,135 @@ const {
  */
 const setupController = async () => {
 	const worldName = LORE_CONFIG.manifest.default.world.name;
-	const isEditor = window.location.pathname.startsWith("/editor");
-	const editorConfig = {
-		[LORE_CONFIG.manifest.designer.address]: {
-			name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
-			description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
-			methods: [
-				{
-					entrypoint: "register_property_registry",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_player",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_entity",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_reactable",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_description_text",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_area",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_exit",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_inventory_item",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_container",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_parent",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_condition",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_effect",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_action",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_trigger",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "create_child",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_player",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_entity",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_reactable",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_description_text",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_description_text",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_area",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_exit",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_condition",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_inventory_item",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_trigger",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_effect",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_action",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_container",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_parent",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-				{
-					entrypoint: "delete_child",
-					description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-				},
-			],
-		},
-	};
+	// const isEditor = window.location.pathname.startsWith("/editor");
+	// const editorConfig = {
+	// 	[LORE_CONFIG.manifest.designer.address]: {
+	// 		name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
+	// 		description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
+	// 		methods: [
+	// 			{
+	// 				entrypoint: "register_property_registry",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_player",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_entity",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_reactable",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_description_text",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_area",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_exit",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_inventory_item",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_container",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_parent",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_condition",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_effect",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_action",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_trigger",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "create_child",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_player",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_entity",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_reactable",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_description_text",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_description_text",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_area",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_exit",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_condition",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_inventory_item",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_trigger",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_effect",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_action",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_container",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_parent",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 			{
+	// 				entrypoint: "delete_child",
+	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+	// 			},
+	// 		],
+	// 	},
+	// };
 	const controllerConfig: ControllerOptions = {
 		policies: {
 			contracts: {
@@ -186,21 +186,21 @@ const setupController = async () => {
 						},
 					],
 				},
-				...(isEditor ? editorConfig : {}),
-				[LORE_CONFIG.token.contract_address]: {
-					name: "TOT NFT", // Optional
-					description: "Mint and transfer TOT tokens",
-					methods: [
-						{
-							entrypoint: "mint", // The actual method name
-							description: "Approve minting a TOT Token",
-						},
-						{
-							entrypoint: "transfer_from", // The actual method name
-							description: "Transfer a TOT Token",
-						},
-					],
-				},
+				// ...(isEditor ? editorConfig : {}),
+				// [LORE_CONFIG.token.contract_address]: {
+				// 	name: "TOT NFT", // Optional
+				// 	description: "Mint and transfer TOT tokens",
+				// 	methods: [
+				// 		{
+				// 			entrypoint: "mint", // The actual method name
+				// 			description: "Approve minting a TOT Token",
+				// 		},
+				// 		{
+				// 			entrypoint: "transfer_from", // The actual method name
+				// 			description: "Transfer a TOT Token",
+				// 		},
+				// 	],
+				// },
 				[LORE_CONFIG.manifest.designer.address]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
@@ -334,9 +334,9 @@ const setupController = async () => {
 				rpcUrl: LORE_CONFIG.env.VITE_KATANA_HTTP_RPC, // FIXME: workaround for endpoint being proxied
 			},
 		],
-		defaultChainId: LORE_CONFIG.token.chainId,
+		defaultChainId: LORE_CONFIG.token.chainId, // controller chain id
 		tokens: {
-			erc20: LORE_CONFIG.token.erc20,
+			// erc20: LORE_CONFIG.token.erc20,
 			//erc721: [addrContract],
 		},
 		slot: LORE_CONFIG.env.VITE_SLOT,
@@ -344,6 +344,7 @@ const setupController = async () => {
 
 	try {
 		const controller = new Controller(controllerConfig);
+		console.log("DEBUG: controller", controller);
 		set({
 			controller,
 		});
@@ -369,10 +370,12 @@ const connectController = async () => {
 		if (!controller) {
 			throw new Error("No controller found");
 		}
+		console.log("DEBUG: Getting controller response:", controller);
 		const res = await controller.connect(); // Get response from the
 		if (!res) {
 			throw new Error("No response from Cartridge Game Controller");
 		}
+		console.log("DEBUG: controller response:", res);
 		const data = {
 			account: res,
 			username: await controller.username(),
@@ -437,6 +440,7 @@ export { useWalletStore };
 if (LORE_CONFIG.useController) {
 	await setupController();
 	const account = await get().controller?.probe();
+	console.log("DEBUG: account", account);
 	if (account !== undefined) {
 		console.log("[Controller] connected");
 		await connectController();

@@ -903,6 +903,52 @@ export const checkForPlayer = async () => {
 	}
 }
 
+export const queryTriggers = async () => {
+	try { 
+		const { sdk } = await InitDojo();
+		const query = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(1000)
+			.includeHashedKeys()
+			.withEntityModels(["lore-TriggerIndex"]);
+
+			const result = await sdk.getEntities({ query });
+
+			const triggers = result.getItems().map((item) => {
+				console.log("DEBUG: TriggerIndex", item.models?.lore?.TriggerIndex);
+				return item.models?.lore?.TriggerIndex;
+			});
+
+			return triggers;
+	} catch (error) {
+		console.error("Error fetching triggers from Torii:", error);
+		throw error;
+	}
+};
+
+export const queryExecActions = async () => {
+	try {
+		const  {sdk} = await InitDojo();
+		const query = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(1000)
+			.includeHashedKeys()
+			.withEntityModels(["lore-ActionExecuted"]);
+
+			const result = await sdk.getEntities({ query });
+
+			const actions = result.getItems().map((item) => {
+				console.log("DEBUG: ActionExecuted", item.models?.lore?.ActionExecuted);
+				return item.models?.lore?.ActionExecuted;
+			});
+
+			return actions;
+	} catch (error) {
+		console.error("Error fetching actions from Torii:", error);
+		throw error;
+	}
+};
+
 const syncEntities = async () => {
 	try {
 		const { sdk, query } = await InitDojo();

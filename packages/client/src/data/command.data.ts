@@ -20,6 +20,8 @@ import {
 import {
 	queryCoinsEntity,
 	queryGameCoinsBalance,
+	queryExecActions,
+	queryTriggers,
 } from "@/editor/data/editor.data";
 import { registerPropertyRegistry } from "@/editor/publisher";
 import DojoStore from "@/lib/stores/dojo.store";
@@ -414,6 +416,14 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+	},
+	_triggers: () => {
+		const triggers = queryTriggers();
+		console.log("TRIGGERS RESULT", triggers);
+	},
+	_actions: () => {
+		const actions = queryExecActions();
+		console.log("ACTIONS RESULT", actions);
 	},
 	connection: async () => {
 		const dest = {

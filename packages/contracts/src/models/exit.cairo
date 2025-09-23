@@ -135,11 +135,13 @@ pub impl ExitComponent of Component<Exit> {
                 }
 
                 // we need to either match by name or by direction
-                if !matchesDirection {
-                    return Result::Err(Error::DirectionNotMatch);
-                }
-                if !matchesName {
-                    return Result::Err(Error::NameNotMatch);
+                if (!(matchesName || matchesDirection)) {
+                    if !matchesDirection {
+                        return Result::Err(Error::DirectionNotMatch);
+                    }
+                    if !matchesName {
+                        return Result::Err(Error::NameNotMatch);
+                    }
                 }
                 // if the exit is not enterable, we can't go there
                 if (!self.can_player_enter()) {

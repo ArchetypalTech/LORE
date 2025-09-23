@@ -209,6 +209,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
+                player.say(ref world, format!("You pick up the {}", nouns[0].text));
                 return container_component.put_item_in(ref world, ref self, *player.game_id);
             },
             InventoryItemActions::DropItem => {
@@ -219,6 +220,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
+                player.say(ref world, format!("You drop the {}", nouns[0].text));
                 return container_component.put_item_out(ref world, ref self, player);
             },
             InventoryItemActions::PutItem => {
@@ -234,6 +236,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
+                    player.say(ref world, format!("You put the {} in the {}", nouns[0].text, nouns[1].text));
                     return container_component.put_item_in(ref world, ref self, *player.game_id);
                 }
                 let container_component: Container = player_container.unwrap();
@@ -252,6 +255,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
+                    player.say(ref world, format!("You take out the {} from the {}", nouns[0].text, nouns[1].text));
                     return container_component.put_item_out(ref world, ref self, player);
                 }
                 return Result::Ok(());
