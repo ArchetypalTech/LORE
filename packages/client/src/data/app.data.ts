@@ -6,9 +6,9 @@ const SLOT_INDICATOR = `<text y='.1em' font-size='90' transform='translate(45, 3
 export const APP_DATA = {
 	title: ">ORUG",
 	icon: `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y='.9em' font-size='90' transform='translate(110, 5) scale(-.975,.975)'>🚪</text>${SLOT_INDICATOR}</svg>`,
-	intro: ["\n", "Welcome to the O'Ruggin Trail", "The first game built with ORuggEd", "\n\n"].join("\n"),
+	intro: ["\n", "Welcome to the O'Ruggin Trail", "The first game built with ORuggEd onchain text adventure editor", "\n\n"].join("\n"),
 	description: [
-		"ORuggEd is an on-chain editor and rapid publishing suite for text adventures. Where players can rewrite and expand the world for each other. Imagine making and deploying a playable world in as little as 20 minutes, and it being ready for paid players immediately. This is our first experiment in this feild.", "\n"].join("\n"),
+		"Imagine making and deploying a playable world in as little as 20 minutes, and it being ready for paid players immediately.", "\n"].join("\n"),
 	keywords: [],
 	image: "",
 	url: "",
