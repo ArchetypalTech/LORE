@@ -39,6 +39,6 @@ allowed-libfuncs-list.name = "experimental"
 # casm = true
 
 # Dojo profiles
-[profile.dev]
-[profile.slot]
-[profile.local]
+[profile.dev] # for running locally
+[profile.slot] # for slot deployment - develop/publish
+[profile.staging] # for slot staging - staging/ changes to code and content
