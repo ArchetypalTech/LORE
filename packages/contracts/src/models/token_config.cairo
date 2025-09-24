@@ -44,6 +44,7 @@ use lore::lib::dns::{DnsTrait, IGameTokenDispatcherTrait};
 use lore::models::{
     entity::{Entity},
     area::{Area, AreaComponent},
+    admin::{AccountPermissionsTrait},
 };
 
 #[generate_trait]
@@ -63,7 +64,13 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
                     else {3};
                 game_info.act_number = core::cmp::max(game_info.act_number, act_number);
                 game_info.progress = core::cmp::min(core::cmp::max(game_info.progress, area.progress_percentage), 100);
-                game_info.completed = (game_info.progress == 100);
+                let completed: bool = (game_info.progress == 100);
+                if (completed && !game_info.completed) {
+                    // completed for the first time: owner becomes editor
+                    let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
+                    AccountPermissionsTrait::set_is_editor(ref world, owner, true);
+                }
+                game_info.completed = completed;
             },
             Option::None => {
                 game_info.act_number = 0;
@@ -104,11 +111,14 @@ mod tests {
     use super::*;
     use lore::{
         tests::helpers,
+        systems::prompt::{IPromptDispatcherTrait},
+        models::player::{PlayerImpl},
     };
 
     #[test]
     fn test_game_token_info_edit() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let (mut world, _, prompt, _, player_address_1, _) = helpers::setup_core();
+        PlayerImpl::caller_as_player(ref world, player_address_1, 0);
         // create room entities
         let room_entity_1: @Entity = @helpers::create_new_entity(1, "Room 1");
         let room_entity_2: @Entity = @helpers::create_new_entity(2, "Room 2");
@@ -126,8 +136,13 @@ mod tests {
         world.write_model(@area_2);
         world.write_model(@area_3);
         //
+        // mint game
+        helpers::set_caller(player_address_1);
+        prompt.prompt("", Option::None);
+        let game_id: u128 = 1;
+        //
         // set room
-        let game_id: u128 = 123;
+        helpers::set_caller(helpers::OWNER());
         GameTokenInfoTrait::set_room(ref world, game_id, *room_entity_1.inst);
         let token_info: GameTokenInfo = world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_1.name.clone(), "set room");

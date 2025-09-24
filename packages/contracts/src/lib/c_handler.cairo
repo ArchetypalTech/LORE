@@ -401,7 +401,7 @@ mod tests {
             ],
         };
         // Handle the command
-        let result = handle_command(@command, ref world, @player);
+        let result = handle_command(@command, ref world, ref player);
 
         // Verify the command was handled successfully
         assert(result.is_ok(), 'Command not handled');

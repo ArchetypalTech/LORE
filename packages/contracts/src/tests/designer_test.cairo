@@ -12,6 +12,7 @@ mod tests {
         },
         models::{
             entity::{Entity},
+            admin::{AccountPermissionsTrait},
         },
         tests::{
             helpers,
@@ -45,6 +46,7 @@ mod tests {
         //
         // another editor can design...
         token.set_editor(RECIPIENT(), true);
+        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT");
         helpers::set_caller(RECIPIENT());
         designer.create_entity(array![helpers::create_new_entity(4, "entity_4")]);
         let entity: Entity = world.read_model(4);
