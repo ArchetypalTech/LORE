@@ -1,18 +1,18 @@
 [world]
-seed = "lore_staging"
-name = ">LORE_STAGING"
+seed = "loreStage"
+name = ">LORE"
 description = "> staging lore project"
 
 [namespace]
-default = "lore_staging"
+default = "lore"
 
 [env]
-rpc_url = "https://api.cartridge.gg/x/lore-staging/katana"
-slot_name = "lore-staging"
+rpc_url = "https://api.cartridge.gg/x/lore-stage/katana"
+slot_name = "lore-stage"
 
 account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
 private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
-world_address = "0xc78460f5ff06e806f956d410c70e3c26c3948f34356eca4c401f1f8ded5dc"
+world_address = "0x1142a4bd443a08f68936caf2e6b5d32121eb3b0327ff5a75b0b92d50cbdc913"
 
 [writers]
 "lore" = ["lore-prompt", "lore-designer", "lore-game_token"]

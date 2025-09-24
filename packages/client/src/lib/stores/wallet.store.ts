@@ -174,7 +174,7 @@ const setupController = async () => {
 	// 	},
 	// };
 	const controllerConfig: ControllerOptions = {
-		namespace: "lore_staging",
+		namespace: "lore",
 		policies: {
 			contracts: {
 				[addAddressPadding(LORE_CONFIG.manifest.entity.address)]: {
@@ -338,7 +338,7 @@ const setupController = async () => {
 		defaultChainId: LORE_CONFIG.token.chainId, // controller chain id
 		tokens: {
 			// erc20: LORE_CONFIG.token.erc20,
-			//erc721: [addrContract],
+			// erc721: LORE_CONFIG.token.erc721,
 		},
 		slot: LORE_CONFIG.env.VITE_SLOT,
 	};
