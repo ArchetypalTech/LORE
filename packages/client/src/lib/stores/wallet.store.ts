@@ -174,7 +174,7 @@ const setupController = async () => {
 	// 	},
 	// };
 	const controllerConfig: ControllerOptions = {
-		namespace: "lore-staging",
+		namespace: "lore_staging",
 		policies: {
 			contracts: {
 				[addAddressPadding(LORE_CONFIG.manifest.entity.address)]: {
