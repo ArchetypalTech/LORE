@@ -55,10 +55,11 @@ pub trait IDesigner<TContractState> {
 #[dojo::contract]
 pub mod designer {
     use super::IDesigner;
+    use core::num::traits::Zero;
     use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::{
         models::{
-            admin::{AccountPermissionsTrait},
+            admin::{AccountPermissions, AccountPermissionsTrait},
             entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
             index::{
                 DescriptionText,
@@ -87,6 +88,8 @@ pub mod designer {
 
     mod Errors {
         pub const NOT_EDITOR: felt252       = 'DESIGNER: Not editor';
+        pub const NOT_YOUR_ENTITY: felt252  = 'DESIGNER: Not your entity';
+        pub const INVALID_ENTITY: felt252    = 'DESIGNER: Invalid entity';
     }
 
     #[abi(embed_v0)]
@@ -124,8 +127,9 @@ pub mod designer {
         // create
         fn create_entity(ref self: ContractState, t: Array<Entity>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 for alt_name in o.alt_names.clone() {
                     let pos_entry = get_dict_entry(world, alt_name.clone());
                     if pos_entry.is_none() {
@@ -147,7 +151,7 @@ pub mod designer {
                 let mut e: Entity = o.clone();
                 e.creator_address = match EntityImpl::get_entity(@world, o.inst) {
                     // new entity: set caller as creator
-                    Option::None => {starknet::get_caller_address()},
+                    Option::None => {config.account_address},
                     // entity exists: keep original creator
                     Option::Some(entity) => {entity.creator_address}
                 };
@@ -157,72 +161,80 @@ pub mod designer {
 
         fn create_player(ref self: ContractState, t: Array<Player>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Player);
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_reactable(ref self: ContractState, t: Array<Reactable>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_description_text(ref self: ContractState, t: Array<DescriptionText>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_area(ref self: ContractState, t: Array<Area>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_inventory_item(ref self: ContractState, t: Array<InventoryItem>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(
                 ref world, ComponentType::InventoryItem,
             );
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_container(ref self: ContractState, t: Array<Container>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Container);
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_trigger(ref self: ContractState, t: Array<Trigger>) {
             let mut world: WorldStorage = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 let _result = TriggerImpl::register_trigger(ref world, @o);
                 // if result.is_err() {
             //     println!(
@@ -235,24 +247,27 @@ pub mod designer {
 
         fn create_condition(ref self: ContractState, t: Array<Condition>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_effect(ref self: ContractState, t: Array<Effect>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_action(ref self: ContractState, t: Array<Action>) {
             let mut world: WorldStorage = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 let _result = ActionImpl::register_action(ref world, @o);
                 // if result.is_err() {
             //     println!(
@@ -265,16 +280,18 @@ pub mod designer {
 
         fn create_parent(ref self: ContractState, t: Array<ParentToChildren>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
 
         fn create_child(ref self: ContractState, t: Array<ChildToParent>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
@@ -282,8 +299,9 @@ pub mod designer {
         // delete
         fn delete_entity(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
                 // delete_reactable(world, model.Reactable);
@@ -294,8 +312,9 @@ pub mod designer {
 
         fn delete_player(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: Player = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -303,8 +322,9 @@ pub mod designer {
 
         fn delete_reactable(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: Reactable = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -312,17 +332,19 @@ pub mod designer {
 
         fn delete_description_text(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
-            for inst in ids {
-                let model: DescriptionText = world.read_model(inst);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
+            for (inst, key) in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
+                let model: DescriptionText = world.read_model((inst, key),);
                 world.erase_model(@model);
             }
         }
 
         fn delete_area(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: Area = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -330,8 +352,9 @@ pub mod designer {
 
         fn delete_exit(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: Exit = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -339,8 +362,9 @@ pub mod designer {
 
         fn delete_inventory_item(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: InventoryItem = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -348,8 +372,9 @@ pub mod designer {
 
         fn delete_container(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: Container = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -357,9 +382,10 @@ pub mod designer {
 
         fn delete_trigger(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world: WorldStorage = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
-            for inst in ids {
-                let model: Trigger = world.read_model(inst);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
+            for (inst, key) in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
+                let model: Trigger = world.read_model((inst, key),);
                 let _result = TriggerImpl::unregister_trigger(ref world, @model);
                 // if result.is_err() {
             //     println!(
@@ -373,27 +399,30 @@ pub mod designer {
 
         fn delete_condition(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
-            for inst in ids {
-                let model: Condition = world.read_model(inst);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
+            for (inst, key) in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
+                let model: Condition = world.read_model((inst, key),);
                 world.erase_model(@model);
             }
         }
 
         fn delete_effect(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
-            for inst in ids {
-                let model: Effect = world.read_model(inst);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
+            for (inst, key) in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
+                let model: Effect = world.read_model((inst, key),);
                 world.erase_model(@model);
             }
         }
 
         fn delete_action(ref self: ContractState, ids: Array<(felt252, felt252)>) {
             let mut world: WorldStorage = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
-            for inst in ids {
-                let model: Action = world.read_model(inst);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
+            for (inst, key) in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
+                let model: Action = world.read_model((inst, key),);
                 let _result = ActionImpl::unregister_action(ref world, @model);
                 // if result.is_err() {
             //     println!(
@@ -407,8 +436,9 @@ pub mod designer {
 
         fn delete_parent(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
-            self._assert_caller_is_editor(@world);
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: ParentToChildren = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -416,7 +446,9 @@ pub mod designer {
 
         fn delete_child(ref self: ContractState, ids: Array<felt252>) {
             let mut world = self.world(@"lore");
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
+                self._assert_can_delete_entity(@world, @config, inst);
                 let model: ChildToParent = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -431,6 +463,16 @@ pub mod designer {
         #[inline(always)]
         fn _assert_caller_is_editor(self: @ContractState, world: @WorldStorage) {
             assert(AccountPermissionsTrait::is_editor(world, starknet::get_caller_address()), Errors::NOT_EDITOR);
+        }
+        #[inline(always)]
+        fn _assert_can_edit_entity(self: @ContractState, world: @WorldStorage, config: @AccountPermissions, inst: felt252) {
+            assert(inst.is_non_zero(), Errors::INVALID_ENTITY);
+            assert(*config.is_admin || (*config.is_editor && EntityImpl::can_edit_entity(world, inst, *config.account_address)), Errors::NOT_YOUR_ENTITY);
+        }
+        #[inline(always)]
+        fn _assert_can_delete_entity(self: @ContractState, world: @WorldStorage, config: @AccountPermissions, inst: felt252) {
+            assert(inst.is_non_zero(), Errors::INVALID_ENTITY);
+            assert(*config.is_admin || (*config.is_editor && EntityImpl::is_creator(world, inst, *config.account_address)), Errors::NOT_YOUR_ENTITY);
         }
     }
 }

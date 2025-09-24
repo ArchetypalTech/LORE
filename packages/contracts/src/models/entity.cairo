@@ -1,4 +1,5 @@
 use starknet::ContractAddress;
+use core::num::traits::Zero;
 use dojo::{
     world::{WorldStorage, IWorldDispatcherTrait},
     model::{ModelStorage, Model},
@@ -100,6 +101,17 @@ pub impl EntityImpl of EntityTrait {
 
     fn is_entity(world: @WorldStorage, inst: felt252) -> bool {
         (Self::get_entity(world, inst).is_some())
+    }
+
+    fn can_edit_entity(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {
+        let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
+        // must be a new entity or the creator
+        (creator_address.is_zero() || creator_address == account_address)
+    }
+    
+    fn is_creator(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {
+        let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
+        (creator_address == account_address)
     }
 
     //---------------------------------
