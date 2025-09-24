@@ -28,7 +28,6 @@ mod tests {
         //
         // deployer can design...
         helpers::set_caller(OWNER());
-        designer.register_property_registry(array![true]);
         designer.create_entity(array![helpers::create_new_entity(1, "entity_1")]);
         let entity: Entity = world.read_model(1);
         assert_eq!(entity.name, "entity_1");
@@ -81,7 +80,6 @@ mod tests {
     #[test]
     fn test_create_delete_components() {
         let (mut world, designer, _, _, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         //
         // deployer can create...
         let mut entity_1 = helpers::create_new_entity(1, "entity_1");
@@ -162,7 +160,6 @@ mod tests {
     #[test]
     fn test_editor_create_delete_components() {
         let (mut world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // EDITOR can create...
@@ -245,7 +242,6 @@ mod tests {
     #[test]
     fn test_editor_create_delete_components_admin_too() {
         let (mut world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // EDITOR can create...
@@ -306,7 +302,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_other_not_allowed_to_edit_core_entity() {
         let (mut _world, designer, _, _, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -322,7 +317,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_other_not_allowed_to_edit_core_component() {
         let (mut _world, designer, _, _, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -345,7 +339,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_other_not_allowed_to_edit_core_keyed() {
         let (mut _world, designer, _, _, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -363,7 +356,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_other_not_allowed_to_delete_core_entity() {
         let (mut _world, designer, _, _, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -379,7 +371,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_other_not_allowed_to_delete_core_component() {
         let (mut _world, designer, _, _, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -402,7 +393,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_other_not_allowed_to_delete_core_keyed() {
         let (mut _world, designer, _, _, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -425,7 +415,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_edit_core_entity() {
         let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // create...
@@ -442,7 +431,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_edit_core_component() {
         let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // create...
@@ -466,7 +454,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_edit_core_keyed() {
         let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // create...
@@ -485,7 +472,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_delete_core_entity() {
         let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // create...
@@ -502,7 +488,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_delete_core_component() {
         let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // create...
@@ -526,7 +511,6 @@ mod tests {
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_delete_core_keyed() {
         let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        designer.register_property_registry(array![true]);
         token.set_editor(OTHER(), true);
         //
         // create...

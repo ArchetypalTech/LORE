@@ -92,36 +92,18 @@ pub mod designer {
         pub const INVALID_ENTITY: felt252    = 'DESIGNER: Invalid entity';
     }
 
+    fn dojo_init(ref self: ContractState) {
+        let mut world: WorldStorage = self.world(@"lore");
+        self._register_property_registry(ref world, array![true]);
+    }
+
     #[abi(embed_v0)]
     pub impl DesignerImpl of IDesigner<ContractState> {
         // register
         fn register_property_registry(ref self: ContractState, done: Array<bool>) {
             let mut world: WorldStorage = self.world(@"lore");
             self._assert_caller_is_editor(@world);
-            for d in done {
-                if d {
-                    // println!("Registering properties for component: {:?}", ComponentType::Area);
-                    VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
-                    // println!("Registering properties for component: {:?}", ComponentType::Exit);
-                    VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
-                    // println!("Registering properties for component: {:?}", ComponentType::Reactable);
-                    VariablePropertyHelper::register_component_properties(
-                        ref world, ComponentType::Reactable,
-                    );
-                    // println!("Registering properties for component: {:?}", ComponentType::InventoryItem);
-                    VariablePropertyHelper::register_component_properties(
-                        ref world, ComponentType::InventoryItem,
-                    );
-                    // println!("Registering properties for component: {:?}", ComponentType::Container);
-                    VariablePropertyHelper::register_component_properties(
-                        ref world, ComponentType::Container,
-                    );
-                    // println!("Registering properties for component: {:?}", ComponentType::Player);
-                    VariablePropertyHelper::register_component_properties(
-                        ref world, ComponentType::Player,
-                    );
-                }
-            }
+            self._register_property_registry(ref world, done);
         }
 
         // create
@@ -474,5 +456,33 @@ pub mod designer {
             assert(inst.is_non_zero(), Errors::INVALID_ENTITY);
             assert(*config.is_admin || (*config.is_editor && EntityImpl::is_creator(world, inst, *config.account_address)), Errors::NOT_YOUR_ENTITY);
         }
+
+        fn _register_property_registry(ref self: ContractState, ref world: WorldStorage, done: Array<bool>) {
+            for d in done {
+                if d {
+                    // println!("Registering properties for component: {:?}", ComponentType::Area);
+                    VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
+                    // println!("Registering properties for component: {:?}", ComponentType::Exit);
+                    VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
+                    // println!("Registering properties for component: {:?}", ComponentType::Reactable);
+                    VariablePropertyHelper::register_component_properties(
+                        ref world, ComponentType::Reactable,
+                    );
+                    // println!("Registering properties for component: {:?}", ComponentType::InventoryItem);
+                    VariablePropertyHelper::register_component_properties(
+                        ref world, ComponentType::InventoryItem,
+                    );
+                    // println!("Registering properties for component: {:?}", ComponentType::Container);
+                    VariablePropertyHelper::register_component_properties(
+                        ref world, ComponentType::Container,
+                    );
+                    // println!("Registering properties for component: {:?}", ComponentType::Player);
+                    VariablePropertyHelper::register_component_properties(
+                        ref world, ComponentType::Player,
+                    );
+                }
+            }
+        }
+
     }
 }

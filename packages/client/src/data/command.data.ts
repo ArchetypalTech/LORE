@@ -281,8 +281,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				useTypewriter: true,
 			});
 		}
-		// Check properties
-		await registerPropertyRegistry();
 
 		let propertyRegistryFound = await propertiesRegistered();
 		// Check properties
