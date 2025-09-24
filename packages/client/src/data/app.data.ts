@@ -8,7 +8,7 @@ export const APP_DATA = {
 	icon: `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y='.9em' font-size='90' transform='translate(110, 5) scale(-.975,.975)'>🚪</text>${SLOT_INDICATOR}</svg>`,
 	intro: ["\n", "Welcome to the O'Ruggin Trail", "The first game built with ORuggEd onchain text adventure editor", "\n\n"].join("\n"),
 	description: [
-		"Imagine making and deploying a playable world in as little as 20 minutes, and it being ready for paid players immediately.", "\n"].join("\n"),
+		"Trail starts here, connect and then look around to get started", "\n"].join("\n"),
 	keywords: [],
 	image: "",
 	url: "",
