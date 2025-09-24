@@ -325,15 +325,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		return;
 	},
-	controller: () => {
-		if (LORE_CONFIG.useController) {
-			if (!WalletStore().isConnected) {
-				sendCommand("_not_yet_connected");
-				return;
-			}
-			WalletStore().controller?.openProfile("inventory");
-		}
-	},
 	_bypass: ({ command }) => {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, null, true);
