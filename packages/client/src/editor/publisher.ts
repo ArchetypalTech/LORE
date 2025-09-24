@@ -148,6 +148,7 @@ const publishEntity = async (entity: Entity) => {
 		entity.actions_keys.length > 0
 			? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
 			: 0,
+		0n, // creator_address is managed on contract level
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };

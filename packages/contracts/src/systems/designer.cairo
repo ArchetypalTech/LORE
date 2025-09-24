@@ -144,7 +144,14 @@ pub mod designer {
                 //         }
                 //     };
                 // }
-                world.write_model(@o);
+                let mut e: Entity = o.clone();
+                e.creator_address = match EntityImpl::get_entity(@world, o.inst) {
+                    // new entity: set caller as creator
+                    Option::None => {starknet::get_caller_address()},
+                    // entity exists: keep original creator
+                    Option::Some(entity) => {entity.creator_address}
+                };
+                world.write_model(@e);
             }
         }
 

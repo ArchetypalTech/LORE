@@ -122,10 +122,8 @@ pub impl PlayerImpl of PlayerTrait {
     }
     fn create_player_entity(ref world: WorldStorage) -> Player {
         // create player entity
-        let mut entity: Entity = Default::default();
+        let mut entity: Entity = EntityImpl::create_entity(ref world, "Player");
         entity.inst = SINGLETON_PLAYER_INST;
-        entity.is_entity = true;
-        entity.name = "Player";
         world.write_model(@entity);
         // create the player component
         let mut player: Player = Component::add_component(ref world, entity.inst);

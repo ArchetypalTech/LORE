@@ -105,7 +105,7 @@ export const Input = ({
 				autoComplete="off"
 				disabled={disabled}
 				readOnly={readOnly}
-				className={cn("bg-white", className)}
+				className={cn(readOnly ? "bg-gray-200" : "bg-white", className)}
 			/>
 		</div>
 	);
