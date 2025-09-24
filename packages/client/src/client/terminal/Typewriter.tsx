@@ -7,8 +7,8 @@ import TerminalLine from "./TerminalLine";
 export default function Typewriter() {
 	const [displayContent, setDisplayContent] =
 		useState<TerminalContentItem | null>(null);
-	const minTypingDelay = 2;
-	const maxTypingDelay = 9;
+	const minTypingDelay = 5;
+	const maxTypingDelay = 15;
 
 	const { activeTypewriterLine } = useTerminalStore();
 
