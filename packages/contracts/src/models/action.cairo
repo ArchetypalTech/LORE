@@ -188,7 +188,13 @@ pub impl ActionImpl of ActionTrait {
         }
         // If all conditions are met, mark action as executed
         if (result_t.is_ok() && result && result_e.is_ok()) {
+            // Set action as executed
             self.set_executed(ref world, *player.game_id, true);
+            // Set triggers as executed
+            for trigger_key in self.trigger.clone() {
+                let trigger: @Trigger = @world.read_model(trigger_key);
+                trigger.set_executed(ref world, *player.game_id, true);
+            }
             for response in self.success_response.clone() {
                 player.say(ref world, response);
             }

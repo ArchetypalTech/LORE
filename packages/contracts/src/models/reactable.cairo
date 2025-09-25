@@ -160,6 +160,7 @@ pub impl ReactableComponent of Component<Reactable> {
                 let (idx1, _idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
                 // Say the description
                 player.say(ref world, ReactableImpl::get_specific_description(@self, idx1, world));
+                // If token is verb and the verb is "examine" then check if the entity has a container. If so, call the container's check function
                 return Result::Ok(());
             },
         }

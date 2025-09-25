@@ -130,6 +130,10 @@ pub impl ContainerImpl of ContainerTrait {
         if (!self.contains(item.inst, @world, *player.game_id)) {
             return Result::Err(Error::NotStored);
         }
+        // check if the iten can be picked up and moved
+        if (!item.can_be_picked_up) {
+            return Result::Err(Error::CantBePicked);
+        }
         // get entities
         let item_entity: Entity = EntityImpl::get_entity(@world, item.inst).unwrap();
         let room_entity: Entity = player.get_room_entity(@world).unwrap();
@@ -185,6 +189,8 @@ pub impl ContainerImpl of ContainerTrait {
             player.say(ref world, format!("It contains:"));
             let items = self.entity(@world).get_children(@world, *player.game_id);
             for item in items {
+                // item name + quantity
+                // It contains cOINS 122 
                 player.say(ref world, format!("{}", item.name));
             };
         }
@@ -249,6 +255,8 @@ pub impl ContainerComponent of Component<Container> {
         let nouns = command.get_nouns();
         match action.action_fn {
             ContainerActions::Open => {
+                // if the cointainer can be opened is false and then player say opern the container
+                // return a player say ( the containers is cant be opened)
                 if (self.is_open) {
                     player
                         .say(
@@ -258,6 +266,10 @@ pub impl ContainerComponent of Component<Container> {
                 } else {
                     player.say(ref world, format!("You open {}", self.entity(@world).name));
                     self.set_open(ref world, true, *player.game_id);
+                    let doneChecking = self.check_container(ref world, player, nouns[0].text);
+                    if (doneChecking) {
+                        return Result::Ok(());
+                    }
                 }
                 return Result::Ok(());
             },
