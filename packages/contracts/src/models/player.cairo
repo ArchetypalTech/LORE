@@ -31,6 +31,8 @@ pub struct Player {
     pub location: felt252,
     /// If the player is in debug mode
     pub use_debug: bool,
+    /// If the player is dead
+    pub is_dead: bool,
 }
 
 // story by game instance

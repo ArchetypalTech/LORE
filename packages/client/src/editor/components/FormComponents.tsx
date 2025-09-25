@@ -246,19 +246,25 @@ export const Toggle = ({
 	value,
 	onChange,
 	className,
+	readOnly,
 }: {
 	id: string;
 	value: boolean;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	className?: string;
+	readOnly?: boolean;
 }) => {
 	return (
-		<div className="form-group flex items-center">
+		<div className={cn(
+					"form-group flex items-center",
+					readOnly ? "bg-gray-200" : "",
+				)}>
 			<input
 				type="checkbox"
 				id={id}
 				checked={value}
-				onChange={onChange}
+				onChange={!readOnly ? onChange : undefined}
+				readOnly={readOnly}
 				className={cn(
 					"h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500",
 					className,

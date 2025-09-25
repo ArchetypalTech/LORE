@@ -162,6 +162,7 @@ const publishPlayer = async (player: Player) => {
 		player.game_id ? num.toBigInt(player.game_id.toString()) : num.toBigInt("0"),
 		player.location ? num.toBigInt(player.location.toString()) : num.toBigInt("0"),
 		player.use_debug ?? false,
+		player.is_dead ?? false,
 	];
 	await dispatchDesignerCall("create_player", [playerData]);
 };

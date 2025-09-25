@@ -44,6 +44,7 @@ use lore::lib::dns::{DnsTrait, IGameTokenDispatcherTrait};
 use lore::models::{
     entity::{Entity},
     area::{Area, AreaComponent},
+    player::{Player, PlayerImpl},
     admin::{AccountPermissionsTrait},
 };
 
@@ -84,6 +85,13 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
     fn has_finished_game(world: @WorldStorage, game_id: u128) -> bool {
         let game_info: GameTokenInfo = world.read_model(game_id);
         (game_info.completed)
+    }
+    fn is_dead(world: @WorldStorage, game_id: u128) -> bool {
+        let player: Option<Player> = PlayerImpl::get_player(world, game_id);
+        match player {
+            Option::Some(player) => {(player.is_dead)},
+            Option::None => {(false)},
+        }
     }
 }
 

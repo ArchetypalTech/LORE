@@ -125,7 +125,7 @@ pub mod game_token {
     use lore::models::{
         admin::{AccountPermissionsTrait},
         token_config::{
-            GameTokenInfo,
+            GameTokenInfo, GameTokenInfoTrait,
             PlayerAccountTrait,
             GameCreatedEvent,
         },
@@ -322,6 +322,10 @@ pub mod game_token {
                 Attribute {
                     key: "Completed",
                     value: if token_info.completed {"Yes"} else {"No"},
+                },
+                Attribute {
+                    key: "Vitality",
+                    value: if GameTokenInfoTrait::is_dead(@world, token_id.low) {"Dead"} else {"Alive"},
                 },
             ].span();
             let mut additional_metadata: Span<Attribute> = array![
