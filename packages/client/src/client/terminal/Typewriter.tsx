@@ -7,8 +7,8 @@ import TerminalLine from "./TerminalLine";
 export default function Typewriter() {
 	const [displayContent, setDisplayContent] =
 		useState<TerminalContentItem | null>(null);
-	const minTypingDelay = 5;
-	const maxTypingDelay = 15;
+	const minTypingDelay = 2;
+	const maxTypingDelay = 9;
 
 	const { activeTypewriterLine } = useTerminalStore();
 
@@ -51,7 +51,7 @@ export default function Typewriter() {
 				});
 				currentIndex++;
 			},
-			(activeTypewriterLine.speed || 10) *
+			(activeTypewriterLine.speed || 6) *
 				Math.random() *
 				(maxTypingDelay - minTypingDelay) +
 				minTypingDelay,
