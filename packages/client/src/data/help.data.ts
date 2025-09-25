@@ -8,14 +8,14 @@ interface HelpContent {
 export const HELP_TEXTS: Record<string, HelpContent> = {
 	CommandSummary: {
 		description:
-			"a few possibilities surface through the haze of your mind",
-		usage: "look [around]\n look at [object]\n examine [object]\n pick up [object]\n use [object] on [target]\n use [exit]\n go through [exit]",
+			"\n\n a few possibilities surface through the haze of your mind\n\n",
+		usage: "look [around]\n look at [object]\n examine [object]\n pick up [object]\n use [object] on [target]\n use [exit]\n go through [exit]\n\n",
 		examples: [
 			"look around",
 			"enter the door",
-			"examine the bottle",
+			"examine the bottle"\n\n,
 		],
-		more: "Use:\n  `help_exits`\n  `help_inspect`\n  `help_container`\n & \n  `help_inventory` \nfor more information",
+		more: "Use:\n\n  `help_exits`\n  `help_inspect`\n  `help_container`\n & \n  `help_inventory` \n\nfor more information",
 	},
 // Exits: {
 // 	description:
