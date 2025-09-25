@@ -23,7 +23,6 @@ import {
 	queryExecActions,
 	queryTriggers,
 } from "@/editor/data/editor.data";
-import { registerPropertyRegistry } from "@/editor/publisher";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
@@ -241,7 +240,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		} else {
 			text.push(`Found ${tokens.length} games:`);
 			tokens.forEach((token) => {
-				text.push(`> ${token.name} ${BigInt(token.token_id) == GameStore().gameId ? "(CURRENT)" : ""}`);
+				text.push(`> ${token.name} ${BigInt(token.token_id) == BigInt(GameStore().gameId ?? 0) ? "(CURRENT)" : ""}`);
 			});
 			text.push(`Type [load game_name] to resume a game`);
 			text.push(`Type [create game] to start a new a game`);
@@ -282,8 +281,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 		}
 
-		let propertyRegistryFound = await propertiesRegistered();
 		// Check properties
+		let propertyRegistryFound = await propertiesRegistered();
 		if (!propertyRegistryFound) {
 			console.log("PropertyRegistry not found");
 		} else {

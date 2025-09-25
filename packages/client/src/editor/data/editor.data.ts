@@ -14,6 +14,7 @@ import type {
 	Reactable,
 	DescriptionText,
 	ComponentTypeEnum,
+	AccountPermissions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -37,7 +38,7 @@ import type {
 import type { ChangeSet, EditorAction } from "../lib/types";
 import { tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
-import { ToriiQueryBuilder } from "@dojoengine/sdk";
+import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
 
@@ -769,6 +770,32 @@ export const getPlayer = async (account: string): Promise<boolean> => {
   }
 };
 
+export const getAccountPermissions = async (address: string): Promise<AccountPermissions | undefined> => {
+  try {
+    const { sdk } = await InitDojo();
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().keys(
+					["lore-AccountPermissions"],
+					[addAddressPadding(address)]
+				).build()
+			)
+      .withEntityModels(["lore-AccountPermissions"]);
+
+    const result = await sdk.getEntities({ query });
+
+    const accountPermissions = result?.getItems()?.[0]?.models?.lore?.AccountPermissions as AccountPermissions;
+		// console.log("AccountPermissions:", accountPermissions);
+		return accountPermissions;
+  } catch (error) {
+    console.error("Error fetching account permissions from Torii:", error);
+    throw error;
+  }
+};
+
 export const propertiesRegistered = async (
   maxRetries = 5,
   delayMs = 2000
@@ -869,6 +896,7 @@ export const queryOwnedGameTokens = async (ownerAddress: BigNumberish): Promise<
 		const result: GameToken[] = tokens.items
 			.filter((item) => BigInt(item.balance) > 0n)
 			.filter((item) => item.token_id !== undefined)
+			.sort((a, b) => Number(BigInt(a.token_id ?? 0)) - Number(BigInt(b.token_id ?? 0)))
 			.map((item) => ({
 				token_id: Number(BigInt(item.token_id ?? 0)),
 				name: `game-${BigInt(item.token_id ?? 0).toString()}`,

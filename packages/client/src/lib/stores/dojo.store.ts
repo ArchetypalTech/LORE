@@ -2,7 +2,7 @@ import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
 
 import { InitDojo } from "@lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
-import { addAddressPadding, num, CairoCustomEnum, BigNumberish } from "starknet";
+import { CairoCustomEnum, BigNumberish } from "starknet";
 import EditorData from "@/editor/data/editor.data";
 import type { EntityCollection } from "@/editor/lib/types";
 import { LORE_CONFIG } from "../config";
@@ -15,11 +15,12 @@ import type {
 } from "../dojo_bindings/typescript/models.gen";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
-import { decodeDojoText, processWhitespaceTags } from "../utils/utils";
+import { bigintToHex128, decodeDojoText, processWhitespaceTags } from "../utils/utils";
 import { addTerminalContent } from "./terminal.store";
 import { getPlayerAddress } from "@/editor/lib/components";
 import * as torii from "@dojoengine/torii-client";
 import GameStore from "./game.store";
+
 
 /**
  * Represents the current status of the Dojo system.
@@ -85,7 +86,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 			.withClause(
 				new ClauseBuilder<SchemaType>().keys(
 					["lore-StoryLine"],
-					[addAddressPadding(playerStory.game_id)]
+					[bigintToHex128(playerStory.game_id)]
 				).build()
 			)
 			.withEntityModels(["lore-StoryLine"]);
@@ -162,7 +163,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 const onPlayerStory = (playerStory: PlayerStory) => {
 	const gameId = GameStore().gameId;
 	const normalizedStoryId: bigint = BigInt(playerStory.game_id);
-	const normalizedGameId: bigint | null = (gameId != null ? gameId : null);
+	const normalizedGameId: bigint | null = (gameId != null ? BigInt(gameId) : null);
 	// console.log("[DEBUG:STORY] normalizedStoryId", normalizedStoryId);
 	// console.log("[DEBUG:STORY] normalizedGameId", normalizedGameId);
 	if (normalizedStoryId === normalizedGameId) {

@@ -1,11 +1,13 @@
 import { useEffect } from "react";
-import { addAddressPadding, BigNumberish, num } from "starknet";
+import { addAddressPadding, BigNumberish } from "starknet";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { useWalletStore } from "./wallet.store";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
 import { InitDojo } from "../dojo";
 import type { SchemaType, PlayerAccount } from "../dojo_bindings/typescript/models.gen";
+import { getAccountPermissions } from "@/editor/data/editor.data";
+import { useMounted } from "@/lib/utils/useMounted";
 
 const {
 	get,
@@ -14,11 +16,14 @@ const {
 	createFactory,
 } = StoreBuilder({
 	// gameId specifically used in the terminal (0 for editor)
-	editorGameId: undefined as bigint | undefined,
+	editorGameId: undefined as number | undefined,
 	// gameId attached to a player on-chain
-	playerGameId: undefined as bigint | undefined,
+	playerGameId: undefined as number | undefined,
 	// resolved gameId to be used
-	gameId: undefined as bigint | undefined,
+	gameId: undefined as number | undefined,
+	// editor permissions
+	isAdmin: undefined as boolean | undefined,
+	isEditor: undefined as boolean | undefined,
 });
 
 /**
@@ -29,7 +34,7 @@ const {
 const GameStore = createFactory({
 	setEditorGameId: (gameId: BigNumberish | undefined) => {
 		const isCurrent = (gameId !== undefined)
-		let editorGameId = (isCurrent ? num.toBigInt(gameId) : undefined);
+		let editorGameId = (isCurrent ? Number(BigInt(gameId)) : undefined);
 		set({ editorGameId });
 		if (isCurrent) {
 			set({ gameId: editorGameId });
@@ -37,13 +42,19 @@ const GameStore = createFactory({
 		console.log("GameStore.setEditorGameId:", gameId, isCurrent?"(CURRENT)":"");
 	},
 	setPlayerGameId: (gameId: BigNumberish | undefined) => {
-		let playerGameId = (gameId ? num.toBigInt(gameId) : undefined);
+		let playerGameId = (gameId ? Number(BigInt(gameId)) : undefined);
 		const isCurrent = (playerGameId !== undefined && get().editorGameId === undefined)
 		set({ playerGameId });
 		if (isCurrent) {
 			set({ gameId: playerGameId });
 		}
 		console.log("GameStore.setPlayerGameId:", gameId, isCurrent?"(CURRENT)":"");
+	},
+	setPermissions: (isAdmin: boolean, isEditor: boolean) => {
+		set({
+			isAdmin,
+			isEditor: (isAdmin || isEditor),
+		});
 	},
 });
 
@@ -52,13 +63,13 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 
 	// set the editor game id, if provided
 	useEffect(() => {
-		GameStore().setEditorGameId(inputGameId == undefined ? undefined : num.toBigInt(inputGameId.toString()));
+		GameStore().setEditorGameId(inputGameId == undefined ? undefined : inputGameId);
 	}, [inputGameId]);
 
 	// use game_id for the connected player
 	const { walletAddress, isConnected } = useWalletStore();
 	useEffect(() => {
-		const _fetch = async (address: bigint) => {
+		const _fetch = async (address: BigNumberish) => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			const query = builder
 				.withCursor("")
@@ -104,14 +115,37 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 };
 
 
+export const useSyncPermissions = () => {
+	const { isAdmin, isEditor } = useGameStore();
+	const { walletAddress, isConnected } = useWalletStore();
+	const mounted = useMounted();
+	useEffect(() => {
+		if (mounted && walletAddress && isConnected) {
+			// get account permissions
+			getAccountPermissions(walletAddress as string).then((accountPermissions) => {
+				console.log("useSyncPermissions() walletAddress:", accountPermissions);
+				GameStore().setPermissions(accountPermissions?.is_admin ?? false, accountPermissions?.is_editor ?? false);
+			});
+		} else {
+			GameStore().setPermissions(false, false);
+		}
+	}, [mounted, walletAddress, isConnected, isAdmin, isEditor]);
+	return { isAdmin, isEditor };
+};
+
+
 /**
- * Factory function that returns all terminal store state and methods.
- * Can be used to access the terminal store outside of React components.
- * @returns {Object} The terminal store state and methods
+ * Returns the current game id.
+ * @returns {number | undefined} The current game id
  */
 export const useCurrentGameId = () => {
 	const { gameId } = useGameStore();
 	return gameId;
+};
+
+export const usePermissions = () => {
+	const { isAdmin, isEditor } = useGameStore();
+	return { isAdmin, isEditor };
 };
 
 
