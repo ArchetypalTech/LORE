@@ -56,9 +56,11 @@ pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameM
             // read the game instance model
             let mut result: M = self.read_model(game_inst);
             // keep the original inst key
+            // println!("+ read_game_model {}:{:x}:{:x}", game_id, inst, game_inst);
             result.set_inst(inst);
             (result)
         } else {
+            // println!("+ read_model ZERO:{:x}", inst);
             (self.read_model(inst))
         })
     }
@@ -80,8 +82,10 @@ pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameM
             let mut game_model: M = model.clone();
             game_model.set_inst(game_inst);
             // write model
+            // println!("+ write_game_model {}:{:x}:{:x}", game_id, model.inst(), game_inst);
             self.write_model(@game_model);
         } else {
+            // println!("+ write_model ZERO:{:x}", model.inst());
             self.write_model(model);
         }
     }
