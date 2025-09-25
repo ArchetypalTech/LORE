@@ -42,9 +42,11 @@ export const Header = ({
 export const DeleteButton = ({
 	onClick,
 	className,
+	disabled,
 }: {
 	onClick: () => void;
 	className?: string;
+	disabled?: boolean;
 }) => {
 	return (
 		<Button
@@ -53,6 +55,7 @@ export const DeleteButton = ({
 			title="Delete Entity"
 			className={cn(className)}
 			onClick={onClick}
+			disabled={disabled}
 		>
 			❌
 		</Button>
@@ -62,9 +65,11 @@ export const DeleteButton = ({
 export const PublishButton = ({
 	onClick,
 	className,
+	disabled,
 }: {
 	onClick: () => void;
 	className?: string;
+	disabled?: boolean;
 }) => {
 	return (
 		<Button
@@ -73,6 +78,7 @@ export const PublishButton = ({
 			title="Publish Entity"
 			className={cn(className)}
 			onClick={onClick}
+			disabled={disabled}
 		>
 			🕊️
 		</Button>

@@ -6,14 +6,14 @@ import { Config } from "../lib/config";
 import { publishConfigToContract } from "../publisher";
 import { Button } from "./ui/Button";
 import { propertiesRegistered } from "../data/editor.data";
-import { usePermissions } from "@/lib/stores/game.store";
+import { useEditorPermissions } from "@/lib/stores/editor.store";
 import { useLocation } from "wouter";
 
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { isConnected } = useWalletStore();
-	const { isAdmin, isEditor } = usePermissions();
+	const { isAdmin, isEditor } = useEditorPermissions();
 	const [_location, navigate] = useLocation();
 
 	// Handler for file upload

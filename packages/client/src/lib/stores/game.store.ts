@@ -6,8 +6,6 @@ import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
 import { InitDojo } from "../dojo";
 import type { SchemaType, PlayerAccount } from "../dojo_bindings/typescript/models.gen";
-import { getAccountPermissions } from "@/editor/data/editor.data";
-import { useMounted } from "@/lib/utils/useMounted";
 
 const {
 	get,
@@ -21,9 +19,6 @@ const {
 	playerGameId: undefined as number | undefined,
 	// resolved gameId to be used
 	gameId: undefined as number | undefined,
-	// editor permissions
-	isAdmin: undefined as boolean | undefined,
-	isEditor: undefined as boolean | undefined,
 });
 
 /**
@@ -50,14 +45,13 @@ const GameStore = createFactory({
 		}
 		console.log("GameStore.setPlayerGameId:", gameId, isCurrent?"(CURRENT)":"");
 	},
-	setPermissions: (isAdmin: boolean, isEditor: boolean) => {
-		set({
-			isAdmin,
-			isEditor: (isAdmin || isEditor),
-		});
-	},
 });
 
+
+/**
+ * Keeps the game id in sync with the player account.
+ * use only once at a top-level component.
+ */
 export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	const { gameId } = useGameStore();
 
@@ -114,26 +108,6 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	return gameId;
 };
 
-
-export const useSyncPermissions = () => {
-	const { isAdmin, isEditor } = useGameStore();
-	const { walletAddress, isConnected } = useWalletStore();
-	const mounted = useMounted();
-	useEffect(() => {
-		if (mounted && walletAddress && isConnected) {
-			// get account permissions
-			getAccountPermissions(walletAddress as string).then((accountPermissions) => {
-				console.log("useSyncPermissions() walletAddress:", accountPermissions);
-				GameStore().setPermissions(accountPermissions?.is_admin ?? false, accountPermissions?.is_editor ?? false);
-			});
-		} else {
-			GameStore().setPermissions(false, false);
-		}
-	}, [mounted, walletAddress, isConnected, isAdmin, isEditor]);
-	return { isAdmin, isEditor };
-};
-
-
 /**
  * Returns the current game id.
  * @returns {number | undefined} The current game id
@@ -141,11 +115,6 @@ export const useSyncPermissions = () => {
 export const useCurrentGameId = () => {
 	const { gameId } = useGameStore();
 	return gameId;
-};
-
-export const usePermissions = () => {
-	const { isAdmin, isEditor } = useGameStore();
-	return { isAdmin, isEditor };
 };
 
 

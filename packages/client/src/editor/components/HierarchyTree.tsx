@@ -12,6 +12,7 @@ import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
+import { useEditorPermissions } from "@/lib/stores/editor.store";
 
 type TreeNode = {
 	id: BigNumberish;
@@ -33,6 +34,7 @@ export const HierarchyTreeItem = ({
 	childCount,
 }: RenderItemProps<TreeNode["data"]>) => {
 	const entity = node.data?.entity as EntityCollection;
+	const isCollapsed = node.collapsed;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
 	const [timer, setTimer] = useState<NodeJS.Timer>();
@@ -108,7 +110,7 @@ export const HierarchyTreeItem = ({
 									}}
 									type="button"
 								>
-									▾
+									{isCollapsed ? "▶" : "▼"}
 								</button>
 							)}
 
@@ -190,6 +192,7 @@ const createTree = () => {
 export const HierarchyTree = () => {
 	const { dataPool, isDirty } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
+	const { isAdmin } = useEditorPermissions();
 
 	useEffect(() => {
 		dataPool;
@@ -199,22 +202,29 @@ export const HierarchyTree = () => {
 
 	return (
 		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
-			<Button
-				variant={"hero"}
-				// className="w-full"
-				onClick={() => EditorData().newEntity()}
-			>
-				<HousePlus />
-				New Entity
-			</Button>
-			<Button
-				variant={"hero"}
-				// className="w-full"
-				onClick={() => EditorData().newPlayer()}
-			>
-				<PersonStanding />
-				New Player
-			</Button>
+
+			{isAdmin && (
+				<>
+					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
+						<HousePlus />
+						New Entity
+					</Button>
+					<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
+						<PersonStanding />
+						New Player
+					</Button>
+				</>
+			)}
+
+			{!isAdmin && (
+				<>
+					<Button variant={"hero"} onClick={() => {}}>
+						<HousePlus />
+						Your Trail
+					</Button>
+				</>
+			)}
+
 			<div className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}
