@@ -581,9 +581,13 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                 },
                             }
                         } else if effect.property == @can_be_picked_up {
+                            println!("Can be picked up to change");
                             let (value, _index) = effect.value[0];
+                            println!("Value: {:?} from effect.value[0]", value);
                             let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            println!("New var value: {:?}", new_var_value);
                             component.can_be_picked_up = new_var_value;
+                            println!("Can be picked up changed to: {:?}", component.can_be_picked_up);
                             success = true;
                         } else if effect.property == @can_go_in_container {
                             let (value, _index) = effect.value[0];
@@ -627,6 +631,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
+                println!("Component storing is: {:?}", component);
                 component.store(ref world, game_id);
                 break;
             }
