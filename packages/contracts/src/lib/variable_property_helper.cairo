@@ -561,6 +561,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         let mut success: bool = false;
         let mut result: Result::<(), Error> = Result::Ok(());
 
+        println!("Component applying effect: {:?}", component);
+        println!("game_id: {:?}", game_id);
+
         for prop in property.properties.clone() {
             if @prop.name == effect.property {
                 match prop.access_flags {
@@ -631,6 +634,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                         }
                     },
                 }
+                println!("game_id: {:?}", game_id);
                 println!("Component storing is: {:?}", component);
                 component.store(ref world, game_id);
                 break;

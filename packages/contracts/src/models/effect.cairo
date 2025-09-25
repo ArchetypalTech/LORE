@@ -121,6 +121,7 @@ pub impl EffectImpl of EffectTrait {
                 match comp {
                     Option::Some(mut item) => {
                         let property_registry: PropertyRegistry = world.read_model(*self.component);
+                        println!("Component applying effect: {:?}", item);
                         // Direct modification to component
                         let (result_p, _success_p) =
                             VariablePropertyHelper::set_inventory_item_property(

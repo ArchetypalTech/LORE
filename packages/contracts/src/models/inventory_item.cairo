@@ -132,6 +132,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     player.log_debug(ref world, format!("Your target is: {}", nouns[1].text));
                 }
 
+                //  use work permit on the terminal
+                // n1 is work, n2 is permit and n3 is termial
+                // use silver ring in the vending unit
+                // n1 is ring, n2 is vending n3 unit
+                // get entity from 1 and check aall alt names and if any of them match against n2  n3 should be the tarte entity 
+                // n1 = n2 work permit *> n3 = terminal
+                // n1 != n2 ring != unir -> n2 -> target
                 let target_entity = EntityImpl::get_entity(@world, *nouns[1].target);
                 if target_entity.is_none() {
                     return Result::Err(Error::NoTargetEntity);
@@ -209,8 +216,14 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                player.say(ref world, format!("You pick up the {}", nouns[0].text));
-                return container_component.put_item_in(ref world, ref self, *player.game_id);
+                player.say(ref world, format!("You try to pick the {}", nouns[0].text));
+                let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot pick the {}", nouns[0].text));
+                } else {
+                    player.say(ref world, format!("You pick up the {}", nouns[0].text));
+                }
+                return res;
             },
             InventoryItemActions::DropItem => {
                 // This is for taking an item from the player's personal inventory
@@ -220,8 +233,14 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                player.say(ref world, format!("You drop the {}", nouns[0].text));
-                return container_component.put_item_out(ref world, ref self, player);
+                player.say(ref world, format!("You try to drop the {}", nouns[0].text));
+                let res = container_component.put_item_out(ref world, ref self, player);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot drop the {}", nouns[0].text));
+                } else {
+                    player.say(ref world, format!("You drop the {}", nouns[0].text));
+                }
+                return res;
             },
             InventoryItemActions::PutItem => {
                 // This is for a specific container
@@ -236,11 +255,24 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    player.say(ref world, format!("You put the {} in the {}", nouns[0].text, nouns[1].text));
-                    return container_component.put_item_in(ref world, ref self, *player.game_id);
+                    player.say(ref world, format!("You try to put {} inside {}", nouns[0].text, nouns[1].text));
+                    let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                    if res.is_err() {
+                        player.say(ref world, format!("You cannot put {} inside {}", nouns[0].text, nouns[1].text));
+                    } else {
+                        player.say(ref world, format!("You put the {} in the {}", nouns[0].text, nouns[1].text));
+                    }
+                    return res;
                 }
                 let container_component: Container = player_container.unwrap();
-                return container_component.put_item_in(ref world, ref self, *player.game_id);
+                player.say(ref world, format!("You try to put {} inside {}", nouns[0].text, nouns[1].text));
+                let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot put {} inside {}", nouns[0].text, nouns[1].text));
+                } else {
+                    player.say(ref world, format!("You put the {} in the {}", nouns[0].text, nouns[1].text));
+                }
+                return res;
             },
             InventoryItemActions::TakeOutItem => {
                 // This is for taking an item from a specific container
@@ -255,10 +287,24 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    player.say(ref world, format!("You take out the {} from the {}", nouns[0].text, nouns[1].text));
-                    return container_component.put_item_out(ref world, ref self, player);
+                    player.say(ref world, format!("You try to take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                    let res = container_component.put_item_out(ref world, ref self, player);
+                    if res.is_err() {
+                        player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                    } else {
+                        player.say(ref world, format!("You take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                    }
+                    return res;
                 }
-                return Result::Ok(());
+                let container_component: Container = player_container.unwrap();
+                player.say(ref world, format!("You try to take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                let res = container_component.put_item_out(ref world, ref self, player);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                } else {
+                    player.say(ref world, format!("You take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                }
+                return res;
             },
         }
         // Result::Err(Error::ActionFailed) // Unreachable code
