@@ -51,7 +51,7 @@ export default function Typewriter() {
 				});
 				currentIndex++;
 			},
-			(activeTypewriterLine.speed || 20) *
+			(activeTypewriterLine.speed || 10) *
 				Math.random() *
 				(maxTypingDelay - minTypingDelay) +
 				minTypingDelay,
