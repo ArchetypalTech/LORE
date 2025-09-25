@@ -4009,7 +4009,7 @@
     },
     {
       "address": "0x247766b5bb3d9091b31955f64aab5da2dc8852f8749198e53dff585c8341223",
-      "class_hash": "0x75e7a1f2ee1833a65c988cf348a3a69397f45853bfa2658092fb4f7863dd090",
+      "class_hash": "0x5daa3bd4657a9bc6526fb2be5bc05d70974dbe7e5d99bc7ac1483ebeea794e1",
       "abi": [
         {
           "type": "impl",

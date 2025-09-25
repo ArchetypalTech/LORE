@@ -13,6 +13,7 @@ use lore::{
         action::{ActionImpl},
         condition::{ConditionImpl},
         token_config::{PlayerAccountTrait},
+        admin::{AccountPermissionsTrait},
     },
     types::command_type::{Command, TokenType, Token},
     lib::{
@@ -245,6 +246,7 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_create_game", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_load_game", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_player", TokenType::System, 2).unwrap();
 }
 
 fn system_command(
@@ -350,6 +352,14 @@ fn system_command(
             // switch game...
             PlayerAccountTrait::switch_game_id(ref world, player_address, game_id.low);
             player.log_sys(ref world, format!("+sys+Loaded game-{:?}", game_id));
+            return Result::Ok(());
+        }
+        if (system_command == "g_player") {
+            player.log_sys(ref world, format!("+sys+address:{:x}", player.address));
+            player.log_sys(ref world, format!("+sys+game_id:{:x}", player.game_id));
+            player.log_sys(ref world, format!("+sys+is_dead:{}", player.is_dead));
+            player.log_sys(ref world, format!("+sys+is_admin:{}", AccountPermissionsTrait::is_admin(@world, player.address)));
+            player.log_sys(ref world, format!("+sys+is_editor:{}", AccountPermissionsTrait::is_editor(@world, player.address)));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);
