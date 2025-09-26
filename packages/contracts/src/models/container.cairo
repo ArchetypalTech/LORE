@@ -156,7 +156,7 @@ pub impl ContainerImpl of ContainerTrait {
         // we also check if the container is the player's personal inventory
         if (!self.is_open) {
             if (self.inst == *player.inst) {
-                player.say(ref world, format!("{} personal inventory is close", object));
+                player.say(ref world, format!("The {} personal inventory is close", self.name));
                 return true;
             } else {
                 player.say(ref world, format!("The {} is closed", object));
@@ -164,7 +164,7 @@ pub impl ContainerImpl of ContainerTrait {
             }
         } else {
             if (self.inst == *player.inst) {
-                player.say(ref world, format!("{} personal inventory is open", object));
+                player.say(ref world, format!("The{} personal inventory is open", self.name));
             } else {
                 player.say(ref world, format!("{} is open", object));
             }
@@ -257,19 +257,32 @@ pub impl ContainerComponent of Component<Container> {
             ContainerActions::Open => {
                 // if the cointainer can be opened is false and then player say opern the container
                 // return a player say ( the containers is cant be opened)
-                if (self.is_open) {
-                    player
-                        .say(
-                            ref world,
-                            format!("The {} is already open.", self.entity(@world).name),
-                        );
-                } else {
+                // If the container is not open:
+                if (!self.is_open) {
+                    // Check if the container can be opened
+                    // If it can't be opened, say so
+                    if (!self.can_be_opened) {
+                        player.say(ref world, format!("The {} can't be opened.", self.entity(@world).name));
+                        return Result::Ok(());
+                    }
+                    // If can be opened then:
+                    // Check if the container is already open
+                    if (self.is_open) {
+                        player.say(ref world, format!("The {} is already open.", self.entity(@world).name));
+                        return Result::Ok(());
+                    }
+                    // If the container is not open, then:
+                    // say that the container is open
                     player.say(ref world, format!("You open {}", self.entity(@world).name));
+                    // Set the container to open
                     self.set_open(ref world, true, *player.game_id);
+                    // Check container status and contents
                     let doneChecking = self.check_container(ref world, player, nouns[0].text);
+                    // Once done checking, return
                     if (doneChecking) {
                         return Result::Ok(());
                     }
+                    
                 }
                 return Result::Ok(());
             },
