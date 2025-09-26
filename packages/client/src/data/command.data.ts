@@ -409,6 +409,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 	coins_balance: async () => {
+		const gameId = GameStore().gameId;
+
+		if (gameId === undefined) {
+			addTerminalContent({
+				text: "You can't check how many Usants coins you have as you haven't started a game yet",
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+
 		const coinsEntity = await queryCoinsEntity();
 		const coinsBalance = await queryGameCoinsBalance(coinsEntity);
 		addTerminalContent({
@@ -437,3 +448,18 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 } as const;
+
+// register aliases for the coins command
+const coinAliases = [
+  "coins balance",
+  "check coins",
+  "check wallet",
+  "check money",
+  "count coins",
+];
+
+// attach aliases to the same handler
+coinAliases.forEach((alias) => {
+  TERMINAL_SYSTEM_COMMANDS[alias] = async (ctx) =>
+    await TERMINAL_SYSTEM_COMMANDS.coins_balance(ctx);
+});
