@@ -429,42 +429,61 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 } as const;
 
-// coins command handler
-const coinsHandler = async (ctx: commandContext) => {
-  const gameId = GameStore().gameId;
-  if (gameId === undefined) {
+// --- COINS SUBCOMMANDS ---
+const coinsSubcommands: Record<string, () => Promise<void>> = {
+  // Main "balance" functionality
+  balance: async () => {
+    const gameId = GameStore().gameId;
+    if (!gameId) {
+      addTerminalContent({
+        text: "You can't check your Usants coins as you haven't started a game yet",
+        format: "error",
+        useTypewriter: true,
+      });
+      return;
+    }
+    const coinsEntity = await queryCoinsEntity();
+    const coinsBalance = await queryGameCoinsBalance(coinsEntity);
     addTerminalContent({
-      text: "You can't check how many Usants coins you have as you haven't started a game yet",
-      format: "error",
+      text: `You have ${coinsBalance} Usants coins`,
+      format: "hash",
+      useTypewriter: true,
+    });
+  },
+
+  // Aliases for "balance"
+  amount: async () => coinsSubcommands.balance(),
+  count: async () => coinsSubcommands.balance(),
+  check: async () => coinsSubcommands.balance(),
+  "balance of coins": async () => coinsSubcommands.balance(),
+  "amount of coins": async () => coinsSubcommands.balance(),
+  "coins check": async () => coinsSubcommands.balance(),
+  "coins count": async () => coinsSubcommands.balance(),
+	"count coins": async () => coinsSubcommands.balance(),
+};
+
+// --- REGISTER COINS COMMAND ---
+TERMINAL_SYSTEM_COMMANDS["coins"] = async (ctx: commandContext) => {
+  const subcommand = ctx.args.join(" ").toLowerCase();
+
+  if (!subcommand) {
+    addTerminalContent({
+      text: 'Did you mean [coins balance]?',
+      format: "hash",
       useTypewriter: true,
     });
     return;
   }
 
-  const coinsEntity = await queryCoinsEntity();
-  const coinsBalance = await queryGameCoinsBalance(coinsEntity);
-  addTerminalContent({
-    text: `You have ${coinsBalance} Usants coins`,
-    format: "hash",
-    useTypewriter: true,
-  });
+  const handler = coinsSubcommands[subcommand] || coinsSubcommands[ctx.args[0]?.toLowerCase()];
+
+  if (handler) {
+    await handler();
+  } else {
+    addTerminalContent({
+      text: `Unknown coins command: "${subcommand}"`,
+      format: "error",
+      useTypewriter: true,
+    });
+  }
 };
-
-// register the handler
-TERMINAL_SYSTEM_COMMANDS["coins_balance"] = coinsHandler;
-
-// register all aliases
-const coinsAliases = [
-  "coins balance",
-  "coins amount",
-  "coins count",
-  "coins check",
-  "check coins",
-  "count coins",
-	"amount of coins",
-	"balance of coins",
-];
-
-coinsAliases.forEach((alias) => {
-  TERMINAL_SYSTEM_COMMANDS[alias] = async (ctx) => await coinsHandler(ctx);
-});
