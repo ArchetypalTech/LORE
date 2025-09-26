@@ -15,6 +15,7 @@ import {
 import {
 	checkForPlayer,
 	propertiesRegistered,
+	queryGameComponents,
 	queryOwnedGameTokens,
 } from "@/editor/data/editor.data";
 import {
@@ -23,7 +24,6 @@ import {
 	queryExecActions,
 	queryTriggers,
 } from "@/editor/data/editor.data";
-import { registerPropertyRegistry } from "@/editor/publisher";
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
@@ -87,7 +87,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				sendCommand("_connect_wallet");
 			} else {
 				sendCommand("_welcome_back");
-				sendCommand("_current_game");
 			}
 		}
 
@@ -175,8 +174,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_not_yet_connected");
 			return;
 		}
-		// allow "game-123" or "123"
-		let game_id = Number(context.args[0].split("-").at(-1));
+		let game_id = Number(context.args[0].split("-").at(-1)); // works with "game-123" or "123"
 		if (isNaN(game_id)) {
 			addTerminalContent({
 				text: `Did you mean [load game_name]?`,
@@ -187,7 +185,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		// current game?
 		if(GameStore().gameId != undefined && game_id == Number(GameStore().gameId)) {
-			sendCommand("_current_game");
 			return;
 		}
 		// check ownership...
@@ -241,7 +238,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		} else {
 			text.push(`Found ${tokens.length} games:`);
 			tokens.forEach((token) => {
-				text.push(`> ${token.name} ${BigInt(token.token_id) == GameStore().gameId ? "(CURRENT)" : ""}`);
+				text.push(`> ${token.name} ${BigInt(token.token_id) == BigInt(GameStore().gameId ?? 0) ? "(CURRENT)" : ""}`);
 			});
 			text.push(`Type [load game_name] to resume a game`);
 			text.push(`Type [create game] to start a new a game`);
@@ -281,11 +278,9 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				useTypewriter: true,
 			});
 		}
-		// Check properties
-		await registerPropertyRegistry();
 
-		let propertyRegistryFound = await propertiesRegistered();
 		// Check properties
+		let propertyRegistryFound = await propertiesRegistered();
 		if (!propertyRegistryFound) {
 			console.log("PropertyRegistry not found");
 		} else {
@@ -324,15 +319,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 		return;
-	},
-	controller: () => {
-		if (LORE_CONFIG.useController) {
-			if (!WalletStore().isConnected) {
-				sendCommand("_not_yet_connected");
-				return;
-			}
-			WalletStore().controller?.openProfile("inventory");
-		}
 	},
 	_bypass: ({ command }) => {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
@@ -424,6 +410,21 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	_actions: () => {
 		const actions = queryExecActions();
 		console.log("ACTIONS RESULT", actions);
+	},
+	_components: async (context: commandContext) => {
+		let game_id = context.args.length > 0
+			? Number(context.args[0].split("-").at(-1)) // works with "game-123" or "123"
+			:  GameStore().gameId;
+		if (!game_id) {
+			addTerminalContent({
+				text: "No game id provided",
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+		const components = await queryGameComponents(game_id);
+		console.log("COMPONENTS RESULT", components);
 	},
 	connection: async () => {
 		const dest = {

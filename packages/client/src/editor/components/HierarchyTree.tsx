@@ -12,10 +12,14 @@ import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
+import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
 
 type TreeNode = {
 	id: BigNumberish;
-	data: { entity: EntityCollection };
+	data: {
+		entity: EntityCollection,
+		canEdit: boolean,
+	};
 	children: TreeNode[];
 };
 
@@ -33,6 +37,8 @@ export const HierarchyTreeItem = ({
 	childCount,
 }: RenderItemProps<TreeNode["data"]>) => {
 	const entity = node.data?.entity as EntityCollection;
+	const isCollapsed = node.collapsed;
+	const canEdit = node.data?.canEdit ?? false;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
 	const [timer, setTimer] = useState<NodeJS.Timer>();
@@ -78,7 +84,7 @@ export const HierarchyTreeItem = ({
 								onPointerDown={(event) => {
 									event.stopPropagation();
 									EditorData().selectEntity(node.id.toString());
-
+									if (!canEdit) return;
 									const t = setTimeout(() => {
 										onPointerDown?.(event);
 										clearTimeout(timer);
@@ -90,7 +96,10 @@ export const HierarchyTreeItem = ({
 									clearTimeout(timer);
 									setTimer(undefined);
 								}}
-								className="absolute top-0 left-0 h-7 w-full cursor-pointer"
+								className={cn(
+									"absolute top-0 left-0 h-7 w-full",
+									canEdit ? "cursor-pointer" : "cursor-no-drop"
+								)}
 							/>
 
 							{/* Highlight when selected */}
@@ -101,14 +110,14 @@ export const HierarchyTreeItem = ({
 							{/* Collapse toggle button */}
 							{isCollapsible && (
 								<button
-									className="cursor-pointer z-20 text-xl"
+									className="cursor-pointer z-20 text-xs"
 									onClick={(e) => {
 										e.stopPropagation();
 										onCollapse?.();
 									}}
 									type="button"
 								>
-									▾
+									{!isCollapsed ? "▼" : "▶"}
 								</button>
 							)}
 
@@ -164,19 +173,18 @@ const createTree = () => {
 		// Store unique entity
 		uniqueEntities.set(instStr, entity);
 
-		if ("ParentToChildren" in entity && entity.ParentToChildren !== undefined) {
-			const children = entity.ParentToChildren?.children.flatMap((child) => {
-				return getNode(child.toString());
-			});
-			return [{ id: inst, data: { entity: entity }, children: children || [] }];
-		}
-		return [
-			{
-				id: inst,
-				data: { entity: entity as { Entity: Entity } },
-				children: [],
+		let children:TreeNode[] = entity.ParentToChildren?.children?.flatMap((child) => {
+			return getNode(child.toString());
+		}) ?? [];
+
+		return [{
+			id: inst,
+			data: {
+				entity: entity as { Entity: Entity },
+				canEdit: EditorStore().canEditEntity(entity),
 			},
-		];
+			children,
+		}];
 	};
 
 	// construct the tree
@@ -190,6 +198,7 @@ const createTree = () => {
 export const HierarchyTree = () => {
 	const { dataPool, isDirty } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
+	const { isAdmin } = useEditorPermissions();
 
 	useEffect(() => {
 		dataPool;
@@ -199,22 +208,29 @@ export const HierarchyTree = () => {
 
 	return (
 		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
-			<Button
-				variant={"hero"}
-				// className="w-full"
-				onClick={() => EditorData().newEntity()}
-			>
-				<HousePlus />
-				New Entity
-			</Button>
-			<Button
-				variant={"hero"}
-				// className="w-full"
-				onClick={() => EditorData().newPlayer()}
-			>
-				<PersonStanding />
-				New Player
-			</Button>
+
+			{isAdmin && (
+				<>
+					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
+						<HousePlus />
+						New Entity
+					</Button>
+					<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
+						<PersonStanding />
+						New Player
+					</Button>
+				</>
+			)}
+
+			{!isAdmin && (
+				<>
+					<Button variant={"hero"} onClick={() => {}}>
+						<HousePlus />
+						Your Trail
+					</Button>
+				</>
+			)}
+
 			<div className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}

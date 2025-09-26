@@ -92,6 +92,7 @@ export interface Entity {
 	name: string;
 	alt_names: Array<string>;
 	actions_keys: Array<BigNumberish>;
+	creator_address: string;
 }
 
 // Type definition for `lore::models::entity::ParentToChildren` struct
@@ -171,6 +172,7 @@ export interface Player {
 	game_id: BigNumberish;
 	location: BigNumberish;
 	use_debug: boolean;
+	is_dead: boolean;
 }
 
 // Type definition for `lore::models::player::PlayerStory` struct
@@ -591,6 +593,7 @@ export const schema: SchemaType = {
 		name: "",
 			alt_names: [""],
 			actions_keys: [0],
+			creator_address: "",
 		},
 		ParentToChildren: {
 			inst: 0,
@@ -714,6 +717,7 @@ export const schema: SchemaType = {
 			game_id: 0,
 			location: 0,
 			use_debug: false,
+			is_dead: false,
 		},
 		PlayerStory: {
 			game_id: 0,

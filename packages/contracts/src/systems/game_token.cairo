@@ -125,7 +125,7 @@ pub mod game_token {
     use lore::models::{
         admin::{AccountPermissionsTrait},
         token_config::{
-            GameTokenInfo,
+            GameTokenInfo, GameTokenInfoTrait,
             PlayerAccountTrait,
             GameCreatedEvent,
         },
@@ -133,7 +133,7 @@ pub mod game_token {
     use lore::constants::{token as constants};
     use lore::lib::{
         dns::{SELECTORS},
-        utils::{HashImpl},
+        utils::{HashImpl, ByteArrayTraitExt},
     };
     use nft_combo::utils::renderer::{Attribute};
 
@@ -317,11 +317,15 @@ pub mod game_token {
                 },
                 Attribute {
                     key: "Progress",
-                    value: format!("{}%", token_info.progress),
+                    value: format!("{}%25", token_info.progress),
                 },
                 Attribute {
                     key: "Completed",
-                    value: if token_info.completed {"Yes"} else {"No"},
+                    value: ByteArrayTraitExt::byte_array_from_bool(token_info.completed),
+                },
+                Attribute {
+                    key: "Vitality",
+                    value: if GameTokenInfoTrait::is_dead(@world, token_id.low) {"Dead"} else {"Alive"},
                 },
             ].span();
             let mut additional_metadata: Span<Attribute> = array![

@@ -105,7 +105,8 @@ fn core_contract_defs() -> Span<ContractDef> {
     game_token_init_calldata.append_serde(admin_accounts);
     [
         ContractDefTrait::new(@"lore", @"designer")
-            .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span()),
+            .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span())
+            .with_init_calldata(array![].span()),
         ContractDefTrait::new(@"lore", @"prompt")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span()),
         ContractDefTrait::new(@"lore", @"game_token")
@@ -228,5 +229,6 @@ pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {
         name,
         alt_names: array![],
         actions_keys: array![],
+        creator_address: starknet::get_caller_address(),
     })
 }

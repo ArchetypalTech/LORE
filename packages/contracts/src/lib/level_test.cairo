@@ -22,6 +22,7 @@ fn room_start(ref world: WorldStorage) {
         name: "The Bang",
         alt_names: array!["bang", "explosion"],
         actions_keys: array![],
+        creator_address: starknet::get_caller_address(),
     };
     world.write_model(@obj);
     let mut reactable: Reactable = Component::add_component(ref world, obj.inst);
@@ -46,6 +47,7 @@ fn object_room_one(ref world: WorldStorage, parent: Entity) {
         name: "a portal",
         alt_names: array!["portal", "door"],
         actions_keys: array![],
+        creator_address: starknet::get_caller_address(),
     };
     world.write_model(@obj);
     let mut reactable: Reactable = Component::add_component(ref world, obj.inst);

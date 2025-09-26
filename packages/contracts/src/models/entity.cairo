@@ -1,3 +1,5 @@
+use starknet::ContractAddress;
+use core::num::traits::Zero;
 use dojo::{
     world::{WorldStorage, IWorldDispatcherTrait},
     model::{ModelStorage, Model},
@@ -9,7 +11,7 @@ use lore::{
     },
 };
 
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug, Default)]
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
 pub struct Entity {
     #[key]
@@ -22,6 +24,8 @@ pub struct Entity {
     pub alt_names: Array<ByteArray>,
     /// Holds the keys of the actions that are attached to this entity
     pub actions_keys: Array<felt252>,
+    /// Creator
+    pub creator_address: ContractAddress,
 }
 
 #[derive(Clone, Drop, Serde, Introspect)]
@@ -54,10 +58,14 @@ pub struct ChildToParent {
 pub impl EntityImpl of EntityTrait {
     // used for tests
     fn create_entity(ref world: WorldStorage, name: ByteArray) -> Entity {
-        let mut entity: Entity = Default::default();
-        entity.inst = world.dispatcher.uuid().try_into().unwrap();
-        entity.is_entity = true;
-        entity.name = name;
+        let mut entity: Entity = Entity {
+            inst: world.dispatcher.uuid().try_into().unwrap(),
+            is_entity: true,
+            name,
+            alt_names: array![],
+            actions_keys: array![],
+            creator_address: starknet::get_caller_address(),
+        };
         world.write_model(@entity);
         entity
     }
@@ -93,6 +101,17 @@ pub impl EntityImpl of EntityTrait {
 
     fn is_entity(world: @WorldStorage, inst: felt252) -> bool {
         (Self::get_entity(world, inst).is_some())
+    }
+
+    fn can_edit_entity(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {
+        let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
+        // must be a new entity or the creator
+        (creator_address.is_zero() || creator_address == account_address)
+    }
+    
+    fn is_creator(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {
+        let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
+        (creator_address == account_address)
     }
 
     //---------------------------------

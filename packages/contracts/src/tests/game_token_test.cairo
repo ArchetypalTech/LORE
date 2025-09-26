@@ -197,7 +197,7 @@ mod tests {
     }
 
     #[test]
-    fn test_token_winners_can_edit() {
+    fn test_token_winner_becomes_editor() {
         let (mut world, designer, prompt, token, _, _) = helpers::setup_core();
         PlayerImpl::caller_as_player(ref world, OWNER(), 0);
         // create an end room
@@ -426,14 +426,14 @@ mod tests {
     }
 
     #[test]
-    fn test_prompt_game_zero_new_editor() {
+    fn test_prompt_game_zero_new_admin() {
         let (mut world, _, prompt, token, _, _) = helpers::setup_core();
         // initialize player singleton
         PlayerImpl::caller_as_player(ref world, OWNER(), 0);
         //
         // create new editor
         helpers::set_caller(OWNER());
-        token.set_editor(OTHER(), true);
+        token.set_admin(OTHER(), true);
         //
         // player_1 say something...
         helpers::set_caller(OTHER());
@@ -441,7 +441,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('PROMPT: Not editor','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('PROMPT: Not admin','ENTRYPOINT_FAILED'))]
     fn test_prompt_game_zero_not_editor() {
         let (mut world, _, prompt, _, _, _) = helpers::setup_core();
         // initialize player singleton

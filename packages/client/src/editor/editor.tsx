@@ -7,6 +7,7 @@ import Terminal from "@/client/terminal/Terminal";
 import { APP_EDITOR_SEO } from "@/data/app.data";
 import { useDojoStore } from "@/lib/stores/dojo.store";
 import { useUserStore } from "@/lib/stores/user.store";
+import { useSyncEditorPermissions } from "@/lib/stores/editor.store";
 import { cn } from "@/lib/utils/utils";
 import { EditorFooter } from "./components/EditorFooter";
 import { EditorHeader } from "./components/EditorHeader";
@@ -25,6 +26,7 @@ export const Editor = () => {
 	const { dark_mode } = useUserStore();
 	const { dataPool, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
+	const { isEditor } = useSyncEditorPermissions();
 
 	useHead({
 		title: APP_EDITOR_SEO.title,
@@ -145,11 +147,11 @@ export const Editor = () => {
 				<div className="relative mx-auto h-full max-w-screen">
 					<EditorHeader />
 					<div className="relative m-0 mx-auto p-0 ">
-						{editorContents}
+						{isEditor && editorContents}
 					</div>
 				</div>
 			</div>
-			<EditorFooter />
+			{isEditor && <EditorFooter />}
 		</>
 	);
 };
