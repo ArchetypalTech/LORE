@@ -15,6 +15,7 @@ import {
 import {
 	checkForPlayer,
 	propertiesRegistered,
+	queryGameComponents,
 	queryOwnedGameTokens,
 } from "@/editor/data/editor.data";
 import {
@@ -173,8 +174,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_not_yet_connected");
 			return;
 		}
-		// allow "game-123" or "123"
-		let game_id = Number(context.args[0].split("-").at(-1));
+		let game_id = Number(context.args[0].split("-").at(-1)); // works with "game-123" or "123"
 		if (isNaN(game_id)) {
 			addTerminalContent({
 				text: `Did you mean [load game_name]?`,
@@ -401,6 +401,21 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	_actions: () => {
 		const actions = queryExecActions();
 		console.log("ACTIONS RESULT", actions);
+	},
+	_components: async (context: commandContext) => {
+		let game_id = context.args.length > 0
+			? Number(context.args[0].split("-").at(-1)) // works with "game-123" or "123"
+			:  GameStore().gameId;
+		if (!game_id) {
+			addTerminalContent({
+				text: "No game id provided",
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+		const components = await queryGameComponents(game_id);
+		console.log("COMPONENTS RESULT", components);
 	},
 	connection: async () => {
 		const dest = {

@@ -36,7 +36,7 @@ import type {
 	WithStringEnums,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import { tick } from "@/lib/utils/utils";
+import { bigintToAddress, bigintToHex128, tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
@@ -971,6 +971,61 @@ export const queryExecActions = async () => {
 			});
 
 			return actions;
+	} catch (error) {
+		console.error("Error fetching actions from Torii:", error);
+		throw error;
+	}
+};
+
+// every model that supports Instance<>
+export const gameInstModels: `${string}-${string}`[] = [
+	"lore-Player",
+	"lore-Area",
+	"lore-Container",
+	"lore-Exit",
+	"lore-InventoryItem",
+	"lore-Reactable",
+	"lore-ParentToChildren",
+	"lore-ChildToParent",
+];
+export const queryGameComponents = async (gameId: BigNumberish) => {
+	try {
+		const  {sdk} = await InitDojo();
+		// get all game instances for the game id
+		const query_game_insts = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(1000)
+			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().keys(
+					["lore-GameInstanceMap"],
+					[bigintToHex128(gameId), undefined]
+				).build()
+			)
+			.withEntityModels(["lore-GameInstanceMap"]);
+			const result_game_insts = await sdk.getEntities({ query: query_game_insts });
+			const game_insts = result_game_insts.getItems()
+			.filter((item) => item.models?.lore?.GameInstanceMap?.game_id !== undefined)
+			.map((item) => bigintToAddress(item.models?.lore?.GameInstanceMap?.game_inst ?? 0));
+		// console.log("DEBUG: queryGameComponents() game_insts: ", game_insts);
+
+		// get all components for the game instances
+		const query_components = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(1000)
+			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().compose().or(
+					game_insts.map((inst) => new ClauseBuilder<SchemaType>().keys(gameInstModels, [inst])),
+				).build()
+			)
+			.withEntityModels(gameInstModels);
+			const result_components = await sdk.getEntities({ query: query_components });
+			const components = result_components.getItems()
+				.map(item => item.models?.lore ?? {}) as EntityCollection[];
+			// console.log("DEBUG: queryGameComponents() components: ", components);
+
+			return components;
 	} catch (error) {
 		console.error("Error fetching actions from Torii:", error);
 		throw error;
