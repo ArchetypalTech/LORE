@@ -839,6 +839,7 @@ export const propertiesRegistered = async (
 
 export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumberish> => {
   try {
+		console.log("DEBUG: queryCoinsPerGame() gameId: ", gameId);
     const { sdk } = await InitDojo();
     const query_game_insts = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
@@ -856,6 +857,7 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
 		const game_insts = result_game_insts.getItems()
 		.filter((item) => item.models?.lore?.GameInstanceMap?.game_id !== undefined)
 		.map((item) => bigintToAddress(item.models?.lore?.GameInstanceMap?.game_inst ?? 0));
+		console.log("DEBUG: queryCoinsPerGame() game_insts: ", game_insts);
 
 		// get entity component
 		const query_entity = new ToriiQueryBuilder<SchemaType>()
@@ -869,6 +871,7 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
 			)
 			.withEntityModels(["lore-Entity"]);
 		const result_entity = await sdk.getEntities({ query: query_entity });
+		console.log("DEBUG: queryCoinsPerGame() result_entity: ", result_entity);
 		const entity = result_entity.getItems().find((item) => {
 			return item.models?.lore?.Entity?.name === "Coins";
 		});
