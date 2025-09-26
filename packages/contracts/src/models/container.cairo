@@ -152,21 +152,23 @@ pub impl ContainerImpl of ContainerTrait {
     fn check_container(
         self: Container, ref world: WorldStorage, player: @Player, object: @ByteArray,
     ) -> bool {
+        // get entity of container
+        let container_entity: Entity = EntityImpl::get_entity(@world, self.inst).unwrap();
         // check if container is open
         // we also check if the container is the player's personal inventory
         if (!self.is_open) {
             if (self.inst == *player.inst) {
-                player.say(ref world, format!("The {} personal inventory is close", self.name));
+                player.say(ref world, format!("The {}'s personal inventory is close", container_entity.name));
                 return true;
             } else {
-                player.say(ref world, format!("The {} is closed", object));
+                player.say(ref world, format!("The {} is closed", container_entity.name));
                 return true;
             }
         } else {
             if (self.inst == *player.inst) {
-                player.say(ref world, format!("The{} personal inventory is open", self.name));
+                player.say(ref world, format!("The {}'s personal inventory is open", container_entity.name));
             } else {
-                player.say(ref world, format!("{} is open", object));
+                player.say(ref world, format!("{} is open", container_entity.name));
             }
         }
         // check if container is full
