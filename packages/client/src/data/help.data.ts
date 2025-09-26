@@ -9,7 +9,7 @@ export const HELP_TEXTS: Record<string, HelpContent> = {
 	CommandSummary: {
 		description:
 			"\n\n a few possibilities surface through the haze of your mind\n\n",
-		usage: ">look [around]\n >look at [object]\n >examine [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit] \n\n",
+		usage: ">look [around]\n >look at [object]\n >examine [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit]\n coins_balance \n\n",
 		examples: [
 			"look around",
 			"enter the door",
