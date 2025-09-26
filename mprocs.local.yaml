@@ -1,3 +1,21 @@
+# development localhost
+# procs:
+#   contracts:
+#     cwd: packages/contracts
+#     shell: wait-port 5050 && bun run dev:watch
+#   client:
+#     cwd: packages/client
+#     shell: bun run dev
+#   torii:
+#     cwd: packages/contracts
+#     # shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
+#     # shell: wait-port 5050 && torii --world "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae" --http.cors_origins "*"
+#     shell: wait-port 5050 && torii --version && torii --world "0x5c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01" --http.cors_origins "*" --indexing.contracts erc721:0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649
+#   katana:
+#     cwd: packages/contracts
+#     shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
+
+# staging localhost
 procs:
   contracts:
     cwd: packages/contracts
@@ -9,7 +27,7 @@ procs:
     cwd: packages/contracts
     # shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
     # shell: wait-port 5050 && torii --world "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae" --http.cors_origins "*"
-    shell: wait-port 5050 && torii --version && torii --world "0x5c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01" --http.cors_origins "*" --indexing.contracts erc721:0x027cca70ee2a23f69ee78135237bc3118ab8e9fa2ec94292599701e587c8ac62
+    shell: wait-port 5050 && torii --version && torii --world "0x1142a4bd443a08f68936caf2e6b5d32121eb3b0327ff5a75b0b92d50cbdc913" --http.cors_origins "*" --indexing.contracts erc721:0x02fa73d2c20fef6f23a84f3ef3b6e99ec2fa819f0b5acf2be6695544b87922e5
   katana:
     cwd: packages/contracts
     shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster

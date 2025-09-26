@@ -5,6 +5,7 @@ use lore::{
         components::{Instance, Component},
         game_instance::{GameModelImpl},
         player::{Player, PlayerImpl},
+        container::{ContainerImpl, ContainerComponent},
         index::{DescriptionText},
     },
     types::{
@@ -160,6 +161,23 @@ pub impl ReactableComponent of Component<Reactable> {
                 let (idx1, _idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
                 // Say the description
                 player.say(ref world, ReactableImpl::get_specific_description(@self, idx1, world));
+                // If token is verb and the verb is "examine" then check if the entity has a container. If so, call the container's check function
+                if (action.action == "examine" || action.action == "inspect") {
+                    // Check if Self has a container
+                    let container = ContainerComponent::get_component(@world, self.inst, *player.game_id);
+                    // If container is none, return ok
+                    if container.is_none() {
+                        return Result::Ok(());
+                    }
+                    // if container is some, call the container's check function
+                    let container_unwrapped = container.unwrap();
+                    // get entity of container
+                    let container_entity: Entity = EntityImpl::get_entity(@world, container_unwrapped.inst).unwrap();
+                    let doneChecking = container_unwrapped.check_container(ref world, player, @container_entity.name);
+                    if doneChecking {
+                        return Result::Ok(());
+                    }
+                }
                 return Result::Ok(());
             },
         }

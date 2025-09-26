@@ -1,6 +1,6 @@
 import { schema } from "@lib/dojo_bindings/typescript/models.gen";
 import manifestJson from "@lore/contracts/manifest";
-import type manifestJsonType from "@lore/contracts/manifest_slot.json";
+import type manifestJsonType from "@lore/contracts/manifest_stage.json";
 import { cleanEnv, str, url } from "envalid";
 import { Account, Contract, RpcProvider, Signer, addAddressPadding } from "starknet";
 
@@ -133,7 +133,7 @@ export const LORE_CONFIG = {
 		// // Contract address
 		contract_address: env.VITE_TOKEN_CONTRACT_ADDRESS,
 		// erc20: ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],
-		// erc721: ["0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649"],
+		//erc721: ["0x02fa73d2c20fef6f23a84f3ef3b6e99ec2fa819f0b5acf2be6695544b87922e5"],
 	},
 	useController: true,
 	//import.meta.env.MODE === "slot",

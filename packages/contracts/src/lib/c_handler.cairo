@@ -35,6 +35,7 @@ pub fn handle_command(
     }
     let verbs = command.get_verbs();
     if verbs.len() == 0 {
+        player.say(ref world, format!("I don't know how to \"{}\"", command.text));
         return Result::Err(Error::ActionFailed);
     }
     let mut nouns = command.get_nouns();
@@ -227,9 +228,11 @@ pub fn handle_command(
         }
         // if command is more than one token and haven't been handled yet
         // return error
+        // if all fails, return error, also verb is found but not target
+        player.say(ref world, format!("I know how to do \"{}\", but you're trying to apply to something imaginary", command.text));
         return Result::Err(Error::ActionFailed);
     }
-
+    
     result
 }
 

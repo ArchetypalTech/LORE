@@ -130,6 +130,10 @@ pub impl ContainerImpl of ContainerTrait {
         if (!self.contains(item.inst, @world, *player.game_id)) {
             return Result::Err(Error::NotStored);
         }
+        // check if the iten can be picked up and moved
+        if (!item.can_be_picked_up) {
+            return Result::Err(Error::CantBePicked);
+        }
         // get entities
         let item_entity: Entity = EntityImpl::get_entity(@world, item.inst).unwrap();
         let room_entity: Entity = player.get_room_entity(@world).unwrap();
@@ -148,21 +152,23 @@ pub impl ContainerImpl of ContainerTrait {
     fn check_container(
         self: Container, ref world: WorldStorage, player: @Player, object: @ByteArray,
     ) -> bool {
+        // get entity of container
+        let container_entity: Entity = EntityImpl::get_entity(@world, self.inst).unwrap();
         // check if container is open
         // we also check if the container is the player's personal inventory
         if (!self.is_open) {
             if (self.inst == *player.inst) {
-                player.say(ref world, format!("{} personal inventory is close", object));
+                player.say(ref world, format!("The {}'s personal inventory is close", container_entity.name));
                 return true;
             } else {
-                player.say(ref world, format!("The {} is closed", object));
+                player.say(ref world, format!("The {} is closed", container_entity.name));
                 return true;
             }
         } else {
             if (self.inst == *player.inst) {
-                player.say(ref world, format!("{} personal inventory is open", object));
+                player.say(ref world, format!("The {}'s personal inventory is open", container_entity.name));
             } else {
-                player.say(ref world, format!("{} is open", object));
+                player.say(ref world, format!("{} is open", container_entity.name));
             }
         }
         // check if container is full
@@ -185,6 +191,8 @@ pub impl ContainerImpl of ContainerTrait {
             player.say(ref world, format!("It contains:"));
             let items = self.entity(@world).get_children(@world, *player.game_id);
             for item in items {
+                // item name + quantity
+                // It contains cOINS 122 
                 player.say(ref world, format!("{}", item.name));
             };
         }
@@ -249,15 +257,34 @@ pub impl ContainerComponent of Component<Container> {
         let nouns = command.get_nouns();
         match action.action_fn {
             ContainerActions::Open => {
-                if (self.is_open) {
-                    player
-                        .say(
-                            ref world,
-                            format!("The {} is already open.", self.entity(@world).name),
-                        );
-                } else {
+                // if the cointainer can be opened is false and then player say opern the container
+                // return a player say ( the containers is cant be opened)
+                // If the container is not open:
+                if (!self.is_open) {
+                    // Check if the container can be opened
+                    // If it can't be opened, say so
+                    if (!self.can_be_opened) {
+                        player.say(ref world, format!("The {} can't be opened.", self.entity(@world).name));
+                        return Result::Ok(());
+                    }
+                    // If can be opened then:
+                    // Check if the container is already open
+                    if (self.is_open) {
+                        player.say(ref world, format!("The {} is already open.", self.entity(@world).name));
+                        return Result::Ok(());
+                    }
+                    // If the container is not open, then:
+                    // say that the container is open
                     player.say(ref world, format!("You open {}", self.entity(@world).name));
+                    // Set the container to open
                     self.set_open(ref world, true, *player.game_id);
+                    // Check container status and contents
+                    let doneChecking = self.check_container(ref world, player, nouns[0].text);
+                    // Once done checking, return
+                    if (doneChecking) {
+                        return Result::Ok(());
+                    }
+                    
                 }
                 return Result::Ok(());
             },

@@ -265,7 +265,7 @@ pub impl TriggerImpl of TriggerTrait {
             },
         }
         // Set trigger as triggered
-        self.set_executed(ref world, game_id, true);
+        //self.set_executed(ref world, game_id, true);
         // Return result
         result
     }
