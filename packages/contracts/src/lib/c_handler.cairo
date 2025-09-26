@@ -34,7 +34,7 @@ pub fn handle_command(
     }
     let verbs = command.get_verbs();
     if verbs.len() == 0 {
-        player.say(ref world, format!("I don't know how to \"{}\"", command.text));
+        player.say(ref world, format!("I don't recognize the VERB(s) in: \"{}\"", command.text));
         return Result::Err(Error::ActionFailed);
     }
     let mut nouns = command.get_nouns();
@@ -171,6 +171,7 @@ pub fn handle_command(
             return if (executed) {
                 Result::Ok(())
             } else {
+                player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
                 result
             };
         },
@@ -228,7 +229,7 @@ pub fn handle_command(
         // if command is more than one token and haven't been handled yet
         // return error
         // if all fails, return error, also verb is found but not target
-        player.say(ref world, format!("I know how to do \"{}\", but you're trying to apply to something imaginary", command.text));
+        player.say(ref world, format!("I know the VERB(s), but not the TARGET(s) in: \"{}\"", command.text));
         return Result::Err(Error::ActionFailed);
     }
     

@@ -408,6 +408,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
+	coins_balance: async () => {
+		const coinsEntity = await queryCoinsEntity();
+		const coinsBalance = await queryGameCoinsBalance(coinsEntity);
+		addTerminalContent({
+			text: `You have ${coinsBalance} Usants coins`,
+			format: "hash",
+			useTypewriter: true,
+		});
+	},
 	_triggers: () => {
 		const triggers = queryTriggers();
 		console.log("TRIGGERS RESULT", triggers);
@@ -428,62 +437,3 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 } as const;
-
-// --- COINS SUBCOMMANDS ---
-const coinsSubcommands: Record<string, () => Promise<void>> = {
-  // Main "balance" functionality
-  balance: async () => {
-    const gameId = GameStore().gameId;
-    if (!gameId) {
-      addTerminalContent({
-        text: "You can't check your Usants coins as you haven't started a game yet",
-        format: "error",
-        useTypewriter: true,
-      });
-      return;
-    }
-    const coinsEntity = await queryCoinsEntity();
-    const coinsBalance = await queryGameCoinsBalance(coinsEntity);
-    addTerminalContent({
-      text: `You have ${coinsBalance} Usants coins`,
-      format: "hash",
-      useTypewriter: true,
-    });
-  },
-
-  // Aliases for "balance"
-  amount: async () => coinsSubcommands.balance(),
-  count: async () => coinsSubcommands.balance(),
-  check: async () => coinsSubcommands.balance(),
-  "balance of coins": async () => coinsSubcommands.balance(),
-  "amount of coins": async () => coinsSubcommands.balance(),
-  "coins check": async () => coinsSubcommands.balance(),
-  "coins count": async () => coinsSubcommands.balance(),
-	"count coins": async () => coinsSubcommands.balance(),
-};
-
-// --- REGISTER COINS COMMAND ---
-TERMINAL_SYSTEM_COMMANDS["coins"] = async (ctx: commandContext) => {
-  const subcommand = ctx.args.join(" ").toLowerCase();
-
-  if (!subcommand) {
-    addTerminalContent({
-      text: 'Did you mean [coins balance]?',
-      format: "hash",
-      useTypewriter: true,
-    });
-    return;
-  }
-
-  const handler = coinsSubcommands[subcommand] || coinsSubcommands[ctx.args[0]?.toLowerCase()];
-
-  if (handler) {
-    await handler();
-  } else {
-    addTerminalContent({
-      text: `Unknown coins command: "${subcommand}"`,
-      format: "error",
-      useTypewriter: true,
-    });
-  }
-};
