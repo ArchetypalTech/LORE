@@ -133,7 +133,7 @@ pub mod game_token {
     use lore::constants::{token as constants};
     use lore::lib::{
         dns::{SELECTORS},
-        utils::{HashImpl},
+        utils::{HashImpl, ByteArrayTraitExt},
     };
     use nft_combo::utils::renderer::{Attribute};
 
@@ -321,7 +321,7 @@ pub mod game_token {
                 },
                 Attribute {
                     key: "Completed",
-                    value: if token_info.completed {"Yes"} else {"No"},
+                    value: ByteArrayTraitExt::byte_array_from_bool(token_info.completed),
                 },
                 Attribute {
                     key: "Vitality",

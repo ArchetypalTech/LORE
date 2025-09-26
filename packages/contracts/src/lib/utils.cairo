@@ -235,15 +235,11 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
     }
 
     fn bool_from_byte_array(value: @ByteArray) -> bool {
-        let true_byte: ByteArray = "true";
-        let false_byte: ByteArray = "false";
-        if value.equals(@true_byte) {
-            true
-        } else if value.equals(@false_byte) {
-            false
-        } else {
-            false
-        }
+        (value.to_lowercase().equals(@"true"))
+    }
+
+    fn byte_array_from_bool(value: bool) -> ByteArray {
+        (if value {"True"} else {"False"})
     }
 
     fn u32_from_felt252(value: felt252) -> u32 {
@@ -583,6 +579,18 @@ mod tests {
         // convert felt252 to byte array
         let byte_array_1: ByteArray = ByteArrayTraitExt::byte_array_from_felt252(felt252_1);
         assert_eq!(byte_array_1, original_str1, "results should be equal");
+    }
+
+    #[test]
+    fn test_byte_array_to_from_bool() {
+        assert_eq!(ByteArrayTraitExt::bool_from_byte_array(@"true"), true, "results should be equal");
+        assert_eq!(ByteArrayTraitExt::bool_from_byte_array(@"True"), true, "results should be equal");
+        assert_eq!(ByteArrayTraitExt::bool_from_byte_array(@"TRUE"), true, "results should be equal");
+        assert_eq!(ByteArrayTraitExt::bool_from_byte_array(@"false"), false, "results should be equal");
+        assert_eq!(ByteArrayTraitExt::bool_from_byte_array(@"False"), false, "results should be equal");
+        assert_eq!(ByteArrayTraitExt::bool_from_byte_array(@"FALSE"), false, "results should be equal");
+        assert_eq!(ByteArrayTraitExt::byte_array_from_bool(true), "True", "results should be equal");
+        assert_eq!(ByteArrayTraitExt::byte_array_from_bool(false), "False", "results should be equal");
     }
 }
 

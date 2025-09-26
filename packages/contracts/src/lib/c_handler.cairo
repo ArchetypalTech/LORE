@@ -1,5 +1,5 @@
 use starknet::{ContractAddress, get_caller_address};
-use dojo::{world::WorldStorage};
+use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
@@ -12,7 +12,7 @@ use lore::{
         components::{Component},
         action::{ActionImpl},
         condition::{ConditionImpl},
-        token_config::{PlayerAccountTrait},
+        token_config::{GameTokenInfo, PlayerAccountTrait},
         admin::{AccountPermissionsTrait},
     },
     types::command_type::{Command, TokenType, Token},
@@ -243,9 +243,10 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_create_game", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_load_game", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_game_data", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_player", TokenType::System, 2).unwrap();
 }
 
@@ -326,10 +327,6 @@ fn system_command(
             };
             return Result::Ok(());
         }
-        if (system_command == "g_game_id") {
-            player.log_sys(ref world, format!("+sys+game-{:?}", player.game_id));
-            return Result::Ok(());
-        }
         if (system_command == "g_create_game") {
             let player_address: ContractAddress = get_caller_address();
             let game_id: u128 = world.game_token_dispatcher().create_game(player_address);
@@ -354,12 +351,25 @@ fn system_command(
             player.log_sys(ref world, format!("+sys+Loaded game-{:?}", game_id));
             return Result::Ok(());
         }
+        if (system_command == "g_game_id") {
+            player.log_sys(ref world, format!("+sys+game-{:?}", player.game_id));
+            return Result::Ok(());
+        }
+        if (system_command == "g_game_data") {
+            let token_info: GameTokenInfo = world.read_model(player.game_id);
+            player.log_sys(ref world, format!("+sys+game-{:?}", token_info.game_id));
+            player.log_sys(ref world, format!("+sys+room: {}", token_info.room_name));
+            player.log_sys(ref world, format!("+sys+act: {}", token_info.act_number));
+            player.log_sys(ref world, format!("+sys+progress: {}%25", token_info.progress));
+            player.log_sys(ref world, format!("+sys+completed: {}", ByteArrayTraitExt::byte_array_from_bool(token_info.completed)));
+            return Result::Ok(());
+        }
         if (system_command == "g_player") {
-            player.log_sys(ref world, format!("+sys+address:{:x}", player.address));
-            player.log_sys(ref world, format!("+sys+game_id:{:x}", player.game_id));
-            player.log_sys(ref world, format!("+sys+is_dead:{}", player.is_dead));
-            player.log_sys(ref world, format!("+sys+is_admin:{}", AccountPermissionsTrait::is_admin(@world, player.address)));
-            player.log_sys(ref world, format!("+sys+is_editor:{}", AccountPermissionsTrait::is_editor(@world, player.address)));
+            player.log_sys(ref world, format!("+sys+address: 0x{:x}", player.address));
+            player.log_sys(ref world, format!("+sys+current_game_id: {}", player.game_id));
+            player.log_sys(ref world, format!("+sys+is_dead: {}", ByteArrayTraitExt::byte_array_from_bool(player.is_dead)));
+            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_admin(@world, player.address))));
+            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_editor(@world, player.address))));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);
