@@ -3,16 +3,28 @@ import {
 	SortableTree,
 	type TreeItems,
 } from "dnd-kit-tree";
-import { HousePlus, PersonStanding } from "lucide-react";
+import { HousePlus, PersonStanding, SquarePen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { cn } from "@/lib/utils/utils";
+import { bigintToAddress, cn } from "@/lib/utils/utils";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
 import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
+
+const _collapsedKey = (inst: BigNumberish) => (`collapsed_${bigintToAddress(inst)}`);
+const _setCollapsed = (inst: BigNumberish, collapsed: boolean) => {
+	if (collapsed) {
+		localStorage.setItem(_collapsedKey(inst), "true");
+	} else {
+		localStorage.removeItem(_collapsedKey(inst));
+	}
+};
+const _isCollapsed = (inst: BigNumberish) => {
+	return localStorage.getItem(_collapsedKey(inst)) === "true";
+};
 
 type TreeNode = {
 	id: BigNumberish;
@@ -21,6 +33,7 @@ type TreeNode = {
 		canEdit: boolean,
 	};
 	children: TreeNode[];
+	collapsed: boolean;
 };
 
 export const HierarchyTreeItem = ({
@@ -41,6 +54,7 @@ export const HierarchyTreeItem = ({
 	const canEdit = node.data?.canEdit ?? false;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
+	const isRoot = (entity.ChildToParent === undefined);
 	const [timer, setTimer] = useState<NodeJS.Timer>();
 
 	// Extract onPointerDown from handleProps safely
@@ -58,7 +72,8 @@ export const HierarchyTreeItem = ({
 			<div
 				className={cn(
 					"relative flex flex-row overflow-visible opacity-80",
-					isSelected && "font-bold text-white opacity-100",
+					isRoot && ("border-1 rounded-sm" + (canEdit ? " border-solid" : " border-dashed")),
+					isSelected && "font-bold opacity-100 bg-black/20",
 				)}
 				style={{
 					paddingLeft: `${depth * 1}rem`,
@@ -104,7 +119,7 @@ export const HierarchyTreeItem = ({
 
 							{/* Highlight when selected */}
 							{isSelected && (
-								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg] bg-black/20" />
+								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg]" />
 							)}
 
 							{/* Collapse toggle button */}
@@ -112,6 +127,7 @@ export const HierarchyTreeItem = ({
 								<button
 									className="cursor-pointer z-20 text-xs"
 									onClick={(e) => {
+										_setCollapsed(node.id, !isCollapsed);
 										e.stopPropagation();
 										onCollapse?.();
 									}}
@@ -184,6 +200,7 @@ const createTree = () => {
 				canEdit: EditorStore().canEditEntity(entity),
 			},
 			children,
+			collapsed: _isCollapsed(inst),
 		}];
 	};
 
