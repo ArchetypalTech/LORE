@@ -20,7 +20,7 @@ export const APP_DATA = {
 	icon: `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y='.9em' font-size='90' transform='translate(110, 5) scale(-.975,.975)'>🚪</text>${SLOT_INDICATOR}</svg>`,
 	intro: ["\n", "Welcome to the O'Ruggin Trail", ASCII_TITLE, "The first game built with ORuggEd onchain text adventure editor", "\n"].join("\n"),
 	description: [
-		"Trail starts here, connect and then look around to get started", "\n"].join("\n"),
+		"Trail starts here, CONNECT and then LOOK AROUND to get started", "\n"].join("\n"),
 	keywords: [],
 	image: "",
 	url: "",
