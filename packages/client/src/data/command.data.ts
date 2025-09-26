@@ -408,34 +408,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	coins: async (context: commandContext) => {
-		const gameId = GameStore().gameId;
-		if (context.args[0] === "balance" || context.args[0] === "amount" || context.args[0] === "count" || context.args[0] === "check") {
-			// get game id
-			if (gameId === undefined) {
-				addTerminalContent({
-					text: "You can't check how many Usants coins you have as you haven't started a game yet",
-					format: "error",
-					useTypewriter: true,
-				});
-				return;
-			}
-			// get coins balance
-			const coinsEntity = await queryCoinsEntity();
-			const coinsBalance = await queryGameCoinsBalance(coinsEntity);
-			addTerminalContent({
-				text: `You have ${coinsBalance} Usants coins`,
-				format: "hash",
-				useTypewriter: true,
-			});
-		} else {
-			addTerminalContent({
-				text: `Did you mean [coins balance, coins amount, coins count, coins check]?`,
-				format: "hash",
-				useTypewriter: true,
-			});
-		}
-	},
 	_triggers: () => {
 		const triggers = queryTriggers();
 		console.log("TRIGGERS RESULT", triggers);
@@ -457,17 +429,42 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 } as const;
 
-// register aliases for the coins command
-const coinAliases = [
+// coins command handler
+const coinsHandler = async (ctx: commandContext) => {
+  const gameId = GameStore().gameId;
+  if (gameId === undefined) {
+    addTerminalContent({
+      text: "You can't check how many Usants coins you have as you haven't started a game yet",
+      format: "error",
+      useTypewriter: true,
+    });
+    return;
+  }
+
+  const coinsEntity = await queryCoinsEntity();
+  const coinsBalance = await queryGameCoinsBalance(coinsEntity);
+  addTerminalContent({
+    text: `You have ${coinsBalance} Usants coins`,
+    format: "hash",
+    useTypewriter: true,
+  });
+};
+
+// register the handler
+TERMINAL_SYSTEM_COMMANDS["coins_balance"] = coinsHandler;
+
+// register all aliases
+const coinsAliases = [
   "coins balance",
+  "coins amount",
+  "coins count",
+  "coins check",
   "check coins",
-  "check wallet",
-  "check money",
   "count coins",
+	"amount of coins",
+	"balance of coins",
 ];
 
-// attach aliases to the same handler
-coinAliases.forEach((alias) => {
-  TERMINAL_SYSTEM_COMMANDS[alias] = async (ctx) =>
-    await TERMINAL_SYSTEM_COMMANDS.coins_balance(ctx);
+coinsAliases.forEach((alias) => {
+  TERMINAL_SYSTEM_COMMANDS[alias] = async (ctx) => await coinsHandler(ctx);
 });
