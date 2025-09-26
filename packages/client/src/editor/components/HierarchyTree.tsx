@@ -12,11 +12,14 @@ import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
-import { useEditorPermissions } from "@/lib/stores/editor.store";
+import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
 
 type TreeNode = {
 	id: BigNumberish;
-	data: { entity: EntityCollection };
+	data: {
+		entity: EntityCollection,
+		canEdit: boolean,
+	};
 	children: TreeNode[];
 };
 
@@ -35,6 +38,7 @@ export const HierarchyTreeItem = ({
 }: RenderItemProps<TreeNode["data"]>) => {
 	const entity = node.data?.entity as EntityCollection;
 	const isCollapsed = node.collapsed;
+	const canEdit = node.data?.canEdit ?? false;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
 	const [timer, setTimer] = useState<NodeJS.Timer>();
@@ -80,7 +84,7 @@ export const HierarchyTreeItem = ({
 								onPointerDown={(event) => {
 									event.stopPropagation();
 									EditorData().selectEntity(node.id.toString());
-
+									if (!canEdit) return;
 									const t = setTimeout(() => {
 										onPointerDown?.(event);
 										clearTimeout(timer);
@@ -92,7 +96,10 @@ export const HierarchyTreeItem = ({
 									clearTimeout(timer);
 									setTimer(undefined);
 								}}
-								className="absolute top-0 left-0 h-7 w-full cursor-pointer"
+								className={cn(
+									"absolute top-0 left-0 h-7 w-full",
+									canEdit ? "cursor-pointer" : "cursor-no-drop"
+								)}
 							/>
 
 							{/* Highlight when selected */}
@@ -103,14 +110,14 @@ export const HierarchyTreeItem = ({
 							{/* Collapse toggle button */}
 							{isCollapsible && (
 								<button
-									className="cursor-pointer z-20 text-xl"
+									className="cursor-pointer z-20 text-xs"
 									onClick={(e) => {
 										e.stopPropagation();
 										onCollapse?.();
 									}}
 									type="button"
 								>
-									{isCollapsed ? "▶" : "▼"}
+									{!isCollapsed ? "▼" : "▶"}
 								</button>
 							)}
 
@@ -166,19 +173,18 @@ const createTree = () => {
 		// Store unique entity
 		uniqueEntities.set(instStr, entity);
 
-		if ("ParentToChildren" in entity && entity.ParentToChildren !== undefined) {
-			const children = entity.ParentToChildren?.children.flatMap((child) => {
-				return getNode(child.toString());
-			});
-			return [{ id: inst, data: { entity: entity }, children: children || [] }];
-		}
-		return [
-			{
-				id: inst,
-				data: { entity: entity as { Entity: Entity } },
-				children: [],
+		let children:TreeNode[] = entity.ParentToChildren?.children?.flatMap((child) => {
+			return getNode(child.toString());
+		}) ?? [];
+
+		return [{
+			id: inst,
+			data: {
+				entity: entity as { Entity: Entity },
+				canEdit: EditorStore().canEditEntity(entity),
 			},
-		];
+			children,
+		}];
 	};
 
 	// construct the tree

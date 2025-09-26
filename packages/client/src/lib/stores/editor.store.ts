@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useWalletStore } from "./wallet.store";
+import WalletStore, { useWalletStore } from "./wallet.store";
 import { useMounted } from "@/lib/utils/useMounted";
 import { getAccountPermissions } from "@/editor/data/editor.data";
 import { EntityCollection } from "@/editor/lib/types";
@@ -27,6 +27,15 @@ const EditorStore = createFactory({
 			isAdmin,
 			isEditor: (isAdmin || isEditor),
 		});
+	},
+	canEditEntity: (entityCollection: EntityCollection | undefined) => {
+		if (get().isAdmin) return true;
+		if (get().isEditor)  {
+			const walletAddress = WalletStore().walletAddress;
+			const creatorAddress = BigInt(entityCollection?.Entity?.creator_address ?? 0);
+			return (creatorAddress === BigInt(walletAddress ?? 0));
+		}
+		return false;
 	},
 });
 
@@ -64,18 +73,11 @@ export const useEditorPermissions = () => {
 /**
  * Returns the current player editor permissions to edit an entity.
  */
-export const useCanEditEntity = (EntityCollection: EntityCollection | undefined) => {
-	const { isAdmin, isEditor } = useEditorStore();
-	const { walletAddress } = useWalletStore();
-	const canEdit = useMemo(() => {
-		if (isAdmin) return true;
-		if (isEditor)  {
-			const creatorAddress = BigInt(EntityCollection?.Entity?.creator_address ?? 0);
-			return (creatorAddress === BigInt(walletAddress ?? 0));
-		}
-		return false;
-	}, [EntityCollection, isAdmin, isEditor, walletAddress])
-	return { isAdmin, isEditor, canEdit };
+export const useCanEditEntity = (entityCollection: EntityCollection | undefined) => {
+	const canEdit = useMemo(() => (
+		EditorStore().canEditEntity(entityCollection)
+	), [entityCollection])
+	return { canEdit };
 };
 
 export default EditorStore;
