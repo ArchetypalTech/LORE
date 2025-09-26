@@ -35,6 +35,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		name: createRandomName(),
 		alt_names: [],
 		actions_keys: [],
+		creator_address: getPlayerAddress() ?? "",
 	},
 });
 
@@ -387,6 +388,14 @@ export const getPlayerAddress = (): string => {
 		}
 	}
 	return LORE_CONFIG.wallet.address;
+};
+
+export const getPlayerUsername = (): string => {
+	let username = 'Player';
+	if (LORE_CONFIG.useController && WalletStore().username) {
+		username = WalletStore().username as string;
+	}
+	return username;
 };
 
 export const getPlayerSingletonInst = (game_id?: string): string => {

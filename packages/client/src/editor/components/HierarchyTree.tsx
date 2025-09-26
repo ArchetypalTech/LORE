@@ -212,7 +212,7 @@ export const HierarchyTree = () => {
 			{isAdmin && (
 				<>
 					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
-						<HousePlus />
+						<SquarePen />
 						New Entity
 					</Button>
 					<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
@@ -224,9 +224,13 @@ export const HierarchyTree = () => {
 
 			{!isAdmin && (
 				<>
-					<Button variant={"hero"} onClick={() => {}}>
+					<Button variant={"hero"} onClick={() => EditorData().newPlayersTrailEntity()}>
 						<HousePlus />
 						Your Trail
+					</Button>
+					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
+						<SquarePen />
+						New Entity
 					</Button>
 				</>
 			)}

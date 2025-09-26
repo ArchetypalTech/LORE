@@ -27,6 +27,8 @@ import {
 	createPlayerEntity,
 	getPlayerSingletonInst,
 	getPlayerAddress,
+	getPlayerUsername,
+	createDefaultAreaComponent,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -577,7 +579,49 @@ const newEntity = async () => {
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 
+	return newEntity;
+};
 
+/**
+ * Creates a new Area trail for an player Editor entity with the default components.
+ * @returns The new entity
+ */
+const newPlayersTrailEntity = async () => {
+	const walletAddress = getPlayerAddress();
+	const username = getPlayerUsername();
+	
+	let existingTrailEntity = getEntity(walletAddress)
+	if (existingTrailEntity) {
+		console.warn("Player trail entity already exists");
+		selectEntity(existingTrailEntity.Entity.inst);
+		return existingTrailEntity;
+	}
+
+	// create Entity
+	const newEntity = createDefaultEntity();
+	newEntity.Entity.inst = walletAddress;
+	newEntity.Entity.name = `${username}'s Trail`;
+	newEntity.Entity.alt_names = [username];
+	syncItem(newEntity);
+	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
+	await tick();
+
+	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
+	descriptionText.DescriptionText.text = `${username}'s Trail`;
+	descriptionText.DescriptionText.key = 0;
+	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
+
+	const reactable = createDefaultReactableComponent(newEntity.Entity);
+	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
+
+	const area = createDefaultAreaComponent(newEntity.Entity);
+	area.Area.is_spawn_point = false;
+	area.Area.progress_percentage = 0;
+	updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
+
+	// select it
+	selectEntity(newEntity.Entity.inst);
 
 	return newEntity;
 };
@@ -1186,6 +1230,7 @@ const EditorData = createFactory({
 	getEntities,
 	getEntity,
 	newEntity,
+	newPlayersTrailEntity,
 	removeEntity,
 	selectEntity,
 	updateComponent,
