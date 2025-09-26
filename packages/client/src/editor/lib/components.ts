@@ -52,7 +52,7 @@ export const createPlayerEntity = (
 			inst: playerInst,
 			is_entity: true,
 			name: playerName,
-			alt_names: [playerName, "me", "myself"],
+			alt_names: ["player", "me", "myself", "inventory"],
 		},
 		Player: {
 			...schema.lore.Player,
