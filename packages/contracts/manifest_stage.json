@@ -4000,7 +4000,7 @@
     },
     {
       "address": "0x35ce90c46076c16abb2d9c7827021a22e3111ca790c16f5c9359aeb24500f71",
-      "class_hash": "0x6655d263c7b1debd015564c4d2a2e7773e606d25185d626c0d4a957d554f8",
+      "class_hash": "0x2eaa7f55a1910e1c1e5f62bab33093d4a209a4ea067d70ab466ed280daab49f",
       "abi": [
         {
           "type": "impl",

@@ -222,7 +222,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 if res.is_err() {
                     player.say(ref world, format!("You cannot pick the {}", nouns[0].text));
                 } else {
-                    player.say(ref world, format!("You pick up the {}", nouns[0].text));
+                    player.say(ref world, format!("You picked up the {}", nouns[0].text));
                 }
                 return res;
             },
@@ -238,7 +238,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 if res.is_err() {
                     player.say(ref world, format!("You cannot drop the {}", nouns[0].text));
                 } else {
-                    player.say(ref world, format!("You drop the {}", nouns[0].text));
+                    player.say(ref world, format!("You dropped the {}", nouns[0].text));
                 }
                 return res;
             },
@@ -289,7 +289,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     if res.is_err() {
                         player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
                     } else {
-                        player.say(ref world, format!("You take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                        player.say(ref world, format!("You took {} from {} and placed in the floor", nouns[0].text, nouns[1].text));
                     }
                     return res;
                 }
@@ -298,7 +298,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 if res.is_err() {
                     player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
                 } else {
-                    player.say(ref world, format!("You take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                    player.say(ref world, format!("You took {} from {} and placed in the floor", nouns[0].text, nouns[1].text));
                 }
                 return res;
             },
