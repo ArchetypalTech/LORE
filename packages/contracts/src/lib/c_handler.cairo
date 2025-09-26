@@ -171,7 +171,6 @@ pub fn handle_command(
             return if (executed) {
                 Result::Ok(())
             } else {
-                player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
                 result
             };
         },
@@ -223,13 +222,28 @@ pub fn handle_command(
                 }
             }
             // if initial verb is not look
+            // check if nouns or directions exist, if they do player recognize verb and target but cant execute command
+            if nouns.len() > 0 {
+                player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
+            } else if directions.len() > 0 {
+                player.say(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
+            } else {
+                // the verb is recognized but the target/direction is not recognized
+                player.say(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
+            }
             // return error
             return Result::Err(Error::ActionFailed);
         }
-        // if command is more than one token and haven't been handled yet
-        // return error
-        // if all fails, return error, also verb is found but not target
-        player.say(ref world, format!("I know the VERB(s), but not the TARGET(s) in: \"{}\"", command.text));
+        // it tokens lengt is more then,
+        // check if nouns or directions exist, if they do player recognize verb and target but cant execute command
+        if nouns.len() > 0 {
+            player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
+        } else if directions.len() > 0 {
+            player.say(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
+        } else {
+            // the verb is recognized but the target/direction is not recognized
+            player.say(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
+        }
         return Result::Err(Error::ActionFailed);
     }
     
