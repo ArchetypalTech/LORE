@@ -317,7 +317,7 @@ pub mod game_token {
                 },
                 Attribute {
                     key: "Progress",
-                    value: format!("{}%", token_info.progress),
+                    value: format!("{}%25", token_info.progress),
                 },
                 Attribute {
                     key: "Completed",
