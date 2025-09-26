@@ -27,8 +27,13 @@ export function processWhitespaceTags(input: string): string[] {
 }
 
 export const decodeDojoText = (text: string) => {
-	const decodedText = decodeURI(text.trimStart()).replaceAll("%2C", ",");
-	return decodedText;
+	try {
+		const decodedText = decodeURI(text.trimStart()).replaceAll("%2C", ",");
+		return decodedText;
+	} catch (error) {
+		console.error("decodeDojoText(): Bad text:", text);
+		throw error;
+	}
 };
 
 // svelte like tick

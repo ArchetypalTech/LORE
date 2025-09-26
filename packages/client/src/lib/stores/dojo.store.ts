@@ -144,7 +144,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 		if (s.line_type.toString() == "Command") {
 			continue;
 		}
-		const trimmed = decodeDojoText(s.line.trim());
+		const trimmed = s.line.trim();
 		const lines = processWhitespaceTags(trimmed);
 		for (const l of lines) {
 			const sys = l.startsWith("+sys+");
