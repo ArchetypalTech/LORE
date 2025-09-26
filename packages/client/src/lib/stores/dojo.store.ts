@@ -53,13 +53,9 @@ const {
 	lastProcessedText: "",
 	originalStoryLength: 0,
 	existingSubscription: undefined as torii.Subscription | undefined,
-	// printedKeys: new Set<number>(),
-	getLastKeyUsed: (game_id: BigNumberish) => (
-		Number(localStorage.getItem(_lastKeyUsedName(game_id)) || "-1")
-	),
-	setLastKeyUsed: (game_id: BigNumberish, key: number) => {
-		localStorage.setItem(_lastKeyUsedName(game_id), String(key));
-	},
+	// current story log
+	currentGameId: -1,
+	lastKeyUsed: -1,
 });
 
 const setStatus = (status: DojoStatus) => set({ status });
@@ -72,10 +68,19 @@ const setStatus = (status: DojoStatus) => set({ status });
 const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	if (!playerStory) return;
 
-	const lastKeyUsed: number = get().getLastKeyUsed(playerStory.game_id);
+	let gameId = Number(BigInt(playerStory.game_id ?? 0));
+	if (gameId !== get().currentGameId) {
+		// chhanged game, or 1st load
+		set({
+			currentGameId: gameId,
+			lastKeyUsed: -1,
+		});
+	}
+	let lastKeyUsed = get().lastKeyUsed;
+	// console.log("[DEBUG:OUTPUTTER] lastKeyUsed", gameId, lastKeyUsed);
 
 	// Fetch all StoryLines for this player
-	const allStoryLines: StoryLine[] = [];
+	let allStoryLines: StoryLine[] = [];
 	try {
 		const { sdk } = await InitDojo();
 		const builder = new ToriiQueryBuilder<SchemaType>();
@@ -114,30 +119,42 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 		console.error("Error fetching StoryLine models from Torii:", error);
 		return;
 	}
+	// sort..
+	allStoryLines = allStoryLines.sort((a, b) => Number(a.key) - Number(b.key));
 
 	// Filter new keys and normalize to number
-	let newLines: StoryLine[] = allStoryLines.sort((a, b) => Number(a.key) - Number(b.key));
+	let newLines: StoryLine[] = [];
 	
-	if (lastKeyUsed !== -1) {
-		newLines = newLines.filter((s) => Number(s.key) > lastKeyUsed);
+	if (lastKeyUsed >= 0) {
+		newLines = allStoryLines.filter((s) => Number(s.key) > lastKeyUsed);
 	} else {
-		// get responses from last command
-		for (let i = newLines.length - 1; i >= 0; i--) {
-			if (newLines[i].line_type.toString() === "Command") {
-				newLines = newLines.slice(i + 1);
+		// get last game responses
+		let foundRepsonse = false;
+		for (let i = allStoryLines.length - 1; i >= 0; i--) {
+			const line = allStoryLines[i];
+			const isGameResponse = line.line_type.toString() === "Response"
+			if (isGameResponse) {
+				// console.log(`[DEBUG:OUTPUTTER] use line[${i}]`, line.line_type, line.line);
+				if (!foundRepsonse) {
+					foundRepsonse = true;
+					lastKeyUsed = Number(line.key);
+				}
+				newLines.unshift(line); // add at the start
+			} else if (foundRepsonse) {
+				// end of response
 				break;
 			}
 		}
 	}
 
 	// console.log("[DEBUG:OUTPUTTER] allStoryLines:", allStoryLines);
-	// console.log("[DEBUG:OUTPUTTER] newLines:", newLines);
+	console.log("[DEBUG:OUTPUTTER] newLines:", newLines);
 
 	if (newLines.length === 0) return;
 
 	// Update lastKeyUsed and printedKeys
 	const maxKey = Number(newLines[newLines.length - 1].key);
-	get().setLastKeyUsed(playerStory.game_id, maxKey);
+	set({ lastKeyUsed: maxKey });
 
 	// Add lines to terminal
 	for (const s of newLines) {
@@ -167,7 +184,7 @@ const onPlayerStory = (playerStory: PlayerStory) => {
 	// console.log("[DEBUG:STORY] normalizedStoryId", normalizedStoryId);
 	// console.log("[DEBUG:STORY] normalizedGameId", normalizedGameId);
 	if (normalizedStoryId === normalizedGameId) {
-		// console.log("[DEBUG:STORY] onPlayerStory", playerStory);
+		// console.log("[DEBUG:STORY] onPlayerStory", gameId, playerStory);
 		setOutputter(playerStory as PlayerStory);
 		return;
 	}
@@ -176,7 +193,7 @@ const onPlayerStory = (playerStory: PlayerStory) => {
 const onReponseData = (
     responseData: ParsedEntity<SchemaType>["models"]["lore"],
 ) => {
-    // console.log("[DEBUG] onReponseData", responseData);
+    console.log("[DEBUG] onReponseData", responseData);
 
     // Check if there’s a PlayerStory update
 		const playerStory: PlayerStory | undefined = responseData.PlayerStory as PlayerStory;
@@ -268,12 +285,14 @@ const initializeConfig = async (
 			sendCommand("_intro");
 			sendCommand("_description");
 		}
-		const entities = Array.isArray(initialEntities) ? initialEntities : [initialEntities];
-				for (const responseData of entities) {
-					if (responseData.models?.lore) {
-						onReponseData(responseData.models.lore);
-					}
-				}
+
+		const entities = initialEntities?.getItems() ?? [];
+		// console.log("[DOJO]: initialEntities", entities);
+		for (const responseData of entities) {
+			if (responseData.models?.lore) {
+				onReponseData(responseData.models.lore);
+			}
+		}
 		clearTimeout(connectionTimeout);
 
 		setStatus({

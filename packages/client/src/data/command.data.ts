@@ -86,7 +86,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				sendCommand("_connect_wallet");
 			} else {
 				sendCommand("_welcome_back");
-				sendCommand("_current_game");
 			}
 		}
 
@@ -186,7 +185,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		// current game?
 		if(GameStore().gameId != undefined && game_id == Number(GameStore().gameId)) {
-			sendCommand("_current_game");
 			return;
 		}
 		// check ownership...
