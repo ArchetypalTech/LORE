@@ -408,25 +408,33 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	coins_balance: async () => {
+	coins: async (context: commandContext) => {
 		const gameId = GameStore().gameId;
-
-		if (gameId === undefined) {
+		if (context.args[0] === "balance" || context.args[0] === "amount" || context.args[0] === "count" || context.args[0] === "check") {
+			// get game id
+			if (gameId === undefined) {
+				addTerminalContent({
+					text: "You can't check how many Usants coins you have as you haven't started a game yet",
+					format: "error",
+					useTypewriter: true,
+				});
+				return;
+			}
+			// get coins balance
+			const coinsEntity = await queryCoinsEntity();
+			const coinsBalance = await queryGameCoinsBalance(coinsEntity);
 			addTerminalContent({
-				text: "You can't check how many Usants coins you have as you haven't started a game yet",
-				format: "error",
+				text: `You have ${coinsBalance} Usants coins`,
+				format: "hash",
 				useTypewriter: true,
 			});
-			return;
+		} else {
+			addTerminalContent({
+				text: `Did you mean [coins balance, coins amount, coins count, coins check]?`,
+				format: "hash",
+				useTypewriter: true,
+			});
 		}
-
-		const coinsEntity = await queryCoinsEntity();
-		const coinsBalance = await queryGameCoinsBalance(coinsEntity);
-		addTerminalContent({
-			text: `You have ${coinsBalance} Usants coins`,
-			format: "hash",
-			useTypewriter: true,
-		});
 	},
 	_triggers: () => {
 		const triggers = queryTriggers();
