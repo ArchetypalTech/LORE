@@ -29,6 +29,8 @@ import {
 	getPlayerAddress,
 	getPlayerUsername,
 	createDefaultAreaComponent,
+	getPlayerEntranceInst,
+	createDefaultExitComponent,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -87,6 +89,12 @@ const resetChanges = () => {
 	});
 	selectEntity(get().selectedEntity!);
 	toast.dismiss("editor-dirty");
+};
+
+const setIsDirty = () => {
+	set({
+		isDirty: Date.now(),
+	});
 };
 
 const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
@@ -544,12 +552,33 @@ const selectEntity = (id: BigNumberish) => {
 		}
 	}
 	set({ selectedEntity: id, editedEntity: undefined });
+
+	// uncollapse parents of selected entity
+	let entity = EditorData().getEntity(id);
+	console.log("------- SELECTED ENTITY", entity?.Entity?.name);
+	while (entity?.ChildToParent) {
+		setEntityCollapsed(entity.ChildToParent.parent, false);
+		entity = EditorData().getEntity(entity.ChildToParent.parent);
+		console.log(">> SELECTED PARENT:", entity?.Entity?.name);
+	}
 };
 
 const updateSelectedEntity = (entity: EntityCollection) => {
 	const selectedEntity = get().selectedEntity!;
 	Object.assign(selectedEntity, entity);
 	set({ selectedEntity });
+};
+
+const _collapsedKey = (inst: BigNumberish) => (`collapsed_${bigintToAddress(inst)}`);
+const setEntityCollapsed = (inst: BigNumberish, collapsed: boolean) => {
+	if (collapsed) {
+		localStorage.setItem(_collapsedKey(inst), "true");
+	} else if (localStorage.getItem(_collapsedKey(inst)) === "true") {
+		localStorage.removeItem(_collapsedKey(inst));
+	}
+};
+const isEntityCollapsed = (inst: BigNumberish) => {
+	return localStorage.getItem(_collapsedKey(inst)) === "true";
 };
 
 /**
@@ -578,50 +607,6 @@ const newEntity = async () => {
 	const reactable = createDefaultReactableComponent(newEntity.Entity);
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
-
-	return newEntity;
-};
-
-/**
- * Creates a new Area trail for an player Editor entity with the default components.
- * @returns The new entity
- */
-const newPlayersTrailEntity = async () => {
-	const walletAddress = getPlayerAddress();
-	const username = getPlayerUsername();
-	
-	let existingTrailEntity = getEntity(walletAddress)
-	if (existingTrailEntity) {
-		console.warn("Player trail entity already exists");
-		selectEntity(existingTrailEntity.Entity.inst);
-		return existingTrailEntity;
-	}
-
-	// create Entity
-	const newEntity = createDefaultEntity();
-	newEntity.Entity.inst = walletAddress;
-	newEntity.Entity.name = `${username}'s Trail`;
-	newEntity.Entity.alt_names = [username];
-	syncItem(newEntity);
-	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
-	await tick();
-
-	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
-	descriptionText.DescriptionText.text = `${username}'s Trail`;
-	descriptionText.DescriptionText.key = 0;
-	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
-
-	const reactable = createDefaultReactableComponent(newEntity.Entity);
-	reactable.Reactable.description = [descriptionText.DescriptionText.key];
-	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
-
-	const area = createDefaultAreaComponent(newEntity.Entity);
-	area.Area.is_spawn_point = false;
-	area.Area.progress_percentage = 0;
-	updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
-
-	// select it
-	selectEntity(newEntity.Entity.inst);
 
 	return newEntity;
 };
@@ -682,6 +667,124 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
 	return playerEntity;
 };
+
+
+/**
+ * Creates a new Area trail for an player Editor entity with the default components.
+ * @returns The new entity
+ */
+const getPlayersTrailEntity = (): EntityCollection | undefined => {
+	const walletAddress = getPlayerAddress();
+	if (BigInt(walletAddress ?? 0) === 0n) {
+		throw new Error("Player entrance instance is 0");
+	}
+	return getEntity(walletAddress);
+};
+
+const createOrSelectPlayersTrailEntity = async () => {
+	// find existing entity
+	let existingEntity = getPlayersTrailEntity()
+	if (existingEntity) {
+		console.warn("Player trail entity already exists");
+		selectEntity(existingEntity.Entity.inst);
+		return existingEntity;
+	}
+
+	// player route instance is the wallet address
+	const walletAddress = getPlayerAddress();
+	const username = getPlayerUsername();
+
+	// create Entity
+	const newEntity = createDefaultEntity();
+	newEntity.Entity.inst = walletAddress;
+	newEntity.Entity.name = `${username}'s Trail`;
+	newEntity.Entity.alt_names = [username];
+	syncItem(newEntity);
+	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
+	await tick();
+
+	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
+	descriptionText.DescriptionText.text = `${username}'s Trail`;
+	descriptionText.DescriptionText.key = 0;
+	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
+
+	const reactable = createDefaultReactableComponent(newEntity.Entity);
+	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
+
+	const area = createDefaultAreaComponent(newEntity.Entity);
+	area.Area.is_spawn_point = false;
+	area.Area.progress_percentage = 0;
+	updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
+
+	// select it
+	selectEntity(newEntity.Entity.inst);
+
+	return newEntity;
+};
+
+
+/**
+ * Creates a new Area trail for an player Editor entity with the default components.
+ * @returns The new entity
+ */
+const getPlayersEntranceEntity = (): EntityCollection | undefined => {
+	const entranceInst = getPlayerEntranceInst();
+	if (entranceInst === 0n) {
+		throw new Error("Player entrance instance is 0");
+	}
+	return entranceInst ? getEntity(entranceInst) : undefined;
+};
+const createOrSelectPlayersEntranceEntity = async (parentInst: BigNumberish | undefined) => {
+	// find existing entity
+	let existingEntity = getPlayersEntranceEntity()
+	if (existingEntity) {
+		console.warn("Player entrance entity already exists");
+		if (parentInst) {
+			addToParent(existingEntity, getEntity(parentInst)!);
+		}
+		selectEntity(existingEntity.Entity.inst);
+		return existingEntity;
+	}
+
+	// player entrance instance is derived from the wallet address
+	const entranceInst = getPlayerEntranceInst();
+	const walletAddress = getPlayerAddress();
+	const username = getPlayerUsername();
+
+	// create Entity
+	const newEntity = createDefaultEntity();
+	newEntity.Entity.inst = bigintToAddress(entranceInst);
+	newEntity.Entity.name = `${username}'s Entrance`;
+	newEntity.Entity.alt_names = [username];
+	syncItem(newEntity);
+	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
+	await tick();
+
+	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
+	descriptionText.DescriptionText.text = `${username}'s Entrance`;
+	descriptionText.DescriptionText.key = 0;
+	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
+
+	const reactable = createDefaultReactableComponent(newEntity.Entity);
+	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
+
+	const exit = createDefaultExitComponent(newEntity.Entity);
+	exit.Exit.leads_to = bigintToAddress(walletAddress);
+	updateComponent(newEntity.Entity.inst, "Exit", exit.Exit as any);
+
+	if (parentInst) {
+		addToParent(newEntity, getEntity(parentInst)!);
+	}
+	
+	// select it
+	selectEntity(newEntity.Entity.inst);
+
+	return newEntity;
+};
+
+
 
 const logPool = () => {
 	const poolArray = Array.from(get().dataPool.values());
@@ -824,7 +927,7 @@ export const getAccountPermissions = async (address: string): Promise<AccountPer
 			.withClause(
 				new ClauseBuilder<SchemaType>().keys(
 					["lore-AccountPermissions"],
-					[addAddressPadding(address)]
+					[bigintToAddress(address)]
 				).build()
 			)
       .withEntityModels(["lore-AccountPermissions"]);
@@ -1227,12 +1330,18 @@ const syncEntities = async () => {
 
 const EditorData = createFactory({
 	get,
+	setIsDirty,
 	getEntities,
 	getEntity,
 	newEntity,
-	newPlayersTrailEntity,
+	getPlayersTrailEntity,
+	getPlayersEntranceEntity,
+	createOrSelectPlayersTrailEntity,
+	createOrSelectPlayersEntranceEntity,
 	removeEntity,
 	selectEntity,
+	setEntityCollapsed,
+	isEntityCollapsed,
 	updateComponent,
 	updateSelectedEntity,
 	removeComponent,
