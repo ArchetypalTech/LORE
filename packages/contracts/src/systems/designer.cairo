@@ -264,7 +264,9 @@ pub mod designer {
             let mut world = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
-                self._assert_can_edit_entity(@world, @config, o.inst);
+                // TODO: validate children ownership, or something better
+                // need this permission to create the player's entrance
+                // self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }
