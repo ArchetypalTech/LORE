@@ -35,6 +35,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		name: createRandomName(),
 		alt_names: [],
 		actions_keys: [],
+		creator_address: getPlayerAddress() ?? "",
 	},
 });
 
@@ -154,7 +155,7 @@ export const createDefaultExitComponent = (
 		inst: entity.inst,
 		is_exit: true,
 		is_enterable: true,
-		direction_type: "None",
+		direction_type: "North",
 		action_map: [
 			{ action: "go", inst: 0, action_fn: "UseExit" },
 			{ action: "enter", inst: 0, action_fn: "UseExit" },
@@ -387,6 +388,28 @@ export const getPlayerAddress = (): string => {
 		}
 	}
 	return LORE_CONFIG.wallet.address;
+};
+
+export const getPlayerUsername = (): string => {
+	let username = 'Player';
+	if (LORE_CONFIG.useController && WalletStore().username) {
+		username = WalletStore().username as string;
+	}
+	return username;
+};
+
+export const getPlayerEntranceInst = (): bigint => {
+	let entranceInst = 0n;
+	if (LORE_CONFIG.useController) {
+		const controllerAddress = WalletStore().controller?.account?.address;
+		if (controllerAddress) {
+			entranceInst = ec.starkCurve.poseidonHashMany([
+				BigInt(shortString.encodeShortString("Entrance")),
+				BigInt(controllerAddress),
+			]);
+		}
+	}
+	return entranceInst;
 };
 
 export const getPlayerSingletonInst = (game_id?: string): string => {

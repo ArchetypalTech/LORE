@@ -1,9 +1,10 @@
 import {
 	type RenderItemProps,
 	SortableTree,
+	type SortableTreeMove,
 	type TreeItems,
 } from "dnd-kit-tree";
-import { HousePlus, PersonStanding } from "lucide-react";
+import { HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -14,13 +15,15 @@ import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
 import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
 
+type TreeNodeData = {
+	entity: EntityCollection,
+	isEditable: boolean,
+};
 type TreeNode = {
 	id: BigNumberish;
-	data: {
-		entity: EntityCollection,
-		canEdit: boolean,
-	};
+	data: TreeNodeData;
 	children: TreeNode[];
+	collapsed: boolean;
 };
 
 export const HierarchyTreeItem = ({
@@ -35,12 +38,13 @@ export const HierarchyTreeItem = ({
 	onCollapse,
 	node,
 	childCount,
-}: RenderItemProps<TreeNode["data"]>) => {
+}: RenderItemProps<TreeNodeData>) => {
 	const entity = node.data?.entity as EntityCollection;
 	const isCollapsed = node.collapsed;
-	const canEdit = node.data?.canEdit ?? false;
+	const isEditable = node.data?.isEditable ?? false;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
+	const isRoot = (entity.ChildToParent === undefined);
 	const [timer, setTimer] = useState<NodeJS.Timer>();
 
 	// Extract onPointerDown from handleProps safely
@@ -58,7 +62,8 @@ export const HierarchyTreeItem = ({
 			<div
 				className={cn(
 					"relative flex flex-row overflow-visible opacity-80",
-					isSelected && "font-bold text-white opacity-100",
+					isRoot && ("border-1 rounded-sm" + (isEditable ? " border-solid" : " border-dashed")),
+					isSelected && "font-bold opacity-100 bg-black/20",
 				)}
 				style={{
 					paddingLeft: `${depth * 1}rem`,
@@ -84,7 +89,7 @@ export const HierarchyTreeItem = ({
 								onPointerDown={(event) => {
 									event.stopPropagation();
 									EditorData().selectEntity(node.id.toString());
-									if (!canEdit) return;
+									if (!isEditable) return;
 									const t = setTimeout(() => {
 										onPointerDown?.(event);
 										clearTimeout(timer);
@@ -98,13 +103,13 @@ export const HierarchyTreeItem = ({
 								}}
 								className={cn(
 									"absolute top-0 left-0 h-7 w-full",
-									canEdit ? "cursor-pointer" : "cursor-no-drop"
+									isEditable ? "cursor-pointer" : "cursor-no-drop"
 								)}
 							/>
 
 							{/* Highlight when selected */}
 							{isSelected && (
-								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg] bg-black/20" />
+								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg]" />
 							)}
 
 							{/* Collapse toggle button */}
@@ -112,6 +117,7 @@ export const HierarchyTreeItem = ({
 								<button
 									className="cursor-pointer z-20 text-xs"
 									onClick={(e) => {
+										EditorData().setEntityCollapsed(node.id, !isCollapsed);
 										e.stopPropagation();
 										onCollapse?.();
 									}}
@@ -181,22 +187,23 @@ const createTree = () => {
 			id: inst,
 			data: {
 				entity: entity as { Entity: Entity },
-				canEdit: EditorStore().canEditEntity(entity),
+				isEditable: EditorStore().canEditEntity(entity),
 			},
 			children,
+			collapsed: EditorData().isEntityCollapsed(inst),
 		}];
 	};
 
 	// construct the tree
 	const tree = parents.flatMap((parent) =>
 		getNode(parent!.Entity.inst),
-	) as unknown as TreeItems<TreeNode["data"]>;
+	) as unknown as TreeItems<TreeNodeData>;
 
 	return { tree };
 };
 
 export const HierarchyTree = () => {
-	const { dataPool, isDirty } = useEditorData();
+	const { dataPool, isDirty, selectedEntity } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
 	const { isAdmin } = useEditorPermissions();
 
@@ -206,13 +213,30 @@ export const HierarchyTree = () => {
 		setData(createTree().tree);
 	}, [dataPool, isDirty]);
 
+	const { canCreateEntrance, createEntranceLabel, entranceParent } = useMemo(() => {
+		const trail = EditorData().getPlayersTrailEntity();
+		const entrance = EditorData().getPlayersEntranceEntity();
+		const selectedArea = EditorData().getEntity(selectedEntity ?? 0)?.Area;
+		const canCreateEntrance = Boolean(trail) 						// your trail exists
+			&& selectedArea?.is_area 													// is an area
+			&& selectedArea?.inst !== trail?.Entity.inst 			// not your trail
+			&& selectedArea?.inst !== entrance?.Entity.inst; 	// not current entrance
+		return {
+			canCreateEntrance: canCreateEntrance || Boolean(entrance),
+			createEntranceLabel:
+				!entrance ? (canCreateEntrance ? "Create Entrance" : "Select Area")
+				: (canCreateEntrance ? "Move Entrance" : "Your Entrance"),
+			entranceParent: canCreateEntrance ? selectedArea?.inst : undefined
+		};
+	}, [selectedEntity]);
+
 	return (
 		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
 
 			{isAdmin && (
 				<>
 					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
-						<HousePlus />
+						<SquarePen />
 						New Entity
 					</Button>
 					<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
@@ -224,9 +248,17 @@ export const HierarchyTree = () => {
 
 			{!isAdmin && (
 				<>
-					<Button variant={"hero"} onClick={() => {}}>
+					<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
 						<HousePlus />
 						Your Trail
+					</Button>
+					<Button variant={"hero"} disabled={!canCreateEntrance} onClick={() => EditorData().createOrSelectPlayersEntranceEntity(entranceParent)}>
+						<LogIn />
+						{createEntranceLabel}
+					</Button>
+					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
+						<SquarePen />
+						New Entity
 					</Button>
 				</>
 			)}
@@ -236,20 +268,31 @@ export const HierarchyTree = () => {
 					removable={false}
 					collapsible={true}
 					value={data}
-					onChange={setData}
-					onMove={(action) => {
+					onChange={(items: TreeItems<TreeNodeData>) => {
+						// apply tree changes
+						setData(items);
+						// rebuild tree to revert unauthorized moves
+						EditorData().setIsDirty();
+					}}
+					onMove={(action: SortableTreeMove) => {
+						// get entity being moved
 						const child = EditorData().getEntity(action.id);
-
 						if (!child) throw new Error("Child not found");
-						if (action.parentId === undefined) {
-							EditorData().removeParent(child);
-							return;
-						}
 
-						const parent = EditorData().getEntity(action.parentId!);
-						if (!parent) throw new Error("Parent not found");
-						EditorData().addToParent(child, parent);
-						return;
+						// get new parent
+						const newParent = EditorData().getEntity(action.parentId!);
+						if (!newParent) throw new Error("Parent not found");
+						
+						// check if new parent is editable
+						if (EditorStore().canEditEntity(newParent)) {
+							if (action.parentId === undefined) {
+								// remove from current parent
+								EditorData().removeParent(child);
+							} else {
+								// add to new parent
+								EditorData().addToParent(child, newParent);
+							}
+						}
 					}}
 					renderItem={HierarchyTreeItem}
 				/>

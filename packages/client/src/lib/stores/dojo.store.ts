@@ -161,6 +161,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 		if (s.line_type.toString() == "Command") {
 			continue;
 		}
+		const isError = s.line_type.toString() == "Error";
 		const trimmed = s.line.trim();
 		const lines = processWhitespaceTags(trimmed);
 		for (const l of lines) {
@@ -168,7 +169,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 			const formatted = l.replaceAll("+sys+", "");
 			addTerminalContent({
 				text: formatted,
-				format: sys ? "hash" : l.startsWith("> ") ? "input" : "out",
+				format: sys ? "hash" : isError ? "error" : l.startsWith("> ") ? "input" : "out",
 				useTypewriter: true,
 			});
 		}

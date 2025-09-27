@@ -79,13 +79,14 @@ pub impl ReactableImpl of ReactableTrait {
 
     fn get_specific_description(
         reactable: @Reactable, index: u32, world: WorldStorage,
-    ) -> ByteArray {
-        if reactable.description.len() == 0 {
-            return "";
+    ) -> Option<ByteArray> {
+        if (index >= reactable.description.len()) {
+            (Option::None)
+        } else {
+            let key: u32 = *reactable.description.at(index);
+            let descriptionText: DescriptionText = world.read_model((*reactable.inst, key));
+            (Option::Some(descriptionText.text))
         }
-        let key: u32 = *reactable.description.at(index);
-        let descriptionText: DescriptionText = world.read_model((*reactable.inst, key));
-        descriptionText.text
     }
 }
 
@@ -158,9 +159,18 @@ pub impl ReactableComponent of Component<Reactable> {
             },
             ReactableActions::ReadSpecificDescription => {
                 // Get idxs from the action map entrypoints
-                let (idx1, _idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
+                let (idx1, _idx2): (u32, u32) = action.entrypoints;
                 // Say the description
-                player.say(ref world, ReactableImpl::get_specific_description(@self, idx1, world));
+                let description: Option<ByteArray> = ReactableImpl::get_specific_description(@self, idx1, world);
+                match description {
+                    Option::Some(description) => {
+                        player.say(ref world, description);
+                    },
+                    Option::None => {
+                        player.log_error(ref world, format!("description index {} not found", idx1));
+                        return Result::Err(Error::ActionFailed);
+                    },
+                }
                 // If token is verb and the verb is "examine" then check if the entity has a container. If so, call the container's check function
                 if (action.action == "examine" || action.action == "inspect") {
                     // Check if Self has a container
@@ -352,6 +362,7 @@ pub mod tests {
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
         let res = ReactableImpl::get_specific_description(@i, idx, world);
-        assert(res == "the rock is from the moon", 'description should be the moon');
+        assert(res.is_some(), 'description should be some');
+        assert(res.unwrap() == "the rock is from the moon", 'description should be the moon');
     }
 }

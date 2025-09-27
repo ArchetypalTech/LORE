@@ -81,10 +81,11 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				const { sdk } = await InitDojo();
 				const result = await sdk.getEntities({ query });
 				const playerAccount: PlayerAccount | undefined = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount;
+				console.log("useSyncGameId() playerAccount", playerAccount);
 				if (playerAccount) {
 					GameStore().setPlayerGameId(playerAccount.current_game_id);
 				} else {
-					sendCommand(`_create_game`);
+					sendCommand(`create game`);
 				}
 			} catch (e) {
 				// const status = {
@@ -95,14 +96,13 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				// sendCommand(`_fatal_error ${status.error}`);
 				console.error("useSyncGameId() error for wallet:", walletAddress, e);
 			}
-
 		}
 		// fetch the player game id
 		const address = BigInt(walletAddress || 0);
-		if (address != 0n && isConnected) {
+		if (address != 0n && isConnected && inputGameId === undefined) {
 			_fetch(address);
 		}
-	}, [walletAddress, isConnected]);
+	}, [walletAddress, isConnected, inputGameId]);
 
 	// return the current game id
 	return gameId;
