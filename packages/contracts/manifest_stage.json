@@ -1480,7 +1480,7 @@
   "contracts": [
     {
       "address": "0x20d12e1d08a1f30484b4b160b896b31e93a6bcafb2abe8ba5bb87312e37d24a",
-      "class_hash": "0x2a2e48b269b0d5ea069214a3d0f5d247a8a61d8b203af93884281b47ec0f515",
+      "class_hash": "0x2dd952ee50ca1b4236c44c2c1b27d3ff721b5a845d9d4a2af89eb1da5cf57dd",
       "abi": [
         {
           "type": "impl",
@@ -1533,6 +1533,13 @@
           ]
         },
         {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
           "type": "impl",
           "name": "DesignerImpl",
           "interface_name": "lore::systems::designer::IDesigner"
@@ -1578,6 +1585,10 @@
             {
               "name": "use_debug",
               "type": "core::bool"
+            },
+            {
+              "name": "is_dead",
+              "type": "core::bool"
             }
           ]
         },
@@ -1604,6 +1615,10 @@
             {
               "name": "actions_keys",
               "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "creator_address",
+              "type": "core::starknet::contract_address::ContractAddress"
             }
           ]
         },
@@ -2692,13 +2707,6 @@
           ]
         },
         {
-          "type": "function",
-          "name": "dojo_init",
-          "inputs": [],
-          "outputs": [],
-          "state_mutability": "view"
-        },
-        {
           "type": "impl",
           "name": "WorldProviderImpl",
           "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
@@ -2810,6 +2818,7 @@
       "tag": "lore-designer",
       "selector": "0x6bb9050b828ea0b021af28404cff2e5b2474da015aea553b72db688e12b9a80",
       "systems": [
+        "dojo_init",
         "create_player",
         "create_entity",
         "create_reactable",
@@ -2844,7 +2853,7 @@
     },
     {
       "address": "0x2fa73d2c20fef6f23a84f3ef3b6e99ec2fa819f0b5acf2be6695544b87922e5",
-      "class_hash": "0x2857eb27785da85459e1b2ecc674b81e245e1548cbc001e22c73567dec131e4",
+      "class_hash": "0x4e24828146af238d2754ee2f75e0371319e129205630e205c69b02ab1c8c513",
       "abi": [
         {
           "type": "impl",
@@ -4000,7 +4009,7 @@
     },
     {
       "address": "0x35ce90c46076c16abb2d9c7827021a22e3111ca790c16f5c9359aeb24500f71",
-      "class_hash": "0x2548876af1de9c1939e5fc0e7e8a35f303baa5e8831b9dbc9d53429200c0ac2",
+      "class_hash": "0x3af11ca4d0464e207062c5d5843e2d338394238a1e6cb6610240ed58fd1a77b",
       "abi": [
         {
           "type": "impl",
@@ -4288,7 +4297,7 @@
     },
     {
       "members": [],
-      "class_hash": "0xf12971415accef95a1efd9d0875fab2bda3ac5574a99084e2b0a90c84cc5c3",
+      "class_hash": "0x70b202d361676c8255c19ffcab74590d8d625b8d4d88435e8793764c5783fdf",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
@@ -4324,7 +4333,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6316923fe80316498581657ff08c62cfa8627cdac73b1ab3d68be008b13322a",
+      "class_hash": "0x413be04859a914967a5a8578c33eb0f4e9402440bda107c883c7bcaacbf5d9b",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },

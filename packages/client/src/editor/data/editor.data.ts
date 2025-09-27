@@ -984,22 +984,65 @@ export const propertiesRegistered = async (
   }
 };
 
-export const queryCoinsEntity = async (): Promise<BigNumberish> => {
+export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumberish> => {
   try {
+		console.log("DEBUG: queryCoinsPerGame() gameId: ", gameId);
     const { sdk } = await InitDojo();
-    const query = new ToriiQueryBuilder<SchemaType>()
+    const query_game_insts = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
-      .withLimit(1000)
+      .withLimit(90000)
       .includeHashedKeys()
-      .withEntityModels(["lore-Entity"]);
+			.withClause(
+				new ClauseBuilder<SchemaType>().keys(
+					["lore-GameInstanceMap"],
+					[bigintToHex128(gameId), undefined]
+				).build()
+			)
+      .withEntityModels(["lore-GameInstanceMap"]);
 
-    const result = await sdk.getEntities({ query });
+    const result_game_insts = await sdk.getEntities({ query: query_game_insts });
+		const game_insts = result_game_insts.getItems()
+		.filter((item) => item.models?.lore?.GameInstanceMap?.game_id !== undefined)
+		.map((item) => bigintToAddress(item.models?.lore?.GameInstanceMap?.game_inst ?? 0));
+		console.log("DEBUG: queryCoinsPerGame() game_insts: ", game_insts);
 
-    const coinsEntity = result.getItems().find((item) => {
-      return item.models?.lore?.Entity?.name === "Coins";
-    });
+		// get entity component
+		const query_entity = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(90000)
+			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().compose().or(
+					game_insts.map((inst) => new ClauseBuilder<SchemaType>().keys(gameInstModels, [inst])),
+				).build()
+			)
+			.withEntityModels(["lore-Entity"]);
+		const result_entity = await sdk.getEntities({ query: query_entity });
+		console.log("DEBUG: queryCoinsPerGame() result_entity: ", result_entity);
+		const entity = result_entity.getItems().find((item) => {
+			return item.models?.lore?.Entity?.name === "Coins";
+		});
+		console.log("DEBUG: queryCoinsPerGame() entity: ", entity);
 
-    return coinsEntity?.models?.lore?.Entity?.inst ?? 0; // fallback if not found
+		// query coins inventory item
+		const query_coins = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(90000)
+			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().keys(
+					["lore-InventoryItem"],
+					[addAddressPadding(entity?.models?.lore?.Entity?.inst ?? 0)]
+				).build()
+			)
+			.withEntityModels(["lore-InventoryItem"]);
+			const result_coins = await sdk.getEntities({ query: query_coins });
+			console.log("DEBUG: queryCoinsPerGame() query_coins result: ", result_coins);
+			const coins = result_coins.getItems().find((item) => {
+				return item.models?.lore?.InventoryItem?.inst === entity?.models?.lore?.Entity?.inst;
+			});
+			console.log("DEBUG: queryCoinsPerGame() coins: ", coins);
+    return coins?.models?.lore?.InventoryItem?.quantity ?? 0; // fallback if not found
   } catch (error) {
     console.error("Error fetching coins entity from Torii:", error);
     throw error;
@@ -1141,7 +1184,7 @@ export const queryGameComponents = async (gameId: BigNumberish) => {
 		// get all game instances for the game id
 		const query_game_insts = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
-			.withLimit(1000)
+			.withLimit(90000)
 			.includeHashedKeys()
 			.withClause(
 				new ClauseBuilder<SchemaType>().keys(
@@ -1159,7 +1202,7 @@ export const queryGameComponents = async (gameId: BigNumberish) => {
 		// get all components for the game instances
 		const query_components = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
-			.withLimit(1000)
+			.withLimit(90000)
 			.includeHashedKeys()
 			.withClause(
 				new ClauseBuilder<SchemaType>().compose().or(

@@ -19,8 +19,7 @@ import {
 	queryOwnedGameTokens,
 } from "@/editor/data/editor.data";
 import {
-	queryCoinsEntity,
-	queryGameCoinsBalance,
+	queryCoinsPerGame,
 	queryExecActions,
 	queryTriggers,
 } from "@/editor/data/editor.data";
@@ -395,8 +394,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 	coins_balance: async () => {
-		const coinsEntity = await queryCoinsEntity();
-		const coinsBalance = await queryGameCoinsBalance(coinsEntity);
+		//const coinsEntity = await queryCoinsEntity();
+		let game_id = GameStore().gameId;
+		if (!game_id) {
+			addTerminalContent({
+				text: "Not possible to get coins balance without an existing game",
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+		const coinsBalance = await queryCoinsPerGame(game_id);
 		addTerminalContent({
 			text: `You have ${coinsBalance} Usants coins`,
 			format: "hash",
