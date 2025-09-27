@@ -291,6 +291,7 @@ export const storyLineType = [
 	'Response',
 	'SysResponse',
 	'Debug',
+	'Error',
 ] as const;
 export type StoryLineType = { [key in typeof storyLineType[number]]: string };
 export type StoryLineTypeEnum = CairoCustomEnum;
@@ -732,7 +733,8 @@ export const schema: SchemaType = {
 				Command: undefined,
 				Response: undefined,
 				SysResponse: undefined,
-				Debug: undefined, }),
+				Debug: undefined,
+				Error: undefined, }),
 		},
 		Reactable: {
 			inst: 0,

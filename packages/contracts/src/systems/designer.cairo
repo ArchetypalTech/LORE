@@ -262,7 +262,7 @@ pub mod designer {
 
         fn create_parent(ref self: ContractState, t: Array<ParentToChildren>) {
             let mut world = self.world(@"lore");
-            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
+            // let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 // TODO: validate children ownership, or something better
                 // need this permission to create the player's entrance
