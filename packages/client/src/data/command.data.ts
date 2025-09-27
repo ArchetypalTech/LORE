@@ -325,7 +325,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	help: () => {
 		const header =
-			"Entities/Objects might have the following properties that can be that allow you to interact with them:";
+			"**Scratches head**";
 		// Handle help command
 		addTerminalContent({
 			text:
