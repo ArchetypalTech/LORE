@@ -44,7 +44,12 @@ pub fn handle_command(
     let mut result: Result::<(), Error> = Result::Err(Error::ActionFailed);
     if nouns.len() > 0 {
         for noun in nouns {
-            let item: Entity = EntityImpl::get_entity(@world, *noun.target).unwrap();
+            let item: Option<Entity> = EntityImpl::get_entity(@world, *noun.target);
+            if (item.is_none()) {
+                player.say(ref world, format!("I've heard about {} but it's not here", noun.text));
+                return Result::Err(Error::ActionFailed);
+            }
+            let item: Entity = item.unwrap();
             if player.use_debug {
                 player.log_debug(ref world, format!("item: {:?}", item));
             }
