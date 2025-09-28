@@ -9,7 +9,7 @@ export const HELP_TEXTS: Record<string, HelpContent> = {
 	CommandSummary: {
 		description:
 			"\n\n a few possibilities surface through the haze of your mind\n\n",
-		usage: ">look [around]\n >look at [object]\n >examine [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit]\n >coins_balance \n >check inventory \n\n TIP: The parser can only handle single word objects currently look for and only use the CAPITALISED words to send commands about e.g ferry OFFICER : >talk to officer etc",
+		usage: ">look [around]\n >look at [object]\n >examine [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit]\n >coins_balance \n >check inventory \n\n TIP: The parser can only handle single word objects currently, so look for and only use the CAPITALISED words to send commands to e.g ferry OFFICER : >talk to officer etc",
 		examples: [
 			"look around",
 			"enter the door",
