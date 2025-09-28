@@ -1,4 +1,4 @@
-interface HelpContent {
+ interface HelpContent {
 	description: string;
 	usage?: string;
 	examples?: string[];
@@ -6,35 +6,46 @@ interface HelpContent {
 }
 
 export const HELP_TEXTS: Record<string, HelpContent> = {
-	Exits: {
+	CommandSummary: {
 		description:
-			"Move through the world using objects or going in a specific direction",
-		usage: "go [direction], enter [exit], use [exit]",
+			"\n\n a few possibilities surface through the haze of your mind\n\n",
+		usage: ">look [around]\n >look at [object]\n >examine [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit]\n coins_balance \n\n",
 		examples: [
-			"go north",
+			"look around",
 			"enter the door",
-			"use teleport",
+			"examine the bottle \n\n ",
 		],
-		more: "Use `help_exits` for more information",
+		more: "Use:\n\n  `help_exits`\n  `help_inspect`\n  `help_container`\n & \n  `help_inventory` \n\nfor more information",
 	},
-	Reactables: {
-		description: "Examine your surroundings or specific objects",
-		usage: "look [around], look at [object], examine [object]",
-		examples: ["look", "look around", "look at tree"],
-		more: "Use `help_inspect` for more information",
-	},
-	Containers: {
-		description: "Store inventory items inside them",
-		usage: "open [object], close [object], check [object]",
-		examples: ["open the bag", "close the bag", "check the bag"],
-		more: "Use `help_container` for more information",
-	},
-	InventoryItems: {
-		description: "Objects that can be placed in containers and used",
-		usage: "pickup [object], drop [object], use [object] on [target]",
-		examples: ["pickup the key", "drop the key", "use the key on the door"],
-		more: "Use `help_inventory` for more information",
-	},
+// Exits: {
+// 	description:
+// 		"Move through the world using objects or going in a specific direction",
+// 	usage: "go [direction], enter [exit], use [exit]",
+// 	examples: [
+// 		"go north",
+// 		"enter the door",
+// 		"use teleport",
+// 	],
+// 	more: "Use:\n  `help_exits for more information",
+// },
+// Reactables: {
+// 	description: "Examine your surroundings or specific objects",
+// 	usage: "look [around], look at [object], examine [object]",
+// 	examples: ["look", "look around", "look at tree"],
+// 	more: "Use `help_inspect` for more information",
+// },
+// Containers: {
+// 	description: "Store inventory items inside them",
+// 	usage: "open [object], close [object], check [object]",
+// 	examples: ["open the bag", "close the bag", "check the bag"],
+// 	more: "Use `help_container` for more information",
+// },
+// InventoryItems: {
+// 	description: "Objects that can be placed in containers and used",
+// 	usage: "pickup [object], drop [object], use [object] on [target]",
+// 	examples: ["pickup the key", "drop the key", "use the key on the door"],
+// 	more: "Use `help_inventory` for more information",
+// },
 };
 
 export const HELP_INSPECT: Record<string, HelpContent> = {
