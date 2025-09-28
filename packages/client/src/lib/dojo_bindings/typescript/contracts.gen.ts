@@ -706,6 +706,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_game_token_createTrophies_calldata = (): DojoCall => {
+		return {
+			contractName: "game_token",
+			entrypoint: "create_trophies",
+			calldata: [],
+		};
+	};
+
+	const game_token_createTrophies = async (snAccount: Account | AccountInterface) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_game_token_createTrophies_calldata(),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_game_token_defaultRoyalty_calldata = (): DojoCall => {
 		return {
 			contractName: "game_token",
@@ -1313,6 +1334,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildContractUriCalldata: build_game_token_contractUri_calldata,
 			createGame: game_token_createGame,
 			buildCreateGameCalldata: build_game_token_createGame_calldata,
+			createTrophies: game_token_createTrophies,
+			buildCreateTrophiesCalldata: build_game_token_createTrophies_calldata,
 			defaultRoyalty: game_token_defaultRoyalty,
 			buildDefaultRoyaltyCalldata: build_game_token_defaultRoyalty_calldata,
 			getApproved: game_token_getApproved,

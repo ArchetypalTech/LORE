@@ -277,6 +277,37 @@ export interface ComponentProperty {
 	access_flags: PropertyAccessEnum;
 }
 
+// Type definition for `achievement::events::index::TrophyCreation` struct
+export interface TrophyCreation {
+	id: BigNumberish;
+	hidden: boolean;
+	index: BigNumberish;
+	points: BigNumberish;
+	start: BigNumberish;
+	end: BigNumberish;
+	group: BigNumberish;
+	icon: BigNumberish;
+	title: BigNumberish;
+	description: string;
+	tasks: Array<Task>;
+	data: string;
+}
+
+// Type definition for `achievement::events::index::TrophyProgression` struct
+export interface TrophyProgression {
+	player_id: BigNumberish;
+	task_id: BigNumberish;
+	count: BigNumberish;
+	time: BigNumberish;
+}
+
+// Type definition for `achievement::types::index::Task` struct
+export interface Task {
+	id: BigNumberish;
+	total: BigNumberish;
+	description: string;
+}
+
 // Type definition for `lore::models::token_config::GameCreatedEvent` struct
 export interface GameCreatedEvent {
 	contract_address: string;
@@ -477,6 +508,9 @@ export interface SchemaType extends ISchemaType {
 		ActionMapInventoryItem: ActionMapInventoryItem,
 		ActionMapReactable: ActionMapReactable,
 		ComponentProperty: ComponentProperty,
+		TrophyCreation: TrophyCreation,
+		TrophyProgression: TrophyProgression,
+		Task: Task,
 		GameCreatedEvent: GameCreatedEvent,
 	},
 }
@@ -844,6 +878,31 @@ export const schema: SchemaType = {
 					ReadOnly: "",
 				ReadWrite: undefined, }),
 		},
+		TrophyCreation: {
+			id: 0,
+			hidden: false,
+			index: 0,
+			points: 0,
+			start: 0,
+			end: 0,
+			group: 0,
+			icon: 0,
+			title: 0,
+		description: "",
+			tasks: [{ id: 0, total: 0, description: "", }],
+		data: "",
+		},
+		TrophyProgression: {
+			player_id: 0,
+			task_id: 0,
+			count: 0,
+			time: 0,
+		},
+		Task: {
+			id: 0,
+			total: 0,
+		description: "",
+		},
 		GameCreatedEvent: {
 			contract_address: "",
 			game_id: 0,
@@ -896,5 +955,8 @@ export enum ModelsMapping {
 	ComponentProperty = 'lore-ComponentProperty',
 	PropertyAccess = 'lore-PropertyAccess',
 	PropertyType = 'lore-PropertyType',
+	TrophyCreation = 'achievement-TrophyCreation',
+	TrophyProgression = 'achievement-TrophyProgression',
+	Task = 'achievement-Task',
 	GameCreatedEvent = 'lore-GameCreatedEvent',
 }

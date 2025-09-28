@@ -17,6 +17,7 @@ pub mod lib {
     pub mod random;
     pub mod utils;
     pub mod dns;
+    pub mod trophies;
     pub mod level_test;
     pub mod errors_texts_output;
     pub mod variable_property_helper;

@@ -73,6 +73,7 @@ pub trait IGameTokenPublic<TState> {
     fn update_token_metadata(ref self: TState, token_id: u256);
     fn update_tokens_metadata(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract_metadata(ref self: TState);
+    fn create_trophies(ref self: TState);
 }
 
 #[dojo::contract]
@@ -92,13 +93,16 @@ pub mod game_token {
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent;
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent::{ERC721HooksImpl};
     use nft_combo::utils::renderer::{ContractMetadata, TokenMetadata};
+    use achievement::components::achievable::AchievableComponent;
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: ERC721ComboComponent, storage: erc721_combo, event: ERC721ComboEvent);
+    component!(path: AchievableComponent, storage: achievable, event: AchievableEvent);
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
     impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
+    impl AchievableInternalImpl = AchievableComponent::InternalImpl<ContractState>;
     #[storage]
     struct Storage {
         #[substorage(v0)]
@@ -107,6 +111,8 @@ pub mod game_token {
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
         erc721_combo: ERC721ComboComponent::Storage,
+        #[substorage(v0)]
+        achievable: AchievableComponent::Storage,
     }
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -117,6 +123,8 @@ pub mod game_token {
         ERC721Event: ERC721Component::Event,
         #[flat]
         ERC721ComboEvent: ERC721ComboComponent::Event,
+        #[flat]
+        AchievableEvent: AchievableComponent::Event,
     }
     //
     // ERC721 end
@@ -134,6 +142,7 @@ pub mod game_token {
     use lore::lib::{
         dns::{SELECTORS},
         utils::{HashImpl, ByteArrayTraitExt},
+        trophies::{Trophy, TrophyTrait, TROPHIES},
     };
     use nft_combo::utils::renderer::{Attribute};
 
@@ -161,6 +170,8 @@ pub mod game_token {
             AccountPermissionsTrait::set_is_admin(ref world, account_address, true);
             AccountPermissionsTrait::set_is_editor(ref world, account_address, true);
         };
+        // create trophies/achievements
+        self._create_trophies(ref world);
     }
 
     #[generate_trait]
@@ -254,6 +265,11 @@ pub mod game_token {
             self._assert_caller_is_admin(@world);
             self.erc721_combo._emit_contract_uri_updated();
         }
+        fn create_trophies(ref self: ContractState) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            self._create_trophies(ref world);
+        }
     }
 
 
@@ -279,6 +295,30 @@ pub mod game_token {
                 AccountPermissionsTrait::is_admin(world, starknet::get_caller_address())
             )
         }
+        
+        fn _create_trophies(ref self: ContractState, ref world: WorldStorage) {
+            let mut trophy_id: u8 = 1;
+            while (trophy_id <= TROPHIES::COUNT) {
+                let trophy: Trophy = trophy_id.into();
+                self.achievable.create(
+                    world,
+                    id: trophy.identifier(),
+                    hidden: trophy.hidden(),
+                    index: trophy.index(),
+                    points: trophy.points(),
+                    start: trophy.start(),
+                    end: trophy.end(),
+                    group: trophy.group(),
+                    icon: trophy.icon(),
+                    title: trophy.title(),
+                    description: trophy.description(),
+                    tasks: trophy.tasks(),
+                    data: trophy.data(),
+                );
+                trophy_id += 1;
+            }
+        }
+
     }
 
 
