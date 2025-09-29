@@ -142,7 +142,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // println!("N0: {}. Executor: {:?}", nouns[0].text, executor);
                 // 1.5 if nouns lenght is equal to 1 then return message
                 if nouns.len() == 1 {
-                    player.say(ref world, format!("Plese provide a target for the action called by {}", nouns[0].text));
+                    player.say(ref world, format!("Please provide a target for the action called by {}.", nouns[0].text));
                     return Result::Ok(());
                 }
                 //let mut target_entity_opt: Option<Entity> = Option::None;
@@ -159,7 +159,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     // noun1 is an alias for self → target is noun2 or noun3
                     // if nouns lenght is equal to 2 then return message as there is no target
                     if nouns.len() == 2 {
-                        player.say(ref world, format!("Plese provide a target for the action called by {} {}", nouns[0].text, nouns[1].text));
+                        player.say(ref world, format!("Please provide a target for the action called by {} {}.", nouns[0].text, nouns[1].text));
                         return Result::Ok(());
                     }
                     // if n2 or n3 are empty then, return message
@@ -172,7 +172,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                                 Option::None => {
                                     // If noun3 is not found, then player.say and return
                                     player.say(ref world, format!(
-                                        "I cannot find the target: {} {}",
+                                        "I cannot find the target: {} {}.",
                                         nouns[2].text, nouns[3].text
                                     ));
                                     return Result::Ok(());
@@ -186,7 +186,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         Option::Some(e) => e,
                         Option::None => {
                             player.say(ref world, format!(
-                                "I cannot find the target: {}. It's not possible to execute that action",
+                                "I cannot find the target: {}. It's not possible to execute that action.",
                                 nouns[1].text
                             ));
                             return Result::Ok(());
@@ -198,7 +198,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 let target_actions = target_entity.actions_keys;
                 if target_actions.len() == 0 {
                     // 6.1 No actions found, just return
-                    player.say(ref world, format!("There is no action to perform on {}", target_entity.name));
+                    player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
                     return Result::Ok(());
                 }
                 // Get the actions
@@ -210,7 +210,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 };
                 if actions.len() == 0 {
                     // No actions found, just return
-                    player.say(ref world, format!("There is no action to perform on {}", target_entity.name));
+                    player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
                     return Result::Ok(());
                 }
                 // Execute actions
