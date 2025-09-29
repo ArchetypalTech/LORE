@@ -344,7 +344,7 @@ fn system_command(
             for item in context {
                 let reactable: Option<Reactable> = Component::get_component(@world, item.inst, player.game_id);
                 if reactable.is_some() {
-                    let description = reactable.unwrap().get_random_description(command, world);
+                    let description = reactable.unwrap().get_random_description(command, world, player.game_id);
                     player.log_sys(ref world, format!("{}", description));
                 }
             };

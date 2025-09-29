@@ -180,7 +180,7 @@ pub impl PlayerImpl of PlayerTrait {
                         if reactable.already_shown {
                             self.say(ref world, format!("{}", reactable.new_entry));
                         } else {
-                            let description = reactable.get_first_description(world);
+                            let description = reactable.get_first_description(world, *self.game_id);
                             self.say(ref world, format!("{}", description));
                             reactable.already_shown = true;
                             reactable.store(ref world, *self.game_id);

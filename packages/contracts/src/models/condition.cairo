@@ -85,7 +85,7 @@ pub impl ConditionImpl of ConditionTrait {
                 }
                 let reactable = OptionTrait::unwrap(reactable_opt);
                 let (b_component_value, _) = VariablePropertyHelper::get_reactable_property(
-                    @reactable, self.property, @property_registry, *world,
+                    @reactable, self.property, @property_registry, *world, game_id,
                 );
                 component_value = b_component_value;
             },
