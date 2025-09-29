@@ -2853,7 +2853,7 @@
     },
     {
       "address": "0x2fa73d2c20fef6f23a84f3ef3b6e99ec2fa819f0b5acf2be6695544b87922e5",
-      "class_hash": "0x4e24828146af238d2754ee2f75e0371319e129205630e205c69b02ab1c8c513",
+      "class_hash": "0x19e7c31c149a000874176bc00644632ee1711b8b5e42c169c0a10c8e1b71af",
       "abi": [
         {
           "type": "impl",
@@ -3045,6 +3045,13 @@
             {
               "type": "function",
               "name": "update_contract_metadata",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_trophies",
               "inputs": [],
               "outputs": [],
               "state_mutability": "external"
@@ -3952,6 +3959,12 @@
         },
         {
           "type": "event",
+          "name": "achievement::components::achievable::AchievableComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
           "name": "lore::systems::game_token::game_token::Event",
           "kind": "enum",
           "variants": [
@@ -3979,6 +3992,11 @@
               "name": "ERC721ComboEvent",
               "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
               "kind": "flat"
+            },
+            {
+              "name": "AchievableEvent",
+              "type": "achievement::components::achievable::AchievableComponent::Event",
+              "kind": "flat"
             }
           ]
         }
@@ -3997,6 +4015,7 @@
         "update_token_metadata",
         "update_tokens_metadata",
         "update_contract_metadata",
+        "create_trophies",
         "upgrade",
         "safe_transfer_from",
         "transfer_from",
@@ -4009,7 +4028,7 @@
     },
     {
       "address": "0x35ce90c46076c16abb2d9c7827021a22e3111ca790c16f5c9359aeb24500f71",
-      "class_hash": "0x17f628c9e171b964879be689c9cdab8754efd476c40340e1c8df57c386993c0",
+      "class_hash": "0x5156e21a457897efe5a6ba7fc571ecefcd7d76aa16ce899cfb58ff6d6e9ba0f",
       "abi": [
         {
           "type": "impl",
@@ -4392,6 +4411,18 @@
       "class_hash": "0x1033736c046a85720d920a901cdd7730f29718aa7ad2cfcf3909c9bfe3c2a0d",
       "tag": "lore-GameCreatedEvent",
       "selector": "0x7c6e3d3f9f2744660619ece25fc28118c70258d3be961f615157fee354aaf39"
+    },
+    {
+      "members": [],
+      "class_hash": "0x1200a00bdf5f5b6e2ad9240c085014d8da1294ff3de54876a322131f338ded2",
+      "tag": "lore-TrophyCreation",
+      "selector": "0x749a7824fe7100999043b621277070c914584f4d8e6db5595dffce9fb4b8636"
+    },
+    {
+      "members": [],
+      "class_hash": "0x5af5b15c9807d9cecb0592cb5e7ec3dc1530b6a22ec50be1f427a031518dc19",
+      "tag": "lore-TrophyProgression",
+      "selector": "0x6b26647ff4a8ae272a1c5e5aa9dea3e1253e124f04fa2a52ce052712cb56fd8"
     }
   ],
   "external_contracts": []
