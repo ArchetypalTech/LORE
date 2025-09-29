@@ -174,8 +174,8 @@ const setupController = async () => {
 	// 	},
 	// };
 	const controllerConfig: ControllerOptions = {
-		preset: "O'Ruggin Trail",
 		namespace: "lore",
+		preset: "orug",
 		policies: {
 			contracts: {
 				[addAddressPadding(LORE_CONFIG.manifest.entity.address)]: {
