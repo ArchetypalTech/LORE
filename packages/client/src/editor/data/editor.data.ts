@@ -615,6 +615,14 @@ const newEntity = async () => {
  * Creates a new player entity with the default components.
  * @returns The new player entity
  */
+export const getPlayerEntity = (): EntityCollection | undefined => {
+	let existingPlayerEntity = getEntity(getPlayerSingletonInst())
+	if (existingPlayerEntity?.Entity?.inst) {
+		return existingPlayerEntity;
+	}
+	return undefined;
+};
+
 export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	let existingPlayerEntity = getEntity(getPlayerSingletonInst())
 	if (existingPlayerEntity) {
@@ -1383,6 +1391,7 @@ const EditorData = createFactory({
 	dojoSync,
 	addToParent,
 	removeParent,
+	getPlayerEntity,
 	newPlayer,
 	syncEntities,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,

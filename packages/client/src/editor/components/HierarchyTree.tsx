@@ -258,10 +258,12 @@ const HierarchyTreeMenu = () => {
 	const { selectedEntity } = useEditorData();
 	const { isAdmin } = useEditorPermissions();
 
-	const { hasTrail, hasEntrance } = useMemo(() => {
+	const { hasPlayer, hasTrail, hasEntrance } = useMemo(() => {
+		const player = EditorData().getPlayerEntity();
 		const trail = EditorData().getPlayersTrailEntity();
 		const entrance = EditorData().getPlayersEntranceEntity();
 		return {
+			hasPlayer: Boolean(player),
 			hasTrail: Boolean(trail),
 			hasEntrance: Boolean(entrance),
 		};
@@ -276,7 +278,7 @@ const HierarchyTreeMenu = () => {
 				</Button>
 				<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
 					<PersonStanding />
-					New Player
+					{hasPlayer ? "Select Player" : "New Player"}
 				</Button>
 			</>
 		);
