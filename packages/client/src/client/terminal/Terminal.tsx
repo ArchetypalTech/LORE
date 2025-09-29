@@ -6,7 +6,8 @@ import {
 } from "@lib/stores/terminal.store";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-import LoadingMessage from "./loader";
+import LoadingMessage from "./Loader";
+import IntroLoader from "./IntroLoader";
 import TerminalLine from "./TerminalLine";
 import Typewriter from "./Typewriter";
 import "./Terminal.css";
@@ -141,7 +142,6 @@ export default function Terminal({
 		if (textAnchorRef.current && terminalFormRef.current)
 			terminalFormRef.current.scrollTo({
 				top: scroller.current?.clientHeight,
-				left: 0,
 				behavior: "smooth",
 			});
 		setTimeout(async () => await sendCommand(command, gameId), 1000);
@@ -170,6 +170,9 @@ export default function Terminal({
 				}}
 			>
 				<div className="screen relative ">
+					<div className="top-2">
+						{ status === 'initialized' && <IntroLoader/>}
+					</div>
 					<div
 						id="scroller"
 						className="flex w-full flex-col items-end p-4"
@@ -194,7 +197,7 @@ export default function Terminal({
 					<div className="sticky text-[1rem] z-10 bottom-[4.5em] md:bottom-[3.8rem] h-4 w-full backdrop-blur-lg"></div>
 					<div className="flex flex-row p-4 pb-6 md:pb-4 sticky bottom-0 z-10 theme-primary-background items-center">
 						{useTerminalStore().isPrinting && <LoadingMessage />}
-						{!useTerminalStore().isPrinting && <span>{`>`}</span>}
+						{!useTerminalStore().isPrinting && status === 'inputEnabled' && <span>{`>`}</span>}
 						<textarea
 							rows={1}
 							id="terminal-input"
@@ -204,11 +207,12 @@ export default function Terminal({
 							ref={terminalInputRef}
 							onKeyDown={handleKeyDown}
 						></textarea>
+						
 						<div
 							className="crt-text fadeInOut absolute pointer-none top-[1.35em]"
 							style={{
 								left: `calc(${cursorPos}ch + 1.85rem)`,
-								visibility: useTerminalStore().isPrinting
+								visibility: useTerminalStore().isPrinting || status !== 'inputEnabled'
 									? "hidden"
 									: "visible",
 							}}

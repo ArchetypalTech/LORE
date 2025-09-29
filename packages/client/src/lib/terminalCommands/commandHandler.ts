@@ -5,6 +5,7 @@ import { SystemCalls } from "@lib/systemCalls";
 import { TERMINAL_SYSTEM_COMMANDS } from "../../data/command.data";
 import { BigNumberish } from "starknet";
 
+
 /**
  * Handles terminal commands entered by the user
  *

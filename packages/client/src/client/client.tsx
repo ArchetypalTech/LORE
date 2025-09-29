@@ -32,6 +32,9 @@ export const Client = () => {
 			<div className="crt buzzing flex h-full max-h-[100dvh] md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
 			</div>
+			<div className="fixed bottom-4">
+					<p className="text-center text-xs text-amber-300">Liked the game? Leave a comment on our <a aria-label="leave a comment" className="comments underline" href="https://archetypaltech.itch.io/oruggin-trail">Itch.io</a> page!</p>
+			</div>
 		</div>
 	);
 };
