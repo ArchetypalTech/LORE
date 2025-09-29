@@ -998,7 +998,7 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
 
 
     const coinsEntity = result.getItems().find((item) => {
-      item.models?.lore?.Entity?.name === "COINS";
+      return item.models?.lore?.Entity?.name === "COINS";
     });
 		console.log("DEBUG: queryCoinsPerGame() coinsEntity: ", coinsEntity);
 
@@ -1024,7 +1024,7 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
 		const result_coins_game_inst = await sdk.getEntities({ query: query_coins_game_inst });
 		console.log("DEBUG: queryCoinsPerGame() result_coins_game_inst: ", result_coins_game_inst);
 		const coinsInventoryItem = result_coins_game_inst.getItems().find((item) => {
-			item.models?.lore?.InventoryItem?.inst === coinsInst;
+			return item.models?.lore?.InventoryItem?.inst === coinsInst;
 		});
 		console.log("DEBUG: queryCoinsPerGame() coinsInventoryItem: ", coinsInventoryItem);
 

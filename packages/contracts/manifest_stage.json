@@ -1480,7 +1480,7 @@
   "contracts": [
     {
       "address": "0x20d12e1d08a1f30484b4b160b896b31e93a6bcafb2abe8ba5bb87312e37d24a",
-      "class_hash": "0x2723913d69133c09e33ba57e21d2fe2ce25e6669b8c7ee4cfe9e8f12ad48d4c",
+      "class_hash": "0x532cb5d45c70d7012c1ea383fcec8791bf081b52986d951740ec5d7c6999bd3",
       "abi": [
         {
           "type": "impl",
@@ -1702,7 +1702,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::DescriptionText",
+          "name": "lore::models::description_text::DescriptionText",
           "members": [
             {
               "name": "inst",
@@ -2398,7 +2398,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::DescriptionText>"
+                  "type": "core::array::Array::<lore::models::description_text::DescriptionText>"
                 }
               ],
               "outputs": [],
@@ -4028,7 +4028,7 @@
     },
     {
       "address": "0x35ce90c46076c16abb2d9c7827021a22e3111ca790c16f5c9359aeb24500f71",
-      "class_hash": "0x5156e21a457897efe5a6ba7fc571ecefcd7d76aa16ce899cfb58ff6d6e9ba0f",
+      "class_hash": "0xf744e55ea9b953f93c4f8b11480345c3c3fbaa6982f984b25fb01e5c21bbc1",
       "abi": [
         {
           "type": "impl",
@@ -4298,7 +4298,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x1cd4f0ade5f8f1a14b1507bfbf1b1b2374cee6fd71931446bae17b31bbcb3a",
+      "class_hash": "0x217f837e0283b1bcf21990701126f1cdb7880290e2991a8c16d02b92fa4db2f",
       "tag": "lore-DescriptionText",
       "selector": "0x167fb02affa7c5f0c7eb85c605f7030903bcc6887619cc8b1b1898f05c78fd6"
     },
@@ -4325,6 +4325,12 @@
       "class_hash": "0x21078b0a3e28156c6bb87ef7a087711c65836ba1cf82bc4e2bbfbe56857055b",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
+    },
+    {
+      "members": [],
+      "class_hash": "0xbda46c216a6077cafb54f5ef6b834e0b09dc69993c2ee5665c968e8685fc20",
+      "tag": "lore-GameInstanceKeyMap",
+      "selector": "0x492a4e1063f95958d7319510e66d94bd297b3fcad32693537fa69e34fa70a81"
     },
     {
       "members": [],
