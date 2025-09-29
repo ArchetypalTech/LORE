@@ -174,6 +174,7 @@ const setupController = async () => {
 	// 	},
 	// };
 	const controllerConfig: ControllerOptions = {
+		preset: "O'Ruggin Trail",
 		namespace: "lore",
 		policies: {
 			contracts: {
