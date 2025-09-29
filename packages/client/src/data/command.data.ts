@@ -160,6 +160,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "game") {
 			// "create game"
 			sendCommand(`g_create_game`);
+		  // send look around command
+			sendCommand(`look around`);
 		} else {
 			addTerminalContent({
 				text: `Did you mean [create game]?`,
