@@ -1,17 +1,15 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{
-            DescriptionText,
-            PropertyRegistry,
-        },
+        index::{PropertyRegistry},
+        description_text::{DescriptionText},
         area::{Area, AreaComponent},
         exit::{Exit},
         reactable::{Reactable},
         inventory_item::{InventoryItem},
         container::{Container, ContainerImpl},
         player::{Player, PlayerImpl},
-        game_instance::{GameModelImpl},
+        game_instance::{GameModelImpl, GameModelKeyImpl},
         effect::{Effect},
     },
     types::{
@@ -246,7 +244,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
     }
 
     fn get_reactable_property(
-        component: @Reactable, name: @ByteArray, property: @PropertyRegistry, world: WorldStorage,
+        component: @Reactable, name: @ByteArray, property: @PropertyRegistry, world: WorldStorage, game_id: u128,
     ) -> (Option<Array<felt252>>, Option<PropertyAccess>) {
         // Define expected property names
         let is_visible: ByteArray = "is_visible";
@@ -266,7 +264,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     let desc = component.description;
                     for i in 0..desc.len() {
                         let key: u32 = *desc.at(i);
-                        let desc_text: DescriptionText = world.read_model((*component.inst, key),);
+                        let desc_text: DescriptionText = world.read_game_model_key(*component.inst, key, game_id);
                         let felt = ByteArrayTraitExt::to_felt252_word(@desc_text.text).unwrap();
                         arr.append(felt);
                     }
@@ -512,9 +510,9 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                                     if key == *index {
                                         // Update existing description
                                         let mut desc_text: DescriptionText = world
-                                            .read_model((component.inst, *index));
+                                            .read_game_model_key(component.inst, *index, game_id);
                                         desc_text.text = value.clone();
-                                        world.write_model(@desc_text);
+                                        world.write_game_model_key(@desc_text, game_id);
                                         found = true;
                                         break;
                                     }

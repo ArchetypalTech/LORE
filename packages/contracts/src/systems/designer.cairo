@@ -1,9 +1,7 @@
 use lore::{
     models::{
         entity::{Entity, ParentToChildren, ChildToParent},
-        index::{
-            DescriptionText,
-        },
+        description_text::{DescriptionText},
         container::{Container},
         player::{Player},
         area::{Area},
@@ -61,9 +59,7 @@ pub mod designer {
         models::{
             admin::{AccountPermissions, AccountPermissionsTrait},
             entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
-            index::{
-                DescriptionText,
-            },
+            description_text::{DescriptionText},
             player::{Player},
             area::{Area},
             exit::{Exit},

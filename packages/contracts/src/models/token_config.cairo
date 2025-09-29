@@ -136,8 +136,8 @@ mod tests {
         PlayerImpl::caller_as_player(ref world, player_address_1, 0);
         // create room entities
         let room_entity_1: @Entity = @helpers::create_new_entity(1, "Room 1");
-        let room_entity_2: @Entity = @helpers::create_new_entity(2, "Room 2");
-        let room_entity_3: @Entity = @helpers::create_new_entity(3, "Room 3");
+        let room_entity_2: @Entity = @helpers::create_new_entity(0x03a419a814c431cc29706ccc4dcfbbb9c952cc96d2f9719d62ab8163b0f5bb52, "Room 2");
+        let room_entity_3: @Entity = @helpers::create_new_entity(0x032454cde156173c1f4ee9a89e4a3a97a9a81bc2f5237b81728af955569c85bb, "Room 3");
         world.write_model(room_entity_1);
         world.write_model(room_entity_2);
         world.write_model(room_entity_3);

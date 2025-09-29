@@ -3,11 +3,11 @@ use starknet::ContractAddress;
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl, GameInstImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl, GameInstImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
-        index::{DescriptionText},
+        description_text::{DescriptionText},
         token_config::{GameTokenInfoTrait},
     },
     types::{command_type::Command},
@@ -180,7 +180,7 @@ pub impl PlayerImpl of PlayerTrait {
                         if reactable.already_shown {
                             self.say(ref world, format!("{}", reactable.new_entry));
                         } else {
-                            let description = reactable.get_first_description(world);
+                            let description = reactable.get_first_description(world, *self.game_id);
                             self.say(ref world, format!("{}", description));
                             reactable.already_shown = true;
                             reactable.store(ref world, *self.game_id);
@@ -193,10 +193,15 @@ pub impl PlayerImpl of PlayerTrait {
         Result::Ok(())
     }
 
-    fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252) {
+    fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252) -> bool {
         self.location = room_id;
         let player_entity: Entity = self.entity(@world);
-        let room_entity: Entity = EntityImpl::get_entity(@world, room_id).unwrap();
+        let room_entity: Option<Entity> = EntityImpl::get_entity(@world, room_id);
+        if (room_entity.is_none()) {
+            self.log_error(ref world, format!("unknown room 0x{:x}", room_id));
+            return false;
+        }
+        let room_entity: Entity = room_entity.unwrap();
         player_entity.set_parent(ref world, @room_entity, self.game_id);
         self.store(ref world, self.game_id);
         if self.use_debug {
@@ -205,6 +210,8 @@ pub impl PlayerImpl of PlayerTrait {
         // Save player progress
         // TODO: find act number
         GameTokenInfoTrait::set_room(ref world, self.game_id, room_entity.inst);
+        // moved!
+        (true)
     }
 
     fn say(self: @Player, ref world: WorldStorage, text: ByteArray) {
@@ -390,7 +397,7 @@ mod tests {
             entity::{Entity, EntityImpl},
             token_config::{GameTokenInfo},
             reactable::{Reactable, ReactableComponent},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
         },
     };
     use lore::models::reactable::tests::{Reactable_create_prefab};

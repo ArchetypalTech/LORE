@@ -64,6 +64,13 @@ export interface Container {
 	action_map: Array<ActionMapContainer>;
 }
 
+// Type definition for `lore::models::description_text::DescriptionText` struct
+export interface DescriptionText {
+	inst: BigNumberish;
+	key: BigNumberish;
+	text: string;
+}
+
 // Type definition for `lore::models::effect::Effect` struct
 export interface Effect {
 	inst: BigNumberish;
@@ -112,6 +119,14 @@ export interface Exit {
 	action_map: Array<ActionMapExit>;
 }
 
+// Type definition for `lore::models::game_instance::GameInstanceKeyMap` struct
+export interface GameInstanceKeyMap {
+	game_id: BigNumberish;
+	inst: BigNumberish;
+	key: BigNumberish;
+	game_inst: BigNumberish;
+}
+
 // Type definition for `lore::models::game_instance::GameInstanceMap` struct
 export interface GameInstanceMap {
 	game_id: BigNumberish;
@@ -128,13 +143,6 @@ export interface ComponentVariable {
 	property_name: string;
 	value: string;
 	last_updated: BigNumberish;
-}
-
-// Type definition for `lore::models::index::DescriptionText` struct
-export interface DescriptionText {
-	inst: BigNumberish;
-	key: BigNumberish;
-	text: string;
 }
 
 // Type definition for `lore::models::index::Dict` struct
@@ -483,14 +491,15 @@ export interface SchemaType extends ISchemaType {
 		Area: Area,
 		Condition: Condition,
 		Container: Container,
+		DescriptionText: DescriptionText,
 		Effect: Effect,
 		ChildToParent: ChildToParent,
 		Entity: Entity,
 		ParentToChildren: ParentToChildren,
 		Exit: Exit,
+		GameInstanceKeyMap: GameInstanceKeyMap,
 		GameInstanceMap: GameInstanceMap,
 		ComponentVariable: ComponentVariable,
-		DescriptionText: DescriptionText,
 		Dict: Dict,
 		PropertyRegistry: PropertyRegistry,
 		InventoryItem: InventoryItem,
@@ -585,6 +594,11 @@ export const schema: SchemaType = {
 				Close: undefined,
 				Check: undefined, }), }],
 		},
+		DescriptionText: {
+			inst: 0,
+			key: 0,
+		text: "",
+		},
 		Effect: {
 			inst: 0,
 			key: 0,
@@ -654,6 +668,12 @@ export const schema: SchemaType = {
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					UseExit: "", }), }],
 		},
+		GameInstanceKeyMap: {
+			game_id: 0,
+			inst: 0,
+			key: 0,
+			game_inst: 0,
+		},
 		GameInstanceMap: {
 			game_id: 0,
 			inst: 0,
@@ -679,11 +699,6 @@ export const schema: SchemaType = {
 		property_name: "",
 		value: "",
 			last_updated: 0,
-		},
-		DescriptionText: {
-			inst: 0,
-			key: 0,
-		text: "",
 		},
 		Dict: {
 			dict_key: 0,
@@ -917,14 +932,15 @@ export enum ModelsMapping {
 	Area = 'lore-Area',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
+	DescriptionText = 'lore-DescriptionText',
 	Effect = 'lore-Effect',
 	ChildToParent = 'lore-ChildToParent',
 	Entity = 'lore-Entity',
 	ParentToChildren = 'lore-ParentToChildren',
 	Exit = 'lore-Exit',
+	GameInstanceKeyMap = 'lore-GameInstanceKeyMap',
 	GameInstanceMap = 'lore-GameInstanceMap',
 	ComponentVariable = 'lore-ComponentVariable',
-	DescriptionText = 'lore-DescriptionText',
 	Dict = 'lore-Dict',
 	PropertyRegistry = 'lore-PropertyRegistry',
 	InventoryItem = 'lore-InventoryItem',

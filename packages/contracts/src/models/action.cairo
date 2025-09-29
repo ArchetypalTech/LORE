@@ -257,7 +257,7 @@ mod tests {
     use lore::{
         models::{
             entity::{Entity, EntityImpl},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             action::{Action, ActionImpl},
             area::{Area},
             exit::{Exit},
@@ -269,7 +269,7 @@ mod tests {
             trigger::{Trigger, TriggerImpl},
             condition::{Condition},
             effect::{Effect, EffectImpl},
-            game_instance::{GameModelImpl},
+            game_instance::{GameModelImpl, GameModelKeyImpl},
         },
         types::{
             component_type::{
@@ -578,7 +578,7 @@ mod tests {
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
         let idx1: u32 = 0;
-        let new_txt2: ByteArray = "Looks that it leads somewhere";
+        let new_txt2: ByteArray = "Looks that it leads nowhere";
         let idx2: u32 = 1;
         // 2. Create array of the new description
         let new_description: Array<(ByteArray, u32)> = array![
@@ -701,8 +701,10 @@ mod tests {
         let key1: u32 = *upd_door.description.at(0);
         // let key2: u32 = *new_description.at(1);
         let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));
+        let new_game_text1: DescriptionText = world.read_game_model_key(upd_door.inst, key1, game_id);
         // let _new_text2: DescriptionText = world.read_model((upd_door.inst, key2));
         assert_ne!(new_txt1.clone(), new_text1.text.clone(), "Description1 should not be updated");
+        assert_ne!(new_txt1.clone(), new_game_text1.text.clone(), "Description1 should not be updated");
         // This one fails as there is no index 1 in the array
         //assert_ne!(upd_door.description[1].clone(), new_text2, "Description2 should not be
         //updated");
@@ -777,7 +779,7 @@ mod tests {
         // 1. New description as bytearray
         let new_txt1: ByteArray = "A door that is open";
         let idx1: u32 = 0;
-        let new_txt2: ByteArray = "Looks that it leads somewhere";
+        let new_txt2: ByteArray = "Looks that it leads nowhere";
         let idx2: u32 = 1;
         // 2. Create array of the new description
         let new_description: Array<(ByteArray, u32)> = array![
@@ -911,15 +913,17 @@ mod tests {
         let upd_door_exit: Exit = world.read_game_model(door.inst, game_id);
         let key1: u32 = *upd_door.description.at(0);
         let key2: u32 = *upd_door.description.at(1);
-        let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));
-        let new_text2: DescriptionText = world.read_model((upd_door.inst, key2));
+        // read_model() will return the original text
+        let original_text1: DescriptionText = world.read_model((upd_door.inst, key1));
+        // let original_text2: DescriptionText = world.read_model((upd_door.inst, key2));
+        // read_game_model_key() will return the updated text
+        let new_text1: DescriptionText = world.read_game_model_key(upd_door.inst, key1, game_id);
+        let new_text2: DescriptionText = world.read_game_model_key(upd_door.inst, key2, game_id);
         assert_eq!(new_txt1, new_text1.text.clone(), "Description1 should be updated");
         assert_eq!(new_txt2, new_text2.text.clone(), "Description2 should be updated");
+        assert_ne!(new_txt1, original_text1.text.clone(), "Original Description1 should not be updated");
+        // assert_ne!(new_txt2, original_text2.text.clone(), "Original Description2 should not be updated");
         assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
-        // println!("Old description: {:?}", old_reactable.description);
-    // println!("New description: {:?}", array![new_text1, new_text2]);
-    // println!("Old is_enterable: {:?}", old_exit.is_enterable);
-    // println!("New is_enterable: {:?}", new_enterable);
     }
 }
 

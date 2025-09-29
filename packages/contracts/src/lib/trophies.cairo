@@ -234,11 +234,11 @@ pub impl TrophyImpl of TrophyTrait {
         else if (self == 0x014d77a7b0faec26ae6a60c0f4d2322eb4b9405b5b644f9ad0887883e987fb43) {(Trophy::DockSide)}
         else if (self == 0x017625e5157fd410506cfcd655515651daf49d4a2b6da6ee351ffc011e0234c4) {(Trophy::TheFool)}
         else if (self == 0x03be4e404aa7fe9739467b455362babc3b8b32fc2a6b2eedc1b3a39f51e57272) {(Trophy::StagingGrounds)}
-        else if (self == 0x03a419a814c431cc29706ccc4dcfbbb9c952cc96d2f9719d62ab8163b0f5bb52) {(Trophy::Marshes)}
+        else if (self == 0x03a419a814c431cc29706ccc4dcfbbb9c952cc96d2f9719d62ab8163b0f5bb52) {(Trophy::Marshes)} // start of Act 2
         else if (self == 0x01ac0212df270aaa32a64cb967ccda8886ae8937ace1f47fc70d390d6bc4f48c) {(Trophy::Salts)}
         else if (self == 0x038281211e4318c639d79e0637a7998e41a4abc993cc0d35aa1394bf85d1b5be) {(Trophy::Celestial)}
         else if (self == 0x023cac799dfbb07f1b2d1ebae31766c85c145cffb79d4b93b49a7a02f654d7a4) {(Trophy::NewRuggin)}
-        else if (self == 0x032454cde156173c1f4ee9a89e4a3a97a9a81bc2f5237b81728af955569c85bb) {(Trophy::ForkstoneVerge)}
+        else if (self == 0x032454cde156173c1f4ee9a89e4a3a97a9a81bc2f5237b81728af955569c85bb) {(Trophy::ForkstoneVerge)} // start of Act 3
         else if (self == 0x009337a3d78bcef8fd1123bc0b86c2bf3ce4447d06a6f9b0473622bbe0673485) {(Trophy::BlackSpire)}
         else if (self == 0x00149baaaf49ef617134213413abf7c3ea81dc112eebcc9afa413cf279e45768) {(Trophy::TCM)}
         else if (self == 0x011dfa59613087381d51de9ac0b38512d5657321b591f3a1706b05fa28f18300) {(Trophy::Usants)}

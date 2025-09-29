@@ -2,11 +2,11 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::{ModelStorage, M
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl, GameModelKeyImpl},
         player::{Player, PlayerImpl},
         container::{ContainerImpl, ContainerComponent},
-        index::{DescriptionText},
+        description_text::{DescriptionText},
     },
     types::{
         command_type::{Command, Token},
@@ -42,7 +42,7 @@ pub struct Reactable {
 #[generate_trait]
 pub impl ReactableImpl of ReactableTrait {
     fn get_random_description(
-        self: @Reactable, command: @Command, world: WorldStorage,
+        self: @Reactable, command: @Command, world: WorldStorage, game_id: u128,
     ) -> ByteArray {
         let (action, _token) = get_action_token(self, @world, command).unwrap();
         match action.action_fn {
@@ -61,30 +61,30 @@ pub impl ReactableImpl of ReactableTrait {
                     return ""; // avoid out-of-bounds access
                 }
                 let key: u32 = *self.description.at(random_idx);
-                let descriptionText: DescriptionText = world.read_model((*self.inst, key));
+                let descriptionText: DescriptionText = world.read_game_model_key(*self.inst, key, game_id);
                 descriptionText.text
             },
             _ => "",
         }
     }
 
-    fn get_first_description(self: @Reactable, world: WorldStorage) -> ByteArray {
+    fn get_first_description(self: @Reactable, world: WorldStorage, game_id: u128) -> ByteArray {
         if self.description.len() == 0 {
             return "";
         }
         let key: u32 = *self.description.at(0);
-        let descriptionText: DescriptionText = world.read_model((*self.inst, key));
+        let descriptionText: DescriptionText = world.read_game_model_key(*self.inst, key, game_id);
         descriptionText.text
     }
 
     fn get_specific_description(
-        reactable: @Reactable, index: u32, world: WorldStorage,
+        reactable: @Reactable, index: u32, world: WorldStorage, game_id: u128,
     ) -> Option<ByteArray> {
         if (index >= reactable.description.len()) {
             (Option::None)
         } else {
             let key: u32 = *reactable.description.at(index);
-            let descriptionText: DescriptionText = world.read_model((*reactable.inst, key));
+            let descriptionText: DescriptionText = world.read_game_model_key(*reactable.inst, key, game_id);
             (Option::Some(descriptionText.text))
         }
     }
@@ -150,18 +150,18 @@ pub impl ReactableComponent of Component<Reactable> {
                 return Result::Ok(());
             },
             ReactableActions::ReadRandomDescription => {
-                player.say(ref world, self.get_random_description(command, world));
+                player.say(ref world, self.get_random_description(command, world, *player.game_id));
                 return Result::Ok(());
             },
             ReactableActions::ReadFirstDescription => {
-                player.say(ref world, self.get_first_description(world));
+                player.say(ref world, self.get_first_description(world, *player.game_id));
                 return Result::Ok(());
             },
             ReactableActions::ReadSpecificDescription => {
                 // Get idxs from the action map entrypoints
                 let (idx1, _idx2): (u32, u32) = action.entrypoints;
                 // Say the description
-                let description: Option<ByteArray> = ReactableImpl::get_specific_description(@self, idx1, world);
+                let description: Option<ByteArray> = ReactableImpl::get_specific_description(@self, idx1, world, *player.game_id);
                 match description {
                     Option::Some(description) => {
                         player.say(ref world, description);
@@ -255,7 +255,7 @@ pub mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             reactable::{Reactable, ReactableImpl},
         },
         types::{command_type::{Command, Token, TokenType}},
@@ -344,7 +344,7 @@ pub mod tests {
         assert(read_reactable.is_reactable, 'reactable is reactable');
         let mut res = array![];
         for _ in 0..10_u8 {
-            res.append(read_reactable.get_random_description(@command, world));
+            res.append(read_reactable.get_random_description(@command, world, 0));
         };
         // println!("reactable: {:?}", res);
     }
@@ -361,7 +361,7 @@ pub mod tests {
         let (prefab, world, _, _) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
-        let res = ReactableImpl::get_specific_description(@i, idx, world);
+        let res = ReactableImpl::get_specific_description(@i, idx, world, 0);
         assert(res.is_some(), 'description should be some');
         assert(res.unwrap() == "the rock is from the moon", 'description should be the moon');
     }

@@ -6,17 +6,6 @@ use lore::{
     constants::errors::Error,
 };
 
-pub trait Instance<M, +Drop<M>, +Model<M>> {
-    // return a models instance key
-    fn inst(self: @M) -> felt252;
-    // used by GameModelImpl only
-    fn set_inst(ref self: M, new_inst: felt252);
-    // validate if a component is initialized
-    fn is_component(self: @M) -> bool;
-    // validate if an entity contains this component
-    fn has_component(self: @WorldStorage, inst: felt252) -> bool;
-}
-
 pub trait Component<M, +Drop<M>, +Model<M>> {
     type ComponentType;
 
