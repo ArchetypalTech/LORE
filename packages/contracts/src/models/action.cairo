@@ -135,6 +135,7 @@ pub impl ActionImpl of ActionTrait {
             if *player.use_debug {
                 player.log_debug(ref world, format!("Action is not called by the correct entity"));
             }
+            player.say(ref world, format!("Action is not called by the correct entity"));
             return (Result::Ok(()), false, Result::Ok(()));
         }
         // Trigger

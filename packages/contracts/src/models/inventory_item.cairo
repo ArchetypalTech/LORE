@@ -126,29 +126,72 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE USE ITEM
                 // Ex: "use the key on the door"
-                // V: Use, N1: key, N2: door (target)
+                // V: Use, N0: key, N1: door (target)
                 // Get target entity to get the actions and execute it
-                if *player.use_debug {
-                    player.log_debug(ref world, format!("Your target is: {}", nouns[1].text));
-                }
+                // OUTDATED
+                // if *player.use_debug {
+                //     player.log_debug(ref world, format!("Your target is: {}", nouns[1].text));
+                // }
 
-                //  use work permit on the terminal
-                // n1 is work, n2 is permit and n3 is termial
-                // use silver ring in the vending unit
-                // n1 is ring, n2 is vending n3 unit
-                // get entity from 1 and check aall alt names and if any of them match against n2  n3 should be the tarte entity 
-                // n1 = n2 work permit *> n3 = terminal
-                // n1 != n2 ring != unir -> n2 -> target
-                let target_entity = EntityImpl::get_entity(@world, *nouns[1].target);
-                if target_entity.is_none() {
-                    return Result::Err(Error::NoTargetEntity);
-                }
-                let target_entity = target_entity.unwrap();
+                // Execute action on the target entity
+                // Ex: "use the work permit on the oily rag"
+                // N0: work, N1: permit, N2: oily , N3: rag
+                // 1. N0 is Self. Get entity so that we can get the alt names
+                let executor = EntityImpl::get_entity(@world, self.inst).unwrap();
+                // println!("InventoryItem execute_command: executor: {:?}", executor);
+                // println!("N0: {}. Executor: {:?}", nouns[0].text, executor);
+                // 1.5 Create target entity
+                //let mut target_entity_opt: Option<Entity> = Option::None;
+                // 2. Check if noun[1] is in the alt names
+                let mut found_in_alt_names = false;
+                for alt_name in executor.alt_names {
+                    if nouns[1].text == @alt_name {
+                        found_in_alt_names = true;
+                        break;
+                    }
+                };
+
+                let target_entity = if found_in_alt_names {
+                    // noun1 is an alias for self → target is noun2 or noun3
+                    match EntityImpl::get_entity(@world, *nouns[2].target) {
+                        Option::Some(e) => e, // If noun2 is found, target is noun2
+                        Option::None => {
+                            // If noun2 is not found, then noun3 is the target
+                            match EntityImpl::get_entity(@world, *nouns[3].target) {
+                                Option::Some(e) => e,
+                                Option::None => {
+                                    // If noun3 is not found, then player.say and return
+                                    player.say(ref world, format!(
+                                        "I cannot find the target: {} {}",
+                                        nouns[2].text, nouns[3].text
+                                    ));
+                                    return Result::Ok(());
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // noun1 is not an alias for self → target is noun1
+                    match EntityImpl::get_entity(@world, *nouns[1].target) {
+                        Option::Some(e) => e,
+                        Option::None => {
+                            player.say(ref world, format!(
+                                "I cannot find the target: {}. It's not possible to execute that action",
+                                nouns[1].text
+                            ));
+                            return Result::Ok(());
+                        }
+                    }
+                };
+                
+                // Get the target actions
                 let target_actions = target_entity.actions_keys;
                 if target_actions.len() == 0 {
-                    // No actions found, just return
+                    // 6.1 No actions found, just return
+                    player.say(ref world, format!("There is no action to perform on {}", target_entity.name));
                     return Result::Ok(());
                 }
+                // Get the actions
                 let mut actions: Array<Action> = ArrayTrait::new();
                 // For each action, execute it
                 for key in target_actions {
@@ -157,9 +200,10 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 };
                 if actions.len() == 0 {
                     // No actions found, just return
+                    player.say(ref world, format!("There is no action to perform on {}", target_entity.name));
                     return Result::Ok(());
                 }
-                // execute actions
+                // Execute actions
                 for action in actions {
                     // context is not being used inside evaluations or processing.
                     let context = TriggerContext {
