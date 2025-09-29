@@ -1019,12 +1019,13 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
 					["lore-GameInstanceMap"],
 					[bigintToHex128(gameId), bigintToAddress(coinsInst)]
 				).build()
-			)
+			).withEntityModels(["lore-InventoryItem"]);
 		
 		const result_coins_game_inst = await sdk.getEntities({ query: query_coins_game_inst });
 		console.log("DEBUG: queryCoinsPerGame() result_coins_game_inst: ", result_coins_game_inst);
+		const bagInst = "0x03ea128a01cf0d9145645e13aca19ec93a1b83d37887670af9b8f097881fe133";
 		const coinsInventoryItem = result_coins_game_inst.getItems().find((item) => {
-			return item.models?.lore?.InventoryItem?.inst === coinsInst;
+			return item.models?.lore?.InventoryItem?.owner_id === bagInst;
 		});
 		console.log("DEBUG: queryCoinsPerGame() coinsInventoryItem: ", coinsInventoryItem);
 
