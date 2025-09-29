@@ -998,7 +998,7 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
 
 
     const coinsEntity = result.getItems().find((item) => {
-      item.models?.lore?.Entity?.name === "usants Coins";
+      item.models?.lore?.Entity?.name === "COINS";
     });
 		console.log("DEBUG: queryCoinsPerGame() coinsEntity: ", coinsEntity);
 
