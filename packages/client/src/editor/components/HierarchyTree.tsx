@@ -203,9 +203,8 @@ const createTree = () => {
 };
 
 export const HierarchyTree = () => {
-	const { dataPool, isDirty, selectedEntity } = useEditorData();
+	const { dataPool, isDirty } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
-	const { isAdmin } = useEditorPermissions();
 
 	useEffect(() => {
 		dataPool;
@@ -213,48 +212,9 @@ export const HierarchyTree = () => {
 		setData(createTree().tree);
 	}, [dataPool, isDirty]);
 
-	const { hasTrail, hasEntrance } = useMemo(() => {
-		const trail = EditorData().getPlayersTrailEntity();
-		const entrance = EditorData().getPlayersEntranceEntity();
-		return {
-			hasTrail: Boolean(trail),
-			hasEntrance: Boolean(entrance),
-		};
-	}, [selectedEntity]);
-
 	return (
 		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
-
-			{isAdmin && (
-				<>
-					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
-						<SquarePen />
-						New Entity
-					</Button>
-					<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
-						<PersonStanding />
-						New Player
-					</Button>
-				</>
-			)}
-
-			{!isAdmin && (
-				<>
-					<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
-						<HousePlus />
-						{hasTrail ? "Your Trail" : "Create Trail"}
-					</Button>
-					<Button variant={"hero"} disabled={!hasTrail} onClick={() => EditorData().createOrSelectPlayersEntranceEntity()}>
-						<LogIn />
-						{hasEntrance ? "Your Entrance" : "Create Entrance"}
-					</Button>
-					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
-						<SquarePen />
-						New Entity
-					</Button>
-				</>
-			)}
-
+			<HierarchyTreeMenu />
 			<div className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}
@@ -291,4 +251,51 @@ export const HierarchyTree = () => {
 			</div>
 		</div>
 	);
+};
+
+
+const HierarchyTreeMenu = () => {
+	const { selectedEntity } = useEditorData();
+	const { isAdmin } = useEditorPermissions();
+
+	const { hasTrail, hasEntrance } = useMemo(() => {
+		const trail = EditorData().getPlayersTrailEntity();
+		const entrance = EditorData().getPlayersEntranceEntity();
+		return {
+			hasTrail: Boolean(trail),
+			hasEntrance: Boolean(entrance),
+		};
+	}, [selectedEntity]);
+
+	if (isAdmin) {
+		return (
+			<>
+				<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
+					<SquarePen />
+					New Entity
+				</Button>
+				<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
+					<PersonStanding />
+					New Player
+				</Button>
+			</>
+		);
+	} else {
+		return (
+			<>
+				<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
+					<HousePlus />
+					{hasTrail ? "Your Trail" : "Create Trail"}
+				</Button>
+				<Button variant={"hero"} disabled={!hasTrail} onClick={() => EditorData().createOrSelectPlayersEntranceEntity()}>
+					<LogIn />
+					{hasEntrance ? "Your Entrance" : "Create Entrance"}
+				</Button>
+				<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
+					<SquarePen />
+					New Entity
+				</Button>
+			</>
+		);
+	}
 };
