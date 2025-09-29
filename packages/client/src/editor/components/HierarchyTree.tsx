@@ -270,7 +270,7 @@ const HierarchyTreeMenu = () => {
 			hasPlayer: Boolean(player),
 			hasTrail: Boolean(trail),
 			hasEntrance: Boolean(entrance),
-			canCreateEntity
+			canCreateEntity: canCreateEntity,
 		};
 	}, [selectedEntity]);
 
@@ -298,7 +298,7 @@ const HierarchyTreeMenu = () => {
 					<LogIn />
 					{hasEntrance ? "Your Entrance" : "Create Entrance"}
 				</Button>
-				<Button variant={"hero"} disabled={!canCreateEntity} onClick={() => EditorData().newEntity()}>
+				<Button variant={"hero"} disabled={!(canCreateEntity && hasTrail)} onClick={() => EditorData().newEntity()}>
 					<SquarePen />
 					New Entity
 				</Button>

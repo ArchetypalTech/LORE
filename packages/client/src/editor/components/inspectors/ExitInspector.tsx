@@ -15,6 +15,7 @@ import {
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
+import { bigintToAddress } from "@/lib/utils/utils";
 
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,
@@ -23,12 +24,12 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 	// @dev: get available areas to link to
 	const { area_value, area_options } = useMemo(() => {
 		return {
-			area_value: componentObject.leads_to.toString(),
+			area_value: bigintToAddress(componentObject.leads_to),
 			area_options: EditorData()
 				.getEntities()
 				.filter((e) => e.Area !== undefined)
 				.map((e) => ({
-					value: e.Entity!.inst.toString(),
+					value: bigintToAddress(e.Entity!.inst),
 					label: e.Entity.name,
 				})),
 		};
