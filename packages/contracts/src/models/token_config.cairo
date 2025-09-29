@@ -47,6 +47,9 @@ use lore::models::{
     player::{Player, PlayerImpl},
     admin::{AccountPermissionsTrait},
 };
+use lore::lib::{
+    trophies::{Trophy, TrophyProgressTrait},
+};
 
 #[generate_trait]
 pub impl GameTokenInfoImpl of GameTokenInfoTrait {
@@ -59,10 +62,14 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
         game_info.room_name = room_entity.name;
         match area {
             Option::Some(area) => {
+                // emit achievement
+                let trophy: Trophy = TrophyProgressTrait::on_enter_room(@world, room_inst);
+                // find change in act
                 let act_number: u8 =
-                    if (area.progress_percentage < 33) {1}
-                    else if (area.progress_percentage < 66) {2}
-                    else {3};
+                    if (trophy == Trophy::Marshes) {2}
+                    else if (trophy == Trophy::ForkstoneVerge) {3}
+                    else {1};
+                // update token info
                 game_info.act_number = core::cmp::max(game_info.act_number, act_number);
                 game_info.progress = core::cmp::min(core::cmp::max(game_info.progress, area.progress_percentage), 100);
                 let completed: bool = (game_info.progress == 100);
