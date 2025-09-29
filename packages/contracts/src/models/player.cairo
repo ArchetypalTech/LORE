@@ -3,8 +3,8 @@ use starknet::ContractAddress;
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl, GameInstImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl, GameInstImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
         description_text::{DescriptionText},

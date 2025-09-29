@@ -6,8 +6,7 @@ use dojo::{
 };
 use lore::{
     models::{
-        components::{Instance},
-        game_instance::{GameModelImpl, GameInstImpl},
+        game_instance::{Instance, GameModelImpl, GameInstImpl},
     },
 };
 

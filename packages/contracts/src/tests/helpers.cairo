@@ -84,6 +84,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::action::m_Action::TEST_CLASS_HASH.into()),
             TestResource::Model(models::action::m_ActionExecuted::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::game_instance::m_GameInstanceKeyMap::TEST_CLASS_HASH.into()),
             // game_token
             TestResource::Model(models::admin::m_AccountPermissions::TEST_CLASS_HASH.into()),
             TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH.into()),

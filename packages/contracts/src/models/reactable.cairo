@@ -2,8 +2,8 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::{ModelStorage, M
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl},
         player::{Player, PlayerImpl},
         container::{ContainerImpl, ContainerComponent},
         description_text::{DescriptionText},

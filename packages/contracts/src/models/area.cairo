@@ -2,8 +2,8 @@ use dojo::{world::WorldStorage, model::{Model, ModelStorage}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl},
         player::{Player},
     },
     types::{command_type::Command},
