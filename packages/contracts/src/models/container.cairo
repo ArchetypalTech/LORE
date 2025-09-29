@@ -279,13 +279,15 @@ pub impl ContainerComponent of Component<Container> {
                     // Set the container to open
                     self.set_open(ref world, true, *player.game_id);
                     // Check container status and contents
-                    let doneChecking = self.check_container(ref world, player, nouns[0].text);
+                    let doneChecking = self.clone().check_container(ref world, player, nouns[0].text);
                     // Once done checking, return
                     if (doneChecking) {
                         return Result::Ok(());
                     }
                     
                 }
+                // if container is already open, say so
+                player.say(ref world, format!("The {} is already open.", self.entity(@world).name));
                 return Result::Ok(());
             },
             ContainerActions::Close => {

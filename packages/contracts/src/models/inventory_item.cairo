@@ -140,7 +140,11 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 let executor = EntityImpl::get_entity(@world, self.inst).unwrap();
                 // println!("InventoryItem execute_command: executor: {:?}", executor);
                 // println!("N0: {}. Executor: {:?}", nouns[0].text, executor);
-                // 1.5 Create target entity
+                // 1.5 if nouns lenght is equal to 1 then return message
+                if nouns.len() == 1 {
+                    player.say(ref world, format!("Plese provide a target for the action called by {}", nouns[0].text));
+                    return Result::Ok(());
+                }
                 //let mut target_entity_opt: Option<Entity> = Option::None;
                 // 2. Check if noun[1] is in the alt names
                 let mut found_in_alt_names = false;
@@ -153,6 +157,12 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
 
                 let target_entity = if found_in_alt_names {
                     // noun1 is an alias for self → target is noun2 or noun3
+                    // if nouns lenght is equal to 2 then return message as there is no target
+                    if nouns.len() == 2 {
+                        player.say(ref world, format!("Plese provide a target for the action called by {} {}", nouns[0].text, nouns[1].text));
+                        return Result::Ok(());
+                    }
+                    // if n2 or n3 are empty then, return message
                     match EntityImpl::get_entity(@world, *nouns[2].target) {
                         Option::Some(e) => e, // If noun2 is found, target is noun2
                         Option::None => {
