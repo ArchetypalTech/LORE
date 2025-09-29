@@ -24,6 +24,7 @@ import { LORE_CONFIG } from "@/lib/config";
 import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish, ec, shortString } from "starknet";
 import randomName from "@scaleway/random-name";
+import { bigintToAddress } from "@/lib/utils/utils";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -35,7 +36,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		name: createRandomName(),
 		alt_names: [],
 		actions_keys: [],
-		creator_address: getPlayerAddress() ?? "",
+		creator_address: bigintToAddress(getPlayerAddress()),
 	},
 });
 

@@ -5,7 +5,7 @@ import {
 	type TreeItems,
 } from "dnd-kit-tree";
 import { HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
 import { cn } from "@/lib/utils/utils";
@@ -13,7 +13,9 @@ import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
+import { Select } from "./FormComponents";
 import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
+import { useWalletStore } from "@/lib/stores/wallet.store";
 
 type TreeNodeData = {
 	entity: EntityCollection,
@@ -174,7 +176,7 @@ const createTree = () => {
 		processedIds.add(instStr);
 
 		const entity = EditorData().getEntity(inst);
-		if (entity === undefined || entity.Entity === undefined) return [];
+		if (entity === undefined || entity.Entity === undefined || !EditorData().shouldDisplayEntity(entity)) return [];
 
 		// Store unique entity
 		uniqueEntities.set(instStr, entity);
@@ -203,66 +205,19 @@ const createTree = () => {
 };
 
 export const HierarchyTree = () => {
-	const { dataPool, isDirty, selectedEntity } = useEditorData();
+	const { dataPool, isDirty, creatorsFilter } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
-	const { isAdmin } = useEditorPermissions();
 
 	useEffect(() => {
 		dataPool;
 		isDirty;
 		setData(createTree().tree);
-	}, [dataPool, isDirty]);
-
-	const { canCreateEntrance, createEntranceLabel, entranceParent } = useMemo(() => {
-		const trail = EditorData().getPlayersTrailEntity();
-		const entrance = EditorData().getPlayersEntranceEntity();
-		const selectedArea = EditorData().getEntity(selectedEntity ?? 0)?.Area;
-		const canCreateEntrance = Boolean(trail) 						// your trail exists
-			&& selectedArea?.is_area 													// is an area
-			&& selectedArea?.inst !== trail?.Entity.inst 			// not your trail
-			&& selectedArea?.inst !== entrance?.Entity.inst; 	// not current entrance
-		return {
-			canCreateEntrance: canCreateEntrance || Boolean(entrance),
-			createEntranceLabel:
-				!entrance ? (canCreateEntrance ? "Create Entrance" : "Select Area")
-				: (canCreateEntrance ? "Move Entrance" : "Your Entrance"),
-			entranceParent: canCreateEntrance ? selectedArea?.inst : undefined
-		};
-	}, [selectedEntity]);
+	}, [dataPool, isDirty, creatorsFilter]);
 
 	return (
 		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
-
-			{isAdmin && (
-				<>
-					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
-						<SquarePen />
-						New Entity
-					</Button>
-					<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
-						<PersonStanding />
-						New Player
-					</Button>
-				</>
-			)}
-
-			{!isAdmin && (
-				<>
-					<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
-						<HousePlus />
-						Your Trail
-					</Button>
-					<Button variant={"hero"} disabled={!canCreateEntrance} onClick={() => EditorData().createOrSelectPlayersEntranceEntity(entranceParent)}>
-						<LogIn />
-						{createEntranceLabel}
-					</Button>
-					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
-						<SquarePen />
-						New Entity
-					</Button>
-				</>
-			)}
-
+			<HierarchyTreeMenu />
+			<HierarchyTreeFilter />
 			<div className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}
@@ -298,5 +253,106 @@ export const HierarchyTree = () => {
 				/>
 			</div>
 		</div>
+	);
+};
+
+
+const HierarchyTreeMenu = () => {
+	const { selectedEntity } = useEditorData();
+	const { isAdmin } = useEditorPermissions();
+
+	const { hasPlayer, hasTrail, hasEntrance, canCreateEntity } = useMemo(() => {
+		const player = EditorData().getPlayerEntity();
+		const trail = EditorData().getPlayersTrailEntity();
+		const entrance = EditorData().getPlayersEntranceEntity();
+		const canCreateEntity = selectedEntity ? EditorStore().canEditEntity(EditorData().getEntity(selectedEntity)) : false;
+		return {
+			hasPlayer: Boolean(player),
+			hasTrail: Boolean(trail),
+			hasEntrance: Boolean(entrance),
+			canCreateEntity: canCreateEntity,
+		};
+	}, [selectedEntity]);
+
+	if (isAdmin) {
+		return (
+			<>
+				<Button variant={"hero"} disabled={!canCreateEntity} onClick={() => EditorData().newEntity()}>
+					<SquarePen />
+					New Entity
+				</Button>
+				<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
+					<PersonStanding />
+					{hasPlayer ? "Select Player" : "New Player"}
+				</Button>
+			</>
+		);
+	} else {
+		return (
+			<>
+				<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
+					<HousePlus />
+					{hasTrail ? "Your Trail" : "Create Trail"}
+				</Button>
+				<Button variant={"hero"} disabled={!hasTrail} onClick={() => EditorData().createOrSelectPlayersEntranceEntity()}>
+					<LogIn />
+					{hasEntrance ? "Your Entrance" : "Create Entrance"}
+				</Button>
+				<Button variant={"hero"} disabled={!(canCreateEntity && hasTrail)} onClick={() => EditorData().newEntity()}>
+					<SquarePen />
+					New Entity
+				</Button>
+			</>
+		);
+	}
+};
+
+type HierarchyTreeFilterOptions = "all" | "orug" | "mine";
+const creatorWallets = [
+	BigInt('0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7'), // tal-valdar
+	BigInt('0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae'), // awtnmy
+	BigInt('0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F'), // mataleone
+	BigInt('0x03bf9ddf561897E5A6af8F443894D918a3CB123638A201556189Bf9B7f2581AE'), // pscho
+	BigInt('0x00EDF69f8Fe2Beea8FdD545380F6C86CE6300A1009F0540324c2D218BCeC19aC'), // edwingeral
+	BigInt('0x055ad6518bB4088Ff51f87663196C1489280cb36E98b8c790749A0E0393c4E0C'), // kishitemplar
+]
+
+const HierarchyTreeFilter = () => {
+	const { isAdmin } = useEditorPermissions();
+	const { walletAddress } = useWalletStore();
+
+	const options = useMemo(() => (isAdmin ? [
+		{ value: "orug", label: "Display ORug" },
+		{ value: "all", label: "Display ORug + Players" },
+	] : [
+		{ value: "all", label: "Display Orug + Mine" },
+		{ value: "orug", label: "Display ORug" },
+		{ value: "mine", label: "Display Mine" },
+	]), [isAdmin]);
+
+	const [filter, setFilter] = useState<HierarchyTreeFilterOptions>(isAdmin ? "orug" : "all");
+	const _onChange = (e: ChangeEvent<HTMLSelectElement>) => {
+		setFilter(e.target.value as HierarchyTreeFilterOptions);
+	};
+
+	useEffect(() => {
+		if (filter === "all") {
+			EditorData().setCreatorsFilter(isAdmin ? [] : [0n, ...creatorWallets, BigInt(walletAddress ?? 0)]);
+		} else if (filter === "orug") {
+			EditorData().setCreatorsFilter([...creatorWallets]);
+		} else if (filter === "mine") {
+			EditorData().setCreatorsFilter([0n, BigInt(walletAddress ?? 0)]);
+		}
+	}, [filter, walletAddress]);
+
+	return (
+		<Select
+			// ref={selectRef}
+			id=""
+			defaultValue={options?.[0]?.value || undefined}
+			onChange={_onChange}
+			options={options}
+			disabled={options.length === 0}
+		/>
 	);
 };

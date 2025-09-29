@@ -62,6 +62,7 @@ const {
 	selectedEntity: undefined as BigNumberish | undefined,
 	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: undefined as number | undefined,
+	creatorsFilter: [] as bigint[],
 });
 
 const getItem = (id: BigNumberish, syncPool = false) =>
@@ -581,6 +582,19 @@ const isEntityCollapsed = (inst: BigNumberish) => {
 	return localStorage.getItem(_collapsedKey(inst)) === "true";
 };
 
+const setCreatorsFilter = (creators: bigint[]) => {
+	set({ creatorsFilter: creators });
+};
+const shouldDisplayEntity = (entity: EntityCollection | undefined): boolean => {
+	if (!entity) return false;
+	const entityCreatorAddress = BigInt(entity?.Entity?.creator_address ?? 0);
+	return (
+		entityCreatorAddress === 0n ||
+		get().creatorsFilter.length === 0 ||
+		get().creatorsFilter.includes(entityCreatorAddress)
+	);
+};
+
 /**
  * Creates a new entity with default reactable component.
  * @returns the new entity
@@ -615,6 +629,14 @@ const newEntity = async () => {
  * Creates a new player entity with the default components.
  * @returns The new player entity
  */
+export const getPlayerEntity = (): EntityCollection | undefined => {
+	let existingPlayerEntity = getEntity(getPlayerSingletonInst())
+	if (existingPlayerEntity?.Entity?.inst) {
+		return existingPlayerEntity;
+	}
+	return undefined;
+};
+
 export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	let existingPlayerEntity = getEntity(getPlayerSingletonInst())
 	if (existingPlayerEntity) {
@@ -717,6 +739,16 @@ const createOrSelectPlayersTrailEntity = async () => {
 	area.Area.progress_percentage = 0;
 	updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
 
+	// create way back to crossroads
+	await createExit({
+		leads_to: crossroadsInst,
+		name: `Crossroads`,
+		description: `Way back to the Crossroads`,
+		parentInst: newEntity.Entity.inst,
+		altNames: [`crossroads`],
+		autoSelect: false,
+	});
+
 	// select it
 	selectEntity(newEntity.Entity.inst);
 
@@ -728,6 +760,7 @@ const createOrSelectPlayersTrailEntity = async () => {
  * Creates a new Area trail for an player Editor entity with the default components.
  * @returns The new entity
  */
+const crossroadsInst = '0x00e0c2c6ce0cdff92c8e857cbde8b7e1ff75cabd59d015389e90aef0a033a976';
 const getPlayersEntranceEntity = (): EntityCollection | undefined => {
 	const entranceInst = getPlayerEntranceInst();
 	if (entranceInst === 0n) {
@@ -735,14 +768,13 @@ const getPlayersEntranceEntity = (): EntityCollection | undefined => {
 	}
 	return entranceInst ? getEntity(entranceInst) : undefined;
 };
-const createOrSelectPlayersEntranceEntity = async (parentInst: BigNumberish | undefined) => {
+const createOrSelectPlayersEntranceEntity = async (): Promise<EntityCollection> => {
+	const crossroadsEntity = getEntity(crossroadsInst);
 	// find existing entity
 	let existingEntity = getPlayersEntranceEntity()
 	if (existingEntity) {
 		console.warn("Player entrance entity already exists");
-		if (parentInst) {
-			addToParent(existingEntity, getEntity(parentInst)!);
-		}
+		addToParent(existingEntity, crossroadsEntity!);
 		selectEntity(existingEntity.Entity.inst);
 		return existingEntity;
 	}
@@ -752,17 +784,51 @@ const createOrSelectPlayersEntranceEntity = async (parentInst: BigNumberish | un
 	const walletAddress = getPlayerAddress();
 	const username = getPlayerUsername();
 
+	const trialCount = crossroadsEntity?.ParentToChildren?.children.length ?? 0;
+
+	const newEntity = await createExit({
+		leads_to: walletAddress,
+		name: `T${trialCount + 1}-${username}`,
+		description: `${username}'s trail entrance`,
+		parentInst: crossroadsInst,
+		inst: entranceInst,
+		altNames: [username],
+		autoSelect: true,
+	});
+	console.log("DEBUG: createOrSelectPlayersEntranceEntity() newEntity: ", newEntity);
+	return newEntity;
+};
+
+export const createExit = async ({
+	leads_to,
+	name,
+	description,
+	parentInst,
+	inst,
+	altNames = [],
+	autoSelect = true,
+}: {
+	leads_to: BigNumberish
+	name: string
+	description: string
+	parentInst: BigNumberish
+	inst?: BigNumberish
+	altNames?: string[]
+	autoSelect?: boolean
+}): Promise<EntityCollection> => {
 	// create Entity
 	const newEntity = createDefaultEntity();
-	newEntity.Entity.inst = bigintToAddress(entranceInst);
-	newEntity.Entity.name = `${username}'s Entrance`;
-	newEntity.Entity.alt_names = [username];
+	if (inst && BigInt(inst) !== 0n) {
+		newEntity.Entity.inst = bigintToAddress(inst);
+	}
+	newEntity.Entity.name = name;
+	newEntity.Entity.alt_names = altNames;
 	syncItem(newEntity);
 	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
 	await tick();
 
 	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
-	descriptionText.DescriptionText.text = `${username}'s Entrance`;
+	descriptionText.DescriptionText.text = description;
 	descriptionText.DescriptionText.key = 0;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 
@@ -771,16 +837,16 @@ const createOrSelectPlayersEntranceEntity = async (parentInst: BigNumberish | un
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 
 	const exit = createDefaultExitComponent(newEntity.Entity);
-	exit.Exit.leads_to = bigintToAddress(walletAddress);
+	exit.Exit.leads_to = bigintToAddress(leads_to);
 	updateComponent(newEntity.Entity.inst, "Exit", exit.Exit as any);
 
-	if (parentInst) {
-		addToParent(newEntity, getEntity(parentInst)!);
-	}
+	// add to parent
+	addToParent(newEntity, getEntity(parentInst)!);
 	
 	// select it
-	selectEntity(newEntity.Entity.inst);
-
+	if (autoSelect) {
+		selectEntity(newEntity.Entity.inst);
+	}
 	return newEntity;
 };
 
@@ -1422,6 +1488,8 @@ const EditorData = createFactory({
 	selectEntity,
 	setEntityCollapsed,
 	isEntityCollapsed,
+	setCreatorsFilter,
+	shouldDisplayEntity,
 	updateComponent,
 	updateSelectedEntity,
 	removeComponent,
@@ -1430,6 +1498,7 @@ const EditorData = createFactory({
 	dojoSync,
 	addToParent,
 	removeParent,
+	getPlayerEntity,
 	newPlayer,
 	syncEntities,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
