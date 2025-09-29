@@ -280,7 +280,7 @@ const initializeConfig = async (
 			error: null,
 		});
 		sendCommand("_bootLoader");
-
+		
 		console.log("[DOJO]: initialized");
 		set({ existingSubscription: subscription });
 	} catch (e) {
