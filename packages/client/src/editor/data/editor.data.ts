@@ -62,6 +62,7 @@ const {
 	selectedEntity: undefined as BigNumberish | undefined,
 	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: undefined as number | undefined,
+	creatorsFilter: [] as bigint[],
 });
 
 const getItem = (id: BigNumberish, syncPool = false) =>
@@ -579,6 +580,19 @@ const setEntityCollapsed = (inst: BigNumberish, collapsed: boolean) => {
 };
 const isEntityCollapsed = (inst: BigNumberish) => {
 	return localStorage.getItem(_collapsedKey(inst)) === "true";
+};
+
+const setCreatorsFilter = (creators: bigint[]) => {
+	set({ creatorsFilter: creators });
+};
+const shouldDisplayEntity = (entity: EntityCollection | undefined): boolean => {
+	if (!entity) return false;
+	const entityCreatorAddress = BigInt(entity?.Entity?.creator_address ?? 0);
+	return (
+		entityCreatorAddress === 0n ||
+		get().creatorsFilter.length === 0 ||
+		get().creatorsFilter.includes(entityCreatorAddress)
+	);
 };
 
 /**
@@ -1383,6 +1397,8 @@ const EditorData = createFactory({
 	selectEntity,
 	setEntityCollapsed,
 	isEntityCollapsed,
+	setCreatorsFilter,
+	shouldDisplayEntity,
 	updateComponent,
 	updateSelectedEntity,
 	removeComponent,
