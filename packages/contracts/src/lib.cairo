@@ -30,6 +30,7 @@ pub mod models {
     pub mod components;
     pub mod condition;
     pub mod container;
+    pub mod description_text;
     pub mod effect;
     pub mod entity;
     pub mod exit;

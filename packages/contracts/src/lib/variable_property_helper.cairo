@@ -1,10 +1,8 @@
 use dojo::{world::{WorldStorage}, model::ModelStorage};
 use lore::{
     models::{
-        index::{
-            DescriptionText,
-            PropertyRegistry,
-        },
+        index::{PropertyRegistry},
+        description_text::{DescriptionText},
         area::{Area, AreaComponent},
         exit::{Exit},
         reactable::{Reactable},

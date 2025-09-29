@@ -259,7 +259,7 @@ mod tests {
     use lore::{
         models::{
             entity::{EntityImpl},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             reactable::{Reactable},
             condition::{Condition},
             components::{Component},

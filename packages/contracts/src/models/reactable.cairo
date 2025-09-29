@@ -6,7 +6,7 @@ use lore::{
         game_instance::{GameModelImpl},
         player::{Player, PlayerImpl},
         container::{ContainerImpl, ContainerComponent},
-        index::{DescriptionText},
+        description_text::{DescriptionText},
     },
     types::{
         command_type::{Command, Token},
@@ -255,7 +255,7 @@ pub mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             reactable::{Reactable, ReactableImpl},
         },
         types::{command_type::{Command, Token, TokenType}},

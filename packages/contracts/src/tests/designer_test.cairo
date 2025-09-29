@@ -14,7 +14,7 @@ mod tests {
             entity::{Entity},
             admin::{AccountPermissionsTrait},
             area::{Area, AreaComponent},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
         },
         tests::{
             helpers,

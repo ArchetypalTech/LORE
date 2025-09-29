@@ -256,7 +256,7 @@ mod tests {
     use lore::{
         models::{
             entity::{Entity, EntityImpl},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             action::{Action, ActionImpl},
             area::{Area},
             exit::{Exit},

@@ -7,7 +7,7 @@ use lore::{
         game_instance::{GameModelImpl, GameInstImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
-        index::{DescriptionText},
+        description_text::{DescriptionText},
         token_config::{GameTokenInfoTrait},
     },
     types::{command_type::Command},
@@ -390,7 +390,7 @@ mod tests {
             entity::{Entity, EntityImpl},
             token_config::{GameTokenInfo},
             reactable::{Reactable, ReactableComponent},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
         },
     };
     use lore::models::reactable::tests::{Reactable_create_prefab};

@@ -2,7 +2,7 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        index::{DescriptionText},
+        description_text::{DescriptionText},
         components::{Component},
         area::{Area},
         exit::{Exit},

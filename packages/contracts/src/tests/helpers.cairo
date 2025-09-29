@@ -68,7 +68,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::player::m_StoryLine::TEST_CLASS_HASH.into()),
             TestResource::Model(models::entity::m_Entity::TEST_CLASS_HASH.into()),
             TestResource::Model(models::reactable::m_Reactable::TEST_CLASS_HASH.into()),
-            TestResource::Model(models::index::m_DescriptionText::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::description_text::m_DescriptionText::TEST_CLASS_HASH.into()),
             TestResource::Model(models::area::m_Area::TEST_CLASS_HASH.into()),
             TestResource::Model(models::exit::m_Exit::TEST_CLASS_HASH.into()),
             TestResource::Model(models::container::m_Container::TEST_CLASS_HASH.into()),

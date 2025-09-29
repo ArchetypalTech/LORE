@@ -188,7 +188,7 @@ mod tests {
     use lore::{
         models::{
             entity::{EntityImpl},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             reactable::{Reactable},
             trigger::{TriggerImpl},
             player::{Player, PlayerImpl},
