@@ -43,8 +43,8 @@ pub impl DescriptionTextInstance of InstanceKey<DescriptionText> {
 
 #[cfg(test)]
 mod tests {
-    // use dojo::{model::ModelStorage};
     use super::*;
+    use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::{
         tests::helpers,
         models::{

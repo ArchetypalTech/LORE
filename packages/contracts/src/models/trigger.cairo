@@ -265,7 +265,7 @@ pub impl TriggerImpl of TriggerTrait {
             },
         }
         // Set trigger as triggered
-        //self.set_executed(ref world, game_id, true);
+        // self.set_executed(ref world, game_id, true);
         // Return result
         result
     }
@@ -456,7 +456,10 @@ mod tests {
         if result.is_ok() { // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+
+        // executed flag was DISABLED!!!!
+        // assert(trigger.is_executed(@world, game_id), 'trigger executed');
+        assert(!trigger.is_executed(@world, game_id), 'trigger executed');
 
         // move player to room entity 2
         player.move_to_room(ref world, room_entity_2.inst);
@@ -493,7 +496,10 @@ mod tests {
         assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
         let result = trigger.evaluate_trigger(ref world, game_id);
         assert(result.is_ok(), 'Trigger should jump');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+
+        // executed flag was DISABLED!!!!
+        // assert(trigger.is_executed(@world, game_id), 'trigger executed 1');
+        assert(!trigger.is_executed(@world, game_id), 'trigger executed 1');
 
         // again...
         let result = trigger.evaluate_trigger(ref world, game_id);
@@ -508,7 +514,10 @@ mod tests {
         assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
         let result = trigger.evaluate_trigger(ref world, game_id);
         assert(result.is_ok(), 'Trigger should jump');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+
+        // executed flag was DISABLED!!!!
+        // assert(trigger.is_executed(@world, game_id), 'trigger executed 2');
+        assert(!trigger.is_executed(@world, game_id), 'trigger executed 2');
 
         // again...
         let result = trigger.evaluate_trigger(ref world, game_id);

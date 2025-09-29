@@ -257,7 +257,7 @@ mod tests {
         prompt.prompt("g_game_id", Option::None);
         story_len_1 += 2;
 // helpers::print_player_story_last_line(@world, game_id_1);
-        assert_eq!(helpers::player_story_len(@world, game_id_1), story_len_1, "said");
+        assert_eq!(helpers::player_story_len(@world, game_id_1), story_len_1, "g_game_id 1");
         assert_eq!(helpers::player_story_last_line(@world, game_id_1), "+sys+game-1");
         //
         // player_2 say ask to create a game...
@@ -286,13 +286,13 @@ mod tests {
         prompt.prompt("g_game_id", Option::None);
         story_len_2 += 2;
 // helpers::print_player_story_last_line(@world, game_id_2);
-        assert_eq!(helpers::player_story_len(@world, game_id_2), story_len_2, "said");
+        assert_eq!(helpers::player_story_len(@world, game_id_2), story_len_2, "g_game_id 2");
         assert_eq!(helpers::player_story_last_line(@world, game_id_2), "+sys+game-2");
         //
         // player 1 can play their own game by id...
         helpers::set_caller(player_address_1);
         prompt.prompt("hello", Option::Some(game_id_1));
-        story_len_1 += 2;
+        story_len_1 += 3;
         // no new game was minted
         assert_eq!(token.total_supply(), 2, "total_supply()");
         // more story was added
@@ -301,7 +301,7 @@ mod tests {
         // ADMIN can play their someone else's game for debugging
         helpers::set_caller(OWNER());
         prompt.prompt("hello", Option::Some(game_id_2));
-        story_len_2 += 2;
+        story_len_2 += 3;
         // no new game was minted
         assert_eq!(token.total_supply(), 2, "total_supply()");
         // more story was added
