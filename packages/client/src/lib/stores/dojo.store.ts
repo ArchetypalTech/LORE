@@ -248,7 +248,7 @@ const initializeConfig = async (
 	const { existingSubscription } = get();
 	if (config === undefined) return;
 
-	console.log("[DOJO]: CONFIG ", config);
+	if (import.meta.env?.isDev) console.log("[DOJO]: CONFIG ", config);
 	connectionTimeout = setTimeout(() => {
 		const status = {
 			status: "error",

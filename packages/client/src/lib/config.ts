@@ -71,12 +71,14 @@ const address = addAddressPadding(getOrFail(env.VITE_BURNER_ADDRESS, "VITE_BURNE
 const privateKey = getOrFail(env.VITE_BURNER_PRIVATE_KEY, "VITE_BURNER_PRIVATE_KEY");
 
 const wallet = (() => {
+	if(env.isDev) {
 	console.log("address", address);
 	console.log("privateKey", privateKey);
 	console.log("katanaProvider", katanaProvider);
 	console.log("env", env);
 	console.log("katanaGoF", katanaGoF);
 	console.log("endpoints", endpoints);
+	}
   // const account = new Account(
 	// 	katanaProvider,
 	// 	address,
@@ -87,7 +89,7 @@ const wallet = (() => {
 		address,
 		signer: new Signer(privateKey),
 	});
-	console.log("account", account);
+	if(env.isDev) console.log("account", account);
   return { address, privateKey, account };
 })()
 
