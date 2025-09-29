@@ -984,8 +984,9 @@ export const propertiesRegistered = async (
   }
 };
 
-export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumberish> => {
-  try {
+export const queryCoinsPerGame = async (gameId: bigint): Promise<bigint> => {
+  let coins_quantiy: bigint = 0n;
+	try {
 		// 1. Get the original entity
 		const { sdk } = await InitDojo();
 		const query_entities = new ToriiQueryBuilder<SchemaType>()
@@ -1002,14 +1003,35 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
     });
 		console.log("DEBUG: queryCoinsPerGame() coinsEntity: ", coinsEntity);
 
-		const coinsInst = coinsEntity?.models?.lore?.Entity?.inst;
+		const coinsInst = BigInt(coinsEntity?.models?.lore?.Entity?.inst ?? 0);
 		if (!coinsInst) {
 			console.error("ERROR: queryCoinsPerGame() coinsInst is undefined");
-			return 0;
+			return 0n;
 		}
 		console.log("DEBUG: queryCoinsPerGame() coinsInst: ", coinsInst);
 
-		//2. Get the game instance using the coins entity and the game id
+		// query game instance map
+		let game_inst_map: BigNumberish = await queryGameInstaceMap(gameId, coinsInst);
+		console.log("DEBUG: queryCoinsPerGame() game_inst_map.inst: ", game_inst_map);
+
+		// query inventory item
+		const inv_item_inst = await queryInvItemGIMap(game_inst_map, coinsInst);
+		console.log("DEBUG: queryCoinsPerGame() inv_item_inst: ", inv_item_inst);
+
+		coins_quantiy = BigInt(inv_item_inst);
+		
+  } catch (error) {
+    console.error("Error fetching coins entity from Torii:", error);
+    throw error;
+  }
+	return coins_quantiy;
+};
+
+export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise<bigint> => {
+	let game_inst_map: bigint = 0n;
+	try{
+		const { sdk } = await InitDojo();
+		// Get the game instance using the coins entity and the game id
 		const query_coins_game_inst = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1017,29 +1039,52 @@ export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumber
       .withClause(
 				new ClauseBuilder<SchemaType>().keys(
 					["lore-GameInstanceMap"],
-					[bigintToHex128(gameId), bigintToAddress(coinsInst)]
+					[bigintToHex128(gameId), bigintToAddress(inst)]
 				).build()
-			).withEntityModels(["lore-InventoryItem"]);
+			).withEntityModels(["lore-GameInstanceMap"]);
 		
 		const result_coins_game_inst = await sdk.getEntities({ query: query_coins_game_inst });
 		console.log("DEBUG: queryCoinsPerGame() result_coins_game_inst: ", result_coins_game_inst);
-		const bagInst = "0x03ea128a01cf0d9145645e13aca19ec93a1b83d37887670af9b8f097881fe133";
-		const coinsInventoryItem = result_coins_game_inst.getItems().find((item) => {
-			return item.models?.lore?.InventoryItem?.owner_id === bagInst;
-		});
-		console.log("DEBUG: queryCoinsPerGame() coinsInventoryItem: ", coinsInventoryItem);
 
-		if (!coinsInventoryItem) {
-			console.log("Warning: queryCoinsPerGame() coinsInventoryItem is undefined");
-			return 0;
-		}
-		console.log("DEBUG: queryCoinsPerGame() coins quantity: ", coinsInventoryItem.models?.lore?.InventoryItem?.quantity ?? 0);
-		return coinsInventoryItem.models?.lore?.InventoryItem?.quantity ?? 0;
-  } catch (error) {
-    console.error("Error fetching coins entity from Torii:", error);
-    throw error;
-  }
+		game_inst_map = BigInt(result_coins_game_inst.getItems().at(0)?.models?.lore?.GameInstanceMap?.game_inst ?? 0);
+		
+		
+	} catch (error) {
+		console.error("Error fetching game instance map from Torii:", error);
+		throw error;
+	}
+	return game_inst_map; 
 };
+
+export const queryInvItemGIMap = async (gameInst: bigint, origInst: bigint): Promise<bigint> => {
+	let inv_item_inst: bigint = 0n;
+	try{
+		const { sdk } = await InitDojo();
+		// get invItem
+		const queryValue = gameInst != 0n ? gameInst : origInst;
+		const query_inv_item = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(1000)
+			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().keys(
+					["lore-InventoryItem"],
+					[bigintToHex128(queryValue)]
+				).build()
+			).withEntityModels(["lore-InventoryItem"]);
+			
+			
+			const result_inv_item = await sdk.getEntities({ query: query_inv_item });
+			console.log("DEBUG: queryInvItemGIMap() result_inv_item: ", result_inv_item);
+
+			inv_item_inst = BigInt(result_inv_item.getItems().at(0)?.models?.lore?.InventoryItem?.quantity ?? 0);
+	} catch (error) {
+		console.error("Error fetching inventory item from Torii:", error);
+		throw error;
+	}
+	return inv_item_inst;
+};
+
 
 export const queryGameCoinsBalance = async (inst: BigNumberish): Promise<BigNumberish> => {
   try {
