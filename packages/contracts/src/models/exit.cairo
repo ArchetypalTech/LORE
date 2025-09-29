@@ -149,7 +149,9 @@ pub impl ExitComponent of Component<Exit> {
                 }
 
                 // Move player to room
-                player.clone().move_to_room(ref world, self.leads_to);
+                if (!player.clone().move_to_room(ref world, self.leads_to)) {
+                    return Result::Err(Error::Unenterable);
+                }
 
                 // Do action
                 // Check if the entity of the exit has an action

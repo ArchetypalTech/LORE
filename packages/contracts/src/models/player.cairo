@@ -193,10 +193,15 @@ pub impl PlayerImpl of PlayerTrait {
         Result::Ok(())
     }
 
-    fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252) {
+    fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252) -> bool {
         self.location = room_id;
         let player_entity: Entity = self.entity(@world);
-        let room_entity: Entity = EntityImpl::get_entity(@world, room_id).unwrap();
+        let room_entity: Option<Entity> = EntityImpl::get_entity(@world, room_id);
+        if (room_entity.is_none()) {
+            self.log_error(ref world, format!("unknown room 0x{:x}", room_id));
+            return false;
+        }
+        let room_entity: Entity = room_entity.unwrap();
         player_entity.set_parent(ref world, @room_entity, self.game_id);
         self.store(ref world, self.game_id);
         if self.use_debug {
@@ -205,6 +210,8 @@ pub impl PlayerImpl of PlayerTrait {
         // Save player progress
         // TODO: find act number
         GameTokenInfoTrait::set_room(ref world, self.game_id, room_entity.inst);
+        // moved!
+        (true)
     }
 
     fn say(self: @Player, ref world: WorldStorage, text: ByteArray) {
