@@ -1,23 +1,23 @@
 
 #[derive(Copy, Drop, PartialEq)]
 pub enum Trophy {
-    None,               // 0
-    FerryDeck,          // 1
-    DockSide,           // 2
-    TheFool,            // 3
-    StagingGrounds,     // 4
-    Marshes,            // 5
-    Salts,              // 6
-    Celestial,          // 7
-    NewRuggin,          // 8
-    ForkstoneVerge,     // 9
-    BlackSpire,         // 10
-    TCM,                // 11
-    Usants,             // 12
-    Crossroads,         // 13
-    Ending1,            // 14
-    Ending2,            // 15
-    Ending3,            // 16
+    None,               // 0   - 0% 
+    FerryDeck,          // 1   - 3%
+    DockSide,           // 2   - 9%
+    TheFool,            // 3   - 16%
+    StagingGrounds,     // 4   - 22%
+    Marshes,            // 5   - 29%
+    Salts,              // 6   - 36%
+    Celestial,          // 7   - 48%
+    NewRuggin,          // 8   - 57%
+    ForkstoneVerge,     // 9   - 68%
+    BlackSpire,         // 10  - 76%
+    TCM,                // 11  - 88%
+    Usants,             // 12  - 93%
+    Crossroads,         // 13  - 100% ?? (can reach in act 1 to get UGC && editor access)
+    Citizenship,        // 14  - 100%
+    TCMAgent,           // 15  - 100%
+    RebelEnding,        // 16  - 100%
 }
 
 pub mod TROPHIES {
@@ -67,18 +67,18 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => 'Usants',
             Trophy::Crossroads      => 'Crossroads',
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => 'Ending1',
-            Trophy::Ending2         => 'Ending2',
-            Trophy::Ending3         => 'Ending3',
+            Trophy::Citizenship     => 'Citizenship',
+            Trophy::TCMAgent        => 'TCM Agent',
+            Trophy::RebelEnding     => 'RebelEnding',
         }
     }
 
     // The achievement group, it should be used to group achievements together
     fn group(self: @Trophy) -> felt252 {
         match self {
-            Trophy::Ending1 |
-            Trophy::Ending2 |
-            Trophy::Ending3 => TROPHY_GROUP::Endings,
+            Trophy::Citizenship  |
+            Trophy::TCM Agent    |
+            Trophy::RebelEnding => TROPHY_GROUP::Endings,
             _ => TROPHY_GROUP::Trails,
         }
     }
@@ -102,9 +102,9 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => 11,
             Trophy::Crossroads      => 12,
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => 0,
-            Trophy::Ending2         => 1,
-            Trophy::Ending3         => 2,
+            Trophy::Citizenship     => 0,
+            Trophy::TCMAgent        => 1,
+            Trophy::RebelEnding     => 2,
         }
     }
 
@@ -126,9 +126,9 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => 'Usants',
             Trophy::Crossroads      => 'Crossroads',
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => 'Ending 1',
-            Trophy::Ending2         => 'Ending 2',
-            Trophy::Ending3         => 'Ending 3',
+            Trophy::Citizenship         => 'Citizenship',
+            Trophy::TCMAgent         => 'TCMAgent',
+            Trophy::RebelEnding     => 'Rebel Ending',
         }
     }
 
@@ -150,9 +150,9 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => "Painted lines, mirrored glass, voices modulated to neutral...",
             Trophy::Crossroads      => "The Crossroads is the staging area for user generated content...",
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => "Ending 1...",
-            Trophy::Ending2         => "Ending 2...",
-            Trophy::Ending3         => "Ending 3...",
+            Trophy::Citizenship         => "Citizenship...",
+            Trophy::TCMAgent         => "TCM Agent...",
+            Trophy::RebelEnding     => "Rebel Ending...",
         }
     }
 
@@ -174,9 +174,9 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => "Reach Usants",
             Trophy::Crossroads      => "Reach the Crossroads",
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => "Reach the Ending 1",
-            Trophy::Ending2         => "Reach the Ending 2",
-            Trophy::Ending3         => "Reach the Ending 3",
+            Trophy::Citizenship         => "Reach the Citizenship ending",
+            Trophy::TCMAgent         => "Reach the Citizenship ending ",
+            Trophy::RebelEnding     => "Reach the Rebel Ending ending",
         }
     }
 
@@ -199,9 +199,9 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => 'fa-barcode',
             Trophy::Crossroads      => 'fa-signs-post',
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => 'fa-flag',
-            Trophy::Ending2         => 'fa-flag-swallowtail',
-            Trophy::Ending3         => 'fa-flag-pennant',
+            Trophy::Citizenship         => 'fa-flag',
+            Trophy::TCMAgent         => 'fa-flag-swallowtail',
+            Trophy::RebelEnding     => 'fa-flag-pennant',
         }
     }
 
@@ -223,9 +223,9 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => 10,
             Trophy::Crossroads      => 10,
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => 100,
-            Trophy::Ending2         => 100,
-            Trophy::Ending3         => 100,
+            Trophy::Citizenship         => 100,
+            Trophy::TCMAgent         => 100,
+            Trophy::RebelEnding     => 100,
         }
     }
 
@@ -243,17 +243,17 @@ pub impl TrophyImpl of TrophyTrait {
         else if (self == 0x00149baaaf49ef617134213413abf7c3ea81dc112eebcc9afa413cf279e45768) {(Trophy::TCM)}
         else if (self == 0x011dfa59613087381d51de9ac0b38512d5657321b591f3a1706b05fa28f18300) {(Trophy::Usants)}
         else if (self == 0x00e0c2c6ce0cdff92c8e857cbde8b7e1ff75cabd59d015389e90aef0a033a976) {(Trophy::Crossroads)}
-        else if (self == 0x11111111111) {(Trophy::Ending1)}
-        else if (self == 0x22222222222) {(Trophy::Ending2)}
-        else if (self == 0x33333333333) {(Trophy::Ending3)}
+        else if (self == 0x11111111111) {(Trophy::Citizenship)}
+        else if (self == 0x22222222222) {(Trophy::TCMAgent)}
+        else if (self == 0x33333333333) {(Trophy::RebelEnding)}
         else {(Trophy::None)}
     }
 
     fn hidden(self: @Trophy) -> bool {
         match self {
-            Trophy::Ending1 => true,
-            Trophy::Ending2 => true,
-            Trophy::Ending3 => true,
+            Trophy::Citizenship => true,
+            Trophy::TCMAgent => true,
+            Trophy::RebelEnding => true,
             _ => false,
         }
     }
@@ -286,9 +286,9 @@ pub impl TrophyImpl of TrophyTrait {
             Trophy::Usants          => 1,
             Trophy::Crossroads      => 1,
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => 1,
-            Trophy::Ending2         => 1,
-            Trophy::Ending3         => 1,
+            Trophy::Citizenship         => 1,
+            Trophy::TCMAgent         => 1,
+            Trophy::RebelEnding     => 1,
         }
     }
 
@@ -344,9 +344,9 @@ pub impl IntoTrophyU8 of core::traits::Into<Trophy, u8> {
             Trophy::Usants          => 12,
             Trophy::Crossroads      => 13,
             // TROPHY_GROUP::Endings
-            Trophy::Ending1         => 14,
-            Trophy::Ending2         => 15,
-            Trophy::Ending3         => 16,
+            Trophy::Citizenship         => 14,
+            Trophy::TCMAgent         => 15,
+            Trophy::RebelEnding     => 16,
         }
     }
 }
@@ -371,9 +371,9 @@ pub impl IntoU8Trophy of core::traits::Into<u8, Trophy> {
             12 => Trophy::Usants,
             13 => Trophy::Crossroads,
             // TROPHY_GROUP::Endings
-            14 => Trophy::Ending1,
-            15 => Trophy::Ending2,
-            16 => Trophy::Ending3,
+            14 => Trophy::Citizenship,
+            15 => Trophy::TCMAgent,
+            16 => Trophy::RebelEnding,
             // invalids
             _  => Trophy::None,
         }
