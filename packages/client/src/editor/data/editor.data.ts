@@ -735,14 +735,13 @@ const getPlayersEntranceEntity = (): EntityCollection | undefined => {
 	}
 	return entranceInst ? getEntity(entranceInst) : undefined;
 };
-const createOrSelectPlayersEntranceEntity = async (parentInst: BigNumberish | undefined) => {
+const createOrSelectPlayersEntranceEntity = async () => {
+	const crossroadsInst = '0x00e0c2c6ce0cdff92c8e857cbde8b7e1ff75cabd59d015389e90aef0a033a976';
 	// find existing entity
 	let existingEntity = getPlayersEntranceEntity()
 	if (existingEntity) {
 		console.warn("Player entrance entity already exists");
-		if (parentInst) {
-			addToParent(existingEntity, getEntity(parentInst)!);
-		}
+		addToParent(existingEntity, getEntity(crossroadsInst)!);
 		selectEntity(existingEntity.Entity.inst);
 		return existingEntity;
 	}
@@ -774,9 +773,8 @@ const createOrSelectPlayersEntranceEntity = async (parentInst: BigNumberish | un
 	exit.Exit.leads_to = bigintToAddress(walletAddress);
 	updateComponent(newEntity.Entity.inst, "Exit", exit.Exit as any);
 
-	if (parentInst) {
-		addToParent(newEntity, getEntity(parentInst)!);
-	}
+	// add to Crossroads
+	addToParent(newEntity, getEntity(crossroadsInst)!);
 	
 	// select it
 	selectEntity(newEntity.Entity.inst);

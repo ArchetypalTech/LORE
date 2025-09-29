@@ -213,20 +213,12 @@ export const HierarchyTree = () => {
 		setData(createTree().tree);
 	}, [dataPool, isDirty]);
 
-	const { canCreateEntrance, createEntranceLabel, entranceParent } = useMemo(() => {
+	const { hasTrail, hasEntrance } = useMemo(() => {
 		const trail = EditorData().getPlayersTrailEntity();
 		const entrance = EditorData().getPlayersEntranceEntity();
-		const selectedArea = EditorData().getEntity(selectedEntity ?? 0)?.Area;
-		const canCreateEntrance = Boolean(trail) 						// your trail exists
-			&& selectedArea?.is_area 													// is an area
-			&& selectedArea?.inst !== trail?.Entity.inst 			// not your trail
-			&& selectedArea?.inst !== entrance?.Entity.inst; 	// not current entrance
 		return {
-			canCreateEntrance: canCreateEntrance || Boolean(entrance),
-			createEntranceLabel:
-				!entrance ? (canCreateEntrance ? "Create Entrance" : "Select Area")
-				: (canCreateEntrance ? "Move Entrance" : "Your Entrance"),
-			entranceParent: canCreateEntrance ? selectedArea?.inst : undefined
+			hasTrail: Boolean(trail),
+			hasEntrance: Boolean(entrance),
 		};
 	}, [selectedEntity]);
 
@@ -250,11 +242,11 @@ export const HierarchyTree = () => {
 				<>
 					<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
 						<HousePlus />
-						Your Trail
+						{hasTrail ? "Your Trail" : "Create Trail"}
 					</Button>
-					<Button variant={"hero"} disabled={!canCreateEntrance} onClick={() => EditorData().createOrSelectPlayersEntranceEntity(entranceParent)}>
+					<Button variant={"hero"} disabled={!hasTrail} onClick={() => EditorData().createOrSelectPlayersEntranceEntity()}>
 						<LogIn />
-						{createEntranceLabel}
+						{hasEntrance ? "Your Entrance" : "Create Entrance"}
 					</Button>
 					<Button variant={"hero"} onClick={() => EditorData().newEntity()}>
 						<SquarePen />
