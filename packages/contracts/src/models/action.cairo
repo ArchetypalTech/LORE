@@ -119,15 +119,20 @@ pub impl ActionImpl of ActionTrait {
         if self.is_executed(@world, *player.game_id) {
             // Action has already been executed, don't do anything
             // return a player.say
-            player.say(ref world, format!("It seems that your memory is not working well as you have already done this. However, here is the result again:"));
-            // return all success responses
-            for response in self.success_response.clone() {
-                player.say(ref world, response);
+            // upon checking that the executor matches
+            if self.executor == *context.inventory_object {
+                player.say(ref world, format!("It seems that your memory is not working well as you have already done this. However, here is the result again:"));
+                // return all success responses
+                for response in self.success_response.clone() {
+                    player.say(ref world, response);
+                }
+                // return condition as false.
+                if *player.use_debug {
+                    player.log_debug(ref world, format!("Action has already been executed"));
+                }
+                return (Result::Ok(()), false, Result::Ok(()));
             }
-            // return condition as false.
-            if *player.use_debug {
-                player.log_debug(ref world, format!("Action has already been executed"));
-            }
+            // if executor does not match, just return
             return (Result::Ok(()), false, Result::Ok(()));
         }
         // Check if the action is called by the correct entity
