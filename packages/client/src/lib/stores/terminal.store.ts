@@ -40,8 +40,7 @@ export function addTerminalContent(item: TerminalContentItem) {
 		contentQueue: [...get().contentQueue, item],
 	});
 
-	if (get().activeTypewriterLine === null) {
-		printingStatus(false);
+	if (get().activeTypewriterLine === null) {		
 		nextItem(null);
 	}
 }
@@ -71,12 +70,16 @@ export const nextItem = async (newContent: TerminalContentItem | null) => {
 	if (state.contentQueue.length > 0) {
 		const nextItem = state.contentQueue[0];
 		if (nextItem) {
+			printingStatus(true);
 			set({
 				contentQueue: state.contentQueue.filter((item) => item !== nextItem),
 				activeTypewriterLine: nextItem,
 			});
 		}
-	}
+	} 
+	// disable printing notice once queue is empty and mode has been typewriter
+	if(!state.contentQueue.length && state.activeTypewriterLine?.useTypewriter) printingStatus(false);
+	
 };
 
 /**
