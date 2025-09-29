@@ -986,63 +986,54 @@ export const propertiesRegistered = async (
 
 export const queryCoinsPerGame = async (gameId: BigNumberish): Promise<BigNumberish> => {
   try {
-		console.log("DEBUG: queryCoinsPerGame() gameId: ", gameId);
-    const { sdk } = await InitDojo();
-    const query_game_insts = new ToriiQueryBuilder<SchemaType>()
+		// 1. Get the original entity
+		const { sdk } = await InitDojo();
+		const query_entities = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
-      .withLimit(90000)
+      .withLimit(1000)
       .includeHashedKeys()
-			.withClause(
+      .withEntityModels(["lore-Entity"]);
+
+    const result = await sdk.getEntities({ query: query_entities });
+
+
+    const coinsEntity = result.getItems().find((item) => {
+      item.models?.lore?.Entity?.name === "usants Coins";
+    });
+		console.log("DEBUG: queryCoinsPerGame() coinsEntity: ", coinsEntity);
+
+		const coinsInst = coinsEntity?.models?.lore?.Entity?.inst;
+		if (!coinsInst) {
+			console.error("ERROR: queryCoinsPerGame() coinsInst is undefined");
+			return 0;
+		}
+		console.log("DEBUG: queryCoinsPerGame() coinsInst: ", coinsInst);
+
+		//2. Get the game instance using the coins entity and the game id
+		const query_coins_game_inst = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
 				new ClauseBuilder<SchemaType>().keys(
 					["lore-GameInstanceMap"],
-					[bigintToHex128(gameId), undefined]
+					[bigintToHex128(gameId), bigintToAddress(coinsInst)]
 				).build()
 			)
-      .withEntityModels(["lore-GameInstanceMap"]);
-
-    const result_game_insts = await sdk.getEntities({ query: query_game_insts });
-		const game_insts = result_game_insts.getItems()
-		.filter((item) => item.models?.lore?.GameInstanceMap?.game_id !== undefined)
-		.map((item) => bigintToAddress(item.models?.lore?.GameInstanceMap?.game_inst ?? 0));
-		console.log("DEBUG: queryCoinsPerGame() game_insts: ", game_insts);
-
-		// get entity component
-		const query_entity = new ToriiQueryBuilder<SchemaType>()
-			.withCursor("")
-			.withLimit(90000)
-			.includeHashedKeys()
-			.withClause(
-				new ClauseBuilder<SchemaType>().compose().or(
-					game_insts.map((inst) => new ClauseBuilder<SchemaType>().keys(gameInstModels, [inst])),
-				).build()
-			)
-			.withEntityModels(["lore-Entity"]);
-		const result_entity = await sdk.getEntities({ query: query_entity });
-		console.log("DEBUG: queryCoinsPerGame() result_entity: ", result_entity);
-		const entity = result_entity.getItems().find((item) => {
-			return item.models?.lore?.Entity?.name === "Coins";
+		
+		const result_coins_game_inst = await sdk.getEntities({ query: query_coins_game_inst });
+		console.log("DEBUG: queryCoinsPerGame() result_coins_game_inst: ", result_coins_game_inst);
+		const coinsInventoryItem = result_coins_game_inst.getItems().find((item) => {
+			item.models?.lore?.InventoryItem?.inst === coinsInst;
 		});
-		console.log("DEBUG: queryCoinsPerGame() entity: ", entity);
+		console.log("DEBUG: queryCoinsPerGame() coinsInventoryItem: ", coinsInventoryItem);
 
-		// query coins inventory item
-		const query_coins = new ToriiQueryBuilder<SchemaType>()
-			.withCursor("")
-			.withLimit(90000)
-			.includeHashedKeys()
-			.withClause(
-				new ClauseBuilder<SchemaType>().keys(
-					["lore-InventoryItem"],
-					[addAddressPadding(entity?.models?.lore?.Entity?.inst ?? 0)]
-				).build()
-			)
-			.withEntityModels(["lore-InventoryItem"]);
-			const result_coins = await sdk.getEntities({ query: query_coins });
-			console.log("DEBUG: queryCoinsPerGame() query_coins result: ", result_coins);
-			const coins = result_coins.getItems().find((item) => {
-				return item.models?.lore?.InventoryItem?.inst === entity?.models?.lore?.Entity?.inst;
-			});
-			console.log("DEBUG: queryCoinsPerGame() coins: ", coins);
-    return coins?.models?.lore?.InventoryItem?.quantity ?? 0; // fallback if not found
+		if (!coinsInventoryItem) {
+			console.log("Warning: queryCoinsPerGame() coinsInventoryItem is undefined");
+			return 0;
+		}
+		console.log("DEBUG: queryCoinsPerGame() coins quantity: ", coinsInventoryItem.models?.lore?.InventoryItem?.quantity ?? 0);
+		return coinsInventoryItem.models?.lore?.InventoryItem?.quantity ?? 0;
   } catch (error) {
     console.error("Error fetching coins entity from Torii:", error);
     throw error;
