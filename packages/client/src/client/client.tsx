@@ -26,15 +26,15 @@ export const Client = () => {
 	return (
 		<div
 			id="client-root"
-			className="relative flex h-screen w-screen items-center justify-center "
+			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center"
 		>
 			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
 				<img src={bg} alt="oruggin-background" />
 			</div>
-			<div className="crt buzzing flex h-full max-h-[100dvh] md:max-h-[70%] w-full items-center justify-center">
+			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
 			</div>
-			<div className="fixed grid grid-cols-3 grid-cols-[.5fr 1fr .5fr] bottom-4 w-full px-4">
+			<div className="fixed hidden md:grid grid-cols-3 grid-cols-[.5fr 1fr .5fr] bottom-4 w-full px-4">
 					<button onClick={() => toggleMuted()} className="text-left text-xs cursor-pointer text-amber-300">background music: {`${useTerminalStore().enableAudio}`}</button>
 					<p className="text-center text-xs text-amber-300">Liked the game? Leave a comment on our <a aria-label="leave a comment" className="comments underline" href="https://archetypaltech.itch.io/oruggin-trail">Itch.io</a> page!</p>
 					<span className="min-w-3">
