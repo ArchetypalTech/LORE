@@ -24,12 +24,12 @@ export const Client = () => {
 	return (
 		<div
 			id="client-root"
-			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center "
+			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center"
 		>
-			<div className="fixed z-[0] opacity-40 w-screen h-screen max-h-[100dvh] artwork-background">
+			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
 				<img src={bg} alt="oruggin-background" />
 			</div>
-			<div className="crt buzzing flex h-full max-h-[100dvh] md:max-h-[70%] w-full items-center justify-center">
+			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
 			</div>
 			<div className="fixed bottom-4 hidden md:block">
