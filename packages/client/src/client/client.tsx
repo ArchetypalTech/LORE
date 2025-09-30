@@ -1,7 +1,9 @@
 import { useHead } from "@unhead/react";
 import { APP_SEO } from "@/data/app.data";
 import Terminal from "./terminal/Terminal";
+import AudioPlayer from "./terminal/AudioPlayer"
 import bg from "../assets/782.webp";
+import { useTerminalStore, toggleMuted } from "@/lib/stores/terminal.store";
 
 export const Client = () => {
 	useHead({
@@ -32,9 +34,14 @@ export const Client = () => {
 			<div className="crt buzzing flex h-full max-h-[100dvh] md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
 			</div>
-			<div className="fixed bottom-4">
+			<div className="fixed grid grid-cols-3 grid-cols-[.5fr 1fr .5fr] bottom-4 w-full px-4">
+					<button onClick={() => toggleMuted()} className="text-left text-xs cursor-pointer text-amber-300">background music: {`${useTerminalStore().enableAudio}`}</button>
 					<p className="text-center text-xs text-amber-300">Liked the game? Leave a comment on our <a aria-label="leave a comment" className="comments underline" href="https://archetypaltech.itch.io/oruggin-trail">Itch.io</a> page!</p>
+					<span className="min-w-3">
+					<AudioPlayer></AudioPlayer>
+					</span>
 			</div>
 		</div>
+
 	);
 };

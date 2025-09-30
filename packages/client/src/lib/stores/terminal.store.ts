@@ -15,6 +15,8 @@ export type TerminalContentItem = {
 	speed?: number;
 	style?: HTMLAttributes<HTMLDivElement>["style"];
 	isPrinting?: boolean;
+	enableAudio: boolean;
+	hasInteracted: boolean;
 };
 
 const {
@@ -24,6 +26,7 @@ const {
 	createFactory,
 } = StoreBuilder({
 	isPrinting: false as boolean,
+	enableAudio: false as boolean,
 	terminalContent: [] as TerminalContentItem[],
 	activeTypewriterLine: null as TerminalContentItem | null,
 	contentQueue: [] as TerminalContentItem[],
@@ -48,6 +51,17 @@ export function addTerminalContent(item: TerminalContentItem) {
 export function printingStatus(state: boolean) {
 	set({
 		isPrinting: state
+	});
+}
+
+export function toggleMuted() {
+	set({
+		enableAudio: !get().enableAudio
+	});
+}
+export function unMute() {
+	set({
+		enableAudio: true
 	});
 }
 

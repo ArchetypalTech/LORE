@@ -3,6 +3,7 @@ import {
 	nextItem,
 	printingStatus,
 	useTerminalStore,
+	setInteracted,
 } from "@lib/stores/terminal.store";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -21,7 +22,7 @@ export default function Terminal({
 	gameId?: BigNumberish;
 }) {
 	const gameId = useSyncGameId(inputGameId);
-
+	
 	const [inputValue, setInputValue] = useState("");
 	const [originalInputValue, setOriginalInputValue] = useState("");
 	const [inputHistory, setInputHistory] = useState<string[]>([]);
