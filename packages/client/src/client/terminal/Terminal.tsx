@@ -3,7 +3,6 @@ import {
 	nextItem,
 	printingStatus,
 	useTerminalStore,
-	setInteracted,
 } from "@lib/stores/terminal.store";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";

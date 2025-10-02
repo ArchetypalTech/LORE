@@ -16,7 +16,7 @@ export type TerminalContentItem = {
 	style?: HTMLAttributes<HTMLDivElement>["style"];
 	isPrinting?: boolean;
 	enableAudio: boolean;
-	hasInteracted: boolean;
+	volumeAudio: number;
 };
 
 const {
@@ -30,6 +30,7 @@ const {
 	terminalContent: [] as TerminalContentItem[],
 	activeTypewriterLine: null as TerminalContentItem | null,
 	contentQueue: [] as TerminalContentItem[],
+	volumeAudio: 0.35,
 });
 
 /**
@@ -52,6 +53,19 @@ export function printingStatus(state: boolean) {
 	set({
 		isPrinting: state
 	});
+}
+
+export function increaseVolume() {
+	let volume = get().volumeAudio
+	volume += 0.1
+	if(volume > 1 ) return 
+	set({ volumeAudio: volume });
+}
+export function decreaseVolume() {
+	let volume = get().volumeAudio
+	volume -= 0.1
+	if(volume < 0.1 ) return 
+	set({ volumeAudio: volume });
 }
 
 export function toggleMuted() {
