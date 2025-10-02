@@ -379,7 +379,7 @@ const removeEntity = (entity: EntityCollection) => {
 	// unbreak whatever we're editing / selecting
 	if (get().selectedEntity === inst) {
 		const index = getEntities().findIndex((x) => x.Entity?.inst === inst);
-		set({ selectedEntity: getEntities()[index + 1]?.Entity?.inst });
+		updateSelectedEntityId(getEntities()[index + 1]?.Entity?.inst);
 	}
 	if (get().editedEntity?.Entity?.inst === inst) {
 		set({ editedEntity: undefined });
@@ -545,6 +545,11 @@ const processMergedObject = (
 	return result as AnyObject;
 };
 
+// Resore previously selected entity, or use fallback if not found
+const restoreSelectedEntity = (fallback_id: BigNumberish) => {
+	selectEntity(localStorage.getItem("selected_entity_id") ?? fallback_id);
+};
+
 const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
 		const entity = getEntity(get().selectedEntity!);
@@ -552,22 +557,20 @@ const selectEntity = (id: BigNumberish) => {
 			syncItem(entity);
 		}
 	}
-	set({ selectedEntity: id, editedEntity: undefined });
+	updateSelectedEntityId(id);
+	set({ editedEntity: undefined });
 
-	// uncollapse parents of selected entity
+	// uncollapse parents of selected entity to make it visible
 	let entity = EditorData().getEntity(id);
-	console.log("------- SELECTED ENTITY", entity?.Entity?.name);
 	while (entity?.ChildToParent) {
 		setEntityCollapsed(entity.ChildToParent.parent, false);
 		entity = EditorData().getEntity(entity.ChildToParent.parent);
-		console.log(">> SELECTED PARENT:", entity?.Entity?.name);
 	}
 };
 
-const updateSelectedEntity = (entity: EntityCollection) => {
-	const selectedEntity = get().selectedEntity!;
-	Object.assign(selectedEntity, entity);
-	set({ selectedEntity });
+const updateSelectedEntityId = (id: BigNumberish) => {
+	set({ selectedEntity: id });
+	localStorage.setItem("selected_entity_id", bigintToAddress(id));
 };
 
 const _uncollapsedKey = (inst: BigNumberish) => (`uncollapsed_${bigintToAddress(inst)}`);
@@ -1491,7 +1494,7 @@ const EditorData = createFactory({
 	setCreatorsFilter,
 	shouldDisplayEntity,
 	updateComponent,
-	updateSelectedEntity,
+	restoreSelectedEntity,
 	removeComponent,
 	logPool,
 	resetChanges,

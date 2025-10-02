@@ -60,7 +60,9 @@ export const Editor = () => {
 		}
 		if (hasObjects) {
 			if (EditorData().selectedEntity === undefined) {
-				EditorData().selectEntity(EditorData().getEntities()[0]?.Entity?.inst);
+				// find first top-level entity
+				const topLevelEntity = EditorData().getEntities().find((e) => e!.ChildToParent === undefined);
+				EditorData().restoreSelectedEntity(topLevelEntity?.Entity?.inst);
 				setEditorState("loaded");
 				return;
 			}
