@@ -695,9 +695,11 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	descriptionText.DescriptionText.text = playerEntity.Entity.name;
 	descriptionText.DescriptionText.key = 0;
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
-	const reactable = createDefaultReactableComponent(playerEntity.Entity);
-	reactable.Reactable.description = [descriptionText.DescriptionText.key];
-	reactable.Reactable.new_entry = playerEntity.Entity.name;
+	const reactable = createDefaultReactableComponent(
+		playerEntity.Entity,
+		[descriptionText.DescriptionText],
+		playerEntity.Entity.name,
+	);
 	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
@@ -740,17 +742,21 @@ const createOrSelectPlayersTrailEntity = async () => {
 	await tick();
 
 	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
-	descriptionText.DescriptionText.text = `${username}'s Trail`;
+	descriptionText.DescriptionText.text = newEntity.Entity.name;
 	descriptionText.DescriptionText.key = 0;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 
-	const reactable = createDefaultReactableComponent(newEntity.Entity);
-	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	const reactable = createDefaultReactableComponent(
+		newEntity.Entity,
+		[descriptionText.DescriptionText],
+		newEntity.Entity.name,
+	);
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 
 	const area = createDefaultAreaComponent(newEntity.Entity);
 	area.Area.is_spawn_point = false;
 	area.Area.progress_percentage = 0;
+	area.Area.preserve_children = false;
 	updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
 
 	// create way back to crossroads
@@ -846,8 +852,11 @@ export const createExit = async ({
 	descriptionText.DescriptionText.key = 0;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 
-	const reactable = createDefaultReactableComponent(newEntity.Entity);
-	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	const reactable = createDefaultReactableComponent(
+		newEntity.Entity,
+		[descriptionText.DescriptionText],
+		description,
+	);
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 
 	const exit = createDefaultExitComponent(newEntity.Entity);

@@ -95,12 +95,14 @@ mod tests {
             inst: entity_1.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 10,
         };
         let mut area_2: Area = Area {
             inst: entity_2.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 20,
         };
         designer.create_area(array![area_1.clone(), area_2.clone()]);
@@ -177,12 +179,14 @@ mod tests {
             inst: entity_1.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 10,
         };
         let mut area_2: Area = Area {
             inst: entity_2.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 20,
         };
         designer.create_area(array![area_1.clone(), area_2.clone()]);
@@ -256,6 +260,7 @@ mod tests {
             inst: entity_1.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 10,
         };
         designer.create_area(array![area_1.clone()]);
@@ -326,6 +331,7 @@ mod tests {
             inst: entity_1.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 10,
         };
         designer.create_area(array![area_1.clone()]);
@@ -380,6 +386,7 @@ mod tests {
             inst: entity_1.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 10,
         };
         designer.create_area(array![area_1.clone()]);
@@ -441,6 +448,7 @@ mod tests {
             inst: entity_1.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 10,
         };
         designer.create_area(array![area_1.clone()]);
@@ -498,6 +506,7 @@ mod tests {
             inst: entity_1.inst,
             is_area: true,
             is_spawn_point: false,
+            preserve_children: false,
             progress_percentage: 10,
         };
         designer.create_area(array![area_1.clone()]);

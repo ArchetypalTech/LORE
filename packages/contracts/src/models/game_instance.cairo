@@ -57,16 +57,26 @@ pub trait InstanceKey<M, +Drop<M>, +Model<M>> {
 
 // for models with keys: (inst)
 pub trait GameModelTrait<M> {
+    // get the mapped game instance for the given, or 0 if not mapped
+    fn get_mapped_game_inst(self: @WorldStorage, inst: felt252, game_id: u128) -> felt252;
+    // verify if a game instance has its own version of a component
     fn has_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> bool;
+    // read a game instance component, or the original
     fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M;
+    // write a game instance component. next read operations will read the game instance version
     fn write_game_model(ref self: WorldStorage, model: @M, game_id: u128);
+    // reset a game instance component. next read operatinos will read the original version
+    fn reset_game_model(ref self: WorldStorage, inst: felt252, game_id: u128);
     // fn write_game_member<T, +Serde<T>, +Drop<T>>(ref self: WorldStorage, model: @M, field_selector: felt252, value: T, game_id: u128);
 }
 
 // for models with keys: (inst, key)
 pub trait GameModelKeyTrait<M> {
+    // get the mapped game instance for the given, or 0 if not mapped
     fn get_mapped_game_inst(self: @WorldStorage, inst: felt252, key: u32, game_id: u128) -> felt252;
+    // read a game instance component, or the original
     fn read_game_model_key(self: @WorldStorage, inst: felt252, key: u32, game_id: u128) -> M;
+    // write a game instance component. next read operations will read the game instance version
     fn write_game_model_key(ref self: WorldStorage, model: @M, game_id: u128);
 }
 
@@ -92,13 +102,15 @@ pub impl GameInstImpl of GameInstTrait {
 }
 
 pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameModelTrait<M> {
-    // check if an entity has a game instance model
+    fn get_mapped_game_inst(self: @WorldStorage, inst: felt252, game_id: u128) -> felt252 {
+        (self.read_member(Model::<GameInstanceMap>::ptr_from_keys((game_id, inst),), selector!("game_inst")))
+    }
+
     fn has_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> bool {
         let game_inst: felt252 = GameInstImpl::game_inst(inst, game_id);
         (Instance::<M>::has_component(self, game_inst))
     }
     
-    // reads a game instance model, if it exists
     fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M {
         let game_inst: felt252 = GameInstImpl::game_inst(inst, game_id);
         (if Instance::<M>::has_component(self, game_inst) {
@@ -114,7 +126,6 @@ pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameM
         })
     }
     
-    // writes a game instance model
     fn write_game_model(ref self: WorldStorage, model: @M, game_id: u128) {
         if game_id.is_non_zero() {
             // generate game instance key
@@ -138,6 +149,17 @@ pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameM
             self.write_model(model);
         }
     }
+
+    fn reset_game_model(ref self: WorldStorage, inst: felt252, game_id: u128) {
+        let game_inst: felt252 = Self::get_mapped_game_inst(@self, inst, game_id);
+        if game_inst.is_non_zero() {
+            // read the original model
+            let mut model: M = self.read_model(inst);
+            // overwrite the game instance
+            model.set_inst(game_inst);
+            self.write_model(@model);
+        }
+    }
 }
 
 pub impl GameModelKeyImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +InstanceKey<M>> of GameModelKeyTrait<M> {
@@ -147,7 +169,6 @@ pub impl GameModelKeyImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +InstanceKey<M>> of
         (self.read_member(Model::<GameInstanceKeyMap>::ptr_from_keys((game_id, inst, key),), selector!("game_inst")))
     }
 
-    // reads a game instance model, if it exists
     fn read_game_model_key(self: @WorldStorage, inst: felt252, key: u32, game_id: u128) -> M {
         let game_inst: felt252 = Self::get_mapped_game_inst(self, inst, key, game_id);
         (if game_inst.is_non_zero() {
@@ -163,7 +184,6 @@ pub impl GameModelKeyImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +InstanceKey<M>> of
         })
     }
     
-    // writes a game instance model
     fn write_game_model_key(ref self: WorldStorage, model: @M, game_id: u128) {
         if game_id.is_non_zero() {
             let mut game_inst: felt252 = Self::get_mapped_game_inst(@self, model.inst(), model.key(), game_id);

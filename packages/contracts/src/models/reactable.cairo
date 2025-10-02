@@ -261,7 +261,7 @@ pub mod tests {
         types::{command_type::{Command, Token, TokenType}},
     };
 
-    pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252) -> Reactable {
+    pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252, new_entry: ByteArray) -> Reactable {
         let descr1 = DescriptionText { inst, key: 0, text: "hello" };
         let descr2 = DescriptionText { inst, key: 1, text: "world" };
         let descr3 = DescriptionText { inst, key: 2, text: "how big is a rock" };
@@ -300,7 +300,7 @@ pub mod tests {
                 },
             ],
             already_shown: false,
-            new_entry: "",
+            new_entry,
         };
         world.write_model(@prefab);
         (prefab)
@@ -308,7 +308,7 @@ pub mod tests {
     
     fn Reactable_create_prefab_world() -> (Reactable, WorldStorage, ContractAddress, ContractAddress) {
         let (mut world, _, _, _, player_1, player_2) = helpers::setup_core();
-        let prefab = Reactable_create_prefab(ref world, 42);
+        let prefab = Reactable_create_prefab(ref world, 42, "");
         (prefab, world, player_1, player_2)
     }
 
