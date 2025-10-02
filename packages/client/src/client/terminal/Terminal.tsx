@@ -21,7 +21,7 @@ export default function Terminal({
 	gameId?: BigNumberish;
 }) {
 	const gameId = useSyncGameId(inputGameId);
-
+	
 	const [inputValue, setInputValue] = useState("");
 	const [originalInputValue, setOriginalInputValue] = useState("");
 	const [inputHistory, setInputHistory] = useState<string[]>([]);
