@@ -40,7 +40,7 @@ import type {
 	WithStringEnums,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import { bigintToAddress, bigintToHex128, tick } from "@/lib/utils/utils";
+import { bigintToAddress, bigintToHex128, bigintEquals, tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
@@ -376,12 +376,23 @@ const removeEntity = (entity: EntityCollection) => {
 		throw new Error("Entity is not an entity");
 	}
 	const inst = entity.Entity!.inst;
-	// unbreak whatever we're editing / selecting
-	if (get().selectedEntity === inst) {
-		const index = getEntities().findIndex((x) => x.Entity?.inst === inst);
-		updateSelectedEntityId(getEntities()[index + 1]?.Entity?.inst);
+	// unbreak whatever we're selecting
+	if (bigintEquals(get().selectedEntity, inst)) {
+		const parentEntity = (entity.ChildToParent !== undefined) ? getEntity(entity.ChildToParent.parent) : undefined;
+		// find closest sibling...
+		const silbingIds = parentEntity?.ParentToChildren?.children ?? [];
+		const index = silbingIds.findIndex((x) => bigintEquals(x, inst));
+		if (index != -1 && silbingIds.length > 1) {
+			updateSelectedEntityId(silbingIds[index > 0 ? index - 1 : index + 1]);
+		} else if (parentEntity) {
+			// or select parent...
+			updateSelectedEntityId(parentEntity.Entity.inst);
+		} else  {
+			updateSelectedEntityId(0n);
+		}
 	}
-	if (get().editedEntity?.Entity?.inst === inst) {
+	// unbreak whatever we're editing
+	if (bigintEquals(get().editedEntity?.Entity?.inst, inst)) {
 		set({ editedEntity: undefined });
 	}
 	// unparent all children

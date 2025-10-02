@@ -49,3 +49,4 @@ export const bigintToHex = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x
 export const bigintToHex64 = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x${BigInt(v).toString(16).padStart(16, '0')}`)
 export const bigintToHex128 = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x${BigInt(v).toString(16).padStart(32, '0')}`)
 export const bigintToAddress = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x${BigInt(v).toString(16).padStart(64, '0')}`)
+export const bigintEquals = (a: BigNumberish | undefined, b: BigNumberish | undefined): boolean => (a != undefined && b != undefined && BigInt(a) == BigInt(b))
