@@ -570,16 +570,16 @@ const updateSelectedEntity = (entity: EntityCollection) => {
 	set({ selectedEntity });
 };
 
-const _collapsedKey = (inst: BigNumberish) => (`collapsed_${bigintToAddress(inst)}`);
+const _uncollapsedKey = (inst: BigNumberish) => (`uncollapsed_${bigintToAddress(inst)}`);
 const setEntityCollapsed = (inst: BigNumberish, collapsed: boolean) => {
-	if (collapsed) {
-		localStorage.setItem(_collapsedKey(inst), "true");
-	} else if (localStorage.getItem(_collapsedKey(inst)) === "true") {
-		localStorage.removeItem(_collapsedKey(inst));
+	if (!collapsed) {
+		localStorage.setItem(_uncollapsedKey(inst), "true");
+	} else if (localStorage.getItem(_uncollapsedKey(inst)) === "true") {
+		localStorage.removeItem(_uncollapsedKey(inst));
 	}
 };
 const isEntityCollapsed = (inst: BigNumberish) => {
-	return localStorage.getItem(_collapsedKey(inst)) === "true";
+	return localStorage.getItem(_uncollapsedKey(inst)) !== "true";
 };
 
 const setCreatorsFilter = (creators: bigint[]) => {
