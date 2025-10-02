@@ -5,10 +5,10 @@ import {
 	type TreeItems,
 } from "dnd-kit-tree";
 import { HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { cn } from "@/lib/utils/utils";
+import { bigintToHex, cn } from "@/lib/utils/utils";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
@@ -60,7 +60,7 @@ export const HierarchyTreeItem = ({
 	}, [entity]);
 
 	return (
-		<div ref={wrapperRef}>
+		<div ref={wrapperRef} id={`item_${bigintToHex(entity.Entity.inst)}`}>
 			<div
 				className={cn(
 					"relative flex flex-row overflow-visible opacity-80",
@@ -205,7 +205,7 @@ const createTree = () => {
 };
 
 export const HierarchyTree = () => {
-	const { dataPool, isDirty, creatorsFilter } = useEditorData();
+	const { dataPool, isDirty, creatorsFilter, selectedEntity } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
 
 	useEffect(() => {
@@ -214,11 +214,22 @@ export const HierarchyTree = () => {
 		setData(createTree().tree);
 	}, [dataPool, isDirty, creatorsFilter]);
 
+	// scroll to selected entity
+	const treeRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		if (selectedEntity && treeRef.current) {
+			const selectedItem = treeRef.current.querySelector(`#item_${bigintToHex(selectedEntity)}`);
+			if (selectedItem) {
+				selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+			}
+		}
+	}, [selectedEntity, treeRef.current, data]);
+
 	return (
 		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
 			<HierarchyTreeMenu />
 			<HierarchyTreeFilter />
-			<div className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
+			<div ref={treeRef} className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}
 					collapsible={true}

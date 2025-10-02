@@ -2,11 +2,12 @@ use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use starknet::ContractAddress;
 use lore::{
     models::{
-        entity::{Entity, EntityImpl},
+        entity::{Entity, EntityImpl, ParentToChildren},
         components::{Component},
         game_instance::{Instance, GameModelImpl, GameInstImpl},
         reactable::{Reactable, ReactableImpl},
         container::{Container, ContainerComponent},
+        area::{Area, AreaComponent},
         description_text::{DescriptionText},
         token_config::{GameTokenInfoTrait},
     },
@@ -194,21 +195,32 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     fn move_to_room(mut self: Player, ref world: WorldStorage, room_id: felt252) -> bool {
-        self.location = room_id;
-        let player_entity: Entity = self.entity(@world);
+        // get room's entity
         let room_entity: Option<Entity> = EntityImpl::get_entity(@world, room_id);
         if (room_entity.is_none()) {
             self.log_error(ref world, format!("unknown room 0x{:x}", room_id));
             return false;
         }
+        // get the room's Area
+        let area: Option<Area> = AreaComponent::get_component(@world, room_id, self.game_id);
+        if let Some(area) = area {
+            if (area.preserve_children) {
+                // reset the room's children on this game instance
+                GameModelImpl::<ParentToChildren>::reset_game_model(ref world, room_id, self.game_id);
+            }
+        }
+        // move player inside the room
         let room_entity: Entity = room_entity.unwrap();
+        let player_entity: Entity = self.entity(@world);
         player_entity.set_parent(ref world, @room_entity, self.game_id);
+        // set player's location
+        self.location = room_id;
         self.store(ref world, self.game_id);
+        // debug
         if self.use_debug {
             self.say(ref world, format!("You {:?} enter {:?}", player_entity, room_entity));
         }
         // Save player progress
-        // TODO: find act number
         GameTokenInfoTrait::set_room(ref world, self.game_id, room_entity.inst);
         // moved!
         (true)
@@ -398,6 +410,11 @@ mod tests {
             token_config::{GameTokenInfo},
             reactable::{Reactable, ReactableComponent},
             description_text::{DescriptionText},
+            area::{AreaComponent},
+            exit::{ExitComponent},
+        },
+        types::{
+            direction_type::{Direction},
         },
     };
     use lore::models::reactable::tests::{Reactable_create_prefab};
@@ -452,8 +469,8 @@ mod tests {
         // create some rooms
         let room_1_entity: Entity = EntityImpl::create_entity(ref world, "room_1");
         let room_2_entity: Entity = EntityImpl::create_entity(ref world, "room_2");
-        let _room_1_reactable: Reactable = Reactable_create_prefab(ref world, room_1_entity.inst);
-        let _room_2_reactable: Reactable = Reactable_create_prefab(ref world, room_2_entity.inst);
+        let _room_1_reactable: Reactable = Reactable_create_prefab(ref world, room_1_entity.inst, "ROOM1");
+        let _room_2_reactable: Reactable = Reactable_create_prefab(ref world, room_2_entity.inst, "ROOM2");
         assert_ne!(room_1_entity.inst, 0, "room_1_entity.inst > 0");
         assert_ne!(room_2_entity.inst, 0, "room_2_entity.inst > 0");
         assert_ne!(room_1_entity.inst, room_2_entity.inst, "room_1_entity.inst != room_2_entity.inst");
@@ -503,9 +520,101 @@ mod tests {
         assert_eq!(token_info_2.room_name, room_1_entity.name.clone(), "new act");
     }
 
+    #[test]
+    fn test_player_room_preserve() {
+        let (mut world, _, prompt, _, player_address, _) = helpers::setup_core();
+        // create some rooms
+        let room_1_entity: Entity = EntityImpl::create_entity(ref world, "Room 1");
+        let room_2_entity: Entity = EntityImpl::create_entity(ref world, "Room 2");
+        let _: Reactable = Reactable_create_prefab(ref world, room_1_entity.inst, "ROOM1");
+        let _: Reactable = Reactable_create_prefab(ref world, room_2_entity.inst, "ROOM2");
+        let _area_1: Area = AreaComponent::add_component(ref world, room_1_entity.inst);
+        let mut area_2: Area = AreaComponent::add_component(ref world, room_2_entity.inst);
+        // create exits
+        let mut exit_1_entity: Entity = EntityImpl::create_entity(ref world, "Exit To Room 2");
+        let mut exit_2_entity: Entity = EntityImpl::create_entity(ref world, "Exit To Room 1");
+        exit_1_entity.alt_names = array!["to_room_2"];
+        exit_2_entity.alt_names = array!["to_room_1"];
+        world.write_model(@exit_1_entity);
+        world.write_model(@exit_2_entity);
+        let _: Reactable = Reactable_create_prefab(ref world, exit_1_entity.inst, "to_room_2");
+        let _: Reactable = Reactable_create_prefab(ref world, exit_2_entity.inst, "to_room_1");
+        let mut exit_to_room_2 = ExitComponent::add_component(ref world, exit_1_entity.inst);
+        let mut exit_to_room_1 = ExitComponent::add_component(ref world, exit_2_entity.inst);
+        exit_to_room_2.leads_to = room_2_entity.inst;
+        exit_to_room_2.is_enterable = true;
+        exit_to_room_2.direction_type = Direction::North;
+        exit_to_room_1.leads_to = room_1_entity.inst;
+        exit_to_room_1.is_enterable = true;
+        exit_to_room_1.direction_type = Direction::South;
+        world.write_model(@exit_to_room_2);
+        world.write_model(@exit_to_room_1);
+        // add exits to rooms
+        exit_1_entity.set_parent(ref world, @room_1_entity, 0);
+        exit_2_entity.set_parent(ref world, @room_2_entity, 0);
+        //
+        // create player
+        let game_id: u128 = 1;
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_address, 0);
+        helpers::set_caller(player_address);
+        prompt.prompt("", Option::None);
+        // place in Room 1
+        helpers::set_caller(helpers::OWNER());
+        player.move_to_room(ref world, room_1_entity.inst);
+        //
+        // rooom 1
+        helpers::set_caller(player_address);
+        prompt.prompt("g_game_id", Option::None);
+        assert_eq!(_last_story_line(@world, game_id), "+sys+game-1", "g_game_id");
+        prompt.prompt("use to_room_2", Option::None);
+        prompt.prompt("look around", Option::None);
+// println!("++ room 1: {}: {}", _story_len(@world, game_id), _last_story_line(@world, game_id));
+        assert_eq!(_last_story_line(@world, game_id), "to_room_1", "look 2");
+        prompt.prompt("use to_room_1", Option::None);
+        prompt.prompt("look around", Option::None);
+// println!("++ room 2: {}: {}", _story_len(@world, game_id), _last_story_line(@world, game_id));
+        assert_eq!(_last_story_line(@world, game_id), "to_room_2", "look 1");
+        //
+        // add new entity to room 2
+        assert_eq!(room_2_entity.get_children_count(@world, 0), 1, "after add");
+        helpers::set_caller(helpers::OWNER());
+        let mut new_entity: Entity = EntityImpl::create_entity(ref world, "New Entity");
+        let _: Reactable = Reactable_create_prefab(ref world, new_entity.inst, "new_entity");
+        new_entity.set_parent(ref world, @room_2_entity, 0);
+        helpers::set_caller(player_address);
+        // one more children
+        assert_eq!(room_2_entity.get_children_count(@world, 0), 2, "after add");
+        assert_eq!(room_2_entity.get_children_count(@world, game_id), 1, "after add");
+        //
+        // enter room 2, look around... new entity not present
+        prompt.prompt("use to_room_2", Option::None);
+        assert_eq!(room_2_entity.get_children_count(@world, game_id), 1+1, "use after add");
+        prompt.prompt("look around", Option::None);
+        assert_eq!(_last_story_line(@world, game_id), "to_room_1", "use after add");
+        prompt.prompt("use to_room_1", Option::None);
+        //
+        // enable preserve_children
+        helpers::set_caller(helpers::OWNER());
+        area_2.preserve_children = true;
+        world.write_model(@area_2);
+        helpers::set_caller(player_address);
+        //
+        // enter room 2, look around... new entity not present
+        prompt.prompt("use to_room_2", Option::None);
+        assert_eq!(room_2_entity.get_children_count(@world, game_id), 2+1, "after preserve");
+        prompt.prompt("look around", Option::None);
+        assert_eq!(_last_story_line(@world, game_id), "new_entity", "after preserve");
+        prompt.prompt("use to_room_1", Option::None);
+    }
+
     fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {
         let story: PlayerStory = world.read_model(game_id);
         (story.story_line)
+    }
+    fn _last_story_line(world: @WorldStorage, game_id: u128) -> ByteArray {
+        let story: PlayerStory = world.read_model(game_id);
+        let story_line: StoryLine = world.read_model((game_id, story.story_line));
+        (story_line.line)
     }
 
     #[test]

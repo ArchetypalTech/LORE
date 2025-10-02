@@ -79,6 +79,17 @@ const notifications = {
 		const currentNotification = getNotification();
 		return currentNotification.logs || [];
 	},
+	startLoading: async () => {
+		toast.loading("Loading >ORUG...", {
+			richColors: true,
+			id: "loading-entities"
+		});
+		setNotification({
+			logs: [],
+		});
+		const currentNotification = getNotification();
+		return currentNotification.logs || [];
+	},
 	/**
 	 * Add a log entry to a publishing notification
 	 */
@@ -101,6 +112,10 @@ const notifications = {
 		} else {
 			toast.info("World published", { richColors: true });
 		}
+	},
+	finalizeLoading: () => {
+		toast.dismiss("loading-entities");
+		toast.info(">ORUG loaded", { richColors: true });
 	},
 };
 

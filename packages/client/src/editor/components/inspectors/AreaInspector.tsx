@@ -17,6 +17,10 @@ export const AreaInspector: ComponentInspector<Area> = ({
 				const event = e as React.ChangeEvent<HTMLInputElement>;
 				updatedObject.is_spawn_point = event.target.checked;
 			},
+			preserve_children: (e, updatedObject) => {
+				const event = e as React.ChangeEvent<HTMLInputElement>;
+				updatedObject.preserve_children = event.target.checked;
+			},
 			progress_percentage: (e, updatedObject) => {
 				updatedObject.progress_percentage = (!isNaN(Number(e.target.value)) ? Math.min(Math.max(Math.floor(Number(e.target.value)), 0), 100) : 0);
 			},
@@ -30,6 +34,11 @@ export const AreaInspector: ComponentInspector<Area> = ({
 			<Toggle
 				id="is_spawn_point"
 				value={componentObject.is_spawn_point}
+				onChange={handleInputChange(undefined)}
+			/>
+			<Toggle
+				id="preserve_children"
+				value={componentObject.preserve_children ?? false}
 				onChange={handleInputChange(undefined)}
 			/>
 			<Input

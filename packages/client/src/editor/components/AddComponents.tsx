@@ -6,6 +6,7 @@ import { Button } from "./ui/Button";
 import type { SelectInputRef } from "./ui/Select";
 
 const ALWAYS_INCLUDE = ["DescriptionText", "Trigger", "Effect", "Condition", "Action" ] as const;
+const ALWAYS_EXCLUDE = ["PlayerStory" ] as const;
 
 export const AddComponents = ({
 	editedEntity,
@@ -25,6 +26,9 @@ export const AddComponents = ({
 				 // Always include if key is in ALWAYS_INCLUDE
 				if (ALWAYS_INCLUDE.includes(key as typeof ALWAYS_INCLUDE[number])) {
 					return true;
+				}
+				if (ALWAYS_EXCLUDE.includes(key as typeof ALWAYS_EXCLUDE[number])) {
+					return false;
 				}
 				return (
 					editedEntity[key as keyof typeof editedEntity] === undefined &&

@@ -39,6 +39,7 @@ export interface Area {
 	is_area: boolean;
 	is_spawn_point: boolean;
 	progress_percentage: BigNumberish;
+	preserve_children: boolean;
 }
 
 // Type definition for `lore::models::condition::Condition` struct
@@ -555,6 +556,7 @@ export const schema: SchemaType = {
 			is_area: false,
 			is_spawn_point: false,
 			progress_percentage: 0,
+			preserve_children: false,
 		},
 		Condition: {
 			inst: 0,

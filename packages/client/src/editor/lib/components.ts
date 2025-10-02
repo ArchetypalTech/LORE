@@ -114,6 +114,7 @@ export const createDefaultAreaComponent = (
 export const createDefaultReactableComponent = (
 	entity: Entity,
 	descriptions?: DescriptionText[],
+	new_entry?: string,
 ): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
 	Reactable: {
 		...schema.lore.Reactable,
@@ -126,7 +127,7 @@ export const createDefaultReactableComponent = (
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 0] },
 		],
 		already_shown: false,
-		new_entry: "",
+		new_entry: new_entry || "",
 	},
 
 

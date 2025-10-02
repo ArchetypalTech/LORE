@@ -40,7 +40,7 @@ import type {
 	WithStringEnums,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import { bigintToAddress, bigintToHex128, tick } from "@/lib/utils/utils";
+import { bigintToAddress, bigintToHex128, bigintEquals, tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
@@ -376,12 +376,23 @@ const removeEntity = (entity: EntityCollection) => {
 		throw new Error("Entity is not an entity");
 	}
 	const inst = entity.Entity!.inst;
-	// unbreak whatever we're editing / selecting
-	if (get().selectedEntity === inst) {
-		const index = getEntities().findIndex((x) => x.Entity?.inst === inst);
-		set({ selectedEntity: getEntities()[index + 1]?.Entity?.inst });
+	// unbreak whatever we're selecting
+	if (bigintEquals(get().selectedEntity, inst)) {
+		const parentEntity = (entity.ChildToParent !== undefined) ? getEntity(entity.ChildToParent.parent) : undefined;
+		// find closest sibling...
+		const silbingIds = parentEntity?.ParentToChildren?.children ?? [];
+		const index = silbingIds.findIndex((x) => bigintEquals(x, inst));
+		if (index != -1 && silbingIds.length > 1) {
+			updateSelectedEntityId(silbingIds[index > 0 ? index - 1 : index + 1]);
+		} else if (parentEntity) {
+			// or select parent...
+			updateSelectedEntityId(parentEntity.Entity.inst);
+		} else  {
+			updateSelectedEntityId(0n);
+		}
 	}
-	if (get().editedEntity?.Entity?.inst === inst) {
+	// unbreak whatever we're editing
+	if (bigintEquals(get().editedEntity?.Entity?.inst, inst)) {
 		set({ editedEntity: undefined });
 	}
 	// unparent all children
@@ -545,6 +556,11 @@ const processMergedObject = (
 	return result as AnyObject;
 };
 
+// Resore previously selected entity, or use fallback if not found
+const restoreSelectedEntity = (fallback_id: BigNumberish) => {
+	selectEntity(localStorage.getItem("selected_entity_id") ?? fallback_id);
+};
+
 const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
 		const entity = getEntity(get().selectedEntity!);
@@ -552,34 +568,32 @@ const selectEntity = (id: BigNumberish) => {
 			syncItem(entity);
 		}
 	}
-	set({ selectedEntity: id, editedEntity: undefined });
+	updateSelectedEntityId(id);
+	set({ editedEntity: undefined });
 
-	// uncollapse parents of selected entity
+	// uncollapse parents of selected entity to make it visible
 	let entity = EditorData().getEntity(id);
-	console.log("------- SELECTED ENTITY", entity?.Entity?.name);
 	while (entity?.ChildToParent) {
 		setEntityCollapsed(entity.ChildToParent.parent, false);
 		entity = EditorData().getEntity(entity.ChildToParent.parent);
-		console.log(">> SELECTED PARENT:", entity?.Entity?.name);
 	}
 };
 
-const updateSelectedEntity = (entity: EntityCollection) => {
-	const selectedEntity = get().selectedEntity!;
-	Object.assign(selectedEntity, entity);
-	set({ selectedEntity });
+const updateSelectedEntityId = (id: BigNumberish) => {
+	set({ selectedEntity: id });
+	localStorage.setItem("selected_entity_id", bigintToAddress(id));
 };
 
-const _collapsedKey = (inst: BigNumberish) => (`collapsed_${bigintToAddress(inst)}`);
+const _uncollapsedKey = (inst: BigNumberish) => (`uncollapsed_${bigintToAddress(inst)}`);
 const setEntityCollapsed = (inst: BigNumberish, collapsed: boolean) => {
-	if (collapsed) {
-		localStorage.setItem(_collapsedKey(inst), "true");
-	} else if (localStorage.getItem(_collapsedKey(inst)) === "true") {
-		localStorage.removeItem(_collapsedKey(inst));
+	if (!collapsed) {
+		localStorage.setItem(_uncollapsedKey(inst), "true");
+	} else if (localStorage.getItem(_uncollapsedKey(inst)) === "true") {
+		localStorage.removeItem(_uncollapsedKey(inst));
 	}
 };
 const isEntityCollapsed = (inst: BigNumberish) => {
-	return localStorage.getItem(_collapsedKey(inst)) === "true";
+	return localStorage.getItem(_uncollapsedKey(inst)) !== "true";
 };
 
 const setCreatorsFilter = (creators: bigint[]) => {
@@ -681,9 +695,11 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	descriptionText.DescriptionText.text = playerEntity.Entity.name;
 	descriptionText.DescriptionText.key = 0;
 	updateComponent(playerEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
-	const reactable = createDefaultReactableComponent(playerEntity.Entity);
-	reactable.Reactable.description = [descriptionText.DescriptionText.key];
-	reactable.Reactable.new_entry = playerEntity.Entity.name;
+	const reactable = createDefaultReactableComponent(
+		playerEntity.Entity,
+		[descriptionText.DescriptionText],
+		playerEntity.Entity.name,
+	);
 	updateComponent(playerEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
@@ -726,17 +742,21 @@ const createOrSelectPlayersTrailEntity = async () => {
 	await tick();
 
 	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
-	descriptionText.DescriptionText.text = `${username}'s Trail`;
+	descriptionText.DescriptionText.text = newEntity.Entity.name;
 	descriptionText.DescriptionText.key = 0;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 
-	const reactable = createDefaultReactableComponent(newEntity.Entity);
-	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	const reactable = createDefaultReactableComponent(
+		newEntity.Entity,
+		[descriptionText.DescriptionText],
+		newEntity.Entity.name,
+	);
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 
 	const area = createDefaultAreaComponent(newEntity.Entity);
 	area.Area.is_spawn_point = false;
 	area.Area.progress_percentage = 0;
+	area.Area.preserve_children = false;
 	updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
 
 	// create way back to crossroads
@@ -832,8 +852,11 @@ export const createExit = async ({
 	descriptionText.DescriptionText.key = 0;
 	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
 
-	const reactable = createDefaultReactableComponent(newEntity.Entity);
-	reactable.Reactable.description = [descriptionText.DescriptionText.key];
+	const reactable = createDefaultReactableComponent(
+		newEntity.Entity,
+		[descriptionText.DescriptionText],
+		description,
+	);
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
 
 	const exit = createDefaultExitComponent(newEntity.Entity);
@@ -1491,7 +1514,7 @@ const EditorData = createFactory({
 	setCreatorsFilter,
 	shouldDisplayEntity,
 	updateComponent,
-	updateSelectedEntity,
+	restoreSelectedEntity,
 	removeComponent,
 	logPool,
 	resetChanges,
