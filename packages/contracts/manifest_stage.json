@@ -1480,7 +1480,7 @@
   "contracts": [
     {
       "address": "0x20d12e1d08a1f30484b4b160b896b31e93a6bcafb2abe8ba5bb87312e37d24a",
-      "class_hash": "0x532cb5d45c70d7012c1ea383fcec8791bf081b52986d951740ec5d7c6999bd3",
+      "class_hash": "0x4319ce00d5b13b85c0e5ea64d121f0902abe4eb581e34cb6149280e5e2cec29",
       "abi": [
         {
           "type": "impl",
@@ -1737,6 +1737,10 @@
             {
               "name": "progress_percentage",
               "type": "core::integer::u8"
+            },
+            {
+              "name": "preserve_children",
+              "type": "core::bool"
             }
           ]
         },
@@ -4028,7 +4032,7 @@
     },
     {
       "address": "0x35ce90c46076c16abb2d9c7827021a22e3111ca790c16f5c9359aeb24500f71",
-      "class_hash": "0x59ece8145b402e1276f1ef628c95f6404b83cff962f8f0f30d141ce61fe8b0a",
+      "class_hash": "0x38c132a29564260409051147ccc3604a7ca4677a8120ad5ceda57da222058f7",
       "abi": [
         {
           "type": "impl",
@@ -4268,7 +4272,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x75a03dfec96e18efccbe203dfdfb7ef3d1d2566910863e4a7b5af95e442e4b8",
+      "class_hash": "0x76c0fe38edb112dda9234b82de359c5199b25df305847eefa3dea388eda694a",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },
