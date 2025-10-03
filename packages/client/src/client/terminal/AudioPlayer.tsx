@@ -16,7 +16,10 @@ export default function () {
 	} = useDojoStore();
 	const { enableAudio, volumeAudio } = useTerminalStore();
 	const handleCanPlay = () => {
-		if (audioRef.current) audioRef.current.volume = volumeAudio;
+		if (audioRef.current && enableAudio) {
+			audioRef.current.volume = volumeAudio;
+			audioRef.current.play();
+		}
 	};
 	// handle volume
 	useEffect(() => {
@@ -35,7 +38,6 @@ export default function () {
 			src={useTrack}
 			muted={!useTerminalStore().enableAudio}
 			onEnded={() => setTrack(randomTrack())}
-			loop={true}
 			onCanPlay={handleCanPlay}
 			style={{ visibility: "hidden" }}
 		/>
