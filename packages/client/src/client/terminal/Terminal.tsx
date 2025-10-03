@@ -6,8 +6,8 @@ import {
 } from "@lib/stores/terminal.store";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-import LoadingMessage from "./Loader";
 import IntroLoader from "./IntroLoader";
+import LoadingMessage from "./Loader";
 import TerminalLine from "./TerminalLine";
 import Typewriter from "./Typewriter";
 import "./Terminal.css";
@@ -21,7 +21,7 @@ export default function Terminal({
 	gameId?: BigNumberish;
 }) {
 	const gameId = useSyncGameId(inputGameId);
-
+	
 	const [inputValue, setInputValue] = useState("");
 	const [originalInputValue, setOriginalInputValue] = useState("");
 	const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -171,7 +171,7 @@ export default function Terminal({
 			>
 				<div className="screen relative ">
 					<div className="top-2">
-						{ status === 'initialized' && <IntroLoader/>}
+						{status === "initialized" && <IntroLoader />}
 					</div>
 					<div
 						id="scroller"
@@ -197,9 +197,12 @@ export default function Terminal({
 					<div className="sticky text-[1rem] z-10 bottom-[4.5em] md:bottom-[3.8rem] h-4 w-full backdrop-blur-lg"></div>
 					<div className="flex flex-row p-4 pb-6 md:pb-4 sticky bottom-0 z-10 theme-primary-background items-center">
 						{useTerminalStore().isPrinting && <LoadingMessage />}
-						{!useTerminalStore().isPrinting && status === 'inputEnabled' && <span>{`>`}</span>}
+						{!useTerminalStore().isPrinting && status === "inputEnabled" && (
+							<span>{`>`}</span>
+						)}
 						<textarea
 							rows={1}
+							disabled={useTerminalStore().isPrinting}
 							id="terminal-input"
 							className="terminal-line system w-full border-0 bg-transparent p-2 pl-0"
 							value={inputValue}
@@ -207,14 +210,14 @@ export default function Terminal({
 							ref={terminalInputRef}
 							onKeyDown={handleKeyDown}
 						></textarea>
-						
 						<div
 							className="crt-text fadeInOut absolute pointer-none top-[1.35em]"
 							style={{
 								left: `calc(${cursorPos}ch + 1.85rem)`,
-								visibility: useTerminalStore().isPrinting || status !== 'inputEnabled'
-									? "hidden"
-									: "visible",
+								visibility:
+									useTerminalStore().isPrinting || status !== "inputEnabled"
+										? "hidden"
+										: "visible",
 							}}
 						>
 							{"\u2588"}
