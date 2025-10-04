@@ -146,7 +146,7 @@ export const Editor = () => {
 				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"
 			>
 				<div className="relative mx-auto h-full max-w-screen">
-					{isLoaded && <EditorHeader />}
+					<EditorHeader />
 					<div className="relative m-0 mx-auto p-0 h-full">
 						{isEditor && editorContents}
 					</div>
