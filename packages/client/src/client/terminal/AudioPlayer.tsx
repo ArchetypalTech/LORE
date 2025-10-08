@@ -15,7 +15,7 @@ import { useTerminalStore } from "@/lib/stores/terminal.store";
 // ];
 
 function randomTrack(currentTrack: string) {
-	const collection = ["track_1", "track_2", "track_3", "track_4", "track_5"];
+	const collection = ["track_2", "track_3", "track_4", "track_5"];
 	const otherTracks = collection.filter(track => track !== currentTrack);
 	const trackname = otherTracks[Math.floor(Math.random() * otherTracks.length)];
 	return `/album/${trackname}.mp3`;
