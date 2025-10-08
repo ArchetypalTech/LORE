@@ -210,6 +210,7 @@ export default function Terminal({
 							ref={terminalInputRef}
 							onKeyDown={handleKeyDown}
 						></textarea>
+						
 						<div
 							className="crt-text fadeInOut absolute pointer-none top-[1.35em]"
 							style={{
