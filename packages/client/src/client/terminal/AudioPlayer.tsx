@@ -14,18 +14,23 @@ import { useTerminalStore } from "@/lib/stores/terminal.store";
 // 	"https://drive.google.com/file/1c57tzTNHxIlM1X_5wpt14otWUKGdSRES/view",
 // ];
 
-function randomTrack(currentTrack: string) {
-	const collection = ["track_2", "track_3", "track_4", "track_5"];
-	const otherTracks = collection.filter(track => track !== currentTrack);
-	const trackname = otherTracks[Math.floor(Math.random() * otherTracks.length)];
-	return `/album/${trackname}.mp3`;
-}
-
 // // Random track generator avoiding immediate repeats
 // function randomTrack(currentTrack: string) {
 //   const otherTracks = tracks.filter(track => track !== currentTrack);
 //   return otherTracks[Math.floor(Math.random() * otherTracks.length)];
 // }
+
+const tracks = ["track_2", "track_3", "track_4", "track_5"];
+
+function randomTrack(currentTrack: string) {
+  if (tracks.length <= 1) return tracks[0]; // only one track, nothing to randomize
+  let nextTrack;
+  do {
+    nextTrack = tracks[Math.floor(Math.random() * tracks.length)];
+  } while (nextTrack === currentTrack); // loop until different track
+  return `/album/${nextTrack}.mp3`;
+}
+
 
 export default function () {
 	// start with random track
@@ -80,7 +85,7 @@ export default function () {
 	const handleEnded = () => {
     setTrack(prev => {
       if (!hasPlayedIntro) setHasPlayedIntro(true);
-      return randomTrack(prev); // pick a random track avoiding immediate repeat
+      return randomTrack(prev); // random track, guaranteed not same as prev
     });
   };
 
