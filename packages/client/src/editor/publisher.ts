@@ -211,7 +211,7 @@ const publishArea = async (area: Area) => {
 		area.is_area,
 		area.is_spawn_point,
 		Number(area.progress_percentage ?? '0'),
-		area.preserve_children,
+		area.preserve_children ?? false,
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };

@@ -7,7 +7,6 @@
 html,
 body,
 #root {
-	@apply relative w-screen h-screen;
 	text-rendering: optimizeLegibility;
 	@apply font-primary antialiased;
 }
