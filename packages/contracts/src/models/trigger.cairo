@@ -265,7 +265,7 @@ pub impl TriggerImpl of TriggerTrait {
             },
         }
         // Set trigger as triggered
-        self.set_executed(ref world, game_id, true);
+        //self.set_executed(ref world, game_id, true);
         // Return result
         result
     }
@@ -490,14 +490,14 @@ mod tests {
         let mut player_r1: Player = world.read_model(player.inst);
         player_r1.move_to_room(ref world, room_entity_1.inst);
 
-        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
+        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet 1');
         let result = trigger.evaluate_trigger(ref world, game_id);
-        assert(result.is_ok(), 'Trigger should jump');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+        assert(result.is_ok(), 'Trigger should jump 1');
+        assert(trigger.is_executed(@world, game_id), 'trigger executed 1');
 
         // again...
         let result = trigger.evaluate_trigger(ref world, game_id);
-        assert(result.is_err(), 'Trigger should not jump');
+        assert(result.is_err(), 'Trigger should not jump 1');
 
         // try another player...
         let game_id: u128 = 456;
@@ -505,13 +505,13 @@ mod tests {
         world.write_model(@player);
 
         // can trigger in this other game...
-        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
+        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet 2');
         let result = trigger.evaluate_trigger(ref world, game_id);
-        assert(result.is_ok(), 'Trigger should jump');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+        assert(result.is_ok(), 'Trigger should jump 2');
+        assert(trigger.is_executed(@world, game_id), 'trigger executed 2');
 
         // again...
         let result = trigger.evaluate_trigger(ref world, game_id);
-        assert(result.is_err(), 'Trigger should not jump');
+        assert(result.is_err(), 'Trigger should not jump 2');
     }
 }

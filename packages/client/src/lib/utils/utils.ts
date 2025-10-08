@@ -1,4 +1,5 @@
 import clsx, { type ClassValue } from "clsx";
+import { BigNumberish } from "starknet";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -26,8 +27,13 @@ export function processWhitespaceTags(input: string): string[] {
 }
 
 export const decodeDojoText = (text: string) => {
-	const decodedText = decodeURI(text.trimStart()).replaceAll("%2C", ",");
-	return decodedText;
+	try {
+		const decodedText = decodeURI(text.trimStart()).replaceAll("%2C", ",");
+		return decodedText;
+	} catch (error) {
+		console.error("decodeDojoText(): Bad text:", text);
+		throw error;
+	}
 };
 
 // svelte like tick
@@ -37,3 +43,10 @@ export const tick = async () => {
 
 export const delay = (ms: number) =>
 	new Promise((resolve) => setTimeout(resolve, ms));
+
+// hex formatters
+export const bigintToHex = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x${BigInt(v).toString(16)}`)
+export const bigintToHex64 = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x${BigInt(v).toString(16).padStart(16, '0')}`)
+export const bigintToHex128 = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x${BigInt(v).toString(16).padStart(32, '0')}`)
+export const bigintToAddress = (v: BigNumberish): `0x${string}` => (!v ? '0x0' : `0x${BigInt(v).toString(16).padStart(64, '0')}`)
+export const bigintEquals = (a: BigNumberish | undefined, b: BigNumberish | undefined): boolean => (a != undefined && b != undefined && BigInt(a) == BigInt(b))

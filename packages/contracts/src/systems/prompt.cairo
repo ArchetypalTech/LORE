@@ -29,9 +29,8 @@ pub mod prompt {
     };
 
     mod Errors {
-        pub const INVALID_CALLER: felt252       = 'PROMPT: Invalid caller';
+        pub const NOT_ADMIN: felt252            = 'PROMPT: Not admin';
         pub const NOT_YOUR_GAME: felt252        = 'PROMPT: Not your game';
-        pub const NOT_EDITOR: felt252           = 'PROMPT: Not editor';
         pub const NO_PLAYER_COMPONENT: felt252  = 'PROMPT: No Player component';
     }
 
@@ -84,8 +83,8 @@ pub mod prompt {
                 Option::Some(game_id) => {
                     // player was provided
                     if game_id == 0 {
-                        // only editors can play game #0
-                        assert(AccountPermissionsTrait::is_editor(@world, player_address), Errors::NOT_EDITOR);
+                        // only admins can play game #0
+                        assert(AccountPermissionsTrait::is_admin(@world, player_address), Errors::NOT_ADMIN);
                     } else {
                         // validate ownership
                         assert((

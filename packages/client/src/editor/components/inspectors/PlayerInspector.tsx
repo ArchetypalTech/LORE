@@ -33,6 +33,10 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				const event = e as ChangeEvent<HTMLInputElement>;
 				updatedObject.use_debug = event.target.checked;
 			},
+			is_dead: (e, updatedObject) => {
+				const event = e as ChangeEvent<HTMLInputElement>;
+				updatedObject.is_dead = event.target.checked;
+			},
 		},
 	});	
 
@@ -67,6 +71,12 @@ export const PlayerInspector: ComponentInspector<Player> = ({
 				id="use_debug"
 				value={componentObject.use_debug}
 				onChange={handleInputChange(undefined)}
+			/>
+			<Toggle
+				id="is_dead"
+				value={componentObject.is_dead}
+				onChange={handleInputChange(undefined)}
+				readOnly={true}
 			/>
 		</Inspector>
 	);

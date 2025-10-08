@@ -148,6 +148,7 @@ const publishEntity = async (entity: Entity) => {
 		entity.actions_keys.length > 0
 			? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
 			: 0,
+		0n, // creator_address is managed on contract level
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -161,6 +162,7 @@ const publishPlayer = async (player: Player) => {
 		player.game_id ? num.toBigInt(player.game_id.toString()) : num.toBigInt("0"),
 		player.location ? num.toBigInt(player.location.toString()) : num.toBigInt("0"),
 		player.use_debug ?? false,
+		player.is_dead ?? false,
 	];
 	await dispatchDesignerCall("create_player", [playerData]);
 };
@@ -209,6 +211,7 @@ const publishArea = async (area: Area) => {
 		area.is_area,
 		area.is_spawn_point,
 		Number(area.progress_percentage ?? '0'),
+		area.preserve_children ?? false,
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
 };

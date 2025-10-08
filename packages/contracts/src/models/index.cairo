@@ -20,19 +20,6 @@ pub struct Dict {
     pub n_value: felt252,
 }
 
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
-#[dojo::model]
-pub struct DescriptionText {
-    /// Unique identifier from the Entity it is attached to
-    #[key]
-    pub inst: felt252,
-    /// Unique identifier of the description
-    #[key]
-    pub key: u32,
-    /// Description text
-    pub text: ByteArray,
-}
-
 #[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
 #[dojo::model]
 pub struct PropertyRegistry {

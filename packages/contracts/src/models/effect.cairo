@@ -188,11 +188,12 @@ mod tests {
     use lore::{
         models::{
             entity::{EntityImpl},
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             reactable::{Reactable},
             trigger::{TriggerImpl},
             player::{Player, PlayerImpl},
-            components::{Component}, 
+            components::{Component},
+            inventory_item::{InventoryItem, InventoryItemImpl},
         },
         types::{
             action_type::{TriggerContext, EffectType},
@@ -226,7 +227,7 @@ mod tests {
     }
 
     #[test]
-    fn Effect_test_apply_effect() {
+    fn Effect_test_apply_effec_text() {
         let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         // create door entity
         let mut door = EntityImpl::create_entity(ref world, "door");
@@ -303,6 +304,73 @@ mod tests {
         assert_ne!(old_txt.text, new_txt1.text.clone(), "Effect should update description");
         assert_eq!(new_txt2.text.clone(), defTxt2.clone(), "Effect should update description");
         assert_eq!(result.is_ok(), true, "Effect should apply successfully");
+    }
+
+    #[test]
+    fn Effect_test_apply_effect_item() {
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
+        // create door entity
+        let mut door = EntityImpl::create_entity(ref world, "door");
+        world.write_model(@door);
+        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
+        let mut item1: InventoryItem = Component::add_component(ref world, door.inst);
+        reactable.is_reactable = true;
+        reactable.is_visible = true;
+        reactable.description = array![0];
+        reactable
+            .action_map =
+                array![
+                    ActionMapReactable {
+                        action: "look",
+                        inst: 0,
+                        action_fn: ReactableActions::ReadRandomDescription,
+                        entrypoints: (1, 1),
+                    },
+                ];
+        reactable.store(ref world, 0);
+
+        let old_item: InventoryItem = world.read_model(door.inst);
+        assert_eq!(old_item.can_be_picked_up, item1.can_be_picked_up, "initial value: can_be_picked_up");
+        assert_eq!(old_item.can_be_picked_up, true, "initial value: can_be_picked_up");
+
+        // Create player
+        let game_id: u128 = 0;
+        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        world.write_model(@player);
+
+        // Create trigger context
+        let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
+
+        // register variable properties
+        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
+
+        // create and apply effect
+        let new_value: Array<(ByteArray, u32)> = array![
+            ("false", 0),
+        ];
+        let key: felt252 = 1;
+        let name: ByteArray = "Effect name";
+        let n_value: u32 = 0;
+        let hex_value: felt252 = 0;
+        let mut effect = create_test_effect(
+            door.inst,
+            key,
+            name,
+            EffectType::ModifyProperty,
+            door.inst,
+            ComponentType::InventoryItem,
+            "can_be_picked_up",
+            new_value.clone(),
+            n_value,
+            hex_value,
+        );
+        world.write_model(@effect);
+        let result = effect.apply_effect(ref world, @context, game_id);
+
+        let new_item: InventoryItem = world.read_model(door.inst);
+        assert_eq!(result.is_ok(), true, "Effect should apply successfully");
+        assert_ne!(new_item.can_be_picked_up, old_item.can_be_picked_up, "new value: can_be_picked_up");
+        assert_eq!(new_item.can_be_picked_up, false, "new value: can_be_picked_up");
     }
 }
 

@@ -7,7 +7,10 @@ pub struct AccountPermissions {
     #[key]
     pub account_address: ContractAddress,
     /// Properties ///
+    /// admins can edit core game and play any game
     pub is_admin: bool,
+    /// editors are players who completed the game
+    /// with limited editing permissions (their own rooms only)
     pub is_editor: bool,
 }
 
@@ -15,7 +18,6 @@ pub struct AccountPermissions {
 //---------------------------------
 // Model Traits
 //
-use lore::models::token_config::{PlayerAccountTrait, GameTokenInfoTrait};
 
 #[generate_trait]
 pub impl AccountPermissionsImpl of AccountPermissionsTrait {
@@ -35,12 +37,6 @@ pub impl AccountPermissionsImpl of AccountPermissionsTrait {
     }
     fn is_editor(world: @WorldStorage, account_address: ContractAddress) -> bool {
         let config: AccountPermissions = world.read_model(account_address);
-        if (config.is_admin || config.is_editor) {
-            (true)
-        } else {
-            // get current game id
-            let game_id: u128 = PlayerAccountTrait::current_game_id(world, account_address);
-            (GameTokenInfoTrait::has_finished_game(world, game_id))
-        }
+        (config.is_admin || config.is_editor)
     }
 }

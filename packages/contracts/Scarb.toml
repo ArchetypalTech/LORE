@@ -19,6 +19,7 @@ openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", 
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", branch = "scarb_2.12.2" }
 dojo_macros = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
+achievement = { git = "https://github.com/cartridge-gg/arcade", rev = "dd076d8a628b011fdc4cbcca0de7ec523ecd1d66" }
 # not used right now but initialised in dojo_init when used for deli interop
 # planetary_interface = { path = "/Users/tims/DATA/BB/dojo/planetary/dojo/planetary_interface" }
 starknet = "2.12.2"
@@ -28,7 +29,11 @@ cairo_test = "2.12.2"
 dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
 
 [[target.starknet-contract]]
-build-external-contracts = ["dojo::world::world_contract::world"]
+build-external-contracts = [
+  "dojo::world::world_contract::world",
+  "achievement::events::index::e_TrophyCreation",
+  "achievement::events::index::e_TrophyProgression",
+]
 allowed-libfuncs-list.name = "experimental"
 
 # debug contract size (max=81,920 felts)
@@ -41,4 +46,4 @@ allowed-libfuncs-list.name = "experimental"
 # Dojo profiles
 [profile.dev]
 [profile.slot]
-[profile.local]
+[profile.stage]

@@ -1,18 +1,18 @@
-# This file is for local, for being able to use the cairo extension language tool
 [world]
-seed = "lore"
+seed = "loreStage"
 name = ">LORE"
-description = "> get started with LORE"
+description = "> staging lore project"
 
 [namespace]
 default = "lore"
 
 [env]
-rpc_url = "http://localhost:5050/"
+rpc_url = "https://api.cartridge.gg/x/lore-stage/katana"
+slot_name = "lore-stage"
 
 account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
 private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
-world_address = "0x3ea2fa8bf5649c0e6fdec0482a23bdf760ec1add97c464c518b4e4bd9ab9f08" # dojo version 1.3.1
+world_address = "0x1142a4bd443a08f68936caf2e6b5d32121eb3b0327ff5a75b0b92d50cbdc913"
 
 [writers]
 "lore" = ["lore-prompt", "lore-designer", "lore-game_token"]

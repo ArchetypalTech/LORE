@@ -1,22 +1,31 @@
 import {
 	type RenderItemProps,
 	SortableTree,
+	type SortableTreeMove,
 	type TreeItems,
 } from "dnd-kit-tree";
-import { HousePlus, PersonStanding } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { cn } from "@/lib/utils/utils";
+import { bigintToHex, cn } from "@/lib/utils/utils";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
+import { Select } from "./FormComponents";
+import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
+import { useWalletStore } from "@/lib/stores/wallet.store";
 
+type TreeNodeData = {
+	entity: EntityCollection,
+	isEditable: boolean,
+};
 type TreeNode = {
 	id: BigNumberish;
-	data: { entity: EntityCollection };
+	data: TreeNodeData;
 	children: TreeNode[];
+	collapsed: boolean;
 };
 
 export const HierarchyTreeItem = ({
@@ -31,10 +40,13 @@ export const HierarchyTreeItem = ({
 	onCollapse,
 	node,
 	childCount,
-}: RenderItemProps<TreeNode["data"]>) => {
+}: RenderItemProps<TreeNodeData>) => {
 	const entity = node.data?.entity as EntityCollection;
+	const isCollapsed = node.collapsed;
+	const isEditable = node.data?.isEditable ?? false;
 	const { selectedEntity } = useEditorData();
 	const isSelected = selectedEntity === entity.Entity.inst;
+	const isRoot = (entity.ChildToParent === undefined);
 	const [timer, setTimer] = useState<NodeJS.Timer>();
 
 	// Extract onPointerDown from handleProps safely
@@ -48,11 +60,12 @@ export const HierarchyTreeItem = ({
 	}, [entity]);
 
 	return (
-		<div ref={wrapperRef}>
+		<div ref={wrapperRef} id={`item_${bigintToHex(entity.Entity.inst)}`}>
 			<div
 				className={cn(
 					"relative flex flex-row overflow-visible opacity-80",
-					isSelected && "font-bold text-white opacity-100",
+					isRoot && ("border-1 rounded-sm" + (isEditable ? " border-solid" : " border-dashed")),
+					isSelected && "font-bold opacity-100 bg-black/20",
 				)}
 				style={{
 					paddingLeft: `${depth * 1}rem`,
@@ -78,7 +91,7 @@ export const HierarchyTreeItem = ({
 								onPointerDown={(event) => {
 									event.stopPropagation();
 									EditorData().selectEntity(node.id.toString());
-
+									if (!isEditable) return;
 									const t = setTimeout(() => {
 										onPointerDown?.(event);
 										clearTimeout(timer);
@@ -90,25 +103,29 @@ export const HierarchyTreeItem = ({
 									clearTimeout(timer);
 									setTimer(undefined);
 								}}
-								className="absolute top-0 left-0 h-7 w-full cursor-pointer"
+								className={cn(
+									"absolute top-0 left-0 h-7 w-full",
+									isEditable ? "cursor-pointer" : "cursor-no-drop"
+								)}
 							/>
 
 							{/* Highlight when selected */}
 							{isSelected && (
-								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg] bg-black/20" />
+								<div className="-left-1 -z-1 absolute top-0 h-[100%] w-[calc(100%+.5rem)] rotate-[.26deg]" />
 							)}
 
 							{/* Collapse toggle button */}
 							{isCollapsible && (
 								<button
-									className="cursor-pointer z-20 text-xl"
+									className="cursor-pointer z-20 text-xs"
 									onClick={(e) => {
+										EditorData().setEntityCollapsed(node.id, !isCollapsed);
 										e.stopPropagation();
 										onCollapse?.();
 									}}
 									type="button"
 								>
-									▾
+									{!isCollapsed ? "▼" : "▶"}
 								</button>
 							)}
 
@@ -159,85 +176,194 @@ const createTree = () => {
 		processedIds.add(instStr);
 
 		const entity = EditorData().getEntity(inst);
-		if (entity === undefined || entity.Entity === undefined) return [];
+		if (entity === undefined || entity.Entity === undefined || !EditorData().shouldDisplayEntity(entity)) return [];
 
 		// Store unique entity
 		uniqueEntities.set(instStr, entity);
 
-		if ("ParentToChildren" in entity && entity.ParentToChildren !== undefined) {
-			const children = entity.ParentToChildren?.children.flatMap((child) => {
-				return getNode(child.toString());
-			});
-			return [{ id: inst, data: { entity: entity }, children: children || [] }];
-		}
-		return [
-			{
-				id: inst,
-				data: { entity: entity as { Entity: Entity } },
-				children: [],
+		let children:TreeNode[] = entity.ParentToChildren?.children?.flatMap((child) => {
+			return getNode(child.toString());
+		}) ?? [];
+
+		return [{
+			id: inst,
+			data: {
+				entity: entity as { Entity: Entity },
+				isEditable: EditorStore().canEditEntity(entity),
 			},
-		];
+			children,
+			collapsed: EditorData().isEntityCollapsed(inst),
+		}];
 	};
 
 	// construct the tree
 	const tree = parents.flatMap((parent) =>
 		getNode(parent!.Entity.inst),
-	) as unknown as TreeItems<TreeNode["data"]>;
+	) as unknown as TreeItems<TreeNodeData>;
 
 	return { tree };
 };
 
 export const HierarchyTree = () => {
-	const { dataPool, isDirty } = useEditorData();
+	const { dataPool, isDirty, creatorsFilter, selectedEntity } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
 
 	useEffect(() => {
 		dataPool;
 		isDirty;
 		setData(createTree().tree);
-	}, [dataPool, isDirty]);
+	}, [dataPool, isDirty, creatorsFilter]);
+
+	// scroll to selected entity
+	const treeRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		if (selectedEntity && treeRef.current) {
+			const selectedItem = treeRef.current.querySelector(`#item_${bigintToHex(selectedEntity)}`);
+			if (selectedItem) {
+				selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+			}
+		}
+	}, [selectedEntity, treeRef.current, data]);
 
 	return (
 		<div className="use-editor-styles flex h-full flex-col items-start justify-start gap-4">
-			<Button
-				variant={"hero"}
-				// className="w-full"
-				onClick={() => EditorData().newEntity()}
-			>
-				<HousePlus />
-				New Entity
-			</Button>
-			<Button
-				variant={"hero"}
-				// className="w-full"
-				onClick={() => EditorData().newPlayer()}
-			>
-				<PersonStanding />
-				New Player
-			</Button>
-			<div className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
+			<HierarchyTreeMenu />
+			<HierarchyTreeFilter />
+			<div ref={treeRef} className="flex h-full max-h-[1500px] flex-col gap-1.25 overflow-y-scroll overflow-x-clip scrollbar-hide">
 				<SortableTree
 					removable={false}
 					collapsible={true}
 					value={data}
-					onChange={setData}
-					onMove={(action) => {
+					onChange={(items: TreeItems<TreeNodeData>) => {
+						// apply tree changes
+						setData(items);
+						// rebuild tree to revert unauthorized moves
+						EditorData().setIsDirty();
+					}}
+					onMove={(action: SortableTreeMove) => {
+						// get entity being moved
 						const child = EditorData().getEntity(action.id);
-
 						if (!child) throw new Error("Child not found");
-						if (action.parentId === undefined) {
-							EditorData().removeParent(child);
-							return;
-						}
 
-						const parent = EditorData().getEntity(action.parentId!);
-						if (!parent) throw new Error("Parent not found");
-						EditorData().addToParent(child, parent);
-						return;
+						// get new parent
+						const newParent = EditorData().getEntity(action.parentId!);
+						if (!newParent) throw new Error("Parent not found");
+						
+						// check if new parent is editable
+						if (EditorStore().canEditEntity(newParent)) {
+							if (action.parentId === undefined) {
+								// remove from current parent
+								EditorData().removeParent(child);
+							} else {
+								// add to new parent
+								EditorData().addToParent(child, newParent);
+							}
+						}
 					}}
 					renderItem={HierarchyTreeItem}
 				/>
 			</div>
 		</div>
+	);
+};
+
+
+const HierarchyTreeMenu = () => {
+	const { selectedEntity } = useEditorData();
+	const { isAdmin } = useEditorPermissions();
+
+	const { hasPlayer, hasTrail, hasEntrance, canCreateEntity } = useMemo(() => {
+		const player = EditorData().getPlayerEntity();
+		const trail = EditorData().getPlayersTrailEntity();
+		const entrance = EditorData().getPlayersEntranceEntity();
+		const canCreateEntity = selectedEntity ? EditorStore().canEditEntity(EditorData().getEntity(selectedEntity)) : false;
+		return {
+			hasPlayer: Boolean(player),
+			hasTrail: Boolean(trail),
+			hasEntrance: Boolean(entrance),
+			canCreateEntity: canCreateEntity,
+		};
+	}, [selectedEntity]);
+
+	if (isAdmin) {
+		return (
+			<>
+				<Button variant={"hero"} disabled={!canCreateEntity} onClick={() => EditorData().newEntity()}>
+					<SquarePen />
+					New Entity
+				</Button>
+				<Button variant={"hero"} onClick={() => EditorData().newPlayer()}>
+					<PersonStanding />
+					{hasPlayer ? "Select Player" : "New Player"}
+				</Button>
+			</>
+		);
+	} else {
+		return (
+			<>
+				<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
+					<HousePlus />
+					{hasTrail ? "Your Trail" : "Create Trail"}
+				</Button>
+				<Button variant={"hero"} disabled={!hasTrail} onClick={() => EditorData().createOrSelectPlayersEntranceEntity()}>
+					<LogIn />
+					{hasEntrance ? "Your Entrance" : "Create Entrance"}
+				</Button>
+				<Button variant={"hero"} disabled={!(canCreateEntity && hasTrail)} onClick={() => EditorData().newEntity()}>
+					<SquarePen />
+					New Entity
+				</Button>
+			</>
+		);
+	}
+};
+
+type HierarchyTreeFilterOptions = "all" | "orug" | "mine";
+const creatorWallets = [
+	BigInt('0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7'), // tal-valdar
+	BigInt('0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae'), // awtnmy
+	BigInt('0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F'), // mataleone
+	BigInt('0x03bf9ddf561897E5A6af8F443894D918a3CB123638A201556189Bf9B7f2581AE'), // pscho
+	BigInt('0x00EDF69f8Fe2Beea8FdD545380F6C86CE6300A1009F0540324c2D218BCeC19aC'), // edwingeral
+	BigInt('0x055ad6518bB4088Ff51f87663196C1489280cb36E98b8c790749A0E0393c4E0C'), // kishitemplar
+]
+
+const HierarchyTreeFilter = () => {
+	const { isAdmin } = useEditorPermissions();
+	const { walletAddress } = useWalletStore();
+
+	const options = useMemo(() => (isAdmin ? [
+		{ value: "orug", label: "Display ORug" },
+		{ value: "all", label: "Display ORug + Players" },
+	] : [
+		{ value: "all", label: "Display Orug + Mine" },
+		{ value: "orug", label: "Display ORug" },
+		{ value: "mine", label: "Display Mine" },
+	]), [isAdmin]);
+
+	const [filter, setFilter] = useState<HierarchyTreeFilterOptions>(isAdmin ? "orug" : "all");
+	const _onChange = (e: ChangeEvent<HTMLSelectElement>) => {
+		setFilter(e.target.value as HierarchyTreeFilterOptions);
+	};
+
+	useEffect(() => {
+		if (filter === "all") {
+			EditorData().setCreatorsFilter(isAdmin ? [] : [0n, ...creatorWallets, BigInt(walletAddress ?? 0)]);
+		} else if (filter === "orug") {
+			EditorData().setCreatorsFilter([...creatorWallets]);
+		} else if (filter === "mine") {
+			EditorData().setCreatorsFilter([0n, BigInt(walletAddress ?? 0)]);
+		}
+	}, [filter, walletAddress]);
+
+	return (
+		<Select
+			// ref={selectRef}
+			id=""
+			defaultValue={options?.[0]?.value || undefined}
+			onChange={_onChange}
+			options={options}
+			disabled={options.length === 0}
+		/>
 	);
 };

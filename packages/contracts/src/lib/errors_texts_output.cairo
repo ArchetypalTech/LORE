@@ -40,7 +40,7 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
                 "Can't exceed capacity limit",
             ],
             Error::CantStore => array![
-                "It can't store", "Is that even possible?", "Can't store anything here",
+                "It can't store", "Is that even possible?", "Can't store anything there",
             ],
             Error::NoContainer => array![
                 "That object cant store anything",
@@ -54,7 +54,7 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
                 "You can't carry or store anything",
             ],
             Error::CantBePicked => array![
-                "It can't be picked",
+                "It can't be picked up",
                 "Its weight is something not from this world",
                 "It won't budge in this lifetime",
             ],
@@ -62,10 +62,10 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
                 "It can't be stored", "It won't fit anywhere", "That won't happen",
             ],
             Error::AlreadyStored => array![
-                "It's already there", "You already have it", "You already have that",
+                "It's already there", "No need - it's already there", "That item is already stored."
             ],
             Error::NotStored => array![
-                "It's not there", "You don't have it", "You don't have that",
+                "It's not there", "Item is not stored there", "That doesn't seem to be stored there.", 
             ],
             Error::NoRoom => array![
                 "You are in the LIMBO, you exist but don't exist",

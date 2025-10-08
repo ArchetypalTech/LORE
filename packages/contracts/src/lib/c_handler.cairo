@@ -1,5 +1,5 @@
 use starknet::{ContractAddress, get_caller_address};
-use dojo::{world::WorldStorage};
+use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
@@ -12,7 +12,8 @@ use lore::{
         components::{Component},
         action::{ActionImpl},
         condition::{ConditionImpl},
-        token_config::{PlayerAccountTrait},
+        token_config::{GameTokenInfo, PlayerAccountTrait},
+        admin::{AccountPermissionsTrait},
     },
     types::command_type::{Command, TokenType, Token},
     lib::{
@@ -34,6 +35,7 @@ pub fn handle_command(
     }
     let verbs = command.get_verbs();
     if verbs.len() == 0 {
+        player.say(ref world, format!("I don't recognize the VERB(s) in: \"{}\"", command.text));
         return Result::Err(Error::ActionFailed);
     }
     let mut nouns = command.get_nouns();
@@ -42,7 +44,12 @@ pub fn handle_command(
     let mut result: Result::<(), Error> = Result::Err(Error::ActionFailed);
     if nouns.len() > 0 {
         for noun in nouns {
-            let item: Entity = EntityImpl::get_entity(@world, *noun.target).unwrap();
+            let item: Option<Entity> = EntityImpl::get_entity(@world, *noun.target);
+            if (item.is_none()) {
+                player.say(ref world, format!("I've heard about {} but it's not here", noun.text));
+                return Result::Err(Error::ActionFailed);
+            }
+            let item: Entity = item.unwrap();
             if player.use_debug {
                 player.log_debug(ref world, format!("item: {:?}", item));
             }
@@ -221,14 +228,31 @@ pub fn handle_command(
                 }
             }
             // if initial verb is not look
+            // check if nouns or directions exist, if they do player recognize verb and target but cant execute command
+            if nouns.len() > 0 {
+                player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
+            } else if directions.len() > 0 {
+                player.say(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
+            } else {
+                // the verb is recognized but the target/direction is not recognized
+                player.say(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
+            }
             // return error
             return Result::Err(Error::ActionFailed);
         }
-        // if command is more than one token and haven't been handled yet
-        // return error
+        // it tokens lengt is more then,
+        // check if nouns or directions exist, if they do player recognize verb and target but cant execute command
+        if nouns.len() > 0 {
+            player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
+        } else if directions.len() > 0 {
+            player.say(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
+        } else {
+            // the verb is recognized but the target/direction is not recognized
+            player.say(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
+        }
         return Result::Err(Error::ActionFailed);
     }
-
+    
     result
 }
 
@@ -242,9 +266,11 @@ pub fn init_system_dictionary(world: WorldStorage) {
     add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_create_game", TokenType::System, 2).unwrap();
     add_to_dictionary(world, "g_load_game", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_game_data", TokenType::System, 2).unwrap();
+    add_to_dictionary(world, "g_player", TokenType::System, 2).unwrap();
 }
 
 fn system_command(
@@ -318,14 +344,10 @@ fn system_command(
             for item in context {
                 let reactable: Option<Reactable> = Component::get_component(@world, item.inst, player.game_id);
                 if reactable.is_some() {
-                    let description = reactable.unwrap().get_random_description(command, world);
+                    let description = reactable.unwrap().get_random_description(command, world, player.game_id);
                     player.log_sys(ref world, format!("{}", description));
                 }
             };
-            return Result::Ok(());
-        }
-        if (system_command == "g_game_id") {
-            player.log_sys(ref world, format!("+sys+game-{:?}", player.game_id));
             return Result::Ok(());
         }
         if (system_command == "g_create_game") {
@@ -350,6 +372,27 @@ fn system_command(
             // switch game...
             PlayerAccountTrait::switch_game_id(ref world, player_address, game_id.low);
             player.log_sys(ref world, format!("+sys+Loaded game-{:?}", game_id));
+            return Result::Ok(());
+        }
+        if (system_command == "g_game_id") {
+            player.log_sys(ref world, format!("+sys+game-{:?}", player.game_id));
+            return Result::Ok(());
+        }
+        if (system_command == "g_game_data") {
+            let token_info: GameTokenInfo = world.read_model(player.game_id);
+            player.log_sys(ref world, format!("+sys+game-{:?}", token_info.game_id));
+            player.log_sys(ref world, format!("+sys+room: {}", token_info.room_name));
+            player.log_sys(ref world, format!("+sys+act: {}", token_info.act_number));
+            player.log_sys(ref world, format!("+sys+progress: {}%25", token_info.progress));
+            player.log_sys(ref world, format!("+sys+completed: {}", ByteArrayTraitExt::byte_array_from_bool(token_info.completed)));
+            return Result::Ok(());
+        }
+        if (system_command == "g_player") {
+            player.log_sys(ref world, format!("+sys+address: 0x{:x}", player.address));
+            player.log_sys(ref world, format!("+sys+current_game_id: {}", player.game_id));
+            player.log_sys(ref world, format!("+sys+is_dead: {}", ByteArrayTraitExt::byte_array_from_bool(player.is_dead)));
+            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_admin(@world, player.address))));
+            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_editor(@world, player.address))));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);
@@ -401,7 +444,7 @@ mod tests {
             ],
         };
         // Handle the command
-        let result = handle_command(@command, ref world, @player);
+        let result = handle_command(@command, ref world, ref player);
 
         // Verify the command was handled successfully
         assert(result.is_ok(), 'Command not handled');
