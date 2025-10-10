@@ -58,7 +58,7 @@ export default defineConfig(async ({ mode }) => {
 				"@styles": resolve(__dirname, "./src/styles"),
 				"@editor": resolve(__dirname, "./src/editor"),
 				"@lore/contracts/manifest": isSlot
-					? "@lore/contracts/manifest_stage.json"
+					? "@lore/contracts/manifest_slot.json"
 					: "@lore/contracts/manifest_dev.json",
 			},
 		},
