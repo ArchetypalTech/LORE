@@ -39,6 +39,7 @@ export interface Area {
 	is_area: boolean;
 	is_spawn_point: boolean;
 	progress_percentage: BigNumberish;
+	preserve_children: boolean;
 }
 
 // Type definition for `lore::models::condition::Condition` struct
@@ -62,6 +63,13 @@ export interface Container {
 	is_open: boolean;
 	num_slots: BigNumberish;
 	action_map: Array<ActionMapContainer>;
+}
+
+// Type definition for `lore::models::description_text::DescriptionText` struct
+export interface DescriptionText {
+	inst: BigNumberish;
+	key: BigNumberish;
+	text: string;
 }
 
 // Type definition for `lore::models::effect::Effect` struct
@@ -92,6 +100,7 @@ export interface Entity {
 	name: string;
 	alt_names: Array<string>;
 	actions_keys: Array<BigNumberish>;
+	creator_address: string;
 }
 
 // Type definition for `lore::models::entity::ParentToChildren` struct
@@ -111,6 +120,14 @@ export interface Exit {
 	action_map: Array<ActionMapExit>;
 }
 
+// Type definition for `lore::models::game_instance::GameInstanceKeyMap` struct
+export interface GameInstanceKeyMap {
+	game_id: BigNumberish;
+	inst: BigNumberish;
+	key: BigNumberish;
+	game_inst: BigNumberish;
+}
+
 // Type definition for `lore::models::game_instance::GameInstanceMap` struct
 export interface GameInstanceMap {
 	game_id: BigNumberish;
@@ -127,13 +144,6 @@ export interface ComponentVariable {
 	property_name: string;
 	value: string;
 	last_updated: BigNumberish;
-}
-
-// Type definition for `lore::models::index::DescriptionText` struct
-export interface DescriptionText {
-	inst: BigNumberish;
-	key: BigNumberish;
-	text: string;
 }
 
 // Type definition for `lore::models::index::Dict` struct
@@ -171,6 +181,7 @@ export interface Player {
 	game_id: BigNumberish;
 	location: BigNumberish;
 	use_debug: boolean;
+	is_dead: boolean;
 }
 
 // Type definition for `lore::models::player::PlayerStory` struct
@@ -275,6 +286,37 @@ export interface ComponentProperty {
 	access_flags: PropertyAccessEnum;
 }
 
+// Type definition for `achievement::events::index::TrophyCreation` struct
+export interface TrophyCreation {
+	id: BigNumberish;
+	hidden: boolean;
+	index: BigNumberish;
+	points: BigNumberish;
+	start: BigNumberish;
+	end: BigNumberish;
+	group: BigNumberish;
+	icon: BigNumberish;
+	title: BigNumberish;
+	description: string;
+	tasks: Array<Task>;
+	data: string;
+}
+
+// Type definition for `achievement::events::index::TrophyProgression` struct
+export interface TrophyProgression {
+	player_id: BigNumberish;
+	task_id: BigNumberish;
+	count: BigNumberish;
+	time: BigNumberish;
+}
+
+// Type definition for `achievement::types::index::Task` struct
+export interface Task {
+	id: BigNumberish;
+	total: BigNumberish;
+	description: string;
+}
+
 // Type definition for `lore::models::token_config::GameCreatedEvent` struct
 export interface GameCreatedEvent {
 	contract_address: string;
@@ -289,6 +331,7 @@ export const storyLineType = [
 	'Response',
 	'SysResponse',
 	'Debug',
+	'Error',
 ] as const;
 export type StoryLineType = { [key in typeof storyLineType[number]]: string };
 export type StoryLineTypeEnum = CairoCustomEnum;
@@ -449,14 +492,15 @@ export interface SchemaType extends ISchemaType {
 		Area: Area,
 		Condition: Condition,
 		Container: Container,
+		DescriptionText: DescriptionText,
 		Effect: Effect,
 		ChildToParent: ChildToParent,
 		Entity: Entity,
 		ParentToChildren: ParentToChildren,
 		Exit: Exit,
+		GameInstanceKeyMap: GameInstanceKeyMap,
 		GameInstanceMap: GameInstanceMap,
 		ComponentVariable: ComponentVariable,
-		DescriptionText: DescriptionText,
 		Dict: Dict,
 		PropertyRegistry: PropertyRegistry,
 		InventoryItem: InventoryItem,
@@ -474,6 +518,9 @@ export interface SchemaType extends ISchemaType {
 		ActionMapInventoryItem: ActionMapInventoryItem,
 		ActionMapReactable: ActionMapReactable,
 		ComponentProperty: ComponentProperty,
+		TrophyCreation: TrophyCreation,
+		TrophyProgression: TrophyProgression,
+		Task: Task,
 		GameCreatedEvent: GameCreatedEvent,
 	},
 }
@@ -509,6 +556,7 @@ export const schema: SchemaType = {
 			is_area: false,
 			is_spawn_point: false,
 			progress_percentage: 0,
+			preserve_children: false,
 		},
 		Condition: {
 			inst: 0,
@@ -547,6 +595,11 @@ export const schema: SchemaType = {
 					Open: "",
 				Close: undefined,
 				Check: undefined, }), }],
+		},
+		DescriptionText: {
+			inst: 0,
+			key: 0,
+		text: "",
 		},
 		Effect: {
 			inst: 0,
@@ -591,6 +644,7 @@ export const schema: SchemaType = {
 		name: "",
 			alt_names: [""],
 			actions_keys: [0],
+			creator_address: "",
 		},
 		ParentToChildren: {
 			inst: 0,
@@ -615,6 +669,12 @@ export const schema: SchemaType = {
 				Down: undefined, }),
 			action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					UseExit: "", }), }],
+		},
+		GameInstanceKeyMap: {
+			game_id: 0,
+			inst: 0,
+			key: 0,
+			game_inst: 0,
 		},
 		GameInstanceMap: {
 			game_id: 0,
@@ -641,11 +701,6 @@ export const schema: SchemaType = {
 		property_name: "",
 		value: "",
 			last_updated: 0,
-		},
-		DescriptionText: {
-			inst: 0,
-			key: 0,
-		text: "",
 		},
 		Dict: {
 			dict_key: 0,
@@ -714,6 +769,7 @@ export const schema: SchemaType = {
 			game_id: 0,
 			location: 0,
 			use_debug: false,
+			is_dead: false,
 		},
 		PlayerStory: {
 			game_id: 0,
@@ -728,7 +784,8 @@ export const schema: SchemaType = {
 				Command: undefined,
 				Response: undefined,
 				SysResponse: undefined,
-				Debug: undefined, }),
+				Debug: undefined,
+				Error: undefined, }),
 		},
 		Reactable: {
 			inst: 0,
@@ -838,6 +895,31 @@ export const schema: SchemaType = {
 					ReadOnly: "",
 				ReadWrite: undefined, }),
 		},
+		TrophyCreation: {
+			id: 0,
+			hidden: false,
+			index: 0,
+			points: 0,
+			start: 0,
+			end: 0,
+			group: 0,
+			icon: 0,
+			title: 0,
+		description: "",
+			tasks: [{ id: 0, total: 0, description: "", }],
+		data: "",
+		},
+		TrophyProgression: {
+			player_id: 0,
+			task_id: 0,
+			count: 0,
+			time: 0,
+		},
+		Task: {
+			id: 0,
+			total: 0,
+		description: "",
+		},
 		GameCreatedEvent: {
 			contract_address: "",
 			game_id: 0,
@@ -852,14 +934,15 @@ export enum ModelsMapping {
 	Area = 'lore-Area',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
+	DescriptionText = 'lore-DescriptionText',
 	Effect = 'lore-Effect',
 	ChildToParent = 'lore-ChildToParent',
 	Entity = 'lore-Entity',
 	ParentToChildren = 'lore-ParentToChildren',
 	Exit = 'lore-Exit',
+	GameInstanceKeyMap = 'lore-GameInstanceKeyMap',
 	GameInstanceMap = 'lore-GameInstanceMap',
 	ComponentVariable = 'lore-ComponentVariable',
-	DescriptionText = 'lore-DescriptionText',
 	Dict = 'lore-Dict',
 	PropertyRegistry = 'lore-PropertyRegistry',
 	InventoryItem = 'lore-InventoryItem',
@@ -890,5 +973,8 @@ export enum ModelsMapping {
 	ComponentProperty = 'lore-ComponentProperty',
 	PropertyAccess = 'lore-PropertyAccess',
 	PropertyType = 'lore-PropertyType',
+	TrophyCreation = 'achievement-TrophyCreation',
+	TrophyProgression = 'achievement-TrophyProgression',
+	Task = 'achievement-Task',
 	GameCreatedEvent = 'lore-GameCreatedEvent',
 }

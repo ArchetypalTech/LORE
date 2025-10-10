@@ -2,8 +2,8 @@ use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl},
         player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
     },
@@ -149,7 +149,9 @@ pub impl ExitComponent of Component<Exit> {
                 }
 
                 // Move player to room
-                player.clone().move_to_room(ref world, self.leads_to);
+                if (!player.clone().move_to_room(ref world, self.leads_to)) {
+                    return Result::Err(Error::Unenterable);
+                }
 
                 // Do action
                 // Check if the entity of the exit has an action

@@ -2,8 +2,8 @@ use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl},
         player::{Player, PlayerImpl},
         action::{Action, ActionImpl},
         area::AreaComponent,
@@ -126,22 +126,82 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // HERE SHOULD GO THE LOGIC FOR HANDLING THE COMMAND
                 // LIKE USE ITEM
                 // Ex: "use the key on the door"
-                // V: Use, N1: key, N2: door (target)
+                // V: Use, N0: key, N1: door (target)
                 // Get target entity to get the actions and execute it
-                if *player.use_debug {
-                    player.log_debug(ref world, format!("Your target is: {}", nouns[1].text));
-                }
+                // OUTDATED
+                // if *player.use_debug {
+                //     player.log_debug(ref world, format!("Your target is: {}", nouns[1].text));
+                // }
 
-                let target_entity = EntityImpl::get_entity(@world, *nouns[1].target);
-                if target_entity.is_none() {
-                    return Result::Err(Error::NoTargetEntity);
-                }
-                let target_entity = target_entity.unwrap();
-                let target_actions = target_entity.actions_keys;
-                if target_actions.len() == 0 {
-                    // No actions found, just return
+                // Execute action on the target entity
+                // Ex: "use the work permit on the oily rag"
+                // N0: work, N1: permit, N2: oily , N3: rag
+                // 1. N0 is Self. Get entity so that we can get the alt names
+                let executor = EntityImpl::get_entity(@world, self.inst).unwrap();
+                // println!("InventoryItem execute_command: executor: {:?}", executor);
+                // println!("N0: {}. Executor: {:?}", nouns[0].text, executor);
+                // 1.5 if nouns lenght is equal to 1 then return message
+                if nouns.len() == 1 {
+                    player.say(ref world, format!("Please provide a target for the action called by {}.", nouns[0].text));
                     return Result::Ok(());
                 }
+                //let mut target_entity_opt: Option<Entity> = Option::None;
+                // 2. Check if noun[1] is in the alt names
+                let mut found_in_alt_names = false;
+                for alt_name in executor.alt_names {
+                    if nouns[1].text == @alt_name {
+                        found_in_alt_names = true;
+                        break;
+                    }
+                };
+
+                let target_entity = if found_in_alt_names {
+                    // noun1 is an alias for self → target is noun2 or noun3
+                    // if nouns lenght is equal to 2 then return message as there is no target
+                    if nouns.len() == 2 {
+                        player.say(ref world, format!("Please provide a target for the action called by {} {}.", nouns[0].text, nouns[1].text));
+                        return Result::Ok(());
+                    }
+                    // if n2 or n3 are empty then, return message
+                    match EntityImpl::get_entity(@world, *nouns[2].target) {
+                        Option::Some(e) => e, // If noun2 is found, target is noun2
+                        Option::None => {
+                            // If noun2 is not found, then noun3 is the target
+                            match EntityImpl::get_entity(@world, *nouns[3].target) {
+                                Option::Some(e) => e,
+                                Option::None => {
+                                    // If noun3 is not found, then player.say and return
+                                    player.say(ref world, format!(
+                                        "I cannot find the target: {} {}.",
+                                        nouns[2].text, nouns[3].text
+                                    ));
+                                    return Result::Ok(());
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // noun1 is not an alias for self → target is noun1
+                    match EntityImpl::get_entity(@world, *nouns[1].target) {
+                        Option::Some(e) => e,
+                        Option::None => {
+                            player.say(ref world, format!(
+                                "I cannot find the target: {}. It's not possible to execute that action.",
+                                nouns[1].text
+                            ));
+                            return Result::Ok(());
+                        }
+                    }
+                };
+                
+                // Get the target actions
+                let target_actions = target_entity.actions_keys;
+                if target_actions.len() == 0 {
+                    // 6.1 No actions found, just return
+                    player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
+                    return Result::Ok(());
+                }
+                // Get the actions
                 let mut actions: Array<Action> = ArrayTrait::new();
                 // For each action, execute it
                 for key in target_actions {
@@ -150,9 +210,10 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 };
                 if actions.len() == 0 {
                     // No actions found, just return
+                    player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
                     return Result::Ok(());
                 }
-                // execute actions
+                // Execute actions
                 for action in actions {
                     // context is not being used inside evaluations or processing.
                     let context = TriggerContext {
@@ -193,8 +254,10 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     }
                     // If all are ok, set used to true
                     if trig_res.is_ok() && cond_res && eff_res.is_ok() {
-                        self.already_used = true;
-                        self.store(ref world, *player.game_id);
+                        // Read the changed model again to change the already_used property
+                        let mut inventory_item: InventoryItem = world.read_game_model(self.inst, *player.game_id);
+                        inventory_item.already_used = true;
+                        inventory_item.store(ref world, *player.game_id);
                         resultUse = Result::Ok(());
                         break;
                     }
@@ -209,8 +272,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                player.say(ref world, format!("You pick up the {}", nouns[0].text));
-                return container_component.put_item_in(ref world, ref self, *player.game_id);
+                let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot pick the {}", nouns[0].text));
+                } else {
+                    player.say(ref world, format!("You picked up the {}", nouns[0].text));
+                }
+                return res;
             },
             InventoryItemActions::DropItem => {
                 // This is for taking an item from the player's personal inventory
@@ -220,8 +288,13 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                player.say(ref world, format!("You drop the {}", nouns[0].text));
-                return container_component.put_item_out(ref world, ref self, player);
+                let res = container_component.put_item_out(ref world, ref self, player);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot drop the {}", nouns[0].text));
+                } else {
+                    player.say(ref world, format!("You dropped the {}", nouns[0].text));
+                }
+                return res;
             },
             InventoryItemActions::PutItem => {
                 // This is for a specific container
@@ -236,11 +309,22 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    player.say(ref world, format!("You put the {} in the {}", nouns[0].text, nouns[1].text));
-                    return container_component.put_item_in(ref world, ref self, *player.game_id);
+                    let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                    if res.is_err() {
+                        player.say(ref world, format!("You cannot put {} inside {}", nouns[0].text, nouns[1].text));
+                    } else {
+                        player.say(ref world, format!("You put the {} inside {}", nouns[0].text, nouns[1].text));
+                    }
+                    return res;
                 }
                 let container_component: Container = player_container.unwrap();
-                return container_component.put_item_in(ref world, ref self, *player.game_id);
+                let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot put {} inside {}", nouns[0].text, nouns[1].text));
+                } else {
+                    player.say(ref world, format!("You put the {} inside {}", nouns[0].text, nouns[1].text));
+                }
+                return res;
             },
             InventoryItemActions::TakeOutItem => {
                 // This is for taking an item from a specific container
@@ -255,10 +339,22 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    player.say(ref world, format!("You take out the {} from the {}", nouns[0].text, nouns[1].text));
-                    return container_component.put_item_out(ref world, ref self, player);
+                    let res = container_component.put_item_out(ref world, ref self, player);
+                    if res.is_err() {
+                        player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                    } else {
+                        player.say(ref world, format!("You took {} from {} and placed in the floor", nouns[0].text, nouns[1].text));
+                    }
+                    return res;
                 }
-                return Result::Ok(());
+                let container_component: Container = player_container.unwrap();
+                let res = container_component.put_item_out(ref world, ref self, player);
+                if res.is_err() {
+                    player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
+                } else {
+                    player.say(ref world, format!("You took {} from {} and placed in the floor", nouns[0].text, nouns[1].text));
+                }
+                return res;
             },
         }
         // Result::Err(Error::ActionFailed) // Unreachable code

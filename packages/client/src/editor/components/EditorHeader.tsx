@@ -5,12 +5,16 @@ import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store";
 import { Config } from "../lib/config";
 import { publishConfigToContract } from "../publisher";
 import { Button } from "./ui/Button";
-import { registerPropertyRegistry } from "../publisher";
 import { propertiesRegistered } from "../data/editor.data";
+import { useEditorPermissions } from "@/lib/stores/editor.store";
+import { useLocation } from "wouter";
+
 
 export const EditorHeader = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { isConnected } = useWalletStore();
+	const { isAdmin, isEditor } = useEditorPermissions();
+	const [_location, navigate] = useLocation();
 
 	// Handler for file upload
 	const handleImportConfig = () => {
@@ -53,7 +57,10 @@ export const EditorHeader = () => {
 						{APP_EDITOR_DATA.title}
 					</h1>
 					<div className="mx-1 text-[7pt]">
-						({import.meta.env.MODE ? import.meta.env.MODE.toUpperCase() : "DEV"})
+						(
+							{import.meta.env.MODE ? import.meta.env.MODE.toUpperCase() : "DEV"}
+							{isAdmin ? "/ADMIN" : isEditor ? "/EDITOR" : ""}
+						)
 					</div>
 				</div>
 				<div className="flex grow" />
@@ -63,9 +70,6 @@ export const EditorHeader = () => {
 							className="btn btn-sm btn-warning"
 							onClick={async () => {
 								await WalletStore().connectController();
-
-								await registerPropertyRegistry();
-
 								let propertyRegistryFound = await propertiesRegistered();
 								// Check properties
 								if (!propertyRegistryFound) {
@@ -77,6 +81,8 @@ export const EditorHeader = () => {
 						>
 							Connect Controller
 						</Button>
+					) : !isEditor ? (
+						<Button onClick={() => navigate("/")}>Go finish the game first</Button>
 					) : (
 						<>
 							<input

@@ -68,7 +68,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::player::m_StoryLine::TEST_CLASS_HASH.into()),
             TestResource::Model(models::entity::m_Entity::TEST_CLASS_HASH.into()),
             TestResource::Model(models::reactable::m_Reactable::TEST_CLASS_HASH.into()),
-            TestResource::Model(models::index::m_DescriptionText::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::description_text::m_DescriptionText::TEST_CLASS_HASH.into()),
             TestResource::Model(models::area::m_Area::TEST_CLASS_HASH.into()),
             TestResource::Model(models::exit::m_Exit::TEST_CLASS_HASH.into()),
             TestResource::Model(models::container::m_Container::TEST_CLASS_HASH.into()),
@@ -84,11 +84,15 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::action::m_Action::TEST_CLASS_HASH.into()),
             TestResource::Model(models::action::m_ActionExecuted::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::game_instance::m_GameInstanceKeyMap::TEST_CLASS_HASH.into()),
             // game_token
             TestResource::Model(models::admin::m_AccountPermissions::TEST_CLASS_HASH.into()),
             TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH.into()),
             TestResource::Model(models::token_config::m_GameTokenInfo::TEST_CLASS_HASH.into()),
             TestResource::Event(models::token_config::e_GameCreatedEvent::TEST_CLASS_HASH.into()),
+            // Arcade achievements
+            TestResource::Event(achievement::events::index::e_TrophyCreation::TEST_CLASS_HASH.into()),
+            TestResource::Event(achievement::events::index::e_TrophyProgression::TEST_CLASS_HASH.into()),
             // TestResource::Event(),
             TestResource::Contract(prompt::TEST_CLASS_HASH.into()),
             TestResource::Contract(designer::TEST_CLASS_HASH.into()),
@@ -105,7 +109,8 @@ fn core_contract_defs() -> Span<ContractDef> {
     game_token_init_calldata.append_serde(admin_accounts);
     [
         ContractDefTrait::new(@"lore", @"designer")
-            .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span()),
+            .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span())
+            .with_init_calldata(array![].span()),
         ContractDefTrait::new(@"lore", @"prompt")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span()),
         ContractDefTrait::new(@"lore", @"game_token")
@@ -228,5 +233,6 @@ pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {
         name,
         alt_names: array![],
         actions_keys: array![],
+        creator_address: starknet::get_caller_address(),
     })
 }

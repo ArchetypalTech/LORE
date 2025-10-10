@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCallback, useEffect } from "react";
 import type { BigNumberish } from "starknet";
+import { useCanEditEntity } from "@/lib/stores/editor.store";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { formatColorHash } from "../editor.utils";
 import { componentData } from "../lib/components";
@@ -10,9 +11,11 @@ import { AddComponents } from "./AddComponents";
 import { DeleteButton, Header, PublishButton } from "./FormComponents";
 import type { ComponentInspector } from "./inspectors/useInspector";
 import { NoEntity } from "./ui/NoEntity";
+import { cn } from "@/lib/utils/utils";
 
 export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 	const { editedEntity, isDirty } = useEditorData();
+	const { canEdit } = useCanEditEntity(editedEntity);
 
 	 // State to track open/closed status per component key
   const [openComponents, setOpenComponents] = useState<Record<string, boolean>>({});
@@ -124,12 +127,12 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 					/>
 				}
 			>
-				<DeleteButton
+				<DeleteButton disabled={!canEdit}
 					onClick={async () => {
 						await EditorData().removeEntity(editedEntity);
 					}}
 				/>
-				<PublishButton
+				<PublishButton disabled={!canEdit}
 					onClick={async () => {
 						await publishConfigToContract(
 							EditorData().changeSet.filter((x) => x.inst === inst),
@@ -145,7 +148,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
           const isOpen = openComponents[key as string] ?? true; // default open
 
           return (
-            <div key={key} className="border-b border-gray-300">
+            <div key={key} className={cn("border-b border-gray-300", !canEdit && "pointer-events-none opacity-50")}>
               {/* Header with toggle button */}
               <div
 								className="flex items-center justify-between bg-gray-100 px-2 py-1 cursor-pointer select-none"
@@ -178,7 +181,9 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
         })}
       </div>
 
-      <AddComponents editedEntity={editedEntity} handleEdit={handleEditComponent} />
+      { canEdit &&
+				<AddComponents editedEntity={editedEntity} handleEdit={handleEditComponent} />
+			}
     </div>
   );
 };

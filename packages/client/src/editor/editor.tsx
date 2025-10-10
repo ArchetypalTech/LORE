@@ -7,6 +7,7 @@ import Terminal from "@/client/terminal/Terminal";
 import { APP_EDITOR_SEO } from "@/data/app.data";
 import { useDojoStore } from "@/lib/stores/dojo.store";
 import { useUserStore } from "@/lib/stores/user.store";
+import { useSyncEditorPermissions } from "@/lib/stores/editor.store";
 import { cn } from "@/lib/utils/utils";
 import { EditorFooter } from "./components/EditorFooter";
 import { EditorHeader } from "./components/EditorHeader";
@@ -15,6 +16,7 @@ import { HierarchyTree } from "./components/HierarchyTree";
 import { Button } from "./components/ui/Button";
 import { NoEntity } from "./components/ui/NoEntity";
 import EditorData, { useEditorData } from "./data/editor.data";
+import { Notifications } from "./lib/notifications";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -25,6 +27,7 @@ export const Editor = () => {
 	const { dark_mode } = useUserStore();
 	const { dataPool, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
+	const { isEditor } = useSyncEditorPermissions();
 
 	useHead({
 		title: APP_EDITOR_SEO.title,
@@ -50,6 +53,14 @@ export const Editor = () => {
 	}, [isDirty]);
 
 	useEffect(() => {
+		if (editorState === "not connected") {
+			Notifications().startLoading();
+		} else if (editorState === "loaded") {
+			Notifications().finalizeLoading();
+		}
+	}, [editorState]);
+
+	useEffect(() => {
 		dataPool;
 		const hasObjects = EditorData().getEntities().length > 0;
 		if (status === "loading") {
@@ -58,7 +69,9 @@ export const Editor = () => {
 		}
 		if (hasObjects) {
 			if (EditorData().selectedEntity === undefined) {
-				EditorData().selectEntity(EditorData().getEntities()[0]?.Entity?.inst);
+				// find first top-level entity
+				const topLevelEntity = EditorData().getEntities().find((e) => e!.ChildToParent === undefined);
+				EditorData().restoreSelectedEntity(topLevelEntity?.Entity?.inst);
 				setEditorState("loaded");
 				return;
 			}
@@ -76,6 +89,8 @@ export const Editor = () => {
 		(async () => await EditorData().syncEntities())();
 	}, []);
 
+	const isLoaded = (editorState === "loaded");
+
 	const editorContents = useMemo(() => {
 		switch (editorState) {
 			case "not connected":
@@ -88,38 +103,26 @@ export const Editor = () => {
 			case "loaded":
 			case "empty":
 				return (
-					<div className="relative grid grid-cols-5 gap-4">
-						<HierarchyTree />
-						<div className="use-editor-styles col-span-2">
-							{editorState !== "empty" ? (
+					!isLoaded ? (
+						<div className="flex grow flex-col w-full" style={{ height: "80%" }}>
+							<NoEntity />
+						</div>
+					) : (
+						<div className="relative grid grid-cols-5 gap-4">
+							<HierarchyTree />
+							<div className="use-editor-styles col-span-2">
 								<EntityEditor key={selectedEntity} inst={selectedEntity!} />
-							) : (
-								<div className="flex grow flex-col">
-									<NoEntity />
-									<Button
-										className="mx-auto max-w-30"
-										onClick={() => EditorData().newEntity()}
-									>
-										<HousePlus /> New Entity
-									</Button>
-									<Button
-										className="mx-auto max-w-30"
-										onClick={() => EditorData().newPlayer()}
-									>
-										<PersonStanding /> New Player
-									</Button>
-								</div>
-							)}
+							</div>
+							<div
+								className={cn(
+									!dark_mode && "contrast-120 invert",
+									"relative col-span-2 h-screen max-h-[calc(100vh-10rem)] opacity-50 hover:opacity-100",
+								)}
+							>
+								<Terminal gameId={0} />
+							</div>
 						</div>
-						<div
-							className={cn(
-								!dark_mode && "contrast-120 invert",
-								"relative col-span-2 h-screen max-h-[calc(100vh-10rem)] opacity-50 hover:opacity-100",
-							)}
-						>
-							<Terminal gameId={0} />
-						</div>
-					</div>
+					)
 				);
 			case "error":
 				return (
@@ -144,12 +147,12 @@ export const Editor = () => {
 			>
 				<div className="relative mx-auto h-full max-w-screen">
 					<EditorHeader />
-					<div className="relative m-0 mx-auto p-0 ">
-						{editorContents}
+					<div className="relative m-0 mx-auto p-0 h-full">
+						{isEditor && editorContents}
 					</div>
 				</div>
 			</div>
-			<EditorFooter />
+			{isEditor && isLoaded&& <EditorFooter />}
 		</>
 	);
 };

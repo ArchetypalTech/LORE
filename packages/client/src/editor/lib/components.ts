@@ -24,6 +24,7 @@ import { LORE_CONFIG } from "@/lib/config";
 import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish, ec, shortString } from "starknet";
 import randomName from "@scaleway/random-name";
+import { bigintToAddress } from "@/lib/utils/utils";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -35,6 +36,7 @@ export const createDefaultEntity = (): WithStringEnums<
 		name: createRandomName(),
 		alt_names: [],
 		actions_keys: [],
+		creator_address: bigintToAddress(getPlayerAddress()),
 	},
 });
 
@@ -52,7 +54,7 @@ export const createPlayerEntity = (
 			inst: playerInst,
 			is_entity: true,
 			name: playerName,
-			alt_names: [playerName, "me", "myself"],
+			alt_names: ["player", "me", "myself", "inventory"],
 		},
 		Player: {
 			...schema.lore.Player,
@@ -112,6 +114,7 @@ export const createDefaultAreaComponent = (
 export const createDefaultReactableComponent = (
 	entity: Entity,
 	descriptions?: DescriptionText[],
+	new_entry?: string,
 ): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
 	Reactable: {
 		...schema.lore.Reactable,
@@ -124,7 +127,7 @@ export const createDefaultReactableComponent = (
 			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 0] },
 		],
 		already_shown: false,
-		new_entry: "",
+		new_entry: new_entry || "",
 	},
 
 
@@ -154,7 +157,7 @@ export const createDefaultExitComponent = (
 		inst: entity.inst,
 		is_exit: true,
 		is_enterable: true,
-		direction_type: "None",
+		direction_type: "North",
 		action_map: [
 			{ action: "go", inst: 0, action_fn: "UseExit" },
 			{ action: "enter", inst: 0, action_fn: "UseExit" },
@@ -387,6 +390,28 @@ export const getPlayerAddress = (): string => {
 		}
 	}
 	return LORE_CONFIG.wallet.address;
+};
+
+export const getPlayerUsername = (): string => {
+	let username = 'Player';
+	if (LORE_CONFIG.useController && WalletStore().username) {
+		username = WalletStore().username as string;
+	}
+	return username;
+};
+
+export const getPlayerEntranceInst = (): bigint => {
+	let entranceInst = 0n;
+	if (LORE_CONFIG.useController) {
+		const controllerAddress = WalletStore().controller?.account?.address;
+		if (controllerAddress) {
+			entranceInst = ec.starkCurve.poseidonHashMany([
+				BigInt(shortString.encodeShortString("Entrance")),
+				BigInt(controllerAddress),
+			]);
+		}
+	}
+	return entranceInst;
 };
 
 export const getPlayerSingletonInst = (game_id?: string): string => {

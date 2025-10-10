@@ -42,9 +42,11 @@ export const Header = ({
 export const DeleteButton = ({
 	onClick,
 	className,
+	disabled,
 }: {
 	onClick: () => void;
 	className?: string;
+	disabled?: boolean;
 }) => {
 	return (
 		<Button
@@ -53,6 +55,7 @@ export const DeleteButton = ({
 			title="Delete Entity"
 			className={cn(className)}
 			onClick={onClick}
+			disabled={disabled}
 		>
 			❌
 		</Button>
@@ -62,9 +65,11 @@ export const DeleteButton = ({
 export const PublishButton = ({
 	onClick,
 	className,
+	disabled,
 }: {
 	onClick: () => void;
 	className?: string;
+	disabled?: boolean;
 }) => {
 	return (
 		<Button
@@ -73,6 +78,7 @@ export const PublishButton = ({
 			title="Publish Entity"
 			className={cn(className)}
 			onClick={onClick}
+			disabled={disabled}
 		>
 			🕊️
 		</Button>
@@ -105,7 +111,7 @@ export const Input = ({
 				autoComplete="off"
 				disabled={disabled}
 				readOnly={readOnly}
-				className={cn("bg-white", className)}
+				className={cn(readOnly ? "bg-gray-200" : "bg-white", className)}
 			/>
 		</div>
 	);
@@ -246,19 +252,25 @@ export const Toggle = ({
 	value,
 	onChange,
 	className,
+	readOnly,
 }: {
 	id: string;
 	value: boolean;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	className?: string;
+	readOnly?: boolean;
 }) => {
 	return (
-		<div className="form-group flex items-center">
+		<div className={cn(
+					"form-group flex items-center",
+					readOnly ? "bg-gray-200" : "",
+				)}>
 			<input
 				type="checkbox"
 				id={id}
 				checked={value}
-				onChange={onChange}
+				onChange={!readOnly ? onChange : undefined}
+				readOnly={readOnly}
 				className={cn(
 					"h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500",
 					className,

@@ -2,10 +2,11 @@ use dojo::{world::{WorldStorage, IWorldDispatcherTrait}, model::{ModelStorage, M
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl, GameModelKeyImpl},
         player::{Player, PlayerImpl},
-        index::{DescriptionText},
+        container::{ContainerImpl, ContainerComponent},
+        description_text::{DescriptionText},
     },
     types::{
         command_type::{Command, Token},
@@ -41,7 +42,7 @@ pub struct Reactable {
 #[generate_trait]
 pub impl ReactableImpl of ReactableTrait {
     fn get_random_description(
-        self: @Reactable, command: @Command, world: WorldStorage,
+        self: @Reactable, command: @Command, world: WorldStorage, game_id: u128,
     ) -> ByteArray {
         let (action, _token) = get_action_token(self, @world, command).unwrap();
         match action.action_fn {
@@ -60,31 +61,32 @@ pub impl ReactableImpl of ReactableTrait {
                     return ""; // avoid out-of-bounds access
                 }
                 let key: u32 = *self.description.at(random_idx);
-                let descriptionText: DescriptionText = world.read_model((*self.inst, key));
+                let descriptionText: DescriptionText = world.read_game_model_key(*self.inst, key, game_id);
                 descriptionText.text
             },
             _ => "",
         }
     }
 
-    fn get_first_description(self: @Reactable, world: WorldStorage) -> ByteArray {
+    fn get_first_description(self: @Reactable, world: WorldStorage, game_id: u128) -> ByteArray {
         if self.description.len() == 0 {
             return "";
         }
         let key: u32 = *self.description.at(0);
-        let descriptionText: DescriptionText = world.read_model((*self.inst, key));
+        let descriptionText: DescriptionText = world.read_game_model_key(*self.inst, key, game_id);
         descriptionText.text
     }
 
     fn get_specific_description(
-        reactable: @Reactable, index: u32, world: WorldStorage,
-    ) -> ByteArray {
-        if reactable.description.len() == 0 {
-            return "";
+        reactable: @Reactable, index: u32, world: WorldStorage, game_id: u128,
+    ) -> Option<ByteArray> {
+        if (index >= reactable.description.len()) {
+            (Option::None)
+        } else {
+            let key: u32 = *reactable.description.at(index);
+            let descriptionText: DescriptionText = world.read_game_model_key(*reactable.inst, key, game_id);
+            (Option::Some(descriptionText.text))
         }
-        let key: u32 = *reactable.description.at(index);
-        let descriptionText: DescriptionText = world.read_model((*reactable.inst, key));
-        descriptionText.text
     }
 }
 
@@ -148,18 +150,44 @@ pub impl ReactableComponent of Component<Reactable> {
                 return Result::Ok(());
             },
             ReactableActions::ReadRandomDescription => {
-                player.say(ref world, self.get_random_description(command, world));
+                player.say(ref world, self.get_random_description(command, world, *player.game_id));
                 return Result::Ok(());
             },
             ReactableActions::ReadFirstDescription => {
-                player.say(ref world, self.get_first_description(world));
+                player.say(ref world, self.get_first_description(world, *player.game_id));
                 return Result::Ok(());
             },
             ReactableActions::ReadSpecificDescription => {
                 // Get idxs from the action map entrypoints
-                let (idx1, _idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
+                let (idx1, _idx2): (u32, u32) = action.entrypoints;
                 // Say the description
-                player.say(ref world, ReactableImpl::get_specific_description(@self, idx1, world));
+                let description: Option<ByteArray> = ReactableImpl::get_specific_description(@self, idx1, world, *player.game_id);
+                match description {
+                    Option::Some(description) => {
+                        player.say(ref world, description);
+                    },
+                    Option::None => {
+                        player.log_error(ref world, format!("description index {} not found", idx1));
+                        return Result::Err(Error::ActionFailed);
+                    },
+                }
+                // If token is verb and the verb is "examine" then check if the entity has a container. If so, call the container's check function
+                if (action.action == "examine" || action.action == "inspect") {
+                    // Check if Self has a container
+                    let container = ContainerComponent::get_component(@world, self.inst, *player.game_id);
+                    // If container is none, return ok
+                    if container.is_none() {
+                        return Result::Ok(());
+                    }
+                    // if container is some, call the container's check function
+                    let container_unwrapped = container.unwrap();
+                    // get entity of container
+                    let container_entity: Entity = EntityImpl::get_entity(@world, container_unwrapped.inst).unwrap();
+                    let doneChecking = container_unwrapped.check_container(ref world, player, @container_entity.name);
+                    if doneChecking {
+                        return Result::Ok(());
+                    }
+                }
                 return Result::Ok(());
             },
         }
@@ -227,13 +255,13 @@ pub mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            index::{DescriptionText},
+            description_text::{DescriptionText},
             reactable::{Reactable, ReactableImpl},
         },
         types::{command_type::{Command, Token, TokenType}},
     };
 
-    pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252) -> Reactable {
+    pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252, new_entry: ByteArray) -> Reactable {
         let descr1 = DescriptionText { inst, key: 0, text: "hello" };
         let descr2 = DescriptionText { inst, key: 1, text: "world" };
         let descr3 = DescriptionText { inst, key: 2, text: "how big is a rock" };
@@ -272,7 +300,7 @@ pub mod tests {
                 },
             ],
             already_shown: false,
-            new_entry: "",
+            new_entry,
         };
         world.write_model(@prefab);
         (prefab)
@@ -280,7 +308,7 @@ pub mod tests {
     
     fn Reactable_create_prefab_world() -> (Reactable, WorldStorage, ContractAddress, ContractAddress) {
         let (mut world, _, _, _, player_1, player_2) = helpers::setup_core();
-        let prefab = Reactable_create_prefab(ref world, 42);
+        let prefab = Reactable_create_prefab(ref world, 42, "");
         (prefab, world, player_1, player_2)
     }
 
@@ -316,7 +344,7 @@ pub mod tests {
         assert(read_reactable.is_reactable, 'reactable is reactable');
         let mut res = array![];
         for _ in 0..10_u8 {
-            res.append(read_reactable.get_random_description(@command, world));
+            res.append(read_reactable.get_random_description(@command, world, 0));
         };
         // println!("reactable: {:?}", res);
     }
@@ -333,7 +361,8 @@ pub mod tests {
         let (prefab, world, _, _) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
-        let res = ReactableImpl::get_specific_description(@i, idx, world);
-        assert(res == "the rock is from the moon", 'description should be the moon');
+        let res = ReactableImpl::get_specific_description(@i, idx, world, 0);
+        assert(res.is_some(), 'description should be some');
+        assert(res.unwrap() == "the rock is from the moon", 'description should be the moon');
     }
 }

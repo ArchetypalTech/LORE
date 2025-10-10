@@ -26,7 +26,7 @@ export const gameTokenAddress = getContractByName(manifest_slot, 'lore', 'game_t
 
 export const cmd_deploy_slot = [
 	`slot deployments create ${slotName} katana`,
-	`slot deployments create ${slotName} torii --world ${worldAddress} --rpc ${rpcUrl} --indexing.transactions --indexing.contracts erc721:${gameTokenAddress}`,
+	`slot deployments create ${slotName} torii --world ${worldAddress} --rpc ${rpcUrl} --indexing.transactions --indexing.contracts erc721:${gameTokenAddress}  --sql.historical lore-TrophyProgression`,
 	`slot deployments list`,
 ];
 export const cmd_view_slot = [`slot deployments list`];

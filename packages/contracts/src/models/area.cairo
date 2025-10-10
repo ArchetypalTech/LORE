@@ -2,8 +2,8 @@ use dojo::{world::WorldStorage, model::{Model, ModelStorage}};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        components::{Instance, Component},
-        game_instance::{GameModelImpl},
+        components::{Component},
+        game_instance::{Instance, GameModelImpl},
         player::{Player},
     },
     types::{command_type::Command},
@@ -21,6 +21,8 @@ pub struct Area {
     pub is_spawn_point: bool,
     /// progress percentage when entering this area
     pub progress_percentage: u8, // 0-100
+    /// when entering, preserve original children (editors can add children to this area)
+    pub preserve_children: bool,
 }
 
 
@@ -84,6 +86,7 @@ pub impl AreaComponent of Component<Area> {
         area.inst = inst;
         area.is_area = true;
         area.progress_percentage = 0;
+        area.preserve_children = false;
         area.store(ref world, 0);
         // Return the component
         area
@@ -134,6 +137,7 @@ mod tests {
         assert_eq!(comp_inst.inst(), area.inst, "baseline");
         assert_eq!(comp_game.inst(), area.inst, "baseline");
         assert_eq!(comp_game.is_spawn_point, false, "baseline");
+        assert_eq!(comp_game.preserve_children, false, "baseline");
         // GameInstanceMap model does not exist yet
         let map: GameInstanceMap = world.read_model((game_id, area.inst),);
         assert_eq!(map.game_inst, 0, "baseline");

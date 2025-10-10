@@ -18,6 +18,9 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 			inst: (e, updatedObject) => {
 				updatedObject.inst = e.target.value;
 			},
+			creator_address: (e, updatedObject) => {
+				updatedObject.creator_address = e.target.value;
+			},
 			alt_names: (e, updatedObject) => {
 				updatedObject.alt_names = (
 					e.target.value as unknown as string[]
@@ -43,6 +46,12 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 			<Input
 				id="inst"
 				value={componentObject.inst.toString()}
+				onChange={handleInputChange(undefined)}
+				readOnly={true}
+			/>
+			<Input
+				id="creator_address"
+				value={componentObject.creator_address?.toString() ?? "0x0"}
 				onChange={handleInputChange(undefined)}
 				readOnly={true}
 			/>

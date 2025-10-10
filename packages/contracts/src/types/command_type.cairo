@@ -89,3 +89,22 @@ pub impl IntoFelt252TokenType of core::traits::Into<felt252, TokenType> {
     }
 }
 
+// convert type to ByteArray for debugging
+pub impl IntoTokenTypeByteArray of core::traits::Into<TokenType, ByteArray> {
+    #[inline]
+    fn into(self: TokenType) -> ByteArray {
+        match self {
+            TokenType::Unknown => "Unknown",
+            TokenType::Verb => "Verb",
+            TokenType::Direction => "Direction",
+            TokenType::Article => "Article",
+            TokenType::Preposition => "Preposition",
+            TokenType::Pronoun => "Pronoun",
+            TokenType::Adjective => "Adjective",
+            TokenType::Noun => "Noun",
+            TokenType::Quantifier => "Quantifier",
+            TokenType::Interrogative => "Interrogative",
+            TokenType::System => "System",
+        }
+    }
+}

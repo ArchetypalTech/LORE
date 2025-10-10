@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { addAddressPadding, BigNumberish, num } from "starknet";
+import { addAddressPadding, BigNumberish } from "starknet";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { useWalletStore } from "./wallet.store";
 import { sendCommand } from "../terminalCommands/commandHandler";
@@ -14,11 +14,11 @@ const {
 	createFactory,
 } = StoreBuilder({
 	// gameId specifically used in the terminal (0 for editor)
-	editorGameId: undefined as bigint | undefined,
+	editorGameId: undefined as number | undefined,
 	// gameId attached to a player on-chain
-	playerGameId: undefined as bigint | undefined,
+	playerGameId: undefined as number | undefined,
 	// resolved gameId to be used
-	gameId: undefined as bigint | undefined,
+	gameId: undefined as number | undefined,
 });
 
 /**
@@ -29,7 +29,7 @@ const {
 const GameStore = createFactory({
 	setEditorGameId: (gameId: BigNumberish | undefined) => {
 		const isCurrent = (gameId !== undefined)
-		let editorGameId = (isCurrent ? num.toBigInt(gameId) : undefined);
+		let editorGameId = (isCurrent ? Number(BigInt(gameId)) : undefined);
 		set({ editorGameId });
 		if (isCurrent) {
 			set({ gameId: editorGameId });
@@ -37,7 +37,7 @@ const GameStore = createFactory({
 		console.log("GameStore.setEditorGameId:", gameId, isCurrent?"(CURRENT)":"");
 	},
 	setPlayerGameId: (gameId: BigNumberish | undefined) => {
-		let playerGameId = (gameId ? num.toBigInt(gameId) : undefined);
+		let playerGameId = (gameId ? Number(BigInt(gameId)) : undefined);
 		const isCurrent = (playerGameId !== undefined && get().editorGameId === undefined)
 		set({ playerGameId });
 		if (isCurrent) {
@@ -47,18 +47,23 @@ const GameStore = createFactory({
 	},
 });
 
+
+/**
+ * Keeps the game id in sync with the player account.
+ * use only once at a top-level component.
+ */
 export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	const { gameId } = useGameStore();
 
 	// set the editor game id, if provided
 	useEffect(() => {
-		GameStore().setEditorGameId(inputGameId == undefined ? undefined : num.toBigInt(inputGameId.toString()));
+		GameStore().setEditorGameId(inputGameId == undefined ? undefined : inputGameId);
 	}, [inputGameId]);
 
 	// use game_id for the connected player
 	const { walletAddress, isConnected } = useWalletStore();
 	useEffect(() => {
-		const _fetch = async (address: bigint) => {
+		const _fetch = async (address: BigNumberish) => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			const query = builder
 				.withCursor("")
@@ -76,10 +81,11 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				const { sdk } = await InitDojo();
 				const result = await sdk.getEntities({ query });
 				const playerAccount: PlayerAccount | undefined = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount;
+				console.log("useSyncGameId() playerAccount", playerAccount);
 				if (playerAccount) {
 					GameStore().setPlayerGameId(playerAccount.current_game_id);
 				} else {
-					sendCommand(`_create_game`);
+					sendCommand(`create game`);
 				}
 			} catch (e) {
 				// const status = {
@@ -90,24 +96,21 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				// sendCommand(`_fatal_error ${status.error}`);
 				console.error("useSyncGameId() error for wallet:", walletAddress, e);
 			}
-
 		}
 		// fetch the player game id
 		const address = BigInt(walletAddress || 0);
-		if (address != 0n && isConnected) {
+		if (address != 0n && isConnected && inputGameId === undefined) {
 			_fetch(address);
 		}
-	}, [walletAddress, isConnected]);
+	}, [walletAddress, isConnected, inputGameId]);
 
 	// return the current game id
 	return gameId;
 };
 
-
 /**
- * Factory function that returns all terminal store state and methods.
- * Can be used to access the terminal store outside of React components.
- * @returns {Object} The terminal store state and methods
+ * Returns the current game id.
+ * @returns {number | undefined} The current game id
  */
 export const useCurrentGameId = () => {
 	const { gameId } = useGameStore();
