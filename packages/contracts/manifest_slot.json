@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0xdeaa07534ac3b6c03bac5e0ad8d1e4c4a675dc66b0b7b6daac37d6944f7188",
-    "address": "0x5c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01",
-    "seed": "lore",
+    "address": "0x710c2c00bbec1d59cabd2f99fdc4f266530be026cf96a37bae4ddf0715031c",
+    "seed": "orugSlot",
     "name": ">LORE",
     "entrypoints": [
       "uuid",
@@ -1479,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0xbfeabd0b9ce6d9119e02891484844fb4eeb11ef82461148903a8bcbe9aa312",
-      "class_hash": "0x2a2e48b269b0d5ea069214a3d0f5d247a8a61d8b203af93884281b47ec0f515",
+      "address": "0x7593521cd3ff9d639c8a31db5d143e40187155790dcb6f3cc8ffc52dc0cefcf",
+      "class_hash": "0x4319ce00d5b13b85c0e5ea64d121f0902abe4eb581e34cb6149280e5e2cec29",
       "abi": [
         {
           "type": "impl",
@@ -1533,6 +1533,13 @@
           ]
         },
         {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
           "type": "impl",
           "name": "DesignerImpl",
           "interface_name": "lore::systems::designer::IDesigner"
@@ -1578,6 +1585,10 @@
             {
               "name": "use_debug",
               "type": "core::bool"
+            },
+            {
+              "name": "is_dead",
+              "type": "core::bool"
             }
           ]
         },
@@ -1604,6 +1615,10 @@
             {
               "name": "actions_keys",
               "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "creator_address",
+              "type": "core::starknet::contract_address::ContractAddress"
             }
           ]
         },
@@ -1687,7 +1702,7 @@
         },
         {
           "type": "struct",
-          "name": "lore::models::index::DescriptionText",
+          "name": "lore::models::description_text::DescriptionText",
           "members": [
             {
               "name": "inst",
@@ -1722,6 +1737,10 @@
             {
               "name": "progress_percentage",
               "type": "core::integer::u8"
+            },
+            {
+              "name": "preserve_children",
+              "type": "core::bool"
             }
           ]
         },
@@ -2383,7 +2402,7 @@
               "inputs": [
                 {
                   "name": "t",
-                  "type": "core::array::Array::<lore::models::index::DescriptionText>"
+                  "type": "core::array::Array::<lore::models::description_text::DescriptionText>"
                 }
               ],
               "outputs": [],
@@ -2692,13 +2711,6 @@
           ]
         },
         {
-          "type": "function",
-          "name": "dojo_init",
-          "inputs": [],
-          "outputs": [],
-          "state_mutability": "view"
-        },
-        {
           "type": "impl",
           "name": "WorldProviderImpl",
           "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
@@ -2810,6 +2822,7 @@
       "tag": "lore-designer",
       "selector": "0x6bb9050b828ea0b021af28404cff2e5b2474da015aea553b72db688e12b9a80",
       "systems": [
+        "dojo_init",
         "create_player",
         "create_entity",
         "create_reactable",
@@ -2843,8 +2856,8 @@
       ]
     },
     {
-      "address": "0x186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649",
-      "class_hash": "0x2857eb27785da85459e1b2ecc674b81e245e1548cbc001e22c73567dec131e4",
+      "address": "0x4a8a5ba466533ff3a29533213fb8f4eef4fa61792cbe71ddc072808d46f4703",
+      "class_hash": "0x19e7c31c149a000874176bc00644632ee1711b8b5e42c169c0a10c8e1b71af",
       "abi": [
         {
           "type": "impl",
@@ -3036,6 +3049,13 @@
             {
               "type": "function",
               "name": "update_contract_metadata",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "create_trophies",
               "inputs": [],
               "outputs": [],
               "state_mutability": "external"
@@ -3943,6 +3963,12 @@
         },
         {
           "type": "event",
+          "name": "achievement::components::achievable::AchievableComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
           "name": "lore::systems::game_token::game_token::Event",
           "kind": "enum",
           "variants": [
@@ -3970,6 +3996,11 @@
               "name": "ERC721ComboEvent",
               "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
               "kind": "flat"
+            },
+            {
+              "name": "AchievableEvent",
+              "type": "achievement::components::achievable::AchievableComponent::Event",
+              "kind": "flat"
             }
           ]
         }
@@ -3988,6 +4019,7 @@
         "update_token_metadata",
         "update_tokens_metadata",
         "update_contract_metadata",
+        "create_trophies",
         "upgrade",
         "safe_transfer_from",
         "transfer_from",
@@ -3999,8 +4031,8 @@
       ]
     },
     {
-      "address": "0x390fa557b5d4aaae2398fe604b04a51c5363b8e0410b317d22ba7b2a4522f44",
-      "class_hash": "0x3cb1436f7ac32dea2e0c9a784c9f665c6a8ef7f2ca666a3c94bed2a9d89a9f0",
+      "address": "0x758426d0c06f1b66841b542e0809fa8381d1eb15480fd14ed30f078b8ad6b7c",
+      "class_hash": "0x38c132a29564260409051147ccc3604a7ca4677a8120ad5ceda57da222058f7",
       "abi": [
         {
           "type": "impl",
@@ -4240,7 +4272,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x75a03dfec96e18efccbe203dfdfb7ef3d1d2566910863e4a7b5af95e442e4b8",
+      "class_hash": "0x76c0fe38edb112dda9234b82de359c5199b25df305847eefa3dea388eda694a",
       "tag": "lore-Area",
       "selector": "0x5de47d467cfa4eb49ae4adaef403b8ad166626f20c88397dd59288e5d4b080d"
     },
@@ -4270,7 +4302,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x1cd4f0ade5f8f1a14b1507bfbf1b1b2374cee6fd71931446bae17b31bbcb3a",
+      "class_hash": "0x217f837e0283b1bcf21990701126f1cdb7880290e2991a8c16d02b92fa4db2f",
       "tag": "lore-DescriptionText",
       "selector": "0x167fb02affa7c5f0c7eb85c605f7030903bcc6887619cc8b1b1898f05c78fd6"
     },
@@ -4288,7 +4320,7 @@
     },
     {
       "members": [],
-      "class_hash": "0xf12971415accef95a1efd9d0875fab2bda3ac5574a99084e2b0a90c84cc5c3",
+      "class_hash": "0x70b202d361676c8255c19ffcab74590d8d625b8d4d88435e8793764c5783fdf",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
@@ -4297,6 +4329,12 @@
       "class_hash": "0x21078b0a3e28156c6bb87ef7a087711c65836ba1cf82bc4e2bbfbe56857055b",
       "tag": "lore-Exit",
       "selector": "0x2ea1adb528633774ffc41f8b48d9e57ee9e9c1c0c65d13db2e2ac8d45ca002c"
+    },
+    {
+      "members": [],
+      "class_hash": "0xbda46c216a6077cafb54f5ef6b834e0b09dc69993c2ee5665c968e8685fc20",
+      "tag": "lore-GameInstanceKeyMap",
+      "selector": "0x492a4e1063f95958d7319510e66d94bd297b3fcad32693537fa69e34fa70a81"
     },
     {
       "members": [],
@@ -4324,7 +4362,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6316923fe80316498581657ff08c62cfa8627cdac73b1ab3d68be008b13322a",
+      "class_hash": "0x413be04859a914967a5a8578c33eb0f4e9402440bda107c883c7bcaacbf5d9b",
       "tag": "lore-Player",
       "selector": "0x3a26dabe7dd21bfc4f1549b782ffa326118e6134af2180128a0cfb2456cd8f0"
     },
@@ -4354,7 +4392,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x5f0971bdbe53adc5ae613c30f12eaf41a0f9e80907aae63aa7f24ecd800c885",
+      "class_hash": "0x17e76ba8f5e0c51270514e259a6a520bc7889d818b5923b7c88821597ace432",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
@@ -4383,6 +4421,18 @@
       "class_hash": "0x1033736c046a85720d920a901cdd7730f29718aa7ad2cfcf3909c9bfe3c2a0d",
       "tag": "lore-GameCreatedEvent",
       "selector": "0x7c6e3d3f9f2744660619ece25fc28118c70258d3be961f615157fee354aaf39"
+    },
+    {
+      "members": [],
+      "class_hash": "0x1200a00bdf5f5b6e2ad9240c085014d8da1294ff3de54876a322131f338ded2",
+      "tag": "lore-TrophyCreation",
+      "selector": "0x749a7824fe7100999043b621277070c914584f4d8e6db5595dffce9fb4b8636"
+    },
+    {
+      "members": [],
+      "class_hash": "0x5af5b15c9807d9cecb0592cb5e7ec3dc1530b6a22ec50be1f427a031518dc19",
+      "tag": "lore-TrophyProgression",
+      "selector": "0x6b26647ff4a8ae272a1c5e5aa9dea3e1253e124f04fa2a52ce052712cb56fd8"
     }
   ],
   "external_contracts": []
