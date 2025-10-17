@@ -1,0 +1,49 @@
+#
+# torii config for profile [dev] 
+# instance [orug-slot]
+#
+
+# world
+world_address = "0x710c2c00bbec1d59cabd2f99fdc4f266530be026cf96a37bae4ddf0715031c"
+rpc = "https://api.cartridge.gg/x/orug-slot/katana"
+
+[runner]
+explorer = true              # Open World Explorer in browser (default: false)
+check_contracts = false       # Verify contracts before starting (default: false)
+
+[indexing]
+contracts = ["erc721:0x4a8a5ba466533ff3a29533213fb8f4eef4fa61792cbe71ddc072808d46f4703"]
+
+# Performance tuning
+events_chunk_size = 1024        # Events per RPC request (default: 1024)
+blocks_chunk_size = 10240       # Blocks per DB commit (default: 10240)
+polling_interval = 350          # Check interval in ms (default: 500)
+max_concurrent_tasks = 100      # Parallel processing (default: 100)
+
+# Content selection
+pending = true                 # Include pending transactions
+transactions = true            # Store transaction data
+namespaces = []                # Specific namespaces only (empty = all)
+world_block = 0                # Starting block number (default: 0)
+
+
+# Advanced options
+controllers = false             # Index Cartridge controllers (default: false)
+strict_model_reader = false     # Read models from registration block (default: false)
+batch_chunk_size = 1024         # Batch request chunk size (default: 1024)
+
+[events]
+raw = false                     # Store raw blockchain events (dev only)
+
+[erc]
+max_metadata_tasks = 50    # Concurrent metadata tasks (default: 100)
+
+[sql]
+page_size = 4096              # Page size in bytes (default: 32768, range: 512-65536)
+cache_size = -500000           # Cache size: negative = KiB, positive = pages (default: -500MB)
+all_model_indices = false      # Auto-create all indices (resource intensive)
+
+# Historical data retention
+historical = ["lore-TrophyProgression"]
+
+# metrics: they are always served on /metrics endpoint of the deployment (only for slot instances)
