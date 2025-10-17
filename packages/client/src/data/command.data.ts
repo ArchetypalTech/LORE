@@ -308,7 +308,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			return;
 		}
 		await WalletStore().openUserProfile();
-		nextItem(null);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	disconnect: async () => {
 		if (!WalletStore().isConnected) {
