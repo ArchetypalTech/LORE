@@ -134,29 +134,61 @@ pub mod lexer {
 
     fn match_tokens(world: WorldStorage, words: Array<ByteArray>) -> Array<Token> {
         let mut tokens: Array<Token> = array![];
-        for i in 0..words.len() {
-            // iterate over the words in the string and find a dictionary match
-            let mut token = Token {
-                position: i,
-                text: words[i].clone(),
-                token_type: TokenType::Unknown,
-                token_value: 0,
-                target: 0,
+        let mut i: u32 = 0;
+
+        while i < words.len() {
+            let mut matched = false;
+            let mut max_match_length = 1;
+            let mut best_match: Option<Token> = Option::None;
+
+            // Try matching sequences of increasing length from current position
+            for len in 1..(words.len() - i + 1) {
+                // Build the sequence of words to try matching
+                let mut sequence = "";
+                for j in 0..len {
+                    if j > 0 {
+                        sequence = sequence + " ";
+                    }
+                    sequence = sequence + words[i + j].clone();
+                };
+                // Try to match this sequence in the dictionary
+                let dict_entry = get_dict_entry(world, sequence.clone());
+                if dict_entry.is_some() {
+                    let dict_entry = dict_entry.unwrap();
+                    max_match_length = len;
+                    best_match =
+                        Option::Some(
+                            Token {
+                                position: i,
+                                text: sequence.clone(),
+                                token_type: dict_entry.tokenType.clone(),
+                                token_value: dict_entry.n_value,
+                                target: 0,
+                            },
+                        );
+                    matched = true;
+                }
             };
-            let dict_entry = get_dict_entry(world, words[i].clone());
-            if dict_entry.is_some() {
-                let dict_entry = dict_entry.unwrap();
-                token =
-                    Token {
-                        position: i,
-                        text: words[i].clone(),
-                        token_type: dict_entry.tokenType.clone(),
-                        token_value: dict_entry.n_value,
-                        target: 0,
-                    };
+            if matched {
+                // Add the best match we found
+                tokens.append(best_match.unwrap());
+                i += max_match_length;
+            } else {
+                // No match found, add as unknown token
+                tokens
+                    .append(
+                        Token {
+                            position: i,
+                            text: words[i].clone(),
+                            token_type: TokenType::Unknown,
+                            token_value: 0,
+                            target: 0,
+                        },
+                    );
+                i += 1;
             }
-            tokens.append(token);
         };
+
         tokens
     }
 

@@ -18,7 +18,11 @@ pub fn add_to_dictionary(
 }
 
 pub fn get_dict_entry(world: WorldStorage, word: ByteArray) -> Option<Dict> {
-    let dict_key: felt252 = word.clone().to_felt252_word().unwrap();
+    let dict_key_result = word.clone().to_felt252_word();
+    if dict_key_result.is_err() {
+        return Option::None;
+    }
+    let dict_key: felt252 = dict_key_result.unwrap();
     let entry: Dict = world.read_model(dict_key);
     if (entry.word == "") {
         return Option::None;
