@@ -1,0 +1,16 @@
+# Virtual workspace
+# https://docs.swmansion.com/scarb/docs/reference/workspaces.html#virtual-workspace
+
+[workspace]
+members = ["packages/contracts"]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2024_07"
+
+#--------------------------
+# Dojo profiles declaration
+#
+[profile.dev]
+[profile.slot]
+[profile.stage]

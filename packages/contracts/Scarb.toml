@@ -1,8 +1,8 @@
 [package]
 name = "lore"
+version.workspace = true
+edition.workspace = true
 cairo-version = ">=2.12.2"
-version = "0.1.1"
-edition = "2024_07"
 experimental-features = ["associated_item_constraints"]
 
 [cairo]
@@ -42,8 +42,3 @@ allowed-libfuncs-list.name = "experimental"
 # uncomment this...
 # sierra = true
 # casm = true
-
-# Dojo profiles
-[profile.dev]
-[profile.slot]
-[profile.stage]

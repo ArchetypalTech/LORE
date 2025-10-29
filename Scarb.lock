@@ -41,7 +41,7 @@ source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea
 
 [[package]]
 name = "lore"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "achievement",
  "dojo",
