@@ -125,7 +125,10 @@ pub fn setup_core() -> (
 ) {
     set_caller(OWNER());
 
-    let mut world = spawn_test_world([namespace_def()].span());
+    let mut world = spawn_test_world(
+        dojo::world::world::TEST_CLASS_HASH.into(),
+        [namespace_def()].span(),
+    );
 
     world.sync_perms_and_inits(core_contract_defs());
 
@@ -181,7 +184,7 @@ pub fn update_test_world(ref world: WorldStorage, namespaces_defs: Span<Namespac
                 TestResource::Contract(ch) => {
                     world
                         .dispatcher
-                        .register_contract(*ch, namespace.clone(), (*ch).try_into().unwrap());
+                        .register_contract((*ch).try_into().unwrap(), namespace.clone(), (*ch).try_into().unwrap());
                 },
                 TestResource::Library((
                     _ch, _name, _version,
