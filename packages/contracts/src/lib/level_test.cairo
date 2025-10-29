@@ -19,6 +19,8 @@ fn room_start(ref world: WorldStorage) {
     let obj: Entity = Entity {
         inst: 2826,
         is_entity: true,
+        story_id: 1,
+        trail_id: 1,
         name: "The Bang",
         alt_names: array!["bang", "explosion"],
         actions_keys: array![],
@@ -44,6 +46,8 @@ fn object_room_one(ref world: WorldStorage, parent: Entity) {
     let obj = Entity {
         inst: 9999,
         is_entity: true,
+        story_id: 1,
+        trail_id: 1,
         name: "a portal",
         alt_names: array!["portal", "door"],
         actions_keys: array![],

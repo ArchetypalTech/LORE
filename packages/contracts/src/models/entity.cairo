@@ -17,14 +17,18 @@ pub struct Entity {
     pub inst: felt252,
     pub is_entity: bool,
     /// Properties ///
+    /// main story id (currently always 1)
+    pub story_id: u128,
+    /// trail id (main story trail is always 1)
+    pub trail_id: u128,
     /// Name of the entity
     pub name: ByteArray,
+    /// Creator
+    pub creator_address: ContractAddress,
     /// Alternative names of the entity
     pub alt_names: Array<ByteArray>,
     /// Holds the keys of the actions that are attached to this entity
     pub actions_keys: Array<felt252>,
-    /// Creator
-    pub creator_address: ContractAddress,
 }
 
 #[derive(Clone, Drop, Serde, Introspect)]
@@ -60,6 +64,8 @@ pub impl EntityImpl of EntityTrait {
         let mut entity: Entity = Entity {
             inst: world.dispatcher.uuid().try_into().unwrap(),
             is_entity: true,
+            story_id: 1,
+            trail_id: 1,
             name,
             alt_names: array![],
             actions_keys: array![],

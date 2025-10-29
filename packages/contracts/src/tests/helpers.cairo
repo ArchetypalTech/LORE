@@ -233,6 +233,8 @@ pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {
     (Entity {
         inst,
         is_entity: true,
+        story_id: 1,
+        trail_id: 1,
         name,
         alt_names: array![],
         actions_keys: array![],
