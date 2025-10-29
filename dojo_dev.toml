@@ -14,6 +14,9 @@ account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab1
 private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
 world_address = "0x5c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01"
 
+[lib_versions]
+"lore-lexer" = "0_2_0"
+
 [writers]
 "lore" = ["lore-prompt", "lore-designer", "lore-game_token"]
 

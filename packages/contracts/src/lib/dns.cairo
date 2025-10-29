@@ -1,10 +1,15 @@
-use starknet::{ContractAddress};
+use starknet::{ContractAddress, ClassHash};
 use dojo::world::{WorldStorage, WorldStorageTrait};
 
-pub use lore::systems::{
+pub use lore::{
+    systems::{
     game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
     prompt::{IPromptDispatcher, IPromptDispatcherTrait},
     designer::{IDesignerDispatcher, IDesignerDispatcherTrait},
+    },
+    lib::{
+        a_lexer::{ILexerLibraryDispatcher, ILexerDispatcherTrait},
+    }
 };
 
 pub mod SELECTORS {
@@ -52,4 +57,14 @@ pub impl DnsImpl of DnsTrait {
     fn game_token_dispatcher(self: @WorldStorage) -> IGameTokenDispatcher {
         (IGameTokenDispatcher{ contract_address: self.game_token_address() })
     }
+
+    //--------------------------
+    // library dispatchers
+    //
+    fn lexer_dispatcher(self: @WorldStorage) -> ILexerLibraryDispatcher {
+        let (_, class_hash): (ContractAddress, ClassHash) = self.dns(@"lexer_v0_2_0").expect('lexer library not found');
+        (ILexerLibraryDispatcher{ class_hash })
+    }
 }
+
+

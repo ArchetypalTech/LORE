@@ -20,11 +20,10 @@ pub mod prompt {
             admin::{AccountPermissionsTrait},
         },
         lib::{
-            a_lexer::{lexer},
             c_handler::{handle_command},
             random::{random_text},
             errors_texts_output::{ErrorOutputterImpl},
-            dns::{DnsTrait, IGameTokenDispatcherTrait},
+            dns::{DnsTrait, IGameTokenDispatcherTrait, ILexerDispatcherTrait},
         },
         constants::errors::{Error},
     };
@@ -51,7 +50,7 @@ pub mod prompt {
             // empty prompt, do nothing (good to initialize a game)
             if (cmd.len() > 0) {
                 player.log_command(ref world, cmd.clone());
-                match (lexer::parse(cmd, world, player)) {
+                match (world.lexer_dispatcher().parse(cmd, world, player)) {
                     Result::Ok(result) => {
                         let res: Result<(), Error> = handle_command(@result, ref world, ref player);
                         if !res.is_ok() {

@@ -15,9 +15,11 @@ use lore::{
         token_config::{GameTokenInfo, PlayerAccountTrait},
         admin::{AccountPermissionsTrait},
     },
-    types::command_type::{Command, TokenType, Token},
+    types::command_type::{
+        Command, CommandImpl,
+        TokenType, Token,
+    },
     lib::{
-        a_lexer::CommandImpl,
         utils::ByteArrayTraitExt,
         dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level},

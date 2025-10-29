@@ -9,12 +9,11 @@ use lore::{
     },
     types::{
         component_type::{ExitActions, ActionMapExit},
-        command_type::{Command, Token},
+        command_type::{Command, CommandImpl, Token},
         action_type::TriggerContext,
         direction_type::{Direction, IntoDirectionByteArray},
     },
     lib::{
-        a_lexer::CommandImpl,
         utils::ByteArrayTraitExt,
     },
     constants::{

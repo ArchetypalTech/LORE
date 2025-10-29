@@ -10,9 +10,9 @@ use dojo_cairo_test::{
 
 use lore::{
     systems::{
-        designer::{designer, IDesignerDispatcher},
-        prompt::{prompt, IPromptDispatcher},
-        game_token::{game_token, IGameTokenDispatcher},
+        designer::{IDesignerDispatcher},
+        prompt::{IPromptDispatcher},
+        game_token::{IGameTokenDispatcher},
     },
     models,
     models::{
@@ -93,10 +93,11 @@ fn namespace_def() -> NamespaceDef {
             // Arcade achievements
             TestResource::Event(achievement::events::index::e_TrophyCreation::TEST_CLASS_HASH.into()),
             TestResource::Event(achievement::events::index::e_TrophyProgression::TEST_CLASS_HASH.into()),
-            // TestResource::Event(),
-            TestResource::Contract(prompt::TEST_CLASS_HASH.into()),
-            TestResource::Contract(designer::TEST_CLASS_HASH.into()),
-            TestResource::Contract(game_token::TEST_CLASS_HASH.into()),
+            // Systems
+            TestResource::Contract(lore::systems::prompt::prompt::TEST_CLASS_HASH.into()),
+            TestResource::Contract(lore::systems::designer::designer::TEST_CLASS_HASH.into()),
+            TestResource::Contract(lore::systems::game_token::game_token::TEST_CLASS_HASH.into()),
+            TestResource::Library((lore::lib::a_lexer::lexer::TEST_CLASS_HASH.into(), @"lexer", @"0_2_0")),
         ].span(),
     };
 
@@ -137,9 +138,9 @@ pub fn setup_core() -> (
     world.dispatcher.grant_owner(selector_from_tag!("lore-prompt"), OWNER());
     world.dispatcher.grant_owner(selector_from_tag!("lore-game_token"), OWNER());
 
-    let designer = IDesignerDispatcher { contract_address: world.designer_address() };
-    let prompt = IPromptDispatcher { contract_address: world.prompt_address() };
-    let game_token = IGameTokenDispatcher { contract_address: world.game_token_address() };
+    let designer: IDesignerDispatcher = IDesignerDispatcher { contract_address: world.designer_address() };
+    let prompt: IPromptDispatcher = IPromptDispatcher { contract_address: world.prompt_address() };
+    let game_token: IGameTokenDispatcher = IGameTokenDispatcher { contract_address: world.game_token_address() };
 
     // FIXME: Setup permissions
     world.dispatcher.grant_writer(selector_from_tag!("lore-Dict"), world.prompt_address());
@@ -163,43 +164,6 @@ pub fn setup_core() -> (
     initialize_dictionary(world);
 
     (world, designer, prompt, game_token, player_1, player_2)
-}
-
-
-pub fn update_test_world(ref world: WorldStorage, namespaces_defs: Span<NamespaceDef>) {
-    for ns in namespaces_defs {
-        let namespace: @ByteArray = ns.namespace;
-
-        // TODO make this failsafe
-        // world.dispatcher.register_namespace(namespace.clone());
-
-        for r in ns.resources {
-            match r {
-                TestResource::Event(ch) => {
-                    world.dispatcher.register_event(namespace.clone(), (*ch).try_into().unwrap());
-                },
-                TestResource::Model(ch) => {
-                    world.dispatcher.register_model(namespace.clone(), (*ch).try_into().unwrap());
-                },
-                TestResource::Contract(ch) => {
-                    world
-                        .dispatcher
-                        .register_contract((*ch).try_into().unwrap(), namespace.clone(), (*ch).try_into().unwrap());
-                },
-                TestResource::Library((
-                    _ch, _name, _version,
-                )) => { // FIXME somehow cannot call "register_library", for later fix when we're using
-                // libraries world
-                //     .register_library(
-                //         namespace.clone(),
-                //         (*ch).try_into().unwrap(),
-                //         (*name).clone(),
-                //         (*version).clone(),
-                //     );
-                },
-            }
-        }
-    };
 }
 
 pub fn drop_all_events(address: ContractAddress) {

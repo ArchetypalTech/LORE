@@ -10,13 +10,12 @@ use lore::{
         container::{Container, ContainerImpl, ContainerComponent},
     },
     types::{
-        command_type::{Command, Token},
+        command_type::{Command, CommandImpl, Token},
         component_type::{InventoryItemActions, ActionMapInventoryItem},
         action_type::TriggerContext,
     },
     constants::errors::Error,
     lib::{
-        a_lexer::CommandImpl,
         utils::ByteArrayTraitExt,
     },
 };
