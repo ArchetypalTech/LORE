@@ -259,12 +259,10 @@ pub mod designer {
         }
 
         fn create_parent(ref self: ContractState, t: Array<ParentToChildren>) {
-            // let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             let mut world: WorldStorage = self.world(@"lore");
+            let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
-                // TODO: validate children ownership, or something better
-                // need this permission to create the player's entrance
-                // self._assert_can_edit_entity(@world, @config, o.inst);
+                self._assert_can_edit_entity(@world, @config, o.inst);
                 world.write_model(@o);
             }
         }

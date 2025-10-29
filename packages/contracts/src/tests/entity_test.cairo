@@ -202,4 +202,24 @@ mod tests {
         let game_id: u128 = 0;
         child1.set_parent(ref world, @child1, game_id);
     }
+
+    #[test]
+    #[should_panic(expected: ('set_parent() invalid story',))]
+    fn test_parent_invalid_story() {
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let (parent1, _, mut child1, _, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref world);
+        let game_id: u128 = 0;
+        child1.story_id = 123;
+        child1.set_parent(ref world, @parent1, game_id);
+    }
+
+    #[test]
+    #[should_panic(expected: ('set_parent() invalid trail',))]
+    fn test_parent_invalid_trail() {
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let (parent1, _, mut child1, _, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref world);
+        let game_id: u128 = 0;
+        child1.trail_id = 123;
+        child1.set_parent(ref world, @parent1, game_id);
+    }
 }
