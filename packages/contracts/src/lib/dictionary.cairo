@@ -12,7 +12,7 @@ pub fn add_to_dictionary(
         return Result::Err(Error::WordTooLong);
     }
     let dict_key: felt252 = word.clone().to_felt252_word().unwrap();
-    let entry = Dict { dict_key, word, tokenType: tokenType, n_value };
+    let entry: Dict = Dict { dict_key, word, tokenType: tokenType, n_value };
     world.write_model(@entry);
     Result::Ok(())
 }

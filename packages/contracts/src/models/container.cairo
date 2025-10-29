@@ -164,12 +164,10 @@ pub impl ContainerImpl of ContainerTrait {
                 player.say(ref world, format!("The {} is closed", container_entity.name));
                 return true;
             }
+        } else if (self.inst == *player.inst) {
+            player.say(ref world, format!("The {}'s personal inventory is open", container_entity.name));
         } else {
-            if (self.inst == *player.inst) {
-                player.say(ref world, format!("The {}'s personal inventory is open", container_entity.name));
-            } else {
-                player.say(ref world, format!("{} is open", container_entity.name));
-            }
+            player.say(ref world, format!("{} is open", container_entity.name));
         }
         // check if container is full
         if (self.is_full(@world, *player.game_id)) {
@@ -460,15 +458,15 @@ mod tests {
         //
         // create some items
         let game_id: u128 = 0;
-        let mut item1_entity = EntityImpl::create_entity(ref world, "item1");
-        let mut item2_entity = EntityImpl::create_entity(ref world, "item2");
+        let mut item1_entity: Entity = EntityImpl::create_entity(ref world, "item1");
+        let mut item2_entity: Entity = EntityImpl::create_entity(ref world, "item2");
         let mut item1: InventoryItem = InventoryItemComponent::add_component(ref world, item1_entity.inst);
         let mut item2: InventoryItem = InventoryItemComponent::add_component(ref world, item2_entity.inst);
         assert!(!item1_entity.has_parent(@world, game_id), "!item1.has_parent");
         assert!(!item2_entity.has_parent(@world, game_id), "!item2.has_parent");
         // create containers
-        let mut container1_entity = EntityImpl::create_entity(ref world, "container1");
-        let mut container2_entity = EntityImpl::create_entity(ref world, "container2");
+        let mut container1_entity: Entity = EntityImpl::create_entity(ref world, "container1");
+        let mut container2_entity: Entity = EntityImpl::create_entity(ref world, "container2");
         let mut container1: Container = ContainerComponent::add_component(ref world, container1_entity.inst);
         let mut container2: Container = ContainerComponent::add_component(ref world, container2_entity.inst);
         assert!(!container1_entity.has_children(@world, game_id), "!container1.has_children");

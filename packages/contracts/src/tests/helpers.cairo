@@ -125,7 +125,7 @@ pub fn setup_core() -> (
 ) {
     set_caller(OWNER());
 
-    let mut world = spawn_test_world(
+    let mut world: WorldStorage = spawn_test_world(
         dojo::world::world::TEST_CLASS_HASH.into(),
         [namespace_def()].span(),
     );
@@ -154,8 +154,8 @@ pub fn setup_core() -> (
     testing::set_block_timestamp(1);
 
     // Setup players
-    let player_1 = 0x69.try_into().unwrap(); // 105
-    let player_2 = 0x42.try_into().unwrap(); // 66
+    let player_1: ContractAddress = 0x69.try_into().unwrap(); // 105
+    let player_2: ContractAddress = 0x42.try_into().unwrap(); // 66
 
     // burn entity 0 value
     EntityImpl::create_entity(ref world, "entity_0");
@@ -168,12 +168,12 @@ pub fn setup_core() -> (
 
 pub fn update_test_world(ref world: WorldStorage, namespaces_defs: Span<NamespaceDef>) {
     for ns in namespaces_defs {
-        let namespace = ns.namespace.clone();
+        let namespace: @ByteArray = ns.namespace;
 
         // TODO make this failsafe
         // world.dispatcher.register_namespace(namespace.clone());
 
-        for r in ns.resources.clone() {
+        for r in ns.resources {
             match r {
                 TestResource::Event(ch) => {
                     world.dispatcher.register_event(namespace.clone(), (*ch).try_into().unwrap());

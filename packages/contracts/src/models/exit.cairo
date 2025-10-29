@@ -149,7 +149,7 @@ pub impl ExitComponent of Component<Exit> {
                 }
 
                 // Move player to room
-                if (!player.clone().move_to_room(ref world, self.leads_to)) {
+                if (!player.move_to_room(ref world, self.leads_to)) {
                     return Result::Err(Error::Unenterable);
                 }
 
@@ -168,7 +168,7 @@ pub impl ExitComponent of Component<Exit> {
                         let mut action: Action = world.read_model((pos_entity.inst, key));
                         actions.append(action);
                     };
-                    if actions.len() == 0 {
+                    if actions.is_empty() {
                         // No actions found, just return
                         return Result::Ok(());
                     }
@@ -217,7 +217,7 @@ pub impl ExitComponent of Component<Exit> {
 fn matches_direction(
     self: @Exit, world: WorldStorage, player: @Player, directions_token: Span<Token>,
 ) -> Option<felt252> {
-    if (directions_token.len() == 0) {
+    if (directions_token.is_empty()) {
         return Option::None;
     }
     let exit_dir = ByteArrayTraitExt::byte_array_from_direction(*self.direction_type);

@@ -70,7 +70,7 @@ pub impl EntityImpl of EntityTrait {
     }
 
     fn get_names(self: @Entity) -> Span<ByteArray> {
-        let mut names = self.alt_names.clone();
+        let mut names: Array<ByteArray> = self.alt_names.clone();
         names.append(self.name.clone());
         (names.span())
     }
@@ -79,7 +79,7 @@ pub impl EntityImpl of EntityTrait {
         if (self.name == name) {
             return true;
         }
-        let mut has_name = false;
+        let mut has_name: bool = false;
         for alt_name in self.alt_names.span() {
             if (alt_name == name) {
                 has_name = true;
@@ -123,7 +123,7 @@ pub impl EntityImpl of EntityTrait {
     }
 
     fn contains_child(self: @Entity, world: @WorldStorage, inst: felt252, game_id: u128) -> bool {
-        let mut result = false;
+        let mut result: bool = false;
         let parent: ParentToChildren = world.read_game_model(*self.inst, game_id);
         for child_inst in parent.children.span() {
             if (child_inst == @inst) {

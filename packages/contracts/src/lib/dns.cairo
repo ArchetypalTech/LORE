@@ -18,14 +18,7 @@ pub mod SELECTORS {
 pub impl DnsImpl of DnsTrait {
     fn find_contract_address(self: @WorldStorage, contract_name: @ByteArray) -> ContractAddress {
         // let (contract_address, _) = self.dns(contract_name).unwrap(); // will panic if not found
-        match self.dns_address(contract_name) {
-            Option::Some(contract_address) => {
-                (contract_address)
-            },
-            Option::None => {
-                (0x0.try_into().unwrap())
-            },
-        }
+        (self.dns_address(contract_name).unwrap_or(0x0.try_into().unwrap()))
     }
 
     //--------------------------

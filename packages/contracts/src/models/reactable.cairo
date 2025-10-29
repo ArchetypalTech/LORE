@@ -48,7 +48,7 @@ pub impl ReactableImpl of ReactableTrait {
         match action.action_fn {
             ReactableActions::ReadRandomDescription => {
                 let (idx1, idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
-                if self.description.len() == 0 || idx1 > idx2 {
+                if self.description.is_empty() || idx1 > idx2 {
                     return "";
                 }
                 let range_len = idx2 - idx1 + 1;
@@ -69,7 +69,7 @@ pub impl ReactableImpl of ReactableTrait {
     }
 
     fn get_first_description(self: @Reactable, world: WorldStorage, game_id: u128) -> ByteArray {
-        if self.description.len() == 0 {
+        if self.description.is_empty() {
             return "";
         }
         let key: u32 = *self.description.at(0);

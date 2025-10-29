@@ -89,15 +89,15 @@ pub impl PlayerImpl of PlayerTrait {
        (match Self::get_player(@world, 0) {
             Option::Some(singleton_player) => {
                 Option::Some(
-                    if (game_id == 0) {
+                    if game_id == 0 {
                         // requesting singleton player
-                        (singleton_player)
-                    } else if (!GameModelImpl::<Player>::has_game_model(@world, SINGLETON_PLAYER_INST, game_id)) {
+                        singleton_player
+                    } else if !GameModelImpl::<Player>::has_game_model(@world, SINGLETON_PLAYER_INST, game_id) {
                         // create new game instance player
-                        (Self::create_player_game_instance(ref world, @singleton_player, address, game_id))
+                        Self::create_player_game_instance(ref world, @singleton_player, address, game_id)
                     } else {
                         // read existing game instance player
-                        (world.read_game_model(SINGLETON_PLAYER_INST, game_id))
+                        world.read_game_model(SINGLETON_PLAYER_INST, game_id)
                     }
                 )
             },
@@ -150,7 +150,7 @@ pub impl PlayerImpl of PlayerTrait {
 
     fn create_player_game_instance(ref world: WorldStorage, base_player: @Player, address: ContractAddress, game_id: u128) -> Player {
         // clone a new game instance player
-        let mut new_player: Player = base_player.clone();
+        let mut new_player: Player = *base_player;
         new_player.address = address;
         new_player.game_id = game_id;
         world.write_game_model(@new_player, game_id);
@@ -175,20 +175,17 @@ pub impl PlayerImpl of PlayerTrait {
                 continue;
             }
             let reactable: Option<Reactable> = Component::get_component(@world, item.inst, *self.game_id);
-            match reactable {
-                Option::Some(mut reactable) => {
-                    if reactable.is_visible {
-                        if reactable.already_shown {
-                            self.say(ref world, format!("{}", reactable.new_entry));
-                        } else {
-                            let description = reactable.get_first_description(world, *self.game_id);
-                            self.say(ref world, format!("{}", description));
-                            reactable.already_shown = true;
-                            reactable.store(ref world, *self.game_id);
-                        }
+            if let Some(mut reactable) = reactable {
+                if reactable.is_visible {
+                    if reactable.already_shown {
+                        self.say(ref world, format!("{}", reactable.new_entry));
+                    } else {
+                        let description = reactable.get_first_description(world, *self.game_id);
+                        self.say(ref world, format!("{}", description));
+                        reactable.already_shown = true;
+                        reactable.store(ref world, *self.game_id);
                     }
-                },
-                Option::None => {},
+                }
             }
         };
         Result::Ok(())
@@ -266,7 +263,7 @@ pub impl PlayerImpl of PlayerTrait {
 
     fn get_room_entity(self: @Player, world: @WorldStorage) -> Option<Entity> {
         let player_entity: Entity = self.entity(world);
-        let parent = player_entity.get_parent(world, *self.game_id);
+        let parent: Option<Entity> = player_entity.get_parent(world, *self.game_id);
         if parent.is_none() {
             return Option::None;
         }
@@ -279,7 +276,7 @@ pub impl PlayerImpl of PlayerTrait {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children = room.get_children(world, *self.game_id);
+                let children: Span<Entity> = room.get_children(world, *self.game_id);
                 // Go over 1st level children
                 for child in children {
                     context.append(child.clone());
@@ -296,16 +293,16 @@ pub impl PlayerImpl of PlayerTrait {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children = room.get_children(world, *self.game_id);
+                let children: Span<Entity> = room.get_children(world, *self.game_id);
                 // Go over 1st level children
                 for child in children {
                     context.append(child.clone());
                     // Go over 2nd level children
-                    let children_2 = child.get_children(world, *self.game_id);
+                    let children_2: Span<Entity> = child.get_children(world, *self.game_id);
                     for child_2 in children_2 {
                         context.append(child_2.clone());
                         // Go over 3rd level children
-                        let children_3 = child_2.get_children(world, *self.game_id);
+                        let children_3: Span<Entity> = child_2.get_children(world, *self.game_id);
                         for child_3 in children_3 {
                             context.append(child_3.clone());
                         }
@@ -410,8 +407,8 @@ mod tests {
             token_config::{GameTokenInfo},
             reactable::{Reactable, ReactableComponent},
             description_text::{DescriptionText},
-            area::{AreaComponent},
-            exit::{ExitComponent},
+            area::{Area, AreaComponent},
+            exit::{Exit, ExitComponent},
         },
         types::{
             direction_type::{Direction},
@@ -539,8 +536,8 @@ mod tests {
         world.write_model(@exit_2_entity);
         let _: Reactable = Reactable_create_prefab(ref world, exit_1_entity.inst, "to_room_2");
         let _: Reactable = Reactable_create_prefab(ref world, exit_2_entity.inst, "to_room_1");
-        let mut exit_to_room_2 = ExitComponent::add_component(ref world, exit_1_entity.inst);
-        let mut exit_to_room_1 = ExitComponent::add_component(ref world, exit_2_entity.inst);
+        let mut exit_to_room_2: Exit = ExitComponent::add_component(ref world, exit_1_entity.inst);
+        let mut exit_to_room_1: Exit = ExitComponent::add_component(ref world, exit_2_entity.inst);
         exit_to_room_2.leads_to = room_2_entity.inst;
         exit_to_room_2.is_enterable = true;
         exit_to_room_2.direction_type = Direction::North;

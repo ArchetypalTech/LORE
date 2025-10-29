@@ -12,11 +12,11 @@ mod tests {
     use super::*;
 
     fn _setup_entities(ref world: WorldStorage) -> (Entity, Entity, Entity, Entity, Entity) {
-        let parent1 = EntityImpl::create_entity(ref world, "parent1");
-        let parent2 = EntityImpl::create_entity(ref world, "parent2");
-        let child1 = EntityImpl::create_entity(ref world, "child1");
-        let child2 = EntityImpl::create_entity(ref world, "child2");
-        let child3 = EntityImpl::create_entity(ref world, "child3");
+        let parent1: Entity = EntityImpl::create_entity(ref world, "parent1");
+        let parent2: Entity = EntityImpl::create_entity(ref world, "parent2");
+        let child1: Entity = EntityImpl::create_entity(ref world, "child1");
+        let child2: Entity = EntityImpl::create_entity(ref world, "child2");
+        let child3: Entity = EntityImpl::create_entity(ref world, "child3");
         world.write_model(@parent1);
         world.write_model(@parent2);
         world.write_model(@child1);
@@ -28,7 +28,7 @@ mod tests {
     #[test]
     fn test_entity_parent_child_basic() {
         let (mut world, _, _, _, _, _) = helpers::setup_core();
-        let (mut parent, _, mut child, _, _) = _setup_entities(ref world);
+        let (mut parent, _, mut child, _, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref world);
 
         // Set parent-child relationship
         let game_id: u128 = 0;
@@ -40,14 +40,14 @@ mod tests {
             child.get_parent(@world, game_id).unwrap().inst == parent.inst, 'C parent should match parent',
         );
 
-        assert(parent.has_children(@world, game_id) == true, 'parent.has_children()');
+        assert(parent.has_children(@world, game_id), 'parent.has_children()');
         assert(parent.get_children_count(@world, game_id) == 1, 'parent.children_count()');
         assert(parent.contains_child(@world, child.inst, game_id), 'parent.contains_child()');
-        let children_ids = parent.get_children_keys(@world, game_id);
+        let children_ids: Span<felt252> = parent.get_children_keys(@world, game_id);
         assert(children_ids.len() == 1, 'parent.get_children_keys()');
         assert(*children_ids.at(0) == child.inst, 'children_ids[0]');
 
-        let children = parent.get_children(@world, game_id);
+        let children: Span<Entity> = parent.get_children(@world, game_id);
         assert(children.len() == 1, 'children.len()');
         assert(child.has_parent(@world, game_id), 'child.has_parent()');
         assert(child.get_parent(@world, game_id).unwrap().inst == parent.inst, 'child.get_parent()');
@@ -56,13 +56,13 @@ mod tests {
     fn _assert_parent_children(world: @WorldStorage, parent: @Entity, expected_children: Span<Entity>, game_id: u128, prefix: ByteArray) {
         assert_eq!(parent.has_children(world, game_id), expected_children.len() > 0, "[{}].has_children()", prefix);
         assert_eq!(parent.get_children_count(world, game_id), expected_children.len(), "[{}].get_children_count()", prefix);
-        let children_entities = parent.get_children(world, game_id);
-        let children_ids = parent.get_children_keys(world, game_id);
+        let children_entities: Span<Entity> = parent.get_children(world, game_id);
+        let children_ids: Span<felt252> = parent.get_children_keys(world, game_id);
         assert_eq!(children_entities.len(), expected_children.len(), "[{}].get_children()", prefix);
         assert_eq!(children_ids.len(), expected_children.len(), "[{}].get_children_keys()", prefix);
         let mut i: u32 = 0;
         while i < expected_children.len() {
-            let child = expected_children.at(i);
+            let child: @Entity = expected_children.at(i);
             assert_eq!(child.has_parent(world, game_id), true, "[{}].has_parent()[{}]", prefix, i);
             assert_eq!(child.get_parent(world, game_id).unwrap().inst, *parent.inst, "[{}].get_parent()[{}]", prefix, i);
             // parent
@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn test_entity_hierarchy() {
         let (mut world, _, _, _, _, _) = helpers::setup_core();
-        let (mut parent1, mut parent2, mut child1, mut child2, mut child3) = _setup_entities(ref world);
+        let (mut parent1, mut parent2, mut child1, mut child2, mut child3): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref world);
 
         // Set relationships
         let game_id: u128 = 0;
@@ -141,7 +141,7 @@ mod tests {
     #[test]
     fn test_entity_game_instance() {
         let (mut world, _, _, _, _, _) = helpers::setup_core();
-        let (mut parent1, mut parent2, mut child1, mut child2, mut child3) = _setup_entities(ref world);
+        let (mut parent1, mut parent2, mut child1, mut child2, mut child3): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref world);
 
         let game_id: u128 = 0;
         child1.set_parent(ref world, @parent1, game_id);
@@ -197,7 +197,7 @@ mod tests {
     #[should_panic(expected: ('set_parent() parent self',))]
     fn test_parent_self() {
         let (mut world, _, _, _, _, _) = helpers::setup_core();
-        let (_, _, mut child1, _, _) = _setup_entities(ref world);
+        let (_, _, mut child1, _, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref world);
         // Set relationships
         let game_id: u128 = 0;
         child1.set_parent(ref world, @child1, game_id);

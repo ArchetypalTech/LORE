@@ -196,7 +196,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 
                 // Get the target actions
                 let target_actions = target_entity.actions_keys;
-                if target_actions.len() == 0 {
+                if target_actions.is_empty() {
                     // 6.1 No actions found, just return
                     player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
                     return Result::Ok(());
@@ -208,7 +208,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     let mut action: Action = world.read_model((target_entity.inst, key));
                     actions.append(action);
                 };
-                if actions.len() == 0 {
+                if actions.is_empty() {
                     // No actions found, just return
                     player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
                     return Result::Ok(());

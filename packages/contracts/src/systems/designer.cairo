@@ -57,6 +57,7 @@ pub mod designer {
     use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::{
         models::{
+            index::{Dict},
             admin::{AccountPermissions, AccountPermissionsTrait},
             entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
             description_text::{DescriptionText},
@@ -80,6 +81,7 @@ pub mod designer {
             utils::{ByteArrayTraitExt},
             variable_property_helper::{VariablePropertyHelper},
         },
+        constants::errors::{Error},
     };
 
     mod Errors {
@@ -104,12 +106,12 @@ pub mod designer {
 
         // create
         fn create_entity(ref self: ContractState, t: Array<Entity>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
                 for alt_name in o.alt_names.clone() {
-                    let pos_entry = get_dict_entry(world, alt_name.clone());
+                    let pos_entry: Option<Dict> = get_dict_entry(world, alt_name.clone());
                     if pos_entry.is_none() {
                         add_to_dictionary(world, alt_name.clone(), TokenType::Noun, 1).unwrap();
                     }
@@ -138,7 +140,7 @@ pub mod designer {
         }
 
         fn create_player(ref self: ContractState, t: Array<Player>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Player);
             for o in t {
@@ -148,7 +150,7 @@ pub mod designer {
         }
 
         fn create_reactable(ref self: ContractState, t: Array<Reactable>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
             for o in t {
@@ -158,7 +160,7 @@ pub mod designer {
         }
 
         fn create_description_text(ref self: ContractState, t: Array<DescriptionText>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
@@ -167,7 +169,7 @@ pub mod designer {
         }
 
         fn create_area(ref self: ContractState, t: Array<Area>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
             for o in t {
@@ -177,7 +179,7 @@ pub mod designer {
         }
 
         fn create_exit(ref self: ContractState, t: Array<Exit>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
             for o in t {
@@ -187,7 +189,7 @@ pub mod designer {
         }
 
         fn create_inventory_item(ref self: ContractState, t: Array<InventoryItem>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(
                 ref world, ComponentType::InventoryItem,
@@ -199,7 +201,7 @@ pub mod designer {
         }
 
         fn create_container(ref self: ContractState, t: Array<Container>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Container);
             for o in t {
@@ -213,7 +215,7 @@ pub mod designer {
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
-                let _result = TriggerImpl::register_trigger(ref world, @o);
+                let _result: Result<(), Error> = TriggerImpl::register_trigger(ref world, @o);
                 // if result.is_err() {
             //     println!(
             //         "Trigger: {:?} failed to register with error: {:?}", o,
@@ -224,7 +226,7 @@ pub mod designer {
         }
 
         fn create_condition(ref self: ContractState, t: Array<Condition>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
@@ -233,7 +235,7 @@ pub mod designer {
         }
 
         fn create_effect(ref self: ContractState, t: Array<Effect>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
@@ -246,7 +248,7 @@ pub mod designer {
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
-                let _result = ActionImpl::register_action(ref world, @o);
+                let _result: Result<(), Error> = ActionImpl::register_action(ref world, @o);
                 // if result.is_err() {
             //     println!(
             //         "Action: {:?} failed to register with error: {:?}", o,
@@ -257,8 +259,8 @@ pub mod designer {
         }
 
         fn create_parent(ref self: ContractState, t: Array<ParentToChildren>) {
-            let mut world = self.world(@"lore");
             // let config: AccountPermissions = world.read_model(starknet::get_caller_address());
+            let mut world: WorldStorage = self.world(@"lore");
             for o in t {
                 // TODO: validate children ownership, or something better
                 // need this permission to create the player's entrance
@@ -268,7 +270,7 @@ pub mod designer {
         }
 
         fn create_child(ref self: ContractState, t: Array<ChildToParent>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
@@ -278,7 +280,7 @@ pub mod designer {
 
         // delete
         fn delete_entity(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -291,7 +293,7 @@ pub mod designer {
         }
 
         fn delete_player(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -301,7 +303,7 @@ pub mod designer {
         }
 
         fn delete_reactable(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -311,7 +313,7 @@ pub mod designer {
         }
 
         fn delete_description_text(ref self: ContractState, ids: Array<(felt252, felt252)>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -321,7 +323,7 @@ pub mod designer {
         }
 
         fn delete_area(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -331,7 +333,7 @@ pub mod designer {
         }
 
         fn delete_exit(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -341,7 +343,7 @@ pub mod designer {
         }
 
         fn delete_inventory_item(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -351,7 +353,7 @@ pub mod designer {
         }
 
         fn delete_container(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -366,7 +368,7 @@ pub mod designer {
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
                 let model: Trigger = world.read_model((inst, key),);
-                let _result = TriggerImpl::unregister_trigger(ref world, @model);
+                let _result: Result<(), Error> = TriggerImpl::unregister_trigger(ref world, @model);
                 // if result.is_err() {
             //     println!(
             //         "Trigger: {:?} failed to unregister with error: {:?}",
@@ -378,7 +380,7 @@ pub mod designer {
         }
 
         fn delete_condition(ref self: ContractState, ids: Array<(felt252, felt252)>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -388,7 +390,7 @@ pub mod designer {
         }
 
         fn delete_effect(ref self: ContractState, ids: Array<(felt252, felt252)>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -403,7 +405,7 @@ pub mod designer {
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
                 let model: Action = world.read_model((inst, key),);
-                let _result = ActionImpl::unregister_action(ref world, @model);
+                let _result: Result<(), Error> = ActionImpl::unregister_action(ref world, @model);
                 // if result.is_err() {
             //     println!(
             //         "Action: {:?} failed to unregister with error: {:?}",
@@ -415,7 +417,7 @@ pub mod designer {
         }
 
         fn delete_parent(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);
@@ -425,7 +427,7 @@ pub mod designer {
         }
 
         fn delete_child(ref self: ContractState, ids: Array<felt252>) {
-            let mut world = self.world(@"lore");
+            let mut world: WorldStorage = self.world(@"lore");
             let config: AccountPermissions = world.read_model(starknet::get_caller_address());
             for inst in ids {
                 self._assert_can_delete_entity(@world, @config, inst);

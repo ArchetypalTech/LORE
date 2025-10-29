@@ -1,7 +1,7 @@
 use core::array::{ArrayTrait, ArrayImpl, Array};
 
 use lore::{
-    models::player::PlayerImpl,
+    models::player::{PlayerImpl},
     types::command_type::{Command, Token, TokenType},
 };
 
@@ -99,7 +99,7 @@ pub mod lexer {
 
     use lore::{
         models::{
-            entity::{EntityImpl},
+            entity::{Entity, EntityImpl},
             player::{Player, PlayerImpl},
         },
         types::command_type::{Command, Token, TokenType},
@@ -150,7 +150,7 @@ pub mod lexer {
                     Token {
                         position: i,
                         text: words[i].clone(),
-                        token_type: dict_entry.tokenType.clone(),
+                        token_type: dict_entry.tokenType,
                         token_value: dict_entry.n_value,
                         target: 0,
                     };
@@ -162,12 +162,12 @@ pub mod lexer {
 
     fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
         // get player for their context (room + room objects + inventory)
-        let context = player.get_full_context(@world);
+        let context: Array<Entity> = player.get_full_context(@world);
         let mut newTokens: Array<Token> = array![];
         for i in 0..command.tokens.len() {
-            let mut token = command.tokens.at(i).clone();
+            let mut token: Token = command.tokens.at(i).clone();
             for item in context.clone() {
-                let names = item.get_names();
+                let names: Span<ByteArray> = item.get_names();
                 for name in names {
                     if @token.text == name {
                         token.target = item.inst;
@@ -188,10 +188,10 @@ pub mod lexer {
         // here we do fancy stuff
         // when there is a preposition, can we assume the next token is a noun? we know more about
         // the context now and what objects we recognize. Do we need to figure out adjectives.
-        let _verbs = command.get_verbs();
-        let _nouns = command.get_nouns();
-        let _directions = command.get_directions();
-        let _targets = command.get_Targets();
+        let _verbs: Span<Token> = command.get_verbs();
+        let _nouns: Span<Token> = command.get_nouns();
+        let _directions: Span<Token> = command.get_directions();
+        let _targets: Span<Token> = command.get_Targets();
         command
     }
 
@@ -215,13 +215,18 @@ mod tests {
     use super::lexer;
     use super::CommandImpl;
     use lore::{
-        models::player::{PlayerImpl},
-        types::command_type::{TokenType, IntoTokenTypeFelt252},
-        tests::helpers,
+        models::player::{Player, PlayerImpl},
+        types::command_type::{
+            Command,
+            Token, TokenType,
+            IntoTokenTypeFelt252,
+        },
         lib::{
             level_test::create_test_level,
             dictionary::{add_to_dictionary},
         },
+        constants::errors::Error,
+        tests::helpers,
     };
 
     #[test]
@@ -231,9 +236,9 @@ mod tests {
         // println!("promptText: {:?}", promptText);
         create_test_level(ref world);
         let game_id: u128 = 0;
-        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(ref world, 2826);
-        let _command = lexer::parse(promptText, world, player);
+        let _command: Result<Command, Error> = lexer::parse(promptText, world, player);
         // println!("command: {:?}", command);
     // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
@@ -249,15 +254,15 @@ mod tests {
         // Setup environment
         create_test_level(ref world);
         let game_id: u128 = 0;
-        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(ref world, 2826);
 
         // Parse command
-        let g_command = lexer::parse(prompt_text, world, player);
+        let g_command: Result<Command, Error> = lexer::parse(prompt_text, world, player);
         assert!(g_command.is_ok(), "Command parsing should succeed");
-        let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
+        let command: Command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
-        let verbs = command.get_verbs();
+        let verbs: Span<Token> = command.get_verbs();
         // println!("Verbs: {:?}", verbs);
         // Check the number of verbs found
         assert_eq!(verbs.len(), 1, "There should be exactly one verb");
@@ -274,16 +279,16 @@ mod tests {
         // Setup environment
         create_test_level(ref world);
         let game_id: u128 = 0;
-        let player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(ref world, 2826);
         let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);
 
         // Parse command
-        let g_command = lexer::parse(prompt_text, world, player);
+        let g_command: Result<Command, Error> = lexer::parse(prompt_text, world, player);
         assert!(g_command.is_ok(), "Command parsing should succeed");
-        let command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
+        let command: Command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
-        let nouns = command.get_nouns();
+        let nouns: Span<Token> = command.get_nouns();
         // println!("Nouns: {:?}", nouns);
         // Check the number of verbs found
         assert_eq!(nouns.len(), 1, "There should be exactly one noun");

@@ -227,7 +227,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 } else if name == @is_enterable {
                     arr.append((*component.is_enterable).into());
                 } else if name == @leads_to {
-                    arr.append((*component.leads_to));
+                    arr.append(*component.leads_to);
                 } else if name == @direction_type {
                     arr
                         .append(
@@ -294,7 +294,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
             if @prop.name == name {
                 let mut arr: Array<felt252> = array![];
                 if name == @owner_id {
-                    arr.append((*component.owner_id));
+                    arr.append(*component.owner_id);
                 } else if name == @can_be_picked_up {
                     arr.append((*component.can_be_picked_up).into());
                 } else if name == @can_go_in_container {
@@ -446,7 +446,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.is_enterable = new_var_value;
                             success = true;
                         } else if name == @leads_to {
-                            let new_destination = hex_value.clone();
+                            let new_destination: felt252 = *hex_value;
                             component.leads_to = new_destination;
                             success = true;
                         } else if name == @direction_type {
@@ -565,7 +565,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if effect.property == @owner_id {
-                            let new_owner_id = effect.hex_value.clone();
+                            let new_owner_id: felt252 = *effect.hex_value;
                             component.owner_id = new_owner_id;
                             // move item to new owner
                             let new_owner_container: Container = world.read_game_model(component.owner_id, game_id);
@@ -589,7 +589,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.can_go_in_container = new_var_value;
                             success = true;
                         } else if effect.property == @quantity {
-                            match effect.effect_type.clone() {
+                            match effect.effect_type {
                                 EffectType::AddQuantity => {
                                     component.quantity += *effect.n_value;
                                     success = true;
@@ -729,7 +729,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadOnly => { result = Result::Err(Error::ReadOnlyVariable); },
                     PropertyAccess::ReadWrite => {
                         if name == @location {
-                            let new_location = hex_value.clone();
+                            let new_location: felt252 = *hex_value;
                             // move player to new location
                             component.move_to_room(ref world, new_location);
                             // describe room

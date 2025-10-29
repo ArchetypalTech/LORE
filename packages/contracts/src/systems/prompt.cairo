@@ -26,6 +26,7 @@ pub mod prompt {
             errors_texts_output::{ErrorOutputterImpl},
             dns::{DnsTrait, IGameTokenDispatcherTrait},
         },
+        constants::errors::{Error},
     };
 
     mod Errors {
@@ -45,16 +46,16 @@ pub mod prompt {
         fn prompt(ref self: ContractState, cmd: ByteArray, game_id: Option<u128>) {
             let mut world: WorldStorage = self.world(@"lore");
 
-            let mut player = self.get_player(ref world, game_id);
+            let mut player: Player = self.get_player(ref world, game_id);
 
             // empty prompt, do nothing (good to initialize a game)
             if (cmd.len() > 0) {
                 player.log_command(ref world, cmd.clone());
                 match (lexer::parse(cmd, world, player)) {
                     Result::Ok(result) => {
-                        let res = handle_command(@result, ref world, ref player);
+                        let res: Result<(), Error> = handle_command(@result, ref world, ref player);
                         if !res.is_ok() {
-                            let error = res.unwrap_err();
+                            let error: Error = res.unwrap_err();
                             // println!("Error: {:?}", error);
                             ErrorOutputterImpl::output_error(error, player, ref world);
                         }

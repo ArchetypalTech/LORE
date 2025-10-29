@@ -3,12 +3,12 @@ use lore::{
     models::{
         entity::{EntityImpl},
         index::{PropertyRegistry},
-        area::{AreaComponent},
-        exit::{ExitComponent},
-        reactable::{ReactableComponent},
-        inventory_item::{InventoryItemComponent},
-        container::{ContainerComponent},
-        player::{PlayerComponent},
+        area::{Area, AreaComponent},
+        exit::{Exit, ExitComponent},
+        reactable::{Reactable, ReactableComponent},
+        inventory_item::{InventoryItem, InventoryItemComponent},
+        container::{Container, ContainerComponent},
+        player::{Player, PlayerComponent},
         trigger::{TriggerImpl},
     },
     types::{
@@ -51,50 +51,50 @@ pub struct Condition {
 #[generate_trait]
 pub impl ConditionImpl of ConditionTrait {
     fn evaluate_condition(self: @Condition, world: @WorldStorage, context: @TriggerContext, game_id: u128) -> bool {
-        let target = *self.target;
+        let target: felt252 = *self.target;
         let mut component_value: Option<Array<felt252>> = Option::None;
         let mut eval_result: bool = false;
         let property_registry: PropertyRegistry = world.read_model(*self.component);
         match self.component {
             ComponentType::Area => {
-                let container_opt = AreaComponent::get_component(world, target, game_id);
+                let container_opt: Option<Area> = AreaComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
-                let area = OptionTrait::unwrap(container_opt);
+                let area: Area = OptionTrait::unwrap(container_opt);
                 let (b_component_value, _) = VariablePropertyHelper::get_area_property(
                     @area, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
             ComponentType::Exit => {
-                let container_opt = ExitComponent::get_component(world, target, game_id);
+                let container_opt: Option<Exit> = ExitComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
-                let exit = OptionTrait::unwrap(container_opt);
+                let exit: Exit = OptionTrait::unwrap(container_opt);
                 let (b_component_value, _) = VariablePropertyHelper::get_exit_property(
                     @exit, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
             ComponentType::Reactable => {
-                let reactable_opt = ReactableComponent::get_component(world, target, game_id);
+                let reactable_opt: Option<Reactable> = ReactableComponent::get_component(world, target, game_id);
                 if reactable_opt.is_none() {
                     return false;
                 }
-                let reactable = OptionTrait::unwrap(reactable_opt);
+                let reactable: Reactable = OptionTrait::unwrap(reactable_opt);
                 let (b_component_value, _) = VariablePropertyHelper::get_reactable_property(
                     @reactable, self.property, @property_registry, *world, game_id,
                 );
                 component_value = b_component_value;
             },
             ComponentType::InventoryItem => {
-                let inventory_item_opt = InventoryItemComponent::get_component(world, target, game_id);
+                let inventory_item_opt: Option<InventoryItem> = InventoryItemComponent::get_component(world, target, game_id);
                 if inventory_item_opt.is_none() {
                     return false;
                 }
-                let inventory_item = OptionTrait::unwrap(inventory_item_opt);
+                let inventory_item: InventoryItem = OptionTrait::unwrap(inventory_item_opt);
                 let (b_component_value, _) =
                     VariablePropertyHelper::get_inventory_item_property(
                     @inventory_item, self.property, @property_registry,
@@ -102,22 +102,22 @@ pub impl ConditionImpl of ConditionTrait {
                 component_value = b_component_value;
             },
             ComponentType::Container => {
-                let container_opt = ContainerComponent::get_component(world, target, game_id);
+                let container_opt: Option<Container> = ContainerComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
-                let container = OptionTrait::unwrap(container_opt);
+                let container: Container = OptionTrait::unwrap(container_opt);
                 let (b_component_value, _) = VariablePropertyHelper::get_container_property(
                     @container, self.property, @property_registry,
                 );
                 component_value = b_component_value;
             },
             ComponentType::Player => {
-                let container_opt = PlayerComponent::get_component(world, target, game_id);
+                let container_opt: Option<Player> = PlayerComponent::get_component(world, target, game_id);
                 if container_opt.is_none() {
                     return false;
                 }
-                let player = OptionTrait::unwrap(container_opt);
+                let player: Player = OptionTrait::unwrap(container_opt);
                 let (b_component_value, _) = VariablePropertyHelper::get_player_property(
                     @player, self.property, @property_registry,
                 );
@@ -258,7 +258,7 @@ mod tests {
     use lore::tests::helpers;
     use lore::{
         models::{
-            entity::{EntityImpl},
+            entity::{Entity, EntityImpl},
             description_text::{DescriptionText},
             reactable::{Reactable},
             condition::{Condition},
@@ -290,7 +290,7 @@ mod tests {
     fn Condition_test_evaluate_condition() {
         let (mut world, _, _, _, _, _) = helpers::setup_core();
         // Create entity and attach ReactableComponent
-        let mut door = EntityImpl::create_entity(ref world, "door");
+        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
 
         let game_id: u128 = 0;
@@ -355,9 +355,9 @@ mod tests {
         // Test: is_reactable == false (should fail)
         let key3: felt252 = 3;
         let name3: ByteArray = "Condition name3";
-        let mut array_false = ArrayTrait::new();
+        let mut array_false: Array<felt252> = ArrayTrait::new();
         array_false.append(0);
-        let mut condition2 = create_test_condition(
+        let mut condition2: Condition = create_test_condition(
             door.inst,
             key3,
             name3,
@@ -381,9 +381,9 @@ mod tests {
         // Test: is_visible == true (should pass)
         let key4: felt252 = 4;
         let name4: ByteArray = "Condition name4";
-        let mut array3 = ArrayTrait::new();
+        let mut array3: Array<felt252> = ArrayTrait::new();
         array3.append(1);
-        let mut condition3 = create_test_condition(
+        let mut condition3: Condition = create_test_condition(
             door.inst,
             key4,
             name4,
@@ -407,9 +407,9 @@ mod tests {
         // Test: is_visible == false (should fail)
         let key5: felt252 = 5;
         let name5: ByteArray = "Condition name5";
-        let mut array4 = ArrayTrait::new();
+        let mut array4: Array<felt252> = ArrayTrait::new();
         array4.append(0);
-        let mut condition4 = create_test_condition(
+        let mut condition4: Condition = create_test_condition(
             door.inst,
             key5,
             name5,
@@ -433,9 +433,9 @@ mod tests {
         // Test: is_visible != 0 (should pass)
         let key6: felt252 = 6;
         let name6: ByteArray = "Condition name6";
-        let mut not_eq_array = ArrayTrait::new();
+        let mut not_eq_array: Array<felt252> = ArrayTrait::new();
         not_eq_array.append(0);
-        let mut condition5 = create_test_condition(
+        let mut condition5: Condition = create_test_condition(
             door.inst,
             key6,
             name6,
@@ -459,9 +459,9 @@ mod tests {
         // Test: is_visible != 1 (should fail)
         let key7: felt252 = 7;
         let name7: ByteArray = "Condition name7";
-        let mut not_eq_array2 = ArrayTrait::new();
+        let mut not_eq_array2: Array<felt252> = ArrayTrait::new();
         not_eq_array2.append(1);
-        let mut condition6 = create_test_condition(
+        let mut condition6: Condition = create_test_condition(
             door.inst,
             key7,
             name7,

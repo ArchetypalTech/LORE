@@ -72,24 +72,21 @@ pub struct ActionExecuted {
 pub impl ActionImpl of ActionTrait {
     fn register_action(ref world: WorldStorage, action: @Action) -> Result<(), Error> {
         // 0. Check if action is already in the entity array
-        let maybe_entity = EntityImpl::get_entity(@world, *action.inst);
-        match maybe_entity {
-            Option::Some(mut entity) => {
-                // Check if action is already registered
-                let mut found = false;
-                for pos_action in entity.actions_keys.clone() {
-                    if (*action.key == pos_action) {
-                        found = true;
-                        break;
-                    }
-                };
-                if found {
-                    // If found just update the action
-                    world.write_model(action);
-                    return Result::Ok(());
+        let maybe_entity: Option<Entity> = EntityImpl::get_entity(@world, *action.inst);
+        if let Some(mut entity) = maybe_entity {
+            // Check if action is already registered
+            let mut found: bool = false;
+            for pos_action in entity.actions_keys.clone() {
+                if (*action.key == pos_action) {
+                    found = true;
+                    break;
                 }
-            },
-            Option::None => {},
+            };
+            if found {
+                // If found just update the action
+                world.write_model(action);
+                return Result::Ok(());
+            }
         }
         // 1. Register action key in the entity
         let mut entity: Entity = EntityImpl::get_entity(@world, *action.inst).unwrap();
@@ -292,10 +289,10 @@ mod tests {
 
     fn create_rooms(ref world: WorldStorage) -> (Entity, Entity) {
         // create room entity 1
-        let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");
+        let mut room_entity_1: Entity = EntityImpl::create_entity(ref world, "room_entity_1");
         world.write_model(@room_entity_1);
         // create room entity 2
-        let mut room_entity_2 = EntityImpl::create_entity(ref world, "room_entity_2");
+        let mut room_entity_2: Entity = EntityImpl::create_entity(ref world, "room_entity_2");
         world.write_model(@room_entity_2);
 
         // ROOM 1 //
@@ -322,7 +319,7 @@ mod tests {
 
     fn create_door(ref world: WorldStorage, leads_to: felt252, direction: Direction) -> Entity {
         // create door entity
-        let mut door = EntityImpl::create_entity(ref world, "door");
+        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
         // add reactable component to door
         let mut reactable: Reactable = Component::add_component(ref world, door.inst);
@@ -369,7 +366,7 @@ mod tests {
 
     fn create_item(ref world: WorldStorage, owner_id: felt252) -> Entity {
         // create item entity
-        let mut item = EntityImpl::create_entity(ref world, "ball");
+        let mut item: Entity = EntityImpl::create_entity(ref world, "ball");
         item.alt_names = array!["ball"];
         world.write_model(@item);
         // add reactable component to item
@@ -692,7 +689,7 @@ mod tests {
         // 1. Trigger should jump
         assert(trig_res.is_ok(), 'Trigger should jump');
         // 2. Condition should fail as player does not have item
-        assert((cond_res == false), 'Condition should fail');
+        assert(!cond_res, 'Condition should fail');
         // 3. Effects should fail as condition is not met
         assert(eff_res.is_err(), 'Effects should fail');
         //assert(eff_res1.is_err(), 'Effects should fail');
@@ -713,7 +710,7 @@ mod tests {
         // This one fails as there is no index 1 in the array
         //assert_ne!(upd_door.description[1].clone(), new_text2, "Description2 should not be
         //updated");
-        assert(upd_door_exit.is_enterable == false, 'Exit should not be updated');
+        assert(!upd_door_exit.is_enterable, 'Exit should not be updated');
     }
 
     #[test]
@@ -905,7 +902,7 @@ mod tests {
         // 1. Trigger should jump
         assert(trig_res.is_ok(), 'Trigger should jump');
         // 2. Condition should fail as player does not have item
-        assert((cond_res == true), 'Condition should be true');
+        assert(cond_res, 'Condition should be true');
         // 3. Effects should fail as condition is not met
         assert(eff_res.is_ok(), 'Effects should pass');
         //assert(eff_res1.is_err(), 'Effects should fail');
@@ -928,7 +925,7 @@ mod tests {
         assert_eq!(new_txt2, new_text2.text.clone(), "Description2 should be updated");
         assert_ne!(new_txt1, original_text1.text.clone(), "Original Description1 should not be updated");
         // assert_ne!(new_txt2, original_text2.text.clone(), "Original Description2 should not be updated");
-        assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
+        assert(upd_door_exit.is_enterable, 'Exit should be updated');
     }
 }
 

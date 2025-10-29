@@ -16,7 +16,7 @@ pub fn create_test_level(ref world: WorldStorage) {
 }
 
 fn room_start(ref world: WorldStorage) {
-    let obj = Entity {
+    let obj: Entity = Entity {
         inst: 2826,
         is_entity: true,
         name: "The Bang",
@@ -26,12 +26,12 @@ fn room_start(ref world: WorldStorage) {
     };
     world.write_model(@obj);
     let mut reactable: Reactable = Component::add_component(ref world, obj.inst);
-    let descr1 = DescriptionText {
+    let descr1: DescriptionText = DescriptionText {
         inst: 2826,
         key: 0,
         text: "The first thing you've ever seen, it's pretty wild, flaring colors like flower petals but kaleidoscopically distorted",
     };
-    let descr2 = DescriptionText { inst: 2826, key: 1, text: "Pretty colors" };
+    let descr2: DescriptionText = DescriptionText { inst: 2826, key: 1, text: "Pretty colors" };
     world.write_model(@descr1);
     world.write_model(@descr2);
     reactable.description = array![0, 1];
@@ -51,8 +51,8 @@ fn object_room_one(ref world: WorldStorage, parent: Entity) {
     };
     world.write_model(@obj);
     let mut reactable: Reactable = Component::add_component(ref world, obj.inst);
-    let descr1 = DescriptionText { inst: 9999, key: 0, text: "A portal" };
-    let descr2 = DescriptionText {
+    let descr1: DescriptionText = DescriptionText { inst: 9999, key: 0, text: "A portal" };
+    let descr2: DescriptionText = DescriptionText {
         inst: 9999, key: 1, text: "A swirling circle of colors, it doesn't seem solid",
     };
     world.write_model(@descr1);
@@ -66,15 +66,15 @@ fn object_room_one(ref world: WorldStorage, parent: Entity) {
 }
 
 fn room_two(ref world: WorldStorage) {
-    let mut entity = EntityImpl::create_entity(ref world, "Idyllic garden");
+    let mut entity: Entity = EntityImpl::create_entity(ref world, "Idyllic garden");
     entity.inst = 1234;
     entity.alt_names = array!["garden"];
     world.write_model(@entity);
     let mut reactable: Reactable = Component::add_component(ref world, entity.inst);
-    let descr1 = DescriptionText {
+    let descr1: DescriptionText = DescriptionText {
         inst: 1234, key: 0, text: "Just suddenly it's all flowers and trees and grass",
     };
-    let descr2 = DescriptionText {
+    let descr2: DescriptionText = DescriptionText {
         inst: 1234, key: 1, text: "Still pretty colors, but now it all has definition",
     };
     world.write_model(@descr1);

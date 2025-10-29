@@ -183,11 +183,12 @@ pub impl EffectImpl of EffectTrait {
 #[cfg(test)]
 mod tests {
     use super::*;
+    // use core::internal::LoopResult::EarlyReturn;
     use dojo::{model::ModelStorage};
     use lore::tests::helpers;
     use lore::{
         models::{
-            entity::{EntityImpl},
+            entity::{Entity, EntityImpl},
             description_text::{DescriptionText},
             reactable::{Reactable},
             trigger::{TriggerImpl},
@@ -230,7 +231,7 @@ mod tests {
     fn Effect_test_apply_effec_text() {
         let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         // create door entity
-        let mut door = EntityImpl::create_entity(ref world, "door");
+        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
         let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
@@ -265,7 +266,7 @@ mod tests {
         world.write_model(@player);
 
         // Create trigger context
-        let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
+        let mut context: TriggerContext = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
         VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
@@ -278,7 +279,7 @@ mod tests {
         let name: ByteArray = "Effect name";
         let n_value: u32 = 0;
         let hex_value: felt252 = 0;
-        let mut effect = create_test_effect(
+        let mut effect: Effect = create_test_effect(
             door.inst,
             key,
             name,
@@ -310,7 +311,7 @@ mod tests {
     fn Effect_test_apply_effect_item() {
         let (mut world, _, _, _, player_1, _) = helpers::setup_core();
         // create door entity
-        let mut door = EntityImpl::create_entity(ref world, "door");
+        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
         let mut reactable: Reactable = Component::add_component(ref world, door.inst);
         let mut item1: InventoryItem = Component::add_component(ref world, door.inst);
@@ -339,7 +340,7 @@ mod tests {
         world.write_model(@player);
 
         // Create trigger context
-        let mut context = create_trigger_context(player.inst, door.inst, 0, 0);
+        let mut context: TriggerContext = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
         VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
@@ -352,7 +353,7 @@ mod tests {
         let name: ByteArray = "Effect name";
         let n_value: u32 = 0;
         let hex_value: felt252 = 0;
-        let mut effect = create_test_effect(
+        let mut effect: Effect = create_test_effect(
             door.inst,
             key,
             name,
@@ -365,7 +366,7 @@ mod tests {
             hex_value,
         );
         world.write_model(@effect);
-        let result = effect.apply_effect(ref world, @context, game_id);
+        let result: Result<(), Error> = effect.apply_effect(ref world, @context, game_id);
 
         let new_item: InventoryItem = world.read_model(door.inst);
         assert_eq!(result.is_ok(), true, "Effect should apply successfully");
