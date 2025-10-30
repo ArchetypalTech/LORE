@@ -18,6 +18,7 @@ dojo = "1.7.2"
 achievement = { git = "https://github.com/cartridge-gg/arcade", rev = "a4de9f4c38814a19716b6c5f9cbd4213645e9cb1" }
 origami_random = { git = "https://github.com/dojoengine/origami", tag = "v1.6.1" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
+openzeppelin_access = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", branch = "scarb_2.12.2" }
 

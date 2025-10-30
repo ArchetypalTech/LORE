@@ -8,23 +8,37 @@ mod tests {
     use lore::{
         systems::{
             designer::{IDesignerDispatcherTrait},
-            game_token::{IGameTokenDispatcherTrait},
+            prompt::{IPromptDispatcherTrait},
         },
         models::{
             entity::{Entity},
-            admin::{AccountPermissionsTrait},
             area::{Area, AreaComponent},
             description_text::{DescriptionText},
+            player::{PlayerImpl},
         },
         tests::{
             helpers,
             helpers::{OWNER, OTHER, RECIPIENT, ADMIN},
         },
+        lib:: {
+            access::{AccessTrait},
+        }
     };
 
     #[test]
+    fn test_access_initialized() {
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        assert!(AccessTrait::is_admin(@world, OWNER()));
+        assert!(AccessTrait::is_editor(@world, OWNER()));
+        assert!(AccessTrait::is_admin(@world, ADMIN()));
+        assert!(AccessTrait::is_editor(@world, ADMIN()));
+        assert!(!AccessTrait::is_admin(@world, OTHER()));
+        assert!(!AccessTrait::is_editor(@world, OTHER()));
+    }
+
+    #[test]
     fn test_designer_permissions() {
-        let (world, designer, _, token, _, _) = helpers::setup_core();
+        let (world, designer, _, _, _, _) = helpers::setup_core();
         //
         // deployer can design...
         helpers::set_caller(OWNER());
@@ -41,7 +55,7 @@ mod tests {
         assert_eq!(entity.creator_address, ADMIN());
         //
         // another admin can design...
-        token.set_admin(OTHER(), true);
+        designer.set_admin(OTHER(), true);
         helpers::set_caller(OTHER());
         designer.create_entity(array![helpers::create_new_entity(3, "entity_3")]);
         let entity: Entity = world.read_model(3);
@@ -49,8 +63,8 @@ mod tests {
         assert_eq!(entity.creator_address, OTHER());
         //
         // another editor can design...
-        token.set_editor(RECIPIENT(), true);
-        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT");
+        designer.set_editor(RECIPIENT(), true);
+        assert!(AccessTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT");
         helpers::set_caller(RECIPIENT());
         designer.create_entity(array![helpers::create_new_entity(4, "entity_4")]);
         let entity: Entity = world.read_model(4);
@@ -161,8 +175,8 @@ mod tests {
 
     #[test]
     fn test_editor_create_delete_components() {
-        let (mut world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // EDITOR can create...
         helpers::set_caller(OTHER());
@@ -245,8 +259,8 @@ mod tests {
 
     #[test]
     fn test_editor_create_delete_components_admin_too() {
-        let (mut world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // EDITOR can create...
         helpers::set_caller(OTHER());
@@ -418,11 +432,73 @@ mod tests {
     // Editor > core > panic
     //
 
+
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
+    fn test_set_admin_not_admin() {
+        let (_, designer, _, _, _, _) = helpers::setup_core();
+        helpers::set_caller(OTHER());
+        designer.set_admin(OTHER(), true);
+    }
+
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
+    fn test_set_editor_not_admin() {
+        let (_, designer, _, _, _, _) = helpers::setup_core();
+        helpers::set_caller(OTHER());
+        designer.set_editor(OTHER(), true);
+    }
+
+    #[test]
+    fn test_set_admin_editor() {
+        let (mut world, designer, _, _, _, _) = helpers::setup_core();
+        // OWNER set admin to OTHER
+        helpers::set_caller(OWNER());
+        designer.set_admin(OTHER(), true);
+        assert!(AccessTrait::is_admin(@world, OTHER()), "admin OTHER");
+        assert!(AccessTrait::is_editor(@world, OTHER()), "editor OTHER");
+        // OTHER set admin to RECIPIENT
+        helpers::set_caller(OTHER());
+        designer.set_admin(RECIPIENT(), true);
+        assert!(AccessTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 1");
+        assert!(AccessTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 1");
+        // OTHER set editor to RECIPIENT
+        helpers::set_caller(OTHER());
+        designer.set_editor(RECIPIENT(), true);
+        assert!(AccessTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 2");
+        assert!(AccessTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 2");
+        // OTHER set editor to RECIPIENT
+        helpers::set_caller(OTHER());
+        designer.set_admin(RECIPIENT(), false);
+        assert!(!AccessTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 3");
+        assert!(AccessTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 3");
+        // OTHER set editor to RECIPIENT
+        helpers::set_caller(OTHER());
+        designer.set_editor(RECIPIENT(), false);
+        assert!(!AccessTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 4");
+        assert!(!AccessTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 4");
+    }
+
+    #[test]
+    fn test_prompt_game_zero_new_admin() {
+        let (mut world, designer, prompt, _, _, _) = helpers::setup_core();
+        // initialize player singleton
+        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
+        //
+        // create new editor
+        helpers::set_caller(OWNER());
+        designer.set_admin(OTHER(), true);
+        //
+        // player_1 say something...
+        helpers::set_caller(OTHER());
+        prompt.prompt("hello", Option::Some(0));
+    }
+
     #[test]
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_edit_core_entity() {
-        let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut _world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -437,8 +513,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_edit_core_component() {
-        let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut _world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -461,8 +537,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_edit_core_keyed() {
-        let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut _world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -479,8 +555,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_delete_core_entity() {
-        let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut _world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -495,8 +571,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_delete_core_component() {
-        let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut _world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -519,8 +595,8 @@ mod tests {
     #[test]
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
     fn test_editor_not_allowed_to_delete_core_keyed() {
-        let (mut _world, designer, _, token, _, _) = helpers::setup_core();
-        token.set_editor(OTHER(), true);
+        let (mut _world, designer, _, _, _, _) = helpers::setup_core();
+        designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());

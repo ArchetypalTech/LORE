@@ -45,9 +45,9 @@ use lore::models::{
     entity::{Entity},
     area::{Area, AreaComponent},
     player::{Player, PlayerImpl},
-    admin::{AccountPermissionsTrait},
 };
 use lore::lib::{
+    access::{AccessTrait},
     trophies::{Trophy, TrophyProgressTrait},
 };
 
@@ -76,7 +76,7 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
                 if (completed && !game_info.completed) {
                     // completed for the first time: owner becomes editor
                     let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
-                    AccountPermissionsTrait::set_is_editor(ref world, owner, true);
+                    AccessTrait::set_is_editor(ref world, owner, true);
                 }
                 game_info.completed = completed;
             },
@@ -131,7 +131,7 @@ mod tests {
     };
 
     #[test]
-    fn test_game_token_info_edit() {
+    fn test_token_config_edit() {
         let (mut world, _, prompt, _, player_address_1, _) = helpers::setup_core();
         PlayerImpl::caller_as_player(ref world, player_address_1, 0);
         // create room entities

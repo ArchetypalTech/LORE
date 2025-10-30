@@ -14,14 +14,16 @@ mod tests {
         models::{
             entity::{Entity},
             token_config::{GameTokenInfo, GameTokenInfoTrait, PlayerAccount, PlayerAccountImpl},
-            admin::{AccountPermissions, AccountPermissionsTrait},
             player::{Player, PlayerImpl},
             area::{Area, AreaComponent},
+        },
+        lib::{
+            access::{AccessTrait},
         },
         constants::{token as constants},
         tests::{
             helpers,
-            helpers::{ZERO, OWNER, OTHER, ADMIN, RECIPIENT},
+            helpers::{ZERO, OWNER, OTHER},
         },
     };
 
@@ -32,25 +34,13 @@ mod tests {
 
     #[test]
     fn test_token_initialized() {
-        let (mut world, _, _, token, _, _) = helpers::setup_core();
-
+        let (_, _, _, token, _, _) = helpers::setup_core();
         println!("TOKEN NAME: [{}]", token.name());
         println!("TOKEN SYMBOL: [{}]", token.symbol());
         assert_ne!(token.name(), "", "empty name");
         assert_ne!(token.symbol(), "", "empty symbol");
         assert_eq!(token.name(), constants::TOKEN_NAME(), "wrong name");
         assert_eq!(token.symbol(), constants::TOKEN_SYMBOL(), "wrong symbol");
-
-        let permissions: AccountPermissions = world.read_model(OWNER());
-        assert_eq!(permissions.is_admin, true, "wrong admin OWNER");
-        assert_eq!(permissions.is_editor, true, "wrong editor OWNER");
-        assert!(AccountPermissionsTrait::is_admin(@world, OWNER()), "admin OWNER");
-        assert!(AccountPermissionsTrait::is_editor(@world, OWNER()), "editor OWNER");
-        let permissions: AccountPermissions = world.read_model(ADMIN());
-        assert_eq!(permissions.is_admin, true, "wrong admin ADMIN");
-        assert_eq!(permissions.is_editor, true, "wrong editor ADMIN");
-        assert!(AccountPermissionsTrait::is_admin(@world, ADMIN()), "admin ADMIN");
-        assert!(AccountPermissionsTrait::is_editor(@world, ADMIN()), "editor ADMIN");
     }
 
     #[test]
@@ -107,93 +97,32 @@ mod tests {
     }
 
     #[test]
-    fn test_token_set_paused() {
+    fn test_token_set_minting_paused() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OWNER());
         assert_eq!(token.is_minting_paused(), false, "default");
-        token.set_paused(true);
-        assert_eq!(token.is_minting_paused(), true, "set_paused(true)");
-        token.set_paused(false);
-        assert_eq!(token.is_minting_paused(), false, "set_paused(false)");
+        token.set_minting_paused(true);
+        assert_eq!(token.is_minting_paused(), true, "set_minting_paused(true)");
+        token.set_minting_paused(false);
+        assert_eq!(token.is_minting_paused(), false, "set_minting_paused(false)");
     }
 
     #[test]
     #[should_panic(expected: ('ERC721Combo: minting is paused','ENTRYPOINT_FAILED'))]
-    fn test_token_set_paused_mint() {
+    fn test_token_set_minting_paused_mint() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OWNER());
-        token.set_paused(true);
-        assert_eq!(token.is_minting_paused(), true, "set_paused(true)");
+        token.set_minting_paused(true);
+        assert_eq!(token.is_minting_paused(), true, "set_minting_paused(true)");
         _mint_token(token, OWNER());
     }
 
     #[test]
     #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
-    fn test_token_set_paused_not_admin() {
+    fn test_token_set_minting_paused_not_admin() {
         let (_, _, _, token, _, _) = helpers::setup_core();
         helpers::set_caller(OTHER());
-        token.set_paused(true);
-    }
-
-    #[test]
-    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
-    fn test_token_set_admin_not_admin() {
-        let (_, _, _, token, _, _) = helpers::setup_core();
-        helpers::set_caller(OTHER());
-        token.set_admin(OTHER(), true);
-    }
-
-    #[test]
-    #[should_panic(expected: ('ORUG: Invalid caller','ENTRYPOINT_FAILED'))]
-    fn test_token_set_editor_not_admin() {
-        let (_, _, _, token, _, _) = helpers::setup_core();
-        helpers::set_caller(OTHER());
-        token.set_editor(OTHER(), true);
-    }
-
-    #[test]
-    fn test_token_set_admin_editor() {
-        let (mut world, _, _, token, _, _) = helpers::setup_core();
-        // OWNER set admin to OTHER
-        helpers::set_caller(OWNER());
-        token.set_admin(OTHER(), true);
-        let permissions: AccountPermissions = world.read_model(OTHER());
-        assert_eq!(permissions.is_admin, true, "wrong admin OTHER");
-        assert_eq!(permissions.is_editor, false, "wrong editor OTHER");
-        assert!(AccountPermissionsTrait::is_admin(@world, OTHER()), "admin OTHER");
-        assert!(AccountPermissionsTrait::is_editor(@world, OTHER()), "editor OTHER");
-        // OTHER set admin to RECIPIENT
-        helpers::set_caller(OTHER());
-        token.set_admin(RECIPIENT(), true);
-        let permissions: AccountPermissions = world.read_model(RECIPIENT());
-        assert_eq!(permissions.is_admin, true, "wrong admin RECIPIENT 1");
-        assert_eq!(permissions.is_editor, false, "wrong editor RECIPIENT 1");
-        assert!(AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 1");
-        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 1");
-        // OTHER set editor to RECIPIENT
-        helpers::set_caller(OTHER());
-        token.set_editor(RECIPIENT(), true);
-        let permissions: AccountPermissions = world.read_model(RECIPIENT());
-        assert_eq!(permissions.is_admin, true, "wrong admin RECIPIENT 2");
-        assert_eq!(permissions.is_editor, true, "wrong editor RECIPIENT 2");
-        assert!(AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 2");
-        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 2");
-        // OTHER set editor to RECIPIENT
-        helpers::set_caller(OTHER());
-        token.set_admin(RECIPIENT(), false);
-        let permissions: AccountPermissions = world.read_model(RECIPIENT());
-        assert_eq!(permissions.is_admin, false, "wrong admin RECIPIENT 3");
-        assert_eq!(permissions.is_editor, true, "wrong editor RECIPIENT 3");
-        assert!(!AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 3");
-        assert!(AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 3");
-        // OTHER set editor to RECIPIENT
-        helpers::set_caller(OTHER());
-        token.set_editor(RECIPIENT(), false);
-        let permissions: AccountPermissions = world.read_model(RECIPIENT());
-        assert_eq!(permissions.is_admin, false, "wrong admin RECIPIENT 4");
-        assert_eq!(permissions.is_editor, false, "wrong editor RECIPIENT 4");
-        assert!(!AccountPermissionsTrait::is_admin(@world, RECIPIENT()), "admin RECIPIENT 4");
-        assert!(!AccountPermissionsTrait::is_editor(@world, RECIPIENT()), "editor RECIPIENT 4");
+        token.set_minting_paused(true);
     }
 
     #[test]
@@ -213,11 +142,11 @@ mod tests {
         assert_eq!(token.owner_of(game_id_1.into()), OTHER(), "owner_of()");
         // set editor
         helpers::set_caller(OWNER());
-        assert!(!AccountPermissionsTrait::is_editor(@world, OTHER()), "!editor");
+        assert!(!AccessTrait::is_editor(@world, OTHER()), "!editor");
         // finish game -- granted editor
         GameTokenInfoTrait::set_room(ref world, game_id_1, *room_entity_1.inst);
         assert!(GameTokenInfoTrait::has_finished_game(@world, game_id_1), "has_finished_game");
-        assert!(AccountPermissionsTrait::is_editor(@world, OTHER()), "editor");
+        assert!(AccessTrait::is_editor(@world, OTHER()), "editor");
         // can edit...
         helpers::set_caller(OTHER());
         designer.create_entity(array![helpers::create_new_entity(1, "entity_1")]);
@@ -423,21 +352,6 @@ mod tests {
 // helpers::print_player_story_last_line(@world, game_id_0);
         assert_eq!(helpers::player_story_len(@world, game_id_0), 3, "said");
         assert_eq!(helpers::player_story_last_line(@world, game_id_0), "+sys+game-0");
-    }
-
-    #[test]
-    fn test_prompt_game_zero_new_admin() {
-        let (mut world, _, prompt, token, _, _) = helpers::setup_core();
-        // initialize player singleton
-        PlayerImpl::caller_as_player(ref world, OWNER(), 0);
-        //
-        // create new editor
-        helpers::set_caller(OWNER());
-        token.set_admin(OTHER(), true);
-        //
-        // player_1 say something...
-        helpers::set_caller(OTHER());
-        prompt.prompt("hello", Option::Some(0));
     }
 
     #[test]

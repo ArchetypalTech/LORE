@@ -13,6 +13,7 @@ pub mod constants {
 pub mod lib {
     pub mod a_lexer;
     pub mod c_handler;
+    pub mod access;
     pub mod random;
     pub mod utils;
     pub mod dns;
@@ -41,7 +42,6 @@ pub mod models {
     pub mod reactable;
     pub mod trigger;
     pub mod token_config;
-    pub mod admin;
 }
 
 pub mod types {

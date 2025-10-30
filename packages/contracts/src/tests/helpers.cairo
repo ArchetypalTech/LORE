@@ -86,7 +86,6 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceKeyMap::TEST_CLASS_HASH.into()),
             // game_token
-            TestResource::Model(models::admin::m_AccountPermissions::TEST_CLASS_HASH.into()),
             TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH.into()),
             TestResource::Model(models::token_config::m_GameTokenInfo::TEST_CLASS_HASH.into()),
             TestResource::Event(models::token_config::e_GameCreatedEvent::TEST_CLASS_HASH.into()),
@@ -111,12 +110,12 @@ fn core_contract_defs() -> Span<ContractDef> {
     [
         ContractDefTrait::new(@"lore", @"designer")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore")].span())
-            .with_init_calldata(array![].span()),
+            .with_init_calldata(game_token_init_calldata.span()),
         ContractDefTrait::new(@"lore", @"prompt")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span()),
         ContractDefTrait::new(@"lore", @"game_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
-            .with_init_calldata(game_token_init_calldata.span()),
+            .with_init_calldata(array![].span()),
     ].span()
 }
 

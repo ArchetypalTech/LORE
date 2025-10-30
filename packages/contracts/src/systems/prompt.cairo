@@ -17,10 +17,10 @@ pub mod prompt {
         models::{
             player::{Player, PlayerImpl, PlayerStory},
             token_config::{PlayerAccountTrait},
-            admin::{AccountPermissionsTrait},
         },
         lib::{
             c_handler::{handle_command},
+            access::{AccessTrait},
             random::{random_text},
             errors_texts_output::{ErrorOutputterImpl},
             dns::{DnsTrait, IGameTokenDispatcherTrait, ILexerDispatcherTrait},
@@ -40,7 +40,7 @@ pub mod prompt {
     #[abi(embed_v0)]
     pub impl PromptImpl of IPrompt<ContractState> {
         fn prompt(ref self: ContractState, cmd: ByteArray, game_id: Option<u128>) {
-            let mut world: WorldStorage = self.world(@"lore");
+            let mut world: WorldStorage = self.world_default();
 
             let mut player: Player = self.get_player(ref world, game_id);
 
@@ -68,6 +68,14 @@ pub mod prompt {
         }
     }
 
+    #[generate_trait]
+    impl WorldDefaultImpl of WorldDefaultTrait {
+        #[inline(always)]
+        fn world_default(self: @ContractState) -> WorldStorage {
+            (self.world(@"lore"))
+        }
+    }
+
 
     //-----------------------------------
     // Internal
@@ -81,14 +89,14 @@ pub mod prompt {
                     // player was provided
                     if game_id == 0 {
                         // only admins can play game #0
-                        assert(AccountPermissionsTrait::is_admin(@world, player_address), Errors::NOT_ADMIN);
+                        assert(AccessTrait::is_admin(@world, player_address), Errors::NOT_ADMIN);
                     } else {
                         // validate ownership
                         assert((
                             // only owner can play
                             world.game_token_dispatcher().is_owner_of(player_address, game_id.into())
                             /// or admins for debugging
-                            || AccountPermissionsTrait::is_admin(@world, player_address)
+                            || AccessTrait::is_admin(@world, player_address)
                         ), Errors::NOT_YOUR_GAME);
                         // set as current
                         PlayerAccountTrait::switch_game_id(ref world, player_address, game_id);

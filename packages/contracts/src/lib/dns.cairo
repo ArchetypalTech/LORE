@@ -1,5 +1,10 @@
+use core::num::traits::Zero;
 use starknet::{ContractAddress, ClassHash};
 use dojo::world::{WorldStorage, WorldStorageTrait};
+use dojo::meta::interface::{
+    IDeployedResourceDispatcher, IDeployedResourceDispatcherTrait,
+    IDeployedResourceSafeDispatcher, IDeployedResourceSafeDispatcherTrait,
+};
 
 pub use lore::{
     systems::{
@@ -22,6 +27,10 @@ pub mod SELECTORS {
 
 #[generate_trait]
 pub impl DnsImpl of DnsTrait {
+    #[inline(always)]
+    fn find_contract_name(self: @WorldStorage, contract_address: ContractAddress) -> ByteArray {
+        (IDeployedResourceDispatcher{contract_address}.dojo_name())
+    }
     fn find_contract_address(self: @WorldStorage, contract_name: @ByteArray) -> ContractAddress {
         // let (contract_address, _) = self.dns(contract_name).unwrap(); // will panic if not found
         (self.dns_address(contract_name).unwrap_or(0x0.try_into().unwrap()))
@@ -69,5 +78,24 @@ pub impl DnsImpl of DnsTrait {
     #[inline(always)]
     fn lexer_dispatcher(self: @WorldStorage) -> ILexerLibraryDispatcher {
         (ILexerLibraryDispatcher{ class_hash: self.lexer_class_hash() })
+    }
+
+    //--------------------------
+    // address validators
+    //
+    #[feature("safe_dispatcher")]
+    fn is_world_contract(self: @WorldStorage, contract_address: ContractAddress) -> bool {
+        // try calling dojo_name() with safe dispatchers
+        // https://book.cairo-lang.org/ch102-02-interacting-with-another-contract.html#handling-errors-with-safe-dispatchers
+        let response: Result<ByteArray, Array<felt252>> = IDeployedResourceSafeDispatcher{contract_address}.dojo_name();
+        (match response {
+            // it is a dojo contract... check if it's in this world
+            Result::Ok(contract_name) => (
+                contract_address.is_non_zero() &&
+                contract_address == self.find_contract_address(@contract_name)
+            ),
+            // failed to call dojo_name(), definitely not of this world
+            Result::Err(_panic_reason) => (false),
+        })
     }
 }

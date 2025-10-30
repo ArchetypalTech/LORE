@@ -13,13 +13,13 @@ use lore::{
         action::{ActionImpl},
         condition::{ConditionImpl},
         token_config::{GameTokenInfo, PlayerAccountTrait},
-        admin::{AccountPermissionsTrait},
     },
     types::command_type::{
         Command, CommandImpl,
         TokenType, Token,
     },
     lib::{
+        access::{AccessTrait},
         utils::ByteArrayTraitExt,
         level_test::{create_test_level},
         dns::{
@@ -362,8 +362,8 @@ fn system_command(
             player.log_sys(ref world, format!("+sys+address: 0x{:x}", player.address));
             player.log_sys(ref world, format!("+sys+current_game_id: {}", player.game_id));
             player.log_sys(ref world, format!("+sys+is_dead: {}", ByteArrayTraitExt::byte_array_from_bool(player.is_dead)));
-            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_admin(@world, player.address))));
-            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_editor(@world, player.address))));
+            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(AccessTrait::is_admin(@world, player.address))));
+            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(AccessTrait::is_editor(@world, player.address))));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);

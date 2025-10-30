@@ -47,6 +47,7 @@ dependencies = [
  "dojo",
  "dojo_cairo_test",
  "nft_combo",
+ "openzeppelin_access",
  "openzeppelin_introspection",
  "openzeppelin_token",
  "origami_random",
