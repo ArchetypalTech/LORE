@@ -45,22 +45,24 @@ pub fn OTHER()     -> ContractAddress { 0x2.try_into().unwrap() } // mock owner 
 pub fn ADMIN()     -> ContractAddress { 0x3.try_into().unwrap() } // mock owner of duelists 3-4
 pub fn RECIPIENT() -> ContractAddress { 0x4.try_into().unwrap() }
 
+pub const PLAYER_1: ContractAddress = 0x69.try_into().unwrap(); // 105
+pub const PLAYER_2: ContractAddress = 0x42.try_into().unwrap(); // 66
 
+#[derive(Copy, Drop)]
+pub struct HelperSystems {
+    pub world:WorldStorage,
+    pub designer:IDesignerDispatcher,
+    pub prompt:IPromptDispatcher,
+    pub game_token:IGameTokenDispatcher,
+    pub trail_token:ITrailTokenDispatcher,
+}
 
 //-----------------------------------
 // deploy test contrac
 //
 
-pub fn setup_core_initialized() -> (
-    WorldStorage, IDesignerDispatcher, IPromptDispatcher, IGameTokenDispatcher, ContractAddress, ContractAddress,
-) {
-    let (world, designer, prompt, token, player_1, player_2) = setup_core();
-
-    (world, designer, prompt, token, player_1, player_2)
-}
-
 fn namespace_def() -> NamespaceDef {
-    let ndef = NamespaceDef {
+    let ndef: NamespaceDef = NamespaceDef {
         namespace: "lore",
         resources: [
             TestResource::Model(models::dictionary::m_Dict::TEST_CLASS_HASH.into()),
@@ -104,8 +106,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Library((lore::lib::a_lexer::lexer::TEST_CLASS_HASH.into(), @"lexer", @"0_2_0")),
         ].span(),
     };
-
-    ndef
+    (ndef)
 }
 
 fn core_contract_defs() -> Span<ContractDef> {
@@ -128,9 +129,7 @@ fn core_contract_defs() -> Span<ContractDef> {
 }
 
 
-pub fn setup_core() -> (
-    WorldStorage, IDesignerDispatcher, IPromptDispatcher, IGameTokenDispatcher, ContractAddress, ContractAddress,
-) {
+pub fn setup_core() -> HelperSystems {
     set_caller(OWNER());
 
     let mut world: WorldStorage = spawn_test_world(
@@ -148,6 +147,7 @@ pub fn setup_core() -> (
     let designer: IDesignerDispatcher = IDesignerDispatcher { contract_address: world.designer_address() };
     let prompt: IPromptDispatcher = IPromptDispatcher { contract_address: world.prompt_address() };
     let game_token: IGameTokenDispatcher = IGameTokenDispatcher { contract_address: world.game_token_address() };
+    let trail_token: ITrailTokenDispatcher = ITrailTokenDispatcher { contract_address: world.trail_token_address() };
 
     // FIXME: Setup permissions
     world.dispatcher.grant_writer(selector_from_tag!("lore-Dict"), world.prompt_address());
@@ -161,16 +161,18 @@ pub fn setup_core() -> (
     testing::set_block_number(1);
     testing::set_block_timestamp(1);
 
-    // Setup players
-    let player_1: ContractAddress = 0x69.try_into().unwrap(); // 105
-    let player_2: ContractAddress = 0x42.try_into().unwrap(); // 66
-
     // burn entity 0 value
     EntityImpl::create_entity(ref world, "entity_0");
 
     DictionaryTrait::initialize_dictionary(ref world);
 
-    (world, designer, prompt, game_token, player_1, player_2)
+    (HelperSystems {
+        world,
+        designer,
+        prompt,
+        game_token,
+        trail_token,
+    })
 }
 
 pub fn drop_all_events(address: ContractAddress) {

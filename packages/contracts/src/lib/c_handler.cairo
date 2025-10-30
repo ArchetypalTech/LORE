@@ -384,11 +384,11 @@ mod tests {
     #[test]
     fn CHandler_test_g_command_handling() {
         // Setup test environment
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
-        create_test_level(ref world);
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        create_test_level(ref sys.world);
         let game_id: u128 = 0;
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(ref world, 2826);
+        let mut player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        player.move_to_room(ref sys.world, 2826);
 
         // Create a test command with g_command system token
         let mut command: Command = Command {
@@ -415,7 +415,7 @@ mod tests {
             ],
         };
         // Handle the command
-        let result: Result<(), Error> = handle_command(@command, ref world, ref player);
+        let result: Result<(), Error> = handle_command(@command, ref sys.world, ref player);
 
         // Verify the command was handled successfully
         assert(result.is_ok(), 'Command not handled');

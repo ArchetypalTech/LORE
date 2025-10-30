@@ -372,18 +372,18 @@ mod tests {
 
     #[test]
     fn test_container_game_comp() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         //
         // create container
-        let container: Container = ContainerComponent::add_component(ref world, 111);
+        let container: Container = ContainerComponent::add_component(ref sys.world, 111);
         assert!(container.is_container);
         assert_eq!(container.inst, 111);
         //
         // read game inst version, same as inst
         let game_id: u128 = 222;
-        let comp_null: Option<Container> = ContainerComponent::get_component(@world, 1234, 0);
-        let comp_inst: Option<Container> = ContainerComponent::get_component(@world, container.inst, 0);
-        let comp_game: Option<Container> = ContainerComponent::get_component(@world, container.inst, 1);
+        let comp_null: Option<Container> = ContainerComponent::get_component(@sys.world, 1234, 0);
+        let comp_inst: Option<Container> = ContainerComponent::get_component(@sys.world, container.inst, 0);
+        let comp_game: Option<Container> = ContainerComponent::get_component(@sys.world, container.inst, 1);
         assert!(comp_null.is_none(), "null");
         assert!(comp_inst.is_some(), "baseline");
         assert!(comp_game.is_some(), "baseline");
@@ -398,16 +398,16 @@ mod tests {
         //
         // save game inst version
         comp_inst.num_slots = 20;
-        comp_inst.store(ref world, 0);
+        comp_inst.store(ref sys.world, 0);
         comp_game.num_slots = 10;
-        comp_game.store(ref world, game_id);
+        comp_game.store(ref sys.world, game_id);
         // inst does not change!
         assert_eq!(comp_inst.inst(), container.inst, "saved");
         assert_eq!(comp_game.inst(), container.inst, "saved");
         //
         // read game inst version, updated, original is preserved
-        let new_comp_inst: Container = ContainerComponent::get_component(@world, container.inst, 0).unwrap();
-        let new_comp_game: Container = ContainerComponent::get_component(@world, container.inst, game_id).unwrap();
+        let new_comp_inst: Container = ContainerComponent::get_component(@sys.world, container.inst, 0).unwrap();
+        let new_comp_game: Container = ContainerComponent::get_component(@sys.world, container.inst, game_id).unwrap();
         assert_eq!(new_comp_inst.inst(), container.inst, "new_component");
         assert_eq!(new_comp_game.inst(), container.inst, "new_component");
         assert_eq!(new_comp_inst.num_slots, 20, "new_component");
@@ -416,13 +416,13 @@ mod tests {
         // edit some more
         comp_inst.can_be_opened = true;
         comp_inst.is_open = false;
-        comp_inst.store(ref world, 0);
+        comp_inst.store(ref sys.world, 0);
         comp_game.can_be_opened = false;
         comp_game.is_open = true;
-        comp_game.store(ref world, game_id);
+        comp_game.store(ref sys.world, game_id);
         // results...
-        let new_comp_inst: Container = ContainerComponent::get_component(@world, container.inst, 0).unwrap();
-        let new_comp_game: Container = ContainerComponent::get_component(@world, container.inst, game_id).unwrap();
+        let new_comp_inst: Container = ContainerComponent::get_component(@sys.world, container.inst, 0).unwrap();
+        let new_comp_game: Container = ContainerComponent::get_component(@sys.world, container.inst, game_id).unwrap();
         assert_eq!(new_comp_inst.inst(), container.inst, "newer_component");
         assert_eq!(new_comp_game.inst(), container.inst, "newer_component");
         assert_eq!(new_comp_inst.num_slots, 20, "newer_component");
@@ -435,66 +435,66 @@ mod tests {
 
     #[test]
     fn test_container_open() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         //
         // create container
-        let mut container: Container = ContainerComponent::add_component(ref world, 11);
+        let mut container: Container = ContainerComponent::add_component(ref sys.world, 11);
         //
         // open container
         assert!(container.can_be_opened, "can_be_opened");
         assert!(container.is_open, "baseline");
-        container.set_open(ref world, false, 0);
+        container.set_open(ref sys.world, false, 0);
         assert!(!container.is_open, "closed");
-        assert!(!GameModelImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameModelImpl::closed");
-        container.set_open(ref world, true, 0);
+        assert!(!GameModelImpl::<Container>::read_game_model(@sys.world, container.inst, 0).is_open, "GameModelImpl::closed");
+        container.set_open(ref sys.world, true, 0);
         assert!(container.is_open, "opened");
-        assert!(GameModelImpl::<Container>::read_game_model(@world, container.inst, 0).is_open, "GameModelImpl:opened");
+        assert!(GameModelImpl::<Container>::read_game_model(@sys.world, container.inst, 0).is_open, "GameModelImpl:opened");
     }
 
     #[test]
     fn test_container_items() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         //
         // create some items
         let game_id: u128 = 0;
-        let mut item1_entity: Entity = EntityImpl::create_entity(ref world, "item1");
-        let mut item2_entity: Entity = EntityImpl::create_entity(ref world, "item2");
-        let mut item1: InventoryItem = InventoryItemComponent::add_component(ref world, item1_entity.inst);
-        let mut item2: InventoryItem = InventoryItemComponent::add_component(ref world, item2_entity.inst);
-        assert!(!item1_entity.has_parent(@world, game_id), "!item1.has_parent");
-        assert!(!item2_entity.has_parent(@world, game_id), "!item2.has_parent");
+        let mut item1_entity: Entity = EntityImpl::create_entity(ref sys.world, "item1");
+        let mut item2_entity: Entity = EntityImpl::create_entity(ref sys.world, "item2");
+        let mut item1: InventoryItem = InventoryItemComponent::add_component(ref sys.world, item1_entity.inst);
+        let mut item2: InventoryItem = InventoryItemComponent::add_component(ref sys.world, item2_entity.inst);
+        assert!(!item1_entity.has_parent(@sys.world, game_id), "!item1.has_parent");
+        assert!(!item2_entity.has_parent(@sys.world, game_id), "!item2.has_parent");
         // create containers
-        let mut container1_entity: Entity = EntityImpl::create_entity(ref world, "container1");
-        let mut container2_entity: Entity = EntityImpl::create_entity(ref world, "container2");
-        let mut container1: Container = ContainerComponent::add_component(ref world, container1_entity.inst);
-        let mut container2: Container = ContainerComponent::add_component(ref world, container2_entity.inst);
-        assert!(!container1_entity.has_children(@world, game_id), "!container1.has_children");
-        assert!(!container2_entity.has_children(@world, game_id), "!container2.has_children");
+        let mut container1_entity: Entity = EntityImpl::create_entity(ref sys.world, "container1");
+        let mut container2_entity: Entity = EntityImpl::create_entity(ref sys.world, "container2");
+        let mut container1: Container = ContainerComponent::add_component(ref sys.world, container1_entity.inst);
+        let mut container2: Container = ContainerComponent::add_component(ref sys.world, container2_entity.inst);
+        assert!(!container1_entity.has_children(@sys.world, game_id), "!container1.has_children");
+        assert!(!container2_entity.has_children(@sys.world, game_id), "!container2.has_children");
         //
         // add items to containers
-        assert_eq!(container1.put_item_in(ref world, ref item1, 0), Result::Ok(()), "item1 > container1");
-        assert_eq!(container2.put_item_in(ref world, ref item2, 0), Result::Ok(()), "item2 > container2");
-        assert!(container1_entity.has_children(@world, game_id), "container1.has_children");
-        assert!(container2_entity.has_children(@world, game_id), "container2.has_children");
-        assert!(item1_entity.has_parent(@world, game_id), "item1.has_parent");
-        assert!(item2_entity.has_parent(@world, game_id), "item2.has_parent");
-        assert!(item1_entity.get_parent(@world, game_id).unwrap().inst == container1.inst(), "item1.get_parent");
-        assert!(item2_entity.get_parent(@world, game_id).unwrap().inst == container2.inst(), "item2.get_parent");
+        assert_eq!(container1.put_item_in(ref sys.world, ref item1, 0), Result::Ok(()), "item1 > container1");
+        assert_eq!(container2.put_item_in(ref sys.world, ref item2, 0), Result::Ok(()), "item2 > container2");
+        assert!(container1_entity.has_children(@sys.world, game_id), "container1.has_children");
+        assert!(container2_entity.has_children(@sys.world, game_id), "container2.has_children");
+        assert!(item1_entity.has_parent(@sys.world, game_id), "item1.has_parent");
+        assert!(item2_entity.has_parent(@sys.world, game_id), "item2.has_parent");
+        assert!(item1_entity.get_parent(@sys.world, game_id).unwrap().inst == container1.inst(), "item1.get_parent");
+        assert!(item2_entity.get_parent(@sys.world, game_id).unwrap().inst == container2.inst(), "item2.get_parent");
         //
         // move an item
-        assert_eq!(container1.put_item_in(ref world, ref item2, 0), Result::Ok(()), "item2 > container1");
-        assert!(container1_entity.has_children(@world, game_id), "moved item2 > container1");
-        assert!(!container2_entity.has_children(@world, game_id), "moved item2 > container1");
-        assert!(container1_entity.get_children(@world, game_id).len() == 2, "moved item2 > container1");
-        assert!(item1_entity.has_parent(@world, game_id), "item1.has_parent");
-        assert!(item2_entity.has_parent(@world, game_id), "item2.has_parent");
-        assert!(item1_entity.get_parent(@world, game_id).unwrap().inst == container1.inst(), "item1.get_parent");
-        assert!(item2_entity.get_parent(@world, game_id).unwrap().inst == container1.inst(), "item2.get_parent");
+        assert_eq!(container1.put_item_in(ref sys.world, ref item2, 0), Result::Ok(()), "item2 > container1");
+        assert!(container1_entity.has_children(@sys.world, game_id), "moved item2 > container1");
+        assert!(!container2_entity.has_children(@sys.world, game_id), "moved item2 > container1");
+        assert!(container1_entity.get_children(@sys.world, game_id).len() == 2, "moved item2 > container1");
+        assert!(item1_entity.has_parent(@sys.world, game_id), "item1.has_parent");
+        assert!(item2_entity.has_parent(@sys.world, game_id), "item2.has_parent");
+        assert!(item1_entity.get_parent(@sys.world, game_id).unwrap().inst == container1.inst(), "item1.get_parent");
+        assert!(item2_entity.get_parent(@sys.world, game_id).unwrap().inst == container1.inst(), "item2.get_parent");
         //
         // invalid move
-        container2.set_can_receive_items(ref world, false, 0);
-        assert_eq!(container2.put_item_in(ref world, ref item2, 0), Result::Err(Error::CantStore), "item2 > container2");
-        assert!(!container2_entity.has_children(@world, game_id), "invalid move");
-        assert!(item2_entity.get_parent(@world, game_id).unwrap().inst == container1.inst(), "item2.get_parent");
+        container2.set_can_receive_items(ref sys.world, false, 0);
+        assert_eq!(container2.put_item_in(ref sys.world, ref item2, 0), Result::Err(Error::CantStore), "item2 > container2");
+        assert!(!container2_entity.has_children(@sys.world, game_id), "invalid move");
+        assert!(item2_entity.get_parent(@sys.world, game_id).unwrap().inst == container1.inst(), "item2.get_parent");
     }
 }

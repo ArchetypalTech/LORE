@@ -306,10 +306,10 @@ pub mod tests {
         (prefab)
     }
     
-    fn Reactable_create_prefab_world() -> (Reactable, WorldStorage, ContractAddress, ContractAddress) {
-        let (mut world, _, _, _, player_1, player_2) = helpers::setup_core();
-        let prefab = Reactable_create_prefab(ref world, 42, "");
-        (prefab, world, player_1, player_2)
+    fn Reactable_create_prefab_world() -> (Reactable, WorldStorage) {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let prefab = Reactable_create_prefab(ref sys.world, 42, "");
+        (prefab, sys.world)
     }
 
     #[test]
@@ -338,7 +338,7 @@ pub mod tests {
                 },
             ],
         };
-        let (prefab, world, _, _) = Reactable_create_prefab_world();
+        let (prefab, world) = Reactable_create_prefab_world();
         let read_reactable: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         // println!("read_reactable: {:?}", read_reactable);
         assert(read_reactable.is_reactable, 'reactable is reactable');
@@ -351,14 +351,14 @@ pub mod tests {
 
     #[test]
     fn Reactable_test_get_component() {
-        let (prefab, world, _, _) = Reactable_create_prefab_world();
+        let (prefab, world) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         assert(i.is_reactable, 'reactable is reactable');
     }
 
     #[test]
     fn Reactable_test_read_specific_description() {
-        let (prefab, world, _, _) = Reactable_create_prefab_world();
+        let (prefab, world) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
         let res = ReactableImpl::get_specific_description(@i, idx, world, 0);

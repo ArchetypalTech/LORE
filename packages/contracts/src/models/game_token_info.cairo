@@ -132,65 +132,65 @@ mod tests {
 
     #[test]
     fn test_game_token_info_edit() {
-        let (mut world, _, prompt, _, player_address_1, _) = helpers::setup_core();
-        PlayerImpl::caller_as_player(ref world, player_address_1, 0);
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, 0);
         // create room entities
         let room_entity_1: @Entity = @helpers::create_new_entity(1, "Room 1");
         let room_entity_2: @Entity = @helpers::create_new_entity(0x03a419a814c431cc29706ccc4dcfbbb9c952cc96d2f9719d62ab8163b0f5bb52, "Room 2");
         let room_entity_3: @Entity = @helpers::create_new_entity(0x032454cde156173c1f4ee9a89e4a3a97a9a81bc2f5237b81728af955569c85bb, "Room 3");
-        world.write_model(room_entity_1);
-        world.write_model(room_entity_2);
-        world.write_model(room_entity_3);
-        let mut area_1: Area = AreaComponent::add_component(ref world, *room_entity_1.inst);
-        let mut area_2: Area = AreaComponent::add_component(ref world, *room_entity_2.inst);
-        let mut area_3: Area = AreaComponent::add_component(ref world, *room_entity_3.inst);
+        sys.world.write_model(room_entity_1);
+        sys.world.write_model(room_entity_2);
+        sys.world.write_model(room_entity_3);
+        let mut area_1: Area = AreaComponent::add_component(ref sys.world, *room_entity_1.inst);
+        let mut area_2: Area = AreaComponent::add_component(ref sys.world, *room_entity_2.inst);
+        let mut area_3: Area = AreaComponent::add_component(ref sys.world, *room_entity_3.inst);
         area_1.progress_percentage = 10;
         area_2.progress_percentage = 50;
         area_3.progress_percentage = 100;
-        world.write_model(@area_1);
-        world.write_model(@area_2);
-        world.write_model(@area_3);
+        sys.world.write_model(@area_1);
+        sys.world.write_model(@area_2);
+        sys.world.write_model(@area_3);
         //
         // mint game
-        helpers::set_caller(player_address_1);
-        prompt.prompt("", Option::None);
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("", Option::None);
         let game_id: u128 = 1;
         //
         // set room
         helpers::set_caller(helpers::OWNER());
-        GameTokenInfoTrait::set_room(ref world, game_id, *room_entity_1.inst);
-        let token_info: GameTokenInfo = world.read_model(game_id);
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_1.inst);
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_1.name.clone(), "set room");
         assert_eq!(token_info.act_number, 1, "set room");
         assert_eq!(token_info.progress, 10, "set room");
         assert_eq!(token_info.completed, false, "set room");
-        assert!(!GameTokenInfoTrait::has_finished_game(@world, game_id), "set room");
+        assert!(!GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "set room");
         //  
         // new act
-        GameTokenInfoTrait::set_room(ref world, game_id, *room_entity_2.inst);
-        let token_info: GameTokenInfo = world.read_model(game_id);
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_2.inst);
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_2.name.clone(), "new act");
         assert_eq!(token_info.act_number, 2, "new act");
         assert_eq!(token_info.progress, 50, "new act");
         assert_eq!(token_info.completed, false, "new act");
-        assert!(!GameTokenInfoTrait::has_finished_game(@world, game_id), "new act");
+        assert!(!GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "new act");
         //
         // back one room
-        GameTokenInfoTrait::set_room(ref world, game_id, *room_entity_1.inst);
-        let token_info: GameTokenInfo = world.read_model(game_id);
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_1.inst);
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_1.name.clone(), "back one room");
         assert_eq!(token_info.act_number, 2, "back one room");
         assert_eq!(token_info.progress, 50, "back one room");
         assert_eq!(token_info.completed, false, "back one room");
-        assert!(!GameTokenInfoTrait::has_finished_game(@world, game_id), "back one room");
+        assert!(!GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "back one room");
         //
         // finish...
-        GameTokenInfoTrait::set_room(ref world, game_id, *room_entity_3.inst);
-        let token_info: GameTokenInfo = world.read_model(game_id);
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_3.inst);
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_3.name.clone(), "finished");
         assert_eq!(token_info.act_number, 3, "finished");
         assert_eq!(token_info.progress, 100, "finished");
         assert_eq!(token_info.completed, true, "finished");
-        assert!(GameTokenInfoTrait::has_finished_game(@world, game_id), "finished");
+        assert!(GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "finished");
     }
 }

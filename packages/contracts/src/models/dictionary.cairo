@@ -256,9 +256,9 @@ mod tests {
 
     #[test]
     fn Dictionary_test_init() {
-        let (world, _, _, _, _, _) = helpers::setup_core();
-        let entry_1: Dict = world.get_dict_entry("look").unwrap();
-        let entry_2: Dict = world.get_dict_entry("beautiful").unwrap();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let entry_1: Dict = sys.world.get_dict_entry("look").unwrap();
+        let entry_2: Dict = sys.world.get_dict_entry("beautiful").unwrap();
         // println!("entry_1: {:?}", entry_1);
         // println!("entry_2: {:?}", entry_2);
         assert(entry_1.tokenType == TokenType::Verb, 'look is verb');
@@ -267,9 +267,10 @@ mod tests {
 
     #[test]
     fn Dictionary_test_add_to_dictionary() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
-        world.add_to_dictionary("something", TokenType::Verb, 1).unwrap();
-        let entry_1: Dict = world.get_dict_entry("something").unwrap();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let _entry_1: Dict = sys.world.get_dict_entry("look").unwrap();
+        sys.world.add_to_dictionary("something", TokenType::Verb, 1).unwrap();
+        let entry_1: Dict = sys.world.get_dict_entry("something").unwrap();
         assert(entry_1.tokenType == TokenType::Verb, 'beautiful is verb');
         assert(entry_1.dict_key == 'something', 'dict_key is "beautiful"');
         assert(entry_1.word == "something", 'word is "beautiful"');

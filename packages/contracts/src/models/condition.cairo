@@ -288,18 +288,18 @@ mod tests {
 
     #[test]
     fn Condition_test_evaluate_condition() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         // Create entity and attach ReactableComponent
-        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
-        world.write_model(@door);
+        let mut door: Entity = EntityImpl::create_entity(ref sys.world, "door");
+        sys.world.write_model(@door);
 
         let game_id: u128 = 0;
         let new_entry: ByteArray = "A door";
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
+        let mut reactable: Reactable = Component::add_component(ref sys.world, door.inst);
         let desc1: DescriptionText = DescriptionText {
             inst: door.inst, key: 0, text: new_entry.clone(),
         };
-        world.write_model(@desc1);
+        sys.world.write_model(@desc1);
         reactable.is_reactable = true;
         reactable.is_visible = true;
         reactable.already_shown = false;
@@ -321,10 +321,10 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world, 0);
+        reactable.store(ref sys.world, 0);
 
         // Register component variable properties
-        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref sys.world, ComponentType::Reactable);
 
         // Test: is_reactable == true (should pass)
         let key2: felt252 = 2;
@@ -341,11 +341,11 @@ mod tests {
             Operator::Equals,
             array_true,
         );
-        world.write_model(@condition);
+        sys.world.write_model(@condition);
         assert(
             condition
                 .evaluate_condition(
-                    @world,
+                    @sys.world,
                     @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
@@ -367,11 +367,11 @@ mod tests {
             Operator::Equals,
             array_false,
         );
-        world.write_model(@condition2);
+        sys.world.write_model(@condition2);
         assert(
             !condition2
                 .evaluate_condition(
-                    @world,
+                    @sys.world,
                     @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
@@ -393,11 +393,11 @@ mod tests {
             Operator::Equals,
             array3,
         );
-        world.write_model(@condition3);
+        sys.world.write_model(@condition3);
         assert(
             condition3
                 .evaluate_condition(
-                    @world,
+                    @sys.world,
                     @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
@@ -419,11 +419,11 @@ mod tests {
             Operator::Equals,
             array4,
         );
-        world.write_model(@condition4);
+        sys.world.write_model(@condition4);
         assert(
             !condition4
                 .evaluate_condition(
-                    @world,
+                    @sys.world,
                     @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
@@ -445,11 +445,11 @@ mod tests {
             Operator::NotEquals,
             not_eq_array,
         );
-        world.write_model(@condition5);
+        sys.world.write_model(@condition5);
         assert(
             condition5
                 .evaluate_condition(
-                    @world,
+                    @sys.world,
                     @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),
@@ -471,11 +471,11 @@ mod tests {
             Operator::NotEquals,
             not_eq_array2,
         );
-        world.write_model(@condition6);
+        sys.world.write_model(@condition6);
         assert(
             !condition6
                 .evaluate_condition(
-                    @world,
+                    @sys.world,
                     @TriggerContext { doer: 0, target1: 0, target2: 0, inventory_object: 0 },
                     game_id,
                 ),

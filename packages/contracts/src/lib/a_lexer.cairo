@@ -186,14 +186,14 @@ mod tests {
 
     #[test]
     fn Lexer_test_prompt() {
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         let promptText: ByteArray = "look, how illegal is it to call the door on a boat a lexer";
         // println!("promptText: {:?}", promptText);
-        create_test_level(ref world);
+        create_test_level(ref sys.world);
         let game_id: u128 = 0;
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(ref world, 2826);
-        let _command: Result<Command, Error> = LexerTrait::parse(@world, promptText, player);
+        let player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        player.move_to_room(ref sys.world, 2826);
+        let _command: Result<Command, Error> = LexerTrait::parse(@sys.world, promptText, player);
         // println!("command: {:?}", command);
     // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
@@ -202,18 +202,18 @@ mod tests {
 
     #[test]
     fn test_get_verbs() {
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         let prompt_text: ByteArray = "look at the magic circle";
         let expected_verb: ByteArray = "look"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(ref world);
+        create_test_level(ref sys.world);
         let game_id: u128 = 0;
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(ref world, 2826);
+        let player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        player.move_to_room(ref sys.world, 2826);
 
         // Parse command
-        let g_command: Result<Command, Error> = LexerTrait::parse(@world, prompt_text, player);
+        let g_command: Result<Command, Error> = LexerTrait::parse(@sys.world, prompt_text, player);
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command: Command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
@@ -227,19 +227,19 @@ mod tests {
 
     #[test]
     fn test_get_nouns() {
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         let prompt_text: ByteArray = "look at the ball";
         let expected_noun: ByteArray = "ball"; // Correctly set verb as a ByteArray
 
         // Setup environment
-        create_test_level(ref world);
+        create_test_level(ref sys.world);
         let game_id: u128 = 0;
-        let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(ref world, 2826);
-        let _ = world.add_to_dictionary(expected_noun.clone(), TokenType::Noun, 2826);
+        let player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        player.move_to_room(ref sys.world, 2826);
+        let _ = sys.world.add_to_dictionary(expected_noun.clone(), TokenType::Noun, 2826);
 
         // Parse command
-        let g_command: Result<Command, Error> = LexerTrait::parse(@world, prompt_text, player);
+        let g_command: Result<Command, Error> = LexerTrait::parse(@sys.world, prompt_text, player);
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command: Command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command

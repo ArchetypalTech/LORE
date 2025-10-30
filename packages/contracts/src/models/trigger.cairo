@@ -307,20 +307,20 @@ mod tests {
 
     #[test]
     fn test_trigger_register_and_index() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
 
         let key: felt252 = 1;
         let trigger: Trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnEnter);
 
-        let result: Result<(), Error> = TriggerImpl::register_trigger(ref world, @trigger);
+        let result: Result<(), Error> = TriggerImpl::register_trigger(ref sys.world, @trigger);
         assert(result.is_ok(), 'Trig not register successfully');
 
-        let stored: Trigger = world.read_model((trigger.inst, trigger.key));
+        let stored: Trigger = sys.world.read_model((trigger.inst, trigger.key));
         assert(stored.inst == 1, 'Trigger inst should match');
         assert(stored.name == "TestTrigger", 'Trigger name should match');
 
         let _key: felt252 = (trigger.trigger_type).into();
-        let index: TriggerIndex = world.read_model(trigger.trigger_type);
+        let index: TriggerIndex = sys.world.read_model(trigger.trigger_type);
         assert(index.trigger_id.len() == 1, 'Trig index should have one ID');
         assert(
             *index.trigger_id[0] == (trigger.inst, trigger.key),
@@ -330,59 +330,59 @@ mod tests {
 
     #[test]
     fn test_trigger_name_too_long() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         let long_name: ByteArray = "Aakldjflkajdflkjldafljaldfjldjsdfdfdf";
 
         // Create entity
-        let mut player: Entity = EntityImpl::create_entity(ref world, "player");
-        world.write_model(@player);
+        let mut player: Entity = EntityImpl::create_entity(ref sys.world, "player");
+        sys.world.write_model(@player);
 
         // Create trigger
         let key: felt252 = 2;
         let trigger: Trigger = create_test_trigger(1, key, long_name, TriggerType::OnExit);
-        world.write_model(@trigger);
+        sys.world.write_model(@trigger);
 
-        let result: Result<(), Error> = TriggerImpl::register_trigger(ref world, @trigger);
+        let result: Result<(), Error> = TriggerImpl::register_trigger(ref sys.world, @trigger);
         assert(result.is_err(), 'Trig name too long should fail');
     }
 
     #[test]
     fn test_trigger_enable_disable() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
 
         // Create trigger
         let key: felt252 = 3;
         let trigger: Trigger = create_test_trigger(1, key, "TestTrigger", TriggerType::OnExit);
-        world.write_model(@trigger);
+        sys.world.write_model(@trigger);
 
-        TriggerImpl::enable_trigger(ref world, (trigger.inst, trigger.key));
-        let enable_trigger: Trigger = world.read_model((trigger.inst, trigger.key));
+        TriggerImpl::enable_trigger(ref sys.world, (trigger.inst, trigger.key));
+        let enable_trigger: Trigger = sys.world.read_model((trigger.inst, trigger.key));
         assert(enable_trigger.is_enabled, 'Trigger should be enabled');
 
-        TriggerImpl::disable_trigger(ref world, (trigger.inst, trigger.key));
-        let disable_trigger: Trigger = world
+        TriggerImpl::disable_trigger(ref sys.world, (trigger.inst, trigger.key));
+        let disable_trigger: Trigger = sys.world
             .read_model((trigger.inst, trigger.key));
         assert_eq!(disable_trigger.is_enabled, false, "Trigger should be disabled");
     }
 
     #[test]
     fn test_trigger_index_append_multiple() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         let id_1: felt252 = 10;
         let id_2: felt252 = 11;
 
         let trigger1: Trigger = create_test_trigger(1, id_1, "TestTrigger", TriggerType::OnEnter);
         let trigger2: Trigger = create_test_trigger(2, id_2, "TestTrigger", TriggerType::OnEnter);
 
-        let result1: Result<(), Error> = TriggerImpl::update_triggerIndex(ref world, @trigger1);
+        let result1: Result<(), Error> = TriggerImpl::update_triggerIndex(ref sys.world, @trigger1);
         // message: 1st trigger index insert didn't succeed
         assert(result1.is_ok(), '1 trig idx insert nt succ');
 
-        let result2: Result<(), Error> = TriggerImpl::update_triggerIndex(ref world, @trigger2);
+        let result2: Result<(), Error> = TriggerImpl::update_triggerIndex(ref sys.world, @trigger2);
         // message: 2nd trigger index insert didn't succeed
         assert(result2.is_ok(), '2 trig idx insert nt succ');
 
-        let index: TriggerIndex = world.read_model(TriggerType::OnEnter);
+        let index: TriggerIndex = sys.world.read_model(TriggerType::OnEnter);
         assert(index.trigger_id.len() == 2, 'Two triggers should be indexed');
         assert_eq!(
             index.trigger_id[0],
@@ -399,78 +399,78 @@ mod tests {
     #[test]
     #[ignore] // trigger.set_executed() was disabled!!!!
     fn test_evaluate_trigger() {
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create room entity 1
-        let mut room_entity_1: Entity = EntityImpl::create_entity(ref world, "room_entity_1");
+        let mut room_entity_1: Entity = EntityImpl::create_entity(ref sys.world, "room_entity_1");
         // create room entity 2
-        let mut room_entity_2: Entity = EntityImpl::create_entity(ref world, "room_entity_2");
+        let mut room_entity_2: Entity = EntityImpl::create_entity(ref sys.world, "room_entity_2");
 
         // add area component to room entity 1
-        let mut area_component_1: Area = AreaComponent::add_component(ref world, room_entity_1.inst);
-        world.write_model(@area_component_1);
+        let mut area_component_1: Area = AreaComponent::add_component(ref sys.world, room_entity_1.inst);
+        sys.world.write_model(@area_component_1);
         // add exit component to room entity 1
-        let mut exit_component_1: Exit = ExitComponent::add_component(ref world, room_entity_1.inst);
+        let mut exit_component_1: Exit = ExitComponent::add_component(ref sys.world, room_entity_1.inst);
         // update exit component
         exit_component_1.leads_to = room_entity_2.inst;
         exit_component_1.direction_type = Direction::North;
-        world.write_model(@exit_component_1);
+        sys.world.write_model(@exit_component_1);
 
         // add area component to room entity 2
-        let mut area_component_2: Area = AreaComponent::add_component(ref world, room_entity_2.inst);
-        world.write_model(@area_component_2);
+        let mut area_component_2: Area = AreaComponent::add_component(ref sys.world, room_entity_2.inst);
+        sys.world.write_model(@area_component_2);
         // add exit component to room entity 2
-        let mut exit_component_2: Exit = ExitComponent::add_component(ref world, room_entity_2.inst);
+        let mut exit_component_2: Exit = ExitComponent::add_component(ref sys.world, room_entity_2.inst);
         // update exit component
         exit_component_2.leads_to = room_entity_1.inst;
         exit_component_2.direction_type = Direction::South;
-        world.write_model(@exit_component_2);
+        sys.world.write_model(@exit_component_2);
 
         let game_id: u128 = 123;
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        let mut player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
         player.location = room_entity_2.inst;
-        world.write_model(@player);
+        sys.world.write_model(@player);
 
-        let mut player_entity: Entity = player.entity(@world);
+        let mut player_entity: Entity = player.entity(@sys.world);
         // add player to room entity 2
-        player_entity.set_parent(ref world, @room_entity_2, game_id);
+        player_entity.set_parent(ref sys.world, @room_entity_2, game_id);
 
         // set trigger to room entity 1
         let key: felt252 = 1;
         let trigger: Trigger = create_test_trigger(
             room_entity_1.inst, key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result: Result<(), Error> = TriggerImpl::register_trigger(ref world, @trigger);
+        let _result: Result<(), Error> = TriggerImpl::register_trigger(ref sys.world, @trigger);
 
         // move player to room entity 1
-        let mut player_r1: Player = world.read_model(player.inst);
-        player_r1.move_to_room(ref world, room_entity_1.inst);
+        let mut player_r1: Player = sys.world.read_model(player.inst);
+        player_r1.move_to_room(ref sys.world, room_entity_1.inst);
 
-        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet');
-        let result: Result<(), Error> = trigger.evaluate_trigger(ref world, game_id);
+        assert(!trigger.is_executed(@sys.world, game_id), 'trigger not executed yet');
+        let result: Result<(), Error> = trigger.evaluate_trigger(ref sys.world, game_id);
         if result.is_ok() { // println!("Trigger jumps successfully");
         };
         assert(result.is_ok(), 'Trigger should jump');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed');
+        assert(trigger.is_executed(@sys.world, game_id), 'trigger executed');
 
         // move player to room entity 2
-        player.move_to_room(ref world, room_entity_2.inst);
-        player_entity.set_parent(ref world, @room_entity_2, game_id);
+        player.move_to_room(ref sys.world, room_entity_2.inst);
+        player_entity.set_parent(ref sys.world, @room_entity_2, game_id);
 
-        let result2: Result<(), Error> = trigger.evaluate_trigger(ref world, game_id);
+        let result2: Result<(), Error> = trigger.evaluate_trigger(ref sys.world, game_id);
         assert(result2.is_err(), 'Trigger should not jump');
     }
 
     #[test]
     #[ignore] // trigger.set_executed() was disabled!!!!
     fn test_evaluate_trigger_once() {
-        let (mut world, _, _, _, player_1, player_2) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
 
         // create room entity 1
-        let mut room_entity_1: Entity = EntityImpl::create_entity(ref world, "room_entity_1");
+        let mut room_entity_1: Entity = EntityImpl::create_entity(ref sys.world, "room_entity_1");
 
         let game_id: u128 = 123;
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        world.write_model(@player);
+        let mut player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        sys.world.write_model(@player);
 
         // set trigger to room entity
         let key: felt252 = 1;
@@ -478,34 +478,34 @@ mod tests {
             room_entity_1.inst, key, "TestTrigger", TriggerType::OnInspect,
         );
         trigger.is_once = true;
-        let _result: Result<(), Error> = TriggerImpl::register_trigger(ref world, @trigger);
+        let _result: Result<(), Error> = TriggerImpl::register_trigger(ref sys.world, @trigger);
 
         // move player to room entity
-        let mut player_r1: Player = world.read_model(player.inst);
-        player_r1.move_to_room(ref world, room_entity_1.inst);
+        let mut player_r1: Player = sys.world.read_model(player.inst);
+        player_r1.move_to_room(ref sys.world, room_entity_1.inst);
 
-        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet 1');
-        let result: Result<(), Error> = trigger.evaluate_trigger(ref world, game_id);
+        assert(!trigger.is_executed(@sys.world, game_id), 'trigger not executed yet 1');
+        let result: Result<(), Error> = trigger.evaluate_trigger(ref sys.world, game_id);
         assert(result.is_ok(), 'Trigger should jump 1');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed 1');
+        assert(trigger.is_executed(@sys.world, game_id), 'trigger executed 1');
 
         // again...
-        let result: Result<(), Error> = trigger.evaluate_trigger(ref world, game_id);
+        let result: Result<(), Error> = trigger.evaluate_trigger(ref sys.world, game_id);
         assert(result.is_err(), 'Trigger should not jump 1');
 
         // try another player...
         let game_id: u128 = 456;
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_2, game_id);
-        world.write_model(@player);
+        let mut player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_2, game_id);
+        sys.world.write_model(@player);
 
         // can trigger in this other game...
-        assert(!trigger.is_executed(@world, game_id), 'trigger not executed yet 2');
-        let result: Result<(), Error> = trigger.evaluate_trigger(ref world, game_id);
+        assert(!trigger.is_executed(@sys.world, game_id), 'trigger not executed yet 2');
+        let result: Result<(), Error> = trigger.evaluate_trigger(ref sys.world, game_id);
         assert(result.is_ok(), 'Trigger should jump 2');
-        assert(trigger.is_executed(@world, game_id), 'trigger executed 2');
+        assert(trigger.is_executed(@sys.world, game_id), 'trigger executed 2');
 
         // again...
-        let result: Result<(), Error> = trigger.evaluate_trigger(ref world, game_id);
+        let result: Result<(), Error> = trigger.evaluate_trigger(ref sys.world, game_id);
         assert(result.is_err(), 'Trigger should not jump 2');
     }
 }

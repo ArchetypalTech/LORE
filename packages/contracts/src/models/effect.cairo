@@ -229,13 +229,13 @@ mod tests {
 
     #[test]
     fn Effect_test_apply_effec_text() {
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create door entity
-        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
-        world.write_model(@door);
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
+        let mut door: Entity = EntityImpl::create_entity(ref sys.world, "door");
+        sys.world.write_model(@door);
+        let mut reactable: Reactable = Component::add_component(ref sys.world, door.inst);
         let desc1: DescriptionText = DescriptionText { inst: door.inst, key: 0, text: "A door" };
-        world.write_model(@desc1);
+        sys.world.write_model(@desc1);
         reactable.is_reactable = true;
         reactable.is_visible = true;
         reactable.description = array![0];
@@ -255,21 +255,21 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world, 0);
-        let old_insp_door: Reactable = world.read_model(door.inst);
+        reactable.store(ref sys.world, 0);
+        let old_insp_door: Reactable = sys.world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
-        let old_txt: DescriptionText = world.read_model((door.inst, old_key));
+        let old_txt: DescriptionText = sys.world.read_model((door.inst, old_key));
 
         // Create player
         let game_id: u128 = 0;
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        world.write_model(@player);
+        let mut player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        sys.world.write_model(@player);
 
         // Create trigger context
         let mut context: TriggerContext = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
-        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref sys.world, ComponentType::Reactable);
 
         // Test description new value
         let new_value: Array<(ByteArray, u32)> = array![
@@ -291,14 +291,14 @@ mod tests {
             n_value,
             hex_value,
         );
-        world.write_model(@effect);
-        let result = effect.apply_effect(ref world, @context, game_id);
+        sys.world.write_model(@effect);
+        let result = effect.apply_effect(ref sys.world, @context, game_id);
 
-        let new_reactable: Reactable = world.read_model(door.inst);
+        let new_reactable: Reactable = sys.world.read_model(door.inst);
         let key: u32 = *new_reactable.description.at(0);
         let key2: u32 = *new_reactable.description.at(1);
-        let new_txt1: DescriptionText = world.read_model((door.inst, key));
-        let new_txt2: DescriptionText = world.read_model((door.inst, key2));
+        let new_txt1: DescriptionText = sys.world.read_model((door.inst, key));
+        let new_txt2: DescriptionText = sys.world.read_model((door.inst, key2));
 
         let (defTxt2, _defKey2) = new_value.at(1);
 
@@ -309,12 +309,12 @@ mod tests {
 
     #[test]
     fn Effect_test_apply_effect_item() {
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create door entity
-        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
-        world.write_model(@door);
-        let mut reactable: Reactable = Component::add_component(ref world, door.inst);
-        let mut item1: InventoryItem = Component::add_component(ref world, door.inst);
+        let mut door: Entity = EntityImpl::create_entity(ref sys.world, "door");
+        sys.world.write_model(@door);
+        let mut reactable: Reactable = Component::add_component(ref sys.world, door.inst);
+        let mut item1: InventoryItem = Component::add_component(ref sys.world, door.inst);
         reactable.is_reactable = true;
         reactable.is_visible = true;
         reactable.description = array![0];
@@ -328,22 +328,22 @@ mod tests {
                         entrypoints: (1, 1),
                     },
                 ];
-        reactable.store(ref world, 0);
+        reactable.store(ref sys.world, 0);
 
-        let old_item: InventoryItem = world.read_model(door.inst);
+        let old_item: InventoryItem = sys.world.read_model(door.inst);
         assert_eq!(old_item.can_be_picked_up, item1.can_be_picked_up, "initial value: can_be_picked_up");
         assert_eq!(old_item.can_be_picked_up, true, "initial value: can_be_picked_up");
 
         // Create player
         let game_id: u128 = 0;
-        let mut player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        world.write_model(@player);
+        let mut player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        sys.world.write_model(@player);
 
         // Create trigger context
         let mut context: TriggerContext = create_trigger_context(player.inst, door.inst, 0, 0);
 
         // register variable properties
-        VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
+        VariablePropertyHelper::register_component_properties(ref sys.world, ComponentType::Reactable);
 
         // create and apply effect
         let new_value: Array<(ByteArray, u32)> = array![
@@ -365,10 +365,10 @@ mod tests {
             n_value,
             hex_value,
         );
-        world.write_model(@effect);
-        let result: Result<(), Error> = effect.apply_effect(ref world, @context, game_id);
+        sys.world.write_model(@effect);
+        let result: Result<(), Error> = effect.apply_effect(ref sys.world, @context, game_id);
 
-        let new_item: InventoryItem = world.read_model(door.inst);
+        let new_item: InventoryItem = sys.world.read_model(door.inst);
         assert_eq!(result.is_ok(), true, "Effect should apply successfully");
         assert_ne!(new_item.can_be_picked_up, old_item.can_be_picked_up, "new value: can_be_picked_up");
         assert_eq!(new_item.can_be_picked_up, false, "new value: can_be_picked_up");
