@@ -13,6 +13,7 @@ use lore::{
         designer::{IDesignerDispatcher},
         prompt::{IPromptDispatcher},
         game_token::{IGameTokenDispatcher},
+        trail_token::{ITrailTokenDispatcher},
     },
     models,
     models::{
@@ -89,13 +90,17 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::game_token_info::m_PlayerGame::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_token_info::m_GameTokenInfo::TEST_CLASS_HASH.into()),
             TestResource::Event(models::game_token_info::e_GameCreatedEvent::TEST_CLASS_HASH.into()),
+            // trail_token
+            TestResource::Model(models::trail_token_info::m_TrailTokenInfo::TEST_CLASS_HASH.into()),
+            TestResource::Event(models::trail_token_info::e_TrailCreatedEvent::TEST_CLASS_HASH.into()),
             // Arcade achievements
             TestResource::Event(achievement::events::index::e_TrophyCreation::TEST_CLASS_HASH.into()),
             TestResource::Event(achievement::events::index::e_TrophyProgression::TEST_CLASS_HASH.into()),
             // Systems
-            TestResource::Contract(lore::systems::prompt::prompt::TEST_CLASS_HASH.into()),
             TestResource::Contract(lore::systems::designer::designer::TEST_CLASS_HASH.into()),
+            TestResource::Contract(lore::systems::prompt::prompt::TEST_CLASS_HASH.into()),
             TestResource::Contract(lore::systems::game_token::game_token::TEST_CLASS_HASH.into()),
+            TestResource::Contract(lore::systems::trail_token::trail_token::TEST_CLASS_HASH.into()),
             TestResource::Library((lore::lib::a_lexer::lexer::TEST_CLASS_HASH.into(), @"lexer", @"0_2_0")),
         ].span(),
     };
@@ -114,6 +119,9 @@ fn core_contract_defs() -> Span<ContractDef> {
         ContractDefTrait::new(@"lore", @"prompt")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span()),
         ContractDefTrait::new(@"lore", @"game_token")
+            .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
+            .with_init_calldata(array![].span()),
+        ContractDefTrait::new(@"lore", @"trail_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
             .with_init_calldata(array![].span()),
     ].span()

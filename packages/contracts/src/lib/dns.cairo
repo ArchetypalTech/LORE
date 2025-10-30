@@ -8,9 +8,10 @@ use dojo::meta::interface::{
 
 pub use lore::{
     systems::{
-    game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
-    prompt::{IPromptDispatcher, IPromptDispatcherTrait},
-    designer::{IDesignerDispatcher, IDesignerDispatcherTrait},
+        designer::{IDesignerDispatcher, IDesignerDispatcherTrait},
+        prompt::{IPromptDispatcher, IPromptDispatcherTrait},
+        game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
+        trail_token::{ITrailTokenDispatcher, ITrailTokenDispatcherTrait},
     },
     lib::{
         a_lexer::{ILexerLibraryDispatcher, ILexerDispatcherTrait},
@@ -23,6 +24,7 @@ pub mod SELECTORS {
     pub const PROMPT: felt252 = selector_from_tag!("lore-prompt");
     pub const DESIGNER: felt252 = selector_from_tag!("lore-designer");
     pub const GAME_TOKEN: felt252 = selector_from_tag!("lore-game_token");
+    pub const TRAIL_TOKEN: felt252 = selector_from_tag!("lore-trail_token");
 }
 
 #[generate_trait]
@@ -56,6 +58,10 @@ pub impl DnsImpl of DnsTrait {
         (self.find_contract_address(@"game_token"))
     }
     #[inline(always)]
+    fn trail_token_address(self: @WorldStorage) -> ContractAddress {
+        (self.find_contract_address(@"trail_token"))
+    }
+    #[inline(always)]
     fn lexer_class_hash(self: @WorldStorage) -> ClassHash {
         (self.find_library_address(@"lexer", @"0_2_0"))
     }
@@ -74,6 +80,10 @@ pub impl DnsImpl of DnsTrait {
     #[inline(always)]
     fn game_token_dispatcher(self: @WorldStorage) -> IGameTokenDispatcher {
         (IGameTokenDispatcher{ contract_address: self.game_token_address() })
+    }
+    #[inline(always)]
+    fn trail_token_dispatcher(self: @WorldStorage) -> ITrailTokenDispatcher {
+        (ITrailTokenDispatcher{ contract_address: self.trail_token_address() })
     }
     #[inline(always)]
     fn lexer_dispatcher(self: @WorldStorage) -> ILexerLibraryDispatcher {

@@ -2,7 +2,7 @@ use starknet::{ContractAddress};
 use dojo::world::IWorldDispatcher;
 
 #[starknet::interface]
-pub trait IGameToken<TState> {
+pub trait ITrailToken<TState> {
     // IWorldProvider
     fn world_dispatcher(self: @TState) -> IWorldDispatcher;
 
@@ -51,8 +51,8 @@ pub trait IGameToken<TState> {
     // IERC721ComboABI end
     //-----------------------------------
 
-    // game_token
-    fn create_game(ref self: TState, recipient: ContractAddress) -> u128;
+    // trail_token
+    fn create_trail(ref self: TState, recipient: ContractAddress) -> u128;
     // fn burn(ref self: TState, token_id: u256);
     fn set_minting_paused(ref self: TState, is_paused: bool);
     fn update_token_metadata(ref self: TState, token_id: u256);
@@ -61,8 +61,8 @@ pub trait IGameToken<TState> {
 }
 
 #[starknet::interface]
-pub trait IGameTokenPublic<TState> {
-    fn create_game(ref self: TState, recipient: ContractAddress) -> u128;
+pub trait ITrailTokenPublic<TState> {
+    fn create_trail(ref self: TState, recipient: ContractAddress) -> u128;
     // fn burn(ref self: TState, token_id: u256);
     // admin
     fn set_minting_paused(ref self: TState, is_paused: bool);
@@ -73,7 +73,7 @@ pub trait IGameTokenPublic<TState> {
 }
 
 #[dojo::contract]
-pub mod game_token {
+pub mod trail_token {
     use starknet::ContractAddress;
     use dojo::{
         world::{WorldStorage, IWorldDispatcherTrait},
@@ -127,13 +127,12 @@ pub mod game_token {
     //-----------------------------------
 
     use lore::models::{
-        game_token_info::{
-            GameTokenInfo, GameTokenInfoTrait,
-            PlayerGameTrait,
-            GameCreatedEvent,
+        trail_token_info::{
+            TrailTokenInfo, TrailTokenInfoTrait,
+            TrailCreatedEvent,
         },
     };
-    use lore::constants::token_metadata::{orug_metadata, game_metadata};
+    use lore::constants::token_metadata::{orug_metadata, trail_metadata};
     use lore::lib::{
         dns::{SELECTORS},
         access::{AccessTrait},
@@ -149,8 +148,8 @@ pub mod game_token {
     fn dojo_init(ref self: ContractState) {
         // initialize ERC721
         self.erc721_combo.initializer(
-            game_metadata::TOKEN_NAME(),
-            game_metadata::TOKEN_SYMBOL(),
+            trail_metadata::TOKEN_NAME(),
+            trail_metadata::TOKEN_SYMBOL(),
             Option::None, // use hooks
             Option::None, // use hooks
             Option::None, // infinite supply
@@ -171,11 +170,11 @@ pub mod game_token {
 
 
     //-----------------------------------
-    // IGameTokenPublic
+    // ITrailTokenPublic
     //
     #[abi(embed_v0)]
-    impl GameTokenPublicImpl of super::IGameTokenPublic<ContractState> {
-        fn create_game(ref self: ContractState, recipient: ContractAddress) -> u128 {
+    impl TrailTokenPublicImpl of super::ITrailTokenPublic<ContractState> {
+        fn create_trail(ref self: ContractState, recipient: ContractAddress) -> u128 {
             let mut world: WorldStorage = self.world_default();
 
             // mint
@@ -191,23 +190,17 @@ pub mod game_token {
             ].span());
 
             // save token
-            world.write_model(@GameTokenInfo {
-                game_id: token_id,
+            world.write_model(@TrailTokenInfo {
+                trail_id: token_id,
                 minter_address: recipient,
                 seed,
-                act_number: 1,
-                room_name: "The Void",
-                progress: 0,
-                completed: false,
+                hub_inst: 0,
             });
 
-            // switch to this game
-            PlayerGameTrait::switch_game_id(ref world, recipient, token_id);
-
             // event...
-            world.emit_event(@GameCreatedEvent{
+            world.emit_event(@TrailCreatedEvent{
                 contract_address,
-                game_id: token_id,
+                trail_id: token_id,
                 recipient,
             });
 
@@ -264,7 +257,7 @@ pub mod game_token {
             assert(self._caller_is_admin(world), Errors::INVALID_CALLER);
         }
         fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
-            ((*world.dispatcher).is_owner(SELECTORS::GAME_TOKEN, starknet::get_caller_address()))
+            ((*world.dispatcher).is_owner(SELECTORS::TRAIL_TOKEN, starknet::get_caller_address()))
         }
         fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
             (
@@ -308,7 +301,7 @@ pub mod game_token {
             let metadata: ContractMetadata = ContractMetadata {
                 name: self.name(),
                 symbol: self.symbol(),
-                description: orug_metadata::DESCRIPTION(),
+                description: trail_metadata::DESCRIPTION(),
                 image: Option::Some(orug_metadata::CONTRACT_IMAGE()),
                 banner_image: Option::Some(orug_metadata::BANNER_IMAGE()),
                 featured_image: Option::None,
@@ -322,28 +315,24 @@ pub mod game_token {
             let self: @ContractState = self.get_contract(); // get the component's contract state
             let mut world: WorldStorage = self.world_default();
             // attributes and metadata
-            let token_info: GameTokenInfo = world.read_model(token_id.low);
+            let token_info: TrailTokenInfo = world.read_model(token_id.low);
             let mut attributes: Span<Attribute> = array![
-                Attribute { 
-                    key: "Act",
-                    value: format!("{}", token_info.act_number),
-                },
-                Attribute {
-                    key: "Room",
-                    value: token_info.room_name.clone(),
-                },
-                Attribute {
-                    key: "Progress",
-                    value: format!("{}%25", token_info.progress),
-                },
-                Attribute {
-                    key: "Completed",
-                    value: ByteArrayTraitExt::byte_array_from_bool(token_info.completed),
-                },
-                Attribute {
-                    key: "Vitality",
-                    value: if GameTokenInfoTrait::is_dead(@world, token_id.low) {"Dead"} else {"Alive"},
-                },
+                // Attribute {
+                //     key: "Hub",
+                //     value: format!("{}", token_info.act_number),
+                // },
+                // Attribute {
+                //     key: "State",
+                //     value: "Draft" | "Published",
+                // },
+                // Attribute {
+                //     key: "Rating",
+                //     value: token_info.room_name.clone(),
+                // },
+                // Attribute {
+                //     key: "Players Completed",
+                //     value: ByteArrayTraitExt::byte_array_from_bool(token_info.completed),
+                // },
             ].span();
             let mut additional_metadata: Span<Attribute> = array![
                 Attribute {
@@ -354,8 +343,8 @@ pub mod game_token {
             // https://docs.opensea.io/docs/metadata-standards#metadata-structure
             let metadata: TokenMetadata = TokenMetadata {
                 token_id,
-                name: format!("{} #{}", game_metadata::TOKEN_NAME(), token_id.low),
-                description: orug_metadata::DESCRIPTION(),
+                name: format!("{} #{}", trail_metadata::TOKEN_NAME(), token_id.low),
+                description: trail_metadata::DESCRIPTION(),
                 image: Option::Some(orug_metadata::CONTRACT_IMAGE()),
                 image_data: Option::None,
                 external_url: Option::Some(orug_metadata::EXTERNAL_LINK()), // TODO: format external token link

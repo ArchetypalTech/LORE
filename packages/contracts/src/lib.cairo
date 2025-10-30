@@ -2,12 +2,13 @@ pub mod systems {
     pub mod designer;
     pub mod prompt;
     pub mod game_token;
+    pub mod trail_token;
 }
 
 pub mod constants {
     pub mod constants;
     pub mod errors;
-    pub mod token;
+    pub mod token_metadata;
 }
 
 pub mod lib {
@@ -42,6 +43,7 @@ pub mod models {
     pub mod reactable;
     pub mod trigger;
     pub mod game_token_info;
+    pub mod trail_token_info;
 }
 
 pub mod types {

@@ -20,7 +20,7 @@ mod tests {
         lib::{
             access::{AccessTrait},
         },
-        constants::{token as constants},
+        constants::token_metadata::{game_metadata},
         tests::{
             helpers,
             helpers::{ZERO, OWNER, OTHER},
@@ -39,8 +39,8 @@ mod tests {
         println!("TOKEN SYMBOL: [{}]", token.symbol());
         assert_ne!(token.name(), "", "empty name");
         assert_ne!(token.symbol(), "", "empty symbol");
-        assert_eq!(token.name(), constants::TOKEN_NAME(), "wrong name");
-        assert_eq!(token.symbol(), constants::TOKEN_SYMBOL(), "wrong symbol");
+        assert_eq!(token.name(), game_metadata::TOKEN_NAME(), "wrong name");
+        assert_eq!(token.symbol(), game_metadata::TOKEN_SYMBOL(), "wrong symbol");
     }
 
     #[test]
