@@ -592,6 +592,95 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_getRoleAdmin_calldata = (role: BigNumberish): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "get_role_admin",
+			calldata: [role],
+		};
+	};
+
+	const designer_getRoleAdmin = async (role: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_designer_getRoleAdmin_calldata(role));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_grantRole_calldata = (role: BigNumberish, account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "grant_role",
+			calldata: [role, account],
+		};
+	};
+
+	const designer_grantRole = async (snAccount: Account | AccountInterface, role: BigNumberish, account: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_grantRole_calldata(role, account),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_hasRole_calldata = (role: BigNumberish, account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "has_role",
+			calldata: [role, account],
+		};
+	};
+
+	const designer_hasRole = async (role: BigNumberish, account: string) => {
+		try {
+			return await provider.call("lore", build_designer_hasRole_calldata(role, account));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_isAdmin_calldata = (account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "is_admin",
+			calldata: [account],
+		};
+	};
+
+	const designer_isAdmin = async (account: string) => {
+		try {
+			return await provider.call("lore", build_designer_isAdmin_calldata(account));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_isEditor_calldata = (account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "is_editor",
+			calldata: [account],
+		};
+	};
+
+	const designer_isEditor = async (account: string) => {
+		try {
+			return await provider.call("lore", build_designer_isEditor_calldata(account));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_registerPropertyRegistry_calldata = (done: Array<boolean>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -607,6 +696,107 @@ export function setupWorld(provider: DojoProvider) {
 				build_designer_registerPropertyRegistry_calldata(done),
 				"lore",
 			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_renounceRole_calldata = (role: BigNumberish, account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "renounce_role",
+			calldata: [role, account],
+		};
+	};
+
+	const designer_renounceRole = async (snAccount: Account | AccountInterface, role: BigNumberish, account: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_renounceRole_calldata(role, account),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_revokeRole_calldata = (role: BigNumberish, account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "revoke_role",
+			calldata: [role, account],
+		};
+	};
+
+	const designer_revokeRole = async (snAccount: Account | AccountInterface, role: BigNumberish, account: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_revokeRole_calldata(role, account),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_setAdmin_calldata = (accountAddress: string, isAdmin: boolean): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "set_admin",
+			calldata: [accountAddress, isAdmin],
+		};
+	};
+
+	const designer_setAdmin = async (snAccount: Account | AccountInterface, accountAddress: string, isAdmin: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_setAdmin_calldata(accountAddress, isAdmin),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_setEditor_calldata = (accountAddress: string, isEditor: boolean): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "set_editor",
+			calldata: [accountAddress, isEditor],
+		};
+	};
+
+	const designer_setEditor = async (snAccount: Account | AccountInterface, accountAddress: string, isEditor: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_setEditor_calldata(accountAddress, isEditor),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_supportsInterface_calldata = (interfaceId: BigNumberish): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "supports_interface",
+			calldata: [interfaceId],
+		};
+	};
+
+	const designer_supportsInterface = async (interfaceId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_designer_supportsInterface_calldata(interfaceId));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -990,61 +1180,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_game_token_setAdmin_calldata = (accountAddress: string, isAdmin: boolean): DojoCall => {
+	const build_game_token_setMintingPaused_calldata = (isPaused: boolean): DojoCall => {
 		return {
 			contractName: "game_token",
-			entrypoint: "set_admin",
-			calldata: [accountAddress, isAdmin],
-		};
-	};
-
-	const game_token_setAdmin = async (snAccount: Account | AccountInterface, accountAddress: string, isAdmin: boolean) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_game_token_setAdmin_calldata(accountAddress, isAdmin),
-				"lore",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_token_setEditor_calldata = (accountAddress: string, isEditor: boolean): DojoCall => {
-		return {
-			contractName: "game_token",
-			entrypoint: "set_editor",
-			calldata: [accountAddress, isEditor],
-		};
-	};
-
-	const game_token_setEditor = async (snAccount: Account | AccountInterface, accountAddress: string, isEditor: boolean) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_game_token_setEditor_calldata(accountAddress, isEditor),
-				"lore",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_game_token_setPaused_calldata = (isPaused: boolean): DojoCall => {
-		return {
-			contractName: "game_token",
-			entrypoint: "set_paused",
+			entrypoint: "set_minting_paused",
 			calldata: [isPaused],
 		};
 	};
 
-	const game_token_setPaused = async (snAccount: Account | AccountInterface, isPaused: boolean) => {
+	const game_token_setMintingPaused = async (snAccount: Account | AccountInterface, isPaused: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_game_token_setPaused_calldata(isPaused),
+				build_game_token_setMintingPaused_calldata(isPaused),
 				"lore",
 			);
 		} catch (error) {
@@ -1239,7 +1387,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_prompt_prompt_calldata = (cmd: string, gameId: option): DojoCall => {
+	const build_prompt_prompt_calldata = (cmd: string, gameId: CairoOption<BigNumberish>): DojoCall => {
 		return {
 			contractName: "prompt",
 			entrypoint: "prompt",
@@ -1247,7 +1395,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const prompt_prompt = async (snAccount: Account | AccountInterface, cmd: string, gameId: option) => {
+	const prompt_prompt = async (snAccount: Account | AccountInterface, cmd: string, gameId: CairoOption<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -1320,8 +1468,28 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeleteReactableCalldata: build_designer_deleteReactable_calldata,
 			deleteTrigger: designer_deleteTrigger,
 			buildDeleteTriggerCalldata: build_designer_deleteTrigger_calldata,
+			getRoleAdmin: designer_getRoleAdmin,
+			buildGetRoleAdminCalldata: build_designer_getRoleAdmin_calldata,
+			grantRole: designer_grantRole,
+			buildGrantRoleCalldata: build_designer_grantRole_calldata,
+			hasRole: designer_hasRole,
+			buildHasRoleCalldata: build_designer_hasRole_calldata,
+			isAdmin: designer_isAdmin,
+			buildIsAdminCalldata: build_designer_isAdmin_calldata,
+			isEditor: designer_isEditor,
+			buildIsEditorCalldata: build_designer_isEditor_calldata,
 			registerPropertyRegistry: designer_registerPropertyRegistry,
 			buildRegisterPropertyRegistryCalldata: build_designer_registerPropertyRegistry_calldata,
+			renounceRole: designer_renounceRole,
+			buildRenounceRoleCalldata: build_designer_renounceRole_calldata,
+			revokeRole: designer_revokeRole,
+			buildRevokeRoleCalldata: build_designer_revokeRole_calldata,
+			setAdmin: designer_setAdmin,
+			buildSetAdminCalldata: build_designer_setAdmin_calldata,
+			setEditor: designer_setEditor,
+			buildSetEditorCalldata: build_designer_setEditor_calldata,
+			supportsInterface: designer_supportsInterface,
+			buildSupportsInterfaceCalldata: build_designer_supportsInterface_calldata,
 		},
 		game_token: {
 			approve: game_token_approve,
@@ -1366,12 +1534,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildSafeTransferFromCalldata: build_game_token_safeTransferFrom_calldata,
 			setApprovalForAll: game_token_setApprovalForAll,
 			buildSetApprovalForAllCalldata: build_game_token_setApprovalForAll_calldata,
-			setAdmin: game_token_setAdmin,
-			buildSetAdminCalldata: build_game_token_setAdmin_calldata,
-			setEditor: game_token_setEditor,
-			buildSetEditorCalldata: build_game_token_setEditor_calldata,
-			setPaused: game_token_setPaused,
-			buildSetPausedCalldata: build_game_token_setPaused_calldata,
+			setMintingPaused: game_token_setMintingPaused,
+			buildSetMintingPausedCalldata: build_game_token_setMintingPaused_calldata,
 			supportsInterface: game_token_supportsInterface,
 			buildSupportsInterfaceCalldata: build_game_token_supportsInterface_calldata,
 			symbol: game_token_symbol,

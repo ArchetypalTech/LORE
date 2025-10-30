@@ -40,7 +40,7 @@ export const loreSpinner = spinner({
 
 const files = {
 	scarb: "Scarb.toml",
-	dojo_config: `dojo_${parsed.mode}.toml`,
+	dojo_config: `../../dojo_${parsed.mode}.toml`,
 };
 
 console.log("\n");

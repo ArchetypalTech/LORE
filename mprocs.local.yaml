@@ -10,7 +10,7 @@
 #     cwd: packages/contracts
 #     # shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
 #     # shell: wait-port 5050 && torii --world "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae" --http.cors_origins "*"
-#     shell: wait-port 5050 && torii --version && torii --world "0x5c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01" --http.cors_origins "*" --indexing.contracts erc721:0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649
+#     shell: wait-port 5050 && torii --version && torii --world "0x0189849c1a8851e3ad29a83c92ae7bee9d1e5fb3b9aff33eb61493f402580f1a" --http.cors_origins "*" --indexing.contracts erc721:0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649
 #   katana:
 #     cwd: packages/contracts
 #     shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
@@ -27,7 +27,7 @@ procs:
     cwd: packages/contracts
     # shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
     # shell: wait-port 5050 && torii --world "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae" --http.cors_origins "*"
-    shell: wait-port 5050 && torii --version && torii --world "0x05c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01" --http.cors_origins "*" --indexing.contracts erc721:0x0751d5c13b9bd01786fdc7b887151aa81a09bdb3c46c0df2aea1895faeccda6d
+    shell: wait-port 5050 && torii --version && torii --world "0x0189849c1a8851e3ad29a83c92ae7bee9d1e5fb3b9aff33eb61493f402580f1a" --http.cors_origins "*" --indexing.contracts erc721:0x0751d5c13b9bd01786fdc7b887151aa81a09bdb3c46c0df2aea1895faeccda6d
   katana:
     cwd: packages/contracts
     shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
