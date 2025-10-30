@@ -86,9 +86,9 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceKeyMap::TEST_CLASS_HASH.into()),
             // game_token
-            TestResource::Model(models::token_config::m_PlayerAccount::TEST_CLASS_HASH.into()),
-            TestResource::Model(models::token_config::m_GameTokenInfo::TEST_CLASS_HASH.into()),
-            TestResource::Event(models::token_config::e_GameCreatedEvent::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::game_token_info::m_PlayerGame::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::game_token_info::m_GameTokenInfo::TEST_CLASS_HASH.into()),
+            TestResource::Event(models::game_token_info::e_GameCreatedEvent::TEST_CLASS_HASH.into()),
             // Arcade achievements
             TestResource::Event(achievement::events::index::e_TrophyCreation::TEST_CLASS_HASH.into()),
             TestResource::Event(achievement::events::index::e_TrophyProgression::TEST_CLASS_HASH.into()),

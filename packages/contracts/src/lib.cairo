@@ -41,7 +41,7 @@ pub mod models {
     pub mod player;
     pub mod reactable;
     pub mod trigger;
-    pub mod token_config;
+    pub mod game_token_info;
 }
 
 pub mod types {

@@ -29,9 +29,9 @@ pub struct GameCreatedEvent {
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
-pub struct PlayerAccount {
+pub struct PlayerGame {
     #[key]
-    pub address: ContractAddress,
+    pub player_address: ContractAddress,
     /// Properties ///
     pub current_game_id: u128,
 }
@@ -103,16 +103,16 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
 }
 
 #[generate_trait]
-pub impl PlayerAccountImpl of PlayerAccountTrait {
-    fn current_game_id(world: @WorldStorage, address: ContractAddress) -> u128 {
-        let account: PlayerAccount = world.read_model(address);
-        (account.current_game_id)
+pub impl PlayerGameImpl of PlayerGameTrait {
+    fn current_game_id(world: @WorldStorage, player_address: ContractAddress) -> u128 {
+        let player_game: PlayerGame = world.read_model(player_address);
+        (player_game.current_game_id)
     }
-    fn switch_game_id(ref world: WorldStorage, address: ContractAddress, game_id: u128) {
-        let mut account: PlayerAccount = world.read_model(address);
-        if (account.current_game_id != game_id && game_id != 0) {
-            account.current_game_id = game_id;
-            world.write_model(@account);
+    fn switch_game_id(ref world: WorldStorage, player_address: ContractAddress, game_id: u128) {
+        let mut player_game: PlayerGame = world.read_model(player_address);
+        if (player_game.current_game_id != game_id && game_id != 0) {
+            player_game.current_game_id = game_id;
+            world.write_model(@player_game);
         }
     }
 }
@@ -131,7 +131,7 @@ mod tests {
     };
 
     #[test]
-    fn test_token_config_edit() {
+    fn test_game_token_info_edit() {
         let (mut world, _, prompt, _, player_address_1, _) = helpers::setup_core();
         PlayerImpl::caller_as_player(ref world, player_address_1, 0);
         // create room entities

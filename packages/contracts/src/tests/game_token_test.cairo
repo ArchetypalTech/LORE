@@ -13,7 +13,7 @@ mod tests {
         },
         models::{
             entity::{Entity},
-            token_config::{GameTokenInfo, GameTokenInfoTrait, PlayerAccount, PlayerAccountImpl},
+            game_token_info::{GameTokenInfo, GameTokenInfoTrait, PlayerGame, PlayerGameImpl},
             player::{Player, PlayerImpl},
             area::{Area, AreaComponent},
         },
@@ -56,8 +56,8 @@ mod tests {
         assert_eq!(token_info_1.act_number, 1, "token_info.act_number");
         assert_eq!(token_info_1.progress, 0, "token_info.progress");
         assert_eq!(token_info_1.completed, false, "token_info.completed");
-        let account: PlayerAccount = world.read_model(OWNER());
-        assert_eq!(account.current_game_id, 1, "account.current_game_id");
+        let player_game: PlayerGame = world.read_model(OWNER());
+        assert_eq!(player_game.current_game_id, 1, "player_game.current_game_id");
 
         _mint_token(token, OTHER());
         assert_eq!(token.total_supply(), 2, "total_supply()");
@@ -69,8 +69,8 @@ mod tests {
         assert_eq!(token_info_2.act_number, 1, "token_info.act_number");
         assert_eq!(token_info_2.progress, 0, "token_info.progress");
         assert_eq!(token_info_2.completed, false, "token_info.completed");
-        let account: PlayerAccount = world.read_model(OTHER());
-        assert_eq!(account.current_game_id, 2, "account.current_game_id");
+        let player_game: PlayerGame = world.read_model(OTHER());
+        assert_eq!(player_game.current_game_id, 2, "player_game.current_game_id");
 
         _mint_token(token, OWNER());
         assert_eq!(token.total_supply(), 3, "total_supply()");
@@ -83,8 +83,8 @@ mod tests {
         assert_eq!(token_info_3.act_number, 1, "token_info.act_number");
         assert_eq!(token_info_3.progress, 0, "token_info.progress");
         assert_eq!(token_info_3.completed, false, "token_info.completed");
-        let account: PlayerAccount = world.read_model(OWNER());
-        assert_eq!(account.current_game_id, 3, "account.current_game_id");
+        let player_game: PlayerGame = world.read_model(OWNER());
+        assert_eq!(player_game.current_game_id, 3, "player_game.current_game_id");
     }
 
     #[test]
@@ -169,7 +169,7 @@ mod tests {
         assert_eq!(token.total_supply(), 1, "total_supply()");
         assert_eq!(token.owner_of(game_id_1.into()), player_address_1, "owner_of()");
         // is current game of player
-        assert_eq!(PlayerAccountImpl::current_game_id(@world, player_address_1), game_id_1, "player_1.current_game_id");
+        assert_eq!(PlayerGameImpl::current_game_id(@world, player_address_1), game_id_1, "player_1.current_game_id");
         // player was created
         let player_1: Player = PlayerImpl::get_player(@world, game_id_1).unwrap();
         story_len_1 += 1;
@@ -202,7 +202,7 @@ mod tests {
         let token_info_2: GameTokenInfo = world.read_model(game_id_2);
         assert_eq!(token_info_2.room_name, room_entity.name.clone(), "token room name");
         // is current game of player
-        assert_eq!(PlayerAccountImpl::current_game_id(@world, player_address_2), game_id_2, "player_2.current_game_id");
+        assert_eq!(PlayerGameImpl::current_game_id(@world, player_address_2), game_id_2, "player_2.current_game_id");
         // player was created
         let player_2: Player = PlayerImpl::get_player(@world, game_id_2).unwrap();
         assert_eq!(player_2.address, player_address_2, "player_2.address");
@@ -253,7 +253,7 @@ mod tests {
         assert_eq!(token.total_supply(), 1, "total_supply()");
         assert_eq!(token.owner_of(game_id_1.into()), player_address_1, "owner_of()");
         // is current game of player
-        assert_eq!(PlayerAccountImpl::current_game_id(@world, player_address_1), game_id_1, "current_game_id = 1");
+        assert_eq!(PlayerGameImpl::current_game_id(@world, player_address_1), game_id_1, "current_game_id = 1");
         // player was created
         let player_1: Player = PlayerImpl::get_player(@world, game_id_1).unwrap();
         assert_eq!(player_1.address, player_address_1, "player_1.address");
@@ -270,7 +270,7 @@ mod tests {
         assert_eq!(token.total_supply(), 2, "total_supply()");
         assert_eq!(token.owner_of(game_id_2.into()), player_address_1, "owner_of()");
         // is current game of player
-        assert_eq!(PlayerAccountImpl::current_game_id(@world, player_address_1), game_id_2, "current_game_id = 2");
+        assert_eq!(PlayerGameImpl::current_game_id(@world, player_address_1), game_id_2, "current_game_id = 2");
         // player was created
         let player_2: Player = PlayerImpl::get_player(@world, game_id_2).unwrap();
         assert_eq!(player_2.address, player_address_1, "player_2.address");
@@ -287,7 +287,7 @@ mod tests {
         //
         // switch to game 1...
         prompt.prompt("g_load_game 1", Option::None);
-        assert_eq!(PlayerAccountImpl::current_game_id(@world, player_address_1), game_id_1, "current_game_id = 1 (loaded)");
+        assert_eq!(PlayerGameImpl::current_game_id(@world, player_address_1), game_id_1, "current_game_id = 1 (loaded)");
         prompt.prompt("hello", Option::None);
         prompt.prompt("hello", Option::None);
         let story_len_1: u32 = helpers::player_story_len(@world, game_id_1);
@@ -295,7 +295,7 @@ mod tests {
         //
         // switch to game 2...
         prompt.prompt("g_load_game 2", Option::None);
-        assert_eq!(PlayerAccountImpl::current_game_id(@world, player_address_1), game_id_2, "current_game_id = 2 (loaded)");
+        assert_eq!(PlayerGameImpl::current_game_id(@world, player_address_1), game_id_2, "current_game_id = 2 (loaded)");
         prompt.prompt("hello", Option::None);
         prompt.prompt("hello", Option::None);
         let story_len_2: u32 = helpers::player_story_len(@world, game_id_2);

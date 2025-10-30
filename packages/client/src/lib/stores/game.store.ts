@@ -5,7 +5,7 @@ import { useWalletStore } from "./wallet.store";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
 import { InitDojo } from "../dojo";
-import type { SchemaType, PlayerAccount } from "../dojo_bindings/typescript/models.gen";
+import type { SchemaType, PlayerGame } from "../dojo_bindings/typescript/models.gen";
 
 const {
 	get,
@@ -71,19 +71,19 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				.includeHashedKeys()
 				.withClause(
 					new ClauseBuilder<SchemaType>().keys(
-						["lore-PlayerAccount"],
+						["lore-PlayerGame"],
 						[addAddressPadding(address)]
 					).build()
 				)
-				.withEntityModels(["lore-PlayerAccount"]);
+				.withEntityModels(["lore-PlayerGame"]);
 
 			try {
 				const { sdk } = await InitDojo();
 				const result = await sdk.getEntities({ query });
-				const playerAccount: PlayerAccount | undefined = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount;
-				console.log("useSyncGameId() playerAccount", playerAccount);
-				if (playerAccount) {
-					GameStore().setPlayerGameId(playerAccount.current_game_id);
+				const playerGame: PlayerGame | undefined = result.getItems()[0]?.models?.lore?.PlayerGame as PlayerGame;
+				console.log("useSyncGameId() playerGame", playerGame);
+				if (playerGame) {
+					GameStore().setPlayerGameId(playerGame.current_game_id);
 				} else {
 					sendCommand(`create game`);
 				}

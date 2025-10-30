@@ -12,7 +12,7 @@ use lore::{
         components::{Component},
         action::{ActionImpl},
         condition::{ConditionImpl},
-        token_config::{GameTokenInfo, PlayerAccountTrait},
+        game_token_info::{GameTokenInfo, PlayerGameTrait},
     },
     types::command_type::{
         Command, CommandImpl,
@@ -341,7 +341,7 @@ fn system_command(
                 return Result::Err(Error::NotYourGame);
             }
             // switch game...
-            PlayerAccountTrait::switch_game_id(ref world, player_address, game_id.low);
+            PlayerGameTrait::switch_game_id(ref world, player_address, game_id.low);
             player.log_sys(ref world, format!("+sys+Loaded game-{:?}", game_id));
             return Result::Ok(());
         }

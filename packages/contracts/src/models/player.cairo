@@ -9,7 +9,7 @@ use lore::{
         container::{Container, ContainerComponent},
         area::{Area, AreaComponent},
         description_text::{DescriptionText},
-        token_config::{GameTokenInfoTrait},
+        game_token_info::{GameTokenInfoTrait},
     },
     types::{command_type::Command},
     constants::errors::Error,
@@ -404,7 +404,7 @@ mod tests {
         systems::prompt::{IPromptDispatcherTrait},
         models::{
             entity::{Entity, EntityImpl},
-            token_config::{GameTokenInfo},
+            game_token_info::{GameTokenInfo},
             reactable::{Reactable, ReactableComponent},
             description_text::{DescriptionText},
             area::{Area, AreaComponent},

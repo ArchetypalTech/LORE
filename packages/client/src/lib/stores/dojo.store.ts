@@ -11,7 +11,7 @@ import type {
 	PlayerStory,
 	StoryLine,
 	SchemaType,
-	PlayerAccount,
+	PlayerGame,
 } from "../dojo_bindings/typescript/models.gen";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
@@ -205,10 +205,10 @@ const onReponseData = (
     }
 
 		// if the player's game was created or has changed
-		const playerAccount: PlayerAccount = responseData.PlayerAccount as PlayerAccount;
-    if (playerAccount && playerAccount.current_game_id !== undefined) {
-			if (BigInt(playerAccount.address) === BigInt(getPlayerAddress())) {
-				GameStore().setPlayerGameId(playerAccount.current_game_id);
+		const playerGame: PlayerGame = responseData.PlayerGame as PlayerGame;
+    if (playerGame && playerGame.current_game_id !== undefined) {
+			if (BigInt(playerGame.player_address) === BigInt(getPlayerAddress())) {
+				GameStore().setPlayerGameId(playerGame.current_game_id);
 				sendCommand("_current_game");
 			}
     }

@@ -127,9 +127,9 @@ pub mod game_token {
     //-----------------------------------
 
     use lore::models::{
-        token_config::{
+        game_token_info::{
             GameTokenInfo, GameTokenInfoTrait,
-            PlayerAccountTrait,
+            PlayerGameTrait,
             GameCreatedEvent,
         },
     };
@@ -202,7 +202,7 @@ pub mod game_token {
             });
 
             // switch to this game
-            PlayerAccountTrait::switch_game_id(ref world, recipient, token_id);
+            PlayerGameTrait::switch_game_id(ref world, recipient, token_id);
 
             // event...
             world.emit_event(@GameCreatedEvent{
