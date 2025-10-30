@@ -18,13 +18,13 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         player::{PlayerStory, StoryLine},
+        dictionary::{DictionaryTrait},
     },
     types::{
         command_type::{IntoTokenTypeFelt252},
     },
     constants::{errors::{}},
     lib::{
-        dictionary::{initialize_dictionary},
         utils::{ByteArrayTraitExt, SerializedAppend},
         dns::{DnsTrait},
     },
@@ -62,7 +62,7 @@ fn namespace_def() -> NamespaceDef {
     let ndef = NamespaceDef {
         namespace: "lore",
         resources: [
-            TestResource::Model(models::index::m_Dict::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::dictionary::m_Dict::TEST_CLASS_HASH.into()),
             TestResource::Model(models::player::m_Player::TEST_CLASS_HASH.into()),
             TestResource::Model(models::player::m_PlayerStory::TEST_CLASS_HASH.into()),
             TestResource::Model(models::player::m_StoryLine::TEST_CLASS_HASH.into()),
@@ -161,7 +161,7 @@ pub fn setup_core() -> (
     // burn entity 0 value
     EntityImpl::create_entity(ref world, "entity_0");
 
-    initialize_dictionary(world);
+    DictionaryTrait::initialize_dictionary(ref world);
 
     (world, designer, prompt, game_token, player_1, player_2)
 }

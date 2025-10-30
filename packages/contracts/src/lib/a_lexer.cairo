@@ -1,7 +1,7 @@
 use dojo::{world::WorldStorage};
 use lore::{
     models::{
-        index::{Dict},
+        dictionary::{Dict, DictionaryTrait},
         entity::{Entity, EntityImpl},
         player::{Player, PlayerImpl},
     },
@@ -14,7 +14,8 @@ use lore::{
 
 #[starknet::interface]
 pub trait ILexer<T> {
-    fn parse(self: @T, message: ByteArray, world: WorldStorage, player: Player) -> Result<Command, Error>;
+    fn initialize_dictionary(self: @T, world: WorldStorage);
+    fn parse(self: @T, world: WorldStorage, message: ByteArray, player: Player) -> Result<Command, Error>;
 }
 
 #[dojo::library]
@@ -23,17 +24,27 @@ pub mod lexer {
     use dojo::{world::WorldStorage};
 
     use lore::{
-        models::player::{Player},
+        models::{
+            dictionary::{DictionaryTrait},
+            player::{Player},
+        },
         types::command_type::{Command},
         constants::errors::Error,
     };
 
     #[abi(embed_v0)]
     impl LexerImpl of ILexer<ContractState> {
+        fn initialize_dictionary(self: @ContractState,
+            mut world: WorldStorage,
+        ) {
+            DictionaryTrait::initialize_dictionary(ref world)
+        }
         fn parse(self: @ContractState,
-            message: ByteArray, world: WorldStorage, player: Player,
+            world: WorldStorage,
+            message: ByteArray,
+            player: Player,
         ) -> Result<Command, Error> {
-            LexerTrait::parse(message, world, player)
+            LexerTrait::parse(@world, message, player)
         }
     }
 }
@@ -47,7 +58,6 @@ use core::array::{ArrayTrait, ArrayImpl, Array};
 use lore::{
     lib::{
         utils::{ByteArrayTraitExt, ClousureTraitImp},
-        dictionary::{get_dict_entry, initialize_dictionary},
     },
 };
 
@@ -55,9 +65,10 @@ use lore::{
 pub impl LexerImpl of LexerTrait {
 
     fn parse(
-        message: ByteArray, world: WorldStorage, player: Player,
+        world: @WorldStorage,
+        message: ByteArray,
+        player: Player,
     ) -> Result<Command, Error> {
-        initialize_dictionary(world);
         let words: Array<ByteArray> = message.split_into_words();
         let lowercased: Array<ByteArray> = Self::lowercase(words.clone());
         let tokens: Array<Token> = Self::match_tokens(world, lowercased);
@@ -75,7 +86,7 @@ pub impl LexerImpl of LexerTrait {
         Result::Ok(command)
     }
 
-    fn match_tokens(world: WorldStorage, words: Array<ByteArray>) -> Array<Token> {
+    fn match_tokens(world: @WorldStorage, words: Array<ByteArray>) -> Array<Token> {
         let mut tokens: Array<Token> = array![];
         for i in 0..words.len() {
             // iterate over the words in the string and find a dictionary match
@@ -86,7 +97,7 @@ pub impl LexerImpl of LexerTrait {
                 token_value: 0,
                 target: 0,
             };
-            let dict_entry: Option<Dict> = get_dict_entry(world, words[i].clone());
+            let dict_entry: Option<Dict> = world.get_dict_entry(words[i].clone());
             if dict_entry.is_some() {
                 let dict_entry: Dict = dict_entry.unwrap();
                 token =
@@ -103,9 +114,9 @@ pub impl LexerImpl of LexerTrait {
         tokens
     }
 
-    fn match_player_context(world: WorldStorage, player: Player, mut command: Command) -> Command {
+    fn match_player_context(world: @WorldStorage, player: Player, mut command: Command) -> Command {
         // get player for their context (room + room objects + inventory)
-        let context: Array<Entity> = player.get_full_context(@world);
+        let context: Array<Entity> = player.get_full_context(world);
         let mut newTokens: Array<Token> = array![];
         for i in 0..command.tokens.len() {
             let mut token: Token = command.tokens.at(i).clone();
@@ -127,7 +138,7 @@ pub impl LexerImpl of LexerTrait {
         command
     }
 
-    fn post_process_command(world: WorldStorage, player: Player, mut command: Command) -> Command {
+    fn post_process_command(world: @WorldStorage, player: Player, mut command: Command) -> Command {
         // here we do fancy stuff
         // when there is a preposition, can we assume the next token is a noun? we know more about
         // the context now and what objects we recognize. Do we need to figure out adjectives.
@@ -157,7 +168,10 @@ pub impl LexerImpl of LexerTrait {
 mod tests {
     use super::{LexerTrait};
     use lore::{
-        models::player::{Player, PlayerImpl},
+        models::{
+            player::{Player, PlayerImpl},
+            dictionary::{DictionaryTrait},
+        },
         types::command_type::{
             Command, CommandImpl,
             Token, TokenType,
@@ -165,7 +179,6 @@ mod tests {
         },
         lib::{
             level_test::create_test_level,
-            dictionary::{add_to_dictionary},
         },
         constants::errors::Error,
         tests::helpers,
@@ -180,7 +193,7 @@ mod tests {
         let game_id: u128 = 0;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(ref world, 2826);
-        let _command: Result<Command, Error> = LexerTrait::parse(promptText, world, player);
+        let _command: Result<Command, Error> = LexerTrait::parse(@world, promptText, player);
         // println!("command: {:?}", command);
     // TODO: finish writing test
     // let prepositionToken: felt252 = TokenType::Preposition.into();
@@ -200,7 +213,7 @@ mod tests {
         player.move_to_room(ref world, 2826);
 
         // Parse command
-        let g_command: Result<Command, Error> = LexerTrait::parse(prompt_text, world, player);
+        let g_command: Result<Command, Error> = LexerTrait::parse(@world, prompt_text, player);
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command: Command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command
@@ -223,10 +236,10 @@ mod tests {
         let game_id: u128 = 0;
         let player: Player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
         player.move_to_room(ref world, 2826);
-        let _ = add_to_dictionary(world, expected_noun.clone(), TokenType::Noun, 2826);
+        let _ = world.add_to_dictionary(expected_noun.clone(), TokenType::Noun, 2826);
 
         // Parse command
-        let g_command: Result<Command, Error> = LexerTrait::parse(prompt_text, world, player);
+        let g_command: Result<Command, Error> = LexerTrait::parse(@world, prompt_text, player);
         assert!(g_command.is_ok(), "Command parsing should succeed");
         let command: Command = g_command.unwrap(); // Safely unwrap since we assert it is Ok
         // Get verbs from the parsed command

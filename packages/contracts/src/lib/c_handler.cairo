@@ -21,9 +21,12 @@ use lore::{
     },
     lib::{
         utils::ByteArrayTraitExt,
-        dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level},
-        dns::{DnsTrait, IGameTokenDispatcherTrait},
+        dns::{
+            DnsTrait,
+            IGameTokenDispatcherTrait,
+            ILexerDispatcherTrait,
+        },
     },
     constants::errors::Error,
 };
@@ -242,23 +245,6 @@ pub fn handle_command(
     result
 }
 
-pub fn init_system_dictionary(world: WorldStorage) {
-    add_to_dictionary(world, "system_initialized", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_debug", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_move", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_init_dict", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_create_game", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_load_game", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_game_data", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_player", TokenType::System, 2).unwrap();
-}
-
 fn system_command(
     command: @Command, ref world: WorldStorage, ref player: Player,
 ) -> Result<(), Error> {
@@ -302,8 +288,7 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_init_dict") {
-            init_dictionary(world);
-            init_system_dictionary(world);
+            world.lexer_dispatcher().initialize_dictionary(world);
             player.log_sys(ref world, "+sys+dictionary re-initialized");
             return Result::Ok(());
         }

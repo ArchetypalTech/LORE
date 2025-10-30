@@ -12,7 +12,6 @@ pub mod constants {
 
 pub mod lib {
     pub mod a_lexer;
-    pub mod dictionary;
     pub mod c_handler;
     pub mod random;
     pub mod utils;
@@ -31,6 +30,7 @@ pub mod models {
     pub mod condition;
     pub mod container;
     pub mod description_text;
+    pub mod dictionary;
     pub mod effect;
     pub mod entity;
     pub mod exit;

@@ -34,11 +34,8 @@ pub mod prompt {
         pub const NO_PLAYER_COMPONENT: felt252  = 'PROMPT: No Player component';
     }
 
-    fn dojo_init(ref self: ContractState) {
-        // TODO: move initializations here
-        // let mut world: WorldStorage = self.world(@"lore");
-        // init_dictionary(world);
-    }
+    // fn dojo_init(ref self: ContractState) {
+    // }
 
     #[abi(embed_v0)]
     pub impl PromptImpl of IPrompt<ContractState> {
@@ -50,7 +47,7 @@ pub mod prompt {
             // empty prompt, do nothing (good to initialize a game)
             if (cmd.len() > 0) {
                 player.log_command(ref world, cmd.clone());
-                match (world.lexer_dispatcher().parse(cmd, world, player)) {
+                match (world.lexer_dispatcher().parse(world, cmd, player)) {
                     Result::Ok(result) => {
                         let res: Result<(), Error> = handle_command(@result, ref world, ref player);
                         if !res.is_ok() {

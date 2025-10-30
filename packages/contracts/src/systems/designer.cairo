@@ -57,7 +57,7 @@ pub mod designer {
     use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::{
         models::{
-            index::{Dict},
+            dictionary::{Dict, DictionaryImpl},
             admin::{AccountPermissions, AccountPermissionsTrait},
             entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
             description_text::{DescriptionText},
@@ -77,9 +77,9 @@ pub mod designer {
             command_type::TokenType,
         },
         lib::{
-            dictionary::{add_to_dictionary, get_dict_entry},
             utils::{ByteArrayTraitExt},
             variable_property_helper::{VariablePropertyHelper},
+            dns::{DnsTrait, ILexerDispatcherTrait},
         },
         constants::errors::{Error},
     };
@@ -93,6 +93,7 @@ pub mod designer {
     fn dojo_init(ref self: ContractState) {
         let mut world: WorldStorage = self.world(@"lore");
         self._register_property_registry(ref world, array![true]);
+        world.lexer_dispatcher().initialize_dictionary(world);
     }
 
     #[abi(embed_v0)]
@@ -111,9 +112,9 @@ pub mod designer {
             for o in t {
                 self._assert_can_edit_entity(@world, @config, o.inst);
                 for alt_name in o.alt_names.clone() {
-                    let pos_entry: Option<Dict> = get_dict_entry(world, alt_name.clone());
+                    let pos_entry: Option<Dict> = world.get_dict_entry(alt_name.clone());
                     if pos_entry.is_none() {
-                        add_to_dictionary(world, alt_name.clone(), TokenType::Noun, 1).unwrap();
+                        world.add_to_dictionary(alt_name.clone(), TokenType::Noun, 1).unwrap();
                     }
                 };
                 // TODO LATER ON
