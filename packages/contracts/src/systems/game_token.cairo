@@ -132,6 +132,9 @@ pub mod game_token {
             PlayerGameTrait,
             GameCreatedEvent,
         },
+        trail_token_info::{
+            TrailProgressTrait,
+        },
     };
     use lore::constants::token_metadata::{orug_metadata, game_metadata};
     use lore::lib::{
@@ -197,8 +200,6 @@ pub mod game_token {
                 seed,
                 act_number: 1,
                 room_name: "The Void",
-                progress: 0,
-                completed: false,
             });
 
             // switch to this game
@@ -206,7 +207,6 @@ pub mod game_token {
 
             // event...
             world.emit_event(@GameCreatedEvent{
-                contract_address,
                 game_id: token_id,
                 recipient,
             });
@@ -322,7 +322,8 @@ pub mod game_token {
             let self: @ContractState = self.get_contract(); // get the component's contract state
             let mut world: WorldStorage = self.world_default();
             // attributes and metadata
-            let token_info: GameTokenInfo = world.read_model(token_id.low);
+            let game_id: u128 = token_id.low;
+            let token_info: GameTokenInfo = world.read_model(game_id);
             let mut attributes: Span<Attribute> = array![
                 Attribute { 
                     key: "Act",
@@ -334,15 +335,15 @@ pub mod game_token {
                 },
                 Attribute {
                     key: "Progress",
-                    value: format!("{}%25", token_info.progress),
+                    value: format!("{}%25", world.current_trail_progress(token_info.game_id, 0)),
                 },
                 Attribute {
                     key: "Completed",
-                    value: ByteArrayTraitExt::byte_array_from_bool(token_info.completed),
+                    value: ByteArrayTraitExt::byte_array_from_bool(world.has_finished_trail(token_info.game_id, 0)),
                 },
                 Attribute {
                     key: "Vitality",
-                    value: if GameTokenInfoTrait::is_dead(@world, token_id.low) {"Dead"} else {"Alive"},
+                    value: if GameTokenInfoTrait::is_dead(@world, game_id) {"Dead"} else {"Alive"},
                 },
             ].span();
             let mut additional_metadata: Span<Attribute> = array![
@@ -354,7 +355,7 @@ pub mod game_token {
             // https://docs.opensea.io/docs/metadata-standards#metadata-structure
             let metadata: TokenMetadata = TokenMetadata {
                 token_id,
-                name: format!("{} #{}", game_metadata::TOKEN_NAME(), token_id.low),
+                name: format!("{} #{}", game_metadata::TOKEN_NAME(), game_id),
                 description: orug_metadata::DESCRIPTION(),
                 image: Option::Some(orug_metadata::CONTRACT_IMAGE()),
                 image_data: Option::None,

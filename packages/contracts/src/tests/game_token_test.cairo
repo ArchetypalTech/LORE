@@ -7,9 +7,10 @@ mod tests {
     };
     use lore::{
         systems::{
-            game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
             designer::{IDesignerDispatcherTrait},
             prompt::{IPromptDispatcherTrait},
+            game_token::{IGameTokenDispatcherTrait},
+            trail_token::{ITrailTokenDispatcherTrait},
         },
         models::{
             entity::{Entity},
@@ -43,49 +44,6 @@ mod tests {
         assert_eq!(sys.game_token.symbol(), game_metadata::TOKEN_SYMBOL(), "wrong symbol");
     }
 
-    #[test]
-    fn test_token_mint() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-
-        _mint_token(ref sys, OWNER());
-        assert_eq!(sys.game_token.total_supply(), 1, "total_supply()");
-        assert_eq!(sys.game_token.owner_of(1), OWNER(), "owner_of()");
-        assert_eq!(sys.game_token.balance_of(OWNER()), 1, "balance_of()");
-        let token_info_1: GameTokenInfo = sys.world.read_model(1);
-        assert_ne!(token_info_1.seed, 0, "token_info.seed");
-        assert_eq!(token_info_1.act_number, 1, "token_info.act_number");
-        assert_eq!(token_info_1.progress, 0, "token_info.progress");
-        assert_eq!(token_info_1.completed, false, "token_info.completed");
-        let player_game: PlayerGame = sys.world.read_model(OWNER());
-        assert_eq!(player_game.current_game_id, 1, "player_game.current_game_id");
-
-        _mint_token(ref sys, OTHER());
-        assert_eq!(sys.game_token.total_supply(), 2, "total_supply()");
-        assert_eq!(sys.game_token.owner_of(2), OTHER(), "owner_of(2)");
-        assert_eq!(sys.game_token.balance_of(OTHER()), 1, "balance_of())");
-        let token_info_2: GameTokenInfo = sys.world.read_model(2);
-        assert_ne!(token_info_2.seed, 0, "token_info.seed");
-        assert_ne!(token_info_2.seed, token_info_1.seed, "token_info.seed");
-        assert_eq!(token_info_2.act_number, 1, "token_info.act_number");
-        assert_eq!(token_info_2.progress, 0, "token_info.progress");
-        assert_eq!(token_info_2.completed, false, "token_info.completed");
-        let player_game: PlayerGame = sys.world.read_model(OTHER());
-        assert_eq!(player_game.current_game_id, 2, "player_game.current_game_id");
-
-        _mint_token(ref sys, OWNER());
-        assert_eq!(sys.game_token.total_supply(), 3, "total_supply()");
-        assert_eq!(sys.game_token.owner_of(3), OWNER(), "owner_of()");
-        assert_eq!(sys.game_token.balance_of(OWNER()), 2, "balance_of()");
-        let token_info_3: GameTokenInfo = sys.world.read_model(3);
-        assert_ne!(token_info_3.seed, token_info_1.seed, "token_info.seed");
-        assert_ne!(token_info_3.seed, token_info_2.seed, "token_info.seed");
-        assert_ne!(token_info_3.seed, 0, "token_info.seed");
-        assert_eq!(token_info_3.act_number, 1, "token_info.act_number");
-        assert_eq!(token_info_3.progress, 0, "token_info.progress");
-        assert_eq!(token_info_3.completed, false, "token_info.completed");
-        let player_game: PlayerGame = sys.world.read_model(OWNER());
-        assert_eq!(player_game.current_game_id, 3, "player_game.current_game_id");
-    }
 
     #[test]
     fn test_token_token_uri() {
@@ -95,6 +53,11 @@ mod tests {
         assert_gt!(uri.len(), 1000, "token_uri.len()");
         println!("TOKEN URI: [{}]", uri);
     }
+
+
+    //-----------------------------------
+    // admin functions
+    //
 
     #[test]
     fn test_token_set_minting_paused() {
@@ -125,6 +88,55 @@ mod tests {
         sys.game_token.set_minting_paused(true);
     }
 
+
+    //-----------------------------------
+    // minting
+    //
+
+    #[test]
+    fn test_token_mint() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+
+        _mint_token(ref sys, OWNER());
+        assert_eq!(sys.game_token.total_supply(), 1, "token_1");
+        assert_eq!(sys.game_token.owner_of(1), OWNER(), "token_1");
+        assert_eq!(sys.game_token.balance_of(OWNER()), 1, "token_1");
+        let token_info_1: GameTokenInfo = sys.world.read_model(1);
+        assert_ne!(token_info_1.seed, 0, "token_1");
+        assert_eq!(token_info_1.act_number, 1, "token_1");
+        assert_eq!(sys.world.current_game_progress(1), 0, "token_1");
+        assert!(!sys.world.has_finished_game(1), "token_1");
+        let player_game: PlayerGame = sys.world.read_model(OWNER());
+        assert_eq!(player_game.current_game_id, 1, "token_1");
+
+        _mint_token(ref sys, OTHER());
+        assert_eq!(sys.game_token.total_supply(), 2, "token_2");
+        assert_eq!(sys.game_token.owner_of(2), OTHER(), "token_2");
+        assert_eq!(sys.game_token.balance_of(OTHER()), 1, "token_2");
+        let token_info_2: GameTokenInfo = sys.world.read_model(2);
+        assert_ne!(token_info_2.seed, 0, "token_2");
+        assert_ne!(token_info_2.seed, token_info_1.seed, "token_2");
+        assert_eq!(token_info_2.act_number, 1, "token_2");
+        assert_eq!(sys.world.current_game_progress(2), 0, "token_2");
+        assert!(!sys.world.has_finished_game(2), "token_2");
+        let player_game: PlayerGame = sys.world.read_model(OTHER());
+        assert_eq!(player_game.current_game_id, 2, "token_2");
+
+        _mint_token(ref sys, OWNER());
+        assert_eq!(sys.game_token.total_supply(), 3, "token_3");
+        assert_eq!(sys.game_token.owner_of(3), OWNER(), "token_3");
+        assert_eq!(sys.game_token.balance_of(OWNER()), 2, "token_3");
+        let token_info_3: GameTokenInfo = sys.world.read_model(3);
+        assert_ne!(token_info_3.seed, token_info_1.seed, "token_3");
+        assert_ne!(token_info_3.seed, token_info_2.seed, "token_3");
+        assert_ne!(token_info_3.seed, 0, "token_3");
+        assert_eq!(token_info_3.act_number, 1, "token_3");
+        assert_eq!(sys.world.current_game_progress(3), 0, "token_3");
+        assert!(!sys.world.has_finished_game(3), "token_3");
+        let player_game: PlayerGame = sys.world.read_model(OWNER());
+        assert_eq!(player_game.current_game_id, 3, "token_3");
+    }
+
     #[test]
     fn test_token_winner_becomes_editor() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
@@ -147,6 +159,9 @@ mod tests {
         GameTokenInfoTrait::set_room(ref sys.world, game_id_1, *room_entity_1.inst);
         assert!(GameTokenInfoTrait::has_finished_game(@sys.world, game_id_1), "has_finished_game");
         assert!(AccessTrait::is_editor(@sys.world, OTHER()), "editor");
+        // can mint trail..
+        helpers::set_caller(OTHER());
+        sys.trail_token.create_trail(OTHER());
         // can edit...
         helpers::set_caller(OTHER());
         sys.designer.create_entity(array![helpers::create_new_entity(1, "entity_1")]);

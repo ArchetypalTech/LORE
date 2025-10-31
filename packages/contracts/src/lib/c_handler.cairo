@@ -13,6 +13,7 @@ use lore::{
         action::{ActionImpl},
         condition::{ConditionImpl},
         game_token_info::{GameTokenInfo, PlayerGameTrait},
+        trail_token_info::{TrailProgress, MAIN_TRAIL_ID},
     },
     types::command_type::{
         Command, CommandImpl,
@@ -351,11 +352,12 @@ fn system_command(
         }
         if (system_command == "g_game_data") {
             let token_info: GameTokenInfo = world.read_model(player.game_id);
+            let trail_progress: TrailProgress = world.read_model((player.game_id, MAIN_TRAIL_ID),);
             player.log_sys(ref world, format!("+sys+game-{:?}", token_info.game_id));
             player.log_sys(ref world, format!("+sys+room: {}", token_info.room_name));
             player.log_sys(ref world, format!("+sys+act: {}", token_info.act_number));
-            player.log_sys(ref world, format!("+sys+progress: {}%25", token_info.progress));
-            player.log_sys(ref world, format!("+sys+completed: {}", ByteArrayTraitExt::byte_array_from_bool(token_info.completed)));
+            player.log_sys(ref world, format!("+sys+progress: {}%25", trail_progress.percentage));
+            player.log_sys(ref world, format!("+sys+completed: {}", ByteArrayTraitExt::byte_array_from_bool(trail_progress.completed)));
             return Result::Ok(());
         }
         if (system_command == "g_player") {

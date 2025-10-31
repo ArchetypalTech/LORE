@@ -94,6 +94,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Event(models::game_token_info::e_GameCreatedEvent::TEST_CLASS_HASH.into()),
             // trail_token
             TestResource::Model(models::trail_token_info::m_TrailTokenInfo::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::trail_token_info::m_TrailProgress::TEST_CLASS_HASH.into()),
             TestResource::Event(models::trail_token_info::e_TrailCreatedEvent::TEST_CLASS_HASH.into()),
             // Arcade achievements
             TestResource::Event(achievement::events::index::e_TrophyCreation::TEST_CLASS_HASH.into()),

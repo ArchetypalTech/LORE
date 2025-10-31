@@ -128,7 +128,7 @@ pub mod trail_token {
 
     use lore::models::{
         trail_token_info::{
-            TrailTokenInfo, TrailTokenInfoTrait,
+            TrailTokenInfo,
             TrailCreatedEvent,
         },
     };
@@ -203,7 +203,6 @@ pub mod trail_token {
 
             // event...
             world.emit_event(@TrailCreatedEvent{
-                contract_address,
                 trail_id: token_id,
                 recipient,
             });

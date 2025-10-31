@@ -12,19 +12,6 @@ pub struct GameTokenInfo {
     /// game progress indicators
     pub room_name: ByteArray,
     pub act_number: u8,
-    pub progress: u8, // 0-100
-    pub completed: bool,
-}
-
-#[derive(Copy, Drop, Serde)]
-#[dojo::event(historical:false)]
-pub struct GameCreatedEvent {
-    #[key]
-    pub contract_address: ContractAddress,
-    #[key]
-    pub game_id: u128,
-    /// Properties ///
-    pub recipient: ContractAddress,
 }
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
@@ -38,6 +25,19 @@ pub struct PlayerGame {
 
 
 //---------------------------------
+// events
+//
+#[derive(Copy, Drop, Serde)]
+#[dojo::event(historical:false)]
+pub struct GameCreatedEvent {
+    #[key]
+    pub game_id: u128,
+    /// Properties ///
+    pub recipient: ContractAddress,
+}
+
+
+//---------------------------------
 // Model Traits
 //
 use lore::lib::dns::{DnsTrait, IGameTokenDispatcherTrait};
@@ -45,6 +45,7 @@ use lore::models::{
     entity::{Entity},
     area::{Area, AreaComponent},
     player::{Player, PlayerImpl},
+    trail_token_info::{TrailProgressTrait, MAIN_TRAIL_ID},
 };
 use lore::lib::{
     access::{AccessTrait},
@@ -59,39 +60,34 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
         let area: Option<Area> = AreaComponent::get_component(@world, room_inst, game_id);
         // update token info
         let mut game_info: GameTokenInfo = world.read_model(game_id);
-        game_info.room_name = room_entity.name;
-        match area {
-            Option::Some(area) => {
-                // emit achievement
-                let trophy: Trophy = TrophyProgressTrait::on_enter_room(@world, room_inst);
-                // find change in act
-                let act_number: u8 =
-                    if (trophy == Trophy::Marshes) {2}
-                    else if (trophy == Trophy::ForkstoneVerge) {3}
-                    else {1};
-                // update token info
-                game_info.act_number = core::cmp::max(game_info.act_number, act_number);
-                game_info.progress = core::cmp::min(core::cmp::max(game_info.progress, area.progress_percentage), 100);
-                let completed: bool = (game_info.progress == 100);
-                if (completed && !game_info.completed) {
-                    // completed for the first time: owner becomes editor
-                    let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
-                    AccessTrait::set_is_editor(ref world, owner, true);
-                }
-                game_info.completed = completed;
-            },
-            Option::None => {
-                game_info.act_number = 0;
-                game_info.progress = 0;
-                game_info.completed = false;
+        if let Option::Some(area) = area {
+            // emit achievement
+            let trophy: Trophy = TrophyProgressTrait::on_enter_room(@world, room_inst);
+            // find change in act
+            let act_number: u8 =
+                if (trophy == Trophy::Marshes) {2}
+                else if (trophy == Trophy::ForkstoneVerge) {3}
+                else {1};
+            // update token info
+            game_info.room_name = room_entity.name;
+            game_info.act_number = core::cmp::max(game_info.act_number, act_number);
+            // update progress
+            let completed_now: bool = world.set_trail_progress(game_id, MAIN_TRAIL_ID, area.progress_percentage);
+            if (completed_now) {
+                // completed for the first time: owner becomes editor
+                let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
+                AccessTrait::set_is_editor(ref world, owner, true);
             }
+            // store!
+            world.write_model(@game_info);
+            world.game_token_dispatcher().update_token_metadata(game_id.into());
         };
-        world.write_model(@game_info);
-        world.game_token_dispatcher().update_token_metadata(game_id.into());
     }
-    fn has_finished_game(world: @WorldStorage, game_id: u128) -> bool {
-        let game_info: GameTokenInfo = world.read_model(game_id);
-        (game_info.completed)
+    fn current_game_progress(self: @WorldStorage, game_id: u128) -> u8 {
+        (self.current_trail_progress(game_id, MAIN_TRAIL_ID))
+    }
+    fn has_finished_game(self: @WorldStorage, game_id: u128) -> bool {
+        (self.has_finished_trail(game_id, MAIN_TRAIL_ID))
     }
     fn is_dead(world: @WorldStorage, game_id: u128) -> bool {
         let player: Option<Player> = PlayerImpl::get_player(world, game_id);
@@ -162,35 +158,31 @@ mod tests {
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_1.name.clone(), "set room");
         assert_eq!(token_info.act_number, 1, "set room");
-        assert_eq!(token_info.progress, 10, "set room");
-        assert_eq!(token_info.completed, false, "set room");
-        assert!(!GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "set room");
-        //  
+        assert_eq!(sys.world.current_game_progress(game_id), 10, "set room");
+        assert!(!sys.world.has_finished_game(game_id), "set room");
+        //
         // new act
         GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_2.inst);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_2.name.clone(), "new act");
         assert_eq!(token_info.act_number, 2, "new act");
-        assert_eq!(token_info.progress, 50, "new act");
-        assert_eq!(token_info.completed, false, "new act");
-        assert!(!GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "new act");
+        assert_eq!(sys.world.current_game_progress(game_id), 50, "new act");
+        assert!(!sys.world.has_finished_game(game_id), "new act");
         //
         // back one room
         GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_1.inst);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_1.name.clone(), "back one room");
         assert_eq!(token_info.act_number, 2, "back one room");
-        assert_eq!(token_info.progress, 50, "back one room");
-        assert_eq!(token_info.completed, false, "back one room");
-        assert!(!GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "back one room");
+        assert_eq!(sys.world.current_game_progress(game_id), 50, "back one room");
+        assert!(!sys.world.has_finished_game(game_id), "back one room");
         //
         // finish...
         GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_3.inst);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_3.name.clone(), "finished");
         assert_eq!(token_info.act_number, 3, "finished");
-        assert_eq!(token_info.progress, 100, "finished");
-        assert_eq!(token_info.completed, true, "finished");
-        assert!(GameTokenInfoTrait::has_finished_game(@sys.world, game_id), "finished");
+        assert_eq!(sys.world.current_game_progress(game_id), 100, "finished");
+        assert!(sys.world.has_finished_game(game_id), "finished");
     }
 }

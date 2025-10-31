@@ -249,7 +249,7 @@ pub fn get_action_token(
 
 #[cfg(test)]
 pub mod tests {
-    use starknet::ContractAddress;
+    // use starknet::ContractAddress;
     use dojo::{world::WorldStorage, model::ModelStorage};
     use super::*;
     use lore::tests::helpers;
@@ -262,19 +262,19 @@ pub mod tests {
     };
 
     pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252, new_entry: ByteArray) -> Reactable {
-        let descr1 = DescriptionText { inst, key: 0, text: "hello" };
-        let descr2 = DescriptionText { inst, key: 1, text: "world" };
-        let descr3 = DescriptionText { inst, key: 2, text: "how big is a rock" };
-        let descr4 = DescriptionText { inst, key: 3, text: "what's up with the rock" };
-        let descr5 = DescriptionText { inst, key: 4, text: "let's talk about the rock" };
-        let descr6 = DescriptionText { inst, key: 5, text: "the rock is from the moon" };
+        let descr1: DescriptionText = DescriptionText { inst, key: 0, text: "hello" };
+        let descr2: DescriptionText = DescriptionText { inst, key: 1, text: "world" };
+        let descr3: DescriptionText = DescriptionText { inst, key: 2, text: "how big is a rock" };
+        let descr4: DescriptionText = DescriptionText { inst, key: 3, text: "what's up with the rock" };
+        let descr5: DescriptionText = DescriptionText { inst, key: 4, text: "let's talk about the rock" };
+        let descr6: DescriptionText = DescriptionText { inst, key: 5, text: "the rock is from the moon" };
         world.write_model(@descr1);
         world.write_model(@descr2);
         world.write_model(@descr3);
         world.write_model(@descr4);
         world.write_model(@descr5);
         world.write_model(@descr6);
-        let prefab = Reactable {
+        let prefab: Reactable = Reactable {
             inst,
             is_reactable: true,
             is_visible: true,
@@ -308,14 +308,14 @@ pub mod tests {
     
     fn Reactable_create_prefab_world() -> (Reactable, WorldStorage) {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        let prefab = Reactable_create_prefab(ref sys.world, 42, "");
+        let prefab: Reactable = Reactable_create_prefab(ref sys.world, 42, "");
         (prefab, sys.world)
     }
 
     #[test]
     fn Reactable_test_create_reactable() {
         // Create a test command with g_command system token
-        let mut command = Command {
+        let mut command: Command = Command {
             command_id: 1,
             text: "look tower",
             words: array!["look", "tower"],
@@ -361,7 +361,7 @@ pub mod tests {
         let (prefab, world) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
-        let res = ReactableImpl::get_specific_description(@i, idx, world, 0);
+        let res: Option<ByteArray> = ReactableImpl::get_specific_description(@i, idx, world, 0);
         assert(res.is_some(), 'description should be some');
         assert(res.unwrap() == "the rock is from the moon", 'description should be the moon');
     }
