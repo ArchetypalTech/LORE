@@ -142,7 +142,8 @@ pub mod trail_token {
     use nft_combo::utils::renderer::{Attribute};
 
     mod Errors {
-        pub const INVALID_CALLER: felt252   = 'ORUG: Invalid caller';
+        pub const INVALID_CALLER: felt252   = 'TRAIL: Invalid caller';
+        pub const NOT_EDITOR: felt252       = 'TRAIL: Not editor';
     }
 
     fn dojo_init(ref self: ContractState) {
@@ -176,6 +177,9 @@ pub mod trail_token {
     impl TrailTokenPublicImpl of super::ITrailTokenPublic<ContractState> {
         fn create_trail(ref self: ContractState, recipient: ContractAddress) -> u128 {
             let mut world: WorldStorage = self.world_default();
+
+            // only editors can create trails
+            assert(AccessTrait::is_editor(@world, recipient), Errors::NOT_EDITOR);
 
             // mint
             let token_id: u128 = self.erc721_combo._mint_next(recipient).low;
