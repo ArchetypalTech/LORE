@@ -76,7 +76,7 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
             if (completed_now) {
                 // completed for the first time: owner becomes editor
                 let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
-                AccessTrait::set_is_editor(ref world, owner, true);
+                world.set_player_is_editor(owner, true);
             }
             // store!
             world.write_model(@game_info);

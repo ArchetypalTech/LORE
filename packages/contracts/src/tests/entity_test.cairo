@@ -204,16 +204,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('set_parent() invalid story',))]
-    fn test_parent_invalid_story() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        let (parent1, _, mut child1, _, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref sys.world);
-        let game_id: u128 = 0;
-        child1.story_id = 123;
-        child1.set_parent(ref sys.world, @parent1, game_id);
-    }
-
-    #[test]
     #[should_panic(expected: ('set_parent() invalid trail',))]
     fn test_parent_invalid_trail() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();

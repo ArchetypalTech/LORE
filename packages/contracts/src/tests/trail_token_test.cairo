@@ -32,8 +32,8 @@ mod tests {
     #[test]
     fn test_token_initialized() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        println!("TOKEN NAME: [{}]", sys.trail_token.name());
-        println!("TOKEN SYMBOL: [{}]", sys.trail_token.symbol());
+        println!("TRAIL TOKEN NAME: [{}]", sys.trail_token.name());
+        println!("TRAIL TOKEN SYMBOL: [{}]", sys.trail_token.symbol());
         assert_ne!(sys.trail_token.name(), "", "empty name");
         assert_ne!(sys.trail_token.symbol(), "", "empty symbol");
         assert_eq!(sys.trail_token.name(), trail_metadata::TOKEN_NAME(), "wrong name");
@@ -46,7 +46,7 @@ mod tests {
         _mint_token(ref sys, OWNER());
         let uri: ByteArray = sys.trail_token.token_uri(1);
         assert_gt!(uri.len(), 1000, "token_uri.len()");
-        println!("TOKEN URI: [{}]", uri);
+        println!("TRAIL TOKEN URI: [{}]", uri);
     }
 
 

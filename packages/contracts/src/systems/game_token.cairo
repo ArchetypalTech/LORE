@@ -269,7 +269,7 @@ pub mod game_token {
         fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
             (
                 self._caller_is_owner(world) ||
-                AccessTrait::is_admin(world, starknet::get_caller_address())
+                world.is_player_admin(starknet::get_caller_address())
             )
         }
         

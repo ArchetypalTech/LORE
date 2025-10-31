@@ -28,12 +28,12 @@ mod tests {
     #[test]
     fn test_access_initialized() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        assert!(AccessTrait::is_admin(@sys.world, OWNER()));
-        assert!(AccessTrait::is_editor(@sys.world, OWNER()));
-        assert!(AccessTrait::is_admin(@sys.world, ADMIN()));
-        assert!(AccessTrait::is_editor(@sys.world, ADMIN()));
-        assert!(!AccessTrait::is_admin(@sys.world, OTHER()));
-        assert!(!AccessTrait::is_editor(@sys.world, OTHER()));
+        assert!(sys.world.is_player_admin(OWNER()));
+        assert!(sys.world.is_player_editor(OWNER()));
+        assert!(sys.world.is_player_admin(ADMIN()));
+        assert!(sys.world.is_player_editor(ADMIN()));
+        assert!(!sys.world.is_player_admin(OTHER()));
+        assert!(!sys.world.is_player_editor(OTHER()));
     }
 
     #[test]
@@ -64,7 +64,7 @@ mod tests {
         //
         // another editor can design...
         sys.designer.set_editor(RECIPIENT(), true);
-        assert!(AccessTrait::is_editor(@sys.world, RECIPIENT()), "editor RECIPIENT");
+        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT");
         helpers::set_caller(RECIPIENT());
         sys.designer.create_entity(array![helpers::create_new_entity(4, "entity_4")]);
         let entity: Entity = sys.world.read_model(4);
@@ -96,8 +96,8 @@ mod tests {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         //
         // deployer can create...
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
-        let mut entity_2 = helpers::create_new_entity(2, "entity_2");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        let mut entity_2: Entity = helpers::create_new_entity(2, "entity_2");
         sys.designer.create_entity(array![entity_1.clone(), entity_2.clone()]);
         assert!(_get_entity(@sys.world, entity_1.inst).is_entity, "entity_1 created");
         assert!(_get_entity(@sys.world, entity_2.inst).is_entity, "entity_2 created");
@@ -180,8 +180,8 @@ mod tests {
         //
         // EDITOR can create...
         helpers::set_caller(OTHER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
-        let mut entity_2 = helpers::create_new_entity(2, "entity_2");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        let mut entity_2: Entity = helpers::create_new_entity(2, "entity_2");
         sys.designer.create_entity(array![entity_1.clone(), entity_2.clone()]);
         assert!(_get_entity(@sys.world, entity_1.inst).is_entity, "entity_1 created");
         assert!(_get_entity(@sys.world, entity_2.inst).is_entity, "entity_2 created");
@@ -264,7 +264,7 @@ mod tests {
         //
         // EDITOR can create...
         helpers::set_caller(OTHER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         assert!(_get_entity(@sys.world, entity_1.inst).is_entity, "entity_1 created");
         assert_eq!(_get_entity(@sys.world, entity_1.inst).creator_address, OTHER(), "entity_1 creator");
@@ -324,7 +324,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         //
         // EDITOR fail...
@@ -339,7 +339,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut area_1: Area = Area {
             inst: entity_1.inst,
@@ -362,7 +362,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
         sys.designer.create_description_text(array![desc_1_1.clone()]);
@@ -379,7 +379,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         //
         // EDITOR fail...
@@ -394,7 +394,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut area_1: Area = Area {
             inst: entity_1.inst,
@@ -417,7 +417,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
         sys.designer.create_description_text(array![desc_1_1.clone()]);
@@ -455,28 +455,28 @@ mod tests {
         // OWNER set admin to OTHER
         helpers::set_caller(OWNER());
         sys.designer.set_admin(OTHER(), true);
-        assert!(AccessTrait::is_admin(@sys.world, OTHER()), "admin OTHER");
-        assert!(AccessTrait::is_editor(@sys.world, OTHER()), "editor OTHER");
+        assert!(sys.world.is_player_admin(OTHER()), "admin OTHER");
+        assert!(sys.world.is_player_editor(OTHER()), "editor OTHER");
         // OTHER set admin to RECIPIENT
         helpers::set_caller(OTHER());
         sys.designer.set_admin(RECIPIENT(), true);
-        assert!(AccessTrait::is_admin(@sys.world, RECIPIENT()), "admin RECIPIENT 1");
-        assert!(AccessTrait::is_editor(@sys.world, RECIPIENT()), "editor RECIPIENT 1");
+        assert!(sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 1");
+        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 1");
         // OTHER set editor to RECIPIENT
         helpers::set_caller(OTHER());
         sys.designer.set_editor(RECIPIENT(), true);
-        assert!(AccessTrait::is_admin(@sys.world, RECIPIENT()), "admin RECIPIENT 2");
-        assert!(AccessTrait::is_editor(@sys.world, RECIPIENT()), "editor RECIPIENT 2");
+        assert!(sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 2");
+        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 2");
         // OTHER set editor to RECIPIENT
         helpers::set_caller(OTHER());
         sys.designer.set_admin(RECIPIENT(), false);
-        assert!(!AccessTrait::is_admin(@sys.world, RECIPIENT()), "admin RECIPIENT 3");
-        assert!(AccessTrait::is_editor(@sys.world, RECIPIENT()), "editor RECIPIENT 3");
+        assert!(!sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 3");
+        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 3");
         // OTHER set editor to RECIPIENT
         helpers::set_caller(OTHER());
         sys.designer.set_editor(RECIPIENT(), false);
-        assert!(!AccessTrait::is_admin(@sys.world, RECIPIENT()), "admin RECIPIENT 4");
-        assert!(!AccessTrait::is_editor(@sys.world, RECIPIENT()), "editor RECIPIENT 4");
+        assert!(!sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 4");
+        assert!(!sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 4");
     }
 
     #[test]
@@ -502,7 +502,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         //
         // EDITOR fail...
@@ -518,7 +518,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut area_1: Area = Area {
             inst: entity_1.inst,
@@ -542,7 +542,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
         sys.designer.create_description_text(array![desc_1_1.clone()]);
@@ -560,7 +560,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         //
         // EDITOR fail...
@@ -576,7 +576,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut area_1: Area = Area {
             inst: entity_1.inst,
@@ -600,7 +600,7 @@ mod tests {
         //
         // create...
         helpers::set_caller(OWNER());
-        let mut entity_1 = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
         sys.designer.create_description_text(array![desc_1_1.clone()]);

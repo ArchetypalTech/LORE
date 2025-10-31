@@ -36,8 +36,8 @@ mod tests {
     #[test]
     fn test_token_initialized() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        println!("TOKEN NAME: [{}]", sys.game_token.name());
-        println!("TOKEN SYMBOL: [{}]", sys.game_token.symbol());
+        println!("GAME TOKEN NAME: [{}]", sys.game_token.name());
+        println!("GAME TOKEN SYMBOL: [{}]", sys.game_token.symbol());
         assert_ne!(sys.game_token.name(), "", "empty name");
         assert_ne!(sys.game_token.symbol(), "", "empty symbol");
         assert_eq!(sys.game_token.name(), game_metadata::TOKEN_NAME(), "wrong name");
@@ -51,7 +51,7 @@ mod tests {
         _mint_token(ref sys, OWNER());
         let uri: ByteArray = sys.game_token.token_uri(1);
         assert_gt!(uri.len(), 1000, "token_uri.len()");
-        println!("TOKEN URI: [{}]", uri);
+        println!("GAME TOKEN URI: [{}]", uri);
     }
 
 
@@ -154,11 +154,11 @@ mod tests {
         assert_eq!(sys.game_token.owner_of(game_id_1.into()), OTHER(), "owner_of()");
         // set editor
         helpers::set_caller(OWNER());
-        assert!(!AccessTrait::is_editor(@sys.world, OTHER()), "!editor");
+        assert!(!sys.world.is_player_editor(OTHER()), "!editor");
         // finish game -- granted editor
         GameTokenInfoTrait::set_room(ref sys.world, game_id_1, *room_entity_1.inst);
         assert!(GameTokenInfoTrait::has_finished_game(@sys.world, game_id_1), "has_finished_game");
-        assert!(AccessTrait::is_editor(@sys.world, OTHER()), "editor");
+        assert!(sys.world.is_player_editor(OTHER()), "editor");
         // can mint trail..
         helpers::set_caller(OTHER());
         sys.trail_token.create_trail(OTHER());

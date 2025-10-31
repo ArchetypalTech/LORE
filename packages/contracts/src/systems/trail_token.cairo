@@ -179,7 +179,7 @@ pub mod trail_token {
             let mut world: WorldStorage = self.world_default();
 
             // only editors can create trails
-            assert(AccessTrait::is_editor(@world, recipient), Errors::NOT_EDITOR);
+            assert(world.is_player_editor(recipient), Errors::NOT_EDITOR);
 
             // mint
             let token_id: u128 = self.erc721_combo._mint_next(recipient).low;
@@ -198,7 +198,7 @@ pub mod trail_token {
                 trail_id: token_id,
                 minter_address: recipient,
                 seed,
-                hub_inst: 0,
+                trail_inst: 0,
             });
 
             // event...
@@ -265,7 +265,7 @@ pub mod trail_token {
         fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
             (
                 self._caller_is_owner(world) ||
-                AccessTrait::is_admin(world, starknet::get_caller_address())
+                world.is_player_admin(starknet::get_caller_address())
             )
         }
         

@@ -7,6 +7,7 @@ use dojo::{
 use lore::{
     models::{
         game_instance::{Instance, GameModelImpl, GameInstImpl},
+        trail_token_info::{MAIN_TRAIL_ID},
     },
 };
 
@@ -17,9 +18,7 @@ pub struct Entity {
     pub inst: felt252,
     pub is_entity: bool,
     /// Properties ///
-    /// main story id (currently always 1)
-    pub story_id: u128,
-    /// trail id (main story trail is always 1)
+    /// the trail this Entity belongs to, or MAIN_TRAIL_ID (zero)
     pub trail_id: u128,
     /// Name of the entity
     pub name: ByteArray,
@@ -59,20 +58,21 @@ pub struct ChildToParent {
 //
 #[generate_trait]
 pub impl EntityImpl of EntityTrait {
-    // used for tests
     fn create_entity(ref world: WorldStorage, name: ByteArray) -> Entity {
+        (Self::create_trail_entity(ref world, name, MAIN_TRAIL_ID))
+    }
+    fn create_trail_entity(ref world: WorldStorage, name: ByteArray, trail_id: u128) -> Entity {
         let mut entity: Entity = Entity {
             inst: world.dispatcher.uuid().try_into().unwrap(),
             is_entity: true,
-            story_id: 1,
-            trail_id: 1,
+            trail_id,
             name,
             alt_names: array![],
             actions_keys: array![],
             creator_address: starknet::get_caller_address(),
         };
         world.write_model(@entity);
-        entity
+        (entity)
     }
 
     fn get_names(self: @Entity) -> Span<ByteArray> {
@@ -193,7 +193,6 @@ pub impl EntityImpl of EntityTrait {
 
     fn set_parent(self: @Entity, ref world: WorldStorage, parent_entity: @Entity, game_id: u128) {
         assert(self.inst != parent_entity.inst, 'set_parent() parent self');
-        assert(self.story_id == parent_entity.story_id, 'set_parent() invalid story');
         assert(self.trail_id == parent_entity.trail_id, 'set_parent() invalid trail');
         // check if the entity is already a child
         let mut child: ChildToParent = world.read_game_model(*self.inst, game_id);

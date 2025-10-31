@@ -20,6 +20,7 @@ use lore::{
         entity::{Entity, EntityImpl},
         player::{PlayerStory, StoryLine},
         dictionary::{DictionaryTrait},
+        trail_token_info::{MAIN_TRAIL_ID},
     },
     types::{
         command_type::{IntoTokenTypeFelt252},
@@ -86,6 +87,8 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::effect::m_Effect::TEST_CLASS_HASH.into()),
             TestResource::Model(models::action::m_Action::TEST_CLASS_HASH.into()),
             TestResource::Model(models::action::m_ActionExecuted::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::hub::m_Hub::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::hub::m_Trail::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceKeyMap::TEST_CLASS_HASH.into()),
             // game_token
@@ -207,8 +210,7 @@ pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {
     (Entity {
         inst,
         is_entity: true,
-        story_id: 1,
-        trail_id: 1,
+        trail_id: MAIN_TRAIL_ID,
         name,
         alt_names: array![],
         actions_keys: array![],

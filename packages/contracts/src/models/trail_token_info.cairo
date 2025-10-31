@@ -15,8 +15,8 @@ pub struct TrailTokenInfo {
     /// Properties ///
     pub minter_address: ContractAddress,
     pub seed: felt252,
-    /// trail location
-    pub hub_inst: felt252,
+    /// trail entity
+    pub trail_inst: felt252,
 }
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
@@ -85,7 +85,7 @@ pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
         //         if (completed && !game_info.completed) {
         //             // completed for the first time: owner becomes editor
         //             let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
-        //             AccessTrait::set_is_editor(ref world, owner, true);
+        //             world.set_player_is_editor(owner, true);
         //         }
         //         game_info.completed = completed;
         //     },

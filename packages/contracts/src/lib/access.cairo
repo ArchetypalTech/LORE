@@ -12,13 +12,13 @@ pub mod ROLES {
 
 #[generate_trait]
 pub impl AccessImpl of AccessTrait {
-    fn set_is_editor(ref world: WorldStorage, account: ContractAddress, is_editor: bool) {
-        (world.designer_dispatcher().set_editor(account, true))
+    fn set_player_is_editor(ref self: WorldStorage, account: ContractAddress, is_editor: bool) {
+        (self.designer_dispatcher().set_editor(account, true))
     }
-    fn is_admin(world: @WorldStorage, account: ContractAddress) -> bool {
-        (world.designer_dispatcher().is_admin(account))
+    fn is_player_admin(self: @WorldStorage, account: ContractAddress) -> bool {
+        (self.designer_dispatcher().is_admin(account))
     }
-    fn is_editor(world: @WorldStorage, account: ContractAddress) -> bool {
-        (world.designer_dispatcher().is_editor(account))
+    fn is_player_editor(self: @WorldStorage, account: ContractAddress) -> bool {
+        (self.designer_dispatcher().is_editor(account))
     }
 }

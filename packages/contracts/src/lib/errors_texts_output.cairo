@@ -85,6 +85,9 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
                 "It doesn't have a player component",
                 "It is not a player, therefore you can't do that",
             ],
+            Error::NotEditor => array![
+                "You need to be an editor to do that.",
+            ],
             Error::NoContainerComponent => array![
                 "It doesn't have a container component",
                 "It is not a container, therefore you can't do that",

@@ -7,6 +7,7 @@ use lore::{
         area::{Area},
         exit::{Exit},
         reactable::{Reactable},
+        trail_token_info::{MAIN_TRAIL_ID},
     },
 };
 
@@ -19,8 +20,7 @@ fn room_start(ref world: WorldStorage) {
     let obj: Entity = Entity {
         inst: 2826,
         is_entity: true,
-        story_id: 1,
-        trail_id: 1,
+        trail_id: MAIN_TRAIL_ID,
         name: "The Bang",
         alt_names: array!["bang", "explosion"],
         actions_keys: array![],
@@ -43,11 +43,10 @@ fn room_start(ref world: WorldStorage) {
 }
 
 fn object_room_one(ref world: WorldStorage, parent: Entity) {
-    let obj = Entity {
+    let obj: Entity = Entity {
         inst: 9999,
         is_entity: true,
-        story_id: 1,
-        trail_id: 1,
+        trail_id: MAIN_TRAIL_ID,
         name: "a portal",
         alt_names: array!["portal", "door"],
         actions_keys: array![],

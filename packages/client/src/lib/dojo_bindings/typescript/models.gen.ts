@@ -98,7 +98,6 @@ export interface ChildToParent {
 export interface Entity {
 	inst: BigNumberish;
 	is_entity: boolean;
-	story_id: BigNumberish;
 	trail_id: BigNumberish;
 	name: string;
 	creator_address: string;
@@ -708,7 +707,6 @@ export const schema: SchemaType = {
 		Entity: {
 			inst: 0,
 			is_entity: false,
-			story_id: 0,
 			trail_id: 0,
 		name: "",
 			creator_address: "",

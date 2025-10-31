@@ -89,14 +89,14 @@ pub mod prompt {
                     // player was provided
                     if game_id == 0 {
                         // only admins can play game #0
-                        assert(AccessTrait::is_admin(@world, player_address), Errors::NOT_ADMIN);
+                        assert(world.is_player_admin(player_address), Errors::NOT_ADMIN);
                     } else {
                         // validate ownership
                         assert((
                             // only owner can play
                             world.game_token_dispatcher().is_owner_of(player_address, game_id.into())
                             /// or admins for debugging
-                            || AccessTrait::is_admin(@world, player_address)
+                            || world.is_player_admin(player_address)
                         ), Errors::NOT_YOUR_GAME);
                         // set as current
                         PlayerGameTrait::switch_game_id(ref world, player_address, game_id);

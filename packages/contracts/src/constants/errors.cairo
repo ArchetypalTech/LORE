@@ -60,4 +60,5 @@ pub enum Error {
     // Player
     NoRoom,
     NotYourGame,
+    NotEditor,
 }

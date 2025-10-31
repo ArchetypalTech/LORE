@@ -13,6 +13,7 @@ use lore::{
         effect::{Effect},
         condition::{Condition},
         trigger::{Trigger},
+        hub::{Hub, Trail},
     },
 };
 
@@ -36,6 +37,8 @@ pub trait IDesigner<TContractState> {
     fn create_condition(ref self: TContractState, t: Array<Condition>);
     fn create_effect(ref self: TContractState, t: Array<Effect>);
     fn create_action(ref self: TContractState, t: Array<Action>);
+    fn create_hub(ref self: TContractState, t: Array<Hub>);
+    fn create_trail(ref self: TContractState, t: Array<Trail>);
     fn create_parent(ref self: TContractState, t: Array<ParentToChildren>);
     fn create_child(ref self: TContractState, t: Array<ChildToParent>);
     //
@@ -51,6 +54,8 @@ pub trait IDesigner<TContractState> {
     fn delete_condition(ref self: TContractState, ids: Array<(felt252, felt252)>);
     fn delete_effect(ref self: TContractState, ids: Array<(felt252, felt252)>);
     fn delete_action(ref self: TContractState, ids: Array<(felt252, felt252)>);
+    fn delete_hub(ref self: TContractState, ids: Array<felt252>);
+    fn delete_trail(ref self: TContractState, ids: Array<felt252>);
     fn delete_parent(ref self: TContractState, ids: Array<felt252>);
     fn delete_child(ref self: TContractState, ids: Array<felt252>);
     //
@@ -116,6 +121,7 @@ pub mod designer {
             effect::{Effect, EffectImpl},
             condition::{Condition},
             trigger::{Trigger, TriggerImpl},
+            hub::{Hub, Trail, TrailTrait},
         },
         types::{
             component_type::ComponentType,
@@ -351,6 +357,25 @@ pub mod designer {
             }
         }
 
+        fn create_hub(ref self: ContractState, t: Array<Hub>) {
+            let owned: ContractAddress = self._assert_caller_is_editor();
+            let mut world: WorldStorage = self.world_default();
+            for o in t {
+                self._assert_can_edit_entity(@world, o.inst, owned);
+                world.write_model(@o);
+            }
+        }
+
+        fn create_trail(ref self: ContractState, t: Array<Trail>) {
+            let owned: ContractAddress = self._assert_caller_is_editor();
+            let mut world: WorldStorage = self.world_default();
+            for o in t {
+                self._assert_can_edit_entity(@world, o.inst, owned);
+                TrailTrait::assert_can_edit_trail(ref world, @o);
+                world.write_model(@o);
+            }
+        }
+
         fn create_parent(ref self: ContractState, t: Array<ParentToChildren>) {
             let owned: ContractAddress = self._assert_caller_is_editor();
             let mut world: WorldStorage = self.world_default();
@@ -375,11 +400,12 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                TrailTrait::assert_can_delete_trail(ref world, inst);
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
                 // delete_reactable(world, model.Reactable);
-            // delete_area(world, model.Area);
-            // delete_exit(world, model.Exit);
+                // delete_area(world, model.Area);
+                // delete_exit(world, model.Exit);
             }
         }
 
@@ -504,6 +530,27 @@ pub mod designer {
             //         result.unwrap_err(),
             //     );
             // }
+            }
+        }
+
+        fn delete_hub(ref self: ContractState, ids: Array<felt252>) {
+            let owned: ContractAddress = self._assert_caller_is_editor();
+            let mut world: WorldStorage = self.world_default();
+            for inst in ids {
+                self._assert_can_delete_entity(@world, inst, owned);
+                let model: Hub = world.read_model(inst);
+                world.erase_model(@model);
+            }
+        }
+
+        fn delete_trail(ref self: ContractState, ids: Array<felt252>) {
+            let owned: ContractAddress = self._assert_caller_is_editor();
+            let mut world: WorldStorage = self.world_default();
+            for inst in ids {
+                self._assert_can_delete_entity(@world, inst, owned);
+                TrailTrait::assert_can_delete_trail(ref world, inst);
+                let model: Trail = world.read_model(inst);
+                world.erase_model(@model);
             }
         }
 

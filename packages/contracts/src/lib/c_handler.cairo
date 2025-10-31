@@ -14,6 +14,7 @@ use lore::{
         condition::{ConditionImpl},
         game_token_info::{GameTokenInfo, PlayerGameTrait},
         trail_token_info::{TrailProgress, MAIN_TRAIL_ID},
+        hub::{TrailTrait},
     },
     types::command_type::{
         Command, CommandImpl,
@@ -25,8 +26,9 @@ use lore::{
         level_test::{create_test_level},
         dns::{
             DnsTrait,
-            IGameTokenDispatcherTrait,
             ILexerDispatcherTrait,
+            IGameTokenDispatcherTrait,
+            ITrailTokenDispatcherTrait,
         },
     },
     constants::errors::Error,
@@ -333,6 +335,16 @@ fn system_command(
             }
             return Result::Ok(());
         }
+        if (system_command == "g_create_trail") {
+            let player_address: ContractAddress = get_caller_address();
+            if (!world.is_player_editor(player_address)) {
+                return Result::Err(Error::NotEditor);
+            }
+            let trail_id: u128 = world.trail_token_dispatcher().create_trail(player_address);
+            TrailTrait::create_new_trail_entity(ref world, trail_id);
+            player.log_sys(ref world, format!("+sys+Created trail-{:?}", trail_id));
+            return Result::Ok(());
+        }
         if (system_command == "g_load_game") {
             let player_address: ContractAddress = get_caller_address();
             let game_id: u256 = tokens.at(1).text.to_felt252_decimal().unwrap().into();
@@ -364,8 +376,8 @@ fn system_command(
             player.log_sys(ref world, format!("+sys+address: 0x{:x}", player.address));
             player.log_sys(ref world, format!("+sys+current_game_id: {}", player.game_id));
             player.log_sys(ref world, format!("+sys+is_dead: {}", ByteArrayTraitExt::byte_array_from_bool(player.is_dead)));
-            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(AccessTrait::is_admin(@world, player.address))));
-            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(AccessTrait::is_editor(@world, player.address))));
+            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(world.is_player_admin(player.address))));
+            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(world.is_player_editor(player.address))));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);

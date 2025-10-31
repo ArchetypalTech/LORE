@@ -42,6 +42,7 @@ pub mod models {
     pub mod player;
     pub mod reactable;
     pub mod trigger;
+    pub mod hub;
     pub mod game_token_info;
     pub mod trail_token_info;
 }
