@@ -56,6 +56,7 @@ pub impl HubImpl of HubTrait {
 
 #[generate_trait]
 pub impl TrailImpl of TrailTrait {
+    // this is a top-level Trail component
     fn is_trail(self: @Trail) -> bool {
         (*self.is_trail)
     }
@@ -66,14 +67,14 @@ pub impl TrailImpl of TrailTrait {
     }
 
     // this is an entity that was added to a Trail
-    fn get_trail_id(self: @WorldStorage, inst: felt252) -> u128 {
-        (self.read_member(Model::<Trail>::ptr_from_keys(inst), selector!("trail_id")))
+    fn get_entity_trail_id(self: @WorldStorage, inst: felt252) -> u128 {
+        (self.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("trail_id")))
     }
     fn is_inside_trail_id(self: @WorldStorage, inst: felt252, trail_id: u128) -> bool {
-        (self.get_trail_id(inst) == trail_id)
+        (self.get_entity_trail_id(inst) == trail_id)
     }
     fn is_inside_trail(self: @WorldStorage, inst: felt252) -> bool {
-        (self.get_trail_id(inst).is_non_zero())
+        (self.get_entity_trail_id(inst).is_non_zero())
     }
 
     // called when a new trial is minted

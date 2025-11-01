@@ -46,6 +46,7 @@ use lore::models::{
     area::{Area, AreaComponent},
     player::{Player, PlayerImpl},
     trail_token_info::{TrailProgressTrait, MAIN_TRAIL_ID},
+    hub::{TrailTrait},
 };
 use lore::lib::{
     access::{AccessTrait},
@@ -59,24 +60,28 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
         let room_entity: Entity = world.read_model(room_inst);
         let area: Option<Area> = AreaComponent::get_component(@world, room_inst, game_id);
         // update token info
-        let mut game_info: GameTokenInfo = world.read_model(game_id);
         if let Option::Some(area) = area {
-            // emit achievement
-            let trophy: Trophy = TrophyProgressTrait::on_enter_room(@world, room_inst);
-            // find change in act
-            let act_number: u8 =
-                if (trophy == Trophy::Marshes) {2}
-                else if (trophy == Trophy::ForkstoneVerge) {3}
-                else {1};
-            // update token info
+            // update room name
+            let mut game_info: GameTokenInfo = world.read_model(game_id);
             game_info.room_name = room_entity.name;
-            game_info.act_number = core::cmp::max(game_info.act_number, act_number);
             // update progress
-            let completed_now: bool = world.set_trail_progress(game_id, MAIN_TRAIL_ID, area.progress_percentage);
-            if (completed_now) {
-                // completed for the first time: owner becomes editor
-                let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
-                world.set_player_is_editor(owner, true);
+            let trail_id: u128 = world.get_entity_trail_id(room_inst);
+            let completed_now: bool = world.set_trail_progress(game_id, trail_id, area.progress_percentage);
+            // is the main game trail...
+            if (trail_id == MAIN_TRAIL_ID) {
+                // emit achievement
+                let trophy: Trophy = TrophyProgressTrait::on_enter_room(@world, room_inst);
+                // find change in act
+                let act_number: u8 =
+                    if (trophy == Trophy::Marshes) {2}
+                    else if (trophy == Trophy::ForkstoneVerge) {3}
+                    else {1};
+                game_info.act_number = core::cmp::max(game_info.act_number, act_number);
+                // if just completed: owner becomes editor
+                if (completed_now) {
+                    let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
+                    world.set_player_is_editor(owner, true);
+                }
             }
             // store!
             world.write_model(@game_info);
@@ -131,21 +136,34 @@ mod tests {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, 0);
         // create room entities
-        let room_entity_1: @Entity = @helpers::create_new_entity(1, "Room 1");
-        let room_entity_2: @Entity = @helpers::create_new_entity(0x03a419a814c431cc29706ccc4dcfbbb9c952cc96d2f9719d62ab8163b0f5bb52, "Room 2");
-        let room_entity_3: @Entity = @helpers::create_new_entity(0x032454cde156173c1f4ee9a89e4a3a97a9a81bc2f5237b81728af955569c85bb, "Room 3");
-        sys.world.write_model(room_entity_1);
-        sys.world.write_model(room_entity_2);
-        sys.world.write_model(room_entity_3);
-        let mut area_1: Area = AreaComponent::add_component(ref sys.world, *room_entity_1.inst);
-        let mut area_2: Area = AreaComponent::add_component(ref sys.world, *room_entity_2.inst);
-        let mut area_3: Area = AreaComponent::add_component(ref sys.world, *room_entity_3.inst);
+        let room_entity_1: Entity = helpers::create_new_entity(1111, "Room 1");
+        let room_entity_2: Entity = helpers::create_new_entity(0x03a419a814c431cc29706ccc4dcfbbb9c952cc96d2f9719d62ab8163b0f5bb52, "Marshes");
+        let room_entity_3: Entity = helpers::create_new_entity(0x032454cde156173c1f4ee9a89e4a3a97a9a81bc2f5237b81728af955569c85bb, "ForkstoneVerge");
+        let mut trail_entity_1: Entity = helpers::create_new_entity(4444, "Trail 1");
+        let mut trail_entity_2: Entity = helpers::create_new_entity(5555, "Trail 2");
+        let trail_id: u128 = 123;
+        trail_entity_1.trail_id = trail_id;
+        trail_entity_2.trail_id = trail_id;
+        sys.world.write_model(@room_entity_1);
+        sys.world.write_model(@room_entity_2);
+        sys.world.write_model(@room_entity_3);
+        sys.world.write_model(@trail_entity_1);
+        sys.world.write_model(@trail_entity_2);
+        let mut area_1: Area = AreaComponent::add_component(ref sys.world, room_entity_1.inst);
+        let mut area_2: Area = AreaComponent::add_component(ref sys.world, room_entity_2.inst);
+        let mut area_3: Area = AreaComponent::add_component(ref sys.world, room_entity_3.inst);
+        let mut trail_1: Area = AreaComponent::add_component(ref sys.world, trail_entity_1.inst);
+        let mut trail_2: Area = AreaComponent::add_component(ref sys.world, trail_entity_2.inst);
         area_1.progress_percentage = 10;
         area_2.progress_percentage = 50;
         area_3.progress_percentage = 100;
+        trail_1.progress_percentage = 60;
+        trail_2.progress_percentage = 100;
         sys.world.write_model(@area_1);
         sys.world.write_model(@area_2);
         sys.world.write_model(@area_3);
+        sys.world.write_model(@trail_1);
+        sys.world.write_model(@trail_2);
         //
         // mint game
         helpers::set_caller(helpers::PLAYER_1);
@@ -154,7 +172,7 @@ mod tests {
         //
         // set room
         helpers::set_caller(helpers::OWNER());
-        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_1.inst);
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, room_entity_1.inst);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_1.name.clone(), "set room");
         assert_eq!(token_info.act_number, 1, "set room");
@@ -162,27 +180,59 @@ mod tests {
         assert!(!sys.world.has_finished_game(game_id), "set room");
         //
         // new act
-        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_2.inst);
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, room_entity_2.inst);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_2.name.clone(), "new act");
         assert_eq!(token_info.act_number, 2, "new act");
         assert_eq!(sys.world.current_game_progress(game_id), 50, "new act");
         assert!(!sys.world.has_finished_game(game_id), "new act");
         //
-        // back one room
-        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_1.inst);
+        // back one room -- no change
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, room_entity_1.inst);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_1.name.clone(), "back one room");
         assert_eq!(token_info.act_number, 2, "back one room");
         assert_eq!(sys.world.current_game_progress(game_id), 50, "back one room");
         assert!(!sys.world.has_finished_game(game_id), "back one room");
+        assert_eq!(sys.world.current_trail_progress(game_id, MAIN_TRAIL_ID), 50, "back one room");
+        assert!(!sys.world.has_finished_trail(game_id, MAIN_TRAIL_ID), "back one room");
+        assert_eq!(sys.world.current_trail_progress(game_id, trail_id), 0, "back one room");
+        assert!(!sys.world.has_finished_trail(game_id, trail_id), "back one room");
         //
-        // finish...
-        GameTokenInfoTrait::set_room(ref sys.world, game_id, *room_entity_3.inst);
+        // into a trail... (game does not change)
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, trail_entity_1.inst);
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
+        assert_eq!(token_info.room_name, trail_entity_1.name.clone(), "enter trail 1");
+        assert_eq!(token_info.act_number, 2, "enter trail 1");
+        assert_eq!(sys.world.current_game_progress(game_id), 50, "enter trail 1");
+        assert!(!sys.world.has_finished_game(game_id), "enter trail 1");
+        assert_eq!(sys.world.current_trail_progress(game_id, MAIN_TRAIL_ID), 50, "enter trail 1");
+        assert!(!sys.world.has_finished_trail(game_id, MAIN_TRAIL_ID), "enter trail 1");
+        assert_eq!(sys.world.current_trail_progress(game_id, trail_id), 60, "enter trail 1");
+        assert!(!sys.world.has_finished_trail(game_id, trail_id), "enter trail 1");
+        //
+        // finished trail
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, trail_entity_2.inst);
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
+        assert_eq!(token_info.room_name, trail_entity_2.name.clone(), "enter trail 2");
+        assert_eq!(token_info.act_number, 2, "enter trail 2");
+        assert_eq!(sys.world.current_game_progress(game_id), 50, "enter trail 2");
+        assert!(!sys.world.has_finished_game(game_id), "enter trail 2");
+        assert_eq!(sys.world.current_trail_progress(game_id, MAIN_TRAIL_ID), 50, "enter trail 12");
+        assert!(!sys.world.has_finished_trail(game_id, MAIN_TRAIL_ID), "enter trail 2");
+        assert_eq!(sys.world.current_trail_progress(game_id, trail_id), 100, "enter trail 2");
+        assert!(sys.world.has_finished_trail(game_id, trail_id), "enter trail 2");
+        //
+        // finish game
+        GameTokenInfoTrait::set_room(ref sys.world, game_id, room_entity_3.inst);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_entity_3.name.clone(), "finished");
         assert_eq!(token_info.act_number, 3, "finished");
         assert_eq!(sys.world.current_game_progress(game_id), 100, "finished");
         assert!(sys.world.has_finished_game(game_id), "finished");
+        assert_eq!(sys.world.current_trail_progress(game_id, MAIN_TRAIL_ID), 100, "finished");
+        assert!(sys.world.has_finished_trail(game_id, MAIN_TRAIL_ID), "finished");
+        assert_eq!(sys.world.current_trail_progress(game_id, trail_id), 100, "finished");
+        assert!(sys.world.has_finished_trail(game_id, trail_id), "finished");
     }
 }
