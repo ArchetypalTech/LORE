@@ -115,7 +115,7 @@ export const ActionInspector: ComponentInspector<Action> = ({
             <Inspector index={idx}>
               <Input
                 id="inst"
-                value={componentObj.inst.toString()}
+                value={componentObj.inst?.toString() ?? ""}
                 onChange={handleInputChange(idx)}
                 readOnly={true}
               />
