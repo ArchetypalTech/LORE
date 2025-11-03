@@ -213,6 +213,21 @@ pub mod designer {
                         world.add_to_dictionary(alt_name.clone(), TokenType::Noun, 1).unwrap();
                     }
                 };
+                //
+                // Keep original creator address
+                let existing_entity: Option<Entity> = EntityImpl::get_entity(@world, o.inst);
+                o.creator_address = match existing_entity {
+                    // new entity: set caller as creator
+                    Option::None => {starknet::get_caller_address()},
+                    // entity exists: keep original creator
+                    Option::Some(entity) => {
+                        self._assert_can_edit_entity(@world, o.inst, owned);
+                        (entity.creator_address)
+                    }
+                };
+                // write model
+                world.write_model(@o);
+
                 // TODO LATER ON
                 // if o.name.len() > 0 {
                 //     let words = ByteArrayTraitExt::split_into_words(@o.name);
@@ -225,16 +240,6 @@ pub mod designer {
                 //         }
                 //     };
                 // }
-                o.creator_address = match EntityImpl::get_entity(@world, o.inst) {
-                    // new entity: set caller as creator
-                    Option::None => {starknet::get_caller_address()},
-                    // entity exists: keep original creator
-                    Option::Some(entity) => {
-                        self._assert_can_edit_entity(@world, o.inst, owned);
-                        (entity.creator_address)
-                    }
-                };
-                world.write_model(@o);
             }
         }
 
@@ -360,8 +365,13 @@ pub mod designer {
         fn create_hub(ref self: ContractState, t: Array<Hub>) {
             let owned: ContractAddress = self._assert_caller_is_editor();
             let mut world: WorldStorage = self.world_default();
-            for o in t {
+            for mut o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                // Keep original trails -- NOT ALLOWED TO EDIT FROM EDITOR
+                // (trails are managed in the contract)
+                let existing_hub: Hub = world.read_model(o.inst);
+                o.trails_insts = existing_hub.trails_insts.clone();
+                // write model
                 world.write_model(@o);
             }
         }

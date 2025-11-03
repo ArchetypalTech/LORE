@@ -4,6 +4,7 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl},
         trail_token_info::{TrailTokenInfo},
+        exit::{Exit},
     },
     lib::{
         utils::ByteArrayTraitExt,
@@ -23,7 +24,7 @@ pub struct Hub {
     /// can receive trails
     pub is_enabled: bool,
     /// trails this Hub contains
-    pub trails_inst: Array<felt252>,
+    pub trails_insts: Array<felt252>,
 }
 
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
@@ -59,8 +60,8 @@ pub impl HubImpl of HubTrait {
     //
     // called when deleting a Hub
     fn remove_trails_from_hub(self: @Hub, ref world: WorldStorage) {
-        for trails_inst in self.trails_inst {
-            let mut trail: Trail = world.read_model(*trails_inst);
+        for trails_insts in self.trails_insts {
+            let mut trail: Trail = world.read_model(*trails_insts);
             if (trail.is_trail && trail.hub_inst == *self.inst) {
                 trail.hub_inst = 0;
                 world.write_model(@trail);
@@ -74,7 +75,7 @@ pub impl HubImpl of HubTrait {
             inst,
             is_hub: true,
             is_enabled: true,
-            trails_inst: array![],
+            trails_insts: array![],
         })
     }
 }
@@ -152,7 +153,7 @@ pub impl TrailImpl of TrailTrait {
             let mut hub: Hub = world.read_model(*self.hub_inst);
             assert(hub.is_hub, 'TRAIL: Invalid hub');
             assert(hub.is_enabled, 'TRAIL: Hub is disabled');
-            hub.trails_inst.append(*self.inst);
+            hub.trails_insts.append(*self.inst);
             world.write_model(@hub);
         }
     }
@@ -163,9 +164,9 @@ pub impl TrailImpl of TrailTrait {
         if (*self.is_trail && self.hub_inst.is_non_zero()) {
             // check if it is inside a Hub
             let mut current_hub: Hub = world.read_model(*self.hub_inst);
-            if (current_hub.is_hub && current_hub.trails_inst.contains(self.inst)) {
+            if (current_hub.is_hub && current_hub.trails_insts.contains(self.inst)) {
                 // remove from current Hub
-                current_hub.trails_inst = current_hub.trails_inst.remove(self.inst);
+                current_hub.trails_insts = current_hub.trails_insts.remove(self.inst);
                 world.write_model(@current_hub);
             }
         }
@@ -360,9 +361,15 @@ mod tests {
         sys.designer.create_trail(array![trail_1.clone(), trail_2.clone(), trail_3.clone()]);
         //
         // check hub trails
-        let hub_1: Hub = sys.world.read_model(hub_1.inst);
-        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_inst.span(), array![trail_1.inst, trail_2.inst].span(), "hub_1.trails_inst 1");
-        ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_inst.span(), array![].span(), "hub_2.trails_inst 2");
+        let mut hub_1: Hub = sys.world.read_model(hub_1.inst);
+        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_insts.span(), array![trail_1.inst, trail_2.inst].span(), "hub_1.trails_insts 1");
+        ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_insts.span(), array![].span(), "hub_2.trails_insts 2");
+        //
+        // try to edit trails -- NOW ALLOWED!
+        hub_1.trails_insts = array![trail_3.inst];
+        sys.designer.create_hub(array![hub_1.clone()]);
+        let mut hub_1: Hub = sys.world.read_model(hub_1.inst);
+        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_insts.span(), array![trail_1.inst, trail_2.inst].span(), "hub_1.trails_insts STILL");
         //
         // move trails...
         trail_1.hub_inst = 0; // remove...
@@ -371,15 +378,15 @@ mod tests {
         sys.designer.create_trail(array![trail_1.clone(), trail_2.clone(), trail_3.clone()]);
         let hub_1: Hub = sys.world.read_model(hub_1.inst);
         let hub_2: Hub = sys.world.read_model(hub_2.inst);
-        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_inst.span(), array![].span(), "hub_1.trails_inst 2");
-        ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_inst.span(), array![trail_2.inst, trail_3.inst].span(), "hub_2.trails_inst 2");
+        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_insts.span(), array![].span(), "hub_1.trails_insts 2");
+        ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_insts.span(), array![trail_2.inst, trail_3.inst].span(), "hub_2.trails_insts 2");
         //
         // delete trail, remove from hub -- NOT ALLOWED!!
 //         sys.designer.delete_trail(array![trail_2.inst]);
 //         let hub_1: Hub = sys.world.read_model(hub_1.inst);
 //         let hub_2: Hub = sys.world.read_model(hub_2.inst);
-//         ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_inst.span(), array![].span(), "hub_1.trails_inst 3");
-//         ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_inst.span(), array![trail_3.inst].span(), "hub_2.trails_inst 3");
+//         ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_insts.span(), array![].span(), "hub_1.trails_insts 3");
+//         ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_insts.span(), array![trail_3.inst].span(), "hub_2.trails_insts 3");
         //
         // delete Hub, remove trails from hub
         sys.designer.delete_hub(array![hub_2.inst]);
@@ -388,8 +395,8 @@ mod tests {
         let trail_1: Trail = sys.world.read_model(trail_1.inst);
         let trail_2: Trail = sys.world.read_model(trail_2.inst);
         let trail_3: Trail = sys.world.read_model(trail_3.inst);
-        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_inst.span(), array![].span(), "hub_1.trails_inst 4");
-        ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_inst.span(), array![].span(), "hub_2.trails_inst 4");
+        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_insts.span(), array![].span(), "hub_1.trails_insts 4");
+        ArrayTestUtilsTrait::assert_span_eq(hub_2.trails_insts.span(), array![].span(), "hub_2.trails_insts 4");
         assert!(trail_1.hub_inst.is_zero(), "trail_1.hub_inst 4");
         assert!(trail_2.hub_inst.is_zero(), "trail_2.hub_inst 4");
         assert!(trail_3.hub_inst.is_zero(), "trail_3.hub_inst 4");
