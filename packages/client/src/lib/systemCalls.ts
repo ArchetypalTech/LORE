@@ -46,14 +46,7 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
 					validateReceiptStatus(receipt, calls); // just log!
 				});
-			} else {
-				// case there is a TX error, add empty line to allow continue playing
-				addTerminalContent({
-							text: "",
-							format: "hash",
-							useTypewriter: true,
-						});
-			}
+			} 
 		} else {
 			console.log("[KATANA-DEV] execControllerCommand", command);
 			await LORE_CONFIG.contracts.entity.invoke("prompt", [calldata]);
@@ -61,6 +54,12 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 		console.timeEnd("calltime");
 	} catch (error) {
 		console.error("Error sending command:", game_id, error as Error);
+		// case there is a TX error, add empty line to allow continue playing
+				addTerminalContent({
+							text: "",
+							format: "hash",
+							useTypewriter: true,
+						});
 	}
 }
 
