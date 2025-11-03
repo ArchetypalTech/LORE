@@ -5,6 +5,7 @@ import { toCairoArray } from "@/editor/editor.utils";
 import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
 import { addAddressPadding } from "starknet";
+import { addTerminalContent } from "@lib/stores/terminal.store";
 
 /**
  * Sends a command to the entity contract.
@@ -45,6 +46,13 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
 					validateReceiptStatus(receipt, calls); // just log!
 				});
+			} else {
+				// case there is a TX error, add empty line to allow continue playing
+				addTerminalContent({
+							text: "",
+							format: "hash",
+							useTypewriter: true,
+						});
 			}
 		} else {
 			console.log("[KATANA-DEV] execControllerCommand", command);
