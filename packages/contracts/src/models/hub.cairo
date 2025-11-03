@@ -1,10 +1,17 @@
 use core::num::traits::Zero;
-use dojo::{world::WorldStorage, model::{ModelStorage, Model}};
+use dojo::{
+    world::{WorldStorage, IWorldDispatcherTrait},
+    model::{ModelStorage, Model},
+};
 use lore::{
     models::{
-        entity::{Entity, EntityImpl},
+        entity::{Entity, EntityImpl, ParentToChildren},
         trail_token_info::{TrailTokenInfo},
+        area::{Area},
         exit::{Exit},
+    },
+    types::{
+        direction_type::{Direction},
     },
     lib::{
         utils::ByteArrayTraitExt,
@@ -55,6 +62,48 @@ pub impl HubImpl of HubTrait {
 
     fn has_hub_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Hub>::ptr_from_keys(inst), selector!("is_hub")))
+    }
+
+    fn get_published_trails_insts(self: @Hub, world: @WorldStorage) -> Span<felt252> {
+        let mut result: Array<felt252> = array![];
+        let is_published: Array<bool> = world.read_member_of_models(Model::<Trail>::ptrs_from_keys(self.trails_insts.span()), selector!("is_published"));
+        for i in 0..is_published.len() {
+            if (*is_published[i]) {
+                //
+                // TODO: apply Trail moderation here (exclude flagged trails)
+                //
+                result.append(*self.trails_insts[i]);
+            }
+        }
+        (result.span())
+    }
+
+    fn get_trails_exits(self: @Hub, world: @WorldStorage) -> Span<Exit> {
+        let mut result: Array<Exit> = array![];
+        // get all published trails added to this Hub
+        let trails_insts: Span<felt252> = self.get_published_trails_insts(world);
+        // get children of each trail
+        let trails_children: Array<Array<felt252>> = world.read_member_of_models(Model::<ParentToChildren>::ptrs_from_keys(trails_insts), selector!("children"));
+        for i in 0..trails_children.len() {
+            // Find spawn points in Areas
+            let children_insts: Span<felt252> = trails_children[i].span();
+            let is_spawn_points: Array<bool> = world.read_member_of_models(Model::<Area>::ptrs_from_keys(children_insts), selector!("is_spawn_point"));
+            for j in 0..is_spawn_points.len() {
+                // if is_spawn_point is true, the Area exists and it is a spawn point
+                if (*is_spawn_points[j]) {
+                    let exit: Exit = Exit {
+                        inst: world.dispatcher.uuid().try_into().unwrap(), // ephemeral inst
+                        is_exit: true,
+                        is_enterable: true,
+                        leads_to: *children_insts[j],
+                        direction_type: Direction::North,
+                        action_map: array![],
+                    };
+                    result.append(exit);
+                }
+            }
+        }
+        (result.span())
     }
 
     //
@@ -207,6 +256,8 @@ mod tests {
             player::{Player, PlayerImpl},
             game_token_info::{PlayerGameImpl},
             trail_token_info::{TrailTokenInfo},
+            area::{AreaComponent, Area},
+            exit::{Exit},
         },
         tests::{
             helpers,
@@ -434,6 +485,80 @@ mod tests {
         // edit trail and panic...
         helpers::set_caller(OWNER());
         sys.designer.create_trail(array![trail_1.clone()]);
+    }
+
+
+    #[test]
+    fn test_get_hub_trails_exits_ok() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        // Create Hubs
+        let game_id: u128 = 0;
+        let entity_hub_1: Entity = EntityImpl::create_entity(ref sys.world, "hub");
+        let mut hub_1: Hub = HubImpl::add_component(ref sys.world, entity_hub_1.inst);
+        sys.designer.create_entity(array![entity_hub_1.clone()]);
+        sys.designer.create_hub(array![hub_1.clone()]);
+        // mint Trails
+        let (entity_trail_1, mut trail_1): (Entity, Trail) = _mint_trail(ref sys);
+        let (entity_trail_2, mut trail_2): (Entity, Trail) = _mint_trail(ref sys);
+        let (entity_trail_3, mut trail_3): (Entity, Trail) = _mint_trail(ref sys);
+        // add trails to hub
+        trail_1.hub_inst = hub_1.inst;
+        trail_2.hub_inst = hub_1.inst;
+        trail_3.hub_inst = hub_1.inst;
+        trail_1.is_published = true;
+        trail_2.is_published = true;
+        trail_3.is_published = false;
+        sys.designer.create_trail(array![trail_1.clone(), trail_2.clone(), trail_3.clone()]);
+        // validate...
+        let hub_1: Hub = sys.world.read_model(hub_1.inst);
+        ArrayTestUtilsTrait::assert_span_eq(hub_1.trails_insts.span(), array![trail_1.inst, trail_2.inst, trail_3.inst].span(), "hub_1.trails_insts");
+        // create Areas inside trails
+        let mut entity_area_1_spawn: Entity = EntityImpl::create_entity(ref sys.world, "entity_area_1_spawn");
+        let mut entity_area_1_other: Entity = EntityImpl::create_entity(ref sys.world, "entity_area_1_other");
+        let mut entity_area_2_spawn: Entity = EntityImpl::create_entity(ref sys.world, "entity_area_2_spawn");
+        let mut entity_area_2_other: Entity = EntityImpl::create_entity(ref sys.world, "entity_area_2_other");
+        let mut entity_area_3_spawn: Entity = EntityImpl::create_entity(ref sys.world, "entity_area_3_spawn");
+        let mut entity_area_3_other: Entity = EntityImpl::create_entity(ref sys.world, "entity_area_3_other");
+        let mut area_1_spawn: Area = AreaComponent::add_component(ref sys.world, entity_area_1_spawn.inst);
+        let mut area_1_other: Area = AreaComponent::add_component(ref sys.world, entity_area_1_other.inst);
+        let mut area_2_spawn: Area = AreaComponent::add_component(ref sys.world, entity_area_2_spawn.inst);
+        let mut area_2_other: Area = AreaComponent::add_component(ref sys.world, entity_area_2_other.inst);
+        let mut area_3_spawn: Area = AreaComponent::add_component(ref sys.world, entity_area_3_spawn.inst);
+        let mut area_3_other: Area = AreaComponent::add_component(ref sys.world, entity_area_3_other.inst);
+        area_1_spawn.is_spawn_point = true;
+        area_1_other.is_spawn_point = false;
+        area_2_spawn.is_spawn_point = true;
+        area_2_other.is_spawn_point = false;
+        area_3_spawn.is_spawn_point = true;
+        area_3_other.is_spawn_point = false;
+        entity_area_1_spawn.trail_id = trail_1.trail_id;
+        entity_area_1_other.trail_id = trail_1.trail_id;
+        entity_area_2_spawn.trail_id = trail_2.trail_id;
+        entity_area_2_other.trail_id = trail_2.trail_id;
+        entity_area_3_spawn.trail_id = trail_3.trail_id;
+        entity_area_3_other.trail_id = trail_3.trail_id;
+        sys.designer.create_entity(array![
+            entity_area_1_spawn.clone(), entity_area_1_other.clone(),
+            entity_area_2_spawn.clone(), entity_area_2_other.clone(),
+            entity_area_3_spawn.clone(), entity_area_3_other.clone(),
+        ]);
+        sys.designer.create_area(array![
+            area_1_spawn.clone(), area_1_other.clone(),
+            area_2_spawn.clone(), area_2_other.clone(),
+            area_3_spawn.clone(), area_3_other.clone(),
+        ]);
+        entity_area_1_spawn.set_parent(ref sys.world, @entity_trail_1, game_id);
+        entity_area_1_other.set_parent(ref sys.world, @entity_trail_1, game_id);
+        entity_area_2_spawn.set_parent(ref sys.world, @entity_trail_2, game_id);
+        entity_area_2_other.set_parent(ref sys.world, @entity_trail_2, game_id);
+        entity_area_3_spawn.set_parent(ref sys.world, @entity_trail_3, game_id);
+        entity_area_3_other.set_parent(ref sys.world, @entity_trail_3, game_id);
+        //
+        // check hub trails
+        let exits: Span<Exit> = hub_1.get_trails_exits(@sys.world);
+        assert_eq!(exits.len(), 2, "exits.len()");
+        assert_eq!(*exits[0].leads_to, area_1_spawn.inst, "exits[0].leads_to");
+        assert_eq!(*exits[1].leads_to, area_2_spawn.inst, "exits[1].leads_to");
     }
 
 }
