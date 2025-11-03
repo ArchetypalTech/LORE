@@ -17,6 +17,7 @@ pub mod lib {
     pub mod access;
     pub mod random;
     pub mod utils;
+    pub mod arrays;
     pub mod dns;
     pub mod trophies;
     pub mod level_test;

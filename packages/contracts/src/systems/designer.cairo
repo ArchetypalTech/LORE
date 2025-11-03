@@ -121,7 +121,7 @@ pub mod designer {
             effect::{Effect, EffectImpl},
             condition::{Condition},
             trigger::{Trigger, TriggerImpl},
-            hub::{Hub, Trail, TrailTrait},
+            hub::{Hub, HubTrait, Trail, TrailTrait},
         },
         types::{
             component_type::ComponentType,
@@ -372,6 +372,7 @@ pub mod designer {
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
                 TrailTrait::assert_can_edit_trail(ref world, @o);
+                o.append_to_hub(ref world);
                 world.write_model(@o);
             }
         }
@@ -539,6 +540,7 @@ pub mod designer {
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
                 let model: Hub = world.read_model(inst);
+                model.remove_trails_from_hub(ref world);
                 world.erase_model(@model);
             }
         }
@@ -550,6 +552,7 @@ pub mod designer {
                 self._assert_can_delete_entity(@world, inst, owned);
                 TrailTrait::assert_can_delete_trail(ref world, inst);
                 let model: Trail = world.read_model(inst);
+                model.remove_from_hub(ref world);
                 world.erase_model(@model);
             }
         }

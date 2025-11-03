@@ -9,6 +9,9 @@ use lore::{
         game_instance::{Instance, GameModelImpl, GameInstImpl},
         trail_token_info::{MAIN_TRAIL_ID},
     },
+    lib::{
+        arrays::ArrayUtilsTrait,
+    },
 };
 
 #[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
@@ -124,25 +127,18 @@ pub impl EntityImpl of EntityTrait {
     //
 
     fn has_children(self: @Entity, world: @WorldStorage, game_id: u128) -> bool {
-        let parent: ParentToChildren = world.read_game_model(*self.inst, game_id);
+        let parent: @ParentToChildren = @world.read_game_model(*self.inst, game_id);
         (parent.children.len() > 0)
     }
 
     fn contains_child(self: @Entity, world: @WorldStorage, inst: felt252, game_id: u128) -> bool {
-        let mut result: bool = false;
-        let parent: ParentToChildren = world.read_game_model(*self.inst, game_id);
-        for child_inst in parent.children.span() {
-            if (child_inst == @inst) {
-                result = true;
-                break;
-            }
-        };
-        (result)
+        let parent: @ParentToChildren = @world.read_game_model(*self.inst, game_id);
+        (parent.children.contains(@inst))
     }
 
     fn get_children(self: @Entity, world: @WorldStorage, game_id: u128) -> Span<Entity> {
         let mut result: Array<Entity> = array![];
-        let parent: ParentToChildren = world.read_game_model(*self.inst, game_id);
+        let parent: @ParentToChildren = @world.read_game_model(*self.inst, game_id);
         for child_inst in parent.children.span() {
             let child_entity: Entity = world.read_model(*child_inst);
             result.append(child_entity);
@@ -214,13 +210,7 @@ pub impl EntityImpl of EntityTrait {
     // internal
     //
     fn _remove_child(ref self: ParentToChildren, ref world: WorldStorage, child_inst: felt252, game_id: u128) {
-        let mut new_children: Array<felt252> = array![];
-        for i in self.children.span() {
-            if (*i != child_inst) {
-                new_children.append(*i);
-            }
-        };
-        self.children = new_children;
+        self.children = self.children.remove(@child_inst);
         self.is_parent = true;
         world.write_game_model(@self, game_id);
     }
