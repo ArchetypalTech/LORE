@@ -172,7 +172,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
         };
 
         if props.len() > 0 {
-            let mut registry = PropertyRegistry { component_type: component, properties: props };
+            let mut registry: PropertyRegistry = PropertyRegistry { component_type: component, properties: props };
             // println!("Writing registry: {:?}", registry);
             world.write_model(@registry);
         }
@@ -261,11 +261,11 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                 } else if name == @is_reactable {
                     arr.append((*component.is_reactable).into());
                 } else if name == @description {
-                    let desc = component.description;
+                    let desc: @Array<u32> = component.description;
                     for i in 0..desc.len() {
                         let key: u32 = *desc.at(i);
                         let desc_text: DescriptionText = world.read_game_model_key(*component.inst, key, game_id);
-                        let felt = ByteArrayTraitExt::to_felt252_word(@desc_text.text).unwrap();
+                        let felt: felt252 = ByteArrayTraitExt::to_felt252_word(@desc_text.text).unwrap();
                         arr.append(felt);
                     }
                 }
@@ -400,7 +400,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadWrite => {
                         if name == @is_spawn_point {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_spawn_point = new_var_value;
                             success = true;
                         }
@@ -437,12 +437,12 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadWrite => {
                         if name == @is_exit {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_exit = new_var_value;
                             success = true;
                         } else if name == @is_enterable {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_enterable = new_var_value;
                             success = true;
                         } else if name == @leads_to {
@@ -451,8 +451,8 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             success = true;
                         } else if name == @direction_type {
                             let (value, _index) = new_value[0];
-                            let lowercased = ByteArrayTraitExt::to_lowercase(value);
-                            let to_felt252_direction = ByteArrayTraitExt::to_felt252_word(
+                            let lowercased: ByteArray = ByteArrayTraitExt::to_lowercase(value);
+                            let to_felt252_direction: felt252 = ByteArrayTraitExt::to_felt252_word(
                                 @lowercased,
                             )
                                 .unwrap();
@@ -493,12 +493,12 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadWrite => {
                         if name == @is_visible {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_visible = new_var_value;
                             success = true;
                         } else if name == @is_reactable {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_reactable = new_var_value;
                             success = true;
                         } else if name == @description {
@@ -520,7 +520,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
 
                                 if !found {
                                     // Add new description
-                                    let new_desc = DescriptionText {
+                                    let new_desc: DescriptionText = DescriptionText {
                                         inst: component.inst, key: *index, text: value.clone(),
                                     };
                                     world.write_model(@new_desc);
@@ -569,7 +569,7 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             component.owner_id = new_owner_id;
                             // move item to new owner
                             let new_owner_container: Container = world.read_game_model(component.owner_id, game_id);
-                            let res = new_owner_container.put_item_in(ref world, ref component, game_id);
+                            let res: Result::<(), Error> = new_owner_container.put_item_in(ref world, ref component, game_id);
                             match res {
                                 Result::Ok(()) => {
                                     success = true;
@@ -580,12 +580,12 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             }
                         } else if effect.property == @can_be_picked_up {
                             let (value, _index) = effect.value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_picked_up = new_var_value;
                             success = true;
                         } else if effect.property == @can_go_in_container {
                             let (value, _index) = effect.value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_go_in_container = new_var_value;
                             success = true;
                         } else if effect.property == @quantity {
@@ -614,12 +614,12 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                             }
                         } else if effect.property == @already_used {
                             let (value, _index) = effect.value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.already_used = new_var_value;
                             success = true;
                         } else if effect.property == @multiple_use {
                             let (value, _index) = effect.value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.multiple_use = new_var_value;
                             success = true;
                         }
@@ -658,22 +658,22 @@ pub impl VariablePropertyHelper of VariablePropertyHelperTrait {
                     PropertyAccess::ReadWrite => {
                         if name == @is_container {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_container = new_var_value;
                             success = true;
                         } else if name == @can_be_opened {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_be_opened = new_var_value;
                             success = true;
                         } else if name == @can_receive_items {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.can_receive_items = new_var_value;
                             success = true;
                         } else if name == @is_open {
                             let (value, _index) = new_value[0];
-                            let new_var_value = ByteArrayTraitExt::bool_from_byte_array(value);
+                            let new_var_value: bool = ByteArrayTraitExt::bool_from_byte_array(value);
                             component.is_open = new_var_value;
                             success = true;
                         } else if name == @num_slots {

@@ -140,7 +140,7 @@ pub impl PlayerImpl of PlayerTrait {
         reactable.description = array![0];
         reactable.store(ref world, 0);
         // (reactable) player description
-        let descr1 = DescriptionText { inst: entity.inst, key: 0, text: "Looks like a visitor" };
+        let descr1: DescriptionText = DescriptionText { inst: entity.inst, key: 0, text: "Looks like a visitor" };
         world.write_model(@descr1);
         // initialize player story
         player.say(ref world, "You feel light, and shiny, in the head");
@@ -163,8 +163,8 @@ pub impl PlayerImpl of PlayerTrait {
     }
 
     fn describe_room(self: @Player, ref world: WorldStorage) -> Result<(), Error> {
-        let context = self.get_context(@world);
-        let room = self.get_room_entity(@world);
+        let context: Array<Entity> = self.get_context(@world);
+        let room: Option<Entity> = self.get_room_entity(@world);
         if room.is_none() {
             return Result::Err(Error::NoRoom);
         }
@@ -180,7 +180,7 @@ pub impl PlayerImpl of PlayerTrait {
                     if reactable.already_shown {
                         self.say(ref world, format!("{}", reactable.new_entry));
                     } else {
-                        let description = reactable.get_first_description(world, *self.game_id);
+                        let description: ByteArray = reactable.get_first_description(world, *self.game_id);
                         self.say(ref world, format!("{}", description));
                         reactable.already_shown = true;
                         reactable.store(ref world, *self.game_id);

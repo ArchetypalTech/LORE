@@ -73,7 +73,7 @@ pub impl ContainerImpl of ContainerTrait {
     fn can_put_item(
         self: @Container, world: @WorldStorage, item: @InventoryItem, game_id: u128,
     ) -> (bool, Result<(), Error>) {
-        let mut can_put_item = false;
+        let mut can_put_item: bool = false;
         // check if container is open
         if (!*self.is_open) {
             return (can_put_item, Result::Err(Error::NotOpen));
@@ -186,7 +186,7 @@ pub impl ContainerImpl of ContainerTrait {
         } else {
             // Say what it contains
             player.say(ref world, format!("It contains:"));
-            let items = self.entity(@world).get_children(@world, *player.game_id);
+            let items: Span<Entity> = self.entity(@world).get_children(@world, *player.game_id);
             for item in items {
                 // item name + quantity
                 // It contains cOINS 122 
@@ -251,7 +251,7 @@ pub impl ContainerComponent of Component<Container> {
     ) -> Result<(), Error> {
         // println!("Container execute_command");
         let (action, _token) = get_action_token(@self, @world, command).unwrap();
-        let nouns = command.get_nouns();
+        let nouns: Span<Token> = command.get_nouns();
         match action.action_fn {
             ContainerActions::Open => {
                 // if the cointainer can be opened is false and then player say opern the container
@@ -276,7 +276,7 @@ pub impl ContainerComponent of Component<Container> {
                     // Set the container to open
                     self.set_open(ref world, true, *player.game_id);
                     // Check container status and contents
-                    let doneChecking = self.clone().check_container(ref world, player, nouns[0].text);
+                    let doneChecking: bool = self.clone().check_container(ref world, player, nouns[0].text);
                     // Once done checking, return
                     if (doneChecking) {
                         return Result::Ok(());
@@ -302,7 +302,7 @@ pub impl ContainerComponent of Component<Container> {
             },
             ContainerActions::Check => {
                 // Check container status
-                let doneChecking = self.check_container(ref world, player, nouns[0].text);
+                let doneChecking: bool = self.check_container(ref world, player, nouns[0].text);
                 if (doneChecking) {
                     return Result::Ok(());
                 }

@@ -5,7 +5,7 @@ use lore::{
         components::{Component},
         game_instance::{Instance, GameModelImpl, GameModelKeyImpl},
         player::{Player, PlayerImpl},
-        container::{ContainerImpl, ContainerComponent},
+        container::{Container, ContainerImpl, ContainerComponent},
         description_text::{DescriptionText},
     },
     types::{
@@ -56,7 +56,7 @@ pub impl ReactableImpl of ReactableTrait {
                     .try_into()
                     .unwrap();
 
-                let random_idx = idx1 + (rng % range_len);
+                let random_idx: u32 = idx1 + (rng % range_len);
                 if random_idx >= self.description.len().try_into().unwrap() {
                     return ""; // avoid out-of-bounds access
                 }
@@ -174,13 +174,13 @@ pub impl ReactableComponent of Component<Reactable> {
                 // If token is verb and the verb is "examine" then check if the entity has a container. If so, call the container's check function
                 if (action.action == "examine" || action.action == "inspect") {
                     // Check if Self has a container
-                    let container = ContainerComponent::get_component(@world, self.inst, *player.game_id);
+                    let container: Option<Container> = ContainerComponent::get_component(@world, self.inst, *player.game_id);
                     // If container is none, return ok
                     if container.is_none() {
                         return Result::Ok(());
                     }
                     // if container is some, call the container's check function
-                    let container_unwrapped = container.unwrap();
+                    let container_unwrapped: Container = container.unwrap();
                     // get entity of container
                     let container_entity: Entity = EntityImpl::get_entity(@world, container_unwrapped.inst).unwrap();
                     let doneChecking = container_unwrapped.check_container(ref world, player, @container_entity.name);
@@ -342,7 +342,7 @@ pub mod tests {
         let read_reactable: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         // println!("read_reactable: {:?}", read_reactable);
         assert(read_reactable.is_reactable, 'reactable is reactable');
-        let mut res = array![];
+        let mut res: Array<ByteArray> = array![];
         for _ in 0..10_u8 {
             res.append(read_reactable.get_random_description(@command, world, 0));
         };
