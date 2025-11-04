@@ -469,7 +469,7 @@ mod tests {
     }
 
     #[test]
-    fn test_player_room() {
+    fn test_player_room_ok() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create some rooms
         let room_1_entity: Entity = EntityImpl::create_entity(ref sys.world, "room_1");
@@ -482,10 +482,10 @@ mod tests {
         // create base player
         let default_room_id: felt252 = 700111;
         let player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, 0);
-        helpers::set_caller(helpers::PLAYER_1);
         // mint game instance for players
         let game_id_1: u128 = 1;
         let game_id_2: u128 = 2;
+        helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("", Option::None);
         helpers::set_caller(helpers::PLAYER_2);
         sys.prompt.prompt("", Option::None);
@@ -510,6 +510,10 @@ mod tests {
         sys.world.write_model(@DescriptionText { inst: room_2_entity.inst, key: 0, text: "something else" });
         //
         // move game instance players
+        let token_info_1: GameTokenInfo = sys.world.read_model(game_id_1);
+        let token_info_2: GameTokenInfo = sys.world.read_model(game_id_2);
+        assert_eq!(token_info_1.room_name, "Nowhere", "clean token info");
+        assert_eq!(token_info_2.room_name, "Nowhere", "clean token info");
         player_1.move_to_room(ref sys.world, room_2_entity.inst);
         player_2.move_to_room(ref sys.world, room_1_entity.inst);
         assert_eq!(_player_location(@sys.world, @player), default_room_id, "moved game inst");
@@ -607,9 +611,13 @@ mod tests {
         // enter room 2, look around... new entity not present
         sys.prompt.prompt("use to_room_2", Option::None);
         assert_eq!(room_2_entity.get_children_count(@sys.world, game_id), 2+1, "after preserve");
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
+        assert_eq!(token_info.room_name, room_2_entity.name.clone(), "after to_room_2");
         sys.prompt.prompt("look around", Option::None);
         assert_eq!(_last_story_line(@sys.world, game_id), "new_entity", "after preserve");
         sys.prompt.prompt("use to_room_1", Option::None);
+        let token_info: GameTokenInfo = sys.world.read_model(game_id);
+        assert_eq!(token_info.room_name, room_1_entity.name.clone(), "after to_room_1");
     }
 
     fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {

@@ -40,6 +40,7 @@ pub struct GameCreatedEvent {
 //---------------------------------
 // Model Traits
 //
+use core::num::traits::Zero;
 use lore::lib::dns::{DnsTrait, IGameTokenDispatcherTrait};
 use lore::models::{
     entity::{Entity},
@@ -56,14 +57,20 @@ use lore::lib::{
 #[generate_trait]
 pub impl GameTokenInfoImpl of GameTokenInfoTrait {
     fn set_room(ref world: WorldStorage, game_id: u128, room_inst: felt252) {
-        // read room entity
+        if (game_id.is_zero()) {
+            return;
+        }
+        // update room name
         let room_entity: Entity = world.read_model(room_inst);
-        let area: Option<Area> = AreaComponent::get_component(@world, room_inst, game_id);
+        if (!room_entity.is_entity) {
+            return;
+        }
         // update token info
+        let mut game_info: GameTokenInfo = world.read_model(game_id);
+        game_info.room_name = room_entity.name;
+        // set progress from Area
+        let area: Option<Area> = AreaComponent::get_component(@world, room_inst, game_id);
         if let Option::Some(area) = area {
-            // update room name
-            let mut game_info: GameTokenInfo = world.read_model(game_id);
-            game_info.room_name = room_entity.name;
             // update progress
             let trail_id: u128 = world.get_entity_trail_id(room_inst);
             let completed_now: bool = world.set_trail_progress(game_id, trail_id, area.progress_percentage);
@@ -83,10 +90,10 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
                     world.set_player_is_editor(owner, true);
                 }
             }
-            // store!
-            world.write_model(@game_info);
-            world.game_token_dispatcher().update_token_metadata(game_id.into());
         };
+        // store!
+        world.write_model(@game_info);
+        world.game_token_dispatcher().update_token_metadata(game_id.into());
     }
     fn current_game_progress(self: @WorldStorage, game_id: u128) -> u8 {
         (self.current_trail_progress(game_id, MAIN_TRAIL_ID))

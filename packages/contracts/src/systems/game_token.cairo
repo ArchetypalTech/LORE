@@ -199,7 +199,7 @@ pub mod game_token {
                 minter_address: recipient,
                 seed,
                 act_number: 1,
-                room_name: "The Void",
+                room_name: "Nowhere",
             });
 
             // switch to this game
