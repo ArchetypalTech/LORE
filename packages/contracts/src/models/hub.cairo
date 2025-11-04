@@ -7,11 +7,17 @@ use lore::{
     models::{
         entity::{Entity, EntityImpl, ParentToChildren},
         trail_token_info::{TrailTokenInfo},
+        description_text::{DescriptionText},
+        reactable::{Reactable},
         area::{Area},
         exit::{Exit},
     },
     types::{
         direction_type::{Direction},
+        component_type::{
+            ActionMapReactable, ReactableActions,
+            ActionMapExit, ExitActions,
+        },
     },
     lib::{
         utils::ByteArrayTraitExt,
@@ -64,6 +70,15 @@ pub impl HubImpl of HubTrait {
         (inst != 0 && self.read_member(Model::<Hub>::ptr_from_keys(inst), selector!("is_hub")))
     }
 
+    fn get_hub_component(self: @WorldStorage, inst: felt252) -> Option<Hub> {
+        if (self.has_hub_component(inst)) {
+            let hub: Hub = self.read_model(inst);
+            Option::Some(hub)
+        } else {
+            Option::None
+        }
+    }
+
     fn get_published_trails_insts(self: @Hub, world: @WorldStorage) -> Span<felt252> {
         let mut result: Array<felt252> = array![];
         let is_published: Array<bool> = world.read_member_of_models(Model::<Trail>::ptrs_from_keys(self.trails_insts.span()), selector!("is_published"));
@@ -76,6 +91,19 @@ pub impl HubImpl of HubTrait {
             }
         }
         (result.span())
+    }
+
+    // fn get_trails_as_children(self: @Hub, world: @WorldStorage, ref context: Array<Entity>) -> Array<Entity> {
+    //     let mut result: Array<Entity> = array![];
+    //     self.append_trails_as_children(world, ref result);
+    //     (result)
+    // }
+    fn append_trails_as_children(self: @Hub, world: @WorldStorage, ref context: Array<Entity>) {
+        let trails_insts: Span<felt252> = self.get_published_trails_insts(world);
+        for i in 0..trails_insts.len() {
+            let trail_entity: Entity = world.read_model(*trails_insts[i]);
+            context.append(trail_entity);
+        }
     }
 
     fn get_trails_exits(self: @Hub, world: @WorldStorage) -> Span<Exit> {
@@ -152,12 +180,14 @@ pub impl TrailImpl of TrailTrait {
         (self.get_entity_trail_id(inst).is_non_zero())
     }
 
+    //
     // called when a new trial is minted
+    // from trail_token only!!!
     fn create_new_trail_entity(ref self: WorldStorage, trail_id: u128) {
         // Create a new entity for the trail
         let trail_name: ByteArray = format!("Trail-{}", trail_id);
         let entity: Entity = EntityImpl::create_trail_entity(ref self, trail_name, trail_id);
-        // Create the trail component
+        // Create the trail components
         let trail: Trail = Trail {
             inst: entity.inst,
             is_trail: true,
@@ -165,28 +195,76 @@ pub impl TrailImpl of TrailTrait {
             hub_inst: 0,
             is_published: false,
         };
+        let exit: Exit = Exit {
+            inst: entity.inst,
+            is_exit: true,
+            is_enterable: true,
+            leads_to: 0,
+            direction_type: Direction::Down,
+            action_map: array![
+                ActionMapExit { action: "go", inst: 0, action_fn: ExitActions::UseExit },
+                ActionMapExit { action: "enter", inst: 0, action_fn: ExitActions::UseExit },
+                ActionMapExit { action: "use", inst: 0, action_fn: ExitActions::UseExit },
+            ],
+        };
+        let descr_2: DescriptionText = DescriptionText {
+            inst: entity.inst,
+            key: 2,
+            text: "This is a player generated Trail. Enter at your own risk!",
+        };
+        let reactable: Reactable = Reactable {
+            inst: entity.inst,
+            is_reactable: true,
+            is_visible: true,
+            description: array![0, 1, 2],
+            action_map: array![
+                ActionMapReactable {
+                    action: "show",
+                    inst: 0,
+                    action_fn: ReactableActions::ReadSpecificDescription,
+                    entrypoints: (1, 1),
+                },
+                ActionMapReactable {
+                    action: "look",
+                    inst: 0,
+                    action_fn: ReactableActions::ReadSpecificDescription,
+                    entrypoints: (2, 2),
+                },
+                ActionMapReactable {
+                    action: "read",
+                    inst: 0,
+                    action_fn: ReactableActions::ReadSpecificDescription,
+                    entrypoints: (2, 2),
+                },
+            ],
+            already_shown: false,
+            new_entry: "A player generated Trail.",
+        };
+        // write models
         self.write_model(@trail);
+        self.write_model(@exit);
+        self.write_model(@descr_2);
+        self.write_model(@reactable);
         // update trail token
         self.write_member(Model::<TrailTokenInfo>::ptr_from_keys(trail_id), selector!("trail_inst"), trail.inst);
     }
 
+    // avoid deleting a top-level Trail entities and components
+    // called from designer delete_*()
+    fn assert_trail_delete_protection(ref self: WorldStorage, inst: felt252) {
+        assert(!self.has_trail_component(inst), 'TRAIL: Not allowed delete trail');
+    }
+
     // called from designer.create_trail()
-    fn assert_can_edit_trail(ref self: WorldStorage, new_trail: @Trail) {
+    fn assert_trail_edit_protection(ref self: WorldStorage, new_trail: @Trail) {
         let existing_trail: Trail = self.read_model(*new_trail.inst);
         // not allowed to create a Trails from designer
         // Trails are one-to-one with tokens, and created automatically when a token is minted
-        assert(existing_trail.is_trail, 'TRAIL: Trail not found');
+        assert(existing_trail.is_trail, 'TRAIL: Not allowed to create');
         // not allowed to change trail_id
         assert(existing_trail.trail_id == *new_trail.trail_id, 'TRAIL: Invalid trail id');
         // not allowed to change the hub_inst
         assert(new_trail.hub_inst.is_zero() || self.has_hub_component(*new_trail.hub_inst), 'TRAIL: Invalid hub');
-    }
-
-    // avoid deleting a top-level Trail entity
-    // called from designer.delete_entity()
-    // called from designer.delete_trail()
-    fn assert_can_delete_trail(ref self: WorldStorage, inst: felt252) {
-        assert(!self.has_trail_component(inst), 'TRAIL: Not allowed delete trail');
     }
 
     //
@@ -257,7 +335,8 @@ mod tests {
             game_token_info::{PlayerGameImpl},
             trail_token_info::{TrailTokenInfo},
             area::{AreaComponent, Area},
-            exit::{Exit},
+            exit::{Exit, ExitInstance},
+            reactable::{ReactableInstance},
         },
         tests::{
             helpers,
@@ -308,6 +387,8 @@ mod tests {
         assert!(trail.is_trail, "is_trail");
         assert_eq!(entity.name, "Trail-1");
         assert_eq!(entity.trail_id, trail.trail_id);
+        assert!(ExitInstance::has_component(@sys.world, entity.inst));
+        assert!(ReactableInstance::has_component(@sys.world, entity.inst));
         //
         // add some children
         let game_id: u128 = 0;
@@ -324,7 +405,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('TRAIL: Trail not found','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('TRAIL: Not allowed to create','ENTRYPOINT_FAILED'))]
     fn test_not_allowed_to_create_trails_directly() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         let mut trail_1: Trail = TrailImpl::add_component(ref sys.world, 0x123, 1);
@@ -353,18 +434,36 @@ mod tests {
     #[should_panic(expected: ('TRAIL: Not allowed delete trail','ENTRYPOINT_FAILED'))]
     fn test_not_allowed_to_delete_trail_entity() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        let (_entity, mut trail) : (Entity, Trail) = _create_trail(ref sys, helpers::PLAYER_1);
+        let (entity, _trail) : (Entity, Trail) = _create_trail(ref sys, helpers::PLAYER_1);
         helpers::set_caller(OWNER());
-        sys.designer.delete_entity(array![trail.inst]);
+        sys.designer.delete_entity(array![entity.inst]);
     }
 
     #[test]
     #[should_panic(expected: ('TRAIL: Not allowed delete trail','ENTRYPOINT_FAILED'))]
     fn test_not_allowed_to_delete_trail_component() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        let (_entity, mut trail) : (Entity, Trail) = _create_trail(ref sys, helpers::PLAYER_1);
+        let (entity, _trail) : (Entity, Trail) = _create_trail(ref sys, helpers::PLAYER_1);
         helpers::set_caller(OWNER());
-        sys.designer.delete_trail(array![trail.inst]);
+        sys.designer.delete_trail(array![entity.inst]);
+    }
+
+    #[test]
+    #[should_panic(expected: ('TRAIL: Not allowed delete trail','ENTRYPOINT_FAILED'))]
+    fn test_not_allowed_to_delete_exit_component() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (entity, _trail) : (Entity, Trail) = _create_trail(ref sys, helpers::PLAYER_1);
+        helpers::set_caller(OWNER());
+        sys.designer.delete_exit(array![entity.inst]);
+    }
+
+    #[test]
+    #[should_panic(expected: ('TRAIL: Not allowed delete trail','ENTRYPOINT_FAILED'))]
+    fn test_not_allowed_to_delete_reactable_component() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (entity, _trail) : (Entity, Trail) = _create_trail(ref sys, helpers::PLAYER_1);
+        helpers::set_caller(OWNER());
+        sys.designer.delete_reactable(array![entity.inst]);
     }
 
     //---------------------------------

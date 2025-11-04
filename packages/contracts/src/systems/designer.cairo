@@ -381,7 +381,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
-                TrailTrait::assert_can_edit_trail(ref world, @o);
+                TrailTrait::assert_trail_edit_protection(ref world, @o);
                 o.append_to_hub(ref world);
                 world.write_model(@o);
             }
@@ -411,7 +411,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
-                TrailTrait::assert_can_delete_trail(ref world, inst);
+                TrailTrait::assert_trail_delete_protection(ref world, inst);
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
                 // delete_reactable(world, model.Reactable);
@@ -435,6 +435,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                TrailTrait::assert_trail_delete_protection(ref world, inst);
                 let model: Reactable = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -445,6 +446,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                TrailTrait::assert_trail_delete_protection(ref world, inst);
                 let model: DescriptionText = world.read_model((inst, key),);
                 world.erase_model(@model);
             }
@@ -465,6 +467,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                TrailTrait::assert_trail_delete_protection(ref world, inst);
                 let model: Exit = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -560,7 +563,7 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
-                TrailTrait::assert_can_delete_trail(ref world, inst);
+                TrailTrait::assert_trail_delete_protection(ref world, inst);
                 let model: Trail = world.read_model(inst);
                 model.remove_from_hub(ref world);
                 world.erase_model(@model);

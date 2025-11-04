@@ -10,6 +10,7 @@ use lore::{
         area::{Area, AreaComponent},
         description_text::{DescriptionText},
         game_token_info::{GameTokenInfoTrait},
+        hub::{HubTrait},
     },
     types::{command_type::Command},
     constants::errors::Error,
@@ -276,12 +277,8 @@ pub impl PlayerImpl of PlayerTrait {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children: Span<Entity> = room.get_children(world, *self.game_id);
-                // Go over 1st level children
-                for child in children {
-                    context.append(child.clone());
-                };
-                context
+                self._append_children_to_context(world, @room, ref context);
+                (context)
             },
             Option::None => array![],
         }
@@ -293,25 +290,36 @@ pub impl PlayerImpl of PlayerTrait {
             Option::Some(room) => {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
-                let children: Span<Entity> = room.get_children(world, *self.game_id);
                 // Go over 1st level children
-                for child in children {
-                    context.append(child.clone());
+                let children_1: Span<Entity> = self._append_children_to_context(world, @room, ref context);
+                for child_1 in children_1 {
                     // Go over 2nd level children
-                    let children_2: Span<Entity> = child.get_children(world, *self.game_id);
+                    let children_2: Span<Entity> = self._append_children_to_context(world, child_1, ref context);
                     for child_2 in children_2 {
-                        context.append(child_2.clone());
                         // Go over 3rd level children
-                        let children_3: Span<Entity> = child_2.get_children(world, *self.game_id);
-                        for child_3 in children_3 {
-                            context.append(child_3.clone());
-                        }
+                         self._append_children_to_context(world, child_2, ref context);
                     };
                 };
                 context
             },
             Option::None => array![],
         }
+    }
+
+    //
+    // Append all children to context
+    fn _append_children_to_context(self: @Player, world: @WorldStorage, parent: @Entity, ref context: Array<Entity>) -> Span<Entity> {
+        // Go over entity children
+        let children: Span<Entity> = parent.get_children(world, *self.game_id);
+        for child in children {
+            context.append(child.clone());
+        };
+        // Add Trails inside Hub as if they were children
+        if let Some(hub) = world.get_hub_component(*parent.inst) {
+            hub.append_trails_as_children(world, ref context);
+        }
+        // return children for recursion
+        (children)
     }
 
     // Get the player personal inventory container component
