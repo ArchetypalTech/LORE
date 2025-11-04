@@ -278,6 +278,7 @@ pub impl PlayerImpl of PlayerTrait {
                 let mut context: Array<Entity> = array![];
                 context.append(room.clone());
                 self._append_children_to_context(world, @room, ref context);
+// println!("get_context({})... len:{}", room.inst, context.len());
                 (context)
             },
             Option::None => array![],
@@ -300,6 +301,7 @@ pub impl PlayerImpl of PlayerTrait {
                          self._append_children_to_context(world, child_2, ref context);
                     };
                 };
+// println!("get_full_context({})... len:{}", room.inst, context.len());
                 context
             },
             Option::None => array![],
@@ -533,8 +535,8 @@ mod tests {
     fn test_player_room_preserve() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create some rooms
-        let room_1_entity: Entity = EntityImpl::create_entity(ref sys.world, "Room 1");
-        let room_2_entity: Entity = EntityImpl::create_entity(ref sys.world, "Room 2");
+        let room_1_entity: Entity = EntityImpl::create_entity(ref sys.world, "You are in Room 1");
+        let room_2_entity: Entity = EntityImpl::create_entity(ref sys.world, "You are in Room 2");
         let _: Reactable = Reactable_create_prefab(ref sys.world, room_1_entity.inst, "ROOM1");
         let _: Reactable = Reactable_create_prefab(ref sys.world, room_2_entity.inst, "ROOM2");
         let _area_1: Area = AreaComponent::add_component(ref sys.world, room_1_entity.inst);
@@ -566,23 +568,22 @@ mod tests {
         let game_id: u128 = 1;
         let player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, 0);
         helpers::set_caller(helpers::PLAYER_1);
-        sys.prompt.prompt("", Option::None);
+        sys.prompt.prompt("", Option::None); // creates game token
         // place in Room 1
         helpers::set_caller(helpers::OWNER());
         player.move_to_room(ref sys.world, room_1_entity.inst);
         //
-        // rooom 1
+        // move to room 2
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("g_game_id", Option::None);
-        assert_eq!(_last_story_line(@sys.world, game_id), "+sys+game-1", "g_game_id");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+game-1", "g_game_id");
         sys.prompt.prompt("use to_room_2", Option::None);
         sys.prompt.prompt("look around", Option::None);
-// println!("++ room 1: {}: {}", _story_len(@sys.world, game_id), _last_story_line(@sys.world, game_id));
-        assert_eq!(_last_story_line(@sys.world, game_id), "to_room_1", "look 2");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_1", "look 2");
+        // move to room 1
         sys.prompt.prompt("use to_room_1", Option::None);
         sys.prompt.prompt("look around", Option::None);
-// println!("++ room 2: {}: {}", _story_len(@sys.world, game_id), _last_story_line(@sys.world, game_id));
-        assert_eq!(_last_story_line(@sys.world, game_id), "to_room_2", "look 1");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_2", "look 1");
         //
         // add new entity to room 2
         assert_eq!(room_2_entity.get_children_count(@sys.world, 0), 1, "after add");
@@ -599,7 +600,7 @@ mod tests {
         sys.prompt.prompt("use to_room_2", Option::None);
         assert_eq!(room_2_entity.get_children_count(@sys.world, game_id), 1+1, "use after add");
         sys.prompt.prompt("look around", Option::None);
-        assert_eq!(_last_story_line(@sys.world, game_id), "to_room_1", "use after add");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_1", "use after add");
         sys.prompt.prompt("use to_room_1", Option::None);
         //
         // enable preserve_children
@@ -614,20 +615,10 @@ mod tests {
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_2_entity.name.clone(), "after to_room_2");
         sys.prompt.prompt("look around", Option::None);
-        assert_eq!(_last_story_line(@sys.world, game_id), "new_entity", "after preserve");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "new_entity", "after preserve");
         sys.prompt.prompt("use to_room_1", Option::None);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_1_entity.name.clone(), "after to_room_1");
-    }
-
-    fn _story_len(world: @WorldStorage, game_id: u128) -> u32 {
-        let story: PlayerStory = world.read_model(game_id);
-        (story.story_line)
-    }
-    fn _last_story_line(world: @WorldStorage, game_id: u128) -> ByteArray {
-        let story: PlayerStory = world.read_model(game_id);
-        let story_line: StoryLine = world.read_model((game_id, story.story_line));
-        (story_line.line)
     }
 
     #[test]
@@ -640,20 +631,20 @@ mod tests {
         let player_1: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id_1);
         assert_eq!(player_0.game_id, game_id_0, "story_start");
         assert_eq!(player_1.game_id, game_id_1, "story_start");
-        assert_eq!(_story_len(@sys.world, game_id_0), 1, "story_start");
-        assert_eq!(_story_len(@sys.world, game_id_1), 1, "story_start");
-        assert_eq!(_story_len(@sys.world, game_id_2), 0, "story_start");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_0), 1, "story_start");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_1), 1, "story_start");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_2), 0, "story_start");
         // say something...
         player_0.say(ref sys.world, "hello");
         player_1.say(ref sys.world, "sys.world");
         player_1.say(ref sys.world, "sys.world");
-        assert_eq!(_story_len(@sys.world, game_id_0), 2, "said");
-        assert_eq!(_story_len(@sys.world, game_id_1), 3, "said");
-        assert_eq!(_story_len(@sys.world, game_id_2), 0, "said");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_0), 2, "said");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_1), 3, "said");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_2), 0, "said");
         // create new player
         let player_2: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id_2);
         assert_eq!(player_2.game_id, game_id_2, "story_start");
-        assert_eq!(_story_len(@sys.world, game_id_2), 1, "new_player");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_2), 1, "new_player");
         // say more...
         player_1.say(ref sys.world, "burp");
         player_2.say(ref sys.world, "blah");
@@ -661,8 +652,8 @@ mod tests {
         player_2.say(ref sys.world, "blah");
         player_2.say(ref sys.world, "blah");
         player_2.say(ref sys.world, "blah");
-        assert_eq!(_story_len(@sys.world, game_id_0), 2, "said_more");
-        assert_eq!(_story_len(@sys.world, game_id_1), 4, "said_more");
-        assert_eq!(_story_len(@sys.world, game_id_2), 6, "said_more");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_0), 2, "said_more");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_1), 4, "said_more");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_2), 6, "said_more");
     }
 }

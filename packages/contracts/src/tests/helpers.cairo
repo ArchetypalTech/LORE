@@ -18,7 +18,7 @@ use lore::{
     models,
     models::{
         entity::{Entity, EntityImpl},
-        player::{PlayerStory, StoryLine},
+        player::{PlayerStory, StoryLine, StoryLineType},
         dictionary::{DictionaryTrait},
         trail_token_info::{MAIN_TRAIL_ID},
     },
@@ -193,17 +193,29 @@ pub fn drop_all_events(address: ContractAddress) {
 // misc functions
 //
 
-pub fn player_story_len(world: @WorldStorage, game_id: u128) -> u32 {
+pub fn game_story_len(world: @WorldStorage, game_id: u128) -> u32 {
     let story: PlayerStory = world.read_model(game_id);
     (story.story_line)
 }
-pub fn player_story_last_line(world: @WorldStorage, game_id: u128) -> ByteArray {
+pub fn game_story_last_line(world: @WorldStorage, game_id: u128) -> ByteArray {
     let story: PlayerStory = world.read_model(game_id);
     let story_line: StoryLine = world.read_model((game_id, story.story_line),);
     (story_line.line)
 }
-pub fn print_player_story_last_line(world: @WorldStorage, game_id: u128) {
-    println!("___output: {:?}", player_story_last_line(world, game_id));
+pub fn print_game_story_last_line(world: @WorldStorage, game_id: u128) {
+    println!("_____last_line[{}]: [{:?}]", game_id, game_story_last_line(world, game_id));
+}
+pub fn print_game_story_last_command(world: @WorldStorage, game_id: u128, prefix: ByteArray) {
+    let story: PlayerStory = world.read_model(game_id);
+    let mut i: u32 = story.story_line;
+    loop {
+        let story_line: StoryLine = world.read_model((game_id, i),);
+        println!("___last_command({})[{}][+{}]: [{:?}]", game_id, prefix.clone(), i, story_line.line);
+        if (i == 0 || story_line.line_type == StoryLineType::Command) {
+            break;
+        }
+        i -= 1;
+    }
 }
 
 pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {

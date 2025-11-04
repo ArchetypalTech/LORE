@@ -190,9 +190,9 @@ mod tests {
         story_len_1 += 1;
         assert_eq!(player_1.address, helpers::PLAYER_1, "player_1.address");
         assert_eq!(player_1.game_id, game_id_1, "player_1.game_id");
-// helpers::print_player_story_last_line(@sys.world, game_id_1);
-        assert_eq!(helpers::player_story_len(@sys.world, game_id_1), story_len_1, "player_1.story");
-        assert_eq!(helpers::player_story_last_line(@sys.world, game_id_1), "You feel light, and shiny, in the head", "player_1.story");
+// helpers::print_game_story_last_line(@sys.world, game_id_1);
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_1), story_len_1, "player_1.story");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "You feel light, and shiny, in the head", "player_1.story");
         // player zero was created too
         let player_0: Player = PlayerImpl::get_player(@sys.world, 0).unwrap();
         assert_eq!(player_0.address, ZERO(), "player_0.address");
@@ -200,9 +200,9 @@ mod tests {
         // system command: g_game_id
         sys.prompt.prompt("g_game_id", Option::None);
         story_len_1 += 2;
-// helpers::print_player_story_last_line(@sys.world, game_id_1);
-        assert_eq!(helpers::player_story_len(@sys.world, game_id_1), story_len_1, "g_game_id 1");
-        assert_eq!(helpers::player_story_last_line(@sys.world, game_id_1), "+sys+game-1");
+// helpers::print_game_story_last_line(@sys.world, game_id_1);
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_1), story_len_1, "g_game_id 1");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+game-1");
         //
         // player_2 say ask to create a game...
         let game_id_2: u128 = 2;
@@ -222,16 +222,16 @@ mod tests {
         let player_2: Player = PlayerImpl::get_player(@sys.world, game_id_2).unwrap();
         assert_eq!(player_2.address, helpers::PLAYER_2, "player_2.address");
         assert_eq!(player_2.game_id, game_id_2, "player_2.game_id");
-// helpers::print_player_story_last_line(@sys.world, game_id_2);
-        assert_eq!(helpers::player_story_len(@sys.world, game_id_2), story_len_2, "player_2.story");
-        assert_eq!(helpers::player_story_last_line(@sys.world, game_id_2), "You feel light, and shiny, in the head", "player_2.story");
-        // assert_eq!(helpers::player_story_last_line(@sys.world, game_id_2), "+sys+game-2", "player_2.story");
+// helpers::print_game_story_last_line(@sys.world, game_id_2);
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_2), story_len_2, "player_2.story");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id_2), "You feel light, and shiny, in the head", "player_2.story");
+        // assert_eq!(helpers::game_story_last_line(@sys.world, game_id_2), "+sys+game-2", "player_2.story");
         // system command: g_game_id
         sys.prompt.prompt("g_game_id", Option::None);
         story_len_2 += 2;
-// helpers::print_player_story_last_line(@sys.world, game_id_2);
-        assert_eq!(helpers::player_story_len(@sys.world, game_id_2), story_len_2, "g_game_id 2");
-        assert_eq!(helpers::player_story_last_line(@sys.world, game_id_2), "+sys+game-2");
+// helpers::print_game_story_last_line(@sys.world, game_id_2);
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_2), story_len_2, "g_game_id 2");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id_2), "+sys+game-2");
         //
         // player 1 can play their own game by id...
         helpers::set_caller(helpers::PLAYER_1);
@@ -240,7 +240,7 @@ mod tests {
         // no new game was minted
         assert_eq!(sys.game_token.total_supply(), 2, "total_supply()");
         // more story was added
-        assert_eq!(helpers::player_story_len(@sys.world, game_id_1), story_len_1, "said");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_1), story_len_1, "said");
         //
         // ADMIN can play their someone else's game for debugging
         helpers::set_caller(OWNER());
@@ -249,7 +249,7 @@ mod tests {
         // no new game was minted
         assert_eq!(sys.game_token.total_supply(), 2, "total_supply()");
         // more story was added
-        assert_eq!(helpers::player_story_len(@sys.world, game_id_2), story_len_2, "said");
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_2), story_len_2, "said");
     }
 
     #[test]
@@ -275,7 +275,7 @@ mod tests {
         assert_eq!(player_1.game_id, game_id_1, "player_1.game_id");
         // build some story...
         sys.prompt.prompt("hello", Option::None);
-        let story_len_1: u32 = helpers::player_story_len(@sys.world, game_id_1);
+        let story_len_1: u32 = helpers::game_story_len(@sys.world, game_id_1);
         assert_gt!(story_len_1, 1, "game_1.story");
         //
         // create a new game...
@@ -291,13 +291,13 @@ mod tests {
         assert_eq!(player_2.address, helpers::PLAYER_1, "player_2.address");
         assert_eq!(player_2.game_id, game_id_2, "player_2.game_id");
         // clean story...
-        let story_len_2: u32 = helpers::player_story_len(@sys.world, game_id_2);
+        let story_len_2: u32 = helpers::game_story_len(@sys.world, game_id_2);
         assert_eq!(story_len_2, 1, "game_2.story");
         assert_lt!(story_len_2, story_len_1, "game_2.story");
         // buil story...
         sys.prompt.prompt("hello", Option::None);
         sys.prompt.prompt("hello", Option::None);
-        let story_len_2: u32 = helpers::player_story_len(@sys.world, game_id_2);
+        let story_len_2: u32 = helpers::game_story_len(@sys.world, game_id_2);
         assert_gt!(story_len_2, story_len_1, "story_len_2 > story_len_1");
         //
         // switch to game 1...
@@ -305,7 +305,7 @@ mod tests {
         assert_eq!(PlayerGameImpl::current_game_id(@sys.world, helpers::PLAYER_1), game_id_1, "current_game_id = 1 (loaded)");
         sys.prompt.prompt("hello", Option::None);
         sys.prompt.prompt("hello", Option::None);
-        let story_len_1: u32 = helpers::player_story_len(@sys.world, game_id_1);
+        let story_len_1: u32 = helpers::game_story_len(@sys.world, game_id_1);
         assert_gt!(story_len_1, story_len_2, "story_len_1 > story_len_2");
         //
         // switch to game 2...
@@ -313,7 +313,7 @@ mod tests {
         assert_eq!(PlayerGameImpl::current_game_id(@sys.world, helpers::PLAYER_1), game_id_2, "current_game_id = 2 (loaded)");
         sys.prompt.prompt("hello", Option::None);
         sys.prompt.prompt("hello", Option::None);
-        let story_len_2: u32 = helpers::player_story_len(@sys.world, game_id_2);
+        let story_len_2: u32 = helpers::game_story_len(@sys.world, game_id_2);
         assert_gt!(story_len_2, story_len_1, "story_len_2 > story_len_1 (2)");
     }
 
@@ -364,9 +364,9 @@ mod tests {
         assert_eq!(player_0.game_id, 0, "player_0.game_id");
         // system command: g_game_id
         sys.prompt.prompt("g_game_id", Option::Some(game_id_0));
-// helpers::print_player_story_last_line(@sys.world, game_id_0);
-        assert_eq!(helpers::player_story_len(@sys.world, game_id_0), 3, "said");
-        assert_eq!(helpers::player_story_last_line(@sys.world, game_id_0), "+sys+game-0");
+// helpers::print_game_story_last_line(@sys.world, game_id_0);
+        assert_eq!(helpers::game_story_len(@sys.world, game_id_0), 3, "said");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id_0), "+sys+game-0");
     }
 
     #[test]
