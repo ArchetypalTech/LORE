@@ -209,7 +209,12 @@ pub impl PlayerImpl of PlayerTrait {
         }
         // move player inside the room
         let room_entity: Entity = room_entity.unwrap();
-        let player_entity: Entity = self.entity(@world);
+        let mut player_entity: Entity = self.entity(@world);
+        // move player to trail if needed
+        if (player_entity.trail_id != room_entity.trail_id) {
+            player_entity.trail_id = room_entity.trail_id;
+            world.write_model(@player_entity);
+        }
         player_entity.set_parent(ref world, @room_entity, self.game_id);
         // set player's location
         self.location = room_id;
@@ -420,9 +425,6 @@ mod tests {
             area::{Area, AreaComponent},
             exit::{Exit, ExitComponent},
         },
-        types::{
-            direction_type::{Direction},
-        },
     };
     use lore::models::reactable::tests::{Reactable_create_prefab};
 
@@ -535,34 +537,11 @@ mod tests {
     fn test_player_room_preserve() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create some rooms
-        let room_1_entity: Entity = EntityImpl::create_entity(ref sys.world, "You are in Room 1");
-        let room_2_entity: Entity = EntityImpl::create_entity(ref sys.world, "You are in Room 2");
-        let _: Reactable = Reactable_create_prefab(ref sys.world, room_1_entity.inst, "ROOM1");
-        let _: Reactable = Reactable_create_prefab(ref sys.world, room_2_entity.inst, "ROOM2");
-        let _area_1: Area = AreaComponent::add_component(ref sys.world, room_1_entity.inst);
-        let mut area_2: Area = AreaComponent::add_component(ref sys.world, room_2_entity.inst);
+        let (room_1_entity, area_1): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 1", "ROOM1", Option::None);
+        let (room_2_entity, mut area_2): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 2", "ROOM2", Option::None);
         // create exits
-        let mut exit_1_entity: Entity = EntityImpl::create_entity(ref sys.world, "Exit To Room 2");
-        let mut exit_2_entity: Entity = EntityImpl::create_entity(ref sys.world, "Exit To Room 1");
-        exit_1_entity.alt_names = array!["to_room_2"];
-        exit_2_entity.alt_names = array!["to_room_1"];
-        sys.world.write_model(@exit_1_entity);
-        sys.world.write_model(@exit_2_entity);
-        let _: Reactable = Reactable_create_prefab(ref sys.world, exit_1_entity.inst, "to_room_2");
-        let _: Reactable = Reactable_create_prefab(ref sys.world, exit_2_entity.inst, "to_room_1");
-        let mut exit_to_room_2: Exit = ExitComponent::add_component(ref sys.world, exit_1_entity.inst);
-        let mut exit_to_room_1: Exit = ExitComponent::add_component(ref sys.world, exit_2_entity.inst);
-        exit_to_room_2.leads_to = room_2_entity.inst;
-        exit_to_room_2.is_enterable = true;
-        exit_to_room_2.direction_type = Direction::North;
-        exit_to_room_1.leads_to = room_1_entity.inst;
-        exit_to_room_1.is_enterable = true;
-        exit_to_room_1.direction_type = Direction::South;
-        sys.world.write_model(@exit_to_room_2);
-        sys.world.write_model(@exit_to_room_1);
-        // add exits to rooms
-        exit_1_entity.set_parent(ref sys.world, @room_1_entity, 0);
-        exit_2_entity.set_parent(ref sys.world, @room_2_entity, 0);
+        let (_exit_1_entity, _exit_to_room_2): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit To Room 2", "to_room_2", @room_1_entity, area_2.inst);
+        let (_exit_2_entity, _exit_to_room_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit To Room 1", "to_room_1", @room_2_entity, area_1.inst);
         //
         // create player
         let game_id: u128 = 1;

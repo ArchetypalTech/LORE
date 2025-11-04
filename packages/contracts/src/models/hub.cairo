@@ -340,8 +340,6 @@ mod tests {
             area::{AreaComponent, Area},
             exit::{Exit, ExitComponent, ExitInstance},
             reactable::{ReactableInstance},
-            reactable::tests::{Reactable_create_prefab},
-
         },
         tests::{
             helpers,
@@ -475,7 +473,7 @@ mod tests {
     // Hubs + Trails
     //
 
-    fn _mint_trail(ref sys: helpers::HelperSystems) -> (Entity, Trail) {
+    fn _mint_trail(ref sys: helpers::HelperSystems) -> (Entity, Trail, Exit) {
         // initialize player singleton
         PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
         // mint from command
@@ -488,8 +486,9 @@ mod tests {
         assert_ne!(trail_info.trail_inst, 0, "_mint_trail()");
         let entity: Entity = sys.world.read_model(trail_info.trail_inst);
         let trail: Trail = sys.world.read_model(trail_info.trail_inst);
+        let exit: Exit = sys.world.read_model(trail_info.trail_inst);
         assert_eq!(trail.trail_id, trail_id, "_mint_trail()");
-        (entity, trail)
+        (entity, trail, exit)
     }
 
     #[test]
@@ -506,9 +505,9 @@ mod tests {
         sys.designer.create_entity(array![entity_hub_1.clone(), entity_hub_2.clone()]);
         sys.designer.create_hub(array![hub_1.clone(), hub_2.clone()]);
         // mint Trails -- will create trails
-        let (_entity_trail_1, mut trail_1): (Entity, Trail) = _mint_trail(ref sys);
-        let (_entity_trail_2, mut trail_2): (Entity, Trail) = _mint_trail(ref sys);
-        let (_entity_trail_3, mut trail_3): (Entity, Trail) = _mint_trail(ref sys);
+        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (_entity_trail_2, mut trail_2, _exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (_entity_trail_3, mut trail_3, _exit_3): (Entity, Trail, Exit) = _mint_trail(ref sys);
         trail_1.hub_inst = hub_1.inst;
         trail_2.hub_inst = hub_1.inst;
         trail_3.hub_inst = 0;
@@ -562,7 +561,7 @@ mod tests {
     fn test_designer_create_trail_to_disabled_hub() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create trails
-        let (_entity_trail_1, mut trail_1): (Entity, Trail) = _mint_trail(ref sys);
+        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
         // Create Hubs
         let entity_hub_1: Entity = EntityImpl::create_entity(ref sys.world, "hub");
         let mut hub_1: Hub = HubImpl::add_component(ref sys.world, entity_hub_1.inst);
@@ -583,7 +582,7 @@ mod tests {
     fn test_designer_create_trail_to_invalid_hub() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create trails
-        let (_entity_trail_1, mut trail_1): (Entity, Trail) = _mint_trail(ref sys);
+        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
         trail_1.hub_inst = 0x123;
         //
         // edit trail and panic...
@@ -602,9 +601,9 @@ mod tests {
         sys.designer.create_entity(array![entity_hub_1.clone()]);
         sys.designer.create_hub(array![hub_1.clone()]);
         // mint Trails
-        let (entity_trail_1, mut trail_1): (Entity, Trail) = _mint_trail(ref sys);
-        let (entity_trail_2, mut trail_2): (Entity, Trail) = _mint_trail(ref sys);
-        let (entity_trail_3, mut trail_3): (Entity, Trail) = _mint_trail(ref sys);
+        let (entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (entity_trail_2, mut trail_2, _exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (entity_trail_3, mut trail_3, _exit_3): (Entity, Trail, Exit) = _mint_trail(ref sys);
         // add trails to hub
         trail_1.hub_inst = hub_1.inst;
         trail_2.hub_inst = hub_1.inst;
@@ -664,39 +663,16 @@ mod tests {
         assert_eq!(*exits[0].leads_to, area_1_spawn.inst, "exits[0].leads_to");
         assert_eq!(*exits[1].leads_to, area_2_spawn.inst, "exits[1].leads_to");
     }
-
+    
     #[test]
     fn test_hub_look_around() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create some rooms
-        let room_1_entity: Entity = EntityImpl::create_entity(ref sys.world, "You are in Room 1");
-        let room_2_entity: Entity = EntityImpl::create_entity(ref sys.world, "You are in Room 2");
-        let _: Reactable = Reactable_create_prefab(ref sys.world, room_1_entity.inst, "ROOM1");
-        let _: Reactable = Reactable_create_prefab(ref sys.world, room_2_entity.inst, "ROOM2");
-        let _area_1: Area = AreaComponent::add_component(ref sys.world, room_1_entity.inst);
-        let _area_2: Area = AreaComponent::add_component(ref sys.world, room_2_entity.inst);
+        let (room_1_entity, area_1): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 1", "ROOM1", Option::None);
+        let (room_2_entity, area_2): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 2", "ROOM2", Option::None);
         // create exits
-        let mut exit_1_entity: Entity = EntityImpl::create_entity(ref sys.world, "Exit To Room 2");
-        let mut exit_2_entity: Entity = EntityImpl::create_entity(ref sys.world, "Exit To Room 1");
-        exit_1_entity.alt_names = array!["to_room_2"];
-        exit_2_entity.alt_names = array!["to_room_1"];
-        sys.world.write_model(@exit_1_entity);
-        sys.world.write_model(@exit_2_entity);
-        let _: Reactable = Reactable_create_prefab(ref sys.world, exit_1_entity.inst, "to_room_2");
-        let _: Reactable = Reactable_create_prefab(ref sys.world, exit_2_entity.inst, "to_room_1");
-        let mut exit_to_room_2: Exit = ExitComponent::add_component(ref sys.world, exit_1_entity.inst);
-        let mut exit_to_room_1: Exit = ExitComponent::add_component(ref sys.world, exit_2_entity.inst);
-        exit_to_room_2.leads_to = room_2_entity.inst;
-        exit_to_room_2.is_enterable = true;
-        exit_to_room_2.direction_type = Direction::North;
-        exit_to_room_1.leads_to = room_1_entity.inst;
-        exit_to_room_1.is_enterable = true;
-        exit_to_room_1.direction_type = Direction::South;
-        sys.world.write_model(@exit_to_room_2);
-        sys.world.write_model(@exit_to_room_1);
-        // add exits to rooms
-        exit_1_entity.set_parent(ref sys.world, @room_1_entity, 0);
-        exit_2_entity.set_parent(ref sys.world, @room_2_entity, 0);
+        let (_exit_1_entity, _exit_to_room_2): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit To Room 2", "to_room_2", @room_1_entity, area_2.inst);
+        let (_exit_2_entity, _exit_to_room_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit To Room 1", "to_room_1", @room_2_entity, area_1.inst);
         //
         // create player
         let game_id: u128 = 1;
@@ -713,95 +689,91 @@ mod tests {
         sys.prompt.prompt("use to_room_1", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id, "use to_room_1");
         sys.prompt.prompt("look around", Option::None);
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (in_room_1)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (in_room_1)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_2", "look 2");
         //
         // Create Hub inside ROOM 1
         helpers::set_caller(helpers::OWNER());
         let mut hub_1: Hub = HubImpl::add_component(ref sys.world, room_1_entity.inst);
+        // sys.world.write_model(@hub_1);
         sys.designer.create_hub(array![hub_1.clone()]);
         // mint Trails
-        let (_entity_trail_1, mut trail_1): (Entity, Trail) = _mint_trail(ref sys);
-        let (_entity_trail_2, mut trail_2): (Entity, Trail) = _mint_trail(ref sys);
-        let (_entity_trail_3, mut trail_3): (Entity, Trail) = _mint_trail(ref sys);
+        let (entity_trail_1, mut trail_1, mut exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (entity_trail_2, mut trail_2, mut exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys);
         // add trails to hub
         trail_1.hub_inst = hub_1.inst;
         trail_2.hub_inst = hub_1.inst;
-        trail_3.hub_inst = hub_1.inst;
         trail_1.is_published = true;
         trail_2.is_published = false;
-        trail_3.is_published = false;
-        sys.designer.create_trail(array![trail_1.clone(), trail_2.clone(), trail_3.clone()]);
+        // sys.world.write_model(@trail_1);
+        // sys.world.write_model(@trail_2);
+        sys.designer.create_trail(array![trail_1.clone(), trail_2.clone()]);
+        //
+        // Create areas inside trails
+        let (trail_1_area_entity, _trail_1_area): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Trail 1", "TRAIL1", Option::Some(@entity_trail_1));
+        let (trail_2_area_entity, _trail_2_area): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Trail 2", "TRAIL2", Option::Some(@entity_trail_2));
+        exit_1.leads_to = trail_1_area_entity.inst;
+        exit_2.leads_to = trail_2_area_entity.inst;
+        sys.world.write_model(@exit_1);
+        sys.world.write_model(@exit_2);
+        // create exits back to Hub
+        let (_exit_1_entity, _exit_from_trail_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit From Trail 1", "trail_1_exit", @trail_1_area_entity, room_1_entity.inst);
+        let (_exit_2_entity, _exit_from_trail_2): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit From Trail 2", "trail_2_exit", @trail_2_area_entity, room_1_entity.inst);
         //
         // list rooms (with trail)
         helpers::set_caller(helpers::PLAYER_1);
-println!("___________________________look at trail-1...");
         sys.prompt.prompt("look around", Option::None); // will display the description
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_1)");
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_1 AGAIN)");
-        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1");
+helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_1)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1"); // last exit available
         //
         // enable Trail2 
         helpers::set_caller(helpers::OWNER());
         trail_2.is_published = true;
-        sys.designer.create_trail(array![trail_2.clone()]);
+        sys.world.write_model(@trail_2);
         // list rooms (with trail)
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("look around", Option::None); // will display the description
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_2)");
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_2 AGAIN)");
-        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2");
+helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_2)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
+
+        //
+        // move to trail 1...
+        sys.prompt.prompt("use trail-1", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "use trail-1");
+        // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
+        sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
+helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_1 AGAIN)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_1_exit"); // last exit available
+
+        //
+        // move back to hub...
+        sys.prompt.prompt("use trail_1_exit", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "use trail_1_exit");
+        // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
+        sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
+helpers::print_game_story_last_command(@sys.world, game_id, "look around (trail_1_exit)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
+
+        //
+        // move to trail 2...
+        sys.prompt.prompt("use trail-2", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "use trail-21");
+        // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
+        sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
+helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_2_exit"); // last exit available
+
+//         //
+//         // exit trail 2...
+//         sys.prompt.prompt("exit trail", Option::None);
+// // helpers::print_game_story_last_command(@sys.world, game_id, "exit trail_2");
+//         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
+//         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (exit trail_2 AGAIN)");
+//         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_2"); // last exit available
 
 
-//         //
-//         // rooom 1
-//         helpers::set_caller(helpers::PLAYER_1);
-//         sys.prompt.prompt("g_game_id", Option::None);
-//         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+game-1", "g_game_id");
-//         sys.prompt.prompt("use to_room_2", Option::None);
-//         sys.prompt.prompt("look around", Option::None);
-// // println!("++ room 1: {}: {}", _story_len(@sys.world, game_id), helpers::game_story_last_line(@sys.world, game_id));
-//         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_1", "look 2");
-//         sys.prompt.prompt("use to_room_1", Option::None);
-//         sys.prompt.prompt("look around", Option::None);
-// // println!("++ room 2: {}: {}", _story_len(@sys.world, game_id), helpers::game_story_last_line(@sys.world, game_id));
-//         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_2", "look 1");
-//         //
-//         // add new entity to room 2
-//         assert_eq!(room_2_entity.get_children_count(@sys.world, 0), 1, "after add");
-//         helpers::set_caller(helpers::OWNER());
-//         let mut new_entity: Entity = EntityImpl::create_entity(ref sys.world, "New Entity");
-//         let _: Reactable = Reactable_create_prefab(ref sys.world, new_entity.inst, "new_entity");
-//         new_entity.set_parent(ref sys.world, @room_2_entity, 0);
-//         helpers::set_caller(helpers::PLAYER_1);
-//         // one more children
-//         assert_eq!(room_2_entity.get_children_count(@sys.world, 0), 2, "after add");
-//         assert_eq!(room_2_entity.get_children_count(@sys.world, game_id), 1, "after add");
-//         //
-//         // enter room 2, look around... new entity not present
-//         sys.prompt.prompt("use to_room_2", Option::None);
-//         assert_eq!(room_2_entity.get_children_count(@sys.world, game_id), 1+1, "use after add");
-//         sys.prompt.prompt("look around", Option::None);
-//         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_1", "use after add");
-//         sys.prompt.prompt("use to_room_1", Option::None);
-//         //
-//         // enable preserve_children
-//         helpers::set_caller(helpers::OWNER());
-//         area_2.preserve_children = true;
-//         sys.world.write_model(@area_2);
-//         helpers::set_caller(helpers::PLAYER_1);
-//         //
-//         // enter room 2, look around... new entity not present
-//         sys.prompt.prompt("use to_room_2", Option::None);
-//         assert_eq!(room_2_entity.get_children_count(@sys.world, game_id), 2+1, "after preserve");
-//         let token_info: GameTokenInfo = sys.world.read_model(game_id);
-//         assert_eq!(token_info.room_name, room_2_entity.name.clone(), "after to_room_2");
-//         sys.prompt.prompt("look around", Option::None);
-//         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "new_entity", "after preserve");
-//         sys.prompt.prompt("use to_room_1", Option::None);
-//         let token_info: GameTokenInfo = sys.world.read_model(game_id);
-//         assert_eq!(token_info.room_name, room_1_entity.name.clone(), "after to_room_1");
     }
 }

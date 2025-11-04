@@ -21,9 +21,14 @@ use lore::{
         player::{PlayerStory, StoryLine, StoryLineType},
         dictionary::{DictionaryTrait},
         trail_token_info::{MAIN_TRAIL_ID},
+        reactable::{Reactable, ReactableImpl, ReactableComponent},
+        reactable::tests::{Reactable_create_prefab},
+        area::{Area, AreaComponent},
+        exit::{Exit, ExitComponent},
     },
     types::{
         command_type::{IntoTokenTypeFelt252},
+        direction_type::{Direction},
     },
     constants::{errors::{}},
     lib::{
@@ -229,3 +234,34 @@ pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {
         creator_address: starknet::get_caller_address(),
     })
 }
+
+pub fn create_area_entity(ref sys: HelperSystems, name: ByteArray, description: ByteArray, parent: Option<@Entity>) -> (Entity, Area) {
+    let trail_id: u128 = match parent {
+        Some(parent) => *parent.trail_id,
+        None => MAIN_TRAIL_ID,
+    };
+    let entity: Entity = EntityImpl::create_trail_entity(ref sys.world, name.clone(), trail_id);
+    if let Some(parent) = parent {
+        entity.set_parent(ref sys.world, parent, 0);
+    }
+    let _: Reactable = Reactable_create_prefab(ref sys.world, entity.inst, description.clone());
+    let area: Area = AreaComponent::add_component(ref sys.world, entity.inst);
+    (entity, area)
+}
+
+pub fn create_exit_in_area(ref sys: HelperSystems, name: ByteArray, description: ByteArray, parent_area: @Entity, exit_to: felt252) -> (Entity, Exit) {
+    let mut entity: Entity = EntityImpl::create_entity(ref sys.world, name.clone());
+    entity.trail_id = *parent_area.trail_id;
+    entity.alt_names = array![description.clone()];
+    sys.world.write_model(@entity);
+    let _: Reactable = Reactable_create_prefab(ref sys.world, entity.inst, description.clone());
+    let mut exit: Exit = ExitComponent::add_component(ref sys.world, entity.inst);
+    exit.leads_to = exit_to;
+    exit.is_enterable = true;
+    exit.direction_type = Direction::South;
+    sys.world.write_model(@exit);
+    // add exits to rooms
+    entity.set_parent(ref sys.world, parent_area, 0);
+    (entity, exit)
+}
+
