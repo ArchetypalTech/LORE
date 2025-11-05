@@ -191,9 +191,8 @@ useEffect(() => {
 
 		setInputValue("");
 		setCursorPos(0);
-		// Optional: helps prevent mobile “spacing gap” (extra textarea height)
+		// Optional: helps prevent mobile “spacing gap”
 		if (terminalInputRef.current) {
-			terminalInputRef.current.style.height = "auto";
 			terminalInputRef.current.selectionStart = 0;
 			terminalInputRef.current.selectionEnd = 0;
 		}
