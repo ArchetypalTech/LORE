@@ -59,15 +59,15 @@ export default function Terminal({
 
 	// FIX: Auto-scroll whenever new content or line prints
 	useEffect(() => {
-		const el = scroller.current;
-		if (!el) return;
-		requestAnimationFrame(() => {
-			el.scrollTo({
-				top: el.scrollHeight,
-				behavior: "smooth",
-			});
-		});
-	}, [terminalContent, activeTypewriterLine]);
+	const el = scroller.current;
+	if (!el) return;
+
+	const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+
+	requestAnimationFrame(() => {
+		scrollToBottom(isNearBottom || isPrinting ? "smooth" : "auto");
+	});
+}, [terminalContent, activeTypewriterLine, isPrinting]);
 
 	// FIX: Re-focus textarea whenever new content prints
 	useEffect(() => {
@@ -205,6 +205,15 @@ useEffect(() => {
 		if (terminalInputRef.current) {
 			terminalInputRef.current.focus();
 		}
+	};
+
+	const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+		const el = scroller.current;
+		if (!el) return;
+		el.scrollTo({
+			top: el.scrollHeight,
+			behavior,
+		});
 	};
 
 	return (
