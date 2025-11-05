@@ -30,7 +30,8 @@ const {
 	terminalContent: [] as TerminalContentItem[],
 	activeTypewriterLine: null as TerminalContentItem | null,
 	contentQueue: [] as TerminalContentItem[],
-	volumeAudio: 0.35,
+	volumeAudio: 0.40,
+	focusLocked: true as boolean,
 });
 
 /**
@@ -80,6 +81,20 @@ export function unMute() {
 }
 
 /**
+ * Locks terminal focus so it won't steal input from other UI (e.g. wallet modals)
+ */
+export function lockTerminalFocus() {
+	set({ focusLocked: false });
+}
+
+/**
+ * Unlocks terminal focus so typing/clicking works again
+ */
+export function unlockTerminalFocus() {
+	set({ focusLocked: true });
+}
+
+/**
  * Processes the next item in the terminal content queue.
  * If a typewriter effect has finished, adds it to the permanent content.
  * @param {TerminalContentItem|null} newContent - The content that has finished its typewriter effect, if any
@@ -126,6 +141,8 @@ const TerminalStore = createFactory({
 	addTerminalContent,
 	nextItem,
 	clearTerminalContent,
+	lockTerminalFocus,
+	unlockTerminalFocus,
 });
 
 export default TerminalStore;
