@@ -190,6 +190,13 @@ useEffect(() => {
 		if (command === "") return;
 
 		setInputValue("");
+		setCursorPos(0);
+		// Optional: helps prevent mobile “spacing gap” (extra textarea height)
+		if (terminalInputRef.current) {
+			terminalInputRef.current.style.height = "auto";
+			terminalInputRef.current.selectionStart = 0;
+			terminalInputRef.current.selectionEnd = 0;
+		}
 		setInputHistory([...inputHistory, command]);
 		printingStatus(true);
 
