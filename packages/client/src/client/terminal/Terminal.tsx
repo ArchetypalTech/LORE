@@ -191,11 +191,6 @@ useEffect(() => {
 
 		setInputValue("");
 		setCursorPos(0);
-		// Optional: helps prevent mobile “spacing gap”
-		if (terminalInputRef.current) {
-			terminalInputRef.current.selectionStart = 0;
-			terminalInputRef.current.selectionEnd = 0;
-		}
 		setInputHistory([...inputHistory, command]);
 		printingStatus(true);
 
