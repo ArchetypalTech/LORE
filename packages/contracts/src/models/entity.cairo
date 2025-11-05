@@ -189,7 +189,7 @@ pub impl EntityImpl of EntityTrait {
 
     fn set_parent(self: @Entity, ref world: WorldStorage, parent_entity: @Entity, game_id: u128) {
         assert(self.inst != parent_entity.inst, 'set_parent() parent self');
-        assert(self.trail_id == parent_entity.trail_id, 'set_parent() invalid trail');
+        // assert(self.trail_id == parent_entity.trail_id, 'set_parent() invalid trail'); // items can be dropped in any trail
         // check if the entity is already a child
         let mut child: ChildToParent = world.read_game_model(*self.inst, game_id);
         if (@child.parent != parent_entity.inst) {
