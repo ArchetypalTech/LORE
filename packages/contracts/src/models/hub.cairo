@@ -93,11 +93,11 @@ pub impl HubImpl of HubTrait {
         (result.span())
     }
 
-    // fn get_trails_as_children(self: @Hub, world: @WorldStorage, ref context: Array<Entity>) -> Array<Entity> {
-    //     let mut result: Array<Entity> = array![];
-    //     self.append_trails_as_children(world, ref result);
-    //     (result)
-    // }
+    fn get_trails_as_children(self: @Hub, world: @WorldStorage) -> Array<Entity> {
+        let mut result: Array<Entity> = array![];
+        self.append_trails_as_children(world, ref result);
+        (result)
+    }
     fn append_trails_as_children(self: @Hub, world: @WorldStorage, ref context: Array<Entity>) {
         let trails_insts: Span<felt252> = self.get_published_trails_insts(world);
         for i in 0..trails_insts.len() {
@@ -106,33 +106,33 @@ pub impl HubImpl of HubTrait {
         }
     }
 
-    fn get_trails_exits(self: @Hub, world: @WorldStorage) -> Span<Exit> {
-        let mut result: Array<Exit> = array![];
-        // get all published trails added to this Hub
-        let trails_insts: Span<felt252> = self.get_published_trails_insts(world);
-        // get children of each trail
-        let trails_children: Array<Array<felt252>> = world.read_member_of_models(Model::<ParentToChildren>::ptrs_from_keys(trails_insts), selector!("children"));
-        for i in 0..trails_children.len() {
-            // Find spawn points in Areas
-            let children_insts: Span<felt252> = trails_children[i].span();
-            let is_spawn_points: Array<bool> = world.read_member_of_models(Model::<Area>::ptrs_from_keys(children_insts), selector!("is_spawn_point"));
-            for j in 0..is_spawn_points.len() {
-                // if is_spawn_point is true, the Area exists and it is a spawn point
-                if (*is_spawn_points[j]) {
-                    let exit: Exit = Exit {
-                        inst: world.dispatcher.uuid().try_into().unwrap(), // ephemeral inst
-                        is_exit: true,
-                        is_enterable: true,
-                        leads_to: *children_insts[j],
-                        direction_type: Direction::North,
-                        action_map: array![],
-                    };
-                    result.append(exit);
-                }
-            }
-        }
-        (result.span())
-    }
+    // fn get_trails_exits(self: @Hub, world: @WorldStorage) -> Span<Exit> {
+    //     let mut result: Array<Exit> = array![];
+    //     // get all published trails added to this Hub
+    //     let trails_insts: Span<felt252> = self.get_published_trails_insts(world);
+    //     // get children of each trail
+    //     let trails_children: Array<Array<felt252>> = world.read_member_of_models(Model::<ParentToChildren>::ptrs_from_keys(trails_insts), selector!("children"));
+    //     for i in 0..trails_children.len() {
+    //         // Find spawn points in Areas
+    //         let children_insts: Span<felt252> = trails_children[i].span();
+    //         let is_spawn_points: Array<bool> = world.read_member_of_models(Model::<Area>::ptrs_from_keys(children_insts), selector!("is_spawn_point"));
+    //         for j in 0..is_spawn_points.len() {
+    //             // if is_spawn_point is true, the Area exists and it is a spawn point
+    //             if (*is_spawn_points[j]) {
+    //                 let exit: Exit = Exit {
+    //                     inst: world.dispatcher.uuid().try_into().unwrap(), // ephemeral inst
+    //                     is_exit: true,
+    //                     is_enterable: true,
+    //                     leads_to: *children_insts[j],
+    //                     direction_type: Direction::North,
+    //                     action_map: array![],
+    //                 };
+    //                 result.append(exit);
+    //             }
+    //         }
+    //     }
+    //     (result.span())
+    // }
 
     //
     // called when deleting a Hub
@@ -592,7 +592,7 @@ mod tests {
 
 
     #[test]
-    fn test_get_hub_trails_exits_ok() {
+    fn test_get_hub_trails_as_children_ok() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // Create Hubs
         let game_id: u128 = 0;
@@ -657,11 +657,17 @@ mod tests {
         entity_area_3_spawn.set_parent(ref sys.world, @entity_trail_3, game_id);
         entity_area_3_other.set_parent(ref sys.world, @entity_trail_3, game_id);
         //
-        // check hub trails
-        let exits: Span<Exit> = hub_1.get_trails_exits(@sys.world);
-        assert_eq!(exits.len(), 2, "exits.len()");
-        assert_eq!(*exits[0].leads_to, area_1_spawn.inst, "exits[0].leads_to");
-        assert_eq!(*exits[1].leads_to, area_2_spawn.inst, "exits[1].leads_to");
+        // check hub trails as children
+        let children: Span<Entity> = hub_1.get_trails_as_children(@sys.world).span();
+        assert_eq!(children.len(), 2, "exits.len()");
+        assert_eq!(*children[0].inst, entity_trail_1.inst, "children[0].inst");
+        assert_eq!(*children[1].inst, entity_trail_2.inst, "children[1].inst");
+        //
+        // check hub trails -- NOT USED!
+        // let exits: Span<Exit> = hub_1.get_trails_exits(@sys.world);
+        // assert_eq!(exits.len(), 2, "exits.len()");
+        // assert_eq!(*exits[0].leads_to, area_1_spawn.inst, "exits[0].leads_to");
+        // assert_eq!(*exits[1].leads_to, area_2_spawn.inst, "exits[1].leads_to");
     }
     
     #[test]
@@ -765,8 +771,9 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (trail_
 helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_2_exit"); // last exit available
 
-//         //
-//         // exit trail 2...
+        //
+        // exit trail 2...
+        // TODO: implement [exit trail] command
 //         sys.prompt.prompt("exit trail", Option::None);
 // // helpers::print_game_story_last_command(@sys.world, game_id, "exit trail_2");
 //         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
