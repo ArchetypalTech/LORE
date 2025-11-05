@@ -57,7 +57,28 @@ export const InitDojo = async () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
 
-			const query = builder.withCursor("").withLimit(90000).includeHashedKeys();
+			const query = builder.withCursor("")
+			.withLimit(90000)
+			.includeHashedKeys()
+			.withEntityModels(
+				[
+					"lore-Entity",
+					"lore-Area",
+					"lore-Exit",
+					"lore-Reactable",
+					"lore-DescriptionText",
+					"lore-Container",
+					"lore-InventoryItem",
+					"lore-Action",
+					"lore-Condition",
+					"lore-Trigger",
+					"lore-Effect",
+					"lore-ParentToChildren",
+					"lore-ChildToParent",
+					"lore-Player",
+					"lore-PlayerStory",
+					"lore-PropertyRegistry",
+				]);
 			return query;
 		};
 
