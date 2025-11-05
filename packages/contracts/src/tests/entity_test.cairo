@@ -1,7 +1,10 @@
 use dojo::{model::ModelStorage};
 use lore::{
     models::{
-        entity::{Entity, EntityImpl},
+        entity::{Entity, EntityImpl, ChildToParent, ParentToChildren},
+    },
+    systems::{
+        designer::IDesignerDispatcherTrait,
     },
     tests::helpers,
 };
@@ -204,12 +207,72 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('set_parent() invalid trail',))]
-    fn test_parent_invalid_trail() {
+    fn test_designer_set_parent_child_ok() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (parent1, mut parent2, child1, mut child2, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref sys.world);
+        let child_to_parent: ChildToParent = ChildToParent {
+            inst: child1.inst,
+            parent: parent1.inst,
+            is_child: true,
+        };
+        let parent_to_children: ParentToChildren = ParentToChildren {
+            inst: parent1.inst,
+            children: array![child1.inst],
+            is_parent: true,
+        };
+        sys.designer.create_child(array![child_to_parent]);
+        sys.designer.create_parent(array![parent_to_children]);
+        //
+        // on a different trail...
+        parent2.trail_id = 123;
+        child2.trail_id = 123;
+        sys.world.write_model(@parent2);
+        sys.world.write_model(@child2);
+        let child_to_parent: ChildToParent = ChildToParent {
+            inst: child2.inst,
+            parent: parent2.inst,
+            is_child: true,
+        };
+        let parent_to_children: ParentToChildren = ParentToChildren {
+            inst: parent2.inst,
+            children: array![child2.inst],
+            is_parent: true,
+        };
+        sys.designer.create_child(array![child_to_parent]);
+        sys.designer.create_parent(array![parent_to_children]);
+
+    }
+
+    #[test]
+    #[should_panic(expected: ('TRAIL: Invalid parent trail_id', 'ENTRYPOINT_FAILED',))]
+    fn test_designer_set_parent_invalid_trail() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (mut parent1, _, child1, _, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref sys.world);
+        // add the parent in a different trail...
+        parent1.trail_id = 123;
+        sys.world.write_model(@parent1);
+        // try to add...
+        let child_to_parent: ChildToParent = ChildToParent {
+            inst: child1.inst,
+            parent: parent1.inst,
+            is_child: true,
+        };
+        sys.designer.create_child(array![child_to_parent]);
+    }
+
+    #[test]
+    #[should_panic(expected: ('TRAIL: Invalid child trail_id', 'ENTRYPOINT_FAILED',))]
+    fn test_designer_set_children_invalid_trail() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         let (parent1, _, mut child1, _, _): (Entity, Entity, Entity, Entity, Entity) = _setup_entities(ref sys.world);
-        let game_id: u128 = 0;
+        // add the parent in a different trail...
         child1.trail_id = 123;
-        child1.set_parent(ref sys.world, @parent1, game_id);
-    }
-}
+        sys.world.write_model(@child1);
+        // try to add...
+        let parent_to_children: ParentToChildren = ParentToChildren {
+            inst: parent1.inst,
+            children: array![child1.inst],
+            is_parent: true,
+        };
+        sys.designer.create_parent(array![parent_to_children]);
+    }}

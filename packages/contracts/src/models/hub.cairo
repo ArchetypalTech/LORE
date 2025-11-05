@@ -1,15 +1,14 @@
 use core::num::traits::Zero;
 use dojo::{
-    world::{WorldStorage, IWorldDispatcherTrait},
+    world::{WorldStorage}, //, IWorldDispatcherTrait},
     model::{ModelStorage, Model},
 };
 use lore::{
     models::{
-        entity::{Entity, EntityImpl, ParentToChildren},
+        entity::{Entity, EntityImpl, ParentToChildren, ChildToParent},
         trail_token_info::{TrailTokenInfo},
         description_text::{DescriptionText},
         reactable::{Reactable},
-        area::{Area},
         exit::{Exit},
     },
     types::{
@@ -170,14 +169,17 @@ pub impl TrailImpl of TrailTrait {
     }
 
     // this is an entity that was added to a Trail
-    fn get_entity_trail_id(self: @WorldStorage, inst: felt252) -> u128 {
-        (self.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("trail_id")))
+    fn is_inside_trail(self: @WorldStorage, inst: felt252) -> bool {
+        (self.get_entity_trail_id(inst).is_non_zero())
     }
     fn is_inside_trail_id(self: @WorldStorage, inst: felt252, trail_id: u128) -> bool {
         (self.get_entity_trail_id(inst) == trail_id)
     }
-    fn is_inside_trail(self: @WorldStorage, inst: felt252) -> bool {
-        (self.get_entity_trail_id(inst).is_non_zero())
+    fn get_entity_trail_id(self: @WorldStorage, inst: felt252) -> u128 {
+        (self.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("trail_id")))
+    }
+    fn get_entities_trail_ids(self: @WorldStorage, insts: Span<felt252>) -> Array<u128> {
+        (self.read_member_of_models(Model::<Entity>::ptrs_from_keys(insts), selector!("trail_id")))
     }
 
     //
@@ -254,12 +256,12 @@ pub impl TrailImpl of TrailTrait {
 
     // avoid deleting a top-level Trail entities and components
     // called from designer delete_*()
-    fn assert_trail_delete_protection(ref self: WorldStorage, inst: felt252) {
+    fn assert_trail_delete_protection(self: @WorldStorage, inst: felt252) {
         assert(!self.has_trail_component(inst), 'TRAIL: Not allowed delete trail');
     }
 
     // called from designer.create_trail()
-    fn assert_trail_edit_protection(ref self: WorldStorage, new_trail: @Trail) {
+    fn assert_trail_edit_protection(self: @WorldStorage, new_trail: @Trail) {
         let existing_trail: Trail = self.read_model(*new_trail.inst);
         // not allowed to create a Trails from designer
         // Trails are one-to-one with tokens, and created automatically when a token is minted
@@ -268,6 +270,22 @@ pub impl TrailImpl of TrailTrait {
         assert(existing_trail.trail_id == *new_trail.trail_id, 'TRAIL: Invalid trail id');
         // not allowed to change the hub_inst
         assert(new_trail.hub_inst.is_zero() || self.has_hub_component(*new_trail.hub_inst), 'TRAIL: Invalid hub');
+    }
+
+    // called from designer.create_parent()
+    fn assert_trail_parent_protection(self: @WorldStorage, new_parent: @ParentToChildren) {
+        let parent_trail_id: u128 = self.get_entity_trail_id(*new_parent.inst);
+        let trail_ids: Array<u128> = self.get_entities_trail_ids(new_parent.children.span());
+        for trail_id in trail_ids {
+            assert(trail_id == parent_trail_id, 'TRAIL: Invalid child trail_id');
+        }
+    }
+
+    // called from designer.create_child()
+    fn assert_trail_child_protection(self: @WorldStorage, new_child: @ChildToParent) {
+        let child_trail_id: u128 = self.get_entity_trail_id(*new_child.inst);
+        let parent_trail_id: u128 = self.get_entity_trail_id(*new_child.parent);
+        assert(parent_trail_id == child_trail_id, 'TRAIL: Invalid parent trail_id');
     }
 
     //
@@ -340,6 +358,8 @@ mod tests {
             area::{AreaComponent, Area},
             exit::{Exit, ExitComponent, ExitInstance},
             reactable::{ReactableInstance},
+            container::{Container, ContainerComponent},
+            inventory_item::{InventoryItem, InventoryItemComponent},
         },
         tests::{
             helpers,
@@ -730,7 +750,7 @@ mod tests {
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("look around", Option::None); // will display the description
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_1)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_1)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1"); // last exit available
         //
         // enable Trail2 
@@ -741,7 +761,7 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("look around", Option::None); // will display the description
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_2)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_2)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
 
         //
@@ -750,7 +770,7 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail
 // helpers::print_game_story_last_command(@sys.world, game_id, "use trail-1");
         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_1 AGAIN)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_1 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_1_exit"); // last exit available
 
         //
@@ -759,17 +779,52 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN tra
 // helpers::print_game_story_last_command(@sys.world, game_id, "use trail_1_exit");
         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (trail_1_exit)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (trail_1_exit)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
 
         //
+        // create a player's cont   ainer
+        helpers::set_caller(helpers::OWNER());
+        let player_entity: Entity = sys.world.read_model(player.inst);
+        let _player_container: Container = ContainerComponent::add_component(ref sys.world, player_entity.inst);
+        // list empty inventory
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("inventory", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "inventory (EMPTY)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "It is empty.");
+        //
+        // Add something to the player's container
+        helpers::set_caller(helpers::OWNER());
+        let mut item1_entity: Entity = EntityImpl::create_entity(ref sys.world, "item-1");
+        let mut _item1: InventoryItem = InventoryItemComponent::add_component(ref sys.world, item1_entity.inst);
+        assert!(!item1_entity.has_parent(@sys.world, game_id), "!item1.has_parent");
+        item1_entity.set_parent(ref sys.world, @player_entity, game_id);
+        sys.world.write_model(@item1_entity);
+        // list invetory
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("inventory", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "inventory (hub)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "item-1"); // last item available
+
+        //
         // move to trail 2...
+        helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("use trail-2", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id, "use trail-21");
         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
-        sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
+        sys.prompt.prompt("look around", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_2_exit"); // last exit available
+
+        //
+        // DROP something from the player's inventory
+        sys.prompt.prompt("drop item-1", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "drop item-1");
+        sys.prompt.prompt("inventory", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "inventory (dropped item-1)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "It is empty.");
+        sys.prompt.prompt("look around", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (dropped item-1)");
 
         //
         // exit trail 2...
@@ -780,7 +835,6 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN tra
 //         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
 // helpers::print_game_story_last_command(@sys.world, game_id, "look around (exit trail_2 AGAIN)");
 //         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_2"); // last exit available
-
 
     }
 }
