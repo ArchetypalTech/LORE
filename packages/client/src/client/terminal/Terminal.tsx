@@ -36,7 +36,7 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	useEffect(() => {
@@ -56,6 +56,25 @@ export default function Terminal({
 
 		return () => clearTimeout(timeout);
 	}, [status]);
+
+	// FIX: Auto-scroll whenever new content or line prints
+	useEffect(() => {
+		const el = scroller.current;
+		if (!el) return;
+		requestAnimationFrame(() => {
+			el.scrollTo({
+				top: el.scrollHeight,
+				behavior: "smooth",
+			});
+		});
+	}, [terminalContent, activeTypewriterLine]);
+
+	// FIX: Re-focus textarea whenever new content prints
+	useEffect(() => {
+		if (status === "inputEnabled" && !isPrinting) {
+			terminalInputRef.current?.focus();
+		}
+	}, [terminalContent, activeTypewriterLine, isPrinting, status]);
 
 	// update cursor position
 	useEffect(() => {
