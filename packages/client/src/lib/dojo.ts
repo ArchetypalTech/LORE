@@ -60,16 +60,10 @@ export const InitDojo = async () => {
 	const query = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
-
+			
 			const query = builder.withCursor("")
 			.withLimit(90000)
 			.includeHashedKeys()
-			.withClause(
-							new ClauseBuilder<SchemaType>().keys(
-								["lore-GameInstanceMap"],
-								[bigintToHex128(gameId), undefined]
-							).build()
-						)
 			.withEntityModels(
 				[
 					"lore-Entity",
@@ -83,10 +77,7 @@ export const InitDojo = async () => {
 					"lore-Condition",
 					"lore-Trigger",
 					"lore-Effect",
-					"lore-ParentToChildren",
-					"lore-ChildToParent",
 					"lore-Player",
-					"lore-PropertyRegistry",
 				]);
 			return query;
 		};
