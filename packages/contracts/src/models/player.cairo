@@ -10,7 +10,7 @@ use lore::{
         area::{Area, AreaComponent},
         description_text::{DescriptionText},
         game_token_info::{GameTokenInfoTrait},
-        hub::{HubTrait},
+        hub::{HubTrait, TrailTrait},
     },
     types::{command_type::Command},
     constants::errors::Error,
@@ -306,6 +306,11 @@ pub impl PlayerImpl of PlayerTrait {
                          self._append_children_to_context(world, child_2, ref context);
                     };
                 };
+                // Add trail to context (so we can call commands like exit trail)
+                if let Some(mut trail) = world.get_trail_entity(room.inst) {
+                    trail.name = "trail";
+                    context.append(trail.clone());
+                }
 // println!("get_full_context({})... len:{}", room.inst, context.len());
                 context
             },

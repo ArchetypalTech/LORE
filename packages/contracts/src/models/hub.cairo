@@ -185,6 +185,17 @@ pub impl TrailImpl of TrailTrait {
         (self.read_member_of_models(Model::<Entity>::ptrs_from_keys(insts), selector!("trail_id")))
     }
 
+    fn get_trail_entity(self: @WorldStorage, inst: felt252) -> Option<Entity> {
+        let trail_id: u128 = self.get_entity_trail_id(inst);
+        if (trail_id.is_zero()) {
+            return Option::None;
+        } else {
+            let trail_info: TrailTokenInfo = self.read_model(trail_id);
+            let trail_entity: Entity = self.read_model(trail_info.trail_inst);
+            (Option::Some(trail_entity))
+        }
+    }
+
     fn are_in_the_same_trail(self: @WorldStorage, inst_1: felt252, inst_2: felt252) -> bool {
         let trail_ids: Array<u128> = self.get_entities_trail_ids(array![inst_1, inst_2].span());
         (trail_ids[0] == trail_ids[1])

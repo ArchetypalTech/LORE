@@ -219,6 +219,7 @@ pub impl DictionaryImpl of DictionaryTrait {
         self.add_to_dictionary("ring", TokenType::Noun, 1).unwrap();
         self.add_to_dictionary("sword", TokenType::Noun, 1).unwrap();
         self.add_to_dictionary("player", TokenType::Noun, 1).unwrap();
+        self.add_to_dictionary("trail", TokenType::Noun, 1).unwrap();
         // interrogatives
         self.add_to_dictionary("who", TokenType::Interrogative, 1).unwrap();
         self.add_to_dictionary("what", TokenType::Interrogative, 2).unwrap();
