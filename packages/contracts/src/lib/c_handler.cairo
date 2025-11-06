@@ -178,7 +178,7 @@ pub fn handle_command(
     // We haven't found any targets that have a verb mapped to the action
     // Are there any default actions we can do?
     // if command is just one token,
-    let tokens = command.tokens.clone().span();
+    let tokens: Span<Token> = command.tokens.clone().span();
     if tokens.len() == 1 {
         let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
         if initialVerb == 'look' {

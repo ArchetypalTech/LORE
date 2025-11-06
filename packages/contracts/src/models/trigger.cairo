@@ -2,10 +2,10 @@ use dojo::{world::{WorldStorage}, model::{ModelStorage, Model}};
 
 use lore::{
     models::{
-        entity::{EntityImpl},
-        area::{AreaComponent},
-        inventory_item::{InventoryItemComponent},
-        player::{PlayerComponent},
+        entity::{Entity, EntityImpl},
+        area::{Area, AreaComponent},
+        inventory_item::{InventoryItem, InventoryItemComponent},
+        player::{Player, PlayerComponent},
     },
     types::action_type::{TriggerType, IntoTriggerTypeFelt252},
     constants::errors::Error,
@@ -66,7 +66,7 @@ pub impl TriggerImpl of TriggerTrait {
         let maybe_index: Option<TriggerIndex> = Self::get_triggerIndex(@world, trigger.trigger_type);
         if let Some(mut trigger_index) = maybe_index {
             // Check if trigger is already registered
-            let mut found = false;
+            let mut found: bool = false;
             for pos_trigger in trigger_index.trigger_id {
                 if ((*trigger.inst, *trigger.key) == (pos_trigger)) {
                     found = true;
@@ -114,14 +114,14 @@ pub impl TriggerImpl of TriggerTrait {
 
     fn update_triggerIndex(ref world: WorldStorage, trigger: @Trigger) -> Result<(), Error> {
         // Get the trigger index option
-        let maybe_index = Self::get_triggerIndex(@world, trigger.trigger_type);
+        let maybe_index: Option<TriggerIndex> = Self::get_triggerIndex(@world, trigger.trigger_type);
 
         match maybe_index {
             Option::None => {
                 // Create new trigger index
-                let mut trigger_ids = ArrayTrait::<(felt252, felt252)>::new();
+                let mut trigger_ids: Array<(felt252, felt252)> = ArrayTrait::<(felt252, felt252)>::new();
                 trigger_ids.append((*trigger.inst, *trigger.key));
-                let trigger_index = TriggerIndex {
+                let trigger_index: TriggerIndex = TriggerIndex {
                     trigger_type: *trigger.trigger_type,
                     trigger_id: trigger_ids,
                 };
@@ -185,21 +185,21 @@ pub impl TriggerImpl of TriggerTrait {
         match *self.trigger_type {
             TriggerType::OnEnter => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, *self.inst);
+                let ent_opt: Option<Entity> = EntityImpl::get_entity(@world, *self.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
-                let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(@world, ent.inst, game_id);
+                let ent: Entity = ent_opt.unwrap();
+                let area_opt: Option<Area> = AreaComponent::get_component(@world, ent.inst, game_id);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if entity has player as a child
-                let children = ent.get_children(@world, game_id);
-                let mut player_found = false;
+                let children: Span<Entity> = ent.get_children(@world, game_id);
+                let mut player_found: bool = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(@world, *child.inst, game_id);
+                    let child_player: Option<Player> = PlayerComponent::get_component(@world, *child.inst, game_id);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -211,21 +211,21 @@ pub impl TriggerImpl of TriggerTrait {
             },
             TriggerType::OnExit => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, *self.inst);
+                let ent_opt: Option<Entity> = EntityImpl::get_entity(@world, *self.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an area component
-                let ent = ent_opt.unwrap();
-                let area_opt = AreaComponent::get_component(@world, ent.inst, game_id);
+                let ent: Entity = ent_opt.unwrap();
+                let area_opt: Option<Area> = AreaComponent::get_component(@world, ent.inst, game_id);
                 if area_opt.is_none() {
                     return Result::Err(Error::NoAreaComponent);
                 }
                 // Check if the entity does not have a player as a child
-                let children = ent.get_children(@world, game_id);
-                let mut player_found = false;
+                let children: Span<Entity> = ent.get_children(@world, game_id);
+                let mut player_found: bool = false;
                 for child in children {
-                    let child_player = PlayerComponent::get_component(@world, *child.inst, game_id);
+                    let child_player: Option<Player> = PlayerComponent::get_component(@world, *child.inst, game_id);
                     if child_player.is_some() {
                         player_found = true;
                         break;
@@ -237,17 +237,17 @@ pub impl TriggerImpl of TriggerTrait {
             },
             TriggerType::OnUse => {
                 // Get entity that trigger is attached to
-                let ent_opt = EntityImpl::get_entity(@world, *self.inst);
+                let ent_opt: Option<Entity> = EntityImpl::get_entity(@world, *self.inst);
                 if ent_opt.is_none() {
                     return Result::Err(Error::EntityNotFound);
                 }
                 // Check if entity has an inventory item component
-                let ent = ent_opt.unwrap();
-                let inventory_item_opt = InventoryItemComponent::get_component(@world, ent.inst, game_id);
+                let ent: Entity = ent_opt.unwrap();
+                let inventory_item_opt: Option<InventoryItem> = InventoryItemComponent::get_component(@world, ent.inst, game_id);
                 if inventory_item_opt.is_none() {
                     return Result::Err(Error::NoInventoryItemComponent);
                 }
-                let inventory_item = inventory_item_opt.unwrap();
+                let inventory_item: InventoryItem = inventory_item_opt.unwrap();
                 // Check that item has not been used
                 // If used check if multiple use is allowed
                 if inventory_item.already_used && !inventory_item.multiple_use {

@@ -24,6 +24,7 @@ pub enum Error {
     // Conditions
     ConditionFailed,
     // Effects
+    NotInTheSameTrail,
     EffectFailed,
     EffectNotFound,
     ReadOnlyVariable,

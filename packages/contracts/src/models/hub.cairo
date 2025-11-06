@@ -172,17 +172,22 @@ pub impl TrailImpl of TrailTrait {
     }
 
     // this is an entity that was added to a Trail
-    fn is_inside_trail(self: @WorldStorage, inst: felt252) -> bool {
-        (self.get_entity_trail_id(inst).is_non_zero())
-    }
-    fn is_inside_trail_id(self: @WorldStorage, inst: felt252, trail_id: u128) -> bool {
-        (self.get_entity_trail_id(inst) == trail_id)
-    }
+    // fn is_inside_trail(self: @WorldStorage, inst: felt252) -> bool {
+    //     (self.get_entity_trail_id(inst).is_non_zero())
+    // }
+    // fn is_inside_trail_id(self: @WorldStorage, inst: felt252, trail_id: u128) -> bool {
+    //     (self.get_entity_trail_id(inst) == trail_id)
+    // }
     fn get_entity_trail_id(self: @WorldStorage, inst: felt252) -> u128 {
         (self.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("trail_id")))
     }
     fn get_entities_trail_ids(self: @WorldStorage, insts: Span<felt252>) -> Array<u128> {
         (self.read_member_of_models(Model::<Entity>::ptrs_from_keys(insts), selector!("trail_id")))
+    }
+
+    fn are_in_the_same_trail(self: @WorldStorage, inst_1: felt252, inst_2: felt252) -> bool {
+        let trail_ids: Array<u128> = self.get_entities_trail_ids(array![inst_1, inst_2].span());
+        (trail_ids[0] == trail_ids[1])
     }
 
     //

@@ -113,7 +113,7 @@ pub impl IntoTokenTypeByteArray of core::traits::Into<TokenType, ByteArray> {
 #[generate_trait]
 pub impl CommandImpl of CommandTrait {
     fn is_system_command(self: @Command) -> bool {
-        let mut is_system_command = false;
+        let mut is_system_command: bool = false;
         for token in self.clone().tokens {
             if token.token_type == TokenType::System {
                 is_system_command = true;
@@ -129,7 +129,7 @@ pub impl CommandImpl of CommandTrait {
     fn get_verbs(self: @Command) -> Span<Token> {
         let mut verbs: Array<Token> = array![];
         for i in 0..self.tokens.len() {
-            let token = self.tokens.at(i).clone();
+            let token: Token = self.tokens.at(i).clone();
 
             // Only proceed if it's a verb
             if token.token_type != TokenType::Verb {
@@ -143,7 +143,7 @@ pub impl CommandImpl of CommandTrait {
     fn get_nouns(self: @Command) -> Span<Token> {
         let mut nouns: Array<Token> = array![];
         for i in 0..self.tokens.len() {
-            let token = self.tokens.at(i).clone();
+            let token: Token = self.tokens.at(i).clone();
 
             // Only consider tokens labeled as Noun
             if token.token_type != TokenType::Noun {
@@ -157,7 +157,7 @@ pub impl CommandImpl of CommandTrait {
     fn get_directions(self: @Command) -> Span<Token> {
         let mut directions: Array<Token> = array![];
         for i in 0..self.tokens.len() {
-            let token = self.tokens.at(i).clone();
+            let token: Token = self.tokens.at(i).clone();
 
             // Only consider direction-type tokens
             if token.token_type != TokenType::Direction {
@@ -171,7 +171,7 @@ pub impl CommandImpl of CommandTrait {
     fn get_Targets(self: @Command) -> Span<Token> {
         let mut targets: Array<Token> = array![];
         for i in 0..self.tokens.len() {
-            let token = self.tokens.at(i).clone();
+            let token: Token = self.tokens.at(i).clone();
             // Only consider Noun-type tokens
             if token.token_type != TokenType::Noun {
                 continue;

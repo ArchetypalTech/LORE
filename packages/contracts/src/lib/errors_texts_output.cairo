@@ -8,7 +8,7 @@ use lore::{
 #[generate_trait]
 pub impl ErrorOutputterImpl of ErrorOutputterTrait {
     fn output_error(self: Error, player: Player, ref world: WorldStorage) {
-        let texts = match self {
+        let texts: Array<ByteArray> = match self {
             Error::Unimplemented => array!["This is not ready yet"],
             Error::NameNotMatch => array![
                 "Does not exist",
@@ -110,6 +110,9 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
             ],
             Error::NoComponent => array![
                 "It doesn't have a component", "It is not a component, therefore you can't do that",
+            ],
+            Error::NotInTheSameTrail => array![
+                "The target is outside the current trail.",
             ],
             _ => array![] // For errors with no message
         };
