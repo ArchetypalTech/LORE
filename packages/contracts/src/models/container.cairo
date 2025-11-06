@@ -218,6 +218,17 @@ pub impl ContainerInstance of Instance<Container> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Container>::ptr_from_keys(inst), selector!("is_container")))
     }
+    fn is_partially_mapped() -> bool {
+        (true)
+    }
+    fn partially_map_from(ref self: Container, game_model: @Container) {
+        // map properties declared in VariablePropertyHelperTrait::register_properties()
+        self.is_container = *game_model.is_container;
+        self.can_be_opened = *game_model.can_be_opened;
+        self.can_receive_items = *game_model.can_receive_items;
+        self.is_open = *game_model.is_open;
+        self.num_slots = *game_model.num_slots;
+    }
 }
 
 pub impl ContainerComponent of Component<Container> {

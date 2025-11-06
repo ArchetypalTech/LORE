@@ -110,6 +110,17 @@ pub impl ReactableInstance of Instance<Reactable> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Reactable>::ptr_from_keys(inst), selector!("is_reactable")))
     }
+    fn is_partially_mapped() -> bool {
+        (true)
+    }
+    fn partially_map_from(ref self: Reactable, game_model: @Reactable) {
+        // map properties declared in VariablePropertyHelperTrait::register_properties()
+        self.is_reactable = *game_model.is_reactable;
+        self.is_visible = *game_model.is_visible;
+        self.description = game_model.description.clone();
+        self.already_shown = *game_model.already_shown;
+        self.new_entry = game_model.new_entry.clone();
+    }
 }
 
 pub impl ReactableComponent of Component<Reactable> {

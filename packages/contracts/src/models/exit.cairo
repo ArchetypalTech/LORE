@@ -74,6 +74,16 @@ pub impl ExitInstance of Instance<Exit> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Exit>::ptr_from_keys(inst), selector!("is_exit")))
     }
+    fn is_partially_mapped() -> bool {
+        (true)
+    }
+    fn partially_map_from(ref self: Exit, game_model: @Exit) {
+        // map properties declared in VariablePropertyHelperTrait::register_properties()
+        self.is_exit = *game_model.is_exit;
+        self.is_enterable = *game_model.is_enterable;
+        self.leads_to = *game_model.leads_to;
+        self.direction_type = *game_model.direction_type;
+    }
 }
 
 pub impl ExitComponent of Component<Exit> {

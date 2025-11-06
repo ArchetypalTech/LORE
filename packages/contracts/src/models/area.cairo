@@ -45,6 +45,14 @@ pub impl AreaInstance of Instance<Area> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Area>::ptr_from_keys(inst), selector!("is_area")))
     }
+    fn is_partially_mapped() -> bool {
+        (true)
+    }
+    fn partially_map_from(ref self: Area, game_model: @Area) {
+        // map properties declared in VariablePropertyHelperTrait::register_properties()
+        self.is_area = *game_model.is_area;
+        self.is_spawn_point = *game_model.is_spawn_point;
+    }
 }
 
 pub impl AreaComponent of Component<Area> {

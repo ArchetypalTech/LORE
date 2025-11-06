@@ -369,6 +369,10 @@ pub impl PlayerInstance of Instance<Player> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Player>::ptr_from_keys(inst), selector!("is_player")))
     }
+    fn is_partially_mapped() -> bool {
+        (false)
+    }
+    fn partially_map_from(ref self: Player, game_model: @Player) {}
 }
 
 pub impl PlayerComponent of Component<Player> {

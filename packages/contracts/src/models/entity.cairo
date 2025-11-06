@@ -247,6 +247,10 @@ pub impl ParentToChildrenInstance of Instance<ParentToChildren> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<ParentToChildren>::ptr_from_keys(inst), selector!("is_parent")))
     }
+    fn is_partially_mapped() -> bool {
+        (false)
+    }
+    fn partially_map_from(ref self: ParentToChildren, game_model: @ParentToChildren) {}
 }
 
 pub impl ChildToParentInstance of Instance<ChildToParent> {
@@ -265,4 +269,8 @@ pub impl ChildToParentInstance of Instance<ChildToParent> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<ChildToParent>::ptr_from_keys(inst), selector!("is_child")))
     }
+    fn is_partially_mapped() -> bool {
+        (false)
+    }
+    fn partially_map_from(ref self: ChildToParent, game_model: @ChildToParent) {}
 }

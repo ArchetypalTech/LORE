@@ -82,6 +82,18 @@ pub impl InventoryItemInstance of Instance<InventoryItem> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<InventoryItem>::ptr_from_keys(inst), selector!("is_inventory_item")))
     }
+    fn is_partially_mapped() -> bool {
+        (true)
+    }
+    fn partially_map_from(ref self: InventoryItem, game_model: @InventoryItem) {
+        // map properties declared in VariablePropertyHelperTrait::register_properties()
+        self.owner_id = *game_model.owner_id;
+        self.can_be_picked_up = *game_model.can_be_picked_up;
+        self.can_go_in_container = *game_model.can_go_in_container;
+        self.quantity = *game_model.quantity;
+        self.already_used = *game_model.already_used;
+        self.multiple_use = *game_model.multiple_use;
+    }
 }
 
 pub impl InventoryItemComponent of Component<InventoryItem> {
