@@ -108,7 +108,7 @@ pub impl EntityImpl of EntityTrait {
     }
 
     fn is_entity(world: @WorldStorage, inst: felt252) -> bool {
-        (Self::get_entity(world, inst).is_some())
+        (inst != 0 && world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("is_entity")))
     }
 
     fn can_edit_entity(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {

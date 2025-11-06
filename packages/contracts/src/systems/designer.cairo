@@ -622,14 +622,12 @@ pub mod designer {
         #[inline(always)]
         fn _assert_can_edit_entity(self: @ContractState, world: @WorldStorage, inst: felt252, owned: ContractAddress) {
             assert(inst.is_non_zero(), Errors::INVALID_ENTITY);
-            // TODO: validate trail ownership
-            assert(owned.is_zero() || true, Errors::NOT_YOUR_ENTITY);
+            assert(owned.is_zero() || world.can_edit_trail(inst, owned), Errors::NOT_YOUR_ENTITY);
         }
         #[inline(always)]
         fn _assert_can_delete_entity(self: @ContractState, world: @WorldStorage, inst: felt252, owned: ContractAddress) {
             assert(inst.is_non_zero(), Errors::INVALID_ENTITY);
-            // TODO: validate trail ownership
-            assert(owned.is_zero() || false, Errors::NOT_YOUR_ENTITY);
+            assert(owned.is_zero() || world.can_edit_trail(inst, owned), Errors::NOT_YOUR_ENTITY);
         }
 
         fn _register_property_registry(ref self: ContractState, ref world: WorldStorage, done: Array<bool>) {

@@ -11,15 +11,19 @@ mod tests {
             prompt::{IPromptDispatcherTrait},
         },
         models::{
-            entity::{Entity},
+            entity::{Entity, ParentToChildren, ChildToParent},
             area::{Area, AreaComponent},
             description_text::{DescriptionText},
             player::{PlayerImpl},
+            hub::tests::{_mint_trail},
+            hub::{Trail},
+            exit::{Exit},
         },
         tests::{
             helpers,
             helpers::{OWNER, OTHER, RECIPIENT, ADMIN},
         },
+        
         lib:: {
             access::{AccessTrait},
         }
@@ -73,7 +77,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not editor','ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
     fn test_designer_not_editor() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // this is not an editor or admin
@@ -176,12 +180,17 @@ mod tests {
     #[test]
     fn test_editor_create_delete_components() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
+        // mint a trail to an editor
         sys.designer.set_editor(OTHER(), true);
-        //
-        // EDITOR can create...
         helpers::set_caller(OTHER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
-        let mut entity_2: Entity = helpers::create_new_entity(2, "entity_2");
+        let (_entity_trail_1, _trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OTHER());
+        let trail_id: u128 = _trail_1.trail_id;
+        //
+        // EDITOR can create in their trails...
+        let mut entity_1: Entity = helpers::create_new_entity(100, "entity_1");
+        let mut entity_2: Entity = helpers::create_new_entity(101, "entity_2");
+        entity_1.trail_id = trail_id;
+        entity_2.trail_id = trail_id;
         sys.designer.create_entity(array![entity_1.clone(), entity_2.clone()]);
         assert!(_get_entity(@sys.world, entity_1.inst).is_entity, "entity_1 created");
         assert!(_get_entity(@sys.world, entity_2.inst).is_entity, "entity_2 created");
@@ -260,14 +269,32 @@ mod tests {
     #[test]
     fn test_editor_create_delete_components_admin_too() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
+        // mint a trail to an editor
         sys.designer.set_editor(OTHER(), true);
+        let (entity_trail_1, trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OTHER());
+        let trail_id: u128 = trail_1.trail_id;
         //
-        // EDITOR can create...
+        // EDITOR can create in their trails...
         helpers::set_caller(OTHER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        let mut entity_1: Entity = helpers::create_new_entity(100, "entity_1");
+        entity_1.trail_id = trail_id;
         sys.designer.create_entity(array![entity_1.clone()]);
         assert!(_get_entity(@sys.world, entity_1.inst).is_entity, "entity_1 created");
         assert_eq!(_get_entity(@sys.world, entity_1.inst).creator_address, OTHER(), "entity_1 creator");
+        //
+        // make it child of trail
+        let mut parent_1: ParentToChildren = ParentToChildren {
+            inst: entity_trail_1.inst,
+            is_parent: true,
+            children: array![entity_1.inst],
+        };
+        let mut child_1: ChildToParent = ChildToParent {
+            inst: entity_1.inst,
+            parent: entity_trail_1.inst,
+            is_child: true,
+        };
+        sys.designer.create_parent(array![parent_1.clone()]);
+        sys.designer.create_child(array![child_1.clone()]);
         //
         // create components
         let mut area_1: Area = Area {
@@ -313,141 +340,26 @@ mod tests {
         assert!(!_get_entity(@sys.world, entity_1.inst).is_entity, "entity_1 deleted");
     }
 
-    //--------------------------------
-    // Other > core > panic
-    //
-
     #[test]
     #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_other_not_allowed_to_edit_core_entity() {
+    fn test_editor_create_invalid_trail() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        //
-        // create...
-        helpers::set_caller(OWNER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
-        sys.designer.create_entity(array![entity_1.clone()]);
-        //
-        // EDITOR fail...
-        helpers::set_caller(OTHER());
-        sys.designer.create_entity(array![entity_1.clone()]);
-    }
-
-    #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_other_not_allowed_to_edit_core_component() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        //
-        // create...
-        helpers::set_caller(OWNER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
-        sys.designer.create_entity(array![entity_1.clone()]);
-        let mut area_1: Area = Area {
-            inst: entity_1.inst,
-            is_area: true,
-            is_spawn_point: false,
-            preserve_children: false,
-            progress_percentage: 10,
-        };
-        sys.designer.create_area(array![area_1.clone()]);
-        //
-        // EDITOR fail...
-        helpers::set_caller(OTHER());
-        sys.designer.create_area(array![area_1.clone()]);
-    }
-
-    #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_other_not_allowed_to_edit_core_keyed() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        //
-        // create...
-        helpers::set_caller(OWNER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
-        sys.designer.create_entity(array![entity_1.clone()]);
-        let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
-        sys.designer.create_description_text(array![desc_1_1.clone()]);
-        //
-        // EDITOR fail...
-        helpers::set_caller(OTHER());
-        sys.designer.create_description_text(array![desc_1_1.clone()]);
-    }
-
-    #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_other_not_allowed_to_delete_core_entity() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        //
-        // create...
-        helpers::set_caller(OWNER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
-        sys.designer.create_entity(array![entity_1.clone()]);
-        //
-        // EDITOR fail...
-        helpers::set_caller(OTHER());
-        sys.designer.delete_entity(array![entity_1.inst]);
-    }
-
-    #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_other_not_allowed_to_delete_core_component() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        //
-        // create...
-        helpers::set_caller(OWNER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
-        sys.designer.create_entity(array![entity_1.clone()]);
-        let mut area_1: Area = Area {
-            inst: entity_1.inst,
-            is_area: true,
-            is_spawn_point: false,
-            preserve_children: false,
-            progress_percentage: 10,
-        };
-        sys.designer.create_area(array![area_1.clone()]);
-        //
-        // EDITOR fail...
-        helpers::set_caller(OTHER());
-        sys.designer.delete_area(array![area_1.inst]);
-    }
-
-    #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_other_not_allowed_to_delete_core_keyed() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        //
-        // create...
-        helpers::set_caller(OWNER());
-        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
-        sys.designer.create_entity(array![entity_1.clone()]);
-        let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
-        sys.designer.create_description_text(array![desc_1_1.clone()]);
-        //
-        // EDITOR fail...
-        helpers::set_caller(OTHER());
-        sys.designer.delete_description_text(array![(desc_1_1.inst, 1)]);
-    }
-
-
-    //--------------------------------
-    // Editor > core > panic
-    //
-
-
-    #[test]
-    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
-    fn test_set_admin_not_admin() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        helpers::set_caller(OTHER());
-        sys.designer.set_admin(OTHER(), true);
-    }
-
-    #[test]
-    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
-    fn test_set_editor_not_admin() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        helpers::set_caller(OTHER());
+        // mint a trail
         sys.designer.set_editor(OTHER(), true);
+        let (_entity_trail_1, _trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OTHER());
+        //
+        // EDITOR can create in their trails...
+        helpers::set_caller(OTHER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        entity_1.trail_id = 123;
+        sys.designer.create_entity(array![entity_1.clone()]);
     }
+
+
+
+    //--------------------------------
+    // Admin functions
+    //
 
     #[test]
     fn test_set_admin_editor() {
@@ -495,26 +407,76 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_editor_not_allowed_to_edit_core_entity() {
+    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
+    fn test_other_set_admin_not_admin() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        helpers::set_caller(OTHER());
+        sys.designer.set_admin(OTHER(), true);
+    }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
+    fn test_editor_set_admin_not_admin() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         sys.designer.set_editor(OTHER(), true);
+        helpers::set_caller(OTHER());
+        sys.designer.set_admin(OTHER(), true);
+    }
+
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
+    fn test_other_set_editor_not_admin() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        helpers::set_caller(OTHER());
+        sys.designer.set_editor(OTHER(), true);
+    }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not admin','ENTRYPOINT_FAILED'))]
+    fn test_set_editor_not_admin() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        sys.designer.set_editor(OTHER(), true);
+        helpers::set_caller(OTHER());
+        sys.designer.set_editor(OTHER(), true);
+    }
+
+
+    //--------------------------------
+    // Other/Editors > core > panic
+    //
+
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not editor','ENTRYPOINT_FAILED'))]
+    fn test_other_not_allowed_to_edit_core_entity() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         //
         // create...
         helpers::set_caller(OWNER());
         let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         //
-        // EDITOR fail...
+        // fail...
+        helpers::set_caller(OTHER());
+        sys.designer.create_entity(array![entity_1.clone()]);
+    }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
+    fn test_editor_not_allowed_to_edit_core_entity() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        //
+        // create...
+        helpers::set_caller(OWNER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        sys.designer.create_entity(array![entity_1.clone()]);
+        //
+        // fail...
+        sys.designer.set_editor(OTHER(), true);
         helpers::set_caller(OTHER());
         sys.designer.create_entity(array![entity_1.clone()]);
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_editor_not_allowed_to_edit_core_component() {
+    #[should_panic(expected: ('DESIGNER: Not editor','ENTRYPOINT_FAILED'))]
+    fn test_other_not_allowed_to_edit_core_component() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        sys.designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -529,16 +491,38 @@ mod tests {
         };
         sys.designer.create_area(array![area_1.clone()]);
         //
-        // EDITOR fail...
+        // fail...
+        helpers::set_caller(OTHER());
+        sys.designer.create_area(array![area_1.clone()]);
+    }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
+    fn test_editor_not_allowed_to_edit_core_component() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        //
+        // create...
+        helpers::set_caller(OWNER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        sys.designer.create_entity(array![entity_1.clone()]);
+        let mut area_1: Area = Area {
+            inst: entity_1.inst,
+            is_area: true,
+            is_spawn_point: false,
+            preserve_children: false,
+            progress_percentage: 10,
+        };
+        sys.designer.create_area(array![area_1.clone()]);
+        //
+        // fail...
+        sys.designer.set_editor(OTHER(), true);
         helpers::set_caller(OTHER());
         sys.designer.create_area(array![area_1.clone()]);
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_editor_not_allowed_to_edit_core_keyed() {
+    #[should_panic(expected: ('DESIGNER: Not editor','ENTRYPOINT_FAILED'))]
+    fn test_other_not_allowed_to_edit_core_keyed() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        sys.designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -547,32 +531,62 @@ mod tests {
         let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
         sys.designer.create_description_text(array![desc_1_1.clone()]);
         //
-        // EDITOR fail...
+        // fail...
+        helpers::set_caller(OTHER());
+        sys.designer.create_description_text(array![desc_1_1.clone()]);
+    }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
+    fn test_editor_not_allowed_to_edit_core_keyed() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        //
+        // create...
+        helpers::set_caller(OWNER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        sys.designer.create_entity(array![entity_1.clone()]);
+        let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
+        sys.designer.create_description_text(array![desc_1_1.clone()]);
+        //
+        // fail...
+        sys.designer.set_editor(OTHER(), true);
         helpers::set_caller(OTHER());
         sys.designer.create_description_text(array![desc_1_1.clone()]);
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_editor_not_allowed_to_delete_core_entity() {
+    #[should_panic(expected: ('DESIGNER: Not editor','ENTRYPOINT_FAILED'))]
+    fn test_other_not_allowed_to_delete_core_entity() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        sys.designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
         let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
         sys.designer.create_entity(array![entity_1.clone()]);
         //
-        // EDITOR fail...
+        // fail...
+        helpers::set_caller(OTHER());
+        sys.designer.delete_entity(array![entity_1.inst]);
+    }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
+    fn test_editor_not_allowed_to_delete_core_entity() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        //
+        // create...
+        helpers::set_caller(OWNER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        sys.designer.create_entity(array![entity_1.clone()]);
+        //
+        // fail...
+        sys.designer.set_editor(OTHER(), true);
         helpers::set_caller(OTHER());
         sys.designer.delete_entity(array![entity_1.inst]);
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_editor_not_allowed_to_delete_core_component() {
+    #[should_panic(expected: ('DESIGNER: Not editor','ENTRYPOINT_FAILED'))]
+    fn test_other_not_allowed_to_delete_core_component() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        sys.designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -587,16 +601,38 @@ mod tests {
         };
         sys.designer.create_area(array![area_1.clone()]);
         //
-        // EDITOR fail...
+        // fail...
+        helpers::set_caller(OTHER());
+        sys.designer.delete_area(array![area_1.inst]);
+    }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
+    fn test_editor_not_allowed_to_delete_core_component() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        //
+        // create...
+        helpers::set_caller(OWNER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        sys.designer.create_entity(array![entity_1.clone()]);
+        let mut area_1: Area = Area {
+            inst: entity_1.inst,
+            is_area: true,
+            is_spawn_point: false,
+            preserve_children: false,
+            progress_percentage: 10,
+        };
+        sys.designer.create_area(array![area_1.clone()]);
+        //
+        // fail...
+        sys.designer.set_editor(OTHER(), true);
         helpers::set_caller(OTHER());
         sys.designer.delete_area(array![area_1.inst]);
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_editor_not_allowed_to_delete_core_keyed() {
+    #[should_panic(expected: ('DESIGNER: Not editor','ENTRYPOINT_FAILED'))]
+    fn test_other_not_allowed_to_delete_core_keyed() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
-        sys.designer.set_editor(OTHER(), true);
         //
         // create...
         helpers::set_caller(OWNER());
@@ -605,8 +641,26 @@ mod tests {
         let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
         sys.designer.create_description_text(array![desc_1_1.clone()]);
         //
-        // EDITOR fail...
+        // fail...
         helpers::set_caller(OTHER());
         sys.designer.delete_description_text(array![(desc_1_1.inst, 1)]);
     }
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
+    fn test_editor_not_allowed_to_delete_core_keyed() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        //
+        // create...
+        helpers::set_caller(OWNER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        sys.designer.create_entity(array![entity_1.clone()]);
+        let mut desc_1_1: DescriptionText = DescriptionText{ inst: entity_1.inst, key: 1, text: "desc_1_1" };
+        sys.designer.create_description_text(array![desc_1_1.clone()]);
+        //
+        // fail...
+        sys.designer.set_editor(OTHER(), true);
+        helpers::set_caller(OTHER());
+        sys.designer.delete_description_text(array![(desc_1_1.inst, 1)]);
+    }
+
 }

@@ -1,4 +1,5 @@
 use core::num::traits::Zero;
+use starknet::{ContractAddress};
 use dojo::{
     world::{WorldStorage}, //, IWorldDispatcherTrait},
     model::{ModelStorage, Model},
@@ -19,8 +20,9 @@ use lore::{
         },
     },
     lib::{
-        utils::ByteArrayTraitExt,
+        dns::{DnsTrait, ITrailTokenDispatcherTrait},
         variable_property_helper::{VariablePropertyHelper},
+        utils::{ByteArrayTraitExt},
         arrays::{ArrayUtilsTrait},
     },
 };
@@ -159,6 +161,7 @@ pub impl HubImpl of HubTrait {
 #[generate_trait]
 pub impl TrailImpl of TrailTrait {
     // this is a top-level Trail component
+    #[inline(always)]
     fn is_trail(self: @Trail) -> bool {
         (*self.is_trail)
     }
@@ -254,6 +257,22 @@ pub impl TrailImpl of TrailTrait {
         self.write_member(Model::<TrailTokenInfo>::ptr_from_keys(trail_id), selector!("trail_inst"), trail.inst);
     }
 
+    fn can_edit_trail(self: @WorldStorage, inst: felt252, owned: ContractAddress) -> bool {
+        if (EntityImpl::is_entity(self, inst)) {
+            let trail_id: u128 = self.get_entity_trail_id(inst);
+            if (trail_id.is_non_zero()) {
+                // check trail ownership
+                (self.trail_token_dispatcher().is_owner_of(owned, trail_id.into()))
+            } else {
+                // not in a trail
+                (false)
+            }
+        } else {
+            // new entity
+            (true)
+        }
+    }
+
     // avoid deleting a top-level Trail entities and components
     // called from designer delete_*()
     fn assert_trail_delete_protection(self: @WorldStorage, inst: felt252) {
@@ -336,7 +355,7 @@ pub impl TrailImpl of TrailTrait {
 
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use starknet::ContractAddress;
     use dojo::{
         // world::{WorldStorage},
@@ -493,21 +512,26 @@ mod tests {
     // Hubs + Trails
     //
 
-    fn _mint_trail(ref sys: helpers::HelperSystems) -> (Entity, Trail, Exit) {
+    pub fn _mint_trail(ref sys: helpers::HelperSystems, recipient: ContractAddress) -> (Entity, Trail, Exit) {
         // initialize player singleton
+        helpers::set_caller(OWNER());
         PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
         // mint from command
         let supply: u128 = sys.trail_token.total_supply().low;
-        helpers::set_caller(OWNER());
+        helpers::set_caller(recipient);
         sys.prompt.prompt("g_create_trail", Option::None);
-        // find entity
+        // minted
         let trail_id: u128 = supply + 1;
+        assert_eq!(sys.trail_token.total_supply().low, trail_id, "trail_token.total_supply()");
+        assert_eq!(sys.trail_token.owner_of(trail_id.into()), recipient, "trail.owner_of(recipient)");
+        // find entity
         let trail_info: TrailTokenInfo = sys.world.read_model(trail_id);
         assert_ne!(trail_info.trail_inst, 0, "_mint_trail()");
         let entity: Entity = sys.world.read_model(trail_info.trail_inst);
         let trail: Trail = sys.world.read_model(trail_info.trail_inst);
         let exit: Exit = sys.world.read_model(trail_info.trail_inst);
         assert_eq!(trail.trail_id, trail_id, "_mint_trail()");
+        assert_eq!(entity.trail_id, trail_id, "_mint_trail()");
         (entity, trail, exit)
     }
 
@@ -525,9 +549,9 @@ mod tests {
         sys.designer.create_entity(array![entity_hub_1.clone(), entity_hub_2.clone()]);
         sys.designer.create_hub(array![hub_1.clone(), hub_2.clone()]);
         // mint Trails -- will create trails
-        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
-        let (_entity_trail_2, mut trail_2, _exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys);
-        let (_entity_trail_3, mut trail_3, _exit_3): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
+        let (_entity_trail_2, mut trail_2, _exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
+        let (_entity_trail_3, mut trail_3, _exit_3): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
         trail_1.hub_inst = hub_1.inst;
         trail_2.hub_inst = hub_1.inst;
         trail_3.hub_inst = 0;
@@ -581,7 +605,7 @@ mod tests {
     fn test_designer_create_trail_to_disabled_hub() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create trails
-        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
         // Create Hubs
         let entity_hub_1: Entity = EntityImpl::create_entity(ref sys.world, "hub");
         let mut hub_1: Hub = HubImpl::add_component(ref sys.world, entity_hub_1.inst);
@@ -602,7 +626,7 @@ mod tests {
     fn test_designer_create_trail_to_invalid_hub() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // create trails
-        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (_entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
         trail_1.hub_inst = 0x123;
         //
         // edit trail and panic...
@@ -621,9 +645,9 @@ mod tests {
         sys.designer.create_entity(array![entity_hub_1.clone()]);
         sys.designer.create_hub(array![hub_1.clone()]);
         // mint Trails
-        let (entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
-        let (entity_trail_2, mut trail_2, _exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys);
-        let (entity_trail_3, mut trail_3, _exit_3): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (entity_trail_1, mut trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
+        let (entity_trail_2, mut trail_2, _exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
+        let (entity_trail_3, mut trail_3, _exit_3): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
         // add trails to hub
         trail_1.hub_inst = hub_1.inst;
         trail_2.hub_inst = hub_1.inst;
@@ -724,8 +748,8 @@ mod tests {
         // sys.world.write_model(@hub_1);
         sys.designer.create_hub(array![hub_1.clone()]);
         // mint Trails
-        let (entity_trail_1, mut trail_1, mut exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys);
-        let (entity_trail_2, mut trail_2, mut exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys);
+        let (entity_trail_1, mut trail_1, mut exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
+        let (entity_trail_2, mut trail_2, mut exit_2): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
         // add trails to hub
         trail_1.hub_inst = hub_1.inst;
         trail_2.hub_inst = hub_1.inst;

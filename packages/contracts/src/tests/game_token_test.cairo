@@ -161,10 +161,12 @@ mod tests {
         assert!(sys.world.is_player_editor(OTHER()), "editor");
         // can mint trail..
         helpers::set_caller(OTHER());
-        sys.trail_token.create_trail(OTHER());
+        let trail_id: u128 = sys.trail_token.create_trail(OTHER());
         // can edit...
         helpers::set_caller(OTHER());
-        sys.designer.create_entity(array![helpers::create_new_entity(1, "entity_1")]);
+        let mut trail_entity: Entity = helpers::create_new_entity(11, "entity_1");
+        trail_entity.trail_id = trail_id;
+        sys.designer.create_entity(array![trail_entity]);
     }
 
     #[test]
