@@ -39,6 +39,8 @@ pub struct Hub {
     pub is_enabled: bool,
     /// trails this Hub contains
     pub trails_insts: Array<felt252>,
+    /// grants editor access by reaching an Area containing this Hub
+    pub grants_editor_access: bool,
 }
 
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
@@ -154,6 +156,7 @@ pub impl HubImpl of HubTrait {
             is_hub: true,
             is_enabled: true,
             trails_insts: array![],
+            grants_editor_access: true,
         })
     }
 }

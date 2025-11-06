@@ -22,8 +22,9 @@ pub trait IDesigner<TContractState> {
     //
     fn is_admin(self: @TContractState, account: ContractAddress) -> bool;
     fn is_editor(self: @TContractState, account: ContractAddress) -> bool;
-    fn set_admin(ref self: TContractState, account_address: ContractAddress, is_admin: bool);
-    fn set_editor(ref self: TContractState, account_address: ContractAddress, is_editor: bool);
+    fn set_admin(ref self: TContractState, account: ContractAddress, is_admin: bool);
+    fn set_editor(ref self: TContractState, account: ContractAddress, is_editor: bool);
+    fn grant_access_to_entity(ref self: TContractState, account: ContractAddress, inst: felt252, granting: bool);
     //
     fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
@@ -62,19 +63,68 @@ pub trait IDesigner<TContractState> {
     fn register_property_registry(ref self: TContractState, done: Array<bool>);
 
     // IAccessControl
-    // fn has_role(self: @TContractState, role: felt252, account: ContractAddress) -> bool;
+    fn has_role(self: @TContractState, role: felt252, account: ContractAddress) -> bool;
     // fn get_role_admin(self: @TContractState, role: felt252) -> felt252;
     // fn grant_role(ref self: TContractState, role: felt252, account: ContractAddress);
     // fn revoke_role(ref self: TContractState, role: felt252, account: ContractAddress);
     // fn renounce_role(ref self: TContractState, role: felt252, account: ContractAddress);
 }
 
+#[starknet::interface]
+pub trait IDesignerPublic<TContractState> {
+    //
+    fn is_admin(self: @TContractState, account: ContractAddress) -> bool;
+    fn is_editor(self: @TContractState, account: ContractAddress) -> bool;
+    fn set_admin(ref self: TContractState, account: ContractAddress, is_admin: bool);
+    fn set_editor(ref self: TContractState, account: ContractAddress, is_editor: bool);
+    fn grant_access_to_entity(ref self: TContractState, account: ContractAddress, inst: felt252, granting: bool);
+    //
+    fn create_player(ref self: TContractState, t: Array<Player>);
+    fn create_entity(ref self: TContractState, t: Array<Entity>);
+    fn create_reactable(ref self: TContractState, t: Array<Reactable>);
+    fn create_description_text(ref self: TContractState, t: Array<DescriptionText>);
+    fn create_area(ref self: TContractState, t: Array<Area>);
+    fn create_exit(ref self: TContractState, t: Array<Exit>);
+    fn create_inventory_item(ref self: TContractState, t: Array<InventoryItem>);
+    fn create_container(ref self: TContractState, t: Array<Container>);
+    fn create_trigger(ref self: TContractState, t: Array<Trigger>);
+    fn create_condition(ref self: TContractState, t: Array<Condition>);
+    fn create_effect(ref self: TContractState, t: Array<Effect>);
+    fn create_action(ref self: TContractState, t: Array<Action>);
+    fn create_hub(ref self: TContractState, t: Array<Hub>);
+    fn create_trail(ref self: TContractState, t: Array<Trail>);
+    fn create_parent(ref self: TContractState, t: Array<ParentToChildren>);
+    fn create_child(ref self: TContractState, t: Array<ChildToParent>);
+    //
+    fn delete_player(ref self: TContractState, ids: Array<felt252>);
+    fn delete_entity(ref self: TContractState, ids: Array<felt252>);
+    fn delete_reactable(ref self: TContractState, ids: Array<felt252>);
+    fn delete_description_text(ref self: TContractState, ids: Array<(felt252, felt252)>);
+    fn delete_area(ref self: TContractState, ids: Array<felt252>);
+    fn delete_exit(ref self: TContractState, ids: Array<felt252>);
+    fn delete_inventory_item(ref self: TContractState, ids: Array<felt252>);
+    fn delete_container(ref self: TContractState, ids: Array<felt252>);
+    fn delete_trigger(ref self: TContractState, ids: Array<(felt252, felt252)>);
+    fn delete_condition(ref self: TContractState, ids: Array<(felt252, felt252)>);
+    fn delete_effect(ref self: TContractState, ids: Array<(felt252, felt252)>);
+    fn delete_action(ref self: TContractState, ids: Array<(felt252, felt252)>);
+    fn delete_hub(ref self: TContractState, ids: Array<felt252>);
+    fn delete_trail(ref self: TContractState, ids: Array<felt252>);
+    fn delete_parent(ref self: TContractState, ids: Array<felt252>);
+    fn delete_child(ref self: TContractState, ids: Array<felt252>);
+    //
+    fn register_property_registry(ref self: TContractState, done: Array<bool>);
+}
+
 #[dojo::contract]
 pub mod designer {
-    use super::IDesigner;
     use starknet::ContractAddress;
     use core::num::traits::Zero;
-    use dojo::{model::ModelStorage, world::WorldStorage};
+    use dojo::{
+        model::ModelStorage,
+        world::WorldStorage,
+        event::EventStorage,
+    };
 
     //
     // components
@@ -128,7 +178,7 @@ pub mod designer {
             command_type::TokenType,
         },
         lib::{
-            access::{ROLES},
+            access::{ROLES, AccessGrantedEvent},
             utils::{ByteArrayTraitExt},
             variable_property_helper::{VariablePropertyHelper},
             dns::{DnsTrait, ILexerDispatcherTrait},
@@ -155,9 +205,9 @@ pub mod designer {
         self.accesscontrol.initializer();
         // intialize admins
         let deployer_address: ContractAddress = starknet::get_execution_info().tx_info.account_contract_address;
-        self._grant_admin_roles(deployer_address);
-        for account_address in admin_accounts {
-            self._grant_admin_roles(account_address);
+        self._grant_admin_roles(ref world, deployer_address);
+        for account in admin_accounts {
+            self._grant_admin_roles(ref world, account);
         };
     }
 
@@ -170,7 +220,7 @@ pub mod designer {
     }
 
     #[abi(embed_v0)]
-    pub impl DesignerImpl of IDesigner<ContractState> {
+    pub impl DesignerPublicImpl of super::IDesignerPublic<ContractState> {
 
         fn is_admin(self: @ContractState, account: ContractAddress) -> bool {
             (self.accesscontrol.has_role(ROLES::ADMIN, account))
@@ -178,21 +228,19 @@ pub mod designer {
         fn is_editor(self: @ContractState, account: ContractAddress) -> bool {
             (self.accesscontrol.has_role(ROLES::EDITOR, account) || self.accesscontrol.has_role(ROLES::ADMIN, account))
         }
-        fn set_admin(ref self: ContractState, account_address: ContractAddress, is_admin: bool) {
-            self._assert_caller_is_admin(@self.world_default());
-            if (is_admin) {
-                self.accesscontrol._grant_role(ROLES::ADMIN, account_address);
-            } else {
-                self.accesscontrol._revoke_role(ROLES::ADMIN, account_address);
-            }
+        fn set_admin(ref self: ContractState, account: ContractAddress, is_admin: bool) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            self._grant_role(ref world, ROLES::ADMIN, account, is_admin);
         }
-        fn set_editor(ref self: ContractState, account_address: ContractAddress, is_editor: bool) {
-            self._assert_caller_is_admin(@self.world_default());
-            if (is_editor) {
-                self.accesscontrol._grant_role(ROLES::EDITOR, account_address);
-            } else {
-                self.accesscontrol._revoke_role(ROLES::EDITOR, account_address);
-            }
+        fn set_editor(ref self: ContractState, account: ContractAddress, is_editor: bool) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            self._grant_role(ref world, ROLES::EDITOR, account, is_editor);
+        }
+        fn grant_access_to_entity(ref self: ContractState, account: ContractAddress, inst: felt252, granting: bool) {
+            let mut world: WorldStorage = self.world_default();
+            self._grant_role(ref world, inst, account, granting);
         }
 
         // TODO: remove this?? is it necessary to call again?
@@ -598,10 +646,30 @@ pub mod designer {
     //
     #[generate_trait]
     impl InternalImpl of InternalTrait {
-        fn _grant_admin_roles(ref self: ContractState, account_address: ContractAddress) {
-            self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, account_address);
-            self.accesscontrol._grant_role(ROLES::ADMIN, account_address);
-            self.accesscontrol._grant_role(ROLES::EDITOR, account_address);
+        fn _grant_admin_roles(ref self: ContractState, ref world: WorldStorage, address: ContractAddress) {
+            self._grant_role(ref world, DEFAULT_ADMIN_ROLE, address, true);
+            self._grant_role(ref world, ROLES::ADMIN, address, true);
+            self._grant_role(ref world, ROLES::EDITOR, address, true);
+        }
+        fn _grant_role(ref self: ContractState, ref world: WorldStorage, role: felt252, address: ContractAddress, granting: bool) {
+            let granted: Option<bool> = 
+                if (granting && !self.accesscontrol.has_role(role, address)) {
+                    self.accesscontrol._grant_role(role, address);
+                    (Option::Some(true))
+                } else if (!granting && self.accesscontrol.has_role(role, address)) {
+                    self.accesscontrol._revoke_role(role, address);
+                    (Option::Some(false))
+                } else {
+                    (Option::None)
+                };
+            // emit event only if changed
+            if let Some(granted) = granted {
+                world.emit_event(@AccessGrantedEvent{
+                    address,
+                    role,
+                    granted,
+                });
+            }
         }
         #[inline(always)]
         fn _assert_caller_is_admin(self: @ContractState, world: @WorldStorage) {

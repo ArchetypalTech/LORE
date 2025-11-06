@@ -102,22 +102,18 @@ pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
 
 #[generate_trait]
 pub impl TrailProgressImpl of TrailProgressTrait {
-    fn set_trail_progress(ref self: WorldStorage, game_id: u128, trail_id: u128, mut percentage: u8) -> bool {
+    fn set_trail_progress(ref self: WorldStorage, game_id: u128, trail_id: u128, mut percentage: u8) {
         let mut trail_progress: TrailProgress = self.read_model((game_id, trail_id),);
-        // return the exact moment the trail was completed
-        let mut completed_now: bool = false;
         // clamp to not exceed 100
         percentage = core::cmp::min(percentage, 100);
         // write only if percentage has changed
         if (percentage > trail_progress.percentage) {
             trail_progress.percentage = percentage;
-            if (percentage == 100 && !trail_progress.completed) {
+            if (percentage == 100) {
                 trail_progress.completed = true;
-                completed_now = true;
             }
             self.write_model(@trail_progress);
         }
-        (completed_now)
     }
     fn current_trail_progress(self: @WorldStorage, game_id: u128, trail_id: u128) -> u8 {
         let trail_progress: TrailProgress = self.read_model((game_id, trail_id),);

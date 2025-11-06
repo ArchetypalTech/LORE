@@ -25,7 +25,7 @@ mod tests {
         },
         
         lib:: {
-            access::{AccessTrait},
+            access::{AccessTrait, ROLES},
         }
     };
 
@@ -38,6 +38,18 @@ mod tests {
         assert!(sys.world.is_player_editor(ADMIN()));
         assert!(!sys.world.is_player_admin(OTHER()));
         assert!(!sys.world.is_player_editor(OTHER()));
+        // also..
+        assert!(sys.designer.is_admin(ADMIN()), "set_admin(OTHER)");
+        assert!(sys.designer.is_editor(ADMIN()), "set_admin(OTHER)");
+        assert!(sys.designer.has_role(ROLES::ADMIN, ADMIN()), "set_admin(OTHER)");
+        assert!(sys.designer.has_role(ROLES::EDITOR, ADMIN()), "set_admin(OTHER)");
+        // not for...
+        assert!(!sys.world.is_player_admin(OTHER()));
+        assert!(!sys.world.is_player_editor(OTHER()));
+        assert!(!sys.designer.is_admin(OTHER()));
+        assert!(!sys.designer.is_editor(OTHER()));
+        assert!(!sys.designer.has_role(ROLES::ADMIN, OTHER()));
+        assert!(!sys.designer.has_role(ROLES::EDITOR, OTHER()));
     }
 
     #[test]
@@ -367,12 +379,16 @@ mod tests {
         // OWNER set admin to OTHER
         helpers::set_caller(OWNER());
         sys.designer.set_admin(OTHER(), true);
-        assert!(sys.world.is_player_admin(OTHER()), "admin OTHER");
-        assert!(sys.world.is_player_editor(OTHER()), "editor OTHER");
+        assert!(sys.world.is_player_admin(OTHER()), "set_admin(OTHER)");
+        assert!(sys.world.is_player_editor(OTHER()), "set_admin(OTHER)");
+        assert!(sys.designer.is_admin(OTHER()), "set_admin(OTHER)");
+        assert!(sys.designer.is_editor(OTHER()), "set_admin(OTHER)");
+        assert!(sys.designer.has_role(ROLES::ADMIN, OTHER()), "set_admin(OTHER)");
+        assert!(sys.designer.has_role(ROLES::EDITOR, OTHER()), "set_admin(OTHER)");
         // OTHER set admin to RECIPIENT
         helpers::set_caller(OTHER());
         sys.designer.set_admin(RECIPIENT(), true);
-        assert!(sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 1");
+        assert!(sys.world.is_player_admin(RECIPIENT()), "set_admin(RECIPIENT)");
         assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 1");
         // OTHER set editor to RECIPIENT
         helpers::set_caller(OTHER());

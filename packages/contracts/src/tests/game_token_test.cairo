@@ -17,9 +17,10 @@ mod tests {
             game_token_info::{GameTokenInfo, GameTokenInfoTrait, PlayerGame, PlayerGameImpl},
             player::{Player, PlayerImpl},
             area::{Area, AreaComponent},
+            hub::{Hub, HubImpl},
         },
         lib::{
-            access::{AccessTrait},
+            access::{AccessTrait, ROLES},
         },
         constants::token_metadata::{game_metadata},
         tests::{
@@ -138,15 +139,18 @@ mod tests {
     }
 
     #[test]
-    fn test_token_winner_becomes_editor() {
+    fn test_token_enter_hub_becomes_editor() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
         // create an end room
         let room_entity_1: @Entity = @helpers::create_new_entity(1, "Room 1");
         let mut area_1: Area = AreaComponent::add_component(ref sys.world, *room_entity_1.inst);
         sys.world.write_model(room_entity_1);
-        area_1.progress_percentage = 100;
+        area_1.progress_percentage = 20;
         sys.world.write_model(@area_1);
+        // Add a Hub -- grants access to editor
+        let mut hub_1: Hub = HubImpl::add_component(ref sys.world, *room_entity_1.inst);
+        sys.world.write_model(@hub_1);
         // mint game token
         let game_id_1: u128 = 1;
         helpers::set_caller(OTHER());
@@ -157,8 +161,11 @@ mod tests {
         assert!(!sys.world.is_player_editor(OTHER()), "!editor");
         // finish game -- granted editor
         GameTokenInfoTrait::set_room(ref sys.world, game_id_1, *room_entity_1.inst);
-        assert!(GameTokenInfoTrait::has_finished_game(@sys.world, game_id_1), "has_finished_game");
+        assert!(!GameTokenInfoTrait::has_finished_game(@sys.world, game_id_1), "has_finished_game");
         assert!(sys.world.is_player_editor(OTHER()), "editor");
+        assert!(sys.designer.is_editor(OTHER()), "editor");
+        assert!(sys.designer.has_role(ROLES::EDITOR, OTHER()), "editor");
+        assert!(sys.designer.has_role(*room_entity_1.inst, OTHER()), "editor");
         // can mint trail..
         helpers::set_caller(OTHER());
         let trail_id: u128 = sys.trail_token.create_trail(OTHER());
@@ -167,6 +174,30 @@ mod tests {
         let mut trail_entity: Entity = helpers::create_new_entity(11, "entity_1");
         trail_entity.trail_id = trail_id;
         sys.designer.create_entity(array![trail_entity]);
+    }
+
+    #[test]
+    fn test_token_finished_game() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
+        // create an end room
+        let room_entity_1: @Entity = @helpers::create_new_entity(1, "Room 1");
+        let mut area_1: Area = AreaComponent::add_component(ref sys.world, *room_entity_1.inst);
+        sys.world.write_model(room_entity_1);
+        area_1.progress_percentage = 100; // finishes game
+        sys.world.write_model(@area_1);
+        // mint game token
+        let game_id_1: u128 = 1;
+        helpers::set_caller(OTHER());
+        sys.prompt.prompt("", Option::None);
+        assert_eq!(sys.game_token.owner_of(game_id_1.into()), OTHER(), "owner_of()");
+        // set editor
+        helpers::set_caller(OWNER());
+        assert!(!sys.world.is_player_editor(OTHER()), "!editor");
+        // finishes game
+        GameTokenInfoTrait::set_room(ref sys.world, game_id_1, *room_entity_1.inst);
+        assert!(GameTokenInfoTrait::has_finished_game(@sys.world, game_id_1), "has_finished_game");
+        assert!(!sys.world.is_player_editor(OTHER()), "editor");
     }
 
     #[test]

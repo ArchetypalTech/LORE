@@ -47,7 +47,7 @@ use lore::models::{
     area::{Area, AreaComponent},
     player::{Player, PlayerImpl},
     trail_token_info::{TrailProgressTrait, MAIN_TRAIL_ID},
-    hub::{TrailTrait},
+    hub::{Hub, HubTrait, TrailTrait},
 };
 use lore::lib::{
     access::{AccessTrait},
@@ -73,7 +73,7 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
         if let Option::Some(area) = area {
             // update progress
             let trail_id: u128 = world.get_entity_trail_id(room_inst);
-            let completed_now: bool = world.set_trail_progress(game_id, trail_id, area.progress_percentage);
+            world.set_trail_progress(game_id, trail_id, area.progress_percentage);
             // is the main game trail...
             if (trail_id == MAIN_TRAIL_ID) {
                 // emit achievement
@@ -84,16 +84,20 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
                     else if (trophy == Trophy::ForkstoneVerge) {3}
                     else {1};
                 game_info.act_number = core::cmp::max(game_info.act_number, act_number);
-                // if just completed: owner becomes editor
-                if (completed_now) {
-                    let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
-                    world.set_player_is_editor(owner, true);
-                }
             }
         };
         // store!
         world.write_model(@game_info);
         world.game_token_dispatcher().update_token_metadata(game_id.into());
+        // give editor access if reached a Hub
+        let hub: Option<Hub> = world.get_hub_component(room_inst);
+        if let Option::Some(hub) = hub {
+            if (hub.grants_editor_access) {
+                let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
+                world.set_player_is_editor(owner, true);
+                world.grant_access_to_entity(owner, room_inst, true);
+            }
+        }
     }
     fn current_game_progress(self: @WorldStorage, game_id: u128) -> u8 {
         (self.current_trail_progress(game_id, MAIN_TRAIL_ID))
