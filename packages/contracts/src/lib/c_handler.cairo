@@ -205,6 +205,7 @@ pub fn handle_command(
         if tokens.len() == 2 {
             let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
             let secondToken: Token = tokens.at(1).clone();
+            // the command [look around] is a shortcut to describe room
             if initialVerb == 'look' {
                 let around: ByteArray = "around";
                 let at: ByteArray = "at";
@@ -217,6 +218,20 @@ pub fn handle_command(
                 }
                 if secondToken.text == at {
                     return Result::Err(Error::NoTarget);
+                }
+            }
+            // the command [exit trail] is a safe way to exit any trail back oto its Hub
+            if initialVerb == 'exit' {
+                if secondToken.text == "trail" {
+                    let hub_entity: Option<Entity> = world.get_trail_hub_entity(player.inst);
+                    if let Some(hub_entity) = hub_entity {
+                        player.move_to_room(ref world, hub_entity.inst);
+                        return Result::Ok(());
+                    } else {
+                        return Result::Err(Error::ActionFailed);
+                    }
+                } else {
+                    // continue to error
                 }
             }
             // if initial verb is not look

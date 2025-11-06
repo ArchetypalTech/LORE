@@ -185,14 +185,39 @@ pub impl TrailImpl of TrailTrait {
         (self.read_member_of_models(Model::<Entity>::ptrs_from_keys(insts), selector!("trail_id")))
     }
 
-    fn get_trail_entity(self: @WorldStorage, inst: felt252) -> Option<Entity> {
+    // returns the corresponding trail_inst (top-level) from any Entity
+    // can be zero if not in a specific trail
+    fn get_entity_trail_inst(self: @WorldStorage, inst: felt252) -> felt252 {
         let trail_id: u128 = self.get_entity_trail_id(inst);
-        if (trail_id.is_zero()) {
-            return Option::None;
-        } else {
+        if (trail_id.is_non_zero()) {
             let trail_info: TrailTokenInfo = self.read_model(trail_id);
-            let trail_entity: Entity = self.read_model(trail_info.trail_inst);
+            (trail_info.trail_inst)
+        } else {
+            (0)
+        }
+    }
+
+    fn get_trail_entity(self: @WorldStorage, inst: felt252) -> Option<Entity> {
+        let trail_inst: felt252 = self.get_entity_trail_inst(inst);
+        if (trail_inst.is_non_zero()) {
+            let trail_entity: Entity = self.read_model(trail_inst);
             (Option::Some(trail_entity))
+        } else {
+            return Option::None;
+        }
+    }
+    fn get_trail_hub_entity(self: @WorldStorage, inst: felt252) -> Option<Entity> {
+        let trail_inst: felt252 = self.get_entity_trail_inst(inst);
+        if (trail_inst.is_non_zero()) {
+            let hub_inst: felt252 = self.read_member(Model::<Trail>::ptr_from_keys(trail_inst), selector!("hub_inst"));
+            let hub_entity: Entity = self.read_model(hub_inst);
+            if (hub_entity.is_entity) {
+                (Option::Some(hub_entity))
+            } else {
+                (Option::None)
+            }
+        } else {
+            return Option::None;
         }
     }
 
@@ -823,7 +848,7 @@ pub mod tests {
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
 
         //
-        // create a player's cont   ainer
+        // create a player's container
         helpers::set_caller(helpers::OWNER());
         let player_entity: Entity = sys.world.read_model(player.inst);
         let _player_container: Container = ContainerComponent::add_component(ref sys.world, player_entity.inst);
@@ -869,12 +894,12 @@ pub mod tests {
         //
         // exit trail 2...
         // TODO: implement [exit trail] command
-//         sys.prompt.prompt("exit trail", Option::None);
-// // helpers::print_game_story_last_command(@sys.world, game_id, "exit trail_2");
-//         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
-//         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
+        sys.prompt.prompt("exit trail", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "exit trail_2");
+        // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
+        sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
 // helpers::print_game_story_last_command(@sys.world, game_id, "look around (exit trail_2 AGAIN)");
-//         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_2"); // last exit available
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
 
     }
 }
