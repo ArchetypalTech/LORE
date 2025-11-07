@@ -4,7 +4,7 @@ import {
 	printingStatus,
 	useTerminalStore,
 } from "@lib/stores/terminal.store";
-import type { FormEvent, KeyboardEvent } from "react";
+import type { FormEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import IntroLoader from "./IntroLoader";
 import LoadingMessage from "./Loader";
@@ -36,7 +36,7 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	useEffect(() => {
@@ -56,6 +56,25 @@ export default function Terminal({
 
 		return () => clearTimeout(timeout);
 	}, [status]);
+
+	// FIX: Auto-scroll whenever new content or line prints
+	useEffect(() => {
+	const el = scroller.current;
+	if (!el) return;
+
+	const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+
+	requestAnimationFrame(() => {
+		scrollToBottom(isNearBottom || isPrinting ? "smooth" : "auto");
+	});
+}, [terminalContent, activeTypewriterLine, isPrinting]);
+
+	// FIX: Re-focus textarea whenever new content prints
+	useEffect(() => {
+		if (status === "inputEnabled" && !isPrinting) {
+			terminalInputRef.current?.focus();
+		}
+	}, [terminalContent, activeTypewriterLine, isPrinting, status]);
 
 	// update cursor position
 	useEffect(() => {
@@ -78,8 +97,43 @@ export default function Terminal({
 		}
 	}, []);
 
+	// Auto-refocus when clicking inside the terminal area (unless focus is locked)
+useEffect(() => {
+	const handleClick = (e: MouseEvent) => {
+		const { focusLocked } = useTerminalStore.getState();
+		if (!focusLocked) return; // skip if focus is locked by another UI (e.g. wallet)
+
+		const terminalEl = terminalFormRef.current;
+		if (terminalEl && terminalEl.contains(e.target as Node)) {
+			terminalInputRef.current?.focus();
+		}
+	};
+
+	document.addEventListener("click", handleClick);
+	return () => document.removeEventListener("click", handleClick);
+}, []);
+
+// Auto-refocus when typing while terminal input is unfocused (unless locked)
+useEffect(() => {
+	const handleKeydown = (e: globalThis.KeyboardEvent) => {
+		const { focusLocked } = useTerminalStore.getState();
+		if (!focusLocked) return;
+
+		const input = terminalInputRef.current;
+		if (!input) return;
+
+		if (document.activeElement !== input && status === "inputEnabled" && !isPrinting) {
+			e.preventDefault();
+			input.focus();
+		}
+	};
+
+	window.addEventListener("keydown", handleKeydown);
+	return () => window.removeEventListener("keydown", handleKeydown);
+}, [status, isPrinting]);
+
 	// Split handleKeyDown to reduce complexity
-	const handleUpArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleUpArrow = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		e.preventDefault();
 		if (inputHistoryIndex === 0) {
 			setOriginalInputValue(inputValue);
@@ -90,7 +144,7 @@ export default function Terminal({
 		}
 	};
 
-	const handleDownArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleDownArrow = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		// console.log(e, inputHistoryIndex);
 		e.preventDefault();
 		if (inputHistoryIndex > 0) {
@@ -105,7 +159,7 @@ export default function Terminal({
 		}
 	};
 
-	const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		focusInput();
 		switch (e.key) {
 			case "Enter":
@@ -136,6 +190,7 @@ export default function Terminal({
 		if (command === "") return;
 
 		setInputValue("");
+		setCursorPos(0);
 		setInputHistory([...inputHistory, command]);
 		printingStatus(true);
 
@@ -151,6 +206,15 @@ export default function Terminal({
 		if (terminalInputRef.current) {
 			terminalInputRef.current.focus();
 		}
+	};
+
+	const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+		const el = scroller.current;
+		if (!el) return;
+		el.scrollTo({
+			top: el.scrollHeight,
+			behavior,
+		});
 	};
 
 	return (
