@@ -193,6 +193,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_createHub_calldata = (t: Array<Hub>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_hub",
+			calldata: [t],
+		};
+	};
+
+	const designer_createHub = async (snAccount: Account | AccountInterface, t: Array<Hub>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createHub_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createInventoryItem_calldata = (t: Array<InventoryItem>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -269,6 +290,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_createReactable_calldata(t),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_createTrail_calldata = (t: Array<Trail>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "create_trail",
+			calldata: [t],
+		};
+	};
+
+	const designer_createTrail = async (snAccount: Account | AccountInterface, t: Array<Trail>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_createTrail_calldata(t),
 				"lore",
 			);
 		} catch (error) {
@@ -487,6 +529,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deleteHub_calldata = (ids: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_hub",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteHub = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteHub_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteInventoryItem_calldata = (ids: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -571,6 +634,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_deleteTrail_calldata = (ids: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "delete_trail",
+			calldata: [ids],
+		};
+	};
+
+	const designer_deleteTrail = async (snAccount: Account | AccountInterface, ids: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_deleteTrail_calldata(ids),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_deleteTrigger_calldata = (ids: Array<[BigNumberish, BigNumberish]>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -603,6 +687,27 @@ export function setupWorld(provider: DojoProvider) {
 	const designer_getRoleAdmin = async (role: BigNumberish) => {
 		try {
 			return await provider.call("lore", build_designer_getRoleAdmin_calldata(role));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_grantAccessToEntity_calldata = (account: string, inst: BigNumberish, granting: boolean): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "grant_access_to_entity",
+			calldata: [account, inst, granting],
+		};
+	};
+
+	const designer_grantAccessToEntity = async (snAccount: Account | AccountInterface, account: string, inst: BigNumberish, granting: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_grantAccessToEntity_calldata(account, inst, granting),
+				"lore",
+			);
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -744,19 +849,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_setAdmin_calldata = (accountAddress: string, isAdmin: boolean): DojoCall => {
+	const build_designer_setAdmin_calldata = (account: string, isAdmin: boolean): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "set_admin",
-			calldata: [accountAddress, isAdmin],
+			calldata: [account, isAdmin],
 		};
 	};
 
-	const designer_setAdmin = async (snAccount: Account | AccountInterface, accountAddress: string, isAdmin: boolean) => {
+	const designer_setAdmin = async (snAccount: Account | AccountInterface, account: string, isAdmin: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_designer_setAdmin_calldata(accountAddress, isAdmin),
+				build_designer_setAdmin_calldata(account, isAdmin),
 				"lore",
 			);
 		} catch (error) {
@@ -765,19 +870,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_designer_setEditor_calldata = (accountAddress: string, isEditor: boolean): DojoCall => {
+	const build_designer_setEditor_calldata = (account: string, isEditor: boolean): DojoCall => {
 		return {
 			contractName: "designer",
 			entrypoint: "set_editor",
-			calldata: [accountAddress, isEditor],
+			calldata: [account, isEditor],
 		};
 	};
 
-	const designer_setEditor = async (snAccount: Account | AccountInterface, accountAddress: string, isEditor: boolean) => {
+	const designer_setEditor = async (snAccount: Account | AccountInterface, account: string, isEditor: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_designer_setEditor_calldata(accountAddress, isEditor),
+				build_designer_setEditor_calldata(account, isEditor),
 				"lore",
 			);
 		} catch (error) {
@@ -1408,6 +1513,590 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_trail_token_approve_calldata = (to: string, tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "approve",
+			calldata: [to, tokenId],
+		};
+	};
+
+	const trail_token_approve = async (snAccount: Account | AccountInterface, to: string, tokenId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_approve_calldata(to, tokenId),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_availableSupply_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "availableSupply",
+			calldata: [],
+		};
+	};
+
+	const trail_token_availableSupply = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_availableSupply_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_balanceOf_calldata = (account: string): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "balanceOf",
+			calldata: [account],
+		};
+	};
+
+	const trail_token_balanceOf = async (account: string) => {
+		try {
+			return await provider.call("lore", build_trail_token_balanceOf_calldata(account));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_contractUri_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "contractURI",
+			calldata: [],
+		};
+	};
+
+	const trail_token_contractUri = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_contractUri_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_createTrail_calldata = (recipient: string): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "create_trail",
+			calldata: [recipient],
+		};
+	};
+
+	const trail_token_createTrail = async (snAccount: Account | AccountInterface, recipient: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_createTrail_calldata(recipient),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_createTrophies_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "create_trophies",
+			calldata: [],
+		};
+	};
+
+	const trail_token_createTrophies = async (snAccount: Account | AccountInterface) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_createTrophies_calldata(),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_defaultRoyalty_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "defaultRoyalty",
+			calldata: [],
+		};
+	};
+
+	const trail_token_defaultRoyalty = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_defaultRoyalty_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_getApproved_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "getApproved",
+			calldata: [tokenId],
+		};
+	};
+
+	const trail_token_getApproved = async (tokenId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_getApproved_calldata(tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_isApprovedForAll_calldata = (owner: string, operator: string): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "isApprovedForAll",
+			calldata: [owner, operator],
+		};
+	};
+
+	const trail_token_isApprovedForAll = async (owner: string, operator: string) => {
+		try {
+			return await provider.call("lore", build_trail_token_isApprovedForAll_calldata(owner, operator));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_isMintedOut_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "is_minted_out",
+			calldata: [],
+		};
+	};
+
+	const trail_token_isMintedOut = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_isMintedOut_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_isMintingPaused_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "is_minting_paused",
+			calldata: [],
+		};
+	};
+
+	const trail_token_isMintingPaused = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_isMintingPaused_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_isOwnerOf_calldata = (address: string, tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "is_owner_of",
+			calldata: [address, tokenId],
+		};
+	};
+
+	const trail_token_isOwnerOf = async (address: string, tokenId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_isOwnerOf_calldata(address, tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_lastTokenId_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "last_token_id",
+			calldata: [],
+		};
+	};
+
+	const trail_token_lastTokenId = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_lastTokenId_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_maxSupply_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "maxSupply",
+			calldata: [],
+		};
+	};
+
+	const trail_token_maxSupply = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_maxSupply_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_mintedSupply_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "mintedSupply",
+			calldata: [],
+		};
+	};
+
+	const trail_token_mintedSupply = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_mintedSupply_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_name_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "name",
+			calldata: [],
+		};
+	};
+
+	const trail_token_name = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_name_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_ownerOf_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "ownerOf",
+			calldata: [tokenId],
+		};
+	};
+
+	const trail_token_ownerOf = async (tokenId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_ownerOf_calldata(tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_reservedSupply_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "reservedSupply",
+			calldata: [],
+		};
+	};
+
+	const trail_token_reservedSupply = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_reservedSupply_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_royaltyInfo_calldata = (tokenId: BigNumberish, salePrice: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "royaltyInfo",
+			calldata: [tokenId, salePrice],
+		};
+	};
+
+	const trail_token_royaltyInfo = async (tokenId: BigNumberish, salePrice: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_royaltyInfo_calldata(tokenId, salePrice));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_safeTransferFrom_calldata = (from: string, to: string, tokenId: BigNumberish, data: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "safeTransferFrom",
+			calldata: [from, to, tokenId, data],
+		};
+	};
+
+	const trail_token_safeTransferFrom = async (snAccount: Account | AccountInterface, from: string, to: string, tokenId: BigNumberish, data: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_safeTransferFrom_calldata(from, to, tokenId, data),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_setApprovalForAll_calldata = (operator: string, approved: boolean): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "setApprovalForAll",
+			calldata: [operator, approved],
+		};
+	};
+
+	const trail_token_setApprovalForAll = async (snAccount: Account | AccountInterface, operator: string, approved: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_setApprovalForAll_calldata(operator, approved),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_setMintingPaused_calldata = (isPaused: boolean): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "set_minting_paused",
+			calldata: [isPaused],
+		};
+	};
+
+	const trail_token_setMintingPaused = async (snAccount: Account | AccountInterface, isPaused: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_setMintingPaused_calldata(isPaused),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_supportsInterface_calldata = (interfaceId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "supports_interface",
+			calldata: [interfaceId],
+		};
+	};
+
+	const trail_token_supportsInterface = async (interfaceId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_supportsInterface_calldata(interfaceId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_symbol_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "symbol",
+			calldata: [],
+		};
+	};
+
+	const trail_token_symbol = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_symbol_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_tokenRoyalty_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "tokenRoyalty",
+			calldata: [tokenId],
+		};
+	};
+
+	const trail_token_tokenRoyalty = async (tokenId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_tokenRoyalty_calldata(tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_tokenUri_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "tokenURI",
+			calldata: [tokenId],
+		};
+	};
+
+	const trail_token_tokenUri = async (tokenId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_tokenUri_calldata(tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_tokenExists_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "token_exists",
+			calldata: [tokenId],
+		};
+	};
+
+	const trail_token_tokenExists = async (tokenId: BigNumberish) => {
+		try {
+			return await provider.call("lore", build_trail_token_tokenExists_calldata(tokenId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_totalSupply_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "totalSupply",
+			calldata: [],
+		};
+	};
+
+	const trail_token_totalSupply = async () => {
+		try {
+			return await provider.call("lore", build_trail_token_totalSupply_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_transferFrom_calldata = (from: string, to: string, tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "transferFrom",
+			calldata: [from, to, tokenId],
+		};
+	};
+
+	const trail_token_transferFrom = async (snAccount: Account | AccountInterface, from: string, to: string, tokenId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_transferFrom_calldata(from, to, tokenId),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_updateContractMetadata_calldata = (): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "update_contract_metadata",
+			calldata: [],
+		};
+	};
+
+	const trail_token_updateContractMetadata = async (snAccount: Account | AccountInterface) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_updateContractMetadata_calldata(),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_updateTokenMetadata_calldata = (tokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "update_token_metadata",
+			calldata: [tokenId],
+		};
+	};
+
+	const trail_token_updateTokenMetadata = async (snAccount: Account | AccountInterface, tokenId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_updateTokenMetadata_calldata(tokenId),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_trail_token_updateTokensMetadata_calldata = (fromTokenId: BigNumberish, toTokenId: BigNumberish): DojoCall => {
+		return {
+			contractName: "trail_token",
+			entrypoint: "update_tokens_metadata",
+			calldata: [fromTokenId, toTokenId],
+		};
+	};
+
+	const trail_token_updateTokensMetadata = async (snAccount: Account | AccountInterface, fromTokenId: BigNumberish, toTokenId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_trail_token_updateTokensMetadata_calldata(fromTokenId, toTokenId),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 
 
 	return {
@@ -1430,6 +2119,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildCreateEntityCalldata: build_designer_createEntity_calldata,
 			createExit: designer_createExit,
 			buildCreateExitCalldata: build_designer_createExit_calldata,
+			createHub: designer_createHub,
+			buildCreateHubCalldata: build_designer_createHub_calldata,
 			createInventoryItem: designer_createInventoryItem,
 			buildCreateInventoryItemCalldata: build_designer_createInventoryItem_calldata,
 			createParent: designer_createParent,
@@ -1438,6 +2129,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildCreatePlayerCalldata: build_designer_createPlayer_calldata,
 			createReactable: designer_createReactable,
 			buildCreateReactableCalldata: build_designer_createReactable_calldata,
+			createTrail: designer_createTrail,
+			buildCreateTrailCalldata: build_designer_createTrail_calldata,
 			createTrigger: designer_createTrigger,
 			buildCreateTriggerCalldata: build_designer_createTrigger_calldata,
 			deleteAction: designer_deleteAction,
@@ -1458,6 +2151,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeleteEntityCalldata: build_designer_deleteEntity_calldata,
 			deleteExit: designer_deleteExit,
 			buildDeleteExitCalldata: build_designer_deleteExit_calldata,
+			deleteHub: designer_deleteHub,
+			buildDeleteHubCalldata: build_designer_deleteHub_calldata,
 			deleteInventoryItem: designer_deleteInventoryItem,
 			buildDeleteInventoryItemCalldata: build_designer_deleteInventoryItem_calldata,
 			deleteParent: designer_deleteParent,
@@ -1466,10 +2161,14 @@ export function setupWorld(provider: DojoProvider) {
 			buildDeletePlayerCalldata: build_designer_deletePlayer_calldata,
 			deleteReactable: designer_deleteReactable,
 			buildDeleteReactableCalldata: build_designer_deleteReactable_calldata,
+			deleteTrail: designer_deleteTrail,
+			buildDeleteTrailCalldata: build_designer_deleteTrail_calldata,
 			deleteTrigger: designer_deleteTrigger,
 			buildDeleteTriggerCalldata: build_designer_deleteTrigger_calldata,
 			getRoleAdmin: designer_getRoleAdmin,
 			buildGetRoleAdminCalldata: build_designer_getRoleAdmin_calldata,
+			grantAccessToEntity: designer_grantAccessToEntity,
+			buildGrantAccessToEntityCalldata: build_designer_grantAccessToEntity_calldata,
 			grantRole: designer_grantRole,
 			buildGrantRoleCalldata: build_designer_grantRole_calldata,
 			hasRole: designer_hasRole,
@@ -1560,6 +2259,72 @@ export function setupWorld(provider: DojoProvider) {
 		prompt: {
 			prompt: prompt_prompt,
 			buildPromptCalldata: build_prompt_prompt_calldata,
+		},
+		trail_token: {
+			approve: trail_token_approve,
+			buildApproveCalldata: build_trail_token_approve_calldata,
+			availableSupply: trail_token_availableSupply,
+			buildAvailableSupplyCalldata: build_trail_token_availableSupply_calldata,
+			balanceOf: trail_token_balanceOf,
+			buildBalanceOfCalldata: build_trail_token_balanceOf_calldata,
+			contractUri: trail_token_contractUri,
+			buildContractUriCalldata: build_trail_token_contractUri_calldata,
+			createTrail: trail_token_createTrail,
+			buildCreateTrailCalldata: build_trail_token_createTrail_calldata,
+			createTrophies: trail_token_createTrophies,
+			buildCreateTrophiesCalldata: build_trail_token_createTrophies_calldata,
+			defaultRoyalty: trail_token_defaultRoyalty,
+			buildDefaultRoyaltyCalldata: build_trail_token_defaultRoyalty_calldata,
+			getApproved: trail_token_getApproved,
+			buildGetApprovedCalldata: build_trail_token_getApproved_calldata,
+			isApprovedForAll: trail_token_isApprovedForAll,
+			buildIsApprovedForAllCalldata: build_trail_token_isApprovedForAll_calldata,
+			isMintedOut: trail_token_isMintedOut,
+			buildIsMintedOutCalldata: build_trail_token_isMintedOut_calldata,
+			isMintingPaused: trail_token_isMintingPaused,
+			buildIsMintingPausedCalldata: build_trail_token_isMintingPaused_calldata,
+			isOwnerOf: trail_token_isOwnerOf,
+			buildIsOwnerOfCalldata: build_trail_token_isOwnerOf_calldata,
+			lastTokenId: trail_token_lastTokenId,
+			buildLastTokenIdCalldata: build_trail_token_lastTokenId_calldata,
+			maxSupply: trail_token_maxSupply,
+			buildMaxSupplyCalldata: build_trail_token_maxSupply_calldata,
+			mintedSupply: trail_token_mintedSupply,
+			buildMintedSupplyCalldata: build_trail_token_mintedSupply_calldata,
+			name: trail_token_name,
+			buildNameCalldata: build_trail_token_name_calldata,
+			ownerOf: trail_token_ownerOf,
+			buildOwnerOfCalldata: build_trail_token_ownerOf_calldata,
+			reservedSupply: trail_token_reservedSupply,
+			buildReservedSupplyCalldata: build_trail_token_reservedSupply_calldata,
+			royaltyInfo: trail_token_royaltyInfo,
+			buildRoyaltyInfoCalldata: build_trail_token_royaltyInfo_calldata,
+			safeTransferFrom: trail_token_safeTransferFrom,
+			buildSafeTransferFromCalldata: build_trail_token_safeTransferFrom_calldata,
+			setApprovalForAll: trail_token_setApprovalForAll,
+			buildSetApprovalForAllCalldata: build_trail_token_setApprovalForAll_calldata,
+			setMintingPaused: trail_token_setMintingPaused,
+			buildSetMintingPausedCalldata: build_trail_token_setMintingPaused_calldata,
+			supportsInterface: trail_token_supportsInterface,
+			buildSupportsInterfaceCalldata: build_trail_token_supportsInterface_calldata,
+			symbol: trail_token_symbol,
+			buildSymbolCalldata: build_trail_token_symbol_calldata,
+			tokenRoyalty: trail_token_tokenRoyalty,
+			buildTokenRoyaltyCalldata: build_trail_token_tokenRoyalty_calldata,
+			tokenUri: trail_token_tokenUri,
+			buildTokenUriCalldata: build_trail_token_tokenUri_calldata,
+			tokenExists: trail_token_tokenExists,
+			buildTokenExistsCalldata: build_trail_token_tokenExists_calldata,
+			totalSupply: trail_token_totalSupply,
+			buildTotalSupplyCalldata: build_trail_token_totalSupply_calldata,
+			transferFrom: trail_token_transferFrom,
+			buildTransferFromCalldata: build_trail_token_transferFrom_calldata,
+			updateContractMetadata: trail_token_updateContractMetadata,
+			buildUpdateContractMetadataCalldata: build_trail_token_updateContractMetadata_calldata,
+			updateTokenMetadata: trail_token_updateTokenMetadata,
+			buildUpdateTokenMetadataCalldata: build_trail_token_updateTokenMetadata_calldata,
+			updateTokensMetadata: trail_token_updateTokensMetadata,
+			buildUpdateTokensMetadataCalldata: build_trail_token_updateTokensMetadata_calldata,
 		},
 	};
 }

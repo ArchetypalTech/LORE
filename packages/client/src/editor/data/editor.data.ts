@@ -42,6 +42,7 @@ import type {
 import type { ChangeSet, EditorAction } from "../lib/types";
 import { bigintToAddress, bigintToHex128, bigintEquals, tick } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
+import { getDojoSdk } from "@/lib/stores/dojo.store";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
@@ -905,7 +906,7 @@ const dojoSync = (
 export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Promise<string[] | undefined> => {
 	let properties_array: string[] | undefined;
 	try {
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const queryProperties = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
@@ -938,7 +939,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
 export const getSpawnPoint = async (): Promise<BigNumberish | undefined> => {
 	let areaInst: BigNumberish | undefined;
 	try {
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const querySpawnPoint = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-Area"]);
@@ -977,7 +978,7 @@ export const getPlayer = async (account: string): Promise<boolean> => {
   const normalizedAccount = normalizeAddress(account);
 
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1008,7 +1009,7 @@ export const getPlayer = async (account: string): Promise<boolean> => {
 
 export const getAccountPermissions = async (address: string): Promise<AccountPermissions | undefined> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1037,7 +1038,7 @@ export const propertiesRegistered = async (
   delayMs = 2000
 ): Promise<boolean> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1077,7 +1078,7 @@ export const queryCoinsPerGame = async (gameId: bigint): Promise<bigint> => {
   let coins_quantiy: bigint = 0n;
 	try {
 		// 1. Get the original entity
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const query_entities = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1119,7 +1120,7 @@ export const queryCoinsPerGame = async (gameId: bigint): Promise<bigint> => {
 export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise<bigint> => {
 	let game_inst_map: bigint = 0n;
 	try{
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		// Get the game instance using the coins entity and the game id
 		const query_coins_game_inst = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
@@ -1148,7 +1149,7 @@ export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise
 export const queryInvItemGIMap = async (gameInst: bigint, origInst: bigint): Promise<bigint> => {
 	let inv_item_inst: bigint = 0n;
 	try{
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		// get invItem
 		const queryValue = gameInst != 0n ? gameInst : origInst;
 		const query_inv_item = new ToriiQueryBuilder<SchemaType>()
@@ -1177,7 +1178,7 @@ export const queryInvItemGIMap = async (gameInst: bigint, origInst: bigint): Pro
 
 export const queryGameCoinsBalance = async (inst: BigNumberish): Promise<BigNumberish> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1203,10 +1204,10 @@ export type GameToken = {
 };
 export const queryOwnedGameTokens = async (ownerAddress: BigNumberish): Promise<GameToken[]> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
 		// get all tokens owned by the address
     const tokens: TokenBalances = await sdk.getTokenBalances({
-			contractAddresses: [addAddressPadding(LORE_CONFIG.manifest.game_token.address)],
+			contractAddresses: [addAddressPadding(LORE_CONFIG.manifests.game_token.address)],
 			accountAddresses: [addAddressPadding(ownerAddress)],
 		});
 		const result: GameToken[] = tokens.items
@@ -1249,7 +1250,7 @@ export const checkForPlayer = async () => {
 
 export const queryTriggers = async () => {
 	try { 
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const query = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
 			.withLimit(1000)
@@ -1272,7 +1273,7 @@ export const queryTriggers = async () => {
 
 export const queryExecActions = async () => {
 	try {
-		const  {sdk} = await InitDojo();
+		const sdk = getDojoSdk();
 		const query = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
 			.withLimit(1000)
@@ -1306,7 +1307,7 @@ export const gameInstModels: `${string}-${string}`[] = [
 ];
 export const queryGameComponents = async (gameId: BigNumberish) => {
 	try {
-		const  {sdk} = await InitDojo();
+		const sdk = getDojoSdk();
 		// get all game instances for the game id
 		const query_game_insts = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")

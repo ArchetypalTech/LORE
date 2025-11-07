@@ -4,7 +4,7 @@ import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { useWalletStore } from "./wallet.store";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
-import { InitDojo } from "../dojo";
+import { getDojoSdk } from "./dojo.store";
 import type { SchemaType, PlayerGame } from "../dojo_bindings/typescript/models.gen";
 
 const {
@@ -78,7 +78,7 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				.withEntityModels(["lore-PlayerGame"]);
 
 			try {
-				const { sdk } = await InitDojo();
+				const sdk = getDojoSdk();
 				const result = await sdk.getEntities({ query });
 				const playerGame: PlayerGame | undefined = result.getItems()[0]?.models?.lore?.PlayerGame as PlayerGame;
 				console.log("useSyncGameId() playerGame", playerGame);

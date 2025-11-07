@@ -1,8 +1,10 @@
 import Controller, { type ControllerOptions } from "@cartridge/controller";
 import { LORE_CONFIG } from "@lib/config";
-import { WalletAccount, addAddressPadding } from "starknet";
+import { BigNumberish, WalletAccount, addAddressPadding } from "starknet";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
+import { useDojoStore } from "./dojo.store";
+import { SDK } from "@dojoengine/sdk";
 
 /**
  * Interface representing the wallet state.
@@ -43,7 +45,7 @@ const {
  * @returns {Promise<Controller | undefined>} The configured controller instance
  */
 const setupController = async () => {
-	const worldName = LORE_CONFIG.manifest.default.world.name;
+	const worldName = LORE_CONFIG.manifests.world.name;
 	// const isEditor = window.location.pathname.startsWith("/editor");
 	// const editorConfig = {
 	// 	[LORE_CONFIG.manifest.designer.address]: {
@@ -178,7 +180,7 @@ const setupController = async () => {
 		preset: "orug",
 		policies: {
 			contracts: {
-				[addAddressPadding(LORE_CONFIG.manifest.entity.address)]: {
+				[addAddressPadding(LORE_CONFIG.manifests.prompt.address)]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
@@ -188,22 +190,7 @@ const setupController = async () => {
 						},
 					],
 				},
-				// ...(isEditor ? editorConfig : {}),
-				// [LORE_CONFIG.token.contract_address]: {
-				// 	name: "TOT NFT", // Optional
-				// 	description: "Mint and transfer TOT tokens",
-				// 	methods: [
-				// 		{
-				// 			entrypoint: "mint", // The actual method name
-				// 			description: "Approve minting a TOT Token",
-				// 		},
-				// 		{
-				// 			entrypoint: "transfer_from", // The actual method name
-				// 			description: "Transfer a TOT Token",
-				// 		},
-				// 	],
-				// },
-				[addAddressPadding(LORE_CONFIG.manifest.designer.address)]: {
+				[addAddressPadding(LORE_CONFIG.manifests.designer.address)]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
 					methods: [
@@ -333,15 +320,13 @@ const setupController = async () => {
 		},
 		chains: [
 			{
-				rpcUrl: LORE_CONFIG.env.VITE_KATANA_HTTP_RPC, // FIXME: workaround for endpoint being proxied
+				rpcUrl: LORE_CONFIG.rpcUrl,
 			},
 		],
-		defaultChainId: LORE_CONFIG.token.chainId, // controller chain id
+		defaultChainId: LORE_CONFIG.chainId, // controller chain id
 		tokens: {
-			// erc20: LORE_CONFIG.token.erc20,
-			// erc721: LORE_CONFIG.token.erc721,
 		},
-		slot: LORE_CONFIG.env.VITE_SLOT,
+		slot: LORE_CONFIG.slotName,
 	};
 
 	try {
@@ -423,21 +408,6 @@ const disconnectController = async () => {
 	});
 };
 
-/**
- * Factory function that returns wallet store state and methods.
- * Provides access to the entire wallet API in one object.
- * @returns {Object} Combined wallet state and methods
- */
-const WalletStore = createFactory({
-	setupController,
-	connectController,
-	openUserProfile,
-	disconnectController,
-});
-
-export default WalletStore;
-export { useWalletStore };
-
 // Initialize controller if using slot configuration
 if (LORE_CONFIG.useController) {
 	await setupController();
@@ -447,4 +417,29 @@ if (LORE_CONFIG.useController) {
 		console.log("[Controller] connected");
 		await connectController();
 	}
+} else {
+	// use burner wallet
+	// TODO: do the same as connectController() to use burner wallet
+	throw new Error("Burner wallet not supported");
+}
+
+/**
+ * Factory function that returns wallet store state and methods.
+ * Provides access to the entire wallet API in one object.
+ * @returns {Object} Combined wallet state and methods
+ */
+const WalletStore = createFactory({
+	// setupController, // never called outside here
+	connectController,
+	openUserProfile,
+	disconnectController,
+});
+
+export default WalletStore;
+export { useWalletStore };
+
+
+// vanilla getters
+export const getWalletAddress = (): string | undefined => {
+  return useWalletStore.getState().walletAddress;
 }

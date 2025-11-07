@@ -1,5 +1,4 @@
-import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
-
+import type { ParsedEntity, SDK, StandardizedQueryResult } from "@dojoengine/sdk";
 import { InitDojo } from "@lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
 import { CairoCustomEnum, BigNumberish } from "starknet";
@@ -82,7 +81,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	// Fetch all StoryLines for this player
 	let allStoryLines: StoryLine[] = [];
 	try {
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const builder = new ToriiQueryBuilder<SchemaType>();
 		const query = builder
 			.withCursor("")
@@ -171,6 +170,8 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 				text: formatted,
 				format: sys ? "hash" : isError ? "error" : l.startsWith("> ") ? "input" : "out",
 				useTypewriter: true,
+				enableAudio: false,
+				volumeAudio: 1,
 			});
 		}
 	}
@@ -327,3 +328,8 @@ const DojoStore = createFactory({
 
 export default DojoStore;
 export { useDojoStore };
+
+// vanilla getters
+export const getDojoSdk = (): SDK<SchemaType> => {
+  return useDojoStore.getState().config?.sdk as SDK<SchemaType>;
+}

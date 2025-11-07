@@ -144,14 +144,30 @@ export interface GameTokenInfo {
 	seed: BigNumberish;
 	room_name: string;
 	act_number: BigNumberish;
-	progress: BigNumberish;
-	completed: boolean;
 }
 
 // Type definition for `lore::models::game_token_info::PlayerGame` struct
 export interface PlayerGame {
 	player_address: string;
 	current_game_id: BigNumberish;
+}
+
+// Type definition for `lore::models::hub::Hub` struct
+export interface Hub {
+	inst: BigNumberish;
+	is_hub: boolean;
+	is_enabled: boolean;
+	trails_insts: Array<BigNumberish>;
+	grants_editor_access: boolean;
+}
+
+// Type definition for `lore::models::hub::Trail` struct
+export interface Trail {
+	inst: BigNumberish;
+	is_trail: boolean;
+	trail_id: BigNumberish;
+	hub_inst: BigNumberish;
+	is_published: boolean;
 }
 
 // Type definition for `lore::models::index::ComponentVariable` struct
@@ -218,6 +234,22 @@ export interface Reactable {
 	action_map: Array<ActionMapReactable>;
 	already_shown: boolean;
 	new_entry: string;
+}
+
+// Type definition for `lore::models::trail_token_info::TrailProgress` struct
+export interface TrailProgress {
+	game_id: BigNumberish;
+	trail_id: BigNumberish;
+	percentage: BigNumberish;
+	completed: boolean;
+}
+
+// Type definition for `lore::models::trail_token_info::TrailTokenInfo` struct
+export interface TrailTokenInfo {
+	trail_id: BigNumberish;
+	minter_address: string;
+	seed: BigNumberish;
+	trail_inst: BigNumberish;
 }
 
 // Type definition for `lore::models::trigger::Trigger` struct
@@ -311,10 +343,22 @@ export interface Task {
 	description: string;
 }
 
+// Type definition for `lore::lib::access::AccessGrantedEvent` struct
+export interface AccessGrantedEvent {
+	address: string;
+	role: BigNumberish;
+	granted: boolean;
+}
+
 // Type definition for `lore::models::game_token_info::GameCreatedEvent` struct
 export interface GameCreatedEvent {
-	contract_address: string;
 	game_id: BigNumberish;
+	recipient: string;
+}
+
+// Type definition for `lore::models::trail_token_info::TrailCreatedEvent` struct
+export interface TrailCreatedEvent {
+	trail_id: BigNumberish;
 	recipient: string;
 }
 
@@ -549,6 +593,8 @@ export interface SchemaType extends ISchemaType {
 		GameInstanceMap: GameInstanceMap,
 		GameTokenInfo: GameTokenInfo,
 		PlayerGame: PlayerGame,
+		Hub: Hub,
+		Trail: Trail,
 		ComponentVariable: ComponentVariable,
 		PropertyRegistry: PropertyRegistry,
 		InventoryItem: InventoryItem,
@@ -556,6 +602,8 @@ export interface SchemaType extends ISchemaType {
 		PlayerStory: PlayerStory,
 		StoryLine: StoryLine,
 		Reactable: Reactable,
+		TrailProgress: TrailProgress,
+		TrailTokenInfo: TrailTokenInfo,
 		Trigger: Trigger,
 		TriggerExecuted: TriggerExecuted,
 		TriggerIndex: TriggerIndex,
@@ -567,7 +615,9 @@ export interface SchemaType extends ISchemaType {
 		TrophyCreation: TrophyCreation,
 		TrophyProgression: TrophyProgression,
 		Task: Task,
+		AccessGrantedEvent: AccessGrantedEvent,
 		GameCreatedEvent: GameCreatedEvent,
+		TrailCreatedEvent: TrailCreatedEvent,
 		BatchMetadataUpdate: BatchMetadataUpdate,
 		MetadataUpdate: MetadataUpdate,
 		RoleAdminChanged: RoleAdminChanged,
@@ -754,12 +804,24 @@ export const schema: SchemaType = {
 			seed: 0,
 		room_name: "",
 			act_number: 0,
-			progress: 0,
-			completed: false,
 		},
 		PlayerGame: {
 			player_address: "",
 			current_game_id: 0,
+		},
+		Hub: {
+			inst: 0,
+			is_hub: false,
+			is_enabled: false,
+			trails_insts: [0],
+			grants_editor_access: false,
+		},
+		Trail: {
+			inst: 0,
+			is_trail: false,
+			trail_id: 0,
+			hub_inst: 0,
+			is_published: false,
 		},
 		ComponentVariable: {
 			inst: 0,
@@ -862,6 +924,18 @@ export const schema: SchemaType = {
 				ReadSpecificDescription: undefined, }), entrypoints: [0, 0], }],
 			already_shown: false,
 		new_entry: "",
+		},
+		TrailProgress: {
+			game_id: 0,
+			trail_id: 0,
+			percentage: 0,
+			completed: false,
+		},
+		TrailTokenInfo: {
+			trail_id: 0,
+			minter_address: "",
+			seed: 0,
+			trail_inst: 0,
 		},
 		Trigger: {
 			inst: 0,
@@ -970,9 +1044,17 @@ export const schema: SchemaType = {
 			total: 0,
 		description: "",
 		},
+		AccessGrantedEvent: {
+			address: "",
+			role: 0,
+			granted: false,
+		},
 		GameCreatedEvent: {
-			contract_address: "",
 			game_id: 0,
+			recipient: "",
+		},
+		TrailCreatedEvent: {
+			trail_id: 0,
 			recipient: "",
 		},
 		BatchMetadataUpdate: {
@@ -1031,6 +1113,8 @@ export enum ModelsMapping {
 	GameInstanceMap = 'lore-GameInstanceMap',
 	GameTokenInfo = 'lore-GameTokenInfo',
 	PlayerGame = 'lore-PlayerGame',
+	Hub = 'lore-Hub',
+	Trail = 'lore-Trail',
 	ComponentVariable = 'lore-ComponentVariable',
 	PropertyRegistry = 'lore-PropertyRegistry',
 	InventoryItem = 'lore-InventoryItem',
@@ -1039,6 +1123,8 @@ export enum ModelsMapping {
 	StoryLine = 'lore-StoryLine',
 	StoryLineType = 'lore-StoryLineType',
 	Reactable = 'lore-Reactable',
+	TrailProgress = 'lore-TrailProgress',
+	TrailTokenInfo = 'lore-TrailTokenInfo',
 	Trigger = 'lore-Trigger',
 	TriggerExecuted = 'lore-TriggerExecuted',
 	TriggerIndex = 'lore-TriggerIndex',
@@ -1062,7 +1148,9 @@ export enum ModelsMapping {
 	TrophyCreation = 'achievement-TrophyCreation',
 	TrophyProgression = 'achievement-TrophyProgression',
 	Task = 'achievement-Task',
+	AccessGrantedEvent = 'lore-AccessGrantedEvent',
 	GameCreatedEvent = 'lore-GameCreatedEvent',
+	TrailCreatedEvent = 'lore-TrailCreatedEvent',
 	BatchMetadataUpdate = 'nft_combo-BatchMetadataUpdate',
 	ContractURIUpdated = 'nft_combo-ContractURIUpdated',
 	MetadataUpdate = 'nft_combo-MetadataUpdate',

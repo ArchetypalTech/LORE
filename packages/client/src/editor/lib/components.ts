@@ -21,7 +21,7 @@ import { DescriptionTextInspector } from "../components/inspectors/DescriptionIn
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
-import WalletStore from "@/lib/stores/wallet.store"
+import WalletStore, { getWalletAddress } from "@/lib/stores/wallet.store"
 import { BigNumberish, ec, shortString } from "starknet";
 import randomName from "@scaleway/random-name";
 import { bigintToAddress } from "@/lib/utils/utils";
@@ -89,11 +89,10 @@ export const createPlayerComponent = (
 export const createPlayerStoryComponent = (
 	_entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "PlayerStory">> => {
-	const address = LORE_CONFIG.wallet.address;
 	return { 
 		PlayerStory: {
 			...schema.lore.PlayerStory,
-			inst: address,
+			game_id: 0,
 			story_line: 0,
 		}
 	};
@@ -389,7 +388,7 @@ export const getPlayerAddress = (): string => {
 			return controllerAddress;
 		}
 	}
-	return LORE_CONFIG.wallet.address;
+	return getWalletAddress() || "";
 };
 
 export const getPlayerUsername = (): string => {

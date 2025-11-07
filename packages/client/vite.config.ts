@@ -39,17 +39,6 @@ export default defineConfig(async ({ mode }) => {
 			target: "esnext",
 			sourcemap: true,
 		},
-		server: {
-			https: true,
-			proxy: {
-				"/katana": {
-					target: process.env.VITE_KATANA_HTTP_RPC,
-					changeOrigin: true,
-					rewrite: (path: string) => path.replace(/^\/katana/, ""),
-				},
-			},
-			cors: false,
-		},
 		resolve: {
 			alias: {
 				"@": resolve(__dirname, "./src"),
