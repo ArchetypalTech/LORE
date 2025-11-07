@@ -31,8 +31,6 @@ pub struct Entity {
     pub alt_names: Array<ByteArray>,
     /// Holds the keys of the actions that are attached to this entity
     pub actions_keys: Array<felt252>,
-    /// Creator
-    pub creator_address: ContractAddress,
 }
 
 #[derive(Clone, Drop, Serde, Introspect)]
@@ -123,18 +121,7 @@ pub impl EntityImpl of EntityTrait {
         let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
         (creator_address == account_address)
     }
-
-    fn can_edit_entity(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {
-        let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
-        // must be a new entity or the creator
-        (creator_address.is_zero() || creator_address == account_address)
-    }
     
-    fn is_creator(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {
-        let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
-        (creator_address == account_address)
-    }
-
     //---------------------------------
     // Parents
     //
