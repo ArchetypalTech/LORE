@@ -379,32 +379,40 @@ mod tests {
         // OWNER set admin to OTHER
         helpers::set_caller(OWNER());
         sys.designer.set_admin(OTHER(), true);
-        assert!(sys.world.is_player_admin(OTHER()), "set_admin(OTHER)");
-        assert!(sys.world.is_player_editor(OTHER()), "set_admin(OTHER)");
-        assert!(sys.designer.is_admin(OTHER()), "set_admin(OTHER)");
-        assert!(sys.designer.is_editor(OTHER()), "set_admin(OTHER)");
-        assert!(sys.designer.has_role(ROLES::ADMIN, OTHER()), "set_admin(OTHER)");
-        assert!(sys.designer.has_role(ROLES::EDITOR, OTHER()), "set_admin(OTHER)");
-        // OTHER set admin to RECIPIENT
-        helpers::set_caller(OTHER());
-        sys.designer.set_admin(RECIPIENT(), true);
-        assert!(sys.world.is_player_admin(RECIPIENT()), "set_admin(RECIPIENT)");
-        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 1");
+        assert!(sys.world.is_player_admin(OTHER()), "is_player_admin(OTHER) 1");
+        assert!(sys.world.is_player_editor(OTHER()), "is_player_editor(OTHER) 1");
+        assert!(sys.designer.is_admin(OTHER()), "is_admin(OTHER) 1");
+        assert!(sys.designer.is_editor(OTHER()), "is_editor(OTHER) 1");
+        assert!(sys.designer.has_role(ROLES::ADMIN, OTHER()), "ROLES::ADMIN(OTHER) 1");
+        assert!(!sys.designer.has_role(ROLES::EDITOR, OTHER()), "ROLES::EDITOR(OTHER) 1");
         // OTHER set editor to RECIPIENT
         helpers::set_caller(OTHER());
         sys.designer.set_editor(RECIPIENT(), true);
-        assert!(sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 2");
-        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 2");
-        // OTHER set editor to RECIPIENT
+        assert!(!sys.world.is_player_admin(RECIPIENT()), "is_player_admin(RECIPIENT) 1");
+        assert!(sys.world.is_player_editor(RECIPIENT()), "is_player_editor(RECIPIENT) 1");
+        assert!(!sys.designer.has_role(ROLES::ADMIN, RECIPIENT()), "ROLES::ADMIN(RECIPIENT) 1");
+        assert!(sys.designer.has_role(ROLES::EDITOR, RECIPIENT()), "ROLES::EDITOR(RECIPIENT) 1");
+        // OTHER set admin to RECIPIENT
         helpers::set_caller(OTHER());
-        sys.designer.set_admin(RECIPIENT(), false);
-        assert!(!sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 3");
-        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 3");
+        sys.designer.set_admin(RECIPIENT(), true);
+        assert!(sys.world.is_player_admin(RECIPIENT()), "is_player_admin(RECIPIENT) 2");
+        assert!(sys.world.is_player_editor(RECIPIENT()), "is_player_editor(RECIPIENT) 2");
+        assert!(sys.designer.has_role(ROLES::ADMIN, RECIPIENT()), "ROLES::ADMIN(RECIPIENT) 2");
+        assert!(sys.designer.has_role(ROLES::EDITOR, RECIPIENT()), "ROLES::EDITOR(RECIPIENT) 2");
         // OTHER set editor to RECIPIENT
         helpers::set_caller(OTHER());
         sys.designer.set_editor(RECIPIENT(), false);
+        assert!(sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 3");
+        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 3");
+        assert!(sys.designer.has_role(ROLES::ADMIN, RECIPIENT()), "ROLES::ADMIN(RECIPIENT) 3");
+        assert!(!sys.designer.has_role(ROLES::EDITOR, RECIPIENT()), "ROLES::EDITOR(RECIPIENT) 3");
+        // OTHER set editor to RECIPIENT
+        helpers::set_caller(OTHER());
+        sys.designer.set_admin(RECIPIENT(), false);
         assert!(!sys.world.is_player_admin(RECIPIENT()), "admin RECIPIENT 4");
         assert!(!sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT 4");
+        assert!(!sys.designer.has_role(ROLES::ADMIN, RECIPIENT()), "ROLES::ADMIN(RECIPIENT) 4");
+        assert!(!sys.designer.has_role(ROLES::EDITOR, RECIPIENT()), "ROLES::EDITOR(RECIPIENT) 4");
     }
 
     #[test]
