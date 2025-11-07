@@ -45,10 +45,7 @@ export default defineConfig(async ({ mode }) => {
 				"@components": resolve(__dirname, "./src/components"),
 				"@lib": resolve(__dirname, "./src/lib"),
 				"@styles": resolve(__dirname, "./src/styles"),
-				"@editor": resolve(__dirname, "./src/editor"),
-				"@lore/contracts/manifest": isSlot
-					? "@lore/contracts/manifest_stage.json"
-					: "@lore/contracts/manifest_dev.json",
+				"@editor": resolve(__dirname, "./src/editor")
 			},
 		},
 	};

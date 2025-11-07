@@ -8,6 +8,7 @@ const cmd = [
 	// `sozo test --profile ${config.mode}`,
 	// `sozo build --profile ${config.mode} --typescript --bindings-output ../client/src/lib/dojo_bindings/`,
 	// `sozo migrate --profile ${config.mode}`,
+	// `scarb run move_manifest`,
 	`sozo inspect --profile ${config.mode}`,
 ];
 

@@ -2,7 +2,7 @@ import { log } from "@clack/prompts";
 import { bgDarkGray, bgGreen, white } from "ansicolor";
 import { config, runCommands } from "./common";
 import { getContractByName } from "@dojoengine/core";
-import manifest_slot from '../manifest_slot.json';
+import manifest_slot from '../../../manifest_slot.json';
 
 export const worldAddress = config.dojo_config?.env?.world_address as string;
 export const rpcUrl = config.dojo_config?.env?.rpc_url as string;
@@ -77,6 +77,7 @@ export const runSlotDeployment = async () => {
 		false,
 	);
 	await runCommands([`sozo migrate --profile ${config.mode}`]);
+	await runCommands([`scarb run move_manifest`], false, false);
 	await runCommands([`sozo inspect --profile ${config.mode}`], false, false);
 	await runCommands([`starkli chain-id --rpc ${rpcUrl}`], false, false);
 	await runCommands(cmd_view_slot);

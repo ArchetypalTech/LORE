@@ -10,7 +10,8 @@ sierra-replace-ids = true
 inlining-strategy = "avoid"
 
 [scripts]
-migrate = "sozo build && sozo migrate apply"
+migrate = "sozo build && sozo migrate apply && scarb run move_manifest"
+move_manifest = "mv ../../manifest_$SCARB_PROFILE.json ."
 
 [dependencies]
 starknet = ">=2.12.2"
