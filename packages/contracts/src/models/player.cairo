@@ -591,6 +591,7 @@ mod tests {
         sys.prompt.prompt("look around", Option::None);
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_1", "use after add");
         sys.prompt.prompt("use to_room_1", Option::None);
+
         //
         // enable preserve_children
         helpers::set_caller(helpers::OWNER());
@@ -608,6 +609,11 @@ mod tests {
         sys.prompt.prompt("use to_room_1", Option::None);
         let token_info: GameTokenInfo = sys.world.read_model(game_id);
         assert_eq!(token_info.room_name, room_1_entity.name.clone(), "after to_room_1");
+    }
+    fn _last_story_line(world: @WorldStorage, game_id: u128) -> ByteArray {
+        let story: PlayerStory = world.read_model(game_id);
+        let story_line: StoryLine = world.read_model((game_id, story.story_line));
+        (story_line.line)
     }
 
     #[test]

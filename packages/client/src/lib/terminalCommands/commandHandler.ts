@@ -65,6 +65,13 @@ export const sendCommand = async <
 	} catch (error) {
 		console.error("Error sending command:", error);
 	}
+
+	// case there is a TX error, add empty line
+	addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 };
 
 /**

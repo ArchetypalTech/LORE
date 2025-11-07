@@ -2,6 +2,7 @@ import { LORE_CONFIG } from "@lib/config";
 import {
 	addTerminalContent,
 	clearTerminalContent,
+	nextItem,
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
@@ -307,6 +308,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			return;
 		}
 		await WalletStore().openUserProfile();
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	disconnect: async () => {
 		if (!WalletStore().isConnected) {

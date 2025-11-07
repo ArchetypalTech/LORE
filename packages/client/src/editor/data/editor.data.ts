@@ -1399,7 +1399,9 @@ const syncEntities = async () => {
 							}
 							setItem(parentEntity as AnyObject, entity.Trigger.inst, true);
 						}
-					} else if (entity.Effect?.inst) {
+					} 
+					
+					if (entity.Effect?.inst) {
 						// For Effect components, find parent entity and merge
 						const parentEntity = getEntity(entity.Effect.inst, true);
 						if (parentEntity && entity.Effect) {
@@ -1417,7 +1419,9 @@ const syncEntities = async () => {
 							}
 							setItem(parentEntity as AnyObject, entity.Effect.inst, true);
 						}
-					} else if (entity.Condition?.inst) {
+					} 
+					
+					if (entity.Condition?.inst) {
 						// For Condition components, find parent entity and merge
 						const parentEntity = getEntity(entity.Condition.inst, true);
 						if (parentEntity && entity.Condition) {
@@ -1435,14 +1439,18 @@ const syncEntities = async () => {
 							}
 							setItem(parentEntity as AnyObject, entity.Condition.inst, true);
 						}
-					} else if (entity.Exit?.inst) {
+					} 
+					
+					if (entity.Exit?.inst) {
 						// For Exit components, find parent entity and merge
 						const parentEntity = getEntity(entity.Exit.inst, true);
 						if (parentEntity && entity.Exit) {
 							parentEntity.Exit = entity.Exit as Exit;
 							setItem(parentEntity as AnyObject, entity.Exit.inst, true);
 						}
-					} else if (entity.Action?.inst) {
+					}
+					
+					if (entity.Action?.inst) {
 						// For Action components, find parent entity and merge
 						const parentEntity = getEntity(entity.Action.inst, true);
 						if (parentEntity && entity.Action) {
