@@ -24,6 +24,8 @@ import {
 	effectType,
 	type Action,
 	type ParentToChildren,
+	type Hub,
+	type Trail,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
 import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
@@ -102,6 +104,12 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	}
 	if ("Area" in collection && collection.Area !== undefined) {
 		await publishArea(collection.Area);
+	}
+	if ("Hub" in collection && collection.Hub !== undefined) {
+		await publishHub(collection.Hub);
+	}
+	if ("Trail" in collection && collection.Trail !== undefined) {
+		await publishTrail(collection.Trail);
 	}
 	if ("Exit" in collection && collection.Exit !== undefined) {
 		await publishExit(collection.Exit);
@@ -214,6 +222,27 @@ const publishArea = async (area: Area) => {
 		area.preserve_children ?? false,
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
+};
+
+const publishHub = async (hub: Hub) => {
+	const hubData = [
+		num.toBigInt(hub.inst.toString()),
+		hub.is_hub,
+		hub.is_enabled,
+		hub.trails_insts.map((x) => num.toBigInt(x.toString())),
+		hub.grants_editor_access,
+	];
+	await dispatchDesignerCall("create_hub", [hubData]);
+};
+
+const publishTrail = async (trail: Trail) => {
+	const trailData = [
+		num.toBigInt(trail.inst.toString()),
+		trail.is_trail,
+		trail.trail_id,
+		trail.hub_inst,
+	];
+	await dispatchDesignerCall("create_trail", [trailData]);
 };
 
 const publishExit = async (exit: Exit) => {
@@ -423,6 +452,12 @@ const deleteCollection = async (model: EntityCollection) => {
 	}
 	if ("Area" in model && model.Area !== undefined) {
 		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Area!.inst)]);
+	}
+	if ("Hub" in model && model.Hub !== undefined) {
+		await dispatchDesignerCall("delete_hub", [num.toBigInt(model.Hub!.inst)]);
+	}
+	if ("Trail" in model && model.Trail !== undefined) {
+		await dispatchDesignerCall("delete_trail", [num.toBigInt(model.Trail!.inst)]);
 	}
 	if ("Exit" in model && model.Exit !== undefined) {
 		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Exit!.inst)]);
