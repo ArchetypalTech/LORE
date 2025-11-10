@@ -28,6 +28,7 @@ export type ProfileConfig = {
   rpcUrl: string;
   toriiUrl: string;
   slotName: string | undefined;
+	useController: boolean;
   burnerAddress?: string | undefined
   burnerPrivateKey?: string | undefined;
 };
@@ -43,8 +44,9 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     rpcUrl: "http://localhost:5050",
     toriiUrl: "http://localhost:8080",
     slotName: undefined,
-		// burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
-		// burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
+		useController: false,
+		burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
+		burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
   },
   slot: {
 		profileName: "slot",
@@ -54,6 +56,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     rpcUrl: "https://api.cartridge.gg/x/orug-slot/katana",
     toriiUrl: "https://api.cartridge.gg/x/orug-slot/torii",
     slotName: "orug-slot",
+		useController: true,
 		// burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
 		// burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
   },
@@ -65,6 +68,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     rpcUrl: "https://api.cartridge.gg/x/lore-stage/katana",
     toriiUrl: "https://api.cartridge.gg/x/lore-stage/torii",
     slotName: "lore-stage",
+		useController: true,
 		// burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
 		// burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
   },
@@ -197,7 +201,6 @@ export type LoreConfig = ProfileConfig & {
 		designer: Contract;
 	};
 	burnerWallet: typeof burnerWallet;
-	useController: boolean;
 	LOCALHOST: boolean;
 	EDITOR_MODE: boolean;
 	env: typeof env;
@@ -211,7 +214,6 @@ export const LORE_CONFIG: LoreConfig = {
 		designer,
 	},
 	manifests,
-	useController: true,
 	burnerWallet,
 	LOCALHOST: isLocalhost,
 	EDITOR_MODE: isEditor,

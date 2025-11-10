@@ -1,6 +1,6 @@
 import Controller, { type ControllerOptions } from "@cartridge/controller";
 import { LORE_CONFIG } from "@lib/config";
-import { BigNumberish, WalletAccount, addAddressPadding } from "starknet";
+import { BigNumberish, Account, addAddressPadding } from "starknet";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
 import { useDojoStore } from "./dojo.store";
@@ -9,7 +9,7 @@ import { SDK } from "@dojoengine/sdk";
 /**
  * Interface representing the wallet state.
  * @interface WalletStore
- * @property {WalletAccount | undefined} account - The wallet account instance
+ * @property {Account | undefined} account - The wallet account instance
  * @property {string | undefined} username - The user's username
  * @property {string | undefined} walletAddress - The wallet's address
  * @property {Controller | undefined} controller - The cartridge controller instance
@@ -17,7 +17,7 @@ import { SDK } from "@dojoengine/sdk";
  * @property {boolean} isLoading - Indicates if wallet operations are in progress
  */
 interface WalletStore {
-	account: WalletAccount | undefined;
+	account: Account | undefined;
 	username: string | undefined;
 	walletAddress: string | undefined;
 	controller: Controller | undefined;
@@ -383,6 +383,39 @@ const connectController = async () => {
 	}
 };
 
+const connectBurnerWallet = async () => {
+	const wallet = get();
+	if (wallet.isConnected) {
+		return;
+	}
+	set({ isLoading: true });
+	try {
+		if (!LORE_CONFIG.burnerWallet) {
+			throw new Error("No burner wallet created");
+		}
+		const data = {
+			account: LORE_CONFIG.burnerWallet.account,
+			username: 'Burner Wallet',
+			walletAddress: addAddressPadding(LORE_CONFIG.burnerAddress as BigNumberish),	
+			isConnected: true,
+			isLoading: false,
+			controller: undefined,
+		} satisfies WalletStore;
+		console.log(
+			"[Burner Wallet] username:",
+			data.username,
+			"address:",
+			data.walletAddress,
+		);
+		set(data);
+	} catch (e) {
+		console.error(e);
+		throw e;
+	} finally {
+		set({ isLoading: false });
+	}
+};
+
 /**
  * Opens the user profile in the Controller UI.
  * Navigates to the inventory section of the profile.
@@ -416,8 +449,7 @@ if (LORE_CONFIG.useController) {
 	}
 } else {
 	// use burner wallet
-	// TODO: do the same as connectController() to use burner wallet
-	throw new Error("Burner wallet not supported");
+	await connectBurnerWallet();
 }
 
 /**
