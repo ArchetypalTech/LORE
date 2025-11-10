@@ -215,6 +215,7 @@ const onReponseData = (
     }
 
     // Always sync EditorData for lore entities
+		//@ts-ignore
     EditorData().dojoSync(responseData as EntityCollection, { verbose: true });
 };
 

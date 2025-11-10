@@ -4,6 +4,8 @@ import { bigintToHex, stringToFelt } from "./utils/utils";
 import manifest_dev from "@lore/contracts/manifest_dev.json";
 import manifest_slot from "@lore/contracts/manifest_slot.json";
 import manifest_stage from "@lore/contracts/manifest_stage.json";
+import { setupWorld } from "@lib/dojo_bindings/typescript/contracts.gen";
+import { DojoProvider } from "@dojoengine/core";
 
 const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	if (value === undefined || value === null) {
@@ -135,14 +137,12 @@ const isEditor = window.location.pathname.startsWith("/editor");
 // Lore config 
 //
 
-const provider = new RpcProvider({
-	nodeUrl: selectedProfileConfig.rpcUrl,
-	headers: {
-		//nocors
-		"Access-Control-Allow-Origin": "*",
-		mode: "no-cors",
-	},
-});
+const provider = new DojoProvider(
+	selectedProfileConfig.dojo_manifest,
+	selectedProfileConfig.rpcUrl,
+);
+
+const world = setupWorld(provider);
 
 const manifests = {
 	world: selectedProfileConfig.dojo_manifest.world,
@@ -164,31 +164,8 @@ const manifests = {
 	),
 };
 
-const burnerWallet = (() => {
-	const address = selectedProfileConfig.burnerAddress;
-	const privateKey = selectedProfileConfig.burnerPrivateKey;
-	const account = (address && privateKey) ? new Account({
-		provider,
-		address,
-		signer: new Signer(privateKey),
-	}) : undefined;
-  return { address, privateKey, account };
-})()
-
-const prompt = new Contract({
-	abi: manifests.prompt.abi,
-	address: manifests.prompt.address,
-	providerOrAccount: burnerWallet.account,
-});
-
-const designer = new Contract({
-	abi: manifests.designer.abi,
-	address: manifests.designer.address,
-	providerOrAccount: burnerWallet.account,
-});
-
 export type LoreConfig = ProfileConfig & {
-	provider: RpcProvider;
+	provider: DojoProvider;
 	manifests: {
 		world: any;
 		prompt: any;
@@ -196,11 +173,7 @@ export type LoreConfig = ProfileConfig & {
 		game_token: any;
 		trail_token: any;
 	}
-	contracts: {
-		prompt: Contract;
-		designer: Contract;
-	};
-	burnerWallet: typeof burnerWallet;
+	world: ReturnType<typeof setupWorld>;
 	LOCALHOST: boolean;
 	EDITOR_MODE: boolean;
 	env: typeof env;
@@ -209,12 +182,8 @@ export type LoreConfig = ProfileConfig & {
 export const LORE_CONFIG: LoreConfig = {
 	...selectedProfileConfig,
 	provider,
-	contracts: {
-		prompt,
-		designer,
-	},
 	manifests,
-	burnerWallet,
+	world,
 	LOCALHOST: isLocalhost,
 	EDITOR_MODE: isEditor,
 	env: env,

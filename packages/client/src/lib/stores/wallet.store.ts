@@ -277,27 +277,30 @@ const connectBurnerWallet = async () => {
 	}
 	set({ isLoading: true });
 	try {
-		if (!LORE_CONFIG.burnerWallet) {
-			throw new Error("No burner wallet created");
+		if (!LORE_CONFIG.burnerAddress) {
+			throw new Error("Missing burner account address");
 		}
+		if (!LORE_CONFIG.burnerPrivateKey) {
+			throw new Error("Missing burner account private key");
+		}
+		const account = new Account({
+			provider: LORE_CONFIG.provider.provider,
+			address: LORE_CONFIG.burnerAddress as string,
+			signer: LORE_CONFIG.burnerPrivateKey as string,
+		});
 		const data = {
-			account: LORE_CONFIG.burnerWallet.account,
+			account: account,
 			username: 'Burner Wallet',
-			walletAddress: addAddressPadding(LORE_CONFIG.burnerAddress as BigNumberish),	
+			walletAddress: addAddressPadding(account.address),	
 			isConnected: true,
 			isLoading: false,
 			controller: undefined,
 		} satisfies WalletStore;
-		console.log(
-			"[Burner Wallet] username:",
-			data.username,
-			"address:",
-			data.walletAddress,
-		);
+		console.log(`[Burner Wallet] username: [${data.username}] address: [${data.walletAddress}]`);
 		set(data);
-	} catch (e) {
-		console.error(e);
-		throw e;
+	} catch (error) {
+		console.error("Error connecting burner wallet", error);
+		throw error;
 	} finally {
 		set({ isLoading: false });
 	}
@@ -353,9 +356,3 @@ const WalletStore = createFactory({
 
 export default WalletStore;
 export { useWalletStore };
-
-
-// vanilla getters
-export const getWalletAddress = (): string | undefined => {
-  return useWalletStore.getState().walletAddress;
-}

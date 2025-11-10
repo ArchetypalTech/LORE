@@ -21,7 +21,7 @@ import { DescriptionTextInspector } from "../components/inspectors/DescriptionIn
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
 import { LORE_CONFIG } from "@/lib/config";
-import WalletStore, { getWalletAddress } from "@/lib/stores/wallet.store"
+import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish, ec, shortString } from "starknet";
 import randomName from "@scaleway/random-name";
 import { bigintToAddress } from "@/lib/utils/utils";
@@ -46,7 +46,6 @@ export const createPlayerEntity = (
 ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
 	const playerInst = getPlayerSingletonInst(); // singleton
 	const playerAddress = getPlayerAddress();
-	// const playerName = getPlayerName();
 	const playerName = "Player";
 	return {
 		// Adding the Entity as we need to set the inst to be the address
@@ -383,33 +382,21 @@ export const componentData: {
 };
 
 export const getPlayerAddress = (): string => {
-	if (LORE_CONFIG.useController) {
-		const controllerAddress = WalletStore().controller?.account?.address;
-		if (controllerAddress) {
-			return controllerAddress;
-		}
-	}
-	return getWalletAddress() || "";
+	return WalletStore().walletAddress ?? "";
 };
 
 export const getPlayerUsername = (): string => {
-	let username = 'Player';
-	if (LORE_CONFIG.useController && WalletStore().username) {
-		username = WalletStore().username as string;
-	}
-	return username;
+	return WalletStore().username ?? 'Player';
 };
 
 export const getPlayerEntranceInst = (): bigint => {
 	let entranceInst = 0n;
-	if (LORE_CONFIG.useController) {
-		const controllerAddress = WalletStore().controller?.account?.address;
-		if (controllerAddress) {
-			entranceInst = ec.starkCurve.poseidonHashMany([
-				BigInt(shortString.encodeShortString("Entrance")),
-				BigInt(controllerAddress),
-			]);
-		}
+	const address = WalletStore().walletAddress;
+	if (address) {
+		entranceInst = ec.starkCurve.poseidonHashMany([
+			BigInt(shortString.encodeShortString("Entrance")),
+			BigInt(address),
+		]);
 	}
 	return entranceInst;
 };
@@ -420,15 +407,4 @@ export const getPlayerSingletonInst = (game_id?: string): string => {
 
 export const getGameInst = (inst: string, game_id?: string): string => {
 	return (!game_id ? inst : ec.starkCurve.poseidonHashMany([BigInt(inst), BigInt(game_id)]).toString());
-};
-
-export const getPlayerName = (): string => {
-	if (LORE_CONFIG.useController) {
-		const { username } = WalletStore();
-		console.log("Controller username:", username);
-		if (username) {
-			return username;
-		}
-	}
-	return randomName();
 };

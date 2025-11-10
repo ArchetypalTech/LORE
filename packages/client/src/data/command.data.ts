@@ -82,12 +82,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	[key: string]: (command: commandContext) => void;
 } = {
 	_bootLoader: () => {
-		if (LORE_CONFIG.useController) {
-			if (!WalletStore().isConnected) {
-				sendCommand("_connect_wallet");
-			} else {
-				sendCommand("_welcome_back");
-			}
+		if (!WalletStore().isConnected) {
+			sendCommand("_connect_wallet");
+		} else {
+			sendCommand("_welcome_back");
 		}
 
 		sendCommand("_hint");
@@ -444,7 +442,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	connection: async () => {
 		const dest = {
-			endpoints: LORE_CONFIG.endpoints,
+			rpcUrl: LORE_CONFIG.rpcUrl,
+			toriiUrl: LORE_CONFIG.toriiUrl,
 			mode: import.meta.env.MODE,
 		};
 		addTerminalContent({

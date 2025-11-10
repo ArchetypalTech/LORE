@@ -714,7 +714,7 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 const getPlayersTrailEntity = (): EntityCollection | undefined => {
 	const walletAddress = getPlayerAddress();
 	if (BigInt(walletAddress ?? 0) === 0n) {
-		throw new Error("Player entrance instance is 0");
+		// throw new Error("Player entrance instance is 0");
 	}
 	return getEntity(walletAddress);
 };
@@ -784,7 +784,7 @@ const crossroadsInst = '0x00e0c2c6ce0cdff92c8e857cbde8b7e1ff75cabd59d015389e90ae
 const getPlayersEntranceEntity = (): EntityCollection | undefined => {
 	const entranceInst = getPlayerEntranceInst();
 	if (entranceInst === 0n) {
-		throw new Error("Player entrance instance is 0");
+		// throw new Error("Player entrance instance is 0");
 	}
 	return entranceInst ? getEntity(entranceInst) : undefined;
 };

@@ -28,7 +28,7 @@ import {
 	type Trail,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
-import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
+import { type DesignerEntrypoints, SystemCalls } from "../lib/systemCalls";
 import EditorData from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
@@ -158,7 +158,6 @@ const publishEntity = async (entity: Entity) => {
 		entity.actions_keys.length > 0
 			? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
 			: 0,
-		0n, // creator_address is managed on contract level
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -538,19 +537,18 @@ const publishRegisterPropertyRegistry = async () => {
  * @returns The response from the API
  */
 export const dispatchDesignerCall = async (
-	call: DesignerCall,
+	entrypoint: DesignerEntrypoints,
 	args: unknown[],
 ) => {
 	try {
-		const response = await SystemCalls.execDesignerCall({ call, args });
+		await SystemCalls.execDesignerCall({ entrypoint, args });
 		Notifications().addPublishingLog(
-			new CustomEvent("designerCall", { detail: { call, args } }),
+			new CustomEvent("designerCall", { detail: { entrypoint, args } }),
 		);
-		return response.json();
 	} catch (error) {
 		Notifications().addPublishingLog(
 			new CustomEvent("error", {
-				detail: { error: { message: (error as Error).message }, call, args },
+				detail: { error: { message: (error as Error).message }, entrypoint, args },
 			}),
 		);
 		if ((error as Error).message.includes("too many")) {
@@ -559,7 +557,7 @@ export const dispatchDesignerCall = async (
 			);
 		}
 		throw new Error(
-			`Error sending designer call: ${(error as Error).message}, ${call}, ${args}`,
+			`Error sending designer call: ${entrypoint}, ${args}: ${(error as Error).message}`,
 		);
 	}
 };
