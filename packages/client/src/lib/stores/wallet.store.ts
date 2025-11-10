@@ -1,10 +1,8 @@
 import Controller, { type ControllerOptions } from "@cartridge/controller";
 import { LORE_CONFIG } from "@lib/config";
-import { BigNumberish, Account, addAddressPadding } from "starknet";
+import { Account, addAddressPadding } from "starknet";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
-import { useDojoStore } from "./dojo.store";
-import { SDK } from "@dojoengine/sdk";
 
 /**
  * Interface representing the wallet state.
