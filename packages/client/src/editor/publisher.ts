@@ -242,6 +242,7 @@ const publishTrail = async (trail: Trail) => {
 		trail.is_trail,
 		trail.trail_id,
 		trail.hub_inst,
+		trail.is_published,
 	];
 	await dispatchDesignerCall("create_trail", [trailData]);
 };

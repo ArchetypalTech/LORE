@@ -23,6 +23,8 @@ import type { EntityCollection, WithStringEnums } from "./types";
 import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish, ec, shortString } from "starknet";
 import { bigintToAddress } from "@/lib/utils/utils";
+import { HubInspector } from "../components/inspectors/HubInspector";
+import { TrailInspector } from "../components/inspectors/TrailInspector";
 
 export const createDefaultEntity = (): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
@@ -105,6 +107,31 @@ export const createDefaultAreaComponent = (
 		is_area: true,
 		is_spawn_point: false,
 		progress_percentage: 0,
+	},
+});
+
+export const createDefaultHubComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Hub">> => ({
+	Hub: {
+		...schema.lore.Hub,
+		inst: entity.inst,
+		is_hub: true,
+		grants_editor_access: false,
+		trails_insts: [],
+	},
+});
+
+export const createDefaultTrailComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Trail">> => ({
+	Trail: {
+		...schema.lore.Trail,
+		inst: entity.inst,
+		is_trail: true,
+		trail_id: 0,
+		hub_inst: 0,
+		is_published: false,
 	},
 });
 
@@ -205,7 +232,7 @@ export const createDefaultContainerComponent = (
 	},
 });
 
-export const createDefaultTrigger = (
+export const createDefaultTriggerComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Trigger">> => ({
 	Trigger: {
@@ -220,7 +247,7 @@ export const createDefaultTrigger = (
 	},
 });
 
-export const createDefaultCondition = (
+export const createDefaultConditionComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Condition">> => ({
 	Condition: {
@@ -335,44 +362,56 @@ export const componentData: {
 		icon: "🚪",
 		creator: createDefaultExitComponent,
 	},
-	InventoryItem: {
+	Hub: {
 		order: 5,
+		inspector: HubInspector,
+		icon: "🚏",
+		creator: createDefaultHubComponent,
+	},
+	Trail: {
+		order: 6,
+		inspector: TrailInspector,
+		icon: "🛤️",
+		creator: createDefaultTrailComponent,
+	},
+	InventoryItem: {
+		order: 7,
 		inspector: InventoryItemInspector,
 		icon: "📦",
 		creator: createDefaultInventoryItemComponent,
 	},
 	Container: {
-		order: 6,
+		order: 8,
 		inspector: ContainerInspector,
 		icon: "🎒",
 		creator: createDefaultContainerComponent,
 	},
 	Trigger: {
-		order: 7,
+		order: 9,
 		inspector: TriggerInspector,
 		icon: "🛎️",
-		creator: createDefaultTrigger,
+		creator: createDefaultTriggerComponent,
 	},
 	Condition: {
-		order: 8,
+		order: 10,
 		inspector: ConditionInspector,
 		icon: "⚖️",
-		creator: createDefaultCondition,
+		creator: createDefaultConditionComponent,
 	},
 	Effect: {
-		order: 9,
+		order: 11,
 		inspector: EffectInspector,
 		icon: "✨",
 		creator: createDefaultEffectComponent,
 	},
 	Action: {
-		order: 10,
+		order: 12,
 		inspector: ActionInspector,
 		icon: "📝",
 		creator: createDefaultActionComponent,
 	},
 	DescriptionText: {
-		order: 11,
+		order: 13,
 		inspector: DescriptionTextInspector,
 		icon: "🔍",
 		creator: createDefaultDescriptionText,

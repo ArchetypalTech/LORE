@@ -75,6 +75,8 @@ export const InitDojo = async () => {
 					"lore-ParentToChildren",
 					"lore-ChildToParent",
 					"lore-PlayerStory",
+					"lore-Hub",
+					"lore-Trail",
 				]);
 			return query;
 		};

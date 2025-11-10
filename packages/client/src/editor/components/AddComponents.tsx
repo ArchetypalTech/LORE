@@ -4,9 +4,11 @@ import type { AnyObject, EntityCollection } from "../lib/types";
 import { Select } from "./FormComponents";
 import { Button } from "./ui/Button";
 import type { SelectInputRef } from "./ui/Select";
+import { useEditorPermissions } from "@/lib/stores/editor.store";
 
-const ALWAYS_INCLUDE = ["DescriptionText", "Trigger", "Effect", "Condition", "Action" ] as const;
-const ALWAYS_EXCLUDE = ["PlayerStory" ] as const;
+const ALWAYS_INCLUDE = ["DescriptionText", "Trigger", "Effect", "Condition", "Action"] as const;
+const ALWAYS_INCLUDE_IF_ADMIN = ["Hub"] as const;
+const ALWAYS_EXCLUDE = ["PlayerStory", "Trail"] as const;
 
 export const AddComponents = ({
 	editedEntity,
@@ -19,12 +21,16 @@ export const AddComponents = ({
 	) => Promise<void>;
 }) => {
 	const selectRef = useRef<SelectInputRef>(null!);
+	const { isAdmin } = useEditorPermissions();
 
 	const options = useMemo(() => {
 		const o = Object.entries(componentData)
 			.filter(([key, value]) => {
 				 // Always include if key is in ALWAYS_INCLUDE
 				if (ALWAYS_INCLUDE.includes(key as typeof ALWAYS_INCLUDE[number])) {
+					return true;
+				}
+				if (isAdmin && ALWAYS_INCLUDE_IF_ADMIN.includes(key as typeof ALWAYS_INCLUDE_IF_ADMIN[number])) {
 					return true;
 				}
 				if (ALWAYS_EXCLUDE.includes(key as typeof ALWAYS_EXCLUDE[number])) {
