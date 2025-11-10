@@ -27,6 +27,7 @@ import {
 	getPlayerSingletonInst,
 	getPlayerAddress,
 	createDefaultExitComponent,
+	createDefaultAreaComponent,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -611,24 +612,25 @@ const shouldDisplayEntity = (entity: EntityCollection | undefined): boolean => {
  */
 const newEntity = async () => {
 	// choose parent
-	let parent: EntityCollection | undefined = undefined;
+	let newParent: EntityCollection | undefined = undefined;
 	if (get().selectedEntity !== undefined) {
 		const e = getEntity(get().selectedEntity!)!;
-		if (e.ChildToParent !== undefined) {
-			parent = getEntity(e.ChildToParent.parent)!;
-			console.log(`creating as sibling of ${parent.Entity.name}`, parent);
+		const selectedParentEntity = e.ChildToParent?.parent ? getEntity(e.ChildToParent.parent)! : undefined;
+		if (selectedParentEntity !== undefined && !selectedParentEntity?.Trail === undefined) {
+			newParent = selectedParentEntity;
+			console.log(`creating as sibling of ${newParent.Entity.name}`, newParent);
 		} else {
-			parent = getEntity(get().selectedEntity!)!;
-			console.log(`creating as child of ${parent.Entity.name}`, parent);
+			newParent = getEntity(get().selectedEntity!)!;
+			console.log(`creating as child of ${newParent.Entity.name}`, newParent);
 		}
 	}
 	// create new entity
-	let newEntity = createDefaultEntity(parent?.Entity.trail_id ?? 0);
+	let newEntity = createDefaultEntity(newParent?.Entity.trail_id ?? 0);
 	syncItem(newEntity);
 	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
 	await tick();
-	if (parent) {
-		addToParent(getEntity(newEntity.Entity.inst)!, parent);
+	if (newParent) {
+		addToParent(getEntity(newEntity.Entity.inst)!, newParent);
 	}
 	// create components
 	selectEntity(newEntity.Entity.inst);
@@ -639,7 +641,11 @@ const newEntity = async () => {
 	const reactable = createDefaultReactableComponent(newEntity.Entity);
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
-
+	// If parent is Trail, add an Area component
+	if (newParent?.Trail !== undefined) {
+		const area = createDefaultAreaComponent(newEntity.Entity);
+		updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
+	}
 	return newEntity;
 };
 
