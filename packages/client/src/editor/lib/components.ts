@@ -26,14 +26,14 @@ import { bigintToAddress } from "@/lib/utils/utils";
 import { HubInspector } from "../components/inspectors/HubInspector";
 import { TrailInspector } from "../components/inspectors/TrailInspector";
 
-export const createDefaultEntity = (): WithStringEnums<
+export const createDefaultEntity = (trail_id?: BigNumberish): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
 > => ({
 	Entity: {
 		...schema.lore.Entity,
 		inst: randomKey(),
 		is_entity: true,
-		trail_id: 0,
+		trail_id: BigInt(trail_id ?? 0),
 		name: createRandomName(),
 		creator_address: bigintToAddress(getPlayerAddress()),
 		alt_names: [],

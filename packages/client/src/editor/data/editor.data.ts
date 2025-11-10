@@ -610,19 +610,27 @@ const shouldDisplayEntity = (entity: EntityCollection | undefined): boolean => {
  * @returns the new entity
  */
 const newEntity = async () => {
-	const newEntity = createDefaultEntity();
+	// choose parent
+	let parent: EntityCollection | undefined = undefined;
+	if (get().selectedEntity !== undefined) {
+		const e = getEntity(get().selectedEntity!)!;
+		if (e.ChildToParent !== undefined) {
+			parent = getEntity(e.ChildToParent.parent)!;
+			console.log(`creating as sibling of ${parent.Entity.name}`, parent);
+		} else {
+			parent = getEntity(get().selectedEntity!)!;
+			console.log(`creating as child of ${parent.Entity.name}`, parent);
+		}
+	}
+	// create new entity
+	let newEntity = createDefaultEntity(parent?.Entity.trail_id ?? 0);
 	syncItem(newEntity);
 	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
 	await tick();
-	if (get().selectedEntity !== undefined) {
-		const e = getEntity(get().selectedEntity!)!;
-		console.log(e);
-		if (e.ChildToParent !== undefined) {
-			const newParent = getEntity(e.ChildToParent.parent)!;
-			console.log(newParent);
-			addToParent(getEntity(newEntity.Entity.inst)!, newParent);
-		}
+	if (parent) {
+		addToParent(getEntity(newEntity.Entity.inst)!, parent);
 	}
+	// create components
 	selectEntity(newEntity.Entity.inst);
 	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
 	descriptionText.DescriptionText.text = newEntity.Entity.name;
