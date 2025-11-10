@@ -45,7 +45,6 @@ import { getDojoSdk } from "@/lib/stores/dojo.store";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
-import DojoStore from "@lib/stores/dojo.store.ts";
 
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();

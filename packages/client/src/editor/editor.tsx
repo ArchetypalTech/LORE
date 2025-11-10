@@ -1,6 +1,5 @@
 import "@styles/editor.css";
 import { useHead } from "@unhead/react";
-import { HousePlus, PersonStanding } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
 import Terminal from "@/client/terminal/Terminal";
@@ -13,7 +12,6 @@ import { EditorFooter } from "./components/EditorFooter";
 import { EditorHeader } from "./components/EditorHeader";
 import { EntityEditor } from "./components/EntityEditor";
 import { HierarchyTree } from "./components/HierarchyTree";
-import { Button } from "./components/ui/Button";
 import { NoEntity } from "./components/ui/NoEntity";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";

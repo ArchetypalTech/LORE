@@ -1,5 +1,5 @@
 import { cleanEnv, str, url } from "envalid";
-import { Account, Contract, RpcProvider, Signer, addAddressPadding } from "starknet";
+import { addAddressPadding } from "starknet";
 import { bigintToHex, stringToFelt } from "./utils/utils";
 import manifest_dev from "@lore/contracts/manifest_dev.json";
 import manifest_slot from "@lore/contracts/manifest_slot.json";

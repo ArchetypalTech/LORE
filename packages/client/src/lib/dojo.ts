@@ -3,7 +3,6 @@ import {
 	init,
 	type StandardizedQueryResult,
 	ToriiQueryBuilder,
-	ClauseBuilder,
 } from "@dojoengine/sdk";
 import { LORE_CONFIG } from "@lib/config";
 import {
@@ -11,10 +10,8 @@ import {
 	schema,
 } from "@lib/dojo_bindings/typescript/models.gen";
 import { addAddressPadding } from "starknet";
-import { bigintToHex128 } from "@/lib/utils/utils";
 
 
-const gameId = 0n;
 /**
  * ## Initializes the Dojo SDK and configuration
  * @dev @dojoengine/sdk has WASM components which cannot be linked to in other parts of the client

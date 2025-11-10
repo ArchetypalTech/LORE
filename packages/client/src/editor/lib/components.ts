@@ -20,10 +20,8 @@ import { ActionInspector } from "../components/inspectors/ActionInspector";
 import { DescriptionTextInspector } from "../components/inspectors/DescriptionInspector";
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
-import { LORE_CONFIG } from "@/lib/config";
 import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish, ec, shortString } from "starknet";
-import randomName from "@scaleway/random-name";
 import { bigintToAddress } from "@/lib/utils/utils";
 
 export const createDefaultEntity = (): WithStringEnums<

@@ -1,12 +1,11 @@
 import { LORE_CONFIG } from "@lib/config";
-import JSONbig from "json-bigint";
-import { BigNumberish, byteArray, CairoOption, CairoOptionVariant, CallData, InvokeFunctionResponse, type RawArgsArray, Call, Account } from "starknet";
+import { BigNumberish, CairoOption, CairoOptionVariant, CallData, type RawArgsArray, Call, Account } from "starknet";
 import { toCairoArray } from "@/editor/editor.utils";
-import WalletStore from "./stores/wallet.store";
 import { sendCommand } from "./terminalCommands/commandHandler";
 import { addAddressPadding } from "starknet";
 import { addTerminalContent } from "@lib/stores/terminal.store";
 import { DojoCall } from "@dojoengine/core";
+import WalletStore from "./stores/wallet.store";
 
 /**
  * Sends a command to the entity contract.
