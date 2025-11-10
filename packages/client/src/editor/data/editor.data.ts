@@ -894,7 +894,9 @@ const dojoSync = (
 	obj: AnyObject,
 	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
-	syncItem(obj, { verbose, sync: true });
+	setTimeout(() => {
+		syncItem(obj, { verbose, sync: true });
+	}, 0);
 };
 
 /**
