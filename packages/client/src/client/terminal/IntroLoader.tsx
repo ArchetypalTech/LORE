@@ -33,8 +33,8 @@ export default function() {
 
       {/* Text below spinner */}
       {DojoStore().isEditorMode && (
-        <div className="text-editor flex">
-          <span>{text}</span>
+        <div className="text-editor flex text-sm">
+          <small>{text}</small>
         </div>
       )}
 
