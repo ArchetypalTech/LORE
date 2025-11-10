@@ -271,15 +271,11 @@ const HierarchyTreeMenu = () => {
 	const { selectedEntity } = useEditorData();
 	const { isAdmin } = useEditorPermissions();
 
-	const { hasPlayer, hasTrail, hasEntrance, canCreateEntity } = useMemo(() => {
+	const { hasPlayer, canCreateEntity } = useMemo(() => {
 		const player = EditorData().getPlayerEntity();
-		const trail = EditorData().getPlayersTrailEntity();
-		const entrance = EditorData().getPlayersEntranceEntity();
 		const canCreateEntity = selectedEntity ? EditorStore().canEditEntity(EditorData().getEntity(selectedEntity)) : false;
 		return {
 			hasPlayer: Boolean(player),
-			hasTrail: Boolean(trail),
-			hasEntrance: Boolean(entrance),
 			canCreateEntity: canCreateEntity,
 		};
 	}, [selectedEntity]);
@@ -300,15 +296,10 @@ const HierarchyTreeMenu = () => {
 	} else {
 		return (
 			<>
-				<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
-					<HousePlus />
-					{hasTrail ? "Your Trail" : "Create Trail"}
+				<Button variant={"hero"} onClick={() => sendCommand("g_create_trail")}>
+					<HousePlus /> Create Trail
 				</Button>
-				<Button variant={"hero"} disabled={!hasTrail} onClick={() => EditorData().createOrSelectPlayersEntranceEntity()}>
-					<LogIn />
-					{hasEntrance ? "Your Entrance" : "Create Entrance"}
-				</Button>
-				<Button variant={"hero"} disabled={!(canCreateEntity && hasTrail)} onClick={() => EditorData().newEntity()}>
+				<Button variant={"hero"} disabled={!canCreateEntity} onClick={() => EditorData().newEntity()}>
 					<SquarePen />
 					New Entity
 				</Button>

@@ -137,7 +137,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 							dangerouslySetInnerHTML={{
 								__html: Array.isArray(componentObject)
 									? formatColorHash(componentObject[0].inst)
-									: formatColorHash(componentObject.inst),
+									: formatColorHash(componentObject.inst ?? 0),
 							}}
 						/>
 						<div className="flex grow" />
