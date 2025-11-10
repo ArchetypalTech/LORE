@@ -412,7 +412,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 			return;
 		}
-		const coinsBalance = await queryCoinsPerGame(game_id);
+		const coinsBalance = await queryCoinsPerGame(BigInt(game_id));
 		addTerminalContent({
 			text: `You have ${coinsBalance} Usants coins`,
 			format: "hash",
