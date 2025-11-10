@@ -500,7 +500,6 @@ const syncItem = (
 		}
 
 		if (verbose)
-			if (DojoStore().isEditorMode) {
 				console.log(
 					`[Editor] Sync${name ? `: ${name}` : ""}: ${
 					// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
@@ -509,7 +508,6 @@ const syncItem = (
 					obj,
 					get(),
 				);
-			}
 		set({ isDirty: Date.now() });
 
 	} catch (e) {
@@ -897,9 +895,7 @@ const dojoSync = (
 	obj: AnyObject,
 	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
-	setTimeout(() => {
-		syncItem(obj, { verbose, sync: true });
-	}, 0);
+	syncItem(obj, { verbose, sync: true });
 };
 
 /**

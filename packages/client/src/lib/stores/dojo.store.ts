@@ -228,7 +228,13 @@ const onReponseData = (
     }
 
     // Always sync EditorData for lore entities
-    EditorData().dojoSync(responseData as EntityCollection, { verbose: true });
+		if (DojoStore().isEditorMode) {
+			EditorData().dojoSync(responseData as EntityCollection, { verbose: true });
+		} 
+
+		if (DojoStore().isClientMode) {
+    	EditorData().dojoSync(responseData as EntityCollection, { verbose: false });
+		}
 };
 
 // Resets the local storage of the processed text and keys
