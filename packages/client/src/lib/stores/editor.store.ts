@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import WalletStore, { useWalletStore } from "./wallet.store";
 import { useMounted } from "@/lib/utils/useMounted";
-import { getAccountPermissions } from "@/editor/data/editor.data";
+import { getAccountRoles } from "@/editor/data/editor.data";
 import { EntityCollection } from "@/editor/lib/types";
 import { StoreBuilder } from "../utils/storebuilder";
 
@@ -51,9 +51,9 @@ export const useSyncEditorPermissions = () => {
 	useEffect(() => {
 		if (mounted && walletAddress && isConnected) {
 			// get account permissions
-			getAccountPermissions(walletAddress as string).then((accountPermissions) => {
-				console.log("useSyncEditorPermissions() walletAddress:", accountPermissions);
-				EditorStore().setPermissions(accountPermissions?.is_admin ?? false, accountPermissions?.is_editor ?? false);
+			getAccountRoles(walletAddress as string).then((roles: string[]) => {
+				console.log("useSyncEditorPermissions() wallet roles:", roles);
+				EditorStore().setPermissions(roles.includes("ROLE_ADMIN") ?? false, roles.includes("ROLE_EDITOR") ?? false);
 			});
 		} else {
 			EditorStore().setPermissions(false, false);

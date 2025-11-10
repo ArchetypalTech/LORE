@@ -14,7 +14,6 @@ import type {
 	Reactable,
 	DescriptionText,
 	ComponentTypeEnum,
-	AccountPermissions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -40,7 +39,7 @@ import type {
 	WithStringEnums,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import { bigintToAddress, bigintToHex128, bigintEquals, tick } from "@/lib/utils/utils";
+import { bigintToAddress, bigintToHex128, bigintEquals, tick, feltToString } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
 import { getDojoSdk } from "@/lib/stores/dojo.store";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
@@ -1007,7 +1006,7 @@ export const getPlayer = async (account: string): Promise<boolean> => {
   }
 };
 
-export const getAccountPermissions = async (address: string): Promise<AccountPermissions | undefined> => {
+export const getAccountRoles = async (address: string): Promise<string[]> => {
   try {
     const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
@@ -1016,17 +1015,23 @@ export const getAccountPermissions = async (address: string): Promise<AccountPer
       .includeHashedKeys()
 			.withClause(
 				new ClauseBuilder<SchemaType>().keys(
-					["lore-AccountPermissions"],
-					[bigintToAddress(address)]
+					["lore-AccessGrantedEvent"],
+					[bigintToAddress(address), undefined]
 				).build()
 			)
-      .withEntityModels(["lore-AccountPermissions"]);
+      .withEntityModels(["lore-AccessGrantedEvent"]);
 
-    const result = await sdk.getEntities({ query });
+    const result = await sdk.getEventMessages({ query });
 
-    const accountPermissions = result?.getItems()?.[0]?.models?.lore?.AccountPermissions as AccountPermissions;
-		// console.log("AccountPermissions:", accountPermissions);
-		return accountPermissions;
+		const roles = result?.getItems()
+			?.map((item) => item.models?.lore?.AccessGrantedEvent?.role as BigNumberish)
+			?.map((role) => {
+				const roleString = feltToString(role);
+				return roleString.startsWith("ROLE_") ? roleString : roleString === "" ? "DEFAULT_ADMIN_ROLE" : role as string;
+			}) ?? [] as string[];
+		// console.log("DEBUG: getAccountRoles(): ", roles);
+
+		return roles;
   } catch (error) {
     console.error("Error fetching account permissions from Torii:", error);
     throw error;
