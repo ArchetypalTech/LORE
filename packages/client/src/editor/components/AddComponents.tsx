@@ -30,14 +30,17 @@ export const AddComponents = ({
 				if (ALWAYS_INCLUDE.includes(key as typeof ALWAYS_INCLUDE[number])) {
 					return true;
 				}
-				if (isAdmin && ALWAYS_INCLUDE_IF_ADMIN.includes(key as typeof ALWAYS_INCLUDE_IF_ADMIN[number])) {
-					return true;
-				}
 				if (ALWAYS_EXCLUDE.includes(key as typeof ALWAYS_EXCLUDE[number])) {
 					return false;
 				}
+				if (key == "Hub" && editedEntity.Area === undefined) {
+					return false; // remove Hub ig Areais not present
+				}
+				if (isAdmin && ALWAYS_INCLUDE_IF_ADMIN.includes(key as typeof ALWAYS_INCLUDE_IF_ADMIN[number])) {
+					return true;
+				}
 				return (
-					editedEntity[key as keyof typeof editedEntity] === undefined &&
+					editedEntity[key as keyof typeof editedEntity] === undefined && // remove if already contains the component
 					value.creator !== undefined
 				);
 			})
