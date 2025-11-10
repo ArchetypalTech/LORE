@@ -318,11 +318,8 @@ const setupController = async () => {
 				},
 			},
 		},
-		chains: [
-			{
-				rpcUrl: LORE_CONFIG.rpcUrl,
-			},
-		],
+		// chains: [{ rpcUrl: "https://localhost:5173/katana" }],
+		chains: [{ rpcUrl: LORE_CONFIG.rpcUrl }],
 		defaultChainId: LORE_CONFIG.chainId, // controller chain id
 		tokens: {
 		},

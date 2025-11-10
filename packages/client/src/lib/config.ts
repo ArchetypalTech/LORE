@@ -38,6 +38,8 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     dojo_manifest: manifest_dev,
     chainName: "KATANA",
     chainId: bigintToHex(stringToFelt("KATANA")),
+    // rpcUrl: "https://localhost:5173/katana",
+    // rpcUrl: "http://127.0.0.1:5050",
     rpcUrl: "http://localhost:5050",
     toriiUrl: "http://localhost:8080",
     slotName: undefined,
@@ -215,3 +217,5 @@ export const LORE_CONFIG: LoreConfig = {
 	EDITOR_MODE: isEditor,
 	env: env,
 };
+
+console.log("DEBUG: LORE_CONFIG:", LORE_CONFIG);
