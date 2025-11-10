@@ -80,6 +80,7 @@ export const InitDojo = async () => {
 					"lore-Player",
 					"lore-ParentToChildren",
 					"lore-ChildToParent",
+					"lore-PlayerStory",
 				]);
 			return query;
 		};
