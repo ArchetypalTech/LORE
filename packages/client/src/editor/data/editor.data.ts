@@ -45,6 +45,7 @@ import { InitDojo } from "@/lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
+import DojoStore from "@lib/stores/dojo.store.ts";
 
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
@@ -499,14 +500,16 @@ const syncItem = (
 		}
 
 		if (verbose)
-			console.log(
-				`[Editor] Sync${name ? `: ${name}` : ""}: ${
-				// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
-				Object.keys(obj as any)
-				}`,
-				obj,
-				get(),
-			);
+			if (DojoStore().isEditorMode) {
+				console.log(
+					`[Editor] Sync${name ? `: ${name}` : ""}: ${
+					// biome-ignore lint/suspicious/noExplicitAny: <force extract type from keys>
+					Object.keys(obj as any)
+					}`,
+					obj,
+					get(),
+				);
+			}
 		set({ isDirty: Date.now() });
 
 	} catch (e) {

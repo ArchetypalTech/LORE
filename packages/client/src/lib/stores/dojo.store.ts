@@ -56,7 +56,19 @@ const {
 	// current story log
 	currentGameId: -1,
 	lastKeyUsed: -1,
+	// AppMode
+	// add these for app mode
+  isClientMode: false,
+  isEditorMode: false,
 });
+
+// Set app mode
+const setAppMode = (mode: "client" | "editor") => {
+  set({
+    isClientMode: mode === "client",
+    isEditorMode: mode === "editor",
+  });
+};
 
 const setStatus = (status: DojoStatus) => set({ status });
 
@@ -194,7 +206,9 @@ const onPlayerStory = (playerStory: PlayerStory) => {
 const onReponseData = (
     responseData: ParsedEntity<SchemaType>["models"]["lore"],
 ) => {
-    console.log("[DEBUG] onReponseData", responseData);
+		if (DojoStore().isEditorMode) {
+			console.log("[DEBUG] onReponseData", responseData);
+		}
 
     // Check if there’s a PlayerStory update
 		const playerStory: PlayerStory | undefined = responseData.PlayerStory as PlayerStory;
@@ -214,7 +228,7 @@ const onReponseData = (
     }
 
     // Always sync EditorData for lore entities
-    EditorData().dojoSync(responseData as EntityCollection, { verbose: false });
+    EditorData().dojoSync(responseData as EntityCollection, { verbose: true });
 };
 
 // Resets the local storage of the processed text and keys
@@ -323,6 +337,7 @@ const DojoStore = createFactory({
 	setStatus,
 	setOutputter,
 	initializeConfig,
+	setAppMode,
 });
 
 export default DojoStore;
