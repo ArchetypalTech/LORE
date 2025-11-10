@@ -3,6 +3,7 @@ import { LORE_CONFIG } from "@lib/config";
 import { WalletAccount, addAddressPadding } from "starknet";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
+import { constants } from "starknet";
 
 /**
  * Interface representing the wallet state.
@@ -333,10 +334,24 @@ const setupController = async () => {
 		},
 		chains: [
 			{
-				rpcUrl: LORE_CONFIG.env.VITE_KATANA_HTTP_RPC, // FIXME: workaround for endpoint being proxied
+				// RPC from env
+				rpcUrl: LORE_CONFIG.env.VITE_KATANA_HTTP_RPC,
 			},
+			{
+				// Starknet Sepolia
+				rpcUrl: 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9'
+			},
+			{
+				// Starknet Mainnet
+				rpcUrl: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9'
+			}
 		],
-		defaultChainId: LORE_CONFIG.token.chainId, // controller chain id
+		defaultChainId: (() => {
+			const rpcUrl = LORE_CONFIG.env.VITE_KATANA_HTTP_RPC || "";
+			if (rpcUrl.includes("sepolia")) return constants.StarknetChainId.SN_SEPOLIA;
+			if (rpcUrl.includes("mainnet")) return constants.StarknetChainId.SN_MAIN;
+			return LORE_CONFIG.token.chainId ?? constants.StarknetChainId.SN_MAIN;
+		})(),
 		tokens: {
 			// erc20: LORE_CONFIG.token.erc20,
 			// erc721: LORE_CONFIG.token.erc721,
