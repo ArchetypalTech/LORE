@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "@lore/root",
@@ -19,7 +20,7 @@
       "name": "@lore/client",
       "version": "0.0.0",
       "dependencies": {
-        "@cartridge/controller": "^0.10.5",
+        "@cartridge/controller": "^0.10.7",
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
@@ -164,9 +165,9 @@
 
     "@bufbuild/protoplugin": ["@bufbuild/protoplugin@2.8.0", "", { "dependencies": { "@bufbuild/protobuf": "2.8.0", "@typescript/vfs": "^1.5.2", "typescript": "5.4.5" } }, "sha512-kwZeZAz6jmDC571Wf/f5cDX02IjvPmtdspdxW/hbLS+bnZHkXMW4StaW+irGd4TkykvHD4fFgBnPG/O1x8OgXw=="],
 
-    "@cartridge/controller": ["@cartridge/controller@0.10.5", "", { "dependencies": { "@cartridge/controller-wasm": "^0.3.6", "@cartridge/penpal": "^6.2.4", "@starknet-io/types-js": "0.9.1", "@telegram-apps/sdk": "^2.4.0", "@turnkey/sdk-browser": "^4.0.0", "@walletconnect/ethereum-provider": "^2.20.0", "bs58": "^6.0.0", "cbor-x": "^1.5.0", "ethers": "^6.13.5", "micro-sol-signer": "^0.5.0", "mipd": "^0.0.7", "open": "^10.1.0", "starknet": "^8.5.2" } }, "sha512-shOD3ADk5BMYGFDyYWNGyimOmkfpGWOHlPdnpyb22eutRN8Is88eUrTOO9Q54NGIkGmMUCiRXM9Ft0FyI+CQng=="],
+    "@cartridge/controller": ["@cartridge/controller@0.10.7", "", { "dependencies": { "@cartridge/controller-wasm": "^0.3.7", "@cartridge/penpal": "^6.2.4", "@starknet-io/types-js": "0.9.1", "@telegram-apps/sdk": "^2.4.0", "@turnkey/sdk-browser": "^4.0.0", "@walletconnect/ethereum-provider": "^2.20.0", "bs58": "^6.0.0", "cbor-x": "^1.5.0", "ethers": "^6.13.5", "micro-sol-signer": "^0.5.0", "mipd": "^0.0.7", "open": "^10.1.0", "starknet": "^8.5.2" } }, "sha512-fcAPIB8q3wkXYUjtbIBJV878kkRLHfqG0Hv4rIx+RqBaGQs4XLHvyTptyRtWEfHhjovkSyZ/TuZ+ySW9yRYApw=="],
 
-    "@cartridge/controller-wasm": ["@cartridge/controller-wasm@0.3.6", "", {}, "sha512-ceI+LvWUAELEshV8Bf7W6AJknUL1ZpztzschluYAVsfnSLPx3c0LKDU8CUl0ISiZaOijOHfheoBkyaE99rayag=="],
+    "@cartridge/controller-wasm": ["@cartridge/controller-wasm@0.3.16", "", {}, "sha512-Ez9RxWkeQnZNjlm64aDomAmXqKQ9zin3pxTzebDJGKnaAjEqveKZA5jLFCFNhL4i70nY1F14ypLXofuxYhZxkA=="],
 
     "@cartridge/penpal": ["@cartridge/penpal@6.2.4", "", {}, "sha512-tdpOnSJJBFMlgLZ1+z9Ho5e6cG5EgMAb1Cmmh1lGT2tmplogU/XPMjLE6CwvKAPDoe6a38iMnbH+ySTAWWIOKA=="],
 
