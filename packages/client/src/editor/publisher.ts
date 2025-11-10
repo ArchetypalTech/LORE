@@ -147,7 +147,9 @@ const publishEntity = async (entity: Entity) => {
 	const entityData = [
 		num.toBigInt(entity.inst.toString()),
 		entity.is_entity,
+		num.toBigInt(entity.trail_id?.toString() ?? "0"),
 		byteArray.byteArrayFromString(entity.name),
+		0n, // creator_address is managed on contract level
 		entity.alt_names.length > 0
 			? entity.alt_names
 				.filter((x) => x.length > 0)

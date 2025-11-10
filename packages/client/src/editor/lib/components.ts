@@ -33,10 +33,11 @@ export const createDefaultEntity = (): WithStringEnums<
 		...schema.lore.Entity,
 		inst: randomKey(),
 		is_entity: true,
+		trail_id: 0,
 		name: createRandomName(),
+		creator_address: bigintToAddress(getPlayerAddress()),
 		alt_names: [],
 		actions_keys: [],
-		creator_address: bigintToAddress(getPlayerAddress()),
 	},
 });
 
