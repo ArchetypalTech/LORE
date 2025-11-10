@@ -1,9 +1,12 @@
+import { useMemo } from "react";
 import {
 	type Hub,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { Input, Toggle } from "../FormComponents";
+import { TextAreaArray, Toggle } from "../FormComponents";
+import { CollapsibleComponent } from "../CollapsibleComponent";
+import { getEntity } from "@/editor/data/editor.data";
 
 export const HubInspector: ComponentInspector<Hub> = ({
 	componentObject,
@@ -24,6 +27,13 @@ export const HubInspector: ComponentInspector<Hub> = ({
 		},
 	});
 
+	const trailNames = useMemo(() => {
+		return componentObject.trails_insts.map((inst) => {
+			return getEntity(inst)?.Entity.name ?? inst.toString();
+		});
+	}, [componentObject.trails_insts]);
+	// console.log("HUB TRAILS>>>", trailNames);
+
 	if (!componentObject) return <div>Hub not found</div>;
 
 	return (
@@ -38,70 +48,19 @@ export const HubInspector: ComponentInspector<Hub> = ({
 				value={componentObject.grants_editor_access ?? false}
 				onChange={handleInputChange(undefined)}
 			/>
-			{/* <CollapsibleComponent title="Description Keys">
+			<CollapsibleComponent title="Trails">
 				<div style={{ marginTop: "4px" }}>
 					<TextAreaArray
-						id="description_keys"
+						id="trails_insts"
 						disabled={true}
 						rows={1}
-						value={componentObject.description as string[]}
-						onChange={(e) => {
-							const newDescriptionKeys = (
-								e.target.value as unknown as string[]
-							).filter((x) => x !== "");
-							const currentKeys = componentObject.description || [];
-							const removedIndex = currentKeys.findIndex(
-								(key) => !newDescriptionKeys.includes(key)
-							);
-
-							const entity = getEntity(componentObject.inst);
-							if (entity && entity.DescriptionText) {
-								removeComponent(entity.Entity.inst, "DescriptionText", removedIndex, true);
-							}
-
-							handleInputChange(undefined)({
-								target: {
-									id: "description_keys",
-									value: newDescriptionKeys,
-								},
-							} as any);
-						}}
+						value={trailNames}
+						onChange={(e) => {}}
 						readOnly={true}
+						// className="text-sm"
 					/>
-					<Button
-						id="add_description"
-						onClick={() => {
-							const entity = getEntity(componentObject.inst);
-							const newDescription = createDefaultDescriptionText(
-								entity!.Entity,
-								entity?.DescriptionText
-							);
-							const newDescriptionKey = newDescription.DescriptionText.key;
-
-							const updatedDescriptions = [
-								...(componentObject.description || []),
-								newDescriptionKey,
-							];
-
-							updateComponent(
-								entity!.Entity.inst,
-								"DescriptionText",
-								newDescription.DescriptionText as any,
-								true
-							);
-
-							handleInputChange(undefined)({
-								target: {
-									id: "description_keys",
-									value: updatedDescriptions,
-								},
-							} as any);
-						}}
-					>
-						Add description
-					</Button>
 				</div>
-			</CollapsibleComponent> */}
+			</CollapsibleComponent>
 		</Inspector>
 	);
 };

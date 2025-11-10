@@ -240,8 +240,8 @@ const publishTrail = async (trail: Trail) => {
 	const trailData = [
 		num.toBigInt(trail.inst.toString()),
 		trail.is_trail,
-		trail.trail_id,
-		trail.hub_inst,
+		num.toBigInt(trail.trail_id.toString()),
+		num.toBigInt(trail.hub_inst.toString()),
 		trail.is_published,
 	];
 	await dispatchDesignerCall("create_trail", [trailData]);
