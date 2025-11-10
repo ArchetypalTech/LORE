@@ -141,7 +141,7 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 							}}
 						/>
 						<div className="flex grow" />
-						{componentName !== "Entity" && (
+						{componentName !== "Entity" && handleRemove !== undefined && (
 							<Button
 								title={`Remove ${componentName} component`}
 								variant={"ghost"}
