@@ -11,6 +11,7 @@ use lore::{
     },
     lib::{
         arrays::ArrayUtilsTrait,
+        utils::{HashImpl},
     },
 };
 
@@ -65,8 +66,9 @@ pub impl EntityImpl of EntityTrait {
         (Self::create_trail_entity(ref world, name, MAIN_TRAIL_ID))
     }
     fn create_trail_entity(ref world: WorldStorage, name: ByteArray, trail_id: u128) -> Entity {
+        let inst: felt252 = HashImpl::hash_values(['entity', world.dispatcher.uuid().try_into().unwrap()].span());
         let mut entity: Entity = Entity {
-            inst: world.dispatcher.uuid().try_into().unwrap(),
+            inst,
             is_entity: true,
             trail_id,
             name,
