@@ -62,7 +62,7 @@ const {
 	selectedEntity: undefined as BigNumberish | undefined,
 	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: undefined as number | undefined,
-	creatorsFilter: [] as bigint[],
+	trailIdsFilter: [] as bigint[],
 });
 
 const getItem = (id: BigNumberish, syncPool = false) =>
@@ -596,16 +596,15 @@ const isEntityCollapsed = (inst: BigNumberish) => {
 	return localStorage.getItem(_uncollapsedKey(inst)) !== "true";
 };
 
-const setCreatorsFilter = (creators: bigint[]) => {
-	set({ creatorsFilter: creators });
+const setTrailIdsFilter = (trailIds: bigint[]) => {
+	set({ trailIdsFilter: trailIds });
 };
 const shouldDisplayEntity = (entity: EntityCollection | undefined): boolean => {
 	if (!entity) return false;
-	const entityCreatorAddress = BigInt(entity?.Entity?.creator_address ?? 0);
+	const entityTrailId = BigInt(entity?.Entity?.trail_id ?? 0);
 	return (
-		entityCreatorAddress === 0n ||
-		get().creatorsFilter.length === 0 ||
-		get().creatorsFilter.includes(entityCreatorAddress)
+		get().trailIdsFilter.length === 0 || // no filter : display all
+		get().trailIdsFilter.includes(entityTrailId) // filter : display only entities with the filter trail id
 	);
 };
 
@@ -1525,7 +1524,7 @@ const EditorData = createFactory({
 	selectEntity,
 	setEntityCollapsed,
 	isEntityCollapsed,
-	setCreatorsFilter,
+	setTrailIdsFilter,
 	shouldDisplayEntity,
 	updateComponent,
 	restoreSelectedEntity,

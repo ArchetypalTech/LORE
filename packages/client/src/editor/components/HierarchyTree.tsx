@@ -15,7 +15,6 @@ import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
 import { Select } from "./FormComponents";
 import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
-import { useWalletStore } from "@/lib/stores/wallet.store";
 
 type TreeNodeData = {
 	entity: EntityCollection,
@@ -205,14 +204,14 @@ const createTree = () => {
 };
 
 export const HierarchyTree = () => {
-	const { dataPool, isDirty, creatorsFilter, selectedEntity } = useEditorData();
+	const { dataPool, isDirty, trailIdsFilter, selectedEntity } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
 
 	useEffect(() => {
 		dataPool;
 		isDirty;
 		setData(createTree().tree);
-	}, [dataPool, isDirty, creatorsFilter]);
+	}, [dataPool, isDirty, trailIdsFilter]);
 
 	// scroll to selected entity
 	const treeRef = useRef<HTMLDivElement>(null);
@@ -319,18 +318,12 @@ const HierarchyTreeMenu = () => {
 };
 
 type HierarchyTreeFilterOptions = "all" | "orug" | "mine";
-const creatorWallets = [
-	BigInt('0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7'), // tal-valdar
-	BigInt('0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae'), // awtnmy
-	BigInt('0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F'), // mataleone
-	BigInt('0x03bf9ddf561897E5A6af8F443894D918a3CB123638A201556189Bf9B7f2581AE'), // pscho
-	BigInt('0x00EDF69f8Fe2Beea8FdD545380F6C86CE6300A1009F0540324c2D218BCeC19aC'), // edwingeral
-	BigInt('0x055ad6518bB4088Ff51f87663196C1489280cb36E98b8c790749A0E0393c4E0C'), // kishitemplar
-]
 
 const HierarchyTreeFilter = () => {
 	const { isAdmin } = useEditorPermissions();
-	const { walletAddress } = useWalletStore();
+
+	// TODO... get owned trail ids
+	const ownedTrailIds: bigint[] = useMemo(() => [], []);
 
 	const options = useMemo(() => (isAdmin ? [
 		{ value: "orug", label: "Display ORug" },
@@ -348,13 +341,13 @@ const HierarchyTreeFilter = () => {
 
 	useEffect(() => {
 		if (filter === "all") {
-			EditorData().setCreatorsFilter(isAdmin ? [] : [0n, ...creatorWallets, BigInt(walletAddress ?? 0)]);
+			EditorData().setTrailIdsFilter(isAdmin ? [] : [0n, ...ownedTrailIds]);
 		} else if (filter === "orug") {
-			EditorData().setCreatorsFilter([...creatorWallets]);
+			EditorData().setTrailIdsFilter([0n]);
 		} else if (filter === "mine") {
-			EditorData().setCreatorsFilter([0n, BigInt(walletAddress ?? 0)]);
+			EditorData().setTrailIdsFilter([...ownedTrailIds]);
 		}
-	}, [filter, walletAddress]);
+	}, [filter, ownedTrailIds]);
 
 	return (
 		<Select
