@@ -8,13 +8,14 @@ import { HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { bigintToHex, cn } from "@/lib/utils/utils";
+import { bigintEquals, bigintToHex, cn } from "@/lib/utils/utils";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
 import { Select } from "./FormComponents";
 import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
+import { sendCommand } from "@/lib/terminalCommands/commandHandler";
 
 type TreeNodeData = {
 	entity: EntityCollection,
@@ -249,7 +250,8 @@ export const HierarchyTree = () => {
 						if (!newParent) throw new Error("Parent not found");
 						
 						// check if new parent is editable
-						if (EditorStore().canEditEntity(newParent)) {
+						// and parent is the same trail as the child
+						if (EditorStore().canEditEntity(newParent) && bigintEquals(child.Entity.trail_id, newParent.Entity.trail_id)) {
 							if (action.parentId === undefined) {
 								// remove from current parent
 								EditorData().removeParent(child);
