@@ -921,6 +921,7 @@ export const getAccountRoles = async (address: string): Promise<string[]> => {
     const result = await sdk.getEventMessages({ query });
 
 		const roles = result?.getItems()
+			?.filter((item) => item.models?.lore?.AccessGrantedEvent?.granted as boolean)
 			?.map((item) => item.models?.lore?.AccessGrantedEvent?.role as BigNumberish)
 			?.map((role) => {
 				const roleString = feltToString(role);

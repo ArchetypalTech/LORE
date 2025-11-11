@@ -28,8 +28,8 @@ export const InitDojo = async () => {
 			manifest,
 			rpcUrl,
 			toriiUrl: LORE_CONFIG.toriiUrl,
-			masterAddress: LORE_CONFIG.burnerAddress ? addAddressPadding(LORE_CONFIG.burnerAddress) : undefined,
-			masterPrivateKey: LORE_CONFIG.burnerPrivateKey ? addAddressPadding(LORE_CONFIG.burnerPrivateKey) : undefined,
+			masterAddress: LORE_CONFIG.burnerAccount ? addAddressPadding(LORE_CONFIG.burnerAccount.address) : undefined,
+			masterPrivateKey: LORE_CONFIG.burnerAccount ? addAddressPadding(LORE_CONFIG.burnerAccount.privateKey) : undefined,
 		});
 	const sdkConfig = {
 		client: {

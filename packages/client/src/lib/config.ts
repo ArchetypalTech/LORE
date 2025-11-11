@@ -1,5 +1,4 @@
 import { cleanEnv, str, url } from "envalid";
-import { addAddressPadding } from "starknet";
 import { bigintToHex, stringToFelt } from "./utils/utils";
 import manifest_dev from "@lore/contracts/manifest_dev.json";
 import manifest_slot from "@lore/contracts/manifest_slot.json";
@@ -13,7 +12,24 @@ const getOrFail = <T>(value: T | undefined, name?: string): T => {
 	}
 	return value;
 };
-const padAddress = (address: string | undefined) => (address ? addAddressPadding(address) : undefined);
+
+const burnerAccounts = [{
+	name: "Deployer Wallet",
+	address: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
+	privateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
+}, {
+	name: "Kataka Account #1",
+	address: `0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec`,
+	privateKey: `0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912`,
+}, {
+	name: "Kataka Account #2",
+	address: `0x13d9ee239f33fea4f8785b9e3870ade909e20a9599ae7cd62c1c292b73af1b7`,
+	privateKey: `0x1c9053c053edf324aec366a34c6901b1095b07af69495bffec7d7fe21effb1b`,
+}, {
+	name: "Kataka Account #3",
+	address: `0x17cc6ca902ed4e8baa8463a7009ff18cc294fa85a94b4ce6ac30a9ebd6057c7`,
+	privateKey: `0x14d6672dcb4b77ca36a887e9a11cd9d637d5012468175829e9c6e770c61642`,
+}] as const;
 
 
 //----------------------------------------------------
@@ -31,8 +47,7 @@ export type ProfileConfig = {
   toriiUrl: string;
   slotName: string | undefined;
 	useController: boolean;
-  burnerAddress?: string | undefined
-  burnerPrivateKey?: string | undefined;
+	burnerAccount?: typeof burnerAccounts[number] | undefined;
 };
 
 const profileConfigs: Record<ProfileName, ProfileConfig> = {
@@ -46,9 +61,11 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     rpcUrl: "http://localhost:5050",
     toriiUrl: "http://localhost:8080",
     slotName: undefined,
-		useController: true,
-		burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
-		burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
+		useController: false,
+		burnerAccount: burnerAccounts[0],
+		// burnerAccount: burnerAccounts[1],
+		// burnerAccount: burnerAccounts[2],
+		// burnerAccount: burnerAccounts[3],
   },
   slot: {
 		profileName: "slot",
@@ -59,8 +76,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     toriiUrl: "https://api.cartridge.gg/x/orug-slot/torii",
     slotName: "orug-slot",
 		useController: true,
-		// burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
-		// burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
+		// burnerAccount: burnerAccounts[0],
   },
   stage: {
 		profileName: "stage",
@@ -71,8 +87,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     toriiUrl: "https://api.cartridge.gg/x/lore-stage/torii",
     slotName: "lore-stage",
 		useController: true,
-		// burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
-		// burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
+		// burnerAccount: burnerAccounts[0],
   },
   // sepolia: {
 	// 	profileName: "sepolia",
@@ -83,8 +98,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
   //   // rpcUrl: "https://starknet-sepolia.public.blastapi.io",
   //   toriiUrl: "https://api.cartridge.gg/x/lore-sepolia/torii",
   //   slotName: 'lore-sepolia',
-	// 	burnerAddress: undefined,
-	// 	burnerPrivateKey: undefined,
+	// 	burnerAccount: burnerAccounts[0],
   // },
   // mainnet: {
 	// 	profileName: "mainnet",
@@ -95,8 +109,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
   //   // rpcUrl: "https://starknet-mainnet.public.blastapi.io",
   //   toriiUrl: "https://api.cartridge.gg/x/lore-mainnet/torii",
   //   slotName: 'lore-mainnet',
-	// 	burnerAddress: undefined,
-	// 	burnerPrivateKey: undefined,
+	// 	burnerAccount: burnerAccounts[0],
   // },
 }
 
@@ -122,9 +135,12 @@ const selectedProfileConfig: ProfileConfig = {
 	..._config,
 	rpcUrl: env.VITE_RPC_URL || _config.rpcUrl,
 	toriiUrl: env.VITE_TORII_URL || _config.toriiUrl,
-	burnerAddress: padAddress(env.VITE_BURNER_ADDRESS || _config.burnerAddress),
-	burnerPrivateKey: padAddress(env.VITE_BURNER_PRIVATE_KEY || _config.burnerPrivateKey),
 	slotName: env.VITE_SLOT || _config.slotName,
+	burnerAccount: (env.VITE_BURNER_ADDRESS && env.VITE_BURNER_PRIVATE_KEY) ? {
+		name: "ENV Burner Wallet",
+		address: env.VITE_BURNER_ADDRESS,
+		privateKey: env.VITE_BURNER_PRIVATE_KEY,
+	} : _config.burnerAccount,
 };
 
 const isLocalhost = window.location.hostname === "localhost";

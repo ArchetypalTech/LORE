@@ -275,21 +275,18 @@ const connectBurnerWallet = async () => {
 	}
 	set({ isLoading: true });
 	try {
-		if (!LORE_CONFIG.burnerAddress) {
-			throw new Error("Missing burner account address");
-		}
-		if (!LORE_CONFIG.burnerPrivateKey) {
-			throw new Error("Missing burner account private key");
+		if (!LORE_CONFIG.burnerAccount) {
+			throw new Error("Missing burner account config");
 		}
 		const account = new Account({
 			provider: LORE_CONFIG.provider.provider,
-			address: LORE_CONFIG.burnerAddress as string,
-			signer: LORE_CONFIG.burnerPrivateKey as string,
+			address: LORE_CONFIG.burnerAccount.address as string,
+			signer: LORE_CONFIG.burnerAccount.privateKey as string,
 		});
 		const data = {
 			account: account,
-			username: 'Burner Wallet',
-			walletAddress: addAddressPadding(account.address),	
+			username: LORE_CONFIG.burnerAccount.name || "Burner Account",
+			walletAddress: addAddressPadding(account.address),
 			isConnected: true,
 			isLoading: false,
 			controller: undefined,
