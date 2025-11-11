@@ -4,7 +4,7 @@ import {
 	type SortableTreeMove,
 	type TreeItems,
 } from "dnd-kit-tree";
-import { HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
+import { Eye, HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -16,6 +16,7 @@ import { Button } from "./ui/Button";
 import { Select } from "./FormComponents";
 import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
 import { sendCommand } from "@/lib/terminalCommands/commandHandler";
+import { useOwnedTokenIds } from "@/lib/stores/token.store";
 
 type TreeNodeData = {
 	entity: EntityCollection,
@@ -312,19 +313,23 @@ const HierarchyTreeMenu = () => {
 
 type HierarchyTreeFilterOptions = "all" | "orug" | "mine";
 
+const _displayLabel = (text:string) => {
+	return <span style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "center" }}><Eye size={16} />&nbsp;{text}</span>;
+};
+
 const HierarchyTreeFilter = () => {
 	const { isAdmin } = useEditorPermissions();
 
 	// TODO... get owned trail ids
-	const ownedTrailIds: bigint[] = useMemo(() => [], []);
+	const { ownedTrailIds } = useOwnedTokenIds();
 
 	const options = useMemo(() => (isAdmin ? [
-		{ value: "orug", label: "Display ORug" },
-		{ value: "all", label: "Display ORug + Players" },
+		{ value: "orug", label: _displayLabel("ORug") },
+		{ value: "all", label: _displayLabel("ORug + Trails") },
 	] : [
-		{ value: "all", label: "Display Orug + Mine" },
-		{ value: "orug", label: "Display ORug" },
-		{ value: "mine", label: "Display Mine" },
+		{ value: "all", label: _displayLabel("Orug + My Trails") },
+		{ value: "orug", label: _displayLabel("ORug") },
+		{ value: "mine", label: _displayLabel("My Trails") },
 	]), [isAdmin]);
 
 	const [filter, setFilter] = useState<HierarchyTreeFilterOptions>(isAdmin ? "orug" : "all");

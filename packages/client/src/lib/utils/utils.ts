@@ -53,3 +53,7 @@ export const bigintEquals = (a: BigNumberish | undefined, b: BigNumberish | unde
 
 export const stringToFelt = (v: string): BigNumberish => (v ? shortString.encodeShortString(v) : '0x0')
 export const feltToString = (v: BigNumberish): string => (BigInt(v) > 0n ? shortString.decodeShortString(bigintToHex(v)) : '')
+
+export const isPositiveBigint = (v: BigNumberish | null | undefined): boolean => {
+  try { return (v != null && BigInt(v) > 0n) } catch { return false }
+}
