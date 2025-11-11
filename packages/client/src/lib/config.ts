@@ -46,7 +46,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     rpcUrl: "http://localhost:5050",
     toriiUrl: "http://localhost:8080",
     slotName: undefined,
-		useController: false,
+		useController: true,
 		burnerAddress: `0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819`,
 		burnerPrivateKey: `0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4`,
   },
