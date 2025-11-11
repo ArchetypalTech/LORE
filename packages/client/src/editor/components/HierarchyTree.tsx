@@ -129,10 +129,10 @@ export const HierarchyTreeItem = ({
 							)}
 
 							{/* Entity name */}
-							<div className="flex-grow ml-2">{entity.Entity.name}</div>
+							<div className={`flex-grow whitespace-nowrap ml-7`}>{entity.Entity.name}</div>
 
 							{/* Icons */}
-							<div className="absolute left-[100%] ml-2 opacity-50 hover:opacity-100">
+							<div className={`absolute right opacity-50 hover:opacity-100 ${isCollapsible?"ml-3":"ml-1"}`}>
 								{icons.map(([key, value]) =>
 									value.icon ? (
 										<span key={key} title={key}>
