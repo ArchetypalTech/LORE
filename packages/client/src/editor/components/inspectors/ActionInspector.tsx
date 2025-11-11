@@ -1,5 +1,6 @@
-import { type ChangeEvent } from "react";
+import { useMemo, type ChangeEvent } from "react";
 import {
+  Entity,
   type Action,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
@@ -15,7 +16,7 @@ import { TriggerSelector } from "../TriggerSelector";
 import { ConditionSelector } from "../ConditionSelector";
 import { EffectSelector } from "../EffectsSelector";
 import { BigNumberish } from "starknet";
-import { useEditorData } from "../../data/editor.data";
+import { getEntity, useEditorData } from "../../data/editor.data";
 import { CollapsibleComponent } from "../CollapsibleComponent";
 import { EntitySelector } from "../EntitySelector";
 
@@ -23,6 +24,12 @@ export const ActionInspector: ComponentInspector<Action> = ({
   componentObject,
   ...props
 }) => {
+  // Ensure componentObject is always an array
+  const componentsArray = Array.isArray(componentObject)
+    ? componentObject
+    : [componentObject];
+  const entity = useMemo(() => getEntity(componentsArray[0].inst)?.Entity, [componentsArray]);
+
   const { handleInputChange, Inspector } = useInspector<Action>({
     componentObject,
     ...props,
@@ -98,11 +105,6 @@ export const ActionInspector: ComponentInspector<Action> = ({
   const { dataPool } = useEditorData();
   
   if (!componentObject) return <div>Action not found</div>;
-
-  // Ensure componentObject is always an array
-  const componentsArray = Array.isArray(componentObject)
-    ? componentObject
-    : [componentObject];
   
   return (
     <>
@@ -145,6 +147,7 @@ export const ActionInspector: ComponentInspector<Action> = ({
                 value={componentObj.executor.toString()}
                 onChange={handleInputChange(idx)}
                 dataPool={dataPool}
+                sourceEntity={entity}
               />
               <TriggerSelector
                 id="triggers"

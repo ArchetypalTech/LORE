@@ -1,6 +1,9 @@
 import { ChangeEvent, useMemo, useState } from "react";
 import { Select } from "./FormComponents";
 import { BigNumberish } from "starknet";
+import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
+import { bigintEquals } from "@/lib/utils/utils";
+
 
 interface EntitySelectorProps {
   id: string;
@@ -8,6 +11,7 @@ interface EntitySelectorProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   dataPool: Map<BigNumberish, any>;
   readOnly?: boolean;
+  sourceEntity: Entity | undefined;
 }
 
 export const EntitySelector = ({
@@ -16,6 +20,7 @@ export const EntitySelector = ({
   onChange,
   dataPool,
   readOnly,
+  sourceEntity,
 }: EntitySelectorProps) => {
   const [filter, setFilter] = useState("");
 
@@ -33,7 +38,7 @@ export const EntitySelector = ({
 
   const entityOptions = useMemo(() => {
     return Array.from(dataPool.entries())
-      .filter(([_, val]) => val.Entity?.name)
+      .filter(([_, val]) => val.Entity?.name && bigintEquals(val.Entity.trail_id, sourceEntity?.trail_id ?? 0))
       .map(([address, val]) => ({
         label: val.Entity.name as string,
         value: address,

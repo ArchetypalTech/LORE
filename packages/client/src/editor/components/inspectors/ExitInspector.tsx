@@ -1,9 +1,10 @@
 import { type ChangeEvent, useMemo } from "react";
-import EditorData from "@/editor/data/editor.data";
+import EditorData, { getEntity } from "@/editor/data/editor.data";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
 	type ActionMapExit,
 	direction,
+	Entity,
 	type Exit,
 	exitActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -15,12 +16,14 @@ import {
 } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { bigintToAddress } from "@/lib/utils/utils";
+import { bigintEquals, bigintToAddress } from "@/lib/utils/utils";
 
 export const ExitInspector: ComponentInspector<Exit> = ({
 	componentObject,
 	...props
 }) => {
+  const entity = useMemo(() => getEntity(componentObject.inst)?.Entity, [componentObject]);
+	
 	// @dev: get available areas to link to
 	const { area_value, area_options } = useMemo(() => {
 		return {
@@ -28,6 +31,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			area_options: EditorData()
 				.getEntities()
 				.filter((e) => e.Area !== undefined)
+				.filter((e) => bigintEquals(e.Entity.trail_id, entity?.Entity.trail_id))
 				.map((e) => ({
 					value: bigintToAddress(e.Entity!.inst),
 					label: e.Entity.name,
