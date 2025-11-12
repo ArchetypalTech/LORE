@@ -1,25 +1,9 @@
-# development localhost
-# procs:
-#   contracts:
-#     cwd: packages/contracts
-#     shell: wait-port 5050 && bun run dev:watch
-#   client:
-#     cwd: packages/client
-#     shell: bun run dev
-#   torii:
-#     cwd: packages/contracts
-#     # shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
-#     # shell: wait-port 5050 && torii --world "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae" --http.cors_origins "*"
-#     shell: wait-port 5050 && torii --version && torii --world "0x0189849c1a8851e3ad29a83c92ae7bee9d1e5fb3b9aff33eb61493f402580f1a" --http.cors_origins "*" --indexing.contracts erc721:0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649
-#   katana:
-#     cwd: packages/contracts
-#     shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
-
-# staging localhost
 procs:
   contracts:
     cwd: packages/contracts
-    shell: wait-port 5050 && bun run dev:watch
+    shell: |
+      wait-port 5050
+      bun run dev:watch
   client:
     cwd: packages/client
     shell: bun run dev
@@ -30,7 +14,11 @@ procs:
       export TRAIL_TOKEN_ADDRESS=0x97e9a41ae85099766f59ba50486b57b7236030389e4ac31ccd46d75039de2a
       wait-port 5050
       torii --version
-      torii --world 0x0189849c1a8851e3ad29a83c92ae7bee9d1e5fb3b9aff33eb61493f402580f1a --http.cors_origins "*" --indexing.contracts erc721:$GAME_TOKEN_ADDRESS,erc721:$TRAIL_TOKEN_ADDRESS
+      torii --http.cors_origins "*" \
+        --world 0x0189849c1a8851e3ad29a83c92ae7bee9d1e5fb3b9aff33eb61493f402580f1a \
+        --indexing.contracts erc721:$GAME_TOKEN_ADDRESS,erc721:$TRAIL_TOKEN_ADDRESS
   katana:
     cwd: packages/contracts
-    shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
+    shell: |
+      katana --version
+      katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster

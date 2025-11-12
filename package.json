@@ -7,8 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "mprocs --config ./mprocs.local.yaml # start developer mode",
-    "dev:slot": "mprocs --config ./mprocs.slot.yaml # start developer mode",
+    "dev": "mprocs --config ./mprocs.local.yaml",
+    "dev:da": "mprocs --config ./mprocs.local_da.yaml",
+    "dev:slot": "mprocs --config ./mprocs.slot.yaml",
     "quickstart": "bun run ./scripts/quickstart.ts # 🧾 quickstart installer "
   },
   "devDependencies": {

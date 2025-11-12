@@ -83,3 +83,49 @@ This is a monorepo containing the following packages:
 | ----------- | --------------- |
 | `client`    | Game client     |
 | `contracts` | Dojo contracts  |
+
+
+## 🌎 Celestia Setup:
+
+### Initialize / deploy settlement chain contract
+> from [Katana docs](https://book.dojoengine.org/toolchain/katana/advanced#chain-initialization)
+
+* Edit and run `scripts/da_sepolia_init.sh`
+
+```
+export CHAIN_ID=KATANA_DA_LOCAL
+export SETTLEMENT_CHAIN=sepolia
+export SETTLEMENT_ADDRESS=<ADDRESS>
+export SETTLEMENT_PRIVATE_KEY=<PRIVATE_KEY>
+export CHAIN_CONFIG_PATH=./chain-config-sepolia
+```
+
+* Config files are saved in `./chain-config-sepolia/`
+
+
+### Run local Katana + Celestia Sepolia
+
+* run: `bun run dev:da`
+* katana will start with chain id `KATANA_DA_LOCAL`
+
+
+### Install Saya
+
+> Saya docker image: [https://github.com/dojoengine/saya/pkgs/container/saya](https://github.com/dojoengine/saya/pkgs/container/saya)
+
+* Install and run [Docker Desktop](https://docs.docker.com/desktop/)
+* Install Saya...
+
+```
+docker pull ghcr.io/dojoengine/saya:v0.1.2
+docker run ghcr.io/dojoengine/saya:v0.1.2
+```
+
+### Run Saya
+
+> from [Saya docs](https://book.dojoengine.org/toolchain/saya/persistent#run-saya)
+
+* Saya will use `.env.persistent`
+* run: `source .env.persistent && saya persistent start`
+* PREFERABLY: `bun run dev:da`
+
