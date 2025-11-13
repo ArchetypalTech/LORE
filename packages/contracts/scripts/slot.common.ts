@@ -72,7 +72,7 @@ export const runSlotDeployment = async () => {
 		false,
 	);
 	await runCommands([`sozo migrate --profile ${config.mode}`]);
-	await runCommands([`scarb run move_manifest`], false, false);
+	await runCommands([`scarb --profile ${config.mode} run post_migrate`], false, false);
 	await runCommands([`sozo inspect --profile ${config.mode}`], false, false);
 	await runCommands([`starkli chain-id --rpc ${rpcUrl}`], false, false);
 	await runCommands(cmd_view_slot);
