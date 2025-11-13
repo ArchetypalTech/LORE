@@ -43,13 +43,13 @@ const {
  * @returns {Promise<Controller | undefined>} The configured controller instance
  */
 const setupController = async () => {
-	const worldName = LORE_CONFIG.manifests.world.name;
+	const worldName = ">LORE";
 	const controllerConfig: ControllerOptions = {
 		namespace: "lore",
 		preset: "orug",
 		policies: {
 			contracts: {
-				[addAddressPadding(LORE_CONFIG.manifests.prompt.address)]: {
+				[LORE_CONFIG.contractAddresses.prompt]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
@@ -59,7 +59,7 @@ const setupController = async () => {
 						},
 					],
 				},
-				[addAddressPadding(LORE_CONFIG.manifests.designer.address)]: {
+				[LORE_CONFIG.contractAddresses.designer]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
 					methods: [

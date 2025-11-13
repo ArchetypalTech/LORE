@@ -106,7 +106,7 @@ async function execDesignerCall(props: DesignerCallProps) {
 		const data = toCairoArray(args).flat() as RawArgsArray;
 		const calldata = CallData.compile(data);
 		const call: Call = {
-			contractAddress: addAddressPadding(LORE_CONFIG.manifests.designer.address),
+			contractAddress: LORE_CONFIG.contractAddresses.designer,
 			entrypoint,
 			calldata,
 		};

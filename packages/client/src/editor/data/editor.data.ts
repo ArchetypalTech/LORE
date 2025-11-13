@@ -1110,7 +1110,7 @@ export const queryOwnedGameTokens = async (ownerAddress: BigNumberish): Promise<
     const sdk = getDojoSdk();
 		// get all tokens owned by the address
     const tokens: TokenBalances = await sdk.getTokenBalances({
-			contractAddresses: [addAddressPadding(LORE_CONFIG.manifests.game_token.address)],
+			contractAddresses: [LORE_CONFIG.contractAddresses.game_token],
 			accountAddresses: [addAddressPadding(ownerAddress)],
 		});
 		const result: GameToken[] = tokens.items

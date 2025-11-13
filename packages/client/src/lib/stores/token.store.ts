@@ -43,7 +43,7 @@ const TokenStore = createFactory({
 			if (tokenId > 0 && BigInt(token?.balance ?? 0) > 0) {
 				// game tokens
 				if (
-					bigintEquals(token.contract_address, LORE_CONFIG.manifests.game_token.address) &&
+					bigintEquals(token.contract_address, LORE_CONFIG.contractAddresses.game_token) &&
 					!get().ownedGameIds.includes(tokenId)
 				) {
 					set({
@@ -54,7 +54,7 @@ const TokenStore = createFactory({
 				}
 				// trail tokens
 				if (
-					bigintEquals(token.contract_address, LORE_CONFIG.manifests.trail_token.address) &&
+					bigintEquals(token.contract_address, LORE_CONFIG.contractAddresses.trail_token) &&
 					!get().ownedTrailIds.includes(tokenId)
 				) {
 					set({
