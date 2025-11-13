@@ -1,4 +1,4 @@
- interface HelpContent {
+interface HelpContent {
 	description: string;
 	usage?: string;
 	examples?: string[];
@@ -8,14 +8,15 @@
 export const HELP_TEXTS: Record<string, HelpContent> = {
 	CommandSummary: {
 		description:
-			"\n\n a few possibilities surface through the haze of your mind\n\n",
-		usage: ">look [around]\n >look at [object]\n >examine [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit]\n coins_balance \n\n",
+			"A few possibilities surface through the haze of your mind",
+		usage: "\n >look [around]\n >look|examine|inspect [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit]\n coins_balance \n\n",
 		examples: [
 			"look around",
 			"enter the door",
-			"examine the bottle \n\n ",
+			"examine the bottle",
+			"pick up the key",
 		],
-		more: "Use:\n\n  `help_exits`\n  `help_inspect`\n  `help_container`\n & \n  `help_inventory` \n\nfor more information",
+		more: "Use:\n `help_exits`\n `help_react`\n `help_container`\n `help_inventory`\n for more information",
 	},
 // Exits: {
 // 	description:
@@ -48,24 +49,24 @@ export const HELP_TEXTS: Record<string, HelpContent> = {
 // },
 };
 
-export const HELP_INSPECT: Record<string, HelpContent> = {
+export const HELP_REACT: Record<string, HelpContent> = {
 	look:{
-		description: "Examine your surroundings or specific objects",
-		usage: "look [around], look at [object]",
-		examples: ["look", "look around", "look at tree"],
+		description: "Examine your surroundings or superficial description of objects",
+		usage: "look [around] | look at [object]",
+		examples: ["look around", "look at tree"],
 	},
 	examine: {
 		description: "Examine specific objects, gives more information",
 		usage: "examine [object]",
 		examples: ["examine the bag"],
 	},
-	check: {
-		description: "Examine the object further more, gives more information",
-		usage: "check [object]",
-		examples: ["check the bag", "check the door"],
+	inspect: {
+		description: "Examine specific objects, gives more information",
+		usage: "inspect [object]",
+		examples: ["inspect the noticeboard"],
 	},
 	other: {
-		description: "Gives more information about the object",
+		description: "Gives more information about the object upon interaction",
 		usage: "smell [object], taste [object], touch [object]",
 		examples: ["smell the bag", "touch the door"],
 	},
@@ -74,18 +75,15 @@ export const HELP_INSPECT: Record<string, HelpContent> = {
 export const HELP_EXITS: Record<string, HelpContent> = {
 	go: {
 		description:
-			"Move through the world in a specific direction\n can also just use direction",
+			"Move through the world via directions or exits.",
 		usage: "go [direction]",
 		examples: [
-			"go north",
-			"go south",
-			"go east",
-			"go west",
+			"go north | go n",
+			"go south | go s",
+			"go northwest | go nw",
+			"go southeast | go se",
 			"go up",
 			"go down",
-			"go n",
-			"go s",
-			"go ...",
 		],
 	},
 	enter: {
@@ -111,7 +109,7 @@ export const HELP_CONTAINER: Record<string, HelpContent> = {
 		examples: ["close the bag", "close the box"],
 	},
 	check: {
-		description: "Checks a specific container and gives information",
+		description: "Checks a specific container and gives information about it",
 		usage: "check [container]",
 		examples: ["check the bag", "check the box"],
 	},
@@ -121,10 +119,10 @@ export const HELP_CONTAINER: Record<string, HelpContent> = {
 	},
 };
 export const HELP_INVENTORY: Record<string, HelpContent> = {
-	pickup: {
+	pick: {
 		description: "Picks up an object and places it in your personal inventory",
-		usage: "pickup [object]",
-		examples: ["pickup paper", "pickup the key"],
+		usage: "pick up [object]",
+		examples: ["pick up paper", "pick up the key"],
 	},
 	drop: {
 		description: "Drops an object from your personal inventory",
