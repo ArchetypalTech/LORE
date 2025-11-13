@@ -1,4 +1,4 @@
- interface HelpContent {
+interface HelpContent {
 	description: string;
 	usage?: string;
 	examples?: string[];
@@ -14,6 +14,7 @@ export const HELP_TEXTS: Record<string, HelpContent> = {
 			"look around",
 			"enter the door",
 			"examine the bottle",
+			"pick up the key",
 		],
 		more: "Use:\n `help_exits`\n `help_react`\n `help_container`\n `help_inventory`\n for more information",
 	},
@@ -77,13 +78,12 @@ export const HELP_EXITS: Record<string, HelpContent> = {
 			"Move through the world via directions or exits.",
 		usage: "go [direction]",
 		examples: [
-			"go north",
-			"go south",
+			"go north | go n",
+			"go south | go s",
+			"go northwest | go nw",
+			"go southeast | go se",
 			"go up",
 			"go down",
-			"go n",
-			"go s",
-			"go ...",
 		],
 	},
 	enter: {
