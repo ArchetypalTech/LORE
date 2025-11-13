@@ -77,15 +77,6 @@ mod tests {
         let entity: Entity = sys.world.read_model(3);
         assert_eq!(entity.name, "entity_3");
         assert_eq!(entity.creator_address, OTHER());
-        //
-        // another editor can design...
-        sys.designer.set_editor(RECIPIENT(), true);
-        assert!(sys.world.is_player_editor(RECIPIENT()), "editor RECIPIENT");
-        helpers::set_caller(RECIPIENT());
-        sys.designer.create_entity(array![helpers::create_new_entity(4, "entity_4")]);
-        let entity: Entity = sys.world.read_model(4);
-        assert_eq!(entity.name, "entity_4");
-        assert_eq!(entity.creator_address, RECIPIENT());
     }
 
     #[test]
@@ -353,8 +344,23 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected: ('DESIGNER: Not your entity','ENTRYPOINT_FAILED'))]
-    fn test_editor_create_invalid_trail() {
+    #[should_panic(expected: ('DESIGNER: Not your trail','ENTRYPOINT_FAILED'))]
+    fn test_editor_create_trail_core() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        // mint a trail
+        sys.designer.set_editor(OTHER(), true);
+        let (_entity_trail_1, _trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OTHER());
+        //
+        // EDITOR can create in their trails...
+        helpers::set_caller(OTHER());
+        let mut entity_1: Entity = helpers::create_new_entity(1, "entity_1");
+        entity_1.trail_id = 0;
+        sys.designer.create_entity(array![entity_1.clone()]);
+    }
+
+    #[test]
+    #[should_panic(expected: ('DESIGNER: Not your trail','ENTRYPOINT_FAILED'))]
+    fn test_editor_create_trail_not_owner() {
         let mut sys: helpers::HelperSystems = helpers::setup_core();
         // mint a trail
         sys.designer.set_editor(OTHER(), true);

@@ -306,7 +306,7 @@ pub impl TrailImpl of TrailTrait {
             let trail_id: u128 = self.get_entity_trail_id(inst);
             if (trail_id.is_non_zero()) {
                 // check trail ownership
-                (self.trail_token_dispatcher().is_owner_of(owned, trail_id.into()))
+                (self.is_owner_of_trail(trail_id, owned))
             } else {
                 // not in a trail
                 (false)
@@ -315,6 +315,10 @@ pub impl TrailImpl of TrailTrait {
             // new entity
             (true)
         }
+    }
+
+    fn is_owner_of_trail(self: @WorldStorage, trail_id: u128, owned: ContractAddress) -> bool {
+        (self.trail_token_dispatcher().is_owner_of(owned, trail_id.into()))
     }
 
     // avoid deleting a top-level Trail entities and components

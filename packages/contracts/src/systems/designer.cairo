@@ -190,6 +190,7 @@ pub mod designer {
         pub const NOT_ADMIN: felt252        = 'DESIGNER: Not admin';
         pub const NOT_EDITOR: felt252       = 'DESIGNER: Not editor';
         pub const NOT_YOUR_ENTITY: felt252  = 'DESIGNER: Not your entity';
+        pub const NOT_YOUR_TRAIL: felt252   = 'DESIGNER: Not your trail';
         pub const INVALID_ENTITY: felt252   = 'DESIGNER: Invalid entity';
     }
 
@@ -261,6 +262,8 @@ pub mod designer {
                         world.add_to_dictionary(alt_name.clone(), TokenType::Noun, 1).unwrap();
                     }
                 };
+                self._assert_can_edit_entity(@world, o.inst, owned);
+                assert(owned.is_zero() || world.is_owner_of_trail(o.trail_id, owned), Errors::NOT_YOUR_TRAIL);
                 //
                 // Keep original creator address
                 let existing_entity: Option<Entity> = EntityImpl::get_entity(@world, o.inst);
@@ -268,10 +271,7 @@ pub mod designer {
                     // new entity: set caller as creator
                     Option::None => {starknet::get_caller_address()},
                     // entity exists: keep original creator
-                    Option::Some(entity) => {
-                        self._assert_can_edit_entity(@world, o.inst, owned);
-                        (entity.creator_address)
-                    }
+                    Option::Some(entity) => {entity.creator_address}
                 };
                 // write model
                 world.write_model(@o);
