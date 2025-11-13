@@ -118,14 +118,14 @@ export CHAIN_CONFIG_PATH=./chain-config-sepolia
 
 ```
 docker pull ghcr.io/dojoengine/saya:v0.1.2
-docker run ghcr.io/dojoengine/saya:v0.1.2
+docker run ghcr.io/dojoengine/saya:v0.1.2 saya --version
 ```
 
 ### Run Saya
 
 > from [Saya docs](https://book.dojoengine.org/toolchain/saya/persistent#run-saya)
 
-* Saya will use `.env.persistent`
-* run: `source .env.persistent && saya persistent start`
+* Saya will use `.env.persistent.sepolia`
+* run: `source .env.persistent.sepolia && saya persistent start`
 * PREFERABLY: `bun run dev:da`
 

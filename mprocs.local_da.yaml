@@ -21,7 +21,7 @@ procs:
     cwd: packages/contracts
     shell: |
       export CHAIN_ID=KATANA_DA_LOCAL
-      export CHAIN_CONFIG_PATH=./chain-config-sepolia/config.toml
+      export CHAIN_CONFIG_PATH=./katana-da-sepolia-config/config.toml
       katana --version
       katana --chain-id $CHAIN_ID \
         --dev --dev.no-fee \
@@ -32,9 +32,12 @@ procs:
   saya:
     cwd: packages/contracts
     shell: |
+      # export SAYA_CMD="saya"
+      export SAYA_CMD="docker run --env-file .env.persistent.sepolia ghcr.io/dojoengine/saya:v0.1.2 saya"
       # wait for katana to start
       wait-port 5050
       # start Saya
-      source .env.persistent
-      saya --version
-      saya persistent start
+      pwd
+      source .env.persistent.sepolia
+      eval $SAYA_CMD --version
+      eval $SAYA_CMD persistent start
