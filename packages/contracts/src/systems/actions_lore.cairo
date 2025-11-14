@@ -25,12 +25,15 @@ pub trait IActionsLore<TState> {
 
 #[dojo::contract]
 pub mod actions_lore {
-    // use starknet::{ContractAddress};
+    use starknet::{ContractAddress, SyscallResultTrait};
     use dojo::{
         world::WorldStorage,
         // model::ModelStorage,
         // event::EventStorage,
     };
+    use starknet::syscalls::send_message_to_l1_syscall;
+
+    const MSG_TO_L2_MAGIC: felt252 = 'MSG';
 
     //-----------------------------------
     // ERC-20 Start
@@ -94,6 +97,39 @@ pub mod actions_lore {
         #[inline(always)]
         fn world_default(self: @ContractState) -> WorldStorage {
             (self.world(@"lore"))
+        }
+    }
+
+    /// Handles a message received from Starknet.
+    ///
+    /// Only functions that are #[l1_handler] can
+    /// receive message from Starknet, exactly as we do with L1 messaging.
+    ///
+    /// # Arguments
+    ///
+    /// * `from_address` - The Starknet contract sending the message.
+    /// * `value` - Expected value in the payload (automatically deserialized).
+    #[l1_handler]
+    fn msg_handler_value(ref self: ContractState, from_address: felt252, value: felt252) {
+        // assert(from_address == ...);
+        assert(value == 888, 'Invalid value');
+    }
+
+
+    //-----------------------------------
+    // Internal
+    //
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        //
+        // L3 > L2 messaging
+        // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/contract_msg_starknet.cairo
+        //
+
+        fn _send_message(ref self: ContractState, to_address: ContractAddress, value: felt252) {
+            // Since the blockifier does not support sending to an address larger than `EthAddress`,
+            // we send the address as the first value of the payload, and use the magic value `MSG` as the `to_address`.
+            send_message_to_l1_syscall(MSG_TO_L2_MAGIC, array![to_address.into(),value].span()).unwrap_syscall();
         }
     }
 

@@ -24,13 +24,13 @@ pub trait IActionsStarknet<TState> {
 
     //-----------------------------------
     // IActionsPublicStarknet
-    fn send_message(ref self: TState, to_address: ContractAddress, selector: felt252, value: felt252);
+    fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
     fn consume_message_value(ref self: TState, value: felt252);
 }
 
 #[starknet::interface]
 trait IActionsPublicStarknet<TState> {
-    fn send_message(ref self: TState, to_address: ContractAddress, selector: felt252, value: felt252);
+    fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
     fn consume_message_value(ref self: TState, value: felt252);
 }
 
@@ -42,7 +42,7 @@ pub mod actions_strk {
         world::WorldStorage,
         // event::EventStorage,
     };
-    // use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
+    use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
     //-----------------------------------
     // ERC-20 Start
@@ -129,34 +129,64 @@ pub mod actions_strk {
 
     #[abi(embed_v0)]
     impl IActionsPublicStarknetImpl of super::IActionsPublicStarknet<ContractState> {
+        
+        /// L2 > L3
         /// Sends a message with the given value.
-        fn send_message(
-            ref self: ContractState, to_address: ContractAddress, selector: felt252, value: felt252,
+        fn purchased_starter_pack(ref self: ContractState,
+            recipient: ContractAddress,
         ) {
-            let _messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
-
-            // let messaging = IMessagingDispatcher {
-            //     contract_address: messaging_config.messaging_contract,
-            // };
-            // messaging.send_message_to_appchain(to_address, selector, array![value].span(),);
+            //
+            // TODO: check sender is Cartridge
+            //
+            self._send_message(recipient, dojo::utils::bytearray_hash(@"purchased_starter_pack"), recipient.into());
         }
 
+        /// L3 > L2
         /// Consume a message registered by the appchain.
-        fn consume_message_value(
-            ref self: ContractState, value: felt252,
+        fn consume_message_value(ref self: ContractState,
+            value: felt252,
         ) {
-            let _messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
+            self._consume_message_value(value);
+        }
+    }
 
-            // let messaging = IMessagingDispatcher {
-            //     contract_address: messaging_config.messaging_contract,
-            // };
 
-            // // Will revert in case of failure if the message is not registered
-            // // as consumable.
-            // let _msg_hash = messaging.consume_message_from_appchain(
-            //     messaging_config.appchain_contract,
-            //     array![value].span(),
-            // );
+    //-----------------------------------
+    // Internal
+    //
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        //
+        // L2 > L3 messaging
+        // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/sn_1.cairo
+        //
+        
+        fn _send_message(ref self: ContractState,
+            to_address: ContractAddress,
+            selector: felt252,
+            value: felt252,
+        ) {
+            let messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
+            let messaging: IMessagingDispatcher = IMessagingDispatcher {
+                contract_address: messaging_config.messaging_contract,
+            };
+            messaging.send_message_to_appchain(to_address, selector, array![value].span(),);
+        }
+
+        fn _consume_message_value(ref self: ContractState,
+            value: felt252,
+        ) {
+            let messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
+            let messaging: IMessagingDispatcher = IMessagingDispatcher {
+                contract_address: messaging_config.messaging_contract,
+            };
+
+            // Will revert in case of failure if the message is not registered
+            // as consumable.
+            let _msg_hash: felt252 = messaging.consume_message_from_appchain(
+                messaging_config.appchain_contract,
+                array![value].span(),
+            );
 
             // msg successfully consumed, we can proceed and process the data
             // in the payload.
