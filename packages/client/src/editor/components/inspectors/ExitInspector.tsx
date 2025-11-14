@@ -4,7 +4,6 @@ import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
 	type ActionMapExit,
 	direction,
-	Entity,
 	type Exit,
 	exitActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -31,7 +30,7 @@ export const ExitInspector: ComponentInspector<Exit> = ({
 			area_options: EditorData()
 				.getEntities()
 				.filter((e) => e.Area !== undefined)
-				.filter((e) => bigintEquals(e.Entity.trail_id, entity?.Entity.trail_id))
+				.filter((e) => bigintEquals(e.Entity.trail_id, entity?.trail_id))
 				.map((e) => ({
 					value: bigintToAddress(e.Entity!.inst),
 					label: e.Entity.name,
