@@ -14,7 +14,6 @@ import type {
 	Reactable,
 	DescriptionText,
 	ComponentTypeEnum,
-	AccountPermissions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -27,10 +26,8 @@ import {
 	createPlayerEntity,
 	getPlayerSingletonInst,
 	getPlayerAddress,
-	getPlayerUsername,
-	createDefaultAreaComponent,
-	getPlayerEntranceInst,
 	createDefaultExitComponent,
+	createDefaultAreaComponent,
 } from "../lib/components";
 import { Notifications } from "../lib/notifications";
 import type {
@@ -40,12 +37,12 @@ import type {
 	WithStringEnums,
 } from "../lib/types";
 import type { ChangeSet, EditorAction } from "../lib/types";
-import { bigintToAddress, bigintToHex128, bigintEquals, tick } from "@/lib/utils/utils";
+import { bigintToAddress, bigintToHex128, bigintEquals, tick, feltToString } from "@/lib/utils/utils";
 import { InitDojo } from "@/lib/dojo";
+import { getDojoSdk } from "@/lib/stores/dojo.store";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
-import DojoStore from "@lib/stores/dojo.store.ts";
 
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
@@ -63,7 +60,7 @@ const {
 	selectedEntity: undefined as BigNumberish | undefined,
 	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: undefined as number | undefined,
-	creatorsFilter: [] as bigint[],
+	trailIdsFilter: [] as bigint[],
 });
 
 const getItem = (id: BigNumberish, syncPool = false) =>
@@ -597,16 +594,15 @@ const isEntityCollapsed = (inst: BigNumberish) => {
 	return localStorage.getItem(_uncollapsedKey(inst)) !== "true";
 };
 
-const setCreatorsFilter = (creators: bigint[]) => {
-	set({ creatorsFilter: creators });
+const setTrailIdsFilter = (trailIds: bigint[]) => {
+	set({ trailIdsFilter: trailIds });
 };
 const shouldDisplayEntity = (entity: EntityCollection | undefined): boolean => {
 	if (!entity) return false;
-	const entityCreatorAddress = BigInt(entity?.Entity?.creator_address ?? 0);
+	const entityTrailId = BigInt(entity?.Entity?.trail_id ?? 0);
 	return (
-		entityCreatorAddress === 0n ||
-		get().creatorsFilter.length === 0 ||
-		get().creatorsFilter.includes(entityCreatorAddress)
+		get().trailIdsFilter.length === 0 || // no filter : display all
+		get().trailIdsFilter.includes(entityTrailId) // filter : display only entities with the filter trail id
 	);
 };
 
@@ -615,19 +611,28 @@ const shouldDisplayEntity = (entity: EntityCollection | undefined): boolean => {
  * @returns the new entity
  */
 const newEntity = async () => {
-	const newEntity = createDefaultEntity();
+	// choose parent
+	let newParent: EntityCollection | undefined = undefined;
+	if (get().selectedEntity !== undefined) {
+		const e = getEntity(get().selectedEntity!)!;
+		const selectedParentEntity = e.ChildToParent?.parent ? getEntity(e.ChildToParent.parent)! : undefined;
+		if (selectedParentEntity !== undefined && !selectedParentEntity?.Trail === undefined) {
+			newParent = selectedParentEntity;
+			console.log(`creating as sibling of ${newParent.Entity.name}`, newParent);
+		} else {
+			newParent = getEntity(get().selectedEntity!)!;
+			console.log(`creating as child of ${newParent.Entity.name}`, newParent);
+		}
+	}
+	// create new entity
+	let newEntity = createDefaultEntity(newParent?.Entity.trail_id ?? 0);
 	syncItem(newEntity);
 	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
 	await tick();
-	if (get().selectedEntity !== undefined) {
-		const e = getEntity(get().selectedEntity!)!;
-		console.log(e);
-		if (e.ChildToParent !== undefined) {
-			const newParent = getEntity(e.ChildToParent.parent)!;
-			console.log(newParent);
-			addToParent(getEntity(newEntity.Entity.inst)!, newParent);
-		}
+	if (newParent) {
+		addToParent(getEntity(newEntity.Entity.inst)!, newParent);
 	}
+	// create components
 	selectEntity(newEntity.Entity.inst);
 	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
 	descriptionText.DescriptionText.text = newEntity.Entity.name;
@@ -636,7 +641,11 @@ const newEntity = async () => {
 	const reactable = createDefaultReactableComponent(newEntity.Entity);
 	reactable.Reactable.description = [descriptionText.DescriptionText.key];
 	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
-
+	// If parent is Trail, add an Area component
+	if (newParent?.Trail !== undefined) {
+		const area = createDefaultAreaComponent(newEntity.Entity);
+		updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
+	}
 	return newEntity;
 };
 
@@ -705,119 +714,6 @@ export const newPlayer = async (): Promise<EntityCollection | undefined> => {
 	const container = createDefaultContainerComponent(playerEntity.Entity);
 	updateComponent(playerEntity.Entity.inst, "Container", container.Container as any);
 	return playerEntity;
-};
-
-
-/**
- * Creates a new Area trail for an player Editor entity with the default components.
- * @returns The new entity
- */
-const getPlayersTrailEntity = (): EntityCollection | undefined => {
-	const walletAddress = getPlayerAddress();
-	if (BigInt(walletAddress ?? 0) === 0n) {
-		throw new Error("Player entrance instance is 0");
-	}
-	return getEntity(walletAddress);
-};
-
-const createOrSelectPlayersTrailEntity = async () => {
-	// find existing entity
-	let existingEntity = getPlayersTrailEntity()
-	if (existingEntity) {
-		console.warn("Player trail entity already exists");
-		selectEntity(existingEntity.Entity.inst);
-		return existingEntity;
-	}
-
-	// player route instance is the wallet address
-	const walletAddress = getPlayerAddress();
-	const username = getPlayerUsername();
-
-	// create Entity
-	const newEntity = createDefaultEntity();
-	newEntity.Entity.inst = walletAddress;
-	newEntity.Entity.name = `${username}'s Trail`;
-	newEntity.Entity.alt_names = [username];
-	syncItem(newEntity);
-	updateComponent(newEntity.Entity.inst, "Entity", newEntity.Entity);
-	await tick();
-
-	const descriptionText = createDefaultDescriptionText(newEntity.Entity);
-	descriptionText.DescriptionText.text = newEntity.Entity.name;
-	descriptionText.DescriptionText.key = 0;
-	updateComponent(newEntity.Entity.inst, "DescriptionText", descriptionText.DescriptionText as any);
-
-	const reactable = createDefaultReactableComponent(
-		newEntity.Entity,
-		[descriptionText.DescriptionText],
-		newEntity.Entity.name,
-	);
-	updateComponent(newEntity.Entity.inst, "Reactable", reactable.Reactable as any);
-
-	const area = createDefaultAreaComponent(newEntity.Entity);
-	area.Area.is_spawn_point = false;
-	area.Area.progress_percentage = 0;
-	area.Area.preserve_children = false;
-	updateComponent(newEntity.Entity.inst, "Area", area.Area as any);
-
-	// create way back to crossroads
-	await createExit({
-		leads_to: crossroadsInst,
-		name: `Crossroads`,
-		description: `Way back to the Crossroads`,
-		parentInst: newEntity.Entity.inst,
-		altNames: [`crossroads`],
-		autoSelect: false,
-	});
-
-	// select it
-	selectEntity(newEntity.Entity.inst);
-
-	return newEntity;
-};
-
-
-/**
- * Creates a new Area trail for an player Editor entity with the default components.
- * @returns The new entity
- */
-const crossroadsInst = '0x00e0c2c6ce0cdff92c8e857cbde8b7e1ff75cabd59d015389e90aef0a033a976';
-const getPlayersEntranceEntity = (): EntityCollection | undefined => {
-	const entranceInst = getPlayerEntranceInst();
-	if (entranceInst === 0n) {
-		throw new Error("Player entrance instance is 0");
-	}
-	return entranceInst ? getEntity(entranceInst) : undefined;
-};
-const createOrSelectPlayersEntranceEntity = async (): Promise<EntityCollection> => {
-	const crossroadsEntity = getEntity(crossroadsInst);
-	// find existing entity
-	let existingEntity = getPlayersEntranceEntity()
-	if (existingEntity) {
-		console.warn("Player entrance entity already exists");
-		addToParent(existingEntity, crossroadsEntity!);
-		selectEntity(existingEntity.Entity.inst);
-		return existingEntity;
-	}
-
-	// player entrance instance is derived from the wallet address
-	const entranceInst = getPlayerEntranceInst();
-	const walletAddress = getPlayerAddress();
-	const username = getPlayerUsername();
-
-	const trialCount = crossroadsEntity?.ParentToChildren?.children.length ?? 0;
-
-	const newEntity = await createExit({
-		leads_to: walletAddress,
-		name: `T${trialCount + 1}-${username}`,
-		description: `${username}'s trail entrance`,
-		parentInst: crossroadsInst,
-		inst: entranceInst,
-		altNames: [username],
-		autoSelect: true,
-	});
-	console.log("DEBUG: createOrSelectPlayersEntranceEntity() newEntity: ", newEntity);
-	return newEntity;
 };
 
 export const createExit = async ({
@@ -906,7 +802,7 @@ const dojoSync = (
 export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Promise<string[] | undefined> => {
 	let properties_array: string[] | undefined;
 	try {
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const queryProperties = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
@@ -939,7 +835,7 @@ export const syncPropertyRegistry = async (componentType: ComponentTypeEnum): Pr
 export const getSpawnPoint = async (): Promise<BigNumberish | undefined> => {
 	let areaInst: BigNumberish | undefined;
 	try {
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const querySpawnPoint = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			const query = builder.withCursor("").withLimit(1000).includeHashedKeys().withEntityModels(["lore-Area"]);
@@ -978,7 +874,7 @@ export const getPlayer = async (account: string): Promise<boolean> => {
   const normalizedAccount = normalizeAddress(account);
 
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1007,26 +903,33 @@ export const getPlayer = async (account: string): Promise<boolean> => {
   }
 };
 
-export const getAccountPermissions = async (address: string): Promise<AccountPermissions | undefined> => {
+export const getAccountRoles = async (address: string): Promise<string[]> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
       .includeHashedKeys()
 			.withClause(
 				new ClauseBuilder<SchemaType>().keys(
-					["lore-AccountPermissions"],
-					[bigintToAddress(address)]
+					["lore-AccessGrantedEvent"],
+					[bigintToAddress(address), undefined]
 				).build()
 			)
-      .withEntityModels(["lore-AccountPermissions"]);
+      .withEntityModels(["lore-AccessGrantedEvent"]);
 
-    const result = await sdk.getEntities({ query });
+    const result = await sdk.getEventMessages({ query });
 
-    const accountPermissions = result?.getItems()?.[0]?.models?.lore?.AccountPermissions as AccountPermissions;
-		// console.log("AccountPermissions:", accountPermissions);
-		return accountPermissions;
+		const roles = result?.getItems()
+			?.filter((item) => item.models?.lore?.AccessGrantedEvent?.granted as boolean)
+			?.map((item) => item.models?.lore?.AccessGrantedEvent?.role as BigNumberish)
+			?.map((role) => {
+				const roleString = feltToString(role);
+				return roleString.startsWith("ROLE_") ? roleString : roleString === "" ? "DEFAULT_ADMIN_ROLE" : role as string;
+			}) ?? [] as string[];
+		// console.log("DEBUG: getAccountRoles(): ", roles);
+
+		return roles;
   } catch (error) {
     console.error("Error fetching account permissions from Torii:", error);
     throw error;
@@ -1038,7 +941,7 @@ export const propertiesRegistered = async (
   delayMs = 2000
 ): Promise<boolean> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1078,7 +981,7 @@ export const queryCoinsPerGame = async (gameId: bigint): Promise<bigint> => {
   let coins_quantiy: bigint = 0n;
 	try {
 		// 1. Get the original entity
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const query_entities = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1120,7 +1023,7 @@ export const queryCoinsPerGame = async (gameId: bigint): Promise<bigint> => {
 export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise<bigint> => {
 	let game_inst_map: bigint = 0n;
 	try{
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		// Get the game instance using the coins entity and the game id
 		const query_coins_game_inst = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
@@ -1149,7 +1052,7 @@ export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise
 export const queryInvItemGIMap = async (gameInst: bigint, origInst: bigint): Promise<bigint> => {
 	let inv_item_inst: bigint = 0n;
 	try{
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		// get invItem
 		const queryValue = gameInst != 0n ? gameInst : origInst;
 		const query_inv_item = new ToriiQueryBuilder<SchemaType>()
@@ -1178,7 +1081,7 @@ export const queryInvItemGIMap = async (gameInst: bigint, origInst: bigint): Pro
 
 export const queryGameCoinsBalance = async (inst: BigNumberish): Promise<BigNumberish> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(1000)
@@ -1204,10 +1107,10 @@ export type GameToken = {
 };
 export const queryOwnedGameTokens = async (ownerAddress: BigNumberish): Promise<GameToken[]> => {
   try {
-    const { sdk } = await InitDojo();
+    const sdk = getDojoSdk();
 		// get all tokens owned by the address
     const tokens: TokenBalances = await sdk.getTokenBalances({
-			contractAddresses: [addAddressPadding(LORE_CONFIG.manifest.game_token.address)],
+			contractAddresses: [LORE_CONFIG.contractAddresses.game_token],
 			accountAddresses: [addAddressPadding(ownerAddress)],
 		});
 		const result: GameToken[] = tokens.items
@@ -1250,7 +1153,7 @@ export const checkForPlayer = async () => {
 
 export const queryTriggers = async () => {
 	try { 
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const query = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
 			.withLimit(1000)
@@ -1273,7 +1176,7 @@ export const queryTriggers = async () => {
 
 export const queryExecActions = async () => {
 	try {
-		const  {sdk} = await InitDojo();
+		const sdk = getDojoSdk();
 		const query = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
 			.withLimit(1000)
@@ -1307,7 +1210,7 @@ export const gameInstModels: `${string}-${string}`[] = [
 ];
 export const queryGameComponents = async (gameId: BigNumberish) => {
 	try {
-		const  {sdk} = await InitDojo();
+		const sdk = getDojoSdk();
 		// get all game instances for the game id
 		const query_game_insts = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
@@ -1512,15 +1415,11 @@ const EditorData = createFactory({
 	getEntities,
 	getEntity,
 	newEntity,
-	getPlayersTrailEntity,
-	getPlayersEntranceEntity,
-	createOrSelectPlayersTrailEntity,
-	createOrSelectPlayersEntranceEntity,
 	removeEntity,
 	selectEntity,
 	setEntityCollapsed,
 	isEntityCollapsed,
-	setCreatorsFilter,
+	setTrailIdsFilter,
 	shouldDisplayEntity,
 	updateComponent,
 	restoreSelectedEntity,

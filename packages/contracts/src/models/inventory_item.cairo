@@ -10,13 +10,12 @@ use lore::{
         container::{Container, ContainerImpl, ContainerComponent},
     },
     types::{
-        command_type::{Command, Token},
+        command_type::{Command, CommandImpl, Token},
         component_type::{InventoryItemActions, ActionMapInventoryItem},
         action_type::TriggerContext,
     },
     constants::errors::Error,
     lib::{
-        a_lexer::CommandImpl,
         utils::ByteArrayTraitExt,
     },
 };
@@ -83,6 +82,18 @@ pub impl InventoryItemInstance of Instance<InventoryItem> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<InventoryItem>::ptr_from_keys(inst), selector!("is_inventory_item")))
     }
+    fn is_partially_mapped() -> bool {
+        (true)
+    }
+    fn partially_map_from(ref self: InventoryItem, game_model: @InventoryItem) {
+        // map properties declared in VariablePropertyHelperTrait::register_properties()
+        self.owner_id = *game_model.owner_id;
+        self.can_be_picked_up = *game_model.can_be_picked_up;
+        self.can_go_in_container = *game_model.can_go_in_container;
+        self.quantity = *game_model.quantity;
+        self.already_used = *game_model.already_used;
+        self.multiple_use = *game_model.multiple_use;
+    }
 }
 
 pub impl InventoryItemComponent of Component<InventoryItem> {
@@ -116,7 +127,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
     ) -> Result<(), Error> {
         // println!("InventoryItem execute_command");
         let (action, _token) = get_action_token(@self, @world, command).unwrap();
-        let nouns = command.get_nouns();
+        let nouns: Span<Token> = command.get_nouns();
         match action.action_fn {
             InventoryItemActions::UseItem => {
                 if *player.use_debug {
@@ -137,7 +148,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // Ex: "use the work permit on the oily rag"
                 // N0: work, N1: permit, N2: oily , N3: rag
                 // 1. N0 is Self. Get entity so that we can get the alt names
-                let executor = EntityImpl::get_entity(@world, self.inst).unwrap();
+                let executor: Entity = EntityImpl::get_entity(@world, self.inst).unwrap();
                 // println!("InventoryItem execute_command: executor: {:?}", executor);
                 // println!("N0: {}. Executor: {:?}", nouns[0].text, executor);
                 // 1.5 if nouns lenght is equal to 1 then return message
@@ -147,7 +158,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 }
                 //let mut target_entity_opt: Option<Entity> = Option::None;
                 // 2. Check if noun[1] is in the alt names
-                let mut found_in_alt_names = false;
+                let mut found_in_alt_names: bool = false;
                 for alt_name in executor.alt_names {
                     if nouns[1].text == @alt_name {
                         found_in_alt_names = true;
@@ -155,7 +166,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     }
                 };
 
-                let target_entity = if found_in_alt_names {
+                let target_entity: Entity = if found_in_alt_names {
                     // noun1 is an alias for self → target is noun2 or noun3
                     // if nouns lenght is equal to 2 then return message as there is no target
                     if nouns.len() == 2 {
@@ -195,8 +206,8 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 };
                 
                 // Get the target actions
-                let target_actions = target_entity.actions_keys;
-                if target_actions.len() == 0 {
+                let target_actions: Array<felt252> = target_entity.actions_keys;
+                if target_actions.is_empty() {
                     // 6.1 No actions found, just return
                     player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
                     return Result::Ok(());
@@ -208,7 +219,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     let mut action: Action = world.read_model((target_entity.inst, key));
                     actions.append(action);
                 };
-                if actions.len() == 0 {
+                if actions.is_empty() {
                     // No actions found, just return
                     player.say(ref world, format!("There is no action to perform on {}.", target_entity.name));
                     return Result::Ok(());
@@ -216,7 +227,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // Execute actions
                 for action in actions {
                     // context is not being used inside evaluations or processing.
-                    let context = TriggerContext {
+                    let context: TriggerContext = TriggerContext {
                         doer: *player.inst,
                         target1: target_entity.inst,
                         target2: 0,
@@ -267,12 +278,12 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             InventoryItemActions::PickupItem => {
                 // This is for the player's personal inventory container
                 // Ex: "pickup the sword"
-                let personal_container = player.get_personal_container(ref world);
+                let personal_container: Option<Container> = player.get_personal_container(ref world);
                 if personal_container.is_none() {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                let res: Result<(), Error> = container_component.put_item_in(ref world, ref self, *player.game_id);
                 if res.is_err() {
                     player.say(ref world, format!("You cannot pick the {}", nouns[0].text));
                 } else {
@@ -283,12 +294,12 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
             InventoryItemActions::DropItem => {
                 // This is for taking an item from the player's personal inventory
                 // Ex:: "drop the sword"
-                let personal_container = player.get_personal_container(ref world);
+                let personal_container: Option<Container> = player.get_personal_container(ref world);
                 if personal_container.is_none() {
                     return Result::Err(Error::NoPersonalContainer);
                 }
                 let container_component: Container = personal_container.unwrap();
-                let res = container_component.put_item_out(ref world, ref self, player);
+                let res: Result<(), Error> = container_component.put_item_out(ref world, ref self, player);
                 if res.is_err() {
                     player.say(ref world, format!("You cannot drop the {}", nouns[0].text));
                 } else {
@@ -300,16 +311,16 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // This is for a specific container
                 // Ex: "put the sword in the bag"
                 // Get the player's container
-                let player_container = get_player_container(@world, player, nouns);
+                let player_container: Option<Container> = get_player_container(@world, player, nouns);
                 if player_container.is_none() {
                     // if it is not in the player, it means it is in an entity container
                     // that is on the room Ex: "put the sword in the box"
-                    let entity_container = get_entity_container(@world, player, nouns);
+                    let entity_container: Option<Container> = get_entity_container(@world, player, nouns);
                     if entity_container.is_none() {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                    let res: Result<(), Error> = container_component.put_item_in(ref world, ref self, *player.game_id);
                     if res.is_err() {
                         player.say(ref world, format!("You cannot put {} inside {}", nouns[0].text, nouns[1].text));
                     } else {
@@ -318,7 +329,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return res;
                 }
                 let container_component: Container = player_container.unwrap();
-                let res = container_component.put_item_in(ref world, ref self, *player.game_id);
+                let res: Result<(), Error> = container_component.put_item_in(ref world, ref self, *player.game_id);
                 if res.is_err() {
                     player.say(ref world, format!("You cannot put {} inside {}", nouns[0].text, nouns[1].text));
                 } else {
@@ -330,16 +341,16 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                 // This is for taking an item from a specific container
                 // Ex: "take out the sword from the bag"
                 // Get the player's container
-                let player_container = get_player_container(@world, player, nouns);
+                let player_container: Option<Container> = get_player_container(@world, player, nouns);
                 if player_container.is_none() {
                     // if it is not in the player, it means it is in an entity container
                     // that is on the room Ex: "take out the sword from the box"
-                    let entity_container = get_entity_container(@world, player, nouns);
+                    let entity_container: Option<Container> = get_entity_container(@world, player, nouns);
                     if entity_container.is_none() {
                         return Result::Err(Error::NoContainer);
                     }
                     let container_component: Container = entity_container.unwrap();
-                    let res = container_component.put_item_out(ref world, ref self, player);
+                    let res: Result<(), Error> = container_component.put_item_out(ref world, ref self, player);
                     if res.is_err() {
                         player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
                     } else {
@@ -348,7 +359,7 @@ pub impl InventoryItemComponent of Component<InventoryItem> {
                     return res;
                 }
                 let container_component: Container = player_container.unwrap();
-                let res = container_component.put_item_out(ref world, ref self, player);
+                let res: Result<(), Error> = container_component.put_item_out(ref world, ref self, player);
                 if res.is_err() {
                     player.say(ref world, format!("You cannot take {} from {} and place in the floor", nouns[0].text, nouns[1].text));
                 } else {
@@ -416,11 +427,11 @@ fn get_player_container(
     world: @WorldStorage, player: @Player, nouns: Span<Token>,
 ) -> Option<Container> {
     let player_entity: Entity = player.entity(world);
-    let player_children = player_entity.get_children(world, *player.game_id);
+    let player_children: Span<Entity> = player_entity.get_children(world, *player.game_id);
     let mut container: Option<@Entity> = Option::None;
     // match the noun wth the child name or alt_name
     for child in player_children {
-        let text = nouns.at(1).text;
+        let text: @ByteArray = nouns.at(1).text;
         if (child.name == text || child.name_is(text)) {
             container = Option::Some(child);
             break;
@@ -429,7 +440,7 @@ fn get_player_container(
     (match container {
         Option::Some(container) => {
             // get container component
-            let player_container = ContainerComponent::get_component(world, *container.inst, *player.game_id);
+            let player_container: Option<Container> = ContainerComponent::get_component(world, *container.inst, *player.game_id);
             (player_container)
         },
         Option::None => {
@@ -445,16 +456,16 @@ fn get_entity_container(
     world: @WorldStorage, player: @Player, nouns: Span<Token>,
 ) -> Option<Container> {
     // get room
-    let room = player.get_room_entity(world);
+    let room: Option<Entity> = player.get_room_entity(world);
     if room.is_none() {
         return Option::None;
     }
     let room_entity: Entity = EntityImpl::get_entity(world, room.unwrap().inst).unwrap();
-    let room_children = room_entity.get_children(world, *player.game_id);
+    let room_children: Span<Entity> = room_entity.get_children(world, *player.game_id);
     let mut container: Option<@Entity> = Option::None;
     // match the noun wth the child name or alt_name
     for child in room_children {
-        let text = nouns.at(1).text;
+        let text: @ByteArray = nouns.at(1).text;
         if (child.name == text || child.name_is(text)) {
             container = Option::Some(child);
             break;
@@ -463,7 +474,7 @@ fn get_entity_container(
     (match container {
         Option::Some(container) => {
             // get container component
-            let room_container = ContainerComponent::get_component(world, *container.inst, *player.game_id);
+            let room_container: Option<Container> = ContainerComponent::get_component(world, *container.inst, *player.game_id);
             (room_container)
         },
         Option::None => {

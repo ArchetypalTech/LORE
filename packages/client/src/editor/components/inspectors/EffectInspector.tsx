@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type Effect,
+  Entity,
   componentType,
   effectType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -13,7 +14,7 @@ import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import { syncPropertyRegistry } from "../../data/editor.data";
+import { getEntity, syncPropertyRegistry } from "../../data/editor.data";
 import { BigNumberish } from "starknet";
 import { CollapsibleComponent } from "../CollapsibleComponent";
 import { EntitySelector } from "../EntitySelector";
@@ -31,6 +32,8 @@ const EffectItem = ({
   handleInputChange: (idx: number) => any;
   Inspector: any;
 }) => {
+  const entity = useMemo(() => getEntity(effectObj.inst)?.Entity, [effectObj]);
+  
   const [propertyNames, setPropertyNames] = useState<string[]>([]);
   const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
   const excludeEffectTypes = ["AddItem", "RemoveItem", "MoveEntity", "SendMessage", "TriggerAction"];
@@ -75,6 +78,7 @@ const EffectItem = ({
           value={effectObj.target.toString()}
           onChange={handleInputChange(idx)}
           dataPool={dataPool}
+  				sourceEntity={entity}
         />
         <CairoEnumSelect
           id="effectType"
@@ -113,6 +117,7 @@ const EffectItem = ({
           value={effectObj.hex_value?.toString() || "0"}
           onChange={handleInputChange(idx)}
           dataPool={dataPool}
+          sourceEntity={entity}
         />
       </Inspector>
     </CollapsibleComponent>

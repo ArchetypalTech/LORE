@@ -2,20 +2,22 @@ pub mod systems {
     pub mod designer;
     pub mod prompt;
     pub mod game_token;
+    pub mod trail_token;
 }
 
 pub mod constants {
     pub mod constants;
     pub mod errors;
-    pub mod token;
+    pub mod token_metadata;
 }
 
 pub mod lib {
     pub mod a_lexer;
-    pub mod dictionary;
     pub mod c_handler;
+    pub mod access;
     pub mod random;
     pub mod utils;
+    pub mod arrays;
     pub mod dns;
     pub mod trophies;
     pub mod level_test;
@@ -31,6 +33,7 @@ pub mod models {
     pub mod condition;
     pub mod container;
     pub mod description_text;
+    pub mod dictionary;
     pub mod effect;
     pub mod entity;
     pub mod exit;
@@ -40,8 +43,9 @@ pub mod models {
     pub mod player;
     pub mod reactable;
     pub mod trigger;
-    pub mod token_config;
-    pub mod admin;
+    pub mod hub;
+    pub mod game_token_info;
+    pub mod trail_token_info;
 }
 
 pub mod types {
@@ -57,5 +61,6 @@ pub mod tests {
     pub mod designer_test;
     pub mod entity_test;
     pub mod game_token_test;
+    pub mod trail_token_test;
     pub mod helpers;
 }

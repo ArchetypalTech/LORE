@@ -2,7 +2,6 @@ import { LORE_CONFIG } from "@lib/config";
 import {
 	addTerminalContent,
 	clearTerminalContent,
-	nextItem,
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
@@ -84,12 +83,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	[key: string]: (command: commandContext) => void;
 } = {
 	_bootLoader: () => {
-		if (LORE_CONFIG.useController) {
-			if (!WalletStore().isConnected) {
-				sendCommand("_connect_wallet");
-			} else {
-				sendCommand("_welcome_back");
-			}
+		if (!WalletStore().isConnected) {
+			sendCommand("_connect_wallet");
+		} else {
+			sendCommand("_welcome_back");
 		}
 
 		sendCommand("_hint");
@@ -414,7 +411,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 			return;
 		}
-		const coinsBalance = await queryCoinsPerGame(game_id);
+		const coinsBalance = await queryCoinsPerGame(BigInt(game_id));
 		addTerminalContent({
 			text: `You have ${coinsBalance} Usants coins`,
 			format: "hash",
@@ -446,7 +443,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	connection: async () => {
 		const dest = {
-			endpoints: LORE_CONFIG.endpoints,
+			rpcUrl: LORE_CONFIG.rpcUrl,
+			toriiUrl: LORE_CONFIG.toriiUrl,
 			mode: import.meta.env.MODE,
 		};
 		addTerminalContent({

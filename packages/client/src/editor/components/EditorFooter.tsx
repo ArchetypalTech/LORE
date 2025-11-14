@@ -9,7 +9,7 @@ export const EditorFooter = () => {
 				<div className="flex grow" />
 				<div className="flex gap-2">
 					<a
-						href={`${LORE_CONFIG.endpoints.torii.http}/sql`}
+						href={`${LORE_CONFIG.toriiUrl}/sql`}
 						target="_blank"
 						rel="noopener noreferrer"
 						className="textFreak text-xs hover:underline"

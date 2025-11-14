@@ -24,6 +24,7 @@ pub enum Error {
     // Conditions
     ConditionFailed,
     // Effects
+    NotInTheSameTrail,
     EffectFailed,
     EffectNotFound,
     ReadOnlyVariable,
@@ -60,4 +61,5 @@ pub enum Error {
     // Player
     NoRoom,
     NotYourGame,
+    NotEditor,
 }

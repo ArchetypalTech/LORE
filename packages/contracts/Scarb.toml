@@ -1,8 +1,8 @@
 [package]
 name = "lore"
-cairo-version = "=2.12.2"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2024_07"
+cairo-version = ">=2.12.2"
 experimental-features = ["associated_item_constraints"]
 
 [cairo]
@@ -13,20 +13,21 @@ inlining-strategy = "avoid"
 migrate = "sozo build && sozo migrate apply"
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
+starknet = ">=2.12.2"
+dojo = "=1.7.2"
+achievement = { git = "https://github.com/cartridge-gg/arcade", rev = "a4de9f4c38814a19716b6c5f9cbd4213645e9cb1" }
 origami_random = { git = "https://github.com/dojoengine/origami", tag = "v1.6.1" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
+openzeppelin_access = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", branch = "scarb_2.12.2" }
-dojo_macros = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
-achievement = { git = "https://github.com/cartridge-gg/arcade", rev = "dd076d8a628b011fdc4cbcca0de7ec523ecd1d66" }
-# not used right now but initialised in dojo_init when used for deli interop
-# planetary_interface = { path = "/Users/tims/DATA/BB/dojo/planetary/dojo/planetary_interface" }
-starknet = "2.12.2"
 
 [dev-dependencies]
-cairo_test = "2.12.2"
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
+cairo_test = ">=2.12.2"
+dojo_cairo_test = "=1.7.2"
+
+[tool.scarb]
+allow-prebuilt-plugins = ["dojo_cairo_macros"]
 
 [[target.starknet-contract]]
 build-external-contracts = [
@@ -43,7 +44,9 @@ allowed-libfuncs-list.name = "experimental"
 # sierra = true
 # casm = true
 
-# Dojo profiles
+#--------------------------
+# Dojo profiles declaration
+#
 [profile.dev]
 [profile.slot]
 [profile.stage]

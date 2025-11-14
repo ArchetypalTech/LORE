@@ -3,25 +3,33 @@ use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
     models::{
         entity::{Entity, EntityImpl},
-        area::{AreaComponent},
+        area::{Area, AreaComponent},
         exit::{Exit, ExitComponent},
         reactable::{Reactable, ReactableImpl, ReactableComponent},
-        inventory_item::{InventoryItemComponent},
+        inventory_item::{InventoryItem, InventoryItemComponent},
         container::{Container, ContainerImpl, ContainerComponent},
         player::{Player, PlayerImpl},
         components::{Component},
         action::{ActionImpl},
         condition::{ConditionImpl},
-        token_config::{GameTokenInfo, PlayerAccountTrait},
-        admin::{AccountPermissionsTrait},
+        game_token_info::{GameTokenInfo, PlayerGameTrait},
+        trail_token_info::{TrailProgress, MAIN_TRAIL_ID},
+        hub::{TrailTrait},
     },
-    types::command_type::{Command, TokenType, Token},
+    types::command_type::{
+        Command, CommandImpl,
+        TokenType, Token,
+    },
     lib::{
-        a_lexer::CommandImpl,
+        access::{AccessTrait},
         utils::ByteArrayTraitExt,
-        dictionary::{init_dictionary, add_to_dictionary},
         level_test::{create_test_level},
-        dns::{DnsTrait, IGameTokenDispatcherTrait},
+        dns::{
+            DnsTrait,
+            ILexerDispatcherTrait,
+            IGameTokenDispatcherTrait,
+            ITrailTokenDispatcherTrait,
+        },
     },
     constants::errors::Error,
 };
@@ -29,17 +37,17 @@ use lore::{
 pub fn handle_command(
     command: @Command, ref world: WorldStorage, ref player: Player,
 ) -> Result<(), Error> {
-    let sys_command = command.is_system_command();
+    let sys_command: bool = command.is_system_command();
     if sys_command {
         return system_command(command, ref world, ref player);
     }
-    let verbs = command.get_verbs();
-    if verbs.len() == 0 {
+    let verbs: Span<Token> = command.get_verbs();
+    if verbs.is_empty() {
         player.say(ref world, format!("I don't recognize the VERB(s) in: \"{}\"", command.text));
         return Result::Err(Error::ActionFailed);
     }
-    let mut nouns = command.get_nouns();
-    let mut directions = command.get_directions();
+    let mut nouns: Span<Token> = command.get_nouns();
+    let mut directions: Span<Token> = command.get_directions();
     let mut executed: Option<bool> = Option::None;
     let mut result: Result::<(), Error> = Result::Err(Error::ActionFailed);
     if nouns.len() > 0 {
@@ -53,157 +61,141 @@ pub fn handle_command(
             if player.use_debug {
                 player.log_debug(ref world, format!("item: {:?}", item));
             }
-            match ReactableComponent::get_component(@world, item.inst, player.game_id) {
-                Option::Some(c) => {
-                    if c.clone().can_use_command(@world, @player, command) {
-                        let res = c.clone().execute_command(ref world, @player, command);
-                        match res {
-                            Result::Ok(()) => {
-                                executed = Option::Some(true);
-                            },
-                            Result::Err(e) => {
-                                executed = Option::Some(false);
-                                result = Result::Err(e);
-                            },
-                        }
-                        break;
+            let c: Option<Reactable> = ReactableComponent::get_component(@world, item.inst, player.game_id);
+            if let Some(c) = c {
+                if c.clone().can_use_command(@world, @player, command) {
+                    let res: Result<(), Error> = c.clone().execute_command(ref world, @player, command);
+                    match res {
+                        Result::Ok(()) => {
+                            executed = Option::Some(true);
+                        },
+                        Result::Err(e) => {
+                            executed = Option::Some(false);
+                            result = Result::Err(e);
+                        },
                     }
-                },
-                Option::None => {},
+                    break;
+                }
             }
-            match AreaComponent::get_component(@world, item.inst, player.game_id) {
-                Option::Some(c) => {
+            let c: Option<Area> = AreaComponent::get_component(@world, item.inst, player.game_id);
+            if let Some(c) = c {
                     if c.can_use_command(@world, @player, command) {
-                        let res = c.execute_command(ref world, @player, command);
-                        match res {
-                            Result::Ok(()) => {
-                                executed = Option::Some(true);
-                            },
-                            Result::Err(e) => {
-                                executed = Option::Some(false);
-                                result = Result::Err(e);
-                            },
-                        }
-                        break;
+                    let res: Result<(), Error> = c.execute_command(ref world, @player, command);
+                    match res {
+                        Result::Ok(()) => {
+                            executed = Option::Some(true);
+                        },
+                        Result::Err(e) => {
+                            executed = Option::Some(false);
+                            result = Result::Err(e);
+                        },
                     }
-                },
-                Option::None => {},
+                    break;
+                }
             }
             // @dev: guaranteed there's a noun
-            match ExitComponent::get_component(@world, item.inst, player.game_id) {
-                Option::Some(c) => {
-                    if c.can_use_command(@world, @player, command) {
-                        let res = c.execute_command(ref world, @player, command);
-                        match res {
-                            Result::Ok(()) => {
-                                executed = Option::Some(true);
-                            },
-                            Result::Err(e) => {
-                                executed = Option::Some(false);
-                                result = Result::Err(e);
-                            },
-                        }
-                        break;
+            let c: Option<Exit> = ExitComponent::get_component(@world, item.inst, player.game_id);
+            if let Some(c) = c {
+                if c.can_use_command(@world, @player, command) {
+                    let res: Result<(), Error> = c.execute_command(ref world, @player, command);
+                    match res {
+                        Result::Ok(()) => {
+                            executed = Option::Some(true);
+                        },
+                        Result::Err(e) => {
+                            executed = Option::Some(false);
+                            result = Result::Err(e);
+                        },
                     }
-                },
-                Option::None => {},
+                    break;
+                }
             }
-            match InventoryItemComponent::get_component(@world, item.inst, player.game_id) {
-                Option::Some(c) => {
-                    if c.can_use_command(@world, @player, command) {
-                        let res = c.execute_command(ref world, @player, command);
-                        match res {
-                            Result::Ok(()) => {
-                                executed = Option::Some(true);
-                            },
-                            Result::Err(e) => {
-                                executed = Option::Some(false);
-                                result = Result::Err(e);
-                            },
-                        }
-                        break;
+            let c: Option<InventoryItem> = InventoryItemComponent::get_component(@world, item.inst, player.game_id);
+            if let Some(c) = c {
+                if c.can_use_command(@world, @player, command) {
+                    let res: Result<(), Error> = c.execute_command(ref world, @player, command);
+                    match res {
+                        Result::Ok(()) => {
+                            executed = Option::Some(true);
+                        },
+                        Result::Err(e) => {
+                            executed = Option::Some(false);
+                            result = Result::Err(e);
+                        },
                     }
-                },
-                Option::None => {},
+                    break;
+                }
             }
-            match ContainerComponent::get_component(@world, item.inst, player.game_id) {
-                Option::Some(c) => {
+            let c: Option<Container> = ContainerComponent::get_component(@world, item.inst, player.game_id);
+            if let Some(c) = c {
                     if c.can_use_command(@world, @player, command) {
-                        let res = c.execute_command(ref world, @player, command);
-                        match res {
-                            Result::Ok(()) => {
-                                executed = Option::Some(true);
-                            },
-                            Result::Err(e) => {
-                                executed = Option::Some(false);
-                                result = Result::Err(e);
-                            },
-                        }
-                        break;
+                    let res: Result<(), Error> = c.execute_command(ref world, @player, command);
+                    match res {
+                        Result::Ok(()) => {
+                            executed = Option::Some(true);
+                        },
+                        Result::Err(e) => {
+                            executed = Option::Some(false);
+                            result = Result::Err(e);
+                        },
                     }
-                },
-                Option::None => {},
+                    break;
+                }
             };
         };
     } else if directions.len() > 0 {
-        let context = player.get_context(@world);
+        let context: Array<Entity> = player.get_context(@world);
         for item in context {
-            let exit: Option<Exit> = Component::get_component(@world, item.inst, player.game_id);
             // @dev: not guaranteed there's a noun
-            match exit {
-                Option::Some(exit) => {
-                    if exit.can_use_command(@world, @player, command) {
-                        let res = exit.execute_command(ref world, @player, command);
-                        match res {
-                            Result::Ok(()) => {
-                                executed = Option::Some(true);
-                            },
-                            Result::Err(e) => {
-                                executed = Option::Some(false);
-                                result = Result::Err(e);
-                            },
-                        }
-                        break;
+            let exit: Option<Exit> = Component::get_component(@world, item.inst, player.game_id);
+            if let Some(exit) = exit {
+                if exit.can_use_command(@world, @player, command) {
+                    let res: Result<(), Error> = exit.execute_command(ref world, @player, command);
+                    match res {
+                        Result::Ok(()) => {
+                            executed = Option::Some(true);
+                        },
+                        Result::Err(e) => {
+                            executed = Option::Some(false);
+                            result = Result::Err(e);
+                        },
                     }
-                },
-                Option::None => {},
+                    break;
+                }
             }
         };
     }
 
     //println!("executed: {:?}", executed);
-    match executed {
-        Option::Some(executed) => {
-            return if (executed) {
-                Result::Ok(())
-            } else {
-                result
-            };
-        },
-        Option::None => {},
+    if let Some(executed) = executed {
+        return if (executed) {
+            Result::Ok(())
+        } else {
+            result
+        };
     };
 
     // We haven't found any targets that have a verb mapped to the action
     // Are there any default actions we can do?
     // if command is just one token,
-    let tokens = command.tokens.clone().span();
+    let tokens: Span<Token> = command.tokens.clone().span();
     if tokens.len() == 1 {
         let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
         if initialVerb == 'look' {
-            let res = player.describe_room(ref world);
+            let res: Result<(), Error> = player.describe_room(ref world);
             if res.is_err() {
                 return Result::Err(res.unwrap_err());
             };
             return Result::Ok(());
         }
         if initialVerb == 'inventory' {
-            let personal_container = player.get_personal_container(ref world);
+            let personal_container: Option<Container> = player.get_personal_container(ref world);
             if personal_container.is_none() {
                 return Result::Err(Error::NoPersonalContainer);
             }
             let container_component: Container = personal_container.unwrap();
             let noun: ByteArray = "Your";
-            let done = container_component.check_container(ref world, @player, @noun);
+            let done: bool = container_component.check_container(ref world, @player, @noun);
             if !done {
                 return Result::Err(Error::ActionFailed);
             }
@@ -213,11 +205,12 @@ pub fn handle_command(
         if tokens.len() == 2 {
             let initialVerb: felt252 = verbs.at(0).text.to_felt252_word().unwrap();
             let secondToken: Token = tokens.at(1).clone();
+            // the command [look around] is a shortcut to describe room
             if initialVerb == 'look' {
                 let around: ByteArray = "around";
                 let at: ByteArray = "at";
                 if secondToken.text == around {
-                    let res = player.describe_room(ref world);
+                    let res: Result<(), Error> = player.describe_room(ref world);
                     if res.is_err() {
                         return Result::Err(res.unwrap_err());
                     };
@@ -225,6 +218,20 @@ pub fn handle_command(
                 }
                 if secondToken.text == at {
                     return Result::Err(Error::NoTarget);
+                }
+            }
+            // the command [exit trail] is a safe way to exit any trail back oto its Hub
+            if initialVerb == 'exit' {
+                if secondToken.text == "trail" {
+                    let hub_entity: Option<Entity> = world.get_trail_hub_entity(player.inst);
+                    if let Some(hub_entity) = hub_entity {
+                        player.move_to_room(ref world, hub_entity.inst);
+                        return Result::Ok(());
+                    } else {
+                        return Result::Err(Error::ActionFailed);
+                    }
+                } else {
+                    // continue to error
                 }
             }
             // if initial verb is not look
@@ -256,28 +263,11 @@ pub fn handle_command(
     result
 }
 
-pub fn init_system_dictionary(world: WorldStorage) {
-    add_to_dictionary(world, "system_initialized", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_debug", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_command", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_move", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_init_dict", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_error", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_level", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_whereami", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_look", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_create_game", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_load_game", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_game_id", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_game_data", TokenType::System, 2).unwrap();
-    add_to_dictionary(world, "g_player", TokenType::System, 2).unwrap();
-}
-
 fn system_command(
     command: @Command, ref world: WorldStorage, ref player: Player,
 ) -> Result<(), Error> {
     let mut system_command: ByteArray = "";
-    let tokens = command.tokens.clone().span();
+    let tokens: Span<Token> = command.tokens.clone().span();
     for token in tokens {
         if token.token_type == @TokenType::System {
             system_command = token.text.clone();
@@ -307,7 +297,7 @@ fn system_command(
         if (system_command == "g_move") {
             player.move_to_room(ref world, 2826);
             player.log_sys(ref world, "+sys+forced move command");
-            let room = player.get_room_entity(@world);
+            let room: Option<Entity> = player.get_room_entity(@world);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
@@ -316,8 +306,7 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_init_dict") {
-            init_dictionary(world);
-            init_system_dictionary(world);
+            world.lexer_dispatcher().initialize_dictionary(world);
             player.log_sys(ref world, "+sys+dictionary re-initialized");
             return Result::Ok(());
         }
@@ -328,15 +317,15 @@ fn system_command(
         }
         if (system_command == "g_whereami") {
             player.log_sys(ref world, "+sys+you are here:");
-            let room = player.get_room_entity(@world);
+            let room: Option<Entity> = player.get_room_entity(@world);
             player.log_sys(ref world, format!("+sys+{:?}", room));
             player.log_sys(ref world, format!("+sys+{:?}", player.entity(@world).get_parent(@world, player.game_id)));
             return Result::Ok(());
         }
         if (system_command == "g_look") {
             player.log_sys(ref world, "+sys+you see this:");
-            let context = player.get_context(@world);
-            let room = player.get_room_entity(@world);
+            let context: Array<Entity> = player.get_context(@world);
+            let room: Option<Entity> = player.get_room_entity(@world);
             if room.is_none() {
                 return Result::Err(Error::ActionFailed);
             }
@@ -344,7 +333,7 @@ fn system_command(
             for item in context {
                 let reactable: Option<Reactable> = Component::get_component(@world, item.inst, player.game_id);
                 if reactable.is_some() {
-                    let description = reactable.unwrap().get_random_description(command, world, player.game_id);
+                    let description: ByteArray = reactable.unwrap().get_random_description(command, world, player.game_id);
                     player.log_sys(ref world, format!("{}", description));
                 }
             };
@@ -355,10 +344,20 @@ fn system_command(
             let game_id: u128 = world.game_token_dispatcher().create_game(player_address);
             player.log_sys(ref world, format!("+sys+Created game-{:?}", game_id));
             // force create new player
-            let player = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
+            let player: Option<Player> = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
             if (player.is_none()) {
                 return Result::Err(Error::NoPlayerComponent);
             }
+            return Result::Ok(());
+        }
+        if (system_command == "g_create_trail") {
+            let player_address: ContractAddress = get_caller_address();
+            if (!world.is_player_editor(player_address)) {
+                return Result::Err(Error::NotEditor);
+            }
+            let trail_id: u128 = world.trail_token_dispatcher().create_trail(player_address);
+            TrailTrait::create_new_trail_entity(ref world, trail_id);
+            player.log_sys(ref world, format!("+sys+Created trail-{:?}", trail_id));
             return Result::Ok(());
         }
         if (system_command == "g_load_game") {
@@ -370,7 +369,7 @@ fn system_command(
                 return Result::Err(Error::NotYourGame);
             }
             // switch game...
-            PlayerAccountTrait::switch_game_id(ref world, player_address, game_id.low);
+            PlayerGameTrait::switch_game_id(ref world, player_address, game_id.low);
             player.log_sys(ref world, format!("+sys+Loaded game-{:?}", game_id));
             return Result::Ok(());
         }
@@ -380,19 +379,20 @@ fn system_command(
         }
         if (system_command == "g_game_data") {
             let token_info: GameTokenInfo = world.read_model(player.game_id);
+            let trail_progress: TrailProgress = world.read_model((player.game_id, MAIN_TRAIL_ID),);
             player.log_sys(ref world, format!("+sys+game-{:?}", token_info.game_id));
             player.log_sys(ref world, format!("+sys+room: {}", token_info.room_name));
             player.log_sys(ref world, format!("+sys+act: {}", token_info.act_number));
-            player.log_sys(ref world, format!("+sys+progress: {}%25", token_info.progress));
-            player.log_sys(ref world, format!("+sys+completed: {}", ByteArrayTraitExt::byte_array_from_bool(token_info.completed)));
+            player.log_sys(ref world, format!("+sys+progress: {}%25", trail_progress.percentage));
+            player.log_sys(ref world, format!("+sys+completed: {}", ByteArrayTraitExt::byte_array_from_bool(trail_progress.completed)));
             return Result::Ok(());
         }
         if (system_command == "g_player") {
             player.log_sys(ref world, format!("+sys+address: 0x{:x}", player.address));
             player.log_sys(ref world, format!("+sys+current_game_id: {}", player.game_id));
             player.log_sys(ref world, format!("+sys+is_dead: {}", ByteArrayTraitExt::byte_array_from_bool(player.is_dead)));
-            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_admin(@world, player.address))));
-            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(AccountPermissionsTrait::is_editor(@world, player.address))));
+            player.log_sys(ref world, format!("+sys+is_admin: {}", ByteArrayTraitExt::byte_array_from_bool(world.is_player_admin(player.address))));
+            player.log_sys(ref world, format!("+sys+is_editor: {}", ByteArrayTraitExt::byte_array_from_bool(world.is_player_editor(player.address))));
             return Result::Ok(());
         }
         return Result::Err(Error::NotSystemAction);
@@ -413,14 +413,14 @@ mod tests {
     #[test]
     fn CHandler_test_g_command_handling() {
         // Setup test environment
-        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
-        create_test_level(ref world);
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        create_test_level(ref sys.world);
         let game_id: u128 = 0;
-        let mut player = PlayerImpl::caller_as_player(ref world, player_1, game_id);
-        player.move_to_room(ref world, 2826);
+        let mut player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
+        player.move_to_room(ref sys.world, 2826);
 
         // Create a test command with g_command system token
-        let mut command = Command {
+        let mut command: Command = Command {
             command_id: 1,
             text: "g_command test",
             words: array!["g_command", "test"],
@@ -444,7 +444,7 @@ mod tests {
             ],
         };
         // Handle the command
-        let result = handle_command(@command, ref world, ref player);
+        let result: Result<(), Error> = handle_command(@command, ref sys.world, ref player);
 
         // Verify the command was handled successfully
         assert(result.is_ok(), 'Command not handled');

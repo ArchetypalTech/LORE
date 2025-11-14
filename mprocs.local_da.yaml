@@ -1,0 +1,43 @@
+procs:
+  contracts:
+    cwd: packages/contracts
+    shell: wait-port 5050 && bun run dev:watch
+  client:
+    cwd: packages/client
+    shell: bun run dev
+  torii:
+    cwd: packages/contracts
+    shell: |
+      export GAME_TOKEN_ADDRESS=0x6962da1f222d4c4209110aa24d0482c672678aa22fa91975b3bac65c5e09d67
+      export TRAIL_TOKEN_ADDRESS=0x97e9a41ae85099766f59ba50486b57b7236030389e4ac31ccd46d75039de2a
+      # wait for katana to start
+      wait-port 5050
+      # start Torii
+      torii --version
+      torii --http.cors_origins "*" \
+        --world 0x05dee2ca4cf9c091f17f4607cc048639017fbc2288daf66d8f2f929e61edeeb2 \
+        --indexing.contracts erc721:$GAME_TOKEN_ADDRESS,erc721:$TRAIL_TOKEN_ADDRESS
+  katana_appchain:
+    cwd: packages/contracts
+    shell: |
+      export CHAIN_ID=KATANA_DA_LOCAL
+      export CHAIN_CONFIG_PATH=./katana-da-sepolia-config/config.toml
+      katana --version
+      katana --chain-id $CHAIN_ID \
+        --dev --dev.no-fee \
+        --http.cors_origins "*" \
+        --cartridge.controllers --cartridge.paymaster \
+        --block-time 30000 --sequencing.block-max-cairo-steps 16000000 \
+        --config $CHAIN_CONFIG_PATH
+  saya:
+    cwd: packages/contracts
+    shell: |
+      # export SAYA_CMD="saya"
+      export SAYA_CMD="docker run --env-file .env.persistent.sepolia ghcr.io/dojoengine/saya:v0.1.2 saya"
+      # wait for katana to start
+      wait-port 5050
+      # start Saya
+      pwd
+      source .env.persistent.sepolia
+      eval $SAYA_CMD --version
+      eval $SAYA_CMD persistent start

@@ -5,7 +5,7 @@ use lore::{
         components::{Component},
         game_instance::{Instance, GameModelImpl, GameModelKeyImpl},
         player::{Player, PlayerImpl},
-        container::{ContainerImpl, ContainerComponent},
+        container::{Container, ContainerImpl, ContainerComponent},
         description_text::{DescriptionText},
     },
     types::{
@@ -48,7 +48,7 @@ pub impl ReactableImpl of ReactableTrait {
         match action.action_fn {
             ReactableActions::ReadRandomDescription => {
                 let (idx1, idx2): (u32, u32) = action.entrypoints.try_into().unwrap();
-                if self.description.len() == 0 || idx1 > idx2 {
+                if self.description.is_empty() || idx1 > idx2 {
                     return "";
                 }
                 let range_len = idx2 - idx1 + 1;
@@ -56,7 +56,7 @@ pub impl ReactableImpl of ReactableTrait {
                     .try_into()
                     .unwrap();
 
-                let random_idx = idx1 + (rng % range_len);
+                let random_idx: u32 = idx1 + (rng % range_len);
                 if random_idx >= self.description.len().try_into().unwrap() {
                     return ""; // avoid out-of-bounds access
                 }
@@ -69,7 +69,7 @@ pub impl ReactableImpl of ReactableTrait {
     }
 
     fn get_first_description(self: @Reactable, world: WorldStorage, game_id: u128) -> ByteArray {
-        if self.description.len() == 0 {
+        if self.description.is_empty() {
             return "";
         }
         let key: u32 = *self.description.at(0);
@@ -109,6 +109,17 @@ pub impl ReactableInstance of Instance<Reactable> {
     }
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Reactable>::ptr_from_keys(inst), selector!("is_reactable")))
+    }
+    fn is_partially_mapped() -> bool {
+        (true)
+    }
+    fn partially_map_from(ref self: Reactable, game_model: @Reactable) {
+        // map properties declared in VariablePropertyHelperTrait::register_properties()
+        self.is_reactable = *game_model.is_reactable;
+        self.is_visible = *game_model.is_visible;
+        self.description = game_model.description.clone();
+        self.already_shown = *game_model.already_shown;
+        self.new_entry = game_model.new_entry.clone();
     }
 }
 
@@ -174,13 +185,13 @@ pub impl ReactableComponent of Component<Reactable> {
                 // If token is verb and the verb is "examine" then check if the entity has a container. If so, call the container's check function
                 if (action.action == "examine" || action.action == "inspect") {
                     // Check if Self has a container
-                    let container = ContainerComponent::get_component(@world, self.inst, *player.game_id);
+                    let container: Option<Container> = ContainerComponent::get_component(@world, self.inst, *player.game_id);
                     // If container is none, return ok
                     if container.is_none() {
                         return Result::Ok(());
                     }
                     // if container is some, call the container's check function
-                    let container_unwrapped = container.unwrap();
+                    let container_unwrapped: Container = container.unwrap();
                     // get entity of container
                     let container_entity: Entity = EntityImpl::get_entity(@world, container_unwrapped.inst).unwrap();
                     let doneChecking = container_unwrapped.check_container(ref world, player, @container_entity.name);
@@ -249,7 +260,7 @@ pub fn get_action_token(
 
 #[cfg(test)]
 pub mod tests {
-    use starknet::ContractAddress;
+    // use starknet::ContractAddress;
     use dojo::{world::WorldStorage, model::ModelStorage};
     use super::*;
     use lore::tests::helpers;
@@ -262,19 +273,19 @@ pub mod tests {
     };
 
     pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252, new_entry: ByteArray) -> Reactable {
-        let descr1 = DescriptionText { inst, key: 0, text: "hello" };
-        let descr2 = DescriptionText { inst, key: 1, text: "world" };
-        let descr3 = DescriptionText { inst, key: 2, text: "how big is a rock" };
-        let descr4 = DescriptionText { inst, key: 3, text: "what's up with the rock" };
-        let descr5 = DescriptionText { inst, key: 4, text: "let's talk about the rock" };
-        let descr6 = DescriptionText { inst, key: 5, text: "the rock is from the moon" };
+        let descr1: DescriptionText = DescriptionText { inst, key: 0, text: "hello" };
+        let descr2: DescriptionText = DescriptionText { inst, key: 1, text: "world" };
+        let descr3: DescriptionText = DescriptionText { inst, key: 2, text: "how big is a rock" };
+        let descr4: DescriptionText = DescriptionText { inst, key: 3, text: "what's up with the rock" };
+        let descr5: DescriptionText = DescriptionText { inst, key: 4, text: "let's talk about the rock" };
+        let descr6: DescriptionText = DescriptionText { inst, key: 5, text: "the rock is from the moon" };
         world.write_model(@descr1);
         world.write_model(@descr2);
         world.write_model(@descr3);
         world.write_model(@descr4);
         world.write_model(@descr5);
         world.write_model(@descr6);
-        let prefab = Reactable {
+        let prefab: Reactable = Reactable {
             inst,
             is_reactable: true,
             is_visible: true,
@@ -306,16 +317,16 @@ pub mod tests {
         (prefab)
     }
     
-    fn Reactable_create_prefab_world() -> (Reactable, WorldStorage, ContractAddress, ContractAddress) {
-        let (mut world, _, _, _, player_1, player_2) = helpers::setup_core();
-        let prefab = Reactable_create_prefab(ref world, 42, "");
-        (prefab, world, player_1, player_2)
+    fn Reactable_create_prefab_world() -> (Reactable, WorldStorage) {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let prefab: Reactable = Reactable_create_prefab(ref sys.world, 42, "");
+        (prefab, sys.world)
     }
 
     #[test]
     fn Reactable_test_create_reactable() {
         // Create a test command with g_command system token
-        let mut command = Command {
+        let mut command: Command = Command {
             command_id: 1,
             text: "look tower",
             words: array!["look", "tower"],
@@ -338,11 +349,11 @@ pub mod tests {
                 },
             ],
         };
-        let (prefab, world, _, _) = Reactable_create_prefab_world();
+        let (prefab, world) = Reactable_create_prefab_world();
         let read_reactable: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         // println!("read_reactable: {:?}", read_reactable);
         assert(read_reactable.is_reactable, 'reactable is reactable');
-        let mut res = array![];
+        let mut res: Array<ByteArray> = array![];
         for _ in 0..10_u8 {
             res.append(read_reactable.get_random_description(@command, world, 0));
         };
@@ -351,17 +362,17 @@ pub mod tests {
 
     #[test]
     fn Reactable_test_get_component() {
-        let (prefab, world, _, _) = Reactable_create_prefab_world();
+        let (prefab, world) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         assert(i.is_reactable, 'reactable is reactable');
     }
 
     #[test]
     fn Reactable_test_read_specific_description() {
-        let (prefab, world, _, _) = Reactable_create_prefab_world();
+        let (prefab, world) = Reactable_create_prefab_world();
         let i: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();
         let idx: u32 = 5;
-        let res = ReactableImpl::get_specific_description(@i, idx, world, 0);
+        let res: Option<ByteArray> = ReactableImpl::get_specific_description(@i, idx, world, 0);
         assert(res.is_some(), 'description should be some');
         assert(res.unwrap() == "the rock is from the moon", 'description should be the moon');
     }

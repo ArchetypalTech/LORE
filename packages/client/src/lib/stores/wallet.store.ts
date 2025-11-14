@@ -1,14 +1,13 @@
 import Controller, { type ControllerOptions } from "@cartridge/controller";
 import { LORE_CONFIG } from "@lib/config";
-import { WalletAccount, addAddressPadding } from "starknet";
+import { Account, addAddressPadding } from "starknet";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
-import { constants } from "starknet";
 
 /**
  * Interface representing the wallet state.
  * @interface WalletStore
- * @property {WalletAccount | undefined} account - The wallet account instance
+ * @property {Account | undefined} account - The wallet account instance
  * @property {string | undefined} username - The user's username
  * @property {string | undefined} walletAddress - The wallet's address
  * @property {Controller | undefined} controller - The cartridge controller instance
@@ -16,7 +15,7 @@ import { constants } from "starknet";
  * @property {boolean} isLoading - Indicates if wallet operations are in progress
  */
 interface WalletStore {
-	account: WalletAccount | undefined;
+	account: Account | undefined;
 	username: string | undefined;
 	walletAddress: string | undefined;
 	controller: Controller | undefined;
@@ -44,142 +43,13 @@ const {
  * @returns {Promise<Controller | undefined>} The configured controller instance
  */
 const setupController = async () => {
-	const worldName = LORE_CONFIG.manifest.default.world.name;
-	// const isEditor = window.location.pathname.startsWith("/editor");
-	// const editorConfig = {
-	// 	[LORE_CONFIG.manifest.designer.address]: {
-	// 		name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
-	// 		description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
-	// 		methods: [
-	// 			{
-	// 				entrypoint: "register_property_registry",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_player",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_entity",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_reactable",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_description_text",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_area",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_exit",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_inventory_item",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_container",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_parent",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_condition",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_effect",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_action",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_trigger",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "create_child",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_player",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_entity",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_reactable",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_description_text",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_description_text",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_area",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_exit",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_condition",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_inventory_item",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_trigger",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_effect",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_action",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_container",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_parent",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 			{
-	// 				entrypoint: "delete_child",
-	// 				description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-	// 			},
-	// 		],
-	// 	},
-	// };
+	const worldName = ">LORE";
 	const controllerConfig: ControllerOptions = {
 		namespace: "lore",
 		preset: "orug",
 		policies: {
 			contracts: {
-				[addAddressPadding(LORE_CONFIG.manifest.entity.address)]: {
+				[LORE_CONFIG.contractAddresses.prompt]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
@@ -189,22 +59,7 @@ const setupController = async () => {
 						},
 					],
 				},
-				// ...(isEditor ? editorConfig : {}),
-				// [LORE_CONFIG.token.contract_address]: {
-				// 	name: "TOT NFT", // Optional
-				// 	description: "Mint and transfer TOT tokens",
-				// 	methods: [
-				// 		{
-				// 			entrypoint: "mint", // The actual method name
-				// 			description: "Approve minting a TOT Token",
-				// 		},
-				// 		{
-				// 			entrypoint: "transfer_from", // The actual method name
-				// 			description: "Transfer a TOT Token",
-				// 		},
-				// 	],
-				// },
-				[addAddressPadding(LORE_CONFIG.manifest.designer.address)]: {
+				[LORE_CONFIG.contractAddresses.designer]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title} when using the editor tool`,
 					methods: [
@@ -261,6 +116,14 @@ const setupController = async () => {
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding actions components`,
 						},
 						{
+							entrypoint: "create_hub",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "create_trail",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
 							entrypoint: "create_trigger",
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding triggers components`,
 						},
@@ -313,6 +176,14 @@ const setupController = async () => {
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting actions components`,
 						},
 						{
+							entrypoint: "delete_hub",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
+							entrypoint: "delete_trail",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+						},
+						{
 							entrypoint: "delete_container",
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting containers components`,
 						},
@@ -328,31 +199,12 @@ const setupController = async () => {
 				},
 			},
 		},
-		chains: [
-			{
-				// RPC from env
-				rpcUrl: LORE_CONFIG.env.VITE_KATANA_HTTP_RPC,
-			},
-			{
-				// Starknet Sepolia
-				rpcUrl: 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9'
-			},
-			{
-				// Starknet Mainnet
-				rpcUrl: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9'
-			}
-		],
-		defaultChainId: (() => {
-			const rpcUrl = LORE_CONFIG.env.VITE_KATANA_HTTP_RPC || "";
-			if (rpcUrl.includes("sepolia")) return constants.StarknetChainId.SN_SEPOLIA;
-			if (rpcUrl.includes("mainnet")) return constants.StarknetChainId.SN_MAIN;
-			return LORE_CONFIG.token.chainId ?? constants.StarknetChainId.SN_MAIN;
-		})(),
+		// chains: [{ rpcUrl: "https://localhost:5173/katana" }],
+		chains: [{ rpcUrl: LORE_CONFIG.rpcUrl }],
+		defaultChainId: LORE_CONFIG.chainId, // controller chain id
 		tokens: {
-			// erc20: LORE_CONFIG.token.erc20,
-			// erc721: LORE_CONFIG.token.erc721,
 		},
-		slot: LORE_CONFIG.env.VITE_SLOT,
+		slot: LORE_CONFIG.slotName,
 	};
 
 	try {
@@ -412,6 +264,39 @@ const connectController = async () => {
 	}
 };
 
+const connectBurnerWallet = async () => {
+	const wallet = get();
+	if (wallet.isConnected) {
+		return;
+	}
+	set({ isLoading: true });
+	try {
+		if (!LORE_CONFIG.burnerAccount) {
+			throw new Error("Missing burner account config");
+		}
+		const account = new Account({
+			provider: LORE_CONFIG.provider.provider,
+			address: LORE_CONFIG.burnerAccount.address as string,
+			signer: LORE_CONFIG.burnerAccount.privateKey as string,
+		});
+		const data = {
+			account: account,
+			username: LORE_CONFIG.burnerAccount.name || "Burner Account",
+			walletAddress: addAddressPadding(account.address),
+			isConnected: true,
+			isLoading: false,
+			controller: undefined,
+		} satisfies WalletStore;
+		console.log(`[Burner Wallet] username: [${data.username}] address: [${data.walletAddress}]`);
+		set(data);
+	} catch (error) {
+		console.error("Error connecting burner wallet", error);
+		throw error;
+	} finally {
+		set({ isLoading: false });
+	}
+};
+
 /**
  * Opens the user profile in the Controller UI.
  * Navigates to the inventory section of the profile.
@@ -434,21 +319,6 @@ const disconnectController = async () => {
 	});
 };
 
-/**
- * Factory function that returns wallet store state and methods.
- * Provides access to the entire wallet API in one object.
- * @returns {Object} Combined wallet state and methods
- */
-const WalletStore = createFactory({
-	setupController,
-	connectController,
-	openUserProfile,
-	disconnectController,
-});
-
-export default WalletStore;
-export { useWalletStore };
-
 // Initialize controller if using slot configuration
 if (LORE_CONFIG.useController) {
 	await setupController();
@@ -458,4 +328,22 @@ if (LORE_CONFIG.useController) {
 		console.log("[Controller] connected");
 		await connectController();
 	}
+} else {
+	// use burner wallet
+	await connectBurnerWallet();
 }
+
+/**
+ * Factory function that returns wallet store state and methods.
+ * Provides access to the entire wallet API in one object.
+ * @returns {Object} Combined wallet state and methods
+ */
+const WalletStore = createFactory({
+	// setupController, // never called outside here
+	connectController,
+	openUserProfile,
+	disconnectController,
+});
+
+export default WalletStore;
+export { useWalletStore };

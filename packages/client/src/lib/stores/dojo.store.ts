@@ -1,5 +1,4 @@
-import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
-
+import type { ParsedEntity, SDK, StandardizedQueryResult } from "@dojoengine/sdk";
 import { InitDojo } from "@lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
 import { CairoCustomEnum, BigNumberish } from "starknet";
@@ -11,7 +10,7 @@ import type {
 	PlayerStory,
 	StoryLine,
 	SchemaType,
-	PlayerAccount,
+	PlayerGame,
 } from "../dojo_bindings/typescript/models.gen";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
@@ -94,7 +93,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	// Fetch all StoryLines for this player
 	let allStoryLines: StoryLine[] = [];
 	try {
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const builder = new ToriiQueryBuilder<SchemaType>();
 		const query = builder
 			.withCursor("")
@@ -183,6 +182,8 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 				text: formatted,
 				format: sys ? "hash" : isError ? "error" : l.startsWith("> ") ? "input" : "out",
 				useTypewriter: true,
+				enableAudio: false,
+				volumeAudio: 1,
 			});
 		}
 	}
@@ -219,10 +220,10 @@ const onReponseData = (
     }
 
 		// if the player's game was created or has changed
-		const playerAccount: PlayerAccount = responseData.PlayerAccount as PlayerAccount;
-    if (playerAccount && playerAccount.current_game_id !== undefined) {
-			if (BigInt(playerAccount.address) === BigInt(getPlayerAddress())) {
-				GameStore().setPlayerGameId(playerAccount.current_game_id);
+		const playerGame: PlayerGame = responseData.PlayerGame as PlayerGame;
+    if (playerGame && playerGame.current_game_id !== undefined) {
+			if (BigInt(playerGame.player_address) === BigInt(getPlayerAddress())) {
+				GameStore().setPlayerGameId(playerGame.current_game_id);
 				sendCommand("_current_game");
 			}
     }
@@ -348,3 +349,8 @@ const DojoStore = createFactory({
 
 export default DojoStore;
 export { useDojoStore };
+
+// vanilla getters
+export const getDojoSdk = (): SDK<SchemaType> => {
+  return useDojoStore.getState().config?.sdk as SDK<SchemaType>;
+}
