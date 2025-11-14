@@ -1,0 +1,166 @@
+use starknet::{ContractAddress};
+use dojo::world::IWorldDispatcher;
+
+#[starknet::interface]
+pub trait IActionsStarknet<TState> {
+    // IWorldProvider
+    fn world_dispatcher(self: @TState) -> IWorldDispatcher;
+
+    // IERC20
+    fn total_supply(self: @TState) -> u256;
+    fn balance_of(self: @TState, account: ContractAddress) -> u256;
+    fn allowance(self: @TState, owner: ContractAddress, spender: ContractAddress) -> u256;
+    fn transfer(ref self: TState, recipient: ContractAddress, amount: u256) -> bool;
+    fn transfer_from(ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
+    fn approve(ref self: TState, spender: ContractAddress, amount: u256) -> bool;
+    // IERC20Metadata
+    fn name(self: @TState) -> ByteArray;
+    fn symbol(self: @TState) -> ByteArray;
+    fn decimals(self: @TState) -> u8;
+    // IERC20CamelOnly
+    fn totalSupply(self: @TState) -> u256;
+    fn balanceOf(self: @TState, account: ContractAddress) -> u256;
+    fn transferFrom(ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
+
+    //-----------------------------------
+    // IActionsPublicStarknet
+    fn send_message(ref self: TState, to_address: ContractAddress, selector: felt252, value: felt252);
+    fn consume_message_value(ref self: TState, value: felt252);
+}
+
+#[starknet::interface]
+trait IActionsPublicStarknet<TState> {
+    fn send_message(ref self: TState, to_address: ContractAddress, selector: felt252, value: felt252);
+    fn consume_message_value(ref self: TState, value: felt252);
+}
+
+#[dojo::contract]
+pub mod actions_strk {
+    use starknet::{ContractAddress};
+    use dojo::{
+        model::ModelStorage,
+        world::WorldStorage,
+        // event::EventStorage,
+    };
+    // use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
+
+    //-----------------------------------
+    // ERC-20 Start
+    //
+    use openzeppelin_token::erc20::ERC20Component;
+    use openzeppelin_token::erc20::ERC20HooksEmptyImpl;
+    use lore_strk::components::coin_component::{
+        CoinComponent,
+        // CoinComponent::{Errors as CoinErrors},
+    };
+    component!(path: ERC20Component, storage: erc20, event: ERC20Event);
+    component!(path: CoinComponent, storage: coin, event: CoinEvent);
+    #[abi(embed_v0)]
+    impl ERC20MixinImpl = ERC20Component::ERC20MixinImpl<ContractState>;
+    impl ERC20InternalImpl = ERC20Component::InternalImpl<ContractState>;
+    impl CoinComponentInternalImpl = CoinComponent::CoinComponentInternalImpl<ContractState>;
+    #[storage]
+    struct Storage {
+        #[substorage(v0)]
+        erc20: ERC20Component::Storage,
+        #[substorage(v0)]
+        coin: CoinComponent::Storage,
+    }
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        #[flat]
+        ERC20Event: ERC20Component::Event,
+        #[flat]
+        CoinEvent: CoinComponent::Event,
+    }
+    //
+    // ERC-20 End
+    //-----------------------------------
+
+    use lore_strk::models::{
+        actions_supply::{ActionsSupply},
+        messaging::{MessagingConfig},
+    };
+
+    mod Errors {
+        pub const INVALID_CALLER: felt252   = 'ACTIONS: Invalid caller';
+        pub const NOT_IMPLEMENTED: felt252  = 'ACTIONS: Not implemented';
+    }
+
+    //*******************************************
+    fn COIN_NAME() -> ByteArray {("Actions")}
+    fn COIN_SYMBOL() -> ByteArray {("ACTIONS")}
+    //*******************************************
+
+    fn dojo_init(ref self: ContractState,
+        messaging_contract: ContractAddress,
+        appchain_contract: ContractAddress,
+    ) {
+        let mut world: WorldStorage = self.world_default();
+        self.erc20.initializer(
+            COIN_NAME(),
+            COIN_SYMBOL(),
+        );
+        self.coin.initialize(
+            0x0.try_into().unwrap(),
+            faucet_amount: 0,
+        );
+        world.write_model(@MessagingConfig {
+            contract_address: starknet::get_contract_address(),
+            messaging_contract,
+            appchain_contract,
+        });
+        world.write_model(@ActionsSupply {
+            contract_address: starknet::get_contract_address(),
+            amount_minted: 0,
+            amount_locked: 0,
+            amount_burned: 0,
+        });
+    }
+    
+    #[generate_trait]
+    impl WorldDefaultImpl of WorldDefaultTrait {
+        #[inline(always)]
+        fn world_default(self: @ContractState) -> WorldStorage {
+            (self.world(@"lore_strk"))
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl IActionsPublicStarknetImpl of super::IActionsPublicStarknet<ContractState> {
+        /// Sends a message with the given value.
+        fn send_message(
+            ref self: ContractState, to_address: ContractAddress, selector: felt252, value: felt252,
+        ) {
+            let _messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
+
+            // let messaging = IMessagingDispatcher {
+            //     contract_address: messaging_config.messaging_contract,
+            // };
+            // messaging.send_message_to_appchain(to_address, selector, array![value].span(),);
+        }
+
+        /// Consume a message registered by the appchain.
+        fn consume_message_value(
+            ref self: ContractState, value: felt252,
+        ) {
+            let _messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
+
+            // let messaging = IMessagingDispatcher {
+            //     contract_address: messaging_config.messaging_contract,
+            // };
+
+            // // Will revert in case of failure if the message is not registered
+            // // as consumable.
+            // let _msg_hash = messaging.consume_message_from_appchain(
+            //     messaging_config.appchain_contract,
+            //     array![value].span(),
+            // );
+
+            // msg successfully consumed, we can proceed and process the data
+            // in the payload.
+        }
+    }
+
+}

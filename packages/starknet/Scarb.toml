@@ -1,0 +1,32 @@
+[package]
+name = "lore_strk"
+version = "0.2.0"
+edition = "2024_07"
+cairo-version = ">=2.12.2"
+
+[cairo]
+sierra-replace-ids = true
+
+[dependencies]
+starknet = ">=2.12.2"
+dojo = "=1.7.2"
+openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
+openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
+# piltover = { git = "https://github.com/keep-starknet-strange/piltover.git" }
+
+[dev-dependencies]
+cairo_test = ">=2.12.2"
+dojo_cairo_test = "=1.7.2"
+
+[tool.scarb]
+allow-prebuilt-plugins = ["dojo_cairo_macros"]
+
+[[target.starknet-contract]]
+build-external-contracts = ["dojo::world::world_contract::world"]
+allowed-libfuncs-list.name = "experimental"
+
+# debug contract size issues
+# needed by `sozo build --stats.by-tag`
+# https://docs.starknet.io/resources/chain-info/
+# max felts = 81,920 felts
+# casm = true
