@@ -1,7 +1,7 @@
 [package]
 name = "lore"
-version.workspace = true
-edition.workspace = true
+version = "0.2.0"
+edition = "2024_07"
 cairo-version = ">=2.12.2"
 experimental-features = ["associated_item_constraints"]
 
@@ -10,12 +10,11 @@ sierra-replace-ids = true
 inlining-strategy = "avoid"
 
 [scripts]
-migrate = "sozo build && sozo migrate apply && scarb run post_migrate"
-post_migrate = "mv ../../manifest_$SCARB_PROFILE.json ./"
+migrate = "sozo build && sozo migrate apply"
 
 [dependencies]
 starknet = ">=2.12.2"
-dojo = "1.7.2"
+dojo = "=1.7.2"
 achievement = { git = "https://github.com/cartridge-gg/arcade", rev = "a4de9f4c38814a19716b6c5f9cbd4213645e9cb1" }
 origami_random = { git = "https://github.com/dojoengine/origami", tag = "v1.6.1" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
@@ -25,7 +24,7 @@ nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", branch = 
 
 [dev-dependencies]
 cairo_test = ">=2.12.2"
-dojo_cairo_test = "1.7.2"
+dojo_cairo_test = "=1.7.2"
 
 [tool.scarb]
 allow-prebuilt-plugins = ["dojo_cairo_macros"]
@@ -44,3 +43,10 @@ allowed-libfuncs-list.name = "experimental"
 # uncomment this...
 # sierra = true
 # casm = true
+
+#--------------------------
+# Dojo profiles declaration
+#
+[profile.dev]
+[profile.slot]
+[profile.stage]

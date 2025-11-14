@@ -66,13 +66,13 @@ export const runSlotDeployment = async () => {
 	log.info(bgGreen(` 🪐 Deploying Contracts to slot `));
 	await runCommands(
 		[
+			`sozo --version`,
 			`sozo build --profile ${config.mode} --typescript --bindings-output ../client/src/lib/dojo_bindings/`,
 		],
 		false,
 		false,
 	);
 	await runCommands([`sozo migrate --profile ${config.mode}`]);
-	await runCommands([`scarb --profile ${config.mode} run post_migrate`], false, false);
 	await runCommands([`sozo inspect --profile ${config.mode}`], false, false);
 	await runCommands([`starkli chain-id --rpc ${rpcUrl}`], false, false);
 	await runCommands(cmd_view_slot);

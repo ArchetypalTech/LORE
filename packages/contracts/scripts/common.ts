@@ -11,6 +11,7 @@ import {
 	black,
 	bgGreen,
 	bgRed,
+	bgYellow,
 } from "ansicolor";
 import { intro, log, outro, spinner } from "@clack/prompts";
 import mri from "mri";
@@ -57,7 +58,7 @@ const torii_version = toolVersions.match(/torii\s+([^\s]+)/)?.[1];
 
 // get main profile config
 const PROFILE_CONFIG: ProfileConfig = getProfileConfig(parsed.mode as ProfileName);
-console.log(PROFILE_CONFIG);
+// console.log(PROFILE_CONFIG);
 
 export const config = {
 	mode: parsed.mode,
@@ -141,6 +142,7 @@ export const startWatcher = async (
 			}
 			console.log(`Detected ${event}`, filename ? `in ${filename}` : "");
 			for (const cmd of commands) {
+				console.log(`\n${black(bgGreen(" Executing command:"))}${black(bgYellow(cmd))}\n`);
 				buildProcess = Bun.spawn(cmd.split(" "), {
 					stdout: "inherit",
 					stderr: "inherit",
