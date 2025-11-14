@@ -8,12 +8,13 @@ use dojo_cairo_test::{
     spawn_test_world,
 };
 
-use lore::{
+pub use lore::{
     systems::{
         designer::{IDesignerDispatcher},
         prompt::{IPromptDispatcher},
         game_token::{IGameTokenDispatcher},
         trail_token::{ITrailTokenDispatcher},
+        actions_lore::{IActionsLoreDispatcher, IActionsLoreDispatcherTrait},
     },
     models,
     models::{
@@ -61,6 +62,7 @@ pub struct HelperSystems {
     pub prompt:IPromptDispatcher,
     pub game_token:IGameTokenDispatcher,
     pub trail_token:ITrailTokenDispatcher,
+    pub actions:IActionsLoreDispatcher,
 }
 
 //-----------------------------------
@@ -96,6 +98,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::hub::m_Trail::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceKeyMap::TEST_CLASS_HASH.into()),
+            TestResource::Model(lore::components::coin_config::m_CoinConfig::TEST_CLASS_HASH.into()),
             TestResource::Event(lore::lib::access::e_AccessGrantedEvent::TEST_CLASS_HASH.into()),
             // game_token
             TestResource::Model(models::game_token_info::m_PlayerGame::TEST_CLASS_HASH.into()),
@@ -113,6 +116,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Contract(lore::systems::prompt::prompt::TEST_CLASS_HASH.into()),
             TestResource::Contract(lore::systems::game_token::game_token::TEST_CLASS_HASH.into()),
             TestResource::Contract(lore::systems::trail_token::trail_token::TEST_CLASS_HASH.into()),
+            TestResource::Contract(lore::systems::actions_lore::actions_lore::TEST_CLASS_HASH.into()),
             TestResource::Library((lore::lib::a_lexer::lexer::TEST_CLASS_HASH.into(), @"lexer", @"0_2_0")),
         ].span(),
     };
@@ -135,6 +139,9 @@ fn core_contract_defs() -> Span<ContractDef> {
         ContractDefTrait::new(@"lore", @"trail_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
             .with_init_calldata(array![].span()),
+        ContractDefTrait::new(@"lore", @"actions_lore")
+            .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
+            .with_init_calldata(array![].span()),
     ].span()
 }
 
@@ -153,11 +160,13 @@ pub fn setup_core() -> HelperSystems {
     world.dispatcher.grant_owner(selector_from_tag!("lore-designer"), OWNER());
     world.dispatcher.grant_owner(selector_from_tag!("lore-prompt"), OWNER());
     world.dispatcher.grant_owner(selector_from_tag!("lore-game_token"), OWNER());
+    world.dispatcher.grant_owner(selector_from_tag!("lore-actions_lore"), OWNER());
 
     let designer: IDesignerDispatcher = IDesignerDispatcher { contract_address: world.designer_address() };
     let prompt: IPromptDispatcher = IPromptDispatcher { contract_address: world.prompt_address() };
     let game_token: IGameTokenDispatcher = IGameTokenDispatcher { contract_address: world.game_token_address() };
     let trail_token: ITrailTokenDispatcher = ITrailTokenDispatcher { contract_address: world.trail_token_address() };
+    let actions: IActionsLoreDispatcher = IActionsLoreDispatcher { contract_address: world.actions_lore_address() };
 
     // FIXME: Setup permissions
     world.dispatcher.grant_writer(selector_from_tag!("lore-Dict"), world.prompt_address());
@@ -182,6 +191,7 @@ pub fn setup_core() -> HelperSystems {
         prompt,
         game_token,
         trail_token,
+        actions,
     })
 }
 

@@ -1,6 +1,6 @@
 use core::num::traits::Zero;
 use starknet::{ContractAddress, ClassHash};
-use dojo::world::{WorldStorage, WorldStorageTrait};
+use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
 use dojo::meta::interface::{
     IDeployedResourceDispatcher, IDeployedResourceDispatcherTrait,
     IDeployedResourceSafeDispatcher, IDeployedResourceSafeDispatcherTrait,
@@ -12,6 +12,7 @@ pub use lore::{
         prompt::{IPromptDispatcher, IPromptDispatcherTrait},
         game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
         trail_token::{ITrailTokenDispatcher, ITrailTokenDispatcherTrait},
+        actions_lore::{IActionsLoreDispatcher, IActionsLoreDispatcherTrait},
     },
     lib::{
         a_lexer::{ILexerLibraryDispatcher, ILexerDispatcherTrait},
@@ -25,6 +26,7 @@ pub mod SELECTORS {
     pub const DESIGNER: felt252 = selector_from_tag!("lore-designer");
     pub const GAME_TOKEN: felt252 = selector_from_tag!("lore-game_token");
     pub const TRAIL_TOKEN: felt252 = selector_from_tag!("lore-trail_token");
+    pub const ACTIONS_LORE: felt252 = selector_from_tag!("lore-actions_lore");
 }
 
 #[generate_trait]
@@ -40,6 +42,15 @@ pub impl DnsImpl of DnsTrait {
     fn find_library_address(self: @WorldStorage, library_name: @ByteArray, library_version: @ByteArray) -> ClassHash {
         let library_name: ByteArray = format!("{}_v{}", library_name, library_version);
         (self.dns_class_hash(@library_name).expect(library_name.to_felt252_word().unwrap_or('library not found')))
+    }
+
+
+    // Create a Store from a dispatcher
+    // https://github.com/dojoengine/dojo/blob/main/crates/dojo/core/src/contract/components/world_provider.cairo
+    // https://github.com/dojoengine/dojo/blob/main/crates/dojo/core/src/world/storage.cairo
+    #[inline(always)]
+    fn world_storage(dispatcher: IWorldDispatcher, namespace: @ByteArray) -> WorldStorage {
+        (WorldStorageTrait::new(dispatcher, namespace))
     }
 
     //--------------------------
@@ -60,6 +71,10 @@ pub impl DnsImpl of DnsTrait {
     #[inline(always)]
     fn trail_token_address(self: @WorldStorage) -> ContractAddress {
         (self.find_contract_address(@"trail_token"))
+    }
+    #[inline(always)]
+    fn actions_lore_address(self: @WorldStorage) -> ContractAddress {
+        (self.find_contract_address(@"actions_lore"))
     }
     #[inline(always)]
     fn lexer_class_hash(self: @WorldStorage) -> ClassHash {
@@ -84,6 +99,10 @@ pub impl DnsImpl of DnsTrait {
     #[inline(always)]
     fn trail_token_dispatcher(self: @WorldStorage) -> ITrailTokenDispatcher {
         (ITrailTokenDispatcher{ contract_address: self.trail_token_address() })
+    }
+    #[inline(always)]
+    fn actions_lore_dispatcher(self: @WorldStorage) -> IActionsLoreDispatcher {
+        (IActionsLoreDispatcher{ contract_address: self.actions_lore_address() })
     }
     #[inline(always)]
     fn lexer_dispatcher(self: @WorldStorage) -> ILexerLibraryDispatcher {

@@ -3,6 +3,12 @@ pub mod systems {
     pub mod prompt;
     pub mod game_token;
     pub mod trail_token;
+    pub mod actions_lore;
+}
+
+pub mod components {
+    pub mod coin_component;
+    pub mod coin_config;
 }
 
 pub mod constants {
@@ -62,5 +68,6 @@ pub mod tests {
     pub mod entity_test;
     pub mod game_token_test;
     pub mod trail_token_test;
+    pub mod actions_lore_test;
     pub mod helpers;
 }
