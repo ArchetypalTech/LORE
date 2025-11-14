@@ -10,6 +10,7 @@ import {
 	HELP_CONTAINER,
 	HELP_EXITS,
 	HELP_INSPECT,
+	HELP_INTERACT,
 	HELP_INVENTORY,
 	HELP_REACT,
 	HELP_TEXTS,
@@ -343,7 +344,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				Object.entries(HELP_TEXTS)
 					.map(
 						([cmd, content]) =>
-							`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples}\n${content.more}`,
+							`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`,
 					)
 					.join("\n\n"),
 			format: "hash",
@@ -353,7 +354,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	help_react: () => {
 		// Handle help inspect command
 		addTerminalContent({
-			text: `available commands:\n\n${Object.entries(HELP_REACT)
+			text: `available commands:\n\n${Object.entries(HELP_INTERACT)
 				.map(
 					([cmd, content]) =>
 						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
