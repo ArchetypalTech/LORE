@@ -262,6 +262,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	clear: () => {
 		clearTerminalContent();
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	connect: async () => {
 		if (WalletStore().isConnected) {
