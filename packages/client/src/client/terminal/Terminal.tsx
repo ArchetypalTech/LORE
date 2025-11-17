@@ -39,6 +39,8 @@ export default function Terminal({
 	const { terminalContent, activeTypewriterLine, isPrinting } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
+	const [userNearBottom, setUserNearBottom] = useState(true);
+
 	useEffect(() => {
 		// Focus input on mount
 		if (terminalInputRef.current) {
@@ -57,24 +59,50 @@ export default function Terminal({
 		return () => clearTimeout(timeout);
 	}, [status]);
 
-	// FIX: Auto-scroll whenever new content or line prints
+  // FIX ADDED: Track user scroll state
 	useEffect(() => {
-	const el = scroller.current;
-	if (!el) return;
+      const el = scroller.current;
+      if (!el) return;
 
-	const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+      const handleScroll = () => {
+          const atBottom =
+              el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+          setUserNearBottom(atBottom);
+      };
 
-	requestAnimationFrame(() => {
-		scrollToBottom(isNearBottom || isPrinting ? "smooth" : "auto");
-	});
-}, [terminalContent, activeTypewriterLine, isPrinting]);
+      el.addEventListener("scroll", handleScroll);
+      return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
 
-	// FIX: Re-focus textarea whenever new content prints
-	useEffect(() => {
-		if (status === "inputEnabled" && !isPrinting) {
-			terminalInputRef.current?.focus();
-		}
-	}, [terminalContent, activeTypewriterLine, isPrinting, status]);
+  // FIX ADDED: Auto-scroll only if user is near bottom
+  useEffect(() => {
+      const el = scroller.current;
+      if (!el) return;
+      if (!userNearBottom) return;
+
+      requestAnimationFrame(() => {
+          el.scrollTo({
+              top: el.scrollHeight,
+              behavior: "smooth",
+          });
+      });
+  }, [terminalContent, activeTypewriterLine, isPrinting, userNearBottom]);
+
+  // FIX ADDED: When printing begins, force scroll to bottom once
+  useEffect(() => {
+      if (!isPrinting || !userNearBottom) return;
+      const el = scroller.current;
+      requestAnimationFrame(() => {
+          el?.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      });
+  }, [isPrinting, userNearBottom]);
+
+  // Re-focus textarea whenever new content prints
+  useEffect(() => {
+      if (status === "inputEnabled" && !isPrinting) {
+          terminalInputRef.current?.focus();
+      }
+  }, [terminalContent, activeTypewriterLine, isPrinting, status]);
 
 	// update cursor position
 	useEffect(() => {
@@ -195,8 +223,8 @@ useEffect(() => {
 		printingStatus(true);
 
 		if (textAnchorRef.current && terminalFormRef.current)
-			terminalFormRef.current.scrollTo({
-				top: scroller.current?.clientHeight,
+			scroller.current?.scrollTo({
+				top: scroller.current.scrollHeight,
 				behavior: "smooth",
 			});
 		setTimeout(async () => await sendCommand(command, gameId), 1000);
@@ -206,15 +234,6 @@ useEffect(() => {
 		if (terminalInputRef.current) {
 			terminalInputRef.current.focus();
 		}
-	};
-
-	const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
-		const el = scroller.current;
-		if (!el) return;
-		el.scrollTo({
-			top: el.scrollHeight,
-			behavior,
-		});
 	};
 
 	return (
@@ -249,12 +268,12 @@ useEffect(() => {
 						<Typewriter />
 
 						{status === "inputEnabled" && (
-							<div id="scroller" className="flex w-full flex-row gap-2">
-								<div
-									ref={textAnchorRef}
-									id="input-anchor"
-									className="font-secondary"
-								/>
+							<div className="flex w-full flex-row gap-2">
+									<div
+											ref={textAnchorRef}
+											id="input-anchor"
+											className="font-secondary"
+									/>
 							</div>
 						)}
 					</div>
