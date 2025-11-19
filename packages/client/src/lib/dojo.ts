@@ -3,6 +3,7 @@ import {
 	init,
 	type StandardizedQueryResult,
 	ToriiQueryBuilder,
+	ClauseBuilder,
 } from "@dojoengine/sdk";
 import { LORE_CONFIG } from "@lib/config";
 import {
@@ -10,7 +11,10 @@ import {
 	schema,
 } from "@lib/dojo_bindings/typescript/models.gen";
 import { addAddressPadding } from "starknet";
+import { bigintToHex128 } from "@/lib/utils/utils";
 
+
+const gameId = 0n;
 /**
  * ## Initializes the Dojo SDK and configuration
  * @dev @dojoengine/sdk has WASM components which cannot be linked to in other parts of the client
@@ -56,8 +60,28 @@ export const InitDojo = async () => {
 	const query = () => {
 			const builder = new ToriiQueryBuilder<SchemaType>();
 			// const query = builder.withOffset(0).withLimit(1000);
-
-			const query = builder.withCursor("").withLimit(90000).includeHashedKeys();
+			
+			const query = builder.withCursor("")
+			.withLimit(90000)
+			.includeHashedKeys()
+			.withEntityModels(
+				[
+					"lore-Entity",
+					"lore-Area",
+					"lore-Exit",
+					"lore-Reactable",
+					"lore-DescriptionText",
+					"lore-Container",
+					"lore-InventoryItem",
+					"lore-Action",
+					"lore-Condition",
+					"lore-Trigger",
+					"lore-Effect",
+					"lore-Player",
+					"lore-ParentToChildren",
+					"lore-ChildToParent",
+					"lore-PlayerStory",
+				]);
 			return query;
 		};
 

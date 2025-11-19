@@ -10,7 +10,9 @@ import {
 	HELP_CONTAINER,
 	HELP_EXITS,
 	HELP_INSPECT,
+	HELP_INTERACT,
 	HELP_INVENTORY,
+	HELP_REACT,
 	HELP_TEXTS,
 } from "@/data/help.data";
 import {
@@ -260,6 +262,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	clear: () => {
 		clearTerminalContent();
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	connect: async () => {
 		if (WalletStore().isConnected) {
@@ -338,7 +345,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		addTerminalContent({
 			text:
 				header +
-				"\n\n" +
+				"\n" +
 				Object.entries(HELP_TEXTS)
 					.map(
 						([cmd, content]) =>
@@ -349,10 +356,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	help_inspect: () => {
+	help_react: () => {
 		// Handle help inspect command
 		addTerminalContent({
-			text: `available commands:\n\n${Object.entries(HELP_INSPECT)
+			text: `available commands:\n\n${Object.entries(HELP_INTERACT)
 				.map(
 					([cmd, content]) =>
 						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
