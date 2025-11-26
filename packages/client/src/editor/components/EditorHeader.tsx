@@ -68,12 +68,15 @@ export const EditorHeader = () => {
 
       {/* Center Section (QR Code) */}
       <div className="flex grow items-center justify-center">
-        <img
-          src="/images/ORugQRcode.png"
-          alt="QR Code"
-          className="h-32 w-32 object-contain"
-        />
-      </div>
+				<div className="flex flex-col items-center">
+					<span className="text-sm font-semibold">Play game here:</span>
+					<img
+						src="/images/OrugQRcode.png"
+						alt="QR Code"
+						className="h-32 w-32 object-contain mt-1"
+					/>
+				</div>
+			</div>
 
       {/* Right Section (Buttons) */}
       <div className="flex gap-2">
