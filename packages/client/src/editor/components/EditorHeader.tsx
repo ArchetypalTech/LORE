@@ -50,63 +50,71 @@ export const EditorHeader = () => {
 	}, [isConnected]);
 
 	return (
-		<div className="use-editor-styles relative pt-5 pb-2">
-			<header className="mx-auto flex w-full flex-row items-center justify-between gap-2 pb-2 lg:container">
-				<div className="flex flex-row font-berkeley">
-					<h1 className="rotate-[-1.65deg] font-berkeley font-bold text-xl">
-						{APP_EDITOR_DATA.title}
-					</h1>
-					<div className="mx-1 text-[7pt]">
-						(
-							{import.meta.env.MODE ? import.meta.env.MODE.toUpperCase() : "DEV"}
-							{isAdmin ? "/ADMIN" : isEditor ? "/EDITOR" : ""}
-						)
-					</div>
-				</div>
-				<div className="flex grow" />
-				<div className="flex gap-2">
-					{requireConnect ? (
-						<Button
-							className="btn btn-sm btn-warning"
-							onClick={async () => {
-								await WalletStore().connectController();
-								let propertyRegistryFound = await propertiesRegistered();
-								// Check properties
-								if (!propertyRegistryFound) {
-									console.log("PropertyRegistry not found");
-								} else {
-									console.log("PropertyRegistry found");
-								}
-							}}
-						>
-							Connect Controller
-						</Button>
-					) : !isEditor ? (
-						<Button onClick={() => navigate("/")}>Go finish the game first</Button>
-					) : (
-						<>
-							<input
-								type="file"
-								ref={fileInputRef}
-								accept=".json"
-								className="hidden"
-								onChange={handleFileChange}
-							/>
-							<Button onClick={handleImportConfig}>Import Config</Button>
-							<Button onClick={handleExportConfig}>Export Config</Button>
-							<Button
-								variant="hero"
-								className="hover:textFreak"
-								onClick={handlePublish}
-							>
-								🕊️ Publish
-							</Button>
-						</>
-					)}
-					{/* <button className="btn" onClick={() => UserStore().toggleDarkMode()}>
-					{dark_mode ? "☀️" : "🌑"}
-				</button> */}
-				</div>
+  <div className="use-editor-styles relative pt-5 pb-2">
+    <header className="mx-auto flex w-full flex-row items-center justify-between gap-2 pb-2 lg:container">
+      
+      {/* Left Section (Title + Mode) */}
+      <div className="flex flex-row font-berkeley">
+        <h1 className="rotate-[-1.65deg] font-berkeley font-bold text-xl">
+          {APP_EDITOR_DATA.title}
+        </h1>
+        <div className="mx-1 text-[7pt]">
+          (
+            {import.meta.env.MODE ? import.meta.env.MODE.toUpperCase() : "DEV"}
+            {isAdmin ? "/ADMIN" : isEditor ? "/EDITOR" : ""}
+          )
+        </div>
+      </div>
+
+      {/* Center Section (QR Code) */}
+      <div className="flex grow items-center justify-center">
+        <img
+          src="/images/OrugQRcode.png"
+          alt="QR Code"
+          className="h-16 w-16 object-contain"
+        />
+      </div>
+
+      {/* Right Section (Buttons) */}
+      <div className="flex gap-2">
+        {requireConnect ? (
+          <Button
+            className="btn btn-sm btn-warning"
+            onClick={async () => {
+              await WalletStore().connectController();
+              let propertyRegistryFound = await propertiesRegistered();
+              if (!propertyRegistryFound) {
+                console.log("PropertyRegistry not found");
+              } else {
+                console.log("PropertyRegistry found");
+              }
+            }}
+          >
+            Connect Controller
+          </Button>
+        ) : !isEditor ? (
+          <Button onClick={() => navigate("/")}>Go finish the game first</Button>
+        ) : (
+          <>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".json"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <Button onClick={handleImportConfig}>Import Config</Button>
+            <Button onClick={handleExportConfig}>Export Config</Button>
+            <Button
+              variant="hero"
+              className="hover:textFreak"
+              onClick={handlePublish}
+            >
+              🕊️ Publish
+            </Button>
+          </>
+        )}
+      </div>
 			</header>
 		</div>
 	);
