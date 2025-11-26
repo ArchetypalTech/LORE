@@ -69,7 +69,7 @@ export const EditorHeader = () => {
       {/* Center Section (QR Code) */}
       <div className="flex grow items-center justify-center">
 				<div className="flex flex-col items-center">
-					<span className="text-sm font-semibold">Play game here:</span>
+					<span className="text-sm font-semibold text-center">Scan me to Play</span>
 					<img
 						src="/images/ORugQRcode.png"
 						alt="QR Code"
