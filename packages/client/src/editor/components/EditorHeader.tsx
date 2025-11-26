@@ -69,7 +69,7 @@ export const EditorHeader = () => {
       {/* Center Section (QR Code) */}
       <div className="flex grow items-center justify-center">
         <img
-          src="/images/OrugQRcode.png"
+          src="/images/ORugQRcode.png"
           alt="QR Code"
           className="h-16 w-16 object-contain"
         />
