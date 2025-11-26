@@ -71,7 +71,7 @@ export const EditorHeader = () => {
         <img
           src="/images/ORugQRcode.png"
           alt="QR Code"
-          className="h-16 w-16 object-contain"
+          className="h-32 w-32 object-contain"
         />
       </div>
 
