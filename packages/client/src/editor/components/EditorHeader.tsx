@@ -71,7 +71,7 @@ export const EditorHeader = () => {
 				<div className="flex flex-col items-center">
 					<span className="text-sm font-semibold">Play game here:</span>
 					<img
-						src="/images/OrugQRcode.png"
+						src="/images/ORugQRcode.png"
 						alt="QR Code"
 						className="h-32 w-32 object-contain mt-1"
 					/>
