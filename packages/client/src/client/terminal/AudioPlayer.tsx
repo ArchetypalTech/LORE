@@ -108,6 +108,7 @@ export default function () {
 		<audio
       ref={audioRef}
       src={useTrack}
+      preload="auto"
       muted={!enableAudio}
       onEnded={handleEnded}
       onLoadedMetadata={handleLoadedMetadata}
