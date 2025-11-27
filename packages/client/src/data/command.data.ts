@@ -337,29 +337,29 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, null, true);
 	},
-	playtrailer: () => {
-		const store = useTerminalStore.getState();
+	// playtrailer: () => {
+	// 	const store = useTerminalStore.getState();
 
-		// 1️⃣ Show a terminal message
-		addTerminalContent({
-			text: "Playing trailer... Press ESC to close.",
-			format: "system",
-			useTypewriter: true,
-		});
+	// 	// 1️⃣ Show a terminal message
+	// 	addTerminalContent({
+	// 		text: "Playing trailer... Press ESC to close.",
+	// 		format: "system",
+	// 		useTypewriter: true,
+	// 	});
 
-		// 2️⃣ Start the video overlay
-		store.setIdleVideoPlaying(true);
+	// 	// 2️⃣ Start the video overlay
+	// 	store.setIdleVideoPlaying(true);
 
-		// 3️⃣ Add ESC listener to close video
-		const escListener = (e: KeyboardEvent) => {
-			if (e.key === "Escape") {
-				store.setIdleVideoPlaying(false);
-				window.removeEventListener("keydown", escListener);
-			}
-		};
+	// 	// 3️⃣ Add ESC listener to close video
+	// 	const escListener = (e: KeyboardEvent) => {
+	// 		if (e.key === "Escape") {
+	// 			store.setIdleVideoPlaying(false);
+	// 			window.removeEventListener("keydown", escListener);
+	// 		}
+	// 	};
 
-		window.addEventListener("keydown", escListener);
-	},
+	// 	window.addEventListener("keydown", escListener);
+	// },
 	help: () => {
 		const header =
 			"**Scratches head**";
