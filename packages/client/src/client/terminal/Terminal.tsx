@@ -219,51 +219,21 @@ useEffect(() => {
 
 	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
 	useEffect(() => {
-		if (typeof window === "undefined") return;
-		console.log("Idle detection effect mounted");
+  console.log("Idle effect mounted");
 
-		const onActivity = () => {
-			console.log("User activity detected");
-			resetIdleTimer();
-		};
+  const onActivity = (e: Event) => {
+    console.log("User activity detected:", e.type);
+  };
 
-		// Attach to window/document as before
-		window.addEventListener("mousemove", onActivity);
-		window.addEventListener("keydown", onActivity);
-		window.addEventListener("click", onActivity);
-		window.addEventListener("touchstart", onActivity);
+  ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach(ev =>
+    window.addEventListener(ev, onActivity)
+  );
 
-		// Also attach to the terminal form to catch clicks and keydowns inside textarea
-		const formEl = terminalFormRef.current;
-		if (formEl) {
-			formEl.addEventListener("keydown", onActivity);
-			formEl.addEventListener("click", onActivity);
-		}
-
-		// Scroll listener
-		const scrollerEl = scroller.current;
-		if (scrollerEl) scrollerEl.addEventListener("scroll", onActivity);
-
-		// Start the timer
-		resetIdleTimer();
-
-		return () => {
-			window.removeEventListener("mousemove", onActivity);
-			window.removeEventListener("keydown", onActivity);
-			window.removeEventListener("click", onActivity);
-			window.removeEventListener("touchstart", onActivity);
-
-			if (formEl) {
-				formEl.removeEventListener("keydown", onActivity);
-				formEl.removeEventListener("click", onActivity);
-			}
-
-			if (scrollerEl) scrollerEl.removeEventListener("scroll", onActivity);
-
-			clearIdleTimer();
-			setIdleVideoPlaying(false);
-		};
-	}, []);
+  return () =>
+    ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach(ev =>
+      window.removeEventListener(ev, onActivity)
+    );
+}, []);
 
 	// If idle state changes locally, ensure store is in sync (extra safety)
 	useEffect(() => {
