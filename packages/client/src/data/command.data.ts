@@ -460,12 +460,26 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 	_play_trailer: () => {
+		const store = useTerminalStore.getState();
+
+		// 1️⃣ Show a terminal message
 		addTerminalContent({
-			text: "Playing trailer... Press [ESC] to stop.",
-			format: "hash",
+			text: "Playing trailer... Press ESC to close.",
+			format: "system",
 			useTypewriter: true,
 		});
 
-		useTerminalStore.getState().setIdleVideoPlaying(true);
+		// 2️⃣ Start the video overlay
+		store.setIdleVideoPlaying(true);
+
+		// 3️⃣ Add ESC listener to close video
+		const escListener = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				store.setIdleVideoPlaying(false);
+				window.removeEventListener("keydown", escListener);
+			}
+		};
+
+		window.addEventListener("keydown", escListener);
 	},
 } as const;
