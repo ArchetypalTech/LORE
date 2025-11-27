@@ -36,10 +36,37 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
+
+	// --- IDLE VIDEO STATE ---
+	const [isIdle, setIsIdle] = useState(false);
+	const idleTimeoutRef = useRef<number | null>(null);
+	const IDLE_DELAY = 1 * 30 * 1000; // 30 seconds (30000 ms)
+	// 2 minutes (120000 ms)
+	
+	// helper: clear timer
+	const clearIdleTimer = () => {
+		if (idleTimeoutRef.current) {
+			window.clearTimeout(idleTimeoutRef.current);
+			idleTimeoutRef.current = null;
+		}
+	};
+
+	// reset timer & cancel idle
+	const resetIdleTimer = () => {
+		clearIdleTimer();
+		if (isIdle) {
+			setIsIdle(false);
+			setIdleVideoPlaying(false);
+		}
+		idleTimeoutRef.current = window.setTimeout(() => {
+			setIsIdle(true);
+			setIdleVideoPlaying(true);
+		}, IDLE_DELAY);
+	};
 
 	useEffect(() => {
 		// Focus input on mount
@@ -187,6 +214,33 @@ useEffect(() => {
 		}
 	};
 
+	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
+	useEffect(() => {
+		const activityEvents: Array<keyof WindowEventMap> = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+
+		const onActivity = () => {
+			resetIdleTimer();
+		};
+
+		activityEvents.forEach((ev) => window.addEventListener(ev, onActivity));
+		// start the timer
+		resetIdleTimer();
+
+		return () => {
+			activityEvents.forEach((ev) => window.removeEventListener(ev, onActivity));
+			clearIdleTimer();
+			// ensure store flag reset
+			setIdleVideoPlaying(false);
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // run on mount only
+
+	// If idle state changes locally, ensure store is in sync (extra safety)
+	useEffect(() => {
+		setIdleVideoPlaying(isIdle);
+	}, [isIdle, setIdleVideoPlaying]);
+
+
 	const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		focusInput();
 		switch (e.key) {
@@ -277,6 +331,22 @@ useEffect(() => {
 							</div>
 						)}
 					</div>
+					{/* Video overlay shown when idle */}
+					{isIdle && (
+						<div
+							className="absolute inset-0 z-50 flex items-center justify-center bg-black/80"
+							aria-hidden={!isIdle}
+						>
+							<video
+								autoPlay
+								loop
+								playsInline
+								muted
+								src="/video/ORugTrailer.mov"
+								className="w-full h-full object-cover"
+							/>
+						</div>
+					)}
 					<div className="sticky text-[1rem] z-10 bottom-[4.5em] md:bottom-[3.8rem] h-4 w-full backdrop-blur-lg"></div>
 					<div className="flex flex-row p-4 pb-6 md:pb-4 sticky bottom-0 z-10 theme-primary-background items-center">
 						{useTerminalStore().isPrinting && <LoadingMessage />}
