@@ -219,6 +219,7 @@ useEffect(() => {
 	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
 	useEffect(() => {
 		if (typeof window === "undefined") return;
+		console.log("Idle detection effect mounted");
 
 		const onActivity = () => {
 			console.log("User activity detected");
