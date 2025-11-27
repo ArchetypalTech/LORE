@@ -217,28 +217,21 @@ useEffect(() => {
 
 	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
 	useEffect(() => {
-		const activityEvents: Array<keyof WindowEventMap> = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+  const activityEvents: Array<keyof WindowEventMap> = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+  const onActivity = () => resetIdleTimer();
+  activityEvents.forEach(ev => window.addEventListener(ev, onActivity));
+  resetIdleTimer(); // start timer
 
-		const onActivity = () => {
-			resetIdleTimer();
-		};
-
-		activityEvents.forEach((ev) => window.addEventListener(ev, onActivity));
-		// start the timer
-		resetIdleTimer();
-
-		return () => {
-			activityEvents.forEach((ev) => window.removeEventListener(ev, onActivity));
-			clearIdleTimer();
-			// ensure store flag reset
-			setIdleVideoPlaying(false);
-			console.log("cleared idle timer");
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []); // run on mount only
+  return () => {
+    activityEvents.forEach(ev => window.removeEventListener(ev, onActivity));
+    clearIdleTimer();
+    setIdleVideoPlaying(false);
+  };
+}, []);
 
 	// If idle state changes locally, ensure store is in sync (extra safety)
 	useEffect(() => {
+		console.log("Idle state changed:", isIdle);
 		setIdleVideoPlaying(isIdle);
 	}, [isIdle, setIdleVideoPlaying]);
 
