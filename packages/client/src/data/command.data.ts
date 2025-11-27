@@ -338,7 +338,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		sendCommand(command, null, true);
 	},
 	playtrailer: () => {
-		// const store = useTerminalStore.getState();
+		const store = useTerminalStore.getState();
 
 		// 1️⃣ Show a terminal message
 		addTerminalContent({
@@ -347,18 +347,18 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 
-		// // 2️⃣ Start the video overlay
-		// store.setIdleVideoPlaying(true);
+		// 2️⃣ Start the video overlay
+		store.setIdleVideoPlaying(true);
 
-		// // 3️⃣ Add ESC listener to close video
-		// const escListener = (e: KeyboardEvent) => {
-		// 	if (e.key === "Escape") {
-		// 		store.setIdleVideoPlaying(false);
-		// 		window.removeEventListener("keydown", escListener);
-		// 	}
-		// };
+		// 3️⃣ Add ESC listener to close video
+		const escListener = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				store.setIdleVideoPlaying(false);
+				window.removeEventListener("keydown", escListener);
+			}
+		};
 
-		// window.addEventListener("keydown", escListener);
+		window.addEventListener("keydown", escListener);
 	},
 	help: () => {
 		const header =
