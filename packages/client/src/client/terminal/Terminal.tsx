@@ -20,6 +20,7 @@ export default function Terminal({
 }: {
 	gameId?: BigNumberish;
 }) {
+	console.log("Terminal component rendered"); 
 	const gameId = useSyncGameId(inputGameId);
 	
 	const [inputValue, setInputValue] = useState("");
