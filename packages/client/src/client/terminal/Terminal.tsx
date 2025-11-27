@@ -218,41 +218,39 @@ useEffect(() => {
 
 	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
 	useEffect(() => {
-		// Guard against server-side execution
 		if (typeof window === "undefined") return;
 
 		console.log("Idle detection effect mounted");
 
-		// List of user activity events to track
-		const activityEvents: Array<keyof WindowEventMap> = [
-			"mousemove",
-			"keydown",
-			"click",
-			"scroll",
-			"touchstart",
-		];
-
-		// Handler for any user activity
 		const onActivity = () => {
 			console.log("User activity detected");
 			resetIdleTimer();
 		};
 
-		// Attach event listeners
-		activityEvents.forEach((ev) => window.addEventListener(ev, onActivity));
+		// Keyboard & mouse events on document
+		document.addEventListener("keydown", onActivity);
+		document.addEventListener("mousemove", onActivity);
+		document.addEventListener("click", onActivity);
+		document.addEventListener("touchstart", onActivity);
 
-		// Start the idle timer immediately
-		console.log("Initializing idle timer");
+		// Scroll event on the terminal scroller only
+		const scrollerEl = scroller.current;
+		if (scrollerEl) {
+			scrollerEl.addEventListener("scroll", onActivity);
+		}
+
 		resetIdleTimer();
 
-		// Cleanup on unmount
 		return () => {
-			console.log("Cleaning up idle timers and event listeners");
-			activityEvents.forEach((ev) => window.removeEventListener(ev, onActivity));
+			document.removeEventListener("keydown", onActivity);
+			document.removeEventListener("mousemove", onActivity);
+			document.removeEventListener("click", onActivity);
+			document.removeEventListener("touchstart", onActivity);
+			if (scrollerEl) scrollerEl.removeEventListener("scroll", onActivity);
 			clearIdleTimer();
 			setIdleVideoPlaying(false);
 		};
-	}, []); // run once on mount
+	}, []);
 
 	// If idle state changes locally, ensure store is in sync (extra safety)
 	useEffect(() => {
