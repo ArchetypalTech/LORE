@@ -459,7 +459,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	_play_trailer: () => {
+	_playtrailer: () => {
 		const store = useTerminalStore.getState();
 
 		// 1️⃣ Show a terminal message
