@@ -36,10 +36,40 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
+
+	// --- IDLE VIDEO STATE ---
+	const [isIdle, setIsIdle] = useState(false);
+	const idleTimeoutRef = useRef<number | null>(null);
+	const IDLE_DELAY = 1 * 30 * 1000; // 30 seconds (30000 ms)
+	// 2 minutes (120000 ms)
+	
+	// helper: clear timer
+	const clearIdleTimer = () => {
+		if (idleTimeoutRef.current) {
+			window.clearTimeout(idleTimeoutRef.current);
+			idleTimeoutRef.current = null;
+		}
+	};
+
+	// reset timer & cancel idle
+	const resetIdleTimer = () => {
+		clearIdleTimer();
+
+		if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
+			setIsIdle(false);
+			setIdleVideoPlaying(false);
+		}
+
+		idleTimeoutRef.current = window.setTimeout(() => {
+			console.log("Idle timer fired! Showing video");
+			setIsIdle(true);
+			setIdleVideoPlaying(true);
+		}, IDLE_DELAY);
+	};
 
 	useEffect(() => {
 		// Focus input on mount
@@ -187,6 +217,59 @@ useEffect(() => {
 		}
 	};
 
+	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+
+		const onActivity = () => {
+			resetIdleTimer();
+		};
+
+		// Attach to window/document as before
+		window.addEventListener("mousemove", onActivity);
+		window.addEventListener("keydown", onActivity);
+		window.addEventListener("click", onActivity);
+		window.addEventListener("touchstart", onActivity);
+
+		// Also attach to the terminal form to catch clicks and keydowns inside textarea
+		const formEl = terminalFormRef.current;
+		if (formEl) {
+			formEl.addEventListener("keydown", onActivity);
+			formEl.addEventListener("click", onActivity);
+		}
+
+		// Scroll listener
+		const scrollerEl = scroller.current;
+		if (scrollerEl) scrollerEl.addEventListener("scroll", onActivity);
+
+		// Start the timer
+		resetIdleTimer();
+
+		return () => {
+			window.removeEventListener("mousemove", onActivity);
+			window.removeEventListener("keydown", onActivity);
+			window.removeEventListener("click", onActivity);
+			window.removeEventListener("touchstart", onActivity);
+
+			if (formEl) {
+				formEl.removeEventListener("keydown", onActivity);
+				formEl.removeEventListener("click", onActivity);
+			}
+
+			if (scrollerEl) scrollerEl.removeEventListener("scroll", onActivity);
+
+			clearIdleTimer();
+			setIdleVideoPlaying(false);
+		};
+	}, []);
+
+	// If idle state changes locally, ensure store is in sync (extra safety)
+	useEffect(() => {
+		console.log("Idle state changed:", isIdle);
+		setIdleVideoPlaying(isIdle);
+	}, [isIdle, setIdleVideoPlaying]);
+
+
 	const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		focusInput();
 		switch (e.key) {
@@ -238,6 +321,7 @@ useEffect(() => {
 
 	return (
 		<div className="flex h-full w-full items-center justify-center font-primary">
+			 {/* Terminal form */}
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}

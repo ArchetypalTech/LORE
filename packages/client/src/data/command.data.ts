@@ -3,16 +3,15 @@ import {
 	addTerminalContent,
 	clearTerminalContent,
 	nextItem,
+	useTerminalStore,
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
 import {
 	HELP_CONTAINER,
 	HELP_EXITS,
-	HELP_INSPECT,
 	HELP_INTERACT,
 	HELP_INVENTORY,
-	HELP_REACT,
 	HELP_TEXTS,
 } from "@/data/help.data";
 import {
@@ -338,6 +337,29 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// DEMO for commands that need to intercept the msd stream, and then call the contract
 		sendCommand(command, null, true);
 	},
+	// playtrailer: () => {
+	// 	const store = useTerminalStore.getState();
+
+	// 	// 1️⃣ Show a terminal message
+	// 	addTerminalContent({
+	// 		text: "Playing trailer... Press ESC to close.",
+	// 		format: "system",
+	// 		useTypewriter: true,
+	// 	});
+
+	// 	// 2️⃣ Start the video overlay
+	// 	store.setIdleVideoPlaying(true);
+
+	// 	// 3️⃣ Add ESC listener to close video
+	// 	const escListener = (e: KeyboardEvent) => {
+	// 		if (e.key === "Escape") {
+	// 			store.setIdleVideoPlaying(false);
+	// 			window.removeEventListener("keydown", escListener);
+	// 		}
+	// 	};
+
+	// 	window.addEventListener("keydown", escListener);
+	// },
 	help: () => {
 		const header =
 			"**Scratches head**";

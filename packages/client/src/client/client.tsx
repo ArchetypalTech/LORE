@@ -4,6 +4,7 @@ import bg from "../assets/782.webp";
 import AudioControls from "./terminal/AudioControls";
 import AudioPlayer from "./terminal/AudioPlayer";
 import Terminal from "./terminal/Terminal";
+import { useTerminalStore } from "@lib/stores/terminal.store";
 
 export const Client = () => {
 	useHead({
@@ -22,6 +23,8 @@ export const Client = () => {
 			};
 		}),
 	});
+
+	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
 
 	return (
 		<div
@@ -51,6 +54,16 @@ export const Client = () => {
 					<AudioPlayer></AudioPlayer>
 				</span>
 			</div>
+			{/* Fullscreen idle video overlay — now in front of terminal */}
+      {idleVideoPlaying && (
+        <video
+          autoPlay
+          loop
+          playsInline
+          src="/video/ORugTrailer_NQ.mp4"
+          className="fixed inset-0 w-screen h-screen object-cover z-[50]"
+        />
+      )}
 		</div>
 	);
 };

@@ -32,6 +32,8 @@ const {
 	contentQueue: [] as TerminalContentItem[],
 	volumeAudio: 0.40,
 	focusLocked: true as boolean,
+	idleVideoPlaying: false,
+  setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
 });
 
 /**

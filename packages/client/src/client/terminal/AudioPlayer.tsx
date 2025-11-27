@@ -46,7 +46,7 @@ export default function () {
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { enableAudio, volumeAudio } = useTerminalStore();
+	const { enableAudio, volumeAudio, idleVideoPlaying } = useTerminalStore();
 
 	// Handle loaded metadata to set start time every time it plays
   const handleLoadedMetadata = () => {
@@ -77,10 +77,25 @@ export default function () {
 	}, [volumeAudio]);
 	// play when player can input
 	useEffect(() => {
-		if (status === "inputEnabled" && audioRef.current && enableAudio) {
-			audioRef.current.play();
-		}
-	}, [status, enableAudio]);
+    if (status === "inputEnabled" && audioRef.current && enableAudio && !idleVideoPlaying) {
+      audioRef.current.play();
+    }
+  }, [status, enableAudio, idleVideoPlaying]);
+
+  // Pause/resume when idle video starts/stops
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (idleVideoPlaying) {
+      audioRef.current.pause();
+    } else {
+      // resume only if audio is enabled
+      if (enableAudio) {
+        audioRef.current.play().catch(() => {
+          // autoplay might be blocked - ignore the error
+        });
+      }
+    }
+  }, [idleVideoPlaying, enableAudio]);
 
 	const handleEnded = () => {
     setTrack(prev => {
@@ -93,6 +108,7 @@ export default function () {
 		<audio
       ref={audioRef}
       src={useTrack}
+      preload="auto"
       muted={!enableAudio}
       onEnded={handleEnded}
       onLoadedMetadata={handleLoadedMetadata}
