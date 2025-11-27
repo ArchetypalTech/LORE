@@ -36,7 +36,7 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting, idleVideoPlaying, setIdleVideoPlaying  } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
@@ -321,16 +321,6 @@ useEffect(() => {
 
 	return (
 		<div className="flex h-full w-full items-center justify-center font-primary">
-			{/* Fullscreen video overlay when idle */}
-			{idleVideoPlaying && (
-				<video
-					autoPlay
-					loop
-					playsInline
-					src="/video/ORugTrailer_NQ.mp4"
-					className="fixed inset-0 z-0 w-full h-full object-cover"
-				/>
-			)}
 			 {/* Terminal form */}
 			<form
 				ref={terminalFormRef}
