@@ -65,6 +65,7 @@ export default function Terminal({
 		idleTimeoutRef.current = window.setTimeout(() => {
 			setIsIdle(true);
 			setIdleVideoPlaying(true);
+			console.log("Idle too long, starting video");
 		}, IDLE_DELAY);
 	};
 
@@ -231,6 +232,7 @@ useEffect(() => {
 			clearIdleTimer();
 			// ensure store flag reset
 			setIdleVideoPlaying(false);
+			console.log("cleared idle timer");
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []); // run on mount only

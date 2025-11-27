@@ -78,9 +78,7 @@ export default function () {
 	// play when player can input
 	useEffect(() => {
     if (status === "inputEnabled" && audioRef.current && enableAudio && !idleVideoPlaying) {
-      audioRef.current.play().catch(() => {
-        // autoplay can be blocked in some browsers
-      });
+      audioRef.current.play();
     }
   }, [status, enableAudio, idleVideoPlaying]);
 
