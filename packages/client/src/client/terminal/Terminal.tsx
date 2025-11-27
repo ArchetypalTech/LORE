@@ -220,33 +220,44 @@ useEffect(() => {
 	useEffect(() => {
 		if (typeof window === "undefined") return;
 
-		console.log("Idle detection effect mounted");
-
 		const onActivity = () => {
 			console.log("User activity detected");
 			resetIdleTimer();
 		};
 
-		// Keyboard & mouse events on document
-		document.addEventListener("keydown", onActivity);
-		document.addEventListener("mousemove", onActivity);
-		document.addEventListener("click", onActivity);
-		document.addEventListener("touchstart", onActivity);
+		// Attach to window/document as before
+		window.addEventListener("mousemove", onActivity);
+		window.addEventListener("keydown", onActivity);
+		window.addEventListener("click", onActivity);
+		window.addEventListener("touchstart", onActivity);
 
-		// Scroll event on the terminal scroller only
-		const scrollerEl = scroller.current;
-		if (scrollerEl) {
-			scrollerEl.addEventListener("scroll", onActivity);
+		// Also attach to the terminal form to catch clicks and keydowns inside textarea
+		const formEl = terminalFormRef.current;
+		if (formEl) {
+			formEl.addEventListener("keydown", onActivity);
+			formEl.addEventListener("click", onActivity);
 		}
 
+		// Scroll listener
+		const scrollerEl = scroller.current;
+		if (scrollerEl) scrollerEl.addEventListener("scroll", onActivity);
+
+		// Start the timer
 		resetIdleTimer();
 
 		return () => {
-			document.removeEventListener("keydown", onActivity);
-			document.removeEventListener("mousemove", onActivity);
-			document.removeEventListener("click", onActivity);
-			document.removeEventListener("touchstart", onActivity);
+			window.removeEventListener("mousemove", onActivity);
+			window.removeEventListener("keydown", onActivity);
+			window.removeEventListener("click", onActivity);
+			window.removeEventListener("touchstart", onActivity);
+
+			if (formEl) {
+				formEl.removeEventListener("keydown", onActivity);
+				formEl.removeEventListener("click", onActivity);
+			}
+
 			if (scrollerEl) scrollerEl.removeEventListener("scroll", onActivity);
+
 			clearIdleTimer();
 			setIdleVideoPlaying(false);
 		};
