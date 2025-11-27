@@ -36,7 +36,7 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, idleVideoPlaying, setIdleVideoPlaying  } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
@@ -57,12 +57,13 @@ export default function Terminal({
 
 	// reset timer & cancel idle
 	const resetIdleTimer = () => {
-		console.log("resetIdleTimer called");
 		clearIdleTimer();
-		if (isIdle) {
+
+		if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
 			setIsIdle(false);
 			setIdleVideoPlaying(false);
 		}
+
 		idleTimeoutRef.current = window.setTimeout(() => {
 			console.log("Idle timer fired! Showing video");
 			setIsIdle(true);
@@ -219,10 +220,8 @@ useEffect(() => {
 	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
 	useEffect(() => {
 		if (typeof window === "undefined") return;
-		console.log("Idle detection effect mounted");
 
 		const onActivity = () => {
-			console.log("User activity detected");
 			resetIdleTimer();
 		};
 
@@ -362,17 +361,14 @@ useEffect(() => {
 						)}
 					</div>
 					{/* Video overlay shown when idle */}
-					{isIdle && (
-						<div
-							className="absolute inset-0 z-50 flex items-center justify-center bg-black/80"
-							aria-hidden={!isIdle}
-						>
+					{idleVideoPlaying && (
+						<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80">
 							<video
 								autoPlay
 								loop
 								playsInline
 								muted
-								src="/video/ORugTrailer.mov"
+								src="/video/ORugTrailer_NQ.mp4"
 								className="w-full h-full object-cover"
 							/>
 						</div>
