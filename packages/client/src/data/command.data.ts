@@ -459,10 +459,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	play_trailer: () => {
+	_play_trailer: () => {
 		addTerminalContent({
 			text: "Playing trailer... Press [ESC] to stop.",
-			format: "system",
+			format: "hash",
 			useTypewriter: true,
 		});
 
