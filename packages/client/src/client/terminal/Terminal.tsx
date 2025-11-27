@@ -321,6 +321,17 @@ useEffect(() => {
 
 	return (
 		<div className="flex h-full w-full items-center justify-center font-primary">
+			{/* Fullscreen video overlay when idle */}
+			{idleVideoPlaying && (
+				<video
+					autoPlay
+					loop
+					playsInline
+					src="/video/ORugTrailer_NQ.mp4"
+					className="fixed inset-0 z-0 w-full h-full object-cover"
+				/>
+			)}
+			 {/* Terminal form */}
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}
@@ -360,19 +371,6 @@ useEffect(() => {
 							</div>
 						)}
 					</div>
-					{/* Video overlay shown when idle */}
-					{idleVideoPlaying && (
-						<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80">
-							<video
-								autoPlay
-								loop
-								playsInline
-								muted
-								src="/video/ORugTrailer_NQ.mp4"
-								className="w-full h-full object-cover"
-							/>
-						</div>
-					)}
 					<div className="sticky text-[1rem] z-10 bottom-[4.5em] md:bottom-[3.8rem] h-4 w-full backdrop-blur-lg"></div>
 					<div className="flex flex-row p-4 pb-6 md:pb-4 sticky bottom-0 z-10 theme-primary-background items-center">
 						{useTerminalStore().isPrinting && <LoadingMessage />}
