@@ -57,15 +57,16 @@ export default function Terminal({
 
 	// reset timer & cancel idle
 	const resetIdleTimer = () => {
+		console.log("resetIdleTimer called");
 		clearIdleTimer();
 		if (isIdle) {
 			setIsIdle(false);
 			setIdleVideoPlaying(false);
 		}
 		idleTimeoutRef.current = window.setTimeout(() => {
+			console.log("Idle timer fired! Showing video");
 			setIsIdle(true);
 			setIdleVideoPlaying(true);
-			console.log("Idle too long, starting video");
 		}, IDLE_DELAY);
 	};
 
@@ -217,17 +218,41 @@ useEffect(() => {
 
 	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
 	useEffect(() => {
-  const activityEvents: Array<keyof WindowEventMap> = ["mousemove", "keydown", "click", "scroll", "touchstart"];
-  const onActivity = () => resetIdleTimer();
-  activityEvents.forEach(ev => window.addEventListener(ev, onActivity));
-  resetIdleTimer(); // start timer
+		// Guard against server-side execution
+		if (typeof window === "undefined") return;
 
-  return () => {
-    activityEvents.forEach(ev => window.removeEventListener(ev, onActivity));
-    clearIdleTimer();
-    setIdleVideoPlaying(false);
-  };
-}, []);
+		console.log("Idle detection effect mounted");
+
+		// List of user activity events to track
+		const activityEvents: Array<keyof WindowEventMap> = [
+			"mousemove",
+			"keydown",
+			"click",
+			"scroll",
+			"touchstart",
+		];
+
+		// Handler for any user activity
+		const onActivity = () => {
+			console.log("User activity detected");
+			resetIdleTimer();
+		};
+
+		// Attach event listeners
+		activityEvents.forEach((ev) => window.addEventListener(ev, onActivity));
+
+		// Start the idle timer immediately
+		console.log("Initializing idle timer");
+		resetIdleTimer();
+
+		// Cleanup on unmount
+		return () => {
+			console.log("Cleaning up idle timers and event listeners");
+			activityEvents.forEach((ev) => window.removeEventListener(ev, onActivity));
+			clearIdleTimer();
+			setIdleVideoPlaying(false);
+		};
+	}, []); // run once on mount
 
 	// If idle state changes locally, ensure store is in sync (extra safety)
 	useEffect(() => {
