@@ -1,3 +1,5 @@
 # suppress diffs for generated files
 **/pnpm-lock.yaml linguist-generated=true
+ORugTrailer.mov filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
 packages/client/public/video/ORugTrailer.mov filter=lfs diff=lfs merge=lfs -text
