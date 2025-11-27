@@ -33,7 +33,26 @@ const {
 	volumeAudio: 0.40,
 	focusLocked: true as boolean,
 	idleVideoPlaying: false,
-  setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
+  escListener: undefined as ((e: KeyboardEvent) => void) | undefined,
+	setIdleVideoPlaying: (v: boolean) => {
+		if (v) {
+			const listener = (e: KeyboardEvent) => {
+				if (e.key === "Escape") {
+					set({ idleVideoPlaying: false });
+					window.removeEventListener("keydown", listener);
+					set({ escListener: undefined });
+				}
+			};
+			window.addEventListener("keydown", listener);
+			set({ idleVideoPlaying: true, escListener: listener });
+		} else {
+			const listener = get().escListener;
+			if (listener) {
+				window.removeEventListener("keydown", listener);
+			}
+			set({ idleVideoPlaying: false, escListener: undefined });
+		}
+	}
 });
 
 /**

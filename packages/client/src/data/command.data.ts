@@ -3,16 +3,15 @@ import {
 	addTerminalContent,
 	clearTerminalContent,
 	nextItem,
+	useTerminalStore,
 } from "@lib/stores/terminal.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
 import {
 	HELP_CONTAINER,
 	HELP_EXITS,
-	HELP_INSPECT,
 	HELP_INTERACT,
 	HELP_INVENTORY,
-	HELP_REACT,
 	HELP_TEXTS,
 } from "@/data/help.data";
 import {
@@ -459,5 +458,14 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 		});
+	},
+	playTrailer: () => {
+		addTerminalContent({
+			text: "Playing trailer... Press [ESC] to stop.",
+			format: "system",
+			useTypewriter: true,
+		});
+
+		useTerminalStore.getState().setIdleVideoPlaying(true);
 	},
 } as const;
