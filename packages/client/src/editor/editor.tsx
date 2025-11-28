@@ -208,16 +208,6 @@ export const Editor = () => {
 	return (
 		<>
 			<Toaster expand visibleToasts={4} position="top-left" />
-			<div
-				id="editor-root"
-				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"
-			>
-				<div className="relative mx-auto h-full max-w-screen">
-					<EditorHeader />
-					<div className="relative m-0 mx-auto p-0 h-full">
-						{isEditor && editorContents}
-					</div>
-				</div>
 			{/* Fullscreen idle video overlay — now in front of terminal */}
       {idleEditorVideoPlaying && (
         <video
@@ -228,6 +218,16 @@ export const Editor = () => {
           className="fixed inset-0 w-screen h-screen object-cover z-[50]"
         />
       )}
+			<div
+				id="editor-root"
+				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"
+			>
+				<div className="relative mx-auto h-full max-w-screen">
+					<EditorHeader />
+					<div className="relative m-0 mx-auto p-0 h-full">
+						{isEditor && editorContents}
+					</div>
+				</div>
 			</div>
 			{isEditor && isLoaded&& <EditorFooter />}
 		</>

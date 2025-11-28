@@ -31,8 +31,6 @@ export const Client = () => {
 			id="client-root"
 			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center"
 		>
-			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
-				<img src={bg} alt="oruggin-background" />
 				{/* Fullscreen idle video overlay — now in front of terminal */}
 				{idleVideoPlaying && (
 					<video
@@ -43,6 +41,8 @@ export const Client = () => {
 						className="fixed inset-0 w-screen h-screen object-cover z-[50]"
 					/>
 				)}
+			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
+				<img src={bg} alt="oruggin-background" />
 			</div>
 			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
