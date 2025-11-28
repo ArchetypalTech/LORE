@@ -154,7 +154,7 @@ export const Editor = () => {
 						{isEditor && editorContents}
 					</div>
 				</div>
-				/* Fullscreen idle video overlay — now in front of terminal */}
+			{/* Fullscreen idle video overlay — now in front of terminal */}
       {idleVideoPlaying && (
         <video
           autoPlay
