@@ -208,20 +208,20 @@ export const Editor = () => {
 	return (
 		<>
 			<Toaster expand visibleToasts={4} position="top-left" />
-			{/* Fullscreen idle video overlay — now in front of terminal */}
-      {idleEditorVideoPlaying && (
-        <video
-          autoPlay
-          loop
-          playsInline
-          src="/video/ORugTrailer_NQ.mp4"
-          className="fixed inset-0 w-screen h-screen object-cover z-[50]"
-        />
-      )}
 			<div
 				id="editor-root"
 				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"
 			>
+				{/* Fullscreen idle video overlay — now in front of terminal */}
+				{idleEditorVideoPlaying && (
+					<video
+						autoPlay
+						loop
+						playsInline
+						src="/video/ORugTrailer_NQ.mp4"
+						className="fixed inset-0 w-screen h-screen object-cover z-[50]"
+					/>
+				)}
 				<div className="relative mx-auto h-full max-w-screen">
 					<EditorHeader />
 					<div className="relative m-0 mx-auto p-0 h-full">
