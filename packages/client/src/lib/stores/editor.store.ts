@@ -14,6 +14,8 @@ const {
 	// editor permissions
 	isAdmin: undefined as boolean | undefined,
 	isEditor: undefined as boolean | undefined,
+	idleVideoPlaying: false,
+  setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
 });
 
 /**

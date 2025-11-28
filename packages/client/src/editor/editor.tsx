@@ -1,13 +1,13 @@
 import "@styles/editor.css";
 import { useHead } from "@unhead/react";
 import { HousePlus, PersonStanding } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Toaster, toast } from "sonner";
 import Terminal from "@/client/terminal/Terminal";
 import { APP_EDITOR_SEO } from "@/data/app.data";
 import { useDojoStore } from "@/lib/stores/dojo.store";
 import { useUserStore } from "@/lib/stores/user.store";
-import { useSyncEditorPermissions } from "@/lib/stores/editor.store";
+import { useSyncEditorPermissions, useEditorStore } from "@/lib/stores/editor.store";
 import { cn } from "@/lib/utils/utils";
 import { EditorFooter } from "./components/EditorFooter";
 import { EditorHeader } from "./components/EditorHeader";
@@ -29,6 +29,7 @@ export const Editor = () => {
 	const { dataPool, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 	const { isEditor } = useSyncEditorPermissions();
+	const { setIdleVideoPlaying } = useEditorStore();
 
 	useHead({
 		title: APP_EDITOR_SEO.title,
@@ -46,6 +47,36 @@ export const Editor = () => {
 			};
 		}),
 	});
+
+	// --- IDLE VIDEO STATE ---
+		const [isIdle, setIsIdle] = useState(false);
+		const idleTimeoutRef = useRef<number | null>(null);
+		const IDLE_DELAY = 1 * 30 * 1000; // 30 seconds (30000 ms)
+		// 2 minutes (120000 ms)
+		
+		// helper: clear timer
+		const clearIdleTimer = () => {
+			if (idleTimeoutRef.current) {
+				window.clearTimeout(idleTimeoutRef.current);
+				idleTimeoutRef.current = null;
+			}
+		};
+	
+		// reset timer & cancel idle
+		const resetIdleTimer = () => {
+			clearIdleTimer();
+	
+			if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
+				setIsIdle(false);
+				setIdleVideoPlaying(false);
+			}
+	
+			idleTimeoutRef.current = window.setTimeout(() => {
+				console.log("Idle timer fired! Showing video");
+				setIsIdle(true);
+				setIdleVideoPlaying(true);
+			}, IDLE_DELAY);
+		};
 
 	useEffect(() => {
 		if (!isDirty) {
@@ -139,8 +170,41 @@ export const Editor = () => {
 		}
 	}, [editorState, dark_mode, selectedEntity]);
 
-	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
+	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
+		useEffect(() => {
+			if (typeof window === "undefined") return;
+	
+			const onActivity = () => {
+				resetIdleTimer();
+			};
+	
+			// Attach to window/document as before
+			window.addEventListener("mousemove", onActivity);
+			window.addEventListener("keydown", onActivity);
+			window.addEventListener("click", onActivity);
+			window.addEventListener("touchstart", onActivity);
+	
+			// Start the timer
+			resetIdleTimer();
+	
+			return () => {
+				window.removeEventListener("mousemove", onActivity);
+				window.removeEventListener("keydown", onActivity);
+				window.removeEventListener("click", onActivity);
+				window.removeEventListener("touchstart", onActivity);
+	
+				clearIdleTimer();
+				setIdleVideoPlaying(false);
+			};
+		}, []);
+	
+		// If idle state changes locally, ensure store is in sync (extra safety)
+		useEffect(() => {
+			console.log("Idle state changed:", isIdle);
+			setIdleVideoPlaying(isIdle);
+		}, [isIdle, setIdleVideoPlaying]);
 
+	const idleEditorVideoPlaying = useEditorStore((state) => state.idleVideoPlaying);
 	return (
 		<>
 			<Toaster expand visibleToasts={4} position="top-left" />
@@ -155,7 +219,7 @@ export const Editor = () => {
 					</div>
 				</div>
 			{/* Fullscreen idle video overlay — now in front of terminal */}
-      {idleVideoPlaying && (
+      {idleEditorVideoPlaying && (
         <video
           autoPlay
           loop
