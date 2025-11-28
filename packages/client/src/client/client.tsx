@@ -33,6 +33,16 @@ export const Client = () => {
 		>
 			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
 				<img src={bg} alt="oruggin-background" />
+				{/* Fullscreen idle video overlay — now in front of terminal */}
+				{idleVideoPlaying && (
+					<video
+						autoPlay
+						loop
+						playsInline
+						src="/video/ORugTrailer_NQ.mp4"
+						className="fixed inset-0 w-screen h-screen object-cover z-[50]"
+					/>
+				)}
 			</div>
 			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
 				<Terminal />
@@ -54,16 +64,6 @@ export const Client = () => {
 					<AudioPlayer></AudioPlayer>
 				</span>
 			</div>
-			{/* Fullscreen idle video overlay — now in front of terminal */}
-      {idleVideoPlaying && (
-        <video
-          autoPlay
-          loop
-          playsInline
-          src="/video/ORugTrailer_NQ.mp4"
-          className="fixed inset-0 w-screen h-screen object-cover z-[50]"
-        />
-      )}
 		</div>
 	);
 };
