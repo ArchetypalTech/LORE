@@ -17,6 +17,7 @@ import { Button } from "./components/ui/Button";
 import { NoEntity } from "./components/ui/NoEntity";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
+import { useTerminalStore } from "@lib/stores/terminal.store";
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -138,6 +139,8 @@ export const Editor = () => {
 		}
 	}, [editorState, dark_mode, selectedEntity]);
 
+	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
+
 	return (
 		<>
 			<Toaster expand visibleToasts={4} position="top-left" />
@@ -151,6 +154,16 @@ export const Editor = () => {
 						{isEditor && editorContents}
 					</div>
 				</div>
+				/* Fullscreen idle video overlay — now in front of terminal */}
+      {idleVideoPlaying && (
+        <video
+          autoPlay
+          loop
+          playsInline
+          src="/video/ORugTrailer_NQ.mp4"
+          className="fixed inset-0 w-screen h-screen object-cover z-[50]"
+        />
+      )}
 			</div>
 			{isEditor && isLoaded&& <EditorFooter />}
 		</>
