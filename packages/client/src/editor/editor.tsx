@@ -17,7 +17,7 @@ import { Button } from "./components/ui/Button";
 import { NoEntity } from "./components/ui/NoEntity";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
-import { useTerminalStore } from "@lib/stores/terminal.store";
+
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
 
@@ -66,7 +66,7 @@ export const Editor = () => {
 		const resetIdleTimer = () => {
 			clearIdleTimer();
 	
-			if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
+			if (isIdle || useEditorStore.getState().idleVideoPlaying) {
 				setIsIdle(false);
 				setIdleVideoPlaying(false);
 			}
