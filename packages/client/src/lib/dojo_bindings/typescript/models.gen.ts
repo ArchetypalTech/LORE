@@ -2,6 +2,13 @@ import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
 import { CairoCustomEnum, type BigNumberish } from 'starknet';
 
+// Type definition for `lore::components::coin_config::CoinConfig` struct
+export interface CoinConfig {
+	coin_address: string;
+	minter_address: string;
+	faucet_amount: BigNumberish;
+}
+
 // Type definition for `lore::models::action::Action` struct
 export interface Action {
 	inst: BigNumberish;
@@ -394,6 +401,20 @@ export interface RoleRevoked {
 	sender: string;
 }
 
+// Type definition for `openzeppelin_token::erc20::erc20::ERC20Component::Approval` struct
+export interface Approval {
+	owner: string;
+	spender: string;
+	value: BigNumberish;
+}
+
+// Type definition for `openzeppelin_token::erc20::erc20::ERC20Component::Transfer` struct
+export interface Transfer {
+	from: string;
+	to: string;
+	value: BigNumberish;
+}
+
 // Type definition for `openzeppelin_token::erc721::erc721::ERC721Component::Approval` struct
 export interface Approval {
 	owner: string;
@@ -577,6 +598,7 @@ export type PropertyTypeEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
 	lore: {
+		CoinConfig: CoinConfig,
 		Action: Action,
 		ActionExecuted: ActionExecuted,
 		Area: Area,
@@ -624,12 +646,17 @@ export interface SchemaType extends ISchemaType {
 		RoleGranted: RoleGranted,
 		RoleRevoked: RoleRevoked,
 		Approval: Approval,
-		ApprovalForAll: ApprovalForAll,
 		Transfer: Transfer,
+		ApprovalForAll: ApprovalForAll,
 	},
 }
 export const schema: SchemaType = {
 	lore: {
+		CoinConfig: {
+			coin_address: "",
+			minter_address: "",
+			faucet_amount: 0,
+		},
 		Action: {
 			inst: 0,
 			key: 0,
@@ -1081,6 +1108,16 @@ export const schema: SchemaType = {
 		},
 		Approval: {
 			owner: "",
+			spender: "",
+		value: 0,
+		},
+		Transfer: {
+			from: "",
+			to: "",
+		value: 0,
+		},
+		Approval: {
+			owner: "",
 			approved: "",
 		token_id: 0,
 		},
@@ -1097,6 +1134,7 @@ export const schema: SchemaType = {
 	},
 };
 export enum ModelsMapping {
+	CoinConfig = 'lore-CoinConfig',
 	Action = 'lore-Action',
 	ActionExecuted = 'lore-ActionExecuted',
 	Area = 'lore-Area',
@@ -1158,6 +1196,6 @@ export enum ModelsMapping {
 	RoleGranted = 'openzeppelin_access-RoleGranted',
 	RoleRevoked = 'openzeppelin_access-RoleRevoked',
 	Approval = 'openzeppelin_token-Approval',
-	ApprovalForAll = 'openzeppelin_token-ApprovalForAll',
 	Transfer = 'openzeppelin_token-Transfer',
+	ApprovalForAll = 'openzeppelin_token-ApprovalForAll',
 }

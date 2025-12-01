@@ -2,14 +2,14 @@
 name = "lore_strk"
 version = "0.2.0"
 edition = "2024_07"
-cairo-version = ">=2.12.2"
+cairo-version = ">=2.13.1"
 
 [cairo]
 sierra-replace-ids = true
 
 [dependencies]
-starknet = ">=2.12.2"
-dojo = "=1.7.2"
+starknet = ">=2.13.1"
+dojo = "=1.8.0"
 openzeppelin_token = "1.0.0"
 openzeppelin_introspection = "1.0.0"
 # piltover = { git = "https://github.com/keep-starknet-strange/piltover.git" }
@@ -17,8 +17,8 @@ piltover = { git = "https://github.com/rsodre/piltover.git", branch = "openzeppe
 # piltover = { path = "../../../piltover" }
 
 [dev-dependencies]
-cairo_test = ">=2.12.2"
-dojo_cairo_test = "=1.7.2"
+cairo_test = ">=2.13.1"
+dojo_cairo_test = "=1.8.0"
 
 [tool.scarb]
 allow-prebuilt-plugins = ["dojo_cairo_macros"]

@@ -5,4 +5,4 @@
 members = []
 
 [workspace.package]
-cairo-version = ">=2.12.2"
+cairo-version = ">=2.13.1"

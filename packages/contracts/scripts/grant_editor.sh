@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export PROFILE=dev
-export WORLD_ADDRESS=0x05dee2ca4cf9c091f17f4607cc048639017fbc2288daf66d8f2f929e61edeeb2
+export WORLD_ADDRESS=0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403`
 
 #------------------------------------------------------------------------------
 # execute dojo call

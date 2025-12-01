@@ -4,6 +4,171 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
+	const build_actions_lore_allowance_calldata = (owner: string, spender: string): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "allowance",
+			calldata: [owner, spender],
+		};
+	};
+
+	const actions_lore_allowance = async (owner: string, spender: string) => {
+		try {
+			return await provider.call("lore", build_actions_lore_allowance_calldata(owner, spender));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_approve_calldata = (spender: string, amount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "approve",
+			calldata: [spender, amount],
+		};
+	};
+
+	const actions_lore_approve = async (snAccount: Account | AccountInterface, spender: string, amount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_lore_approve_calldata(spender, amount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_balanceOf_calldata = (account: string): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "balanceOf",
+			calldata: [account],
+		};
+	};
+
+	const actions_lore_balanceOf = async (account: string) => {
+		try {
+			return await provider.call("lore", build_actions_lore_balanceOf_calldata(account));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_decimals_calldata = (): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "decimals",
+			calldata: [],
+		};
+	};
+
+	const actions_lore_decimals = async () => {
+		try {
+			return await provider.call("lore", build_actions_lore_decimals_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_name_calldata = (): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "name",
+			calldata: [],
+		};
+	};
+
+	const actions_lore_name = async () => {
+		try {
+			return await provider.call("lore", build_actions_lore_name_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_symbol_calldata = (): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "symbol",
+			calldata: [],
+		};
+	};
+
+	const actions_lore_symbol = async () => {
+		try {
+			return await provider.call("lore", build_actions_lore_symbol_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_totalSupply_calldata = (): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "totalSupply",
+			calldata: [],
+		};
+	};
+
+	const actions_lore_totalSupply = async () => {
+		try {
+			return await provider.call("lore", build_actions_lore_totalSupply_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_transfer_calldata = (recipient: string, amount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "transfer",
+			calldata: [recipient, amount],
+		};
+	};
+
+	const actions_lore_transfer = async (snAccount: Account | AccountInterface, recipient: string, amount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_lore_transfer_calldata(recipient, amount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_transferFrom_calldata = (sender: string, recipient: string, amount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "transferFrom",
+			calldata: [sender, recipient, amount],
+		};
+	};
+
+	const actions_lore_transferFrom = async (snAccount: Account | AccountInterface, sender: string, recipient: string, amount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_lore_transferFrom_calldata(sender, recipient, amount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createAction_calldata = (t: Array<Action>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -2100,6 +2265,26 @@ export function setupWorld(provider: DojoProvider) {
 
 
 	return {
+		actions_lore: {
+			allowance: actions_lore_allowance,
+			buildAllowanceCalldata: build_actions_lore_allowance_calldata,
+			approve: actions_lore_approve,
+			buildApproveCalldata: build_actions_lore_approve_calldata,
+			balanceOf: actions_lore_balanceOf,
+			buildBalanceOfCalldata: build_actions_lore_balanceOf_calldata,
+			decimals: actions_lore_decimals,
+			buildDecimalsCalldata: build_actions_lore_decimals_calldata,
+			name: actions_lore_name,
+			buildNameCalldata: build_actions_lore_name_calldata,
+			symbol: actions_lore_symbol,
+			buildSymbolCalldata: build_actions_lore_symbol_calldata,
+			totalSupply: actions_lore_totalSupply,
+			buildTotalSupplyCalldata: build_actions_lore_totalSupply_calldata,
+			transfer: actions_lore_transfer,
+			buildTransferCalldata: build_actions_lore_transfer_calldata,
+			transferFrom: actions_lore_transferFrom,
+			buildTransferFromCalldata: build_actions_lore_transferFrom_calldata,
+		},
 		designer: {
 			createAction: designer_createAction,
 			buildCreateActionCalldata: build_designer_createAction_calldata,
