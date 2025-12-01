@@ -1,33 +1,17 @@
-![Dojo Starter](../assets/dojo-cover.png)
+# Katana / Starknet / Saya integration
 
-# Dojo Starter: Official Guide
+Based on: [https://github.com/glihm/starknet-messaging-dev/tree/l2-l3-saya](https://github.com/glihm/starknet-messaging-dev/tree/l2-l3-saya)
 
-A quickstart guide to help you build and deploy your first Dojo provable game.
-
-Read the full tutorial [here](https://dojoengine.org/tutorial/dojo-starter).
 
 ## Running Locally
 
-#### Terminal one (Make sure this is running)
+* Install tool versions [here](https://github.com/glihm/starknet-messaging-dev/tree/l2-l3-saya?tab=readme-ov-file#requirements)
+
+* Copy `katana_l3` to `/packages/starknet/bin` (ask Glihm or copy from Docker image)
+
+* Deploy and start L2 / L3...
 
 ```bash
 # Run Katana
-katana --dev --dev.no-fee
-```
-
-#### Terminal two
-
-```bash
-# Build the example
-sozo build
-
-# Inspect the world
-sozo inspect
-
-# Migrate the example
-sozo migrate
-
-# Start Torii
-# Replace <WORLD_ADDRESS> with the address of the deployed world from the previous step
-torii --world <WORLD_ADDRESS> --http.cors_origins "*"
+bun run local_saya
 ```

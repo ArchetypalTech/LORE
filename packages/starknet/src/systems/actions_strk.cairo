@@ -32,14 +32,19 @@ pub trait IActionsStarknet<TState> {
 trait IActionsPublicStarknet<TState> {
     fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
     fn consume_message_value(ref self: TState, value: felt252);
+    // admin functions
+    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
+    fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
 }
 
 #[dojo::contract]
 pub mod actions_strk {
+    use core::num::traits::Zero;
     use starknet::{ContractAddress};
     use dojo::{
         model::ModelStorage,
         world::WorldStorage,
+        world::IWorldDispatcherTrait,
         // event::EventStorage,
     };
     use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
@@ -82,10 +87,13 @@ pub mod actions_strk {
         actions_supply::{ActionsSupply},
         messaging::{MessagingConfig},
     };
+    use lore_strk::lib::dns::{SELECTORS};
 
     mod Errors {
-        pub const INVALID_CALLER: felt252   = 'ACTIONS: Invalid caller';
-        pub const NOT_IMPLEMENTED: felt252  = 'ACTIONS: Not implemented';
+        pub const INVALID_CALLER: felt252               = 'ACTIONS: Invalid caller';
+        pub const INVALID_MESSAGING_CONTRACT: felt252   = 'ACTIONS: Invalid messaging';
+        pub const INVALID_APPCHAIN_CONTRACT: felt252    = 'ACTIONS: Invalid appchain';
+        pub const NOT_IMPLEMENTED: felt252              = 'ACTIONS: Not implemented';
     }
 
     //*******************************************
@@ -107,7 +115,7 @@ pub mod actions_strk {
             faucet_amount: 0,
         );
         world.write_model(@MessagingConfig {
-            contract_address: starknet::get_contract_address(),
+            key: 1,
             messaging_contract,
             appchain_contract,
         });
@@ -129,7 +137,6 @@ pub mod actions_strk {
 
     #[abi(embed_v0)]
     impl IActionsPublicStarknetImpl of super::IActionsPublicStarknet<ContractState> {
-        
         /// L2 > L3
         /// Sends a message with the given value.
         fn purchased_starter_pack(ref self: ContractState,
@@ -148,6 +155,24 @@ pub mod actions_strk {
         ) {
             self._consume_message_value(value);
         }
+
+        /// Admin functions
+        fn set_messaging_contract(ref self: ContractState, messaging_contract: ContractAddress) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_owner(@world);
+            assert(messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
+            let mut messaging_config: MessagingConfig = world.read_model(1);
+            messaging_config.messaging_contract = messaging_contract;
+            world.write_model(@messaging_config);
+        }
+        fn set_appchain_contract(ref self: ContractState, appchain_contract: ContractAddress) {   
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_owner(@world);
+            assert(appchain_contract.is_non_zero(), Errors::INVALID_APPCHAIN_CONTRACT);
+            let mut messaging_config: MessagingConfig = world.read_model(1);
+            messaging_config.appchain_contract = appchain_contract;
+            world.write_model(@messaging_config);
+        }
     }
 
 
@@ -156,6 +181,14 @@ pub mod actions_strk {
     //
     #[generate_trait]
     impl InternalImpl of InternalTrait {
+        #[inline(always)]
+        fn _assert_caller_is_owner(self: @ContractState, world: @WorldStorage) {
+            assert(self._caller_is_owner(world), Errors::INVALID_CALLER);
+        }
+        fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
+            ((*world.dispatcher).is_owner(SELECTORS::ACTIONS_TOKEN, starknet::get_caller_address()))
+        }
+
         //
         // L2 > L3 messaging
         // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/sn_1.cairo
@@ -166,7 +199,9 @@ pub mod actions_strk {
             selector: felt252,
             value: felt252,
         ) {
-            let messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
+            let messaging_config: MessagingConfig = self.world_default().read_model(1);
+            assert(messaging_config.messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
+
             let messaging: IMessagingDispatcher = IMessagingDispatcher {
                 contract_address: messaging_config.messaging_contract,
             };
@@ -176,7 +211,10 @@ pub mod actions_strk {
         fn _consume_message_value(ref self: ContractState,
             value: felt252,
         ) {
-            let messaging_config: MessagingConfig = self.world_default().read_model(starknet::get_contract_address());
+            let messaging_config: MessagingConfig = self.world_default().read_model(1);
+            assert(messaging_config.messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
+            assert(messaging_config.appchain_contract.is_non_zero(), Errors::INVALID_APPCHAIN_CONTRACT);
+
             let messaging: IMessagingDispatcher = IMessagingDispatcher {
                 contract_address: messaging_config.messaging_contract,
             };

@@ -5,7 +5,7 @@ use starknet::ContractAddress;
 #[dojo::model]
 pub struct MessagingConfig {
     #[key]
-    pub contract_address: ContractAddress,
+    pub key: felt252,
     //-----------------------------------
     pub messaging_contract: ContractAddress,
     pub appchain_contract: ContractAddress,

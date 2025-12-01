@@ -1,5 +1,6 @@
 pub mod systems {
     pub mod actions_strk;
+    pub mod fact_registry_mock;
 }
 
 pub mod components {
