@@ -13,7 +13,7 @@ interface UIBoxProps {
 */
 export default function UIPanel({ location, exits, puzzles }: UIBoxProps) {
   return (
-    <div className="ui-panel fixed top-4 left-1/2 -translate-x-1/2 z-[60] w-full max-w-[900px] min-w-[min(90%,700px)] p-4">
+    <div className="ui-panel w-full max-w-[900px] mx-auto mt-4 p-4">
       <div className="backdrop-blur-md bg-black/60 rounded-2xl border border-emerald-500/40 shadow-xl p-4 text-green-300 font-primary">
         <div className="grid grid-cols-3 gap-4">
           {/* Location */}
