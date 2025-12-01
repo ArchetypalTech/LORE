@@ -26,6 +26,7 @@ import {
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
+import UIPanelStore from "@/lib/stores/terminal.uiPanel.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -454,6 +455,38 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		addTerminalContent({
 			text: JSON.stringify(dest, null, 2),
 			format: "system",
+			useTypewriter: true,
+		});
+	},
+	ui: (context: commandContext) => {
+		const panel = UIPanelStore();
+
+		// ui show
+		if (context.args[0] === "show") {
+			panel.show();
+			addTerminalContent({
+				text: "UI panel shown.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// ui hide
+		if (context.args[0] === "hide") {
+			panel.hide();
+			addTerminalContent({
+				text: "UI panel hidden.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// Invalid usage
+		addTerminalContent({
+			text: `Usage:\n  ui show\n  ui hide`,
+			format: "error",
 			useTypewriter: true,
 		});
 	},
