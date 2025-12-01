@@ -32,6 +32,8 @@ const {
 	contentQueue: [] as TerminalContentItem[],
 	volumeAudio: 0.40,
 	focusLocked: true as boolean,
+	idleVideoPlaying: false,
+  setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
 });
 
 /**
@@ -118,12 +120,6 @@ export const nextItem = async (newContent: TerminalContentItem | null) => {
 				contentQueue: state.contentQueue.filter((item) => item !== nextItem),
 				activeTypewriterLine: nextItem,
 			});
-
-			// Scroll to bottom when new typewriter starts
-			const el = document.getElementById("scroller");
-			if (el) {
-				el.scrollTop = el.scrollHeight;
-			}
 		}
 	} 
 	// disable printing notice once queue is empty and mode has been typewriter

@@ -55,65 +55,65 @@ const setupController = async () => {
 					methods: [
 						{
 							entrypoint: "prompt",
-							description: `The terminal endpoint for ${worldName}`,
+							description: `The terminal endpoint for ${worldName} prompting the user for input`,
 						},
 					],
 				},
 				[LORE_CONFIG.contractAddresses.designer]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
-					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title}`,
+					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title} when using the editor tool`,
 					methods: [
 						{
 							entrypoint: "register_property_registry",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} registering properties`,
 						},
 						{
 							entrypoint: "create_player",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} creating the player character`,
 						},
 						{
 							entrypoint: "create_entity",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} creating an entity`,
 						},
 						{
 							entrypoint: "create_reactable",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding reactables components`,
 						},
 						{
 							entrypoint: "create_description_text",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding descriptions texts components`,
 						},
 						{
 							entrypoint: "create_area",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding areas components`,
 						},
 						{
 							entrypoint: "create_exit",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding exits components`,
 						},
 						{
 							entrypoint: "create_inventory_item",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding inventory items components`,
 						},
 						{
 							entrypoint: "create_container",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding containers components`,
 						},
 						{
 							entrypoint: "create_parent",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding parent-child relations components`,
 						},
 						{
 							entrypoint: "create_condition",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding conditions components`,
 						},
 						{
 							entrypoint: "create_effect",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding effects components`,
 						},
 						{
 							entrypoint: "create_action",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding actions components`,
 						},
 						{
 							entrypoint: "create_hub",
@@ -125,59 +125,55 @@ const setupController = async () => {
 						},
 						{
 							entrypoint: "create_trigger",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding triggers components`,
 						},
 						{
 							entrypoint: "create_child",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} adding child-parent relations components`,
 						},
 						{
 							entrypoint: "delete_player",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting the player character`,
 						},
 						{
 							entrypoint: "delete_entity",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting an entity`,
 						},
 						{
 							entrypoint: "delete_reactable",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting reactables components`,
 						},
 						{
 							entrypoint: "delete_description_text",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
-						},
-						{
-							entrypoint: "delete_description_text",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting descriptions texts components`,
 						},
 						{
 							entrypoint: "delete_area",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting areas components`,
 						},
 						{
 							entrypoint: "delete_exit",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting exits components`,
 						},
 						{
 							entrypoint: "delete_condition",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting conditions components`,
 						},
 						{
 							entrypoint: "delete_inventory_item",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting inventory items components`,
 						},
 						{
 							entrypoint: "delete_trigger",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting triggers components`,
 						},
 						{
 							entrypoint: "delete_effect",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting effects components`,
 						},
 						{
 							entrypoint: "delete_action",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting actions components`,
 						},
 						{
 							entrypoint: "delete_hub",
@@ -189,15 +185,15 @@ const setupController = async () => {
 						},
 						{
 							entrypoint: "delete_container",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting containers components`,
 						},
 						{
 							entrypoint: "delete_parent",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting parent-child relations components`,
 						},
 						{
 							entrypoint: "delete_child",
-							description: `The terminal endpoint for ${APP_EDITOR_DATA.title}`,
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting child-parent relations components`,
 						},
 					],
 				},

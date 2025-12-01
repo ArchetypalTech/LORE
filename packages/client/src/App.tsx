@@ -3,6 +3,7 @@ import "./styles/index.css";
 import { Client } from "./client/client";
 import { Editor } from "./editor/editor";
 import DojoStore from "@lib/stores/dojo.store.ts";
+import { useTerminalStore} from "@lib/stores/terminal.store";
 
 const App = () => {
   return (
@@ -11,6 +12,7 @@ const App = () => {
         path="/editor"
         component={() => {
           DojoStore().setAppMode("editor");
+          useTerminalStore().focusLocked = false;
           return <Editor />;
         }}
       />

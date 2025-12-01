@@ -4,6 +4,9 @@ import bg from "../assets/782.webp";
 import AudioControls from "./terminal/AudioControls";
 import AudioPlayer from "./terminal/AudioPlayer";
 import Terminal from "./terminal/Terminal";
+import { useTerminalStore } from "@lib/stores/terminal.store";
+import { useUIPanelStore } from "@lib/stores/terminal.uiPanel.store";
+import UIPanel from "./terminal/Terminal.uiPanel";
 
 export const Client = () => {
 	useHead({
@@ -23,11 +26,32 @@ export const Client = () => {
 		}),
 	});
 
+	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
+	const { visible, location, exits, puzzles } = useUIPanelStore();
+
 	return (
 		<div
 			id="client-root"
 			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center"
 		>
+				{/* Fullscreen idle video overlay — now in front of terminal */}
+				{idleVideoPlaying && (
+					<video
+						autoPlay
+						loop
+						playsInline
+						src="/video/ORugTrailer_NQ.mp4"
+						className="fixed inset-0 w-screen h-screen object-cover z-[50]"
+					/>
+				)}
+
+				{visible && (
+					<UIPanel
+					location={location}
+					exits={exits}
+					puzzles={puzzles}
+					/>
+				)}
 			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
 				<img src={bg} alt="oruggin-background" />
 			</div>

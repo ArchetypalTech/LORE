@@ -36,8 +36,40 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
+
+	const [userNearBottom, setUserNearBottom] = useState(true);
+
+	// --- IDLE VIDEO STATE ---
+	const [isIdle, setIsIdle] = useState(false);
+	const idleTimeoutRef = useRef<number | null>(null);
+	const IDLE_DELAY = 1 * 30 * 1000; // 30 seconds (30000 ms)
+	// 2 minutes (120000 ms)
+	
+	// helper: clear timer
+	const clearIdleTimer = () => {
+		if (idleTimeoutRef.current) {
+			window.clearTimeout(idleTimeoutRef.current);
+			idleTimeoutRef.current = null;
+		}
+	};
+
+	// reset timer & cancel idle
+	const resetIdleTimer = () => {
+		clearIdleTimer();
+
+		if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
+			setIsIdle(false);
+			setIdleVideoPlaying(false);
+		}
+
+		idleTimeoutRef.current = window.setTimeout(() => {
+			console.log("Idle timer fired! Showing video");
+			setIsIdle(true);
+			setIdleVideoPlaying(true);
+		}, IDLE_DELAY);
+	};
 
 	useEffect(() => {
 		// Focus input on mount
@@ -57,24 +89,50 @@ export default function Terminal({
 		return () => clearTimeout(timeout);
 	}, [status]);
 
-	// FIX: Auto-scroll whenever new content or line prints
+  // FIX ADDED: Track user scroll state
 	useEffect(() => {
-	const el = scroller.current;
-	if (!el) return;
+      const el = scroller.current;
+      if (!el) return;
 
-	const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+      const handleScroll = () => {
+          const atBottom =
+              el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+          setUserNearBottom(atBottom);
+      };
 
-	requestAnimationFrame(() => {
-		scrollToBottom(isNearBottom || isPrinting ? "smooth" : "auto");
-	});
-}, [terminalContent, activeTypewriterLine, isPrinting]);
+      el.addEventListener("scroll", handleScroll);
+      return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
 
-	// FIX: Re-focus textarea whenever new content prints
-	useEffect(() => {
-		if (status === "inputEnabled" && !isPrinting) {
-			terminalInputRef.current?.focus();
-		}
-	}, [terminalContent, activeTypewriterLine, isPrinting, status]);
+  // FIX ADDED: Auto-scroll only if user is near bottom
+  useEffect(() => {
+      const el = scroller.current;
+      if (!el) return;
+      if (!userNearBottom) return;
+
+      requestAnimationFrame(() => {
+          el.scrollTo({
+              top: el.scrollHeight,
+              behavior: "smooth",
+          });
+      });
+  }, [terminalContent, activeTypewriterLine, isPrinting, userNearBottom]);
+
+  // FIX ADDED: When printing begins, force scroll to bottom once
+  useEffect(() => {
+      if (!isPrinting || !userNearBottom) return;
+      const el = scroller.current;
+      requestAnimationFrame(() => {
+          el?.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      });
+  }, [isPrinting, userNearBottom]);
+
+  // Re-focus textarea whenever new content prints
+  useEffect(() => {
+      if (status === "inputEnabled" && !isPrinting) {
+          terminalInputRef.current?.focus();
+      }
+  }, [terminalContent, activeTypewriterLine, isPrinting, status]);
 
 	// update cursor position
 	useEffect(() => {
@@ -159,6 +217,59 @@ useEffect(() => {
 		}
 	};
 
+	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+
+		const onActivity = () => {
+			resetIdleTimer();
+		};
+
+		// Attach to window/document as before
+		window.addEventListener("mousemove", onActivity);
+		window.addEventListener("keydown", onActivity);
+		window.addEventListener("click", onActivity);
+		window.addEventListener("touchstart", onActivity);
+
+		// Also attach to the terminal form to catch clicks and keydowns inside textarea
+		const formEl = terminalFormRef.current;
+		if (formEl) {
+			formEl.addEventListener("keydown", onActivity);
+			formEl.addEventListener("click", onActivity);
+		}
+
+		// Scroll listener
+		const scrollerEl = scroller.current;
+		if (scrollerEl) scrollerEl.addEventListener("scroll", onActivity);
+
+		// Start the timer
+		resetIdleTimer();
+
+		return () => {
+			window.removeEventListener("mousemove", onActivity);
+			window.removeEventListener("keydown", onActivity);
+			window.removeEventListener("click", onActivity);
+			window.removeEventListener("touchstart", onActivity);
+
+			if (formEl) {
+				formEl.removeEventListener("keydown", onActivity);
+				formEl.removeEventListener("click", onActivity);
+			}
+
+			if (scrollerEl) scrollerEl.removeEventListener("scroll", onActivity);
+
+			clearIdleTimer();
+			setIdleVideoPlaying(false);
+		};
+	}, []);
+
+	// If idle state changes locally, ensure store is in sync (extra safety)
+	useEffect(() => {
+		console.log("Idle state changed:", isIdle);
+		setIdleVideoPlaying(isIdle);
+	}, [isIdle, setIdleVideoPlaying]);
+
+
 	const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		focusInput();
 		switch (e.key) {
@@ -195,8 +306,8 @@ useEffect(() => {
 		printingStatus(true);
 
 		if (textAnchorRef.current && terminalFormRef.current)
-			terminalFormRef.current.scrollTo({
-				top: scroller.current?.clientHeight,
+			scroller.current?.scrollTo({
+				top: scroller.current.scrollHeight,
 				behavior: "smooth",
 			});
 		setTimeout(async () => await sendCommand(command, gameId), 1000);
@@ -208,17 +319,9 @@ useEffect(() => {
 		}
 	};
 
-	const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
-		const el = scroller.current;
-		if (!el) return;
-		el.scrollTo({
-			top: el.scrollHeight,
-			behavior,
-		});
-	};
-
 	return (
 		<div className="flex h-full w-full items-center justify-center font-primary">
+			 {/* Terminal form */}
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}
@@ -249,12 +352,12 @@ useEffect(() => {
 						<Typewriter />
 
 						{status === "inputEnabled" && (
-							<div id="scroller" className="flex w-full flex-row gap-2">
-								<div
-									ref={textAnchorRef}
-									id="input-anchor"
-									className="font-secondary"
-								/>
+							<div className="flex w-full flex-row gap-2">
+									<div
+											ref={textAnchorRef}
+											id="input-anchor"
+											className="font-secondary"
+									/>
 							</div>
 						)}
 					</div>

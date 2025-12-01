@@ -4,7 +4,7 @@ import { Button } from "./ui/Button";
 
 export const EditorFooter = () => {
 	return (
-		<footer className="fixed bottom-0 mt-4 mb-1 flex w-screen items-center justify-center gap-2 rounded-2xl not-dark:bg-transparent px-4 py-4">
+		<footer className="fixed bottom-0 z-25 mt-4 mb-1 flex w-screen items-center justify-center gap-2 rounded-2xl not-dark:bg-transparent px-4 py-4">
 			<div className="r-4 relative flex w-full max-w-[1200px] flex-row items-center justify-between gap-2 ">
 				<div className="flex grow" />
 				<div className="flex gap-2">

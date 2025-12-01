@@ -8,9 +8,8 @@ import { APP_DATA } from "@/data/app.data";
 import {
 	HELP_CONTAINER,
 	HELP_EXITS,
-	HELP_INSPECT,
+	HELP_INTERACT,
 	HELP_INVENTORY,
-	HELP_REACT,
 	HELP_TEXTS,
 } from "@/data/help.data";
 import {
@@ -27,6 +26,7 @@ import {
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
+import UIPanelStore from "@/lib/stores/terminal.uiPanel.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -258,6 +258,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	clear: () => {
 		clearTerminalContent();
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	connect: async () => {
 		if (WalletStore().isConnected) {
@@ -340,7 +345,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				Object.entries(HELP_TEXTS)
 					.map(
 						([cmd, content]) =>
-							`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples}\n${content.more}`,
+							`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.more}`,
 					)
 					.join("\n\n"),
 			format: "hash",
@@ -350,7 +355,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	help_react: () => {
 		// Handle help inspect command
 		addTerminalContent({
-			text: `available commands:\n\n${Object.entries(HELP_REACT)
+			text: `available commands:\n\n${Object.entries(HELP_INTERACT)
 				.map(
 					([cmd, content]) =>
 						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
@@ -449,6 +454,38 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		addTerminalContent({
 			text: JSON.stringify(dest, null, 2),
 			format: "system",
+			useTypewriter: true,
+		});
+	},
+	ui: (context: commandContext) => {
+		const panel = UIPanelStore();
+
+		// ui show
+		if (context.args[0] === "show") {
+			panel.show();
+			addTerminalContent({
+				text: "UI panel shown.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// ui hide
+		if (context.args[0] === "hide") {
+			panel.hide();
+			addTerminalContent({
+				text: "UI panel hidden.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// Invalid usage
+		addTerminalContent({
+			text: `Usage:\n  ui show\n  ui hide`,
+			format: "error",
 			useTypewriter: true,
 		});
 	},

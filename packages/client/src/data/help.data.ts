@@ -8,7 +8,7 @@ interface HelpContent {
 export const HELP_TEXTS: Record<string, HelpContent> = {
 	CommandSummary: {
 		description:
-			"A few possibilities surface through the haze of your mind",
+			"A few possibilities surface through the haze of your mind:",
 		usage: "\n >look [around]\n >look|examine|inspect [object]\n >pick up [object]\n >use [object] on [target]\n >use [exit]\n >go through [exit]\n coins_balance \n\n",
 		examples: [
 			"look around",
@@ -16,7 +16,7 @@ export const HELP_TEXTS: Record<string, HelpContent> = {
 			"examine the bottle",
 			"pick up the key",
 		],
-		more: "Use:\n `help_exits`\n `help_react`\n `help_container`\n `help_inventory`\n for more information",
+		more: "Use:\n `help_exits`\n `help_interact`\n `help_container`\n `help_inventory`\n for more information",
 	},
 // Exits: {
 // 	description:
@@ -49,19 +49,19 @@ export const HELP_TEXTS: Record<string, HelpContent> = {
 // },
 };
 
-export const HELP_REACT: Record<string, HelpContent> = {
+export const HELP_INTERACT: Record<string, HelpContent> = {
 	look:{
-		description: "Examine your surroundings or superficial description of objects",
+		description: "Check your surroundings or get an initial description of objects",
 		usage: "look [around] | look at [object]",
 		examples: ["look around", "look at tree"],
 	},
 	examine: {
-		description: "Examine specific objects, gives more information",
+		description: "Examine specific objects, gets more information about them",
 		usage: "examine [object]",
 		examples: ["examine the bag"],
 	},
 	inspect: {
-		description: "Examine specific objects, gives more information",
+		description: "Inspect specific objects, gets more information about them",
 		usage: "inspect [object]",
 		examples: ["inspect the noticeboard"],
 	},
@@ -109,7 +109,7 @@ export const HELP_CONTAINER: Record<string, HelpContent> = {
 		examples: ["close the bag", "close the box"],
 	},
 	check: {
-		description: "Checks a specific container and gives information about it",
+		description: "Checks a specific container object and gets information about it",
 		usage: "check [container]",
 		examples: ["check the bag", "check the box"],
 	},
@@ -130,7 +130,7 @@ export const HELP_INVENTORY: Record<string, HelpContent> = {
 		examples: ["drop paper", "drop the key"],
 	},
 	take: {
-		description: "Takes an object from a specific container and places in the ground",
+		description: "Takes an object from a specific container and places it in the ground",
 		usage: "take [object] from [container]",
 		examples: ["take paper from the bag", "take the key from the box"],
 	},
