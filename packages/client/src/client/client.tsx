@@ -7,6 +7,7 @@ import Terminal from "./terminal/Terminal";
 import { useTerminalStore } from "@lib/stores/terminal.store";
 import { useUIPanelStore } from "@lib/stores/terminal.uiPanel.store";
 import UIPanel from "./terminal/Terminal.uiPanel";
+import "./styles/uiPanel.css";
 
 export const Client = () => {
 	useHead({
@@ -50,7 +51,7 @@ export const Client = () => {
 
 				{/* UIPanel (fixed height content, never overlaps) */}
 				{visible && (
-					<div className="z-40 w-full max-w-[900px] px-4 pt-4 flex-none max-h-[30vh] overflow-y-auto">
+					<div className="z-40 w-full max-w-[900px] px-4 pt-4 flex-none max-h-[30vh] overflow-y-auto no-scrollbar">
 						<UIPanel
 							location={location}
 							exits={exits}
