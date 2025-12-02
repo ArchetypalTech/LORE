@@ -64,7 +64,7 @@ export const Client = () => {
 				</div>
 
 				{/* Terminal */}
-				<div className="crt buzzing flex-none w-full md:max-h-[70%] h-[70%] flex items-center justify-center overflow-hidden">
+				<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
 					<Terminal/>
 				</div>
 

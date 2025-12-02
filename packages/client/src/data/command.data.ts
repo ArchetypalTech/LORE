@@ -27,6 +27,7 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore from "@/lib/stores/terminal.uiPanel.store";
+import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
 /**
  * Context object passed to each terminal command handler
@@ -464,6 +465,9 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// ui show
 		if (context.args[0] === "show") {
 			panel.show();
+			const gameId = GameStore().gameId;
+			if (!gameId) return;
+			queryPanelInfo(BigInt(gameId));
 			addTerminalContent({
 				text: "UI panel shown.",
 				format: "system",

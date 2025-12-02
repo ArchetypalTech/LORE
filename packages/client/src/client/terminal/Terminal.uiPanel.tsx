@@ -1,39 +1,43 @@
-import { useEffect } from "react";
-import { useCurrentGameId } from "../../lib/stores/game.store"; 
 import { queryPlayerLocationPerGame } from "../../editor/data/editor.data";
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
 
+
+
+/**
+ * Fetches the current player's location for a given gameId
+ * and updates the UIPanel store.
+ * @param gameId The game ID to query
+ */
+export const queryPanelInfo = async (gameId: bigint) => {
+  if (!gameId) return;
+
+  try {
+    const loc = await queryPlayerLocationPerGame(gameId);
+    if (!loc) return;
+
+    // update the store directly
+    useUIPanelStore.getState().setLocation(loc);
+  } catch (err) {
+    console.error("Failed to query panel info:", err);
+  }
+};
+
+// --- UIPanel component ---
 export default function UIPanel() {
-  const { location, exits, puzzles, setLocation } = useUIPanelStore();
-  const gameId = useCurrentGameId();
-
-  useEffect(() => {
-    if (!gameId) return;
-
-    const fetchLocation = async () => {
-      try {
-        const loc = await queryPlayerLocationPerGame(BigInt(gameId));
-        if (loc) {
-          setLocation(loc);
-        }
-      } catch (err) {
-        console.error("Failed to fetch player location:", err);
-      }
-    };
-
-    fetchLocation();
-  }, [gameId, setLocation]);
+  const { location, exits, puzzles } = useUIPanelStore();
 
   return (
     <div className="ui-panel w-full p-4">
       <div className="backdrop-blur-md bg-black/60 rounded-2xl border border-emerald-500/40 shadow-xl p-4 text-green-300 font-primary">
         <div className="grid grid-cols-3 gap-4">
-          
+
+          {/* Location */}
           <div>
             <h3 className="text-amber-300 font-bold mb-1">Location</h3>
             <p className="text-sm">{location || "Loading..."}</p>
           </div>
 
+          {/* Exits */}
           <div>
             <h3 className="text-amber-300 font-bold mb-1">Exits</h3>
             <ul className="space-y-1 text-sm">
@@ -49,6 +53,7 @@ export default function UIPanel() {
             </ul>
           </div>
 
+          {/* Puzzles */}
           <div>
             <h3 className="text-amber-300 font-bold mb-1">Puzzles</h3>
             <ul className="space-y-1 text-sm">

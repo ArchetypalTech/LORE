@@ -1,7 +1,7 @@
 import JSONbig from "json-bigint";
 import { LORE_CONFIG } from "@lib/config";
 import { toast } from "sonner";
-import { addAddressPadding, type BigNumberish, num } from "starknet";
+import { addAddressPadding, type BigNumberish, num, wallet } from "starknet";
 import type { TokenBalances } from "@dojoengine/torii-client";
 import type {
 	Entity,
@@ -1352,6 +1352,7 @@ export const queryGameComponents = async (gameId: BigNumberish) => {
 export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<string | undefined> => {
 	let player_location: string | undefined;
 	const player_inst = "0x00e0c2c6ce0cdff92c8e857cbde8b7e1ff75cabd59d015389e90aef0a033a976";
+	const player_address = getPlayerAddress();
 	try {
 		// 1. Get the original player component
 		const { sdk } = await InitDojo();
@@ -1362,7 +1363,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<string
       .withEntityModels(["lore-Player"]);
 		const result_player = await sdk.getEntities({ query: query_player });
 		const player = result_player.getItems().find((item) => { 
-			return item.models?.lore?.Player?.inst === player_inst 
+			return item.models?.lore?.Player?.address === player_address 
 		});
 		console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 		const playerInst = BigInt(player?.models?.lore?.Player?.inst ?? 0);
