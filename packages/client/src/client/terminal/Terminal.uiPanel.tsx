@@ -1,4 +1,7 @@
-import { queryPlayerLocationPerGame } from "../../editor/data/editor.data";
+import { 
+  queryPlayerLocationPerGame,
+  queryExitsPerGame,
+} from "../../lib/queriesPanel/uiPanelQueries";
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
 
 
@@ -12,11 +15,13 @@ export const queryPanelInfo = async (gameId: bigint) => {
   if (!gameId) return;
 
   try {
-    const loc = await queryPlayerLocationPerGame(gameId);
-    if (!loc) return;
+    const [location_name, location_inst] = await queryPlayerLocationPerGame(gameId);
+    if (!location_name) return;
+    const exits = await queryExitsPerGame(gameId, location_inst!);
 
     // update the store directly
-    useUIPanelStore.getState().setLocation(loc);
+    useUIPanelStore.getState().setLocation(location_name);
+    useUIPanelStore.getState().setExits(exits);
   } catch (err) {
     console.error("Failed to query panel info:", err);
   }
@@ -57,9 +62,9 @@ export default function UIPanel() {
           <div>
             <h3 className="text-amber-300 font-bold mb-1">Puzzles</h3>
             <ul className="space-y-1 text-sm">
-              {puzzles.map((puzzle, idx) => (
-                <li key={idx} className="border-b border-emerald-600/30 pb-1">
-                  {puzzle}
+              {puzzles.map((e) => (
+                <li key={e.name} className="border-b border-emerald-600/30 pb-1">
+                  {e.name}
                 </li>
               ))}
             </ul>
