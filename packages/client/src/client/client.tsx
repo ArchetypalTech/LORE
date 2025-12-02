@@ -7,7 +7,7 @@ import Terminal from "./terminal/Terminal";
 import { useTerminalStore } from "@lib/stores/terminal.store";
 import { useUIPanelStore } from "@lib/stores/terminal.uiPanel.store";
 import UIPanel from "./terminal/Terminal.uiPanel";
-import "./styles/uiPanel.css";
+import "../styles/uiPanel.css";
 
 export const Client = () => {
 	useHead({
