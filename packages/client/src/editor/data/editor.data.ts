@@ -1350,9 +1350,11 @@ export const queryGameComponents = async (gameId: BigNumberish) => {
 };
 
 export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<string | undefined> => {
+	console.log("DEBUG: queryPlayerLocationPerGame() gameId: ", gameId);
 	let player_location: string | undefined;
 	const player_inst = "0x00e0c2c6ce0cdff92c8e857cbde8b7e1ff75cabd59d015389e90aef0a033a976";
 	const player_address = getPlayerAddress();
+	console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
 	try {
 		// 1. Get the original player component
 		const { sdk } = await InitDojo();
@@ -1362,6 +1364,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<string
       .includeHashedKeys()
       .withEntityModels(["lore-Player"]);
 		const result_player = await sdk.getEntities({ query: query_player });
+		console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
 		const player = result_player.getItems().find((item) => { 
 			return item.models?.lore?.Player?.address === player_address 
 		});
