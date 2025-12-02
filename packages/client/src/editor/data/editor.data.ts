@@ -1349,10 +1349,14 @@ export const queryGameComponents = async (gameId: BigNumberish) => {
 	}
 };
 
+const normalizeAddressZero = (addr: string): string => {
+  return addr.replace(/^0x0+/, "0x").toLowerCase();
+}
+
 export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<string | undefined> => {
 	console.log("DEBUG: queryPlayerLocationPerGame() gameId: ", gameId);
 	let player_location: string | undefined;
-	const player_address = BigInt(getPlayerAddress()).toString();
+	const player_address = getPlayerAddress();
 	console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
 	try {
 		// 1. Get the original player component
@@ -1365,8 +1369,9 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<string
 		const result_player = await sdk.getEntities({ query: query_player });
 		console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
 
-		const player = result_player.getItems().find((item) => { 
-			return item.models?.lore?.Player?.address === player_address; 
+		const player = result_player.getItems().find((item) => {
+			const addr = item.models?.lore?.Player?.address;
+			return addr ? normalizeAddressZero(addr) === player_address : false;
 		});
 		console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 
