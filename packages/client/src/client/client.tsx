@@ -44,12 +44,12 @@ export const Client = () => {
 					className="fixed inset-0 w-screen h-screen object-cover z-[50]"
 				/>
 			)}
-			
-			<div className="relative w-full h-full flex items-center justify-center">
 
-				{/* UI Panel positioned ABOVE the terminal */}
+			<div className="relative w-full h-full flex flex-col items-center justify-start">
+
+				{/* UI panel ABOVE terminal */}
 				{visible && (
-					<div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-[900px] px-4">
+					<div className="w-full max-w-[900px] px-4 z-40 mb-4">
 						<UIPanel
 							location={location}
 							exits={exits}
@@ -63,7 +63,7 @@ export const Client = () => {
 					<img src={bg} alt="oruggin-background" />
 				</div>
 
-				{/* Terminal itself */}
+				{/* Terminal (now sits BELOW panel without overlap) */}
 				<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
 					<Terminal />
 				</div>
