@@ -1,17 +1,29 @@
+import { useEffect } from "react";
+import { useCurrentGameId } from "../../lib/stores/game.store"; 
+import { queryPlayerLocationPerGame } from "../../editor/data/editor.data";
+import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
 
+export default function UIPanel() {
+  const { location, exits, puzzles, setLocation } = useUIPanelStore();
+  const gameId = useCurrentGameId();
 
-interface UIBoxProps {
-  location: string;
-  exits: { id: number; name: string; direction: string; destination: string }[];
-  puzzles: string[];
-}
+  useEffect(() => {
+    if (!gameId) return;
 
+    const fetchLocation = async () => {
+      try {
+        const loc = await queryPlayerLocationPerGame(BigInt(gameId));
+        if (loc) {
+          setLocation(loc);
+        }
+      } catch (err) {
+        console.error("Failed to fetch player location:", err);
+      }
+    };
 
-/**
-* UI.Panel — a floating panel that overlays the Terminal.
-* It auto-expands but never goes smaller than Terminal width.
-*/
-export default function UIPanel({ location, exits, puzzles }: UIBoxProps) {
+    fetchLocation();
+  }, [gameId, setLocation]);
+
   return (
     <div className="ui-panel w-full p-4">
       <div className="backdrop-blur-md bg-black/60 rounded-2xl border border-emerald-500/40 shadow-xl p-4 text-green-300 font-primary">
@@ -19,7 +31,7 @@ export default function UIPanel({ location, exits, puzzles }: UIBoxProps) {
           
           <div>
             <h3 className="text-amber-300 font-bold mb-1">Location</h3>
-            <p className="text-sm">{location}</p>
+            <p className="text-sm">{location || "Loading..."}</p>
           </div>
 
           <div>

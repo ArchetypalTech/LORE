@@ -28,7 +28,7 @@ export const Client = () => {
 	});
 
 	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
-	const { visible, location, exits, puzzles } = useUIPanelStore();
+	const { visible, exits, puzzles } = useUIPanelStore();
 
 	return (
 		<div
@@ -52,10 +52,7 @@ export const Client = () => {
 				{visible && (
 					<>
 						<div className="z-40 w-full max-w-[900px] px-4 pt-4 flex-none max-h-[30vh] overflow-y-auto no-scrollbar">
-							<UIPanel 
-							location={location} 
-							exits={exits} 
-							puzzles={puzzles}/>
+							<UIPanel/>
 						</div>
 						<div className="flex-none h-3" />
 					</>
