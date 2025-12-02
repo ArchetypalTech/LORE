@@ -30,7 +30,7 @@ export const Client = () => {
 	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
 	const { visible, location, exits, puzzles } = useUIPanelStore();
 
-		return (
+			return (
 		<div
 			id="client-root"
 			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center overflow-hidden"
@@ -49,15 +49,20 @@ export const Client = () => {
 
 			<div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden">
 
-				{/* UIPanel (fixed height content, never overlaps) */}
+				{/* UIPanel (fixed height, scrollable, never overlaps) */}
 				{visible && (
-					<div className="z-40 w-full max-w-[900px] px-4 pt-4 flex-none max-h-[30vh] overflow-y-auto no-scrollbar">
-						<UIPanel
-							location={location}
-							exits={exits}
-							puzzles={puzzles}
-						/>
-					</div>
+					<>
+						<div className="z-40 w-full max-w-[900px] px-4 pt-4 flex-none max-h-[30vh] overflow-y-auto no-scrollbar">
+							<UIPanel
+								location={location}
+								exits={exits}
+								puzzles={puzzles}
+							/>
+						</div>
+
+						{/* Permanent gap between panel and terminal */}
+						<div className="h-3" />
+					</>
 				)}
 
 				{/* Artwork background */}
@@ -65,8 +70,8 @@ export const Client = () => {
 					<img src={bg} alt="oruggin-background" />
 				</div>
 
-				{/* Terminal (fills remaining height) */}
-				<div className="crt buzzing flex-1 flex w-full items-center justify-center max-h-full overflow-hidden">
+				{/* Terminal (fixed original size, never shrinks) */}
+				<div className="crt buzzing flex-none w-full md:max-h-[70%] h-full flex items-center justify-center overflow-hidden">
 					<Terminal />
 				</div>
 			</div>
