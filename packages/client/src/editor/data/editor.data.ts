@@ -1365,11 +1365,14 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<string
       .withEntityModels(["lore-Player"]);
 		const result_player = await sdk.getEntities({ query: query_player });
 		console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
+
 		const player = result_player.getItems().find((item) => { 
-			return item.models?.lore?.Player?.address === player_address 
+			return item.models?.lore?.Player?.address === BigInt(player_address).toString() 
 		});
 		console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
+
 		const playerInst = BigInt(player?.models?.lore?.Player?.inst ?? 0);
+		console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
 		if (!playerInst) {
 			console.error("ERROR: queryPlayerLocationPerGame() playerInst is undefined");
 			return undefined;
