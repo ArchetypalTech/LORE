@@ -34,45 +34,53 @@ export const Client = () => {
 			id="client-root"
 			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center"
 		>
-				{/* Fullscreen idle video overlay — now in front of terminal */}
-				{idleVideoPlaying && (
-					<video
-						autoPlay
-						loop
-						playsInline
-						src="/video/ORugTrailer_NQ.mp4"
-						className="fixed inset-0 w-screen h-screen object-cover z-[50]"
-					/>
+			{/* Idle video */}
+			{idleVideoPlaying && (
+				<video
+					autoPlay
+					loop
+					playsInline
+					src="/video/ORugTrailer_NQ.mp4"
+					className="fixed inset-0 w-screen h-screen object-cover z-[50]"
+				/>
+			)}
+			
+			<div className="relative w-full h-full flex items-center justify-center">
+
+				{/* UI Panel positioned ABOVE the terminal */}
+				{visible && (
+					<div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-[900px] px-4">
+						<UIPanel
+							location={location}
+							exits={exits}
+							puzzles={puzzles}
+						/>
+					</div>
 				)}
 
-				{visible && (
-					<UIPanel
-					location={location}
-					exits={exits}
-					puzzles={puzzles}
-					/>
-				)}
-			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
-				<img src={bg} alt="oruggin-background" />
+				{/* Artwork background */}
+				<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
+					<img src={bg} alt="oruggin-background" />
+				</div>
+
+				{/* Terminal itself */}
+				<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
+					<Terminal />
+				</div>
 			</div>
-			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
-				<Terminal />
-			</div>
-			<div className="fixed hidden items-center md:grid grid-cols-3 grid-cols-[.5fr 1fr .5fr] bottom-4 w-full px-4">
-				<AudioControls></AudioControls>
+
+			{/* Audio + Footer */}
+			<div className="fixed hidden md:grid grid-cols-3 grid-cols-[.5fr 1fr .5fr] bottom-4 w-full px-4">
+				<AudioControls />
 				<p className="text-center text-xs text-amber-300">
 					Liked the game? Leave a comment on our{" "}
-					<a
-						aria-label="leave a comment"
-						className="comments underline"
-						href="https://archetypaltech.itch.io/oruggin-trail"
-					>
+					<a aria-label="leave a comment" className="comments underline" href="https://archetypaltech.itch.io/oruggin-trail">
 						Itch.io
 					</a>{" "}
 					page!
 				</p>
 				<span className="min-w-3">
-					<AudioPlayer></AudioPlayer>
+					<AudioPlayer />
 				</span>
 			</div>
 		</div>
