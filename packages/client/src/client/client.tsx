@@ -77,8 +77,8 @@ export const Client = () => {
 			</div>
 
 			{/* Audio + Footer */}
-			<div className="fixed hidden md:grid grid-cols-3 grid-cols-[.5fr 1fr .5fr] bottom-4 w-full px-4">
-				<AudioControls />
+			<div className="fixed hidden items-center md:grid grid-cols-3 grid-cols-[.5fr 1fr .5fr] bottom-4 w-full px-4">
+				<AudioControls></AudioControls>
 				<p className="text-center text-xs text-amber-300">
 					Liked the game? Leave a comment on our{" "}
 					<a
@@ -91,7 +91,7 @@ export const Client = () => {
 					page!
 				</p>
 				<span className="min-w-3">
-					<AudioPlayer />
+					<AudioPlayer></AudioPlayer>
 				</span>
 			</div>
 		</div>
