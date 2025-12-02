@@ -29,11 +29,12 @@ export const Client = () => {
 	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
 	const { visible, location, exits, puzzles } = useUIPanelStore();
 
-	return (
+		return (
 		<div
 			id="client-root"
-			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center"
+			className="relative flex h-screen w-screen max-h-[100dvh] items-center justify-center overflow-hidden"
 		>
+
 			{/* Idle video */}
 			{idleVideoPlaying && (
 				<video
@@ -45,11 +46,11 @@ export const Client = () => {
 				/>
 			)}
 
-			<div className="relative w-full h-full flex flex-col items-center justify-start">
+			<div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden">
 
-				{/* UI panel ABOVE terminal */}
+				{/* UIPanel (fixed height content, never overlaps) */}
 				{visible && (
-					<div className="w-full max-w-[900px] px-4 z-40 mb-4">
+					<div className="z-40 w-full max-w-[900px] px-4 pt-4 flex-none max-h-[30vh] overflow-y-auto">
 						<UIPanel
 							location={location}
 							exits={exits}
@@ -63,8 +64,8 @@ export const Client = () => {
 					<img src={bg} alt="oruggin-background" />
 				</div>
 
-				{/* Terminal (now sits BELOW panel without overlap) */}
-				<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
+				{/* Terminal (fills remaining height) */}
+				<div className="crt buzzing flex-1 flex w-full items-center justify-center max-h-full overflow-hidden">
 					<Terminal />
 				</div>
 			</div>
@@ -74,7 +75,11 @@ export const Client = () => {
 				<AudioControls />
 				<p className="text-center text-xs text-amber-300">
 					Liked the game? Leave a comment on our{" "}
-					<a aria-label="leave a comment" className="comments underline" href="https://archetypaltech.itch.io/oruggin-trail">
+					<a
+						aria-label="leave a comment"
+						className="comments underline"
+						href="https://archetypaltech.itch.io/oruggin-trail"
+					>
 						Itch.io
 					</a>{" "}
 					page!
