@@ -182,16 +182,18 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
 
     for (const exitModel of exitModels) {
       console.log("DEBUG: queryExitsPerGame() exitModel: ", exitModel);
-      if (!exitModel.inst || !exitModel.leads_to) {
+      if (!exitModel.inst && !exitModel.leads_to) {
         console.warn("Skipping exitModel missing required fields:", exitModel);
         continue;
       }
 
-      const exitInst = BigInt(exitModel.inst.toString());
+      const exitInst = BigInt(exitModel!.inst!.toString());
+      console.log("DEBUG: queryExitsPerGame() exitInst: ", exitInst);
       const exitEntity = await queryEntity(exitInst);
       console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
 
       const leadsToInst = BigInt(exitModel.leads_to.toString());
+      console.log("DEBUG: queryExitsPerGame() leadsToInst: ", leadsToInst);
       const exitLeadsToEntity = await queryEntity(leadsToInst);
       console.log("DEBUG: queryExitsPerGame() exitLeadsToEntity: ", exitLeadsToEntity);
 
@@ -299,6 +301,8 @@ const queryEntity = async (inst: bigint): Promise<Partial<Entity> | undefined> =
   
   const entity_item = result_entity.getItems().find((item) => {
     const instHex = item.models?.lore?.Entity?.inst;
+    console.log("DEBUG: queryEntity() instHex: ", instHex);
+    console.log("DEBUG: queryEntity() inst: ", inst);
     return instHex !== undefined && BigInt(instHex) === inst;
   });
   console.log("DEBUG: queryEntity() entity_item: ", entity_item);
