@@ -181,6 +181,7 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     let counter = 0;
 
     for (const exitModel of exitModels) {
+      console.log("DEBUG: queryExitsPerGame() exitModel: ", exitModel);
       if (!exitModel.inst || !exitModel.leads_to) {
         console.warn("Skipping exitModel missing required fields:", exitModel);
         continue;
@@ -269,10 +270,7 @@ const queryExitGIMap = async (gameInst: bigint, childInst: bigint): Promise<Part
   const result_child_exit = await sdk.getEntities({ query: query_child_exit });
   console.log("DEBUG: queryChildExit() result_child_exit: ", result_child_exit);
   
-  const child_exit_item = result_child_exit.getItems().find((item) => {
-    const instHex = item.models?.lore?.Exit?.inst;
-    return instHex !== undefined && BigInt(instHex) === childInst;
-  });
+  const child_exit_item = result_child_exit.getItems().at(0);
   console.log("DEBUG: queryChildExit() child_exit_item: ", child_exit_item);
   // if (!child_exit_item) {
   //   console.error("ERROR: queryChildExit() child_exit_item is undefined");
