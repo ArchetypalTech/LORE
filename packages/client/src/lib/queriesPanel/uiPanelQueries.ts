@@ -156,6 +156,28 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
   let exits: ExitInfo[] = [];
   
   try {
+    // 1. Query the lore-ParentToChild model and get the one whose inst is equal to playerlocationInst
+    // const { sdk } = await InitDojo();
+    // const query_parent_child = new ToriiQueryBuilder<SchemaType>()
+    //   .withCursor("")
+    //   .withLimit(1000)
+    //   .includeHashedKeys()
+    //   .withClause(
+    //     new ClauseBuilder<SchemaType>().keys(
+    //       ["lore-ParentToChild"],
+    //       [bigintToHex128(gameId), bigintToAddress(playerLocationInst)]
+    //     ).build()
+    //   )
+    //   .withEntityModels(["lore-ParentToChild"]);
+    // const result_parent_child = await sdk.getEntities({ query: query_parent_child });
+    // console.log("DEBUG: queryExitsPerGame() result_parent_child: ", result_parent_child);
+    
+    // const parent_child = result_parent_child.getItems().find((item) => {
+    //   return item.models?.lore?.ParentToChild?.inst === playerLocationInst;
+    // });
+    // console.log("DEBUG: queryExitsPerGame() parent_child: ", parent_child);
+
+
     // 1. Query the lore-ParentChild model using the GIMap and the player location entity
     const { sdk } = await InitDojo();
     const query_parent_child = new ToriiQueryBuilder<SchemaType>()
@@ -164,11 +186,11 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
       .includeHashedKeys()
       .withClause(
         new ClauseBuilder<SchemaType>().keys(
-          ["lore-ParentChild"],
+          ["lore-ParentToChild"],
           [bigintToHex128(gameId), bigintToAddress(playerLocationInst)]
         ).build()
       )
-      .withEntityModels(["lore-ParentChild"]);
+      .withEntityModels(["lore-ParentToChild"]);
     const result_parent_child = await sdk.getEntities({ query: query_parent_child });
     console.log("DEBUG: queryExitsPerGame() result_parent_child: ", result_parent_child);
     
