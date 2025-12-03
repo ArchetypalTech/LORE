@@ -323,7 +323,8 @@ const queryParentToChildren = async ( playerLocationInst: bigint): Promise<Parti
     console.log("DEBUG: queryExitsPerGame() result_parent_children: ", result_parent_children);
     
     const parent_children = result_parent_children.getItems().find((item) => {
-      return item.models?.lore?.ParentToChildren?.inst === playerLocationInst;
+      const instHex = item.models?.lore?.ParentToChildren?.inst;
+      return instHex !== undefined && BigInt(instHex) === playerLocationInst;
     });
     console.log("DEBUG: queryExitsPerGame() parent_children: ", parent_children);
     if (!parent_children) {
