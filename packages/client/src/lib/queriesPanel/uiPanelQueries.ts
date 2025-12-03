@@ -1,7 +1,7 @@
 import { getPlayerAddress } from "../../editor/lib/components";
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
-import { SchemaType, ParentToChildren } from "@/lib/dojo_bindings/typescript/models.gen";
+import { SchemaType, ParentToChildren, Exit } from "@/lib/dojo_bindings/typescript/models.gen";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo } from "../stores/terminal.uiPanel.store";
@@ -174,9 +174,23 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     // });
     // console.log("DEBUG: queryExitsPerGame() parent_children: ", parent_children);
 
-    const children = queryParentToChildren(playerLocationInst);
-    console.log("DEBUG: queryExitsPerGame() children: ", children);
+    const parentToChildren =  await queryParentToChildren(playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() parentToChildren: ", parentToChildren);
 
+    // 2. For each child, query the lore-Exit model
+    let exitModels: Partial<Exit>[] = [];
+
+    if (parentToChildren?.children?.length) {
+      for (const child of parentToChildren.children) {
+        const childBigInt = BigInt(child.toString());
+        const childExit = await queryChildExit(childBigInt);
+
+        if (childExit) {
+          exitModels.push(childExit);
+        }
+      }
+    }
+    console.log("DEBUG: queryExitsPerGame() exitModels: ", exitModels);
 
     // // 1. Query the lore-ParentChild model using the GIMap and the player location entity
     // const { sdk } = await InitDojo();
@@ -337,4 +351,34 @@ const queryParentToChildren = async ( playerLocationInst: bigint): Promise<Parti
     throw error;
   }
   return parent_to_children;
+};
+
+const queryChildExit = async (childInst: bigint): Promise<Partial<Exit> | undefined> => {
+  let child_exit: Partial<Exit> | undefined;
+  const { sdk } = await InitDojo();
+  const query_child_exit = new ToriiQueryBuilder<SchemaType>()
+    .withCursor("")
+    .withLimit(1000)
+    .includeHashedKeys()
+    .withClause(
+      new ClauseBuilder<SchemaType>().keys(
+        ["lore-Exit"],
+        [bigintToAddress(childInst)]
+      ).build()
+    )
+    .withEntityModels(["lore-Exit"]);
+  const result_child_exit = await sdk.getEntities({ query: query_child_exit });
+  console.log("DEBUG: queryChildExit() result_child_exit: ", result_child_exit);
+  
+  const child_exit_item = result_child_exit.getItems().find((item) => {
+    const instHex = item.models?.lore?.Exit?.inst;
+    return instHex !== undefined && BigInt(instHex) === childInst;
+  });
+  console.log("DEBUG: queryChildExit() child_exit_item: ", child_exit_item);
+  if (!child_exit_item) {
+    console.error("ERROR: queryChildExit() child_exit_item is undefined");
+    return undefined;
+  }
+  child_exit = child_exit_item?.models?.lore?.Exit;
+  return child_exit;
 };
