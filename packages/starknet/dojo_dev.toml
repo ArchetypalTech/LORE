@@ -10,9 +10,9 @@ default = "lore_strk"
 rpc_url = "http://localhost:50000/"
 slot_name = "lore_strk-stage"
 
+world_address = "0x03bd2ce4af00a298fb73f997972c6cc39a6cab58f6bf9a1d16b98431da1b3dc7"
 account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
 private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
-world_address = "0x03bd2ce4af00a298fb73f997972c6cc39a6cab58f6bf9a1d16b98431da1b3dc7`"
 
 [writers]
 "lore_strk" = ["lore_strk-actions_strk"]

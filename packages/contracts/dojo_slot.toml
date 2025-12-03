@@ -10,15 +10,21 @@ default = "lore"
 rpc_url = "https://api.cartridge.gg/x/orug-slot/katana"
 slot_name = "orug-slot"
 
+world_address = "0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403"
 account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
 private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
-world_address = "0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403`"
 
 [lib_versions]
 "lore-lexer" = "0_2_0"
 
 [writers]
-"lore" = ["lore-designer", "lore-prompt", "lore-game_token", "lore-trail_token"]
+"lore" = [
+  "lore-designer",
+  "lore-prompt",
+  "lore-game_token",
+  "lore-trail_token",
+  "lore-actions_lore",
+]
 
 [init_call_args]
 "lore-designer" = [

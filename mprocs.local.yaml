@@ -1,4 +1,9 @@
 procs:
+  katana:
+    cwd: packages/contracts
+    shell: |
+      katana --version
+      katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
   contracts:
     cwd: packages/contracts
     shell: |
@@ -9,16 +14,18 @@ procs:
     shell: bun run dev
   torii:
     cwd: packages/contracts
+    env:
+      PROFILE: dev
     shell: |
-      export GAME_TOKEN_ADDRESS=0x6962da1f222d4c4209110aa24d0482c672678aa22fa91975b3bac65c5e09d67
-      export TRAIL_TOKEN_ADDRESS=0x97e9a41ae85099766f59ba50486b57b7236030389e4ac31ccd46d75039de2a
+      source ../../scripts/utils.sh
+      export WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+      export GAME_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-game_token)
+      export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-trail_token)
+      echo ">>> Dojo world: [${WORLD_ADDRESS}]"
+      echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
+      echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
       wait-port 5050
       torii --version
       torii --http.cors_origins "*" \
-        --world 0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403` \
+        --world ${WORLD_ADDRESS} \
         --indexing.contracts erc721:$GAME_TOKEN_ADDRESS,erc721:$TRAIL_TOKEN_ADDRESS
-  katana:
-    cwd: packages/contracts
-    shell: |
-      katana --version
-      katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
