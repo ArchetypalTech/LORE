@@ -1,7 +1,7 @@
 import { getPlayerAddress } from "../../editor/lib/components";
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
-import { SchemaType } from "@/lib/dojo_bindings/typescript/models.gen";
+import { SchemaType, ParentToChildren } from "@/lib/dojo_bindings/typescript/models.gen";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo } from "../stores/terminal.uiPanel.store";
@@ -36,7 +36,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
     // console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 
     const playerInst = BigInt(player?.models?.lore?.Player?.inst ?? 0);
-    console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
+    // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
     if (!playerInst) {
       console.error("ERROR: queryPlayerLocationPerGame() playerInst is undefined");
       return ([undefined, undefined]);
@@ -81,10 +81,7 @@ export const queryGameInstaceMapByPlayer = async (gameId: bigint, inst: bigint):
       ).withEntityModels(["lore-GameInstanceMap"]);
     
     const result_player_game_inst = await sdk.getEntities({ query: query_player_game_inst });
-    console.log("DEBUG: queryPlayerLocationPerGame() result_player_game_inst: ", result_player_game_inst);
-
     game_inst_map = BigInt(result_player_game_inst.getItems().at(0)?.models?.lore?.GameInstanceMap?.game_inst ?? 0);
-    
     
   } catch (error) {
     console.error("Error fetching game instance map from Torii:", error);
@@ -157,46 +154,28 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
   
   try {
     // 1. Query the lore-ParentToChild model and get the one whose inst is equal to playerlocationInst
-    const { sdk } = await InitDojo();
-    const query_parent_children = new ToriiQueryBuilder<SchemaType>()
-      .withCursor("")
-      .withLimit(1000)
-      .includeHashedKeys()
-      .withClause(
-        new ClauseBuilder<SchemaType>().keys(
-          ["lore-ParentToChildren"],
-          [bigintToHex128(gameId), bigintToAddress(playerLocationInst)]
-        ).build()
-      )
-      .withEntityModels(["lore-ParentToChildren"]);
-    const result_parent_children = await sdk.getEntities({ query: query_parent_children });
-    console.log("DEBUG: queryExitsPerGame() result_parent_child: ", result_parent_children);
+    // const { sdk } = await InitDojo();
+    // const query_parent_children = new ToriiQueryBuilder<SchemaType>()
+    //   .withCursor("")
+    //   .withLimit(1000)
+    //   .includeHashedKeys()
+    //   .withClause(
+    //     new ClauseBuilder<SchemaType>().keys(
+    //       ["lore-ParentToChildren"],
+    //       [bigintToAddress(playerLocationInst)]
+    //     ).build()
+    //   )
+    //   .withEntityModels(["lore-ParentToChildren"]);
+    // const result_parent_children = await sdk.getEntities({ query: query_parent_children });
+    // console.log("DEBUG: queryExitsPerGame() result_parent_child2: ", result_parent_children);
     
-    const parent_child = result_parent_children.getItems().find((item) => {
-      return item.models?.lore?.ParentToChildren?.inst === playerLocationInst;
-    });
-    console.log("DEBUG: queryExitsPerGame() parent_child: ", parent_child);
+    // const parent_children = result_parent_children.getItems().find((item) => {
+    //   return item.models?.lore?.ParentToChildren?.inst === playerLocationInst;
+    // });
+    // console.log("DEBUG: queryExitsPerGame() parent_children: ", parent_children);
 
-    // 2. Query the lore-ParentToChildren model using the player location entity
-    const query_parent_children2 = new ToriiQueryBuilder<SchemaType>()
-      .withCursor("")
-      .withLimit(1000)
-      .includeHashedKeys()
-      .withClause(
-        new ClauseBuilder<SchemaType>().keys(
-          ["lore-ParentToChildren"],
-          [bigintToAddress(playerLocationInst)]
-        ).build()
-      )
-      .withEntityModels(["lore-ParentToChildren"]);
-    const result_parent_children2 = await sdk.getEntities({ query: query_parent_children2 });
-    console.log("DEBUG: queryExitsPerGame() result_parent_child2: ", result_parent_children2);
-    
-    const parent_children2 = result_parent_children.getItems().find((item) => {
-      return item.models?.lore?.ParentToChildren?.inst === playerLocationInst;
-    });
-    console.log("DEBUG: queryExitsPerGame() parent_children2: ", parent_children2);
-
+    const children = queryParentToChildren(playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() children: ", children);
 
 
     // // 1. Query the lore-ParentChild model using the GIMap and the player location entity
@@ -321,4 +300,40 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     throw error;
   }
   return exits;
+};
+
+const queryParentToChildren = async ( playerLocationInst: bigint): Promise<Partial<ParentToChildren> | undefined> => {
+  let parent_to_children: Partial<ParentToChildren> | undefined;
+  
+  try {
+    // 1. Query the lore-ParentToChild model and get the one whose inst is equal to playerlocationInst
+    const { sdk } = await InitDojo();
+    const query_parent_children = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-ParentToChildren"],
+          [bigintToAddress(playerLocationInst)]
+        ).build()
+      )
+      .withEntityModels(["lore-ParentToChildren"]);
+    const result_parent_children = await sdk.getEntities({ query: query_parent_children });
+    console.log("DEBUG: queryExitsPerGame() result_parent_children: ", result_parent_children);
+    
+    const parent_children = result_parent_children.getItems().find((item) => {
+      return item.models?.lore?.ParentToChildren?.inst === playerLocationInst;
+    });
+    console.log("DEBUG: queryExitsPerGame() parent_children: ", parent_children);
+    if (!parent_children) {
+      console.error("ERROR: queryParentToChildren() parent_children is undefined");
+      return undefined;
+    }
+    parent_to_children = parent_children?.models?.lore?.ParentToChildren;
+  } catch (error) {
+    console.error("Error fetching parent_to_children from Torii:", error);
+    throw error;
+  }
+  return parent_to_children;
 };
