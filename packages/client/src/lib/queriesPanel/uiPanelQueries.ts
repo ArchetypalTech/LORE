@@ -189,6 +189,8 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
 
       const exitInst = BigInt(exitModel!.inst!.toString());
       console.log("DEBUG: queryExitsPerGame() exitInst: ", exitInst);
+      console.log("DEBUG: queryExitsPerGame() exitModel.inst: ", bigintToHex128(exitModel!.inst!));
+      console.log("DEBUG: queryExitsPerGame() exitModel.inst2: ", bigintToHex128(exitInst));
       const exitEntity = await queryEntity(exitInst);
       console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
 
@@ -292,7 +294,7 @@ const queryEntity = async (inst: bigint): Promise<Partial<Entity> | undefined> =
     .withClause(
       new ClauseBuilder<SchemaType>().keys(
         ["lore-Entity"],
-        [bigintToAddress(inst)]
+        [bigintToHex128(inst)]
       ).build()
     )
     .withEntityModels(["lore-Entity"]);
