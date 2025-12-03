@@ -17,7 +17,7 @@ export const queryPanelInfo = async (gameId: bigint) => {
   try {
     const [location_name, location_inst] = await queryPlayerLocationPerGame(gameId);
     if (!location_name) return;
-    const exits = await queryExitsPerGame(location_inst!);
+    const exits = await queryExitsPerGame(gameId, location_inst!);
 
     // update the store directly
     useUIPanelStore.getState().setLocation(location_name);

@@ -94,7 +94,6 @@ export const queryPlayerLocationGIMap = async (gameInst: bigint, origInst: bigin
   let player_location: bigint = 0n;
   try{
     const { sdk } = await InitDojo();
-    // get invItem
     const queryValue = gameInst != 0n ? gameInst : origInst;
     const query_playerComp = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
@@ -149,7 +148,7 @@ export const queryPlayerLocationEntityGIMap = async (gameInst: bigint, origInst:
 };
 
 // Exits
-export const queryExitsPerGame = async (playerLocationInst: bigint): Promise<ExitInfo[]> => {
+export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigint): Promise<ExitInfo[] | undefined> => {
   let exits: ExitInfo[] = [];
   
   try {
@@ -163,8 +162,9 @@ export const queryExitsPerGame = async (playerLocationInst: bigint): Promise<Exi
     if (parentToChildren?.children?.length) {
       for (const child of parentToChildren.children) {
         const childBigInt = BigInt(child.toString());
-        const childExit = await queryChildExit(childBigInt);
-
+        const gameInstMap = await queryGameInstaceMapByPlayer(gameId, childBigInt);
+        console.log("DEBUG: queryExitsPerGame() gameInstMap: ", gameInstMap);
+        const childExit = await queryExitGIMap(gameInstMap, childBigInt);
         if (childExit) {
           exitModels.push(childExit);
         }
@@ -251,9 +251,10 @@ const queryParentToChildren = async ( playerLocationInst: bigint): Promise<Parti
   return parent_to_children;
 };
 
-const queryChildExit = async (childInst: bigint): Promise<Partial<Exit> | undefined> => {
+const queryExitGIMap = async (gameInst: bigint, childInst: bigint): Promise<Partial<Exit> | undefined> => {
   let child_exit: Partial<Exit> | undefined;
   const { sdk } = await InitDojo();
+  const queryValue = gameInst != 0n ? gameInst : childInst;
   const query_child_exit = new ToriiQueryBuilder<SchemaType>()
     .withCursor("")
     .withLimit(1000)
@@ -261,7 +262,7 @@ const queryChildExit = async (childInst: bigint): Promise<Partial<Exit> | undefi
     .withClause(
       new ClauseBuilder<SchemaType>().keys(
         ["lore-Exit"],
-        [bigintToAddress(childInst)]
+          [bigintToHex128(queryValue)]
       ).build()
     )
     .withEntityModels(["lore-Exit"]);
