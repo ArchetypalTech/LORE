@@ -191,6 +191,7 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     if (parentToChildren?.children?.length) {
       for (const child of parentToChildren.children) {
         const childBigInt = BigInt(child.toString());
+        console.log("DEBUG: queryExitsPerGame() childBigInt: ", childBigInt);
         const gameInstMap = await queryGameInstaceMapByPlayer(gameId, childBigInt);
         console.log("DEBUG: queryExitsPerGame() gameInstMap: ", gameInstMap);
         exit = await queryExitGIMap(gameInstMap, childBigInt);
@@ -265,6 +266,9 @@ const queryExitGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partia
   let child_exit: Partial<Exit> | undefined;
   const { sdk } = await InitDojo();
   const queryValue = gameInst != 0n ? gameInst : objInst;
+  console.log("DEBUG: queryExitGIMap() gameInst: ", gameInst);
+  console.log("DEBUG: queryExitGIMap() objInst: ", objInst);
+  console.log("DEBUG: queryExitGIMap() queryValue: ", queryValue);
   const query_obj_exit = new ToriiQueryBuilder<SchemaType>()
     .withCursor("")
     .withLimit(1000)
@@ -316,36 +320,4 @@ const queryEntity = async (inst: bigint): Promise<Partial<Entity> | undefined> =
   // }
   entity = entity_item?.models?.lore?.Entity;
   return entity;
-};
-
-const queryExit = async (inst: bigint): Promise<Partial<Exit> | undefined> => {
-  let exit: Partial<Exit> | undefined;
-  const { sdk } = await InitDojo();
-  const query_exit = new ToriiQueryBuilder<SchemaType>()
-    .withCursor("")
-    .withLimit(1000)
-    .includeHashedKeys()
-    .withClause(
-      new ClauseBuilder<SchemaType>().keys(
-        ["lore-Exit"],
-        [bigintToHex128(inst)]
-      ).build()
-    )
-    .withEntityModels(["lore-Exit"]);
-  const result_exit = await sdk.getEntities({ query: query_exit });
-  console.log("DEBUG: queryEntity() result_entity: ", result_exit);
-  
-  const exit_item = result_exit.getItems().find((item) => {
-    const instHex = item.models?.lore?.Exit?.inst;
-    console.log("DEBUG: queryEntity() instHex: ", instHex);
-    console.log("DEBUG: queryEntity() inst: ", inst);
-    return instHex !== undefined && BigInt(instHex) === inst;
-  });
-  console.log("DEBUG: queryEntity() entity_item: ", exit_item);
-  // if (!entity_item) {
-  //   console.error("ERROR: queryEntity() entity_item is undefined");
-  //   return undefined;
-  // }
-  exit = exit_item?.models?.lore?.Exit;
-  return exit;
 };
