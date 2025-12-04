@@ -6,7 +6,6 @@ import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo } from "../stores/terminal.uiPanel.store";
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import { exit } from "node:process";
 
 const normalizeAddressZero = (addr: string): string => {
   return addr.replace(/^0x0+/, "0x").toLowerCase();
@@ -166,27 +165,14 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     // 2. For the parent, check it it has an exit
     const parentInst = BigInt(parentToChildren?.inst.toString());
     console.log("DEBUG: queryExitsPerGame() parentInst: ", parentInst);
-    console.log("DEBUG: queryExitsPerGame() playerLocationInst: ", playerLocationInst);
     const gameInstMap = await queryGameInstaceMapByPlayer(gameId, parentInst);
-    const gameInstMap2 = await queryGameInstaceMapByPlayer(gameId, playerLocationInst);
     console.log("DEBUG: queryExitsPerGame() gameInstMap: ", gameInstMap);
-    console.log("DEBUG: queryExitsPerGame() gameInstMap2: ", gameInstMap2);
     exit = await queryExitGIMap(gameInstMap, parentInst);
-    console.log("DEBUG: queryExitsPerGame() exitP0: ", exit);
-    const exit2 = await queryExitGIMap(gameInstMap, playerLocationInst);
-    console.log("DEBUG: queryExitsPerGame() exitP1: ", exit2);
-    const exit3 = await queryExitGIMap(gameInstMap2, parentInst);
-    console.log("DEBUG: queryExitsPerGame() exitP2: ", exit3);
-    const exit4 = await queryExitGIMap(gameInstMap2, playerLocationInst);
-    console.log("DEBUG: queryExitsPerGame() exitP3: ", exit4);
-    const exit5 = await queryExit(parentInst);
-    console.log("DEBUG: queryExitsPerGame() exitP4: ", exit5);
-    const exit6 = await queryExit(playerLocationInst);
-    console.log("DEBUG: queryExitsPerGame() exitP5: ", exit6);
+    console.log("DEBUG: queryExitsPerGame() exit: ", exit);
     if (exit) {
       console.log("DEBUG: queryExitsPerGame() exitParent: ", exit);
       // Query the exit's entity model
-      exitEntity = await queryEntity(playerLocationInst);
+      exitEntity = await queryEntity(parentInst);
       console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
       // Query the exit's leads_to entity model
       const leadsToInst = BigInt(exit.leads_to.toString());
