@@ -175,11 +175,8 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     console.log("DEBUG: queryExitsPerGame() modelsEntityExit: ", modelsEntityExit);
 
     // 3. For each exit:
-    // 3.1 Query the lore-Entity model using its inst
-    // 3.2 Query the lore-Entity model using the exit's leads_to value
-    // 3.3 Build the exitInfo object
-    // 3.4 Add exitInfo to exits array
-    let exits: ExitInfo[] = [];
+    // Query the lore-Entity model using the exit's leads_to value
+    // Build the exitInfo object and addd exitInfo to exits array
     let counter = 0;
 
     for (const modelEntityExit of modelsEntityExit) {
