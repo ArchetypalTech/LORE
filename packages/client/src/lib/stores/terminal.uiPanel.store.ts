@@ -5,7 +5,6 @@ export type ExitInfo = {
   name: string;
   direction: string | number;
   destination: string;
-  is_enterable: boolean;
 };
 
 export type PuzzleInfo = {
@@ -18,12 +17,14 @@ export type UIPanelState = {
   location: string;
   exits: ExitInfo[];
   puzzles: PuzzleInfo[];
+  loading: boolean;
 
   show: () => void;
   hide: () => void;
   setLocation: (v: string) => void;
   setExits: (v: ExitInfo[]) => void;
   setPuzzles: (v: PuzzleInfo[]) => void;
+  setLoading: (v: boolean) => void;
 };
 
 const { get, set, useStore: useUIPanelStore, createFactory } =
@@ -39,21 +40,18 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
         name: "Rust-Eaten Gate",
         direction: "north",
         destination: "Abandoned Warehouse",
-        is_enterable: true,
       },
       {
         id: 2,
         name: "Collapsed Pier",
         direction: "east",
         destination: "Tidepath Edge",
-        is_enterable: false,
       },
       {
         id: 3,
         name: "Broken Tram Line",
         direction: "south",
         destination: "Lower Rail Tunnels",
-        is_enterable: true,
       },
     ],
 
@@ -72,6 +70,8 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
       },
     ],
 
+    loading: false,
+
     // ACTIONS
     show: () => set({ visible: true }),
     hide: () => set({ visible: false }),
@@ -79,6 +79,7 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
     setLocation: (v) => set({ location: v }),
     setExits: (v) => set({ exits: v }),
     setPuzzles: (v) => set({ puzzles: v }),
+    setLoading: (v) => set({ loading: v }),
   });
 
 const UIPanelStore = createFactory({});
