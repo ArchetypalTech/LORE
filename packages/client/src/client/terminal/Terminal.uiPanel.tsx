@@ -31,7 +31,7 @@ export const queryPanelInfo = async (gameId: bigint) => {
 
 // --- UIPanel component ---
 export default function UIPanel() {
-  const { location, exits, puzzles } = useUIPanelStore();
+  const { location, exits, puzzles } = useUIPanelStore((s) => s);
 
   return (
     <div className="ui-panel w-full p-4">
