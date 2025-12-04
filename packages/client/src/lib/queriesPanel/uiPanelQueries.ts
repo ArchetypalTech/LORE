@@ -179,6 +179,10 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     console.log("DEBUG: queryExitsPerGame() exitP2: ", exit3);
     const exit4 = await queryExitGIMap(gameInstMap2, playerLocationInst);
     console.log("DEBUG: queryExitsPerGame() exitP3: ", exit4);
+    const exit5 = await queryExit(parentInst);
+    console.log("DEBUG: queryExitsPerGame() exitP4: ", exit5);
+    const exit6 = await queryExit(playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() exitP5: ", exit6);
     if (exit) {
       console.log("DEBUG: queryExitsPerGame() exitParent: ", exit);
       // Query the exit's entity model
@@ -326,4 +330,36 @@ const queryEntity = async (inst: bigint): Promise<Partial<Entity> | undefined> =
   // }
   entity = entity_item?.models?.lore?.Entity;
   return entity;
+};
+
+const queryExit = async (inst: bigint): Promise<Partial<Exit> | undefined> => {
+  let exit: Partial<Exit> | undefined;
+  const { sdk } = await InitDojo();
+  const query_exit = new ToriiQueryBuilder<SchemaType>()
+    .withCursor("")
+    .withLimit(1000)
+    .includeHashedKeys()
+    .withClause(
+      new ClauseBuilder<SchemaType>().keys(
+        ["lore-Exit"],
+        [bigintToHex128(inst)]
+      ).build()
+    )
+    .withEntityModels(["lore-Exit"]);
+  const result_exit = await sdk.getEntities({ query: query_exit });
+  console.log("DEBUG: queryEntity() result_entity: ", result_exit);
+  
+  const exit_item = result_exit.getItems().find((item) => {
+    const instHex = item.models?.lore?.Exit?.inst;
+    console.log("DEBUG: queryEntity() instHex: ", instHex);
+    console.log("DEBUG: queryEntity() inst: ", inst);
+    return instHex !== undefined && BigInt(instHex) === inst;
+  });
+  console.log("DEBUG: queryEntity() entity_item: ", exit_item);
+  // if (!entity_item) {
+  //   console.error("ERROR: queryEntity() entity_item is undefined");
+  //   return undefined;
+  // }
+  exit = exit_item?.models?.lore?.Exit;
+  return exit;
 };
