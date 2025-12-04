@@ -158,15 +158,35 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     const parentToChildren =  await queryParentToChildren(playerLocationInst);
     console.log("DEBUG: queryExitsPerGame() parentToChildren: ", parentToChildren);
 
-    // 2. For each child, query the lore-Entity and lore-Exit models
+    
     let exitEntity: Partial<Entity> | undefined;
     let exit: Partial<Exit> | undefined;
     let exitLeadsTo: Partial<Entity> | undefined;
 
+    // 2. For the parent, check it it has an exit
+    const gameInstMap = await queryGameInstaceMapByPlayer(gameId, playerLocationInst);
+    exit = await queryExitGIMap(gameInstMap, playerLocationInst);
+    if (exit) {
+      console.log("DEBUG: queryExitsPerGame() exitParent: ", exit);
+      // Query the exit's entity model
+      exitEntity = await queryEntity(playerLocationInst);
+      console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
+      // Query the exit's leads_to entity model
+      const leadsToInst = BigInt(exit.leads_to.toString());
+      exitLeadsTo = await queryEntity(leadsToInst);
+      console.log("DEBUG: queryExitsPerGame() exitLeadsTo: ", exitLeadsTo);
+      // build the exitInfo object and add it to exits array
+      exits.push({
+        id: counter++,
+        name: exitEntity?.name ?? "unknown",
+        direction: stringCairoEnum(exit.direction_type ?? "None"),
+        destination: exit.is_enterable ? (exitLeadsTo?.name ?? "unknown") : "Unknown",
+      });
+    }
+
+    // 3. For each child, query the lore-Entity and lore-Exit models
     if (parentToChildren?.children?.length) {
       for (const child of parentToChildren.children) {
-        
-
         const childBigInt = BigInt(child.toString());
         const gameInstMap = await queryGameInstaceMapByPlayer(gameId, childBigInt);
         console.log("DEBUG: queryExitsPerGame() gameInstMap: ", gameInstMap);
