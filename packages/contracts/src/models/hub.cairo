@@ -407,7 +407,7 @@ pub mod tests {
     use starknet::ContractAddress;
     use dojo::{
         // world::{WorldStorage},
-        model::{ModelStorage},
+        // model::{ModelStorage},
     };
     use super::*;
     use lore::{
@@ -415,7 +415,7 @@ pub mod tests {
             designer::{IDesignerDispatcherTrait},
             prompt::{IPromptDispatcherTrait},
             game_token::{IGameTokenDispatcherTrait},
-            trail_token::{ITrailTokenDispatcherTrait},
+            // trail_token::{ITrailTokenDispatcherTrait},
         },
         models::{
             entity::{Entity},

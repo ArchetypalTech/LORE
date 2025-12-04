@@ -422,7 +422,7 @@ pub impl PlayerComponent of Component<Player> {
 
 #[cfg(test)]
 mod tests {
-    use dojo::{model::ModelStorage};
+    // use dojo::{model::ModelStorage};
     use super::*;
     use lore::{
         tests::helpers,

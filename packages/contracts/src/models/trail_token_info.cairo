@@ -131,7 +131,7 @@ pub impl TrailProgressImpl of TrailProgressTrait {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dojo::{model::ModelStorage};
+    // use dojo::{model::ModelStorage};
     use lore::{
         tests::helpers,
     };

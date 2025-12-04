@@ -254,7 +254,7 @@ pub impl ConditionImpl of ConditionTrait {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dojo::{model::ModelStorage};
+    // use dojo::{model::ModelStorage};
     use lore::tests::helpers;
     use lore::{
         models::{

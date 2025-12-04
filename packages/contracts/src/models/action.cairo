@@ -254,7 +254,10 @@ pub impl ActionImpl of ActionTrait {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dojo::{model::ModelStorage, world::WorldStorage};
+    use dojo::{
+        world::WorldStorage,
+        // model::ModelStorage,
+    };
     use lore::tests::helpers;
     use lore::{
         models::{
