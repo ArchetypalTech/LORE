@@ -165,10 +165,20 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
 
     // 2. For the parent, check it it has an exit
     const parentInst = BigInt(parentToChildren?.inst.toString());
-    const gameInstMap = await queryGameInstaceMapByPlayer(gameId, parentInst);
     console.log("DEBUG: queryExitsPerGame() parentInst: ", parentInst);
+    console.log("DEBUG: queryExitsPerGame() playerLocationInst: ", playerLocationInst);
+    const gameInstMap = await queryGameInstaceMapByPlayer(gameId, parentInst);
+    const gameInstMap2 = await queryGameInstaceMapByPlayer(gameId, playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() gameInstMap: ", gameInstMap);
+    console.log("DEBUG: queryExitsPerGame() gameInstMap2: ", gameInstMap2);
     exit = await queryExitGIMap(gameInstMap, parentInst);
     console.log("DEBUG: queryExitsPerGame() exitP0: ", exit);
+    const exit2 = await queryExitGIMap(gameInstMap, playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() exitP1: ", exit2);
+    const exit3 = await queryExitGIMap(gameInstMap2, parentInst);
+    console.log("DEBUG: queryExitsPerGame() exitP2: ", exit3);
+    const exit4 = await queryExitGIMap(gameInstMap2, playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() exitP3: ", exit4);
     if (exit) {
       console.log("DEBUG: queryExitsPerGame() exitParent: ", exit);
       // Query the exit's entity model
