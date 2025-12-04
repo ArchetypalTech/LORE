@@ -187,27 +187,32 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
       });
     }
 
-    for ( const child of parentToChildren.children ) {
-      console.log("DEBUG: queryExitsPerGame() child: ", child);
-      const childInst = BigInt(child.toString());
-      // Query the exit using the Game Instance Map
-      exit = await queryExitGIMap(game_inst_map, childInst);
-      console.log("DEBUG: queryExitsPerGame() exit: ", exit)
-      if (exit) {
-        // Query the exit's entity model
-        exitEntity = await queryEntity(childInst);
-        console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
-        // Query the exit's leads_to entity model
-        const leads_to_inst = BigInt(exit.leads_to.toString());
-        exitLeadsTo = await queryEntity(leads_to_inst);
-        console.log("DEBUG: queryExitsPerGame() exitLeadsTo: ", exitLeadsTo);
-        // Build the exitInfo object and add it to exits array
-        exits.push({
-          id: counter++,
-          name: exitEntity?.name ?? "unknown",
-          direction: stringCairoEnum(exit.direction_type ?? "None"),
-          destination: exit.is_enterable ? (exitLeadsTo?.name ?? "unknown") : "Unknown",
-        });
+    if (parentToChildren?.children?.length) {
+      for ( const child of parentToChildren.children ) {
+        console.log("DEBUG: queryExitsPerGame() child: ", child);
+        const childInst = BigInt(child.toString());
+        // Query the exit using the Game Instance Map
+        exit = await queryExitGIMap(game_inst_map, childInst);
+        console.log("DEBUG: queryExitsPerGame() exit: ", exit)
+        if (exit) {
+          // Query the exit's entity model
+          const exitInst = BigInt(exit!.inst!.toString());
+          exitEntity = await queryEntity(exitInst);
+          console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
+          if (exit.leads_to) {
+            // Query the exit's leads_to entity model
+            const leads_to_inst = BigInt(exit.leads_to.toString());
+            exitLeadsTo = await queryEntity(leads_to_inst);
+            console.log("DEBUG: queryExitsPerGame() exitLeadsTo: ", exitLeadsTo);
+          }
+          // Build the exitInfo object and add it to exits array
+          exits.push({
+            id: counter++,
+            name: exitEntity?.name ?? "unknown",
+            direction: stringCairoEnum(exit.direction_type ?? "None"),
+            destination: exit.is_enterable ? (exitLeadsTo?.name ?? "unknown") : "Unknown",
+          });
+        }
       }
     }
     console.log("DEBUG: queryExitsPerGame() exits: ", exits);
