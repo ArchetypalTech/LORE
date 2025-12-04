@@ -6,6 +6,7 @@ import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo } from "../stores/terminal.uiPanel.store";
 import { stringCairoEnum } from "@/editor/lib/schemas";
+import { exit } from "node:process";
 
 const normalizeAddressZero = (addr: string): string => {
   return addr.replace(/^0x0+/, "0x").toLowerCase();
@@ -156,8 +157,8 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     const parentToChildren =  await queryParentToChildren(playerLocationInst);
     console.log("DEBUG: queryExitsPerGame() parentToChildren: ", parentToChildren);
 
-    // 2. For each child, query the lore-Exit model
-    let exitModels: Partial<Exit>[] = [];
+    // 2. For each child, query the lore-Entity and lore-Exit models
+    let modelsEntityExit: [Partial<Entity>, Partial<Exit>][] = [];
 
     if (parentToChildren?.children?.length) {
       for (const child of parentToChildren.children) {
@@ -165,12 +166,13 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
         const gameInstMap = await queryGameInstaceMapByPlayer(gameId, childBigInt);
         console.log("DEBUG: queryExitsPerGame() gameInstMap: ", gameInstMap);
         const childExit = await queryExitGIMap(gameInstMap, childBigInt);
-        if (childExit) {
-          exitModels.push(childExit);
+        const childEntity = await queryEntity(childBigInt);
+        if (childExit && childEntity) {
+          modelsEntityExit.push([childEntity, childExit]);
         }
       }
     }
-    console.log("DEBUG: queryExitsPerGame() exitModels: ", exitModels);
+    console.log("DEBUG: queryExitsPerGame() modelsEntityExit: ", modelsEntityExit);
 
     // 3. For each exit:
     // 3.1 Query the lore-Entity model using its inst
@@ -180,31 +182,29 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     let exits: ExitInfo[] = [];
     let counter = 0;
 
-    for (const exitModel of exitModels) {
-      console.log("DEBUG: queryExitsPerGame() exitModel: ", exitModel);
-      if (!exitModel.inst && !exitModel.leads_to) {
-        console.warn("Skipping exitModel missing required fields:", exitModel);
+    for (const modelEntityExit of modelsEntityExit) {
+      const [entity, exit] = modelEntityExit;
+      console.log("DEBUG: queryExitsPerGame() exitModel: ", exit);
+      console.log("DEBUG: queryExitsPerGame() entityModel: ", entity);
+      if (!exit.inst && !exit.leads_to) {
+        console.warn("Skipping exitModel missing required fields:", exit);
         continue;
       }
 
-      const exitInst = BigInt(exitModel!.inst!.toString());
-      console.log("DEBUG: queryExitsPerGame() exitInst: ", exitInst);
-      console.log("DEBUG: queryExitsPerGame() exitModel.inst: ", bigintToHex128(exitModel!.inst!));
-      console.log("DEBUG: queryExitsPerGame() exitModel.inst2: ", bigintToHex128(exitInst));
-      const exitEntity = await queryEntity(exitInst);
-      console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
+      const exitEntity = entity.name;
+      console.log("DEBUG: queryExitsPerGame() exitEntityName: ", exitEntity);
 
-      const leadsToInst = BigInt(exitModel.leads_to.toString());
+      const leadsToInst = BigInt(exit.leads_to.toString());
       console.log("DEBUG: queryExitsPerGame() leadsToInst: ", leadsToInst);
       const exitLeadsToEntity = await queryEntity(leadsToInst);
       console.log("DEBUG: queryExitsPerGame() exitLeadsToEntity: ", exitLeadsToEntity);
 
       exits.push({
         id: counter,
-        name: exitEntity?.name ?? "unknown",
-        direction: stringCairoEnum(exitModel.direction_type ?? "None"),
+        name: exitEntity ?? "unknown",
+        direction: stringCairoEnum(exit.direction_type ?? "None"),
         destination: exitLeadsToEntity?.name ?? "unknown",
-        is_enterable: exitModel.is_enterable ?? false,
+        is_enterable: exit.is_enterable ?? false,
       });
 
       counter++;
@@ -283,6 +283,7 @@ const queryExitGIMap = async (gameInst: bigint, childInst: bigint): Promise<Part
   child_exit = child_exit_item?.models?.lore?.Exit;
   return child_exit;
 };
+
 
 const queryEntity = async (inst: bigint): Promise<Partial<Entity> | undefined> => {
   let entity: Partial<Entity> | undefined;

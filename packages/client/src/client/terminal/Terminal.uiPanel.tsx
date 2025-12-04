@@ -21,7 +21,9 @@ export const queryPanelInfo = async (gameId: bigint) => {
 
     // update the store directly
     useUIPanelStore.getState().setLocation(location_name);
-    useUIPanelStore.getState().setExits(exits);
+    if (exits) {
+      useUIPanelStore.getState().setExits(exits);
+    }    
   } catch (err) {
     console.error("Failed to query panel info:", err);
   }
