@@ -172,11 +172,11 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     exit = await queryExitGIMap(game_inst_map, parentInst);
     if (exit) {
       // Query the exit's entity model
-      exitEntity = await queryEntity(parentInst);
+      exitEntity = await queryEntityGIMap(game_inst_map, parentInst);
       console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
       // Query the exit's leads_to entity model
       const leads_to_inst = BigInt(exit.leads_to.toString());
-      exitLeadsTo = await queryEntity(leads_to_inst);
+      exitLeadsTo = await queryEntityGIMap(game_inst_map, leads_to_inst);
       console.log("DEBUG: queryExitsPerGame() exitLeadsTo: ", exitLeadsTo);
       // Build the exitInfo object and add it to exits array
       exits.push({
@@ -197,12 +197,12 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
         if (exit) {
           // Query the exit's entity model
           const exitInst = BigInt(exit!.inst!.toString());
-          exitEntity = await queryEntity(exitInst);
+          exitEntity = await queryEntityGIMap(game_inst_map, exitInst);
           console.log("DEBUG: queryExitsPerGame() exitEntity: ", exitEntity);
           if (exit.leads_to) {
             // Query the exit's leads_to entity model
             const leads_to_inst = BigInt(exit.leads_to.toString());
-            exitLeadsTo = await queryEntity(leads_to_inst);
+            exitLeadsTo = await queryEntityGIMap(game_inst_map, leads_to_inst);
             console.log("DEBUG: queryExitsPerGame() exitLeadsTo: ", exitLeadsTo);
           }
           // Build the exitInfo object and add it to exits array
@@ -283,6 +283,31 @@ const queryExitGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partia
 
   child_exit = obj_exit_item?.models?.lore?.Exit;
   return child_exit;
+};
+
+const queryEntityGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partial<Entity> | undefined> => {
+  let entity: Partial<Entity> | undefined;
+  const { sdk } = await InitDojo();
+  const queryValue = gameInst != 0n ? gameInst : objInst;
+  const query_obj_entity = new ToriiQueryBuilder<SchemaType>()
+    .withCursor("")
+    .withLimit(1000)
+    .includeHashedKeys()
+    .withClause(
+      new ClauseBuilder<SchemaType>().keys(
+        ["lore-Entity"],
+          [bigintToHex128(queryValue)]
+      ).build()
+    )
+    .withEntityModels(["lore-Entity"]);
+  const result_obj_entity = await sdk.getEntities({ query: query_obj_entity });
+  console.log("DEBUG: queryObjEntity() result_obj_entityGIMap: ", result_obj_entity);
+  
+  const obj_entity_item = result_obj_entity.getItems().at(0);
+  console.log("DEBUG: queryObjEntity() obj_entity_itemGIMap: ", obj_entity_item);
+
+  entity = obj_entity_item?.models?.lore?.Entity;
+  return entity;
 };
 
 const queryEntity = async (inst: bigint): Promise<Partial<Entity> | undefined> => {
