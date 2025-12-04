@@ -17,9 +17,9 @@ export const queryPanelInfo = async (gameId: bigint) => {
   store.setLoading(true);
 
   try {
-    const [location_name, location_inst] = await queryPlayerLocationPerGame(gameId);
+    const [location_name, location_inst, playerInst] = await queryPlayerLocationPerGame(gameId);
     if (!location_name) return;
-    const exits = await queryExitsPerGame(gameId, location_inst!);
+    const exits = await queryExitsPerGame(gameId, location_inst!, playerInst!);
     console.log("DEBUG: queryPanelInfo() exits: ", exits);
 
     // update the store directly

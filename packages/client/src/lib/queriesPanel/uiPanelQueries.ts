@@ -12,10 +12,11 @@ const normalizeAddressZero = (addr: string): string => {
 }
 
 // Player location
-export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(string | undefined), (bigint| undefined)]> => {
+export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(string | undefined), (bigint| undefined), (bigint | undefined)]> => {
   // console.log("DEBUG: queryPlayerLocationPerGame() gameId: ", gameId);
   let player_location: string | undefined;
   let location_inst: bigint | undefined;
+  let playerInst: bigint | undefined;
   const player_address = getPlayerAddress();
   // console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
   try {
@@ -35,11 +36,11 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
     });
     // console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 
-    const playerInst = BigInt(player?.models?.lore?.Player?.inst ?? 0);
+    playerInst = BigInt(player?.models?.lore?.Player?.inst ?? 0);
     // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
     if (!playerInst) {
       console.error("ERROR: queryPlayerLocationPerGame() playerInst is undefined");
-      return ([undefined, undefined]);
+      return ([undefined, undefined, undefined]);
     }
     // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
 
@@ -61,7 +62,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
     console.error("Error fetching player location from Torii:", error);
     throw error;
   }
-  return ([player_location, location_inst]);
+  return ([player_location, location_inst, playerInst]);
 }
 
 export const queryGameInstaceMapByPlayer = async (gameId: bigint, inst: bigint): Promise<bigint> => {
@@ -148,7 +149,7 @@ export const queryPlayerLocationEntityGIMap = async (gameInst: bigint, origInst:
 };
 
 // Exits
-export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigint): Promise<ExitInfo[] | undefined> => {
+export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigint, playerInst: bigint): Promise<ExitInfo[] | undefined> => {
   let exits: ExitInfo[] = [];
   let counter = 0;
   
@@ -160,14 +161,25 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
     const parentToChildren =  await queryParentToChildren(playerLocationInst);
     console.log("DEBUG: queryExitsPerGame() parentToChildren: ", parentToChildren);
 
+    const game_inst_map = await queryGameInstaceMapByPlayer(gameId, playerInst);
+    console.log("DEBUG: queryExitsPerGame() game_inst_map: ", game_inst_map);
+
     for ( const child of parentToChildren.children ) {
       console.log("DEBUG: queryExitsPerGame() child: ", child);
       const childInst = BigInt(child.toString());
       console.log("DEBUG: queryExitsPerGame() childInst: ", childInst);
-      const childEnity = await queryEntity(childInst);
-      console.log("DEBUG: queryExitsPerGame() childEnity: ", childEnity);
       const childExit = await queryExit(childInst);
-      console.log("DEBUG: queryExitsPerGame() childExit: ", childExit);
+      console.log("DEBUG: queryExitsPerGame() childExit: ", childExit)
+      if (childExit) {
+        const childEntity = await queryEntity(childInst);
+        console.log("DEBUG: queryExitsPerGame() childEnity: ", childEntity);
+      }
+      const childExit2 = await queryExitGIMap(game_inst_map, childInst);
+      console.log("DEBUG: queryExitsPerGame() childExit2: ", childExit2)
+      if (childExit2) {
+        const childEntity2 = await queryEntity(childInst);
+        console.log("DEBUG: queryExitsPerGame() childEnity2: ", childEntity2);
+      }
     }
 
     
@@ -280,9 +292,6 @@ const queryExitGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partia
   let child_exit: Partial<Exit> | undefined;
   const { sdk } = await InitDojo();
   const queryValue = gameInst != 0n ? gameInst : objInst;
-  console.log("DEBUG: queryExitGIMap() gameInst: ", gameInst);
-  console.log("DEBUG: queryExitGIMap() objInst: ", objInst);
-  console.log("DEBUG: queryExitGIMap() queryValue: ", queryValue);
   const query_obj_exit = new ToriiQueryBuilder<SchemaType>()
     .withCursor("")
     .withLimit(1000)
@@ -295,10 +304,10 @@ const queryExitGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partia
     )
     .withEntityModels(["lore-Exit"]);
   const result_obj_exit = await sdk.getEntities({ query: query_obj_exit });
-  console.log("DEBUG: queryObjExit() result_child_exit: ", result_obj_exit);
+  console.log("DEBUG: queryObjExit() result_obj_exitGIMap: ", result_obj_exit);
   
   const obj_exit_item = result_obj_exit.getItems().at(0);
-  console.log("DEBUG: queryObjExit() obj_exit_item: ", obj_exit_item);
+  console.log("DEBUG: queryObjExit() obj_exit_itemGIMap: ", obj_exit_item);
 
   child_exit = obj_exit_item?.models?.lore?.Exit;
   return child_exit;
