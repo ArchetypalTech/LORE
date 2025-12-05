@@ -1,17 +1,17 @@
 // use core::num::traits::Zero;
 // use starknet::{ContractAddress};
 
-use lore_strk::models::{
+use lore_sn::models::{
     // config::{CoinConfig}
 };
-use lore_strk::tests::{helpers,
+use lore_sn::tests::{helpers,
     helpers::{
         IActionsStarknetDispatcherTrait,
         HelperSystems,
         // OWNER,
     },
 };
-use lore_strk::models::constants::{CONST};
+use lore_sn::models::constants::{CONST};
 
 const AMOUNT: u128 = 1000 * CONST::ETH_TO_WEI.low;
 

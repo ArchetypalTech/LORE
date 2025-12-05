@@ -28,10 +28,10 @@ pub mod CoinComponent {
         ERC20Component::{InternalImpl as ERC20InternalImpl},
     };
 
-    use lore_strk::components::coin_config::{
+    use lore_sn::components::coin_config::{
         CoinConfig,
     };
-    use lore_strk::lib::dns::{DnsTrait};
+    use lore_sn::lib::dns::{DnsTrait};
 
     #[storage]
     pub struct Storage {}
@@ -61,7 +61,7 @@ pub mod CoinComponent {
             minter_address: ContractAddress,
             faucet_amount: u128,
         ) {
-            let mut world: WorldStorage = DnsTrait::world_storage(self.get_contract().world_dispatcher(), @"lore_strk");
+            let mut world: WorldStorage = DnsTrait::world_storage(self.get_contract().world_dispatcher(), @"lore_sn");
             let coin_config: CoinConfig = CoinConfig {
                 coin_address: starknet::get_contract_address(),
                 minter_address,
@@ -73,7 +73,7 @@ pub mod CoinComponent {
         fn can_mint(self: @ComponentState<TContractState>,
             recipient: ContractAddress,
         ) -> bool {
-            let mut world: WorldStorage = DnsTrait::world_storage(self.get_contract().world_dispatcher(), @"lore_strk");
+            let mut world: WorldStorage = DnsTrait::world_storage(self.get_contract().world_dispatcher(), @"lore_sn");
             let coin_config: CoinConfig = world.read_model(starknet::get_contract_address());
             (
                 coin_config.minter_address.is_zero() ||      // anyone can mint
@@ -101,7 +101,7 @@ pub mod CoinComponent {
         fn faucet(ref self: ComponentState<TContractState>,
             recipient: ContractAddress,
         ) {
-            let mut world: WorldStorage = DnsTrait::world_storage(self.get_contract().world_dispatcher(), @"lore_strk");
+            let mut world: WorldStorage = DnsTrait::world_storage(self.get_contract().world_dispatcher(), @"lore_sn");
             let coin_config: CoinConfig = world.read_model(starknet::get_contract_address());
             assert(coin_config.faucet_amount > 0, Errors::FAUCET_UNAVAILABLE);
 

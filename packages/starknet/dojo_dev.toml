@@ -1,24 +1,24 @@
 [world]
-seed = "lore_strk"
+seed = "lore_sn"
 name = ">LORE Starknet"
 description = "> get started with LORE Starknet"
 
 [namespace]
-default = "lore_strk"
+default = "lore_sn"
 
 [env]
 rpc_url = "http://localhost:50000/"
-slot_name = "lore_strk-stage"
+slot_name = "lore_sn-stage"
 
 world_address = "0x03bd2ce4af00a298fb73f997972c6cc39a6cab58f6bf9a1d16b98431da1b3dc7"
 account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
 private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 [writers]
-"lore_strk" = ["lore_strk-actions_strk"]
+"lore_sn" = ["lore_sn-actions_strk"]
 
 [init_call_args]
-"lore_strk-actions_strk" = [
+"lore_sn-actions_strk" = [
   "0x0", # messaging/piltover address
   "0x0", # appchain address
 ]

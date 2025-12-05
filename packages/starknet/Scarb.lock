@@ -32,7 +32,7 @@ source = "registry+https://scarbs.xyz/"
 checksum = "sha256:31eb462462e7176e42b2fe14272bf221d2655a0708299105ca64d0b99bd59b3e"
 
 [[package]]
-name = "lore_strk"
+name = "lore_sn"
 version = "0.2.0"
 dependencies = [
  "dojo",

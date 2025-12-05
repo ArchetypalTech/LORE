@@ -21,9 +21,9 @@ procs:
       #----------------
       echo ">>> L2: set_appchain_contract(${APPCHAIN_ADDRESS})"
       cd ../starknet
-      sozo -P ${PROFILE} execute --wait lore_strk-actions_strk set_appchain_contract ${APPCHAIN_ADDRESS}
-      sozo -P ${PROFILE} model get lore_strk-MessagingConfig 1
-      export SN_ADDRESS=$(get_contract_address ${PROFILE} lore_strk-actions_strk)
+      sozo -P ${PROFILE} execute --wait lore_sn-actions_strk set_appchain_contract ${APPCHAIN_ADDRESS}
+      sozo -P ${PROFILE} model get lore_sn-MessagingConfig 1
+      export SN_ADDRESS=$(get_contract_address ${PROFILE} lore_sn-actions_strk)
       #----------------
       echo ">>> L3: set_sn_contract(${SN_ADDRESS})"
       cd ../contracts
@@ -61,7 +61,7 @@ procs:
       #
       echo ">>> Deploying L2 mocked fact registry contract..."
       sozo -P ${PROFILE} build
-      sozo declare target/dev/lore_strk_fact_registry_mock.contract_class.json \
+      sozo declare target/dev/lore_sn_fact_registry_mock.contract_class.json \
         --katana-account katana0 \
         --rpc-url ${KATANA_L2_RPC}
       sozo deploy 0x0056289bc807ecf889aee508909d6902ddf4b6cd77d7d0aaaeb5adc7aca3bd23 \
@@ -101,8 +101,8 @@ procs:
       # set_messaging_contract()
       #
       echo ">>> L2: set_messaging_contract(${PILTOVER_ADDRESS})"
-      sozo -P ${PROFILE} execute --wait lore_strk-actions_strk set_messaging_contract ${PILTOVER_ADDRESS}
-      sozo -P ${PROFILE} model get lore_strk-MessagingConfig 1
+      sozo -P ${PROFILE} execute --wait lore_sn-actions_strk set_messaging_contract ${PILTOVER_ADDRESS}
+      sozo -P ${PROFILE} model get lore_sn-MessagingConfig 1
       #----------------
       echo "👍 Done!"
   l3_katana:

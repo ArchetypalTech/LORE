@@ -1,5 +1,5 @@
 [package]
-name = "lore_strk"
+name = "lore_sn"
 version = "0.2.0"
 edition = "2024_07"
 cairo-version = ">=2.13.1"

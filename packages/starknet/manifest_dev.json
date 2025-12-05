@@ -2,7 +2,7 @@
   "world": {
     "class_hash": "0x613551abceb2b37073b1149bb862ea70cf029981ce1ca47e9dd7c7ab97cb65d",
     "address": "0x3bd2ce4af00a298fb73f997972c6cc39a6cab58f6bf9a1d16b98431da1b3dc7",
-    "seed": "lore_strk",
+    "seed": "lore_sn",
     "name": ">LORE Starknet",
     "entrypoints": [
       "uuid",
@@ -39,7 +39,7 @@
         "0x0",
         "0x0"
       ],
-      "tag": "lore_strk-actions_strk",
+      "tag": "lore_sn-actions_strk",
       "selector": "0x6e688c410e1b129fdf477922923bc00e8147708e267f92b89b754be7f9ffea5",
       "systems": [
         "dojo_init",
@@ -81,7 +81,7 @@
         }
       ],
       "class_hash": "0x3aa7fd125bc43b17db97070c29435dff61b2eb10343ff19dbda3aa05f457c9c",
-      "tag": "lore_strk-ActionsSupply",
+      "tag": "lore_sn-ActionsSupply",
       "selector": "0xfad5af1d29eb9797896aaf95ec02e3afa65c79716584d4cbf1786b108ab492"
     },
     {
@@ -103,7 +103,7 @@
         }
       ],
       "class_hash": "0x1d0da3727633911d6db9135a1fd9a385507bd9442399d8bcf8c832065a77bdf",
-      "tag": "lore_strk-CoinConfig",
+      "tag": "lore_sn-CoinConfig",
       "selector": "0x7e22d8f28788b9796b27ab14d0dd70572d8e14d12604946236af8d5cda9b653"
     },
     {
@@ -125,7 +125,7 @@
         }
       ],
       "class_hash": "0x37378c360977d62d10aa73919c5a48770c37a695dc1fe8f8daf823417268440",
-      "tag": "lore_strk-MessagingConfig",
+      "tag": "lore_sn-MessagingConfig",
       "selector": "0x5b323e345d35c1179f72618e7e975d90678a5f52f7450107b55e818c7808b61"
     }
   ],
@@ -1941,7 +1941,7 @@
       "inputs": [
         {
           "name": "model",
-          "type": "lore_strk::models::messaging::MessagingConfig"
+          "type": "lore_sn::models::messaging::MessagingConfig"
         }
       ],
       "outputs": [],
@@ -1960,7 +1960,7 @@
       "inputs": [
         {
           "name": "value",
-          "type": "lore_strk::models::messaging::MessagingConfigValue"
+          "type": "lore_sn::models::messaging::MessagingConfigValue"
         }
       ],
       "outputs": [],
@@ -1968,13 +1968,13 @@
     },
     {
       "type": "event",
-      "name": "lore_strk::components::coin_component::CoinComponent::Event",
+      "name": "lore_sn::components::coin_component::CoinComponent::Event",
       "kind": "enum",
       "variants": []
     },
     {
       "type": "struct",
-      "name": "lore_strk::components::coin_config::CoinConfig",
+      "name": "lore_sn::components::coin_config::CoinConfig",
       "members": [
         {
           "name": "coin_address",
@@ -1992,7 +1992,7 @@
     },
     {
       "type": "struct",
-      "name": "lore_strk::components::coin_config::CoinConfigValue",
+      "name": "lore_sn::components::coin_config::CoinConfigValue",
       "members": [
         {
           "name": "minter_address",
@@ -2006,13 +2006,13 @@
     },
     {
       "type": "event",
-      "name": "lore_strk::components::coin_config::m_CoinConfig::Event",
+      "name": "lore_sn::components::coin_config::m_CoinConfig::Event",
       "kind": "enum",
       "variants": []
     },
     {
       "type": "struct",
-      "name": "lore_strk::models::actions_supply::ActionsSupply",
+      "name": "lore_sn::models::actions_supply::ActionsSupply",
       "members": [
         {
           "name": "contract_address",
@@ -2034,7 +2034,7 @@
     },
     {
       "type": "struct",
-      "name": "lore_strk::models::actions_supply::ActionsSupplyValue",
+      "name": "lore_sn::models::actions_supply::ActionsSupplyValue",
       "members": [
         {
           "name": "amount_minted",
@@ -2052,13 +2052,13 @@
     },
     {
       "type": "event",
-      "name": "lore_strk::models::actions_supply::m_ActionsSupply::Event",
+      "name": "lore_sn::models::actions_supply::m_ActionsSupply::Event",
       "kind": "enum",
       "variants": []
     },
     {
       "type": "struct",
-      "name": "lore_strk::models::messaging::MessagingConfig",
+      "name": "lore_sn::models::messaging::MessagingConfig",
       "members": [
         {
           "name": "key",
@@ -2076,7 +2076,7 @@
     },
     {
       "type": "struct",
-      "name": "lore_strk::models::messaging::MessagingConfigValue",
+      "name": "lore_sn::models::messaging::MessagingConfigValue",
       "members": [
         {
           "name": "messaging_contract",
@@ -2090,13 +2090,13 @@
     },
     {
       "type": "event",
-      "name": "lore_strk::models::messaging::m_MessagingConfig::Event",
+      "name": "lore_sn::models::messaging::m_MessagingConfig::Event",
       "kind": "enum",
       "variants": []
     },
     {
       "type": "interface",
-      "name": "lore_strk::systems::actions_strk::IActionsPublicStarknet",
+      "name": "lore_sn::systems::actions_strk::IActionsPublicStarknet",
       "items": [
         {
           "type": "function",
@@ -2150,7 +2150,7 @@
     },
     {
       "type": "event",
-      "name": "lore_strk::systems::actions_strk::actions_strk::Event",
+      "name": "lore_sn::systems::actions_strk::actions_strk::Event",
       "kind": "enum",
       "variants": [
         {
@@ -2170,7 +2170,7 @@
         },
         {
           "name": "CoinEvent",
-          "type": "lore_strk::components::coin_component::CoinComponent::Event",
+          "type": "lore_sn::components::coin_component::CoinComponent::Event",
           "kind": "flat"
         }
       ]

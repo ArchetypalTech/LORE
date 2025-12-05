@@ -56,7 +56,7 @@ pub mod actions_strk {
     //
     use openzeppelin_token::erc20::ERC20Component;
     use openzeppelin_token::erc20::ERC20HooksEmptyImpl;
-    use lore_strk::components::coin_component::{
+    use lore_sn::components::coin_component::{
         CoinComponent,
         // CoinComponent::{Errors as CoinErrors},
     };
@@ -85,11 +85,11 @@ pub mod actions_strk {
     // ERC-20 End
     //-----------------------------------
 
-    use lore_strk::models::{
+    use lore_sn::models::{
         actions_supply::{ActionsSupply},
         messaging::{MessagingConfig},
     };
-    use lore_strk::lib::dns::{SELECTORS};
+    use lore_sn::lib::dns::{SELECTORS};
 
     mod Errors {
         pub const INVALID_CALLER: felt252               = 'ACTIONS: Invalid caller';
@@ -133,7 +133,7 @@ pub mod actions_strk {
     impl WorldDefaultImpl of WorldDefaultTrait {
         #[inline(always)]
         fn world_default(self: @ContractState) -> WorldStorage {
-            (self.world(@"lore_strk"))
+            (self.world(@"lore_sn"))
         }
     }
 

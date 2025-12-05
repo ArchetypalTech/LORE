@@ -39,8 +39,8 @@ export L3_WORLD_ADDRESS=0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc627
 export RECIPIENT=0x1234
 # L2: send message to mint L3 actions
 cd packages/starknet/
-sozo model get lore_strk-MessagingConfig 1
-sozo execute --world $L2_WORLD_ADDRESS --wait lore_strk-actions_strk purchased_starter_pack $RECIPIENT
+sozo model get lore_sn-MessagingConfig 1
+sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-actions_strk purchased_starter_pack $RECIPIENT
 # L3: validate balance (must not be zero)
 cd packages/contracts/
 sozo model get lore-ActionsConfig 1

@@ -6,13 +6,13 @@ use dojo::meta::interface::{
     IDeployedResourceSafeDispatcher, IDeployedResourceSafeDispatcherTrait,
 };
 
-pub use lore_strk::systems::{
+pub use lore_sn::systems::{
     actions_strk::{IActionsStarknetDispatcher, IActionsStarknetDispatcherTrait},
 };
 
 pub mod SELECTORS {
     // systems
-    pub const ACTIONS_TOKEN: felt252 = selector_from_tag!("lore_strk-actions_strk");
+    pub const ACTIONS_TOKEN: felt252 = selector_from_tag!("lore_sn-actions_strk");
 }
 
 #[generate_trait]
