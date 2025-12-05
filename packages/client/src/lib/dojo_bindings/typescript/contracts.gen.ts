@@ -76,6 +76,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_lore_mintTo_calldata = (recipient: string, actions: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "mint_to",
+			calldata: [recipient, actions],
+		};
+	};
+
+	const actions_lore_mintTo = async (snAccount: Account | AccountInterface, recipient: string, actions: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_lore_mintTo_calldata(recipient, actions),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_lore_name_calldata = (): DojoCall => {
 		return {
 			contractName: "actions_lore",
@@ -87,6 +108,27 @@ export function setupWorld(provider: DojoProvider) {
 	const actions_lore_name = async () => {
 		try {
 			return await provider.call("lore", build_actions_lore_name_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_lore_setMessagingContract_calldata = (messagingContract: string): DojoCall => {
+		return {
+			contractName: "actions_lore",
+			entrypoint: "set_messaging_contract",
+			calldata: [messagingContract],
+		};
+	};
+
+	const actions_lore_setMessagingContract = async (snAccount: Account | AccountInterface, messagingContract: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_lore_setMessagingContract_calldata(messagingContract),
+				"lore",
+			);
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -2274,8 +2316,12 @@ export function setupWorld(provider: DojoProvider) {
 			buildBalanceOfCalldata: build_actions_lore_balanceOf_calldata,
 			decimals: actions_lore_decimals,
 			buildDecimalsCalldata: build_actions_lore_decimals_calldata,
+			mintTo: actions_lore_mintTo,
+			buildMintToCalldata: build_actions_lore_mintTo_calldata,
 			name: actions_lore_name,
 			buildNameCalldata: build_actions_lore_name_calldata,
+			setMessagingContract: actions_lore_setMessagingContract,
+			buildSetMessagingContractCalldata: build_actions_lore_setMessagingContract_calldata,
 			symbol: actions_lore_symbol,
 			buildSymbolCalldata: build_actions_lore_symbol_calldata,
 			totalSupply: actions_lore_totalSupply,

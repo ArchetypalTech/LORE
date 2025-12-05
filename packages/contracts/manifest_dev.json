@@ -33,13 +33,17 @@
   },
   "contracts": [
     {
-      "address": "0x47e44b82a6643fc214b936c3c74bf587bb8830291cac1c6376ee5ec1ee5624",
-      "class_hash": "0x577939a11a4c95603b8d4659b2715b63be9d7708c87217bd35c42ebe812a2da",
-      "init_calldata": [],
+      "address": "0x7a4f6c95777d3f69f8d1d26b8143422914029c589986f377ebfa27489dd444a",
+      "class_hash": "0x52c3c2d3f361d1d2c37be25858286c51c8bcdb0087e193f7a6cd9352e8cac98",
+      "init_calldata": [
+        "0x0"
+      ],
       "tag": "lore-actions_lore",
       "selector": "0x4bf3c8f8bae224e5915fb4a9d5430d0e17d3714c90ab5bb27bbed14eaa14239",
       "systems": [
         "dojo_init",
+        "set_messaging_contract",
+        "mint_to",
         "upgrade",
         "transfer",
         "transfer_from",
@@ -266,6 +270,23 @@
     {
       "members": [
         {
+          "name": "key",
+          "type": "core::felt252",
+          "key": true
+        },
+        {
+          "name": "messaging_contract",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        }
+      ],
+      "class_hash": "0x265129429e46dd5b9a8857fac94d021fff7b5d7ce53be0e602450220e7bfe22",
+      "tag": "lore-ActionsConfig",
+      "selector": "0x7fefff6a47338092a1f3fbc2383dfed1bfbdd7f521da265e119f1b4e3be16d9"
+    },
+    {
+      "members": [
+        {
           "name": "inst",
           "type": "core::felt252",
           "key": true
@@ -316,28 +337,6 @@
       "class_hash": "0x35170eb5278f2e24c6f2a9f7e2adba47f15cf0d8544c6519632567eb0c497c3",
       "tag": "lore-ChildToParent",
       "selector": "0x6c2a358df76ae2ca942ea3cc2f59ade04e5f5ba87ee162b41a10ad5a5755287"
-    },
-    {
-      "members": [
-        {
-          "name": "coin_address",
-          "type": "core::starknet::contract_address::ContractAddress",
-          "key": true
-        },
-        {
-          "name": "minter_address",
-          "type": "core::starknet::contract_address::ContractAddress",
-          "key": false
-        },
-        {
-          "name": "faucet_amount",
-          "type": "core::integer::u128",
-          "key": false
-        }
-      ],
-      "class_hash": "0x3e4d58838d521cc7af8ce3f8ded44405d318e46bea830aa965524e1bd0e7038",
-      "tag": "lore-CoinConfig",
-      "selector": "0x75e9c9fed08080e365514127f8db0d5413b3715a9c52df9c93b987f9bf24b76"
     },
     {
       "members": [
@@ -3420,50 +3419,6 @@
       "state_mutability": "view"
     },
     {
-      "type": "event",
-      "name": "lore::components::coin_component::CoinComponent::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
-      "type": "struct",
-      "name": "lore::components::coin_config::CoinConfig",
-      "members": [
-        {
-          "name": "coin_address",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "minter_address",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "faucet_amount",
-          "type": "core::integer::u128"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "lore::components::coin_config::CoinConfigValue",
-      "members": [
-        {
-          "name": "minter_address",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "faucet_amount",
-          "type": "core::integer::u128"
-        }
-      ]
-    },
-    {
-      "type": "event",
-      "name": "lore::components::coin_config::m_CoinConfig::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
       "type": "enum",
       "name": "lore::constants::errors::Error",
       "variants": [
@@ -3882,6 +3837,36 @@
     {
       "type": "event",
       "name": "lore::models::action::m_ActionExecuted::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "struct",
+      "name": "lore::models::actions_config::ActionsConfig",
+      "members": [
+        {
+          "name": "key",
+          "type": "core::felt252"
+        },
+        {
+          "name": "messaging_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore::models::actions_config::ActionsConfigValue",
+      "members": [
+        {
+          "name": "messaging_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore::models::actions_config::m_ActionsConfig::Event",
       "kind": "enum",
       "variants": []
     },
@@ -5420,6 +5405,40 @@
       "variants": []
     },
     {
+      "type": "interface",
+      "name": "lore::systems::actions_lore::IActionsPublicStarknet",
+      "items": [
+        {
+          "type": "function",
+          "name": "set_messaging_contract",
+          "inputs": [
+            {
+              "name": "messaging_contract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "mint_to",
+          "inputs": [
+            {
+              "name": "recipient",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "actions",
+              "type": "core::integer::u8"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
       "type": "event",
       "name": "lore::systems::actions_lore::actions_lore::Event",
       "kind": "enum",
@@ -5437,11 +5456,6 @@
         {
           "name": "ERC20Event",
           "type": "openzeppelin_token::erc20::erc20::ERC20Component::Event",
-          "kind": "flat"
-        },
-        {
-          "name": "CoinEvent",
-          "type": "lore::components::coin_component::CoinComponent::Event",
           "kind": "flat"
         }
       ]
@@ -6751,22 +6765,6 @@
       ]
     },
     {
-      "type": "l1_handler",
-      "name": "msg_handler_value",
-      "inputs": [
-        {
-          "name": "from_address",
-          "type": "core::felt252"
-        },
-        {
-          "name": "value",
-          "type": "core::felt252"
-        }
-      ],
-      "outputs": [],
-      "state_mutability": "external"
-    },
-    {
       "type": "event",
       "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::BatchMetadataUpdate",
       "kind": "struct",
@@ -8021,6 +8019,22 @@
           "kind": "key"
         }
       ]
+    },
+    {
+      "type": "l1_handler",
+      "name": "purchased_starter_pack",
+      "inputs": [
+        {
+          "name": "from_address",
+          "type": "core::felt252"
+        },
+        {
+          "name": "payload",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ],
+      "outputs": [],
+      "state_mutability": "external"
     }
   ]
 }

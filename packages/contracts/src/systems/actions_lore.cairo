@@ -21,14 +21,27 @@ pub trait IActionsLore<TState> {
     fn totalSupply(self: @TState) -> u256;
     fn balanceOf(self: @TState, account: ContractAddress) -> u256;
     fn transferFrom(ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
+
+    //-----------------------------------
+    // IActionsPublicStarknet
+    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
+}
+
+#[starknet::interface]
+trait IActionsPublicStarknet<TState> {
+    // admin functions
+    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
 }
 
 #[dojo::contract]
 pub mod actions_lore {
+    use core::num::traits::Zero;
     use starknet::{ContractAddress, SyscallResultTrait};
     use dojo::{
-        world::WorldStorage,
-        // model::ModelStorage,
+        world::{WorldStorage, IWorldDispatcherTrait},
+        model::ModelStorage,
         // event::EventStorage,
     };
     use starknet::syscalls::send_message_to_l1_syscall;
@@ -40,56 +53,59 @@ pub mod actions_lore {
     //
     use openzeppelin_token::erc20::ERC20Component;
     use openzeppelin_token::erc20::ERC20HooksEmptyImpl;
-    use lore::components::coin_component::{
-        CoinComponent,
-        // CoinComponent::{Errors as CoinErrors},
-    };
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
-    component!(path: CoinComponent, storage: coin, event: CoinEvent);
     #[abi(embed_v0)]
     impl ERC20MixinImpl = ERC20Component::ERC20MixinImpl<ContractState>;
     impl ERC20InternalImpl = ERC20Component::InternalImpl<ContractState>;
-    impl CoinComponentInternalImpl = CoinComponent::CoinComponentInternalImpl<ContractState>;
     #[storage]
     struct Storage {
         #[substorage(v0)]
         erc20: ERC20Component::Storage,
-        #[substorage(v0)]
-        coin: CoinComponent::Storage,
     }
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
         #[flat]
         ERC20Event: ERC20Component::Event,
-        #[flat]
-        CoinEvent: CoinComponent::Event,
     }
     //
     // ERC-20 End
     //-----------------------------------
 
+    use lore::models::{
+        actions_config::{
+            ActionsConfig, ActionsConfigTrait,
+        },
+    };
+    use lore::lib::{
+        access::{AccessTrait},
+        dns::{SELECTORS},
+    };
+    use lore::constants::constants::{CONST};
+
 
     mod Errors {
-        pub const INVALID_CALLER: felt252   = 'ACTIONS: Invalid caller';
-        pub const NOT_IMPLEMENTED: felt252  = 'ACTIONS: Not implemented';
+        pub const INVALID_CALLER: felt252               = 'ACTIONS: Invalid caller';
+        pub const INVALID_COMMAND: felt252              = 'ACTIONS: Invalid command';
+        pub const INVALID_RECIPIENT: felt252            = 'ACTIONS: Invalid recipient';
+        pub const INVALID_AMOUNT: felt252               = 'ACTIONS: Invalid amount';
+        pub const INVALID_MESSAGING_CONTRACT: felt252   = 'ACTIONS: Invalid messaging';
     }
 
     //*******************************************
-    fn COIN_NAME() -> ByteArray {("Actions")}
-    fn COIN_SYMBOL() -> ByteArray {("ACTIONS")}
+    fn TOKEN_NAME() -> ByteArray {"O'Ruggin Trail Actions"}
+    fn TOKEN_SYMBOL() -> ByteArray {"ORUG_ACTIONS"}
     //*******************************************
 
-    fn dojo_init(ref self: ContractState) {
-        // let mut world: WorldStorage = self.world_default();
+    fn dojo_init(ref self: ContractState,
+        messaging_contract: ContractAddress,
+    ) {
+        let mut world: WorldStorage = self.world_default();
         self.erc20.initializer(
-            COIN_NAME(),
-            COIN_SYMBOL(),
+            TOKEN_NAME(),
+            TOKEN_SYMBOL(),
         );
-        self.coin.initialize(
-            0x0.try_into().unwrap(),
-            faucet_amount: 0,
-        );
+        world.initialize_actions_config(messaging_contract);
     }
     
     #[generate_trait]
@@ -108,24 +124,78 @@ pub mod actions_lore {
     /// # Arguments
     ///
     /// * `from_address` - The Starknet contract sending the message.
-    /// * `value` - Expected value in the payload (automatically deserialized).
+    /// * `payload` - Expected value in the payload (automatically deserialized).
     #[l1_handler]
-    fn msg_handler_value(ref self: ContractState, from_address: felt252, value: felt252) {
-        // assert(from_address == ...);
-        assert(value == 888, 'Invalid value');
+    fn purchased_starter_pack(ref self: ContractState, from_address: felt252, payload: Array<felt252>) {
+        let world: WorldStorage = self.world_default();
+        // validate caller
+        let actions_config: ActionsConfig = world.get_actions_config();
+        assert(from_address == actions_config.messaging_contract.into(), Errors::INVALID_CALLER);
+        // parse payload
+        let recipient: ContractAddress = (*payload.at(0)).try_into().unwrap();
+        let actions: u8 = (*payload.at(1)).try_into().unwrap();
+        let amount: u256 = (actions.into() * CONST::ETH_TO_WEI);
+        self._mint_to(recipient, amount);
     }
 
+    #[abi(embed_v0)]
+    impl IActionsPublicStarknetImpl of super::IActionsPublicStarknet<ContractState> {
+        fn mint_to(ref self: ContractState, recipient: ContractAddress, actions: u8) {
+            // validate caller
+            self._assert_caller_is_admin(@self.world_default());
+            // mint actions...
+            let amount: u256 = actions.into() * CONST::ETH_TO_WEI;
+            self._mint_to(recipient, amount);
+        }
+
+        /// Admin functions
+        fn set_messaging_contract(ref self: ContractState, messaging_contract: ContractAddress) {
+            let mut world: WorldStorage = self.world_default();
+            // validate caller
+            self._assert_caller_is_owner(@world);
+            // set messaging contract
+            assert(messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
+            let mut actions_config: ActionsConfig = world.get_actions_config();
+            actions_config.messaging_contract = messaging_contract;
+            world.write_model(@actions_config);
+        }
+    }
 
     //-----------------------------------
     // Internal
     //
     #[generate_trait]
     impl InternalImpl of InternalTrait {
+        #[inline(always)]
+        fn _assert_caller_is_owner(self: @ContractState, world: @WorldStorage) {
+            assert(self._caller_is_owner(world), Errors::INVALID_CALLER);
+        }
+        #[inline(always)]
+        fn _assert_caller_is_admin(self: @ContractState, world: @WorldStorage) {
+            assert(self._caller_is_admin(world), Errors::INVALID_CALLER);
+        }
+        fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
+            ((*world.dispatcher).is_owner(SELECTORS::ACTIONS_LORE, starknet::get_caller_address()))
+        }
+        fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
+            (
+                self._caller_is_owner(world) ||
+                world.is_player_admin(starknet::get_caller_address())
+            )
+        }
+
+        // mint new actions to a recipient
+        fn _mint_to(ref self: ContractState, recipient: ContractAddress, amount: u256) {
+            assert(recipient.is_non_zero(), Errors::INVALID_RECIPIENT);
+            assert(amount.is_non_zero(), Errors::INVALID_AMOUNT);
+            self.erc20.mint(recipient, amount);
+        }
+
+
         //
         // L3 > L2 messaging
         // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/contract_msg_starknet.cairo
         //
-
         fn _send_message(ref self: ContractState, to_address: ContractAddress, value: felt252) {
             // Since the blockifier does not support sending to an address larger than `EthAddress`,
             // we send the address as the first value of the payload, and use the magic value `MSG` as the `to_address`.

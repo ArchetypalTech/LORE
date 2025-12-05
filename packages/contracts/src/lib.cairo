@@ -6,11 +6,6 @@ pub mod systems {
     pub mod actions_lore;
 }
 
-pub mod components {
-    pub mod coin_component;
-    pub mod coin_config;
-}
-
 pub mod constants {
     pub mod constants;
     pub mod errors;
@@ -52,6 +47,7 @@ pub mod models {
     pub mod hub;
     pub mod game_token_info;
     pub mod trail_token_info;
+    pub mod actions_config;
 }
 
 pub mod types {

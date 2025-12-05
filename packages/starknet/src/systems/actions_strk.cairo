@@ -26,6 +26,8 @@ pub trait IActionsStarknet<TState> {
     // IActionsPublicStarknet
     fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
     fn consume_message_value(ref self: TState, value: felt252);
+    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
+    fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
 }
 
 #[starknet::interface]
@@ -145,7 +147,11 @@ pub mod actions_strk {
             //
             // TODO: check sender is Cartridge
             //
-            self._send_message(recipient, dojo::utils::bytearray_hash(@"purchased_starter_pack"), recipient.into());
+            let payload: Span<felt252> = array![
+                recipient.into(),
+                20.into(),
+            ].span();
+            self._send_message(selector!("purchased_starter_pack"), payload);
         }
 
         /// L3 > L2
@@ -153,7 +159,8 @@ pub mod actions_strk {
         fn consume_message_value(ref self: ContractState,
             value: felt252,
         ) {
-            self._consume_message_value(value);
+            let payload: Span<felt252> = array![value].span();
+            self._consume_message_value(payload);
         }
 
         /// Admin functions
@@ -195,21 +202,25 @@ pub mod actions_strk {
         //
         
         fn _send_message(ref self: ContractState,
-            to_address: ContractAddress,
             selector: felt252,
-            value: felt252,
+            payload: Span<felt252>,
         ) {
             let messaging_config: MessagingConfig = self.world_default().read_model(1);
             assert(messaging_config.messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
+            assert(messaging_config.appchain_contract.is_non_zero(), Errors::INVALID_APPCHAIN_CONTRACT);
+
+            // serialize payload
+            let mut serialized_payload: Array<felt252> = array![];
+            payload.serialize(ref serialized_payload);
 
             let messaging: IMessagingDispatcher = IMessagingDispatcher {
                 contract_address: messaging_config.messaging_contract,
             };
-            messaging.send_message_to_appchain(to_address, selector, array![value].span(),);
+            messaging.send_message_to_appchain(messaging_config.appchain_contract, selector, serialized_payload.span());
         }
 
         fn _consume_message_value(ref self: ContractState,
-            value: felt252,
+            payload: Span<felt252>,
         ) {
             let messaging_config: MessagingConfig = self.world_default().read_model(1);
             assert(messaging_config.messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
@@ -223,7 +234,7 @@ pub mod actions_strk {
             // as consumable.
             let _msg_hash: felt252 = messaging.consume_message_from_appchain(
                 messaging_config.appchain_contract,
-                array![value].span(),
+                payload,
             );
 
             // msg successfully consumed, we can proceed and process the data

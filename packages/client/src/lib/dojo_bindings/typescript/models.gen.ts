@@ -2,13 +2,6 @@ import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
 import { CairoCustomEnum, type BigNumberish } from 'starknet';
 
-// Type definition for `lore::components::coin_config::CoinConfig` struct
-export interface CoinConfig {
-	coin_address: string;
-	minter_address: string;
-	faucet_amount: BigNumberish;
-}
-
 // Type definition for `lore::models::action::Action` struct
 export interface Action {
 	inst: BigNumberish;
@@ -31,6 +24,12 @@ export interface ActionExecuted {
 	inst: BigNumberish;
 	key: BigNumberish;
 	is_executed: boolean;
+}
+
+// Type definition for `lore::models::actions_config::ActionsConfig` struct
+export interface ActionsConfig {
+	key: BigNumberish;
+	messaging_contract: string;
 }
 
 // Type definition for `lore::models::area::Area` struct
@@ -598,9 +597,9 @@ export type PropertyTypeEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
 	lore: {
-		CoinConfig: CoinConfig,
 		Action: Action,
 		ActionExecuted: ActionExecuted,
+		ActionsConfig: ActionsConfig,
 		Area: Area,
 		Condition: Condition,
 		Container: Container,
@@ -652,11 +651,6 @@ export interface SchemaType extends ISchemaType {
 }
 export const schema: SchemaType = {
 	lore: {
-		CoinConfig: {
-			coin_address: "",
-			minter_address: "",
-			faucet_amount: 0,
-		},
 		Action: {
 			inst: 0,
 			key: 0,
@@ -676,6 +670,10 @@ export const schema: SchemaType = {
 			inst: 0,
 			key: 0,
 			is_executed: false,
+		},
+		ActionsConfig: {
+			key: 0,
+			messaging_contract: "",
 		},
 		Area: {
 			inst: 0,
@@ -1134,9 +1132,9 @@ export const schema: SchemaType = {
 	},
 };
 export enum ModelsMapping {
-	CoinConfig = 'lore-CoinConfig',
 	Action = 'lore-Action',
 	ActionExecuted = 'lore-ActionExecuted',
+	ActionsConfig = 'lore-ActionsConfig',
 	Area = 'lore-Area',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
