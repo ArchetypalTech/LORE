@@ -269,7 +269,12 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
 
     console.log("DEBUG: queryExitsPerGame() BREAK POINT");
 
-    const parentToChildren22 =  await queryParentToChildrenGIMap(game_inst_map, playerLocationInst);
+    const locationEntity22 = await queryEntityGIMap(game_inst_map, playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() locationEntity22: ", locationEntity22);
+
+    const locationEntity22Inst = BigInt(locationEntity22!.inst!.toString());
+    console.log("DEBUG: queryExitsPerGame() locationEntity222Inst: ", locationEntity22Inst);
+    const parentToChildren22 =  await queryParentToChildrenGIMap(game_inst_map, locationEntity22Inst);
     console.log("DEBUG: queryExitsPerGame() parentToChildren2: ", parentToChildren22);
 
     for ( const child of parentToChildren22.children ) {
