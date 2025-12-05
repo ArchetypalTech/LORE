@@ -36,16 +36,18 @@ Test messaging
 ```bash
 export L2_WORLD_ADDRESS=0x03bd2ce4af00a298fb73f997972c6cc39a6cab58f6bf9a1d16b98431da1b3dc7
 export L3_WORLD_ADDRESS=0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403
-export PILTOVER_ADDRESS=$(grep '^core_contract' ../starknet/data/dev/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
+export L2_SN_CONTRACT=0x041b3b8e0b1f5c6c13a0c175911c259f64955b11d343d9be2359bbf67a209f0c
+export L3_APPCHAIN_CONTRACT=0x03313b16a5003d1f62691bfc2421698494ad0727b3cb0f574d3ec9bdab854d8b 
 export RECIPIENT=0x1234
 # setup L3
 cd packages/contracts/
-sozo execute --world $L3_WORLD_ADDRESS --wait lore-actions_lore set_messaging_contract ${PILTOVER_ADDRESS}
+sozo execute --world $L3_WORLD_ADDRESS --wait lore-actions_lore set_sn_contract ${L2_SN_CONTRACT}
 sozo model get lore-ActionsConfig 1
 # call L2
 cd packages/starknet/
-sozo execute --world $L2_WORLD_ADDRESS --wait lore_strk-actions_strk purchased_starter_pack $RECIPIENT
+sozo execute --world $L3_WORLD_ADDRESS --wait lore_strk-actions_strk set_appchain_contract ${L3_APPCHAIN_CONTRACT}
 sozo model get lore_strk-MessagingConfig 1
+sozo execute --world $L2_WORLD_ADDRESS --wait lore_strk-actions_strk purchased_starter_pack $RECIPIENT
 # validate L3
 cd packages/contracts/
 sozo call --world $L3_WORLD_ADDRESS lore-actions_lore balance_of $RECIPIENT

@@ -29,7 +29,7 @@ export interface ActionExecuted {
 // Type definition for `lore::models::actions_config::ActionsConfig` struct
 export interface ActionsConfig {
 	key: BigNumberish;
-	messaging_contract: string;
+	sn_contract: string;
 }
 
 // Type definition for `lore::models::area::Area` struct
@@ -673,7 +673,7 @@ export const schema: SchemaType = {
 		},
 		ActionsConfig: {
 			key: 0,
-			messaging_contract: "",
+			sn_contract: "",
 		},
 		Area: {
 			inst: 0,

@@ -114,19 +114,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_lore_setMessagingContract_calldata = (messagingContract: string): DojoCall => {
+	const build_actions_lore_setSnContract_calldata = (snContract: string): DojoCall => {
 		return {
 			contractName: "actions_lore",
-			entrypoint: "set_messaging_contract",
-			calldata: [messagingContract],
+			entrypoint: "set_sn_contract",
+			calldata: [snContract],
 		};
 	};
 
-	const actions_lore_setMessagingContract = async (snAccount: Account | AccountInterface, messagingContract: string) => {
+	const actions_lore_setSnContract = async (snAccount: Account | AccountInterface, snContract: string) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_lore_setMessagingContract_calldata(messagingContract),
+				build_actions_lore_setSnContract_calldata(snContract),
 				"lore",
 			);
 		} catch (error) {
@@ -2320,8 +2320,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildMintToCalldata: build_actions_lore_mintTo_calldata,
 			name: actions_lore_name,
 			buildNameCalldata: build_actions_lore_name_calldata,
-			setMessagingContract: actions_lore_setMessagingContract,
-			buildSetMessagingContractCalldata: build_actions_lore_setMessagingContract_calldata,
+			setSnContract: actions_lore_setSnContract,
+			buildSetSnContractCalldata: build_actions_lore_setSnContract_calldata,
 			symbol: actions_lore_symbol,
 			buildSymbolCalldata: build_actions_lore_symbol_calldata,
 			totalSupply: actions_lore_totalSupply,

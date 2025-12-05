@@ -6,7 +6,7 @@ pub struct ActionsConfig {
     #[key]
     pub key: felt252,
     //------
-    pub messaging_contract: ContractAddress,
+    pub sn_contract: ContractAddress,
 }
 
 
@@ -21,10 +21,10 @@ use dojo::{
 
 #[generate_trait]
 pub impl ActionsConfigImpl of ActionsConfigTrait {
-    fn initialize_actions_config(ref self: WorldStorage, messaging_contract: ContractAddress) {
+    fn initialize_actions_config(ref self: WorldStorage, sn_contract: ContractAddress) {
         let actions_config: ActionsConfig = ActionsConfig {
             key: 1,
-            messaging_contract,
+            sn_contract,
         };
         self.write_model(@actions_config);
     }

@@ -24,14 +24,14 @@ pub trait IActionsLore<TState> {
 
     //-----------------------------------
     // IActionsPublicStarknet
-    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
+    fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
 }
 
 #[starknet::interface]
 trait IActionsPublicStarknet<TState> {
     // admin functions
-    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
+    fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
 }
 
@@ -85,11 +85,11 @@ pub mod actions_lore {
 
 
     mod Errors {
-        pub const INVALID_CALLER: felt252               = 'ACTIONS: Invalid caller';
-        pub const INVALID_COMMAND: felt252              = 'ACTIONS: Invalid command';
-        pub const INVALID_RECIPIENT: felt252            = 'ACTIONS: Invalid recipient';
-        pub const INVALID_AMOUNT: felt252               = 'ACTIONS: Invalid amount';
-        pub const INVALID_MESSAGING_CONTRACT: felt252   = 'ACTIONS: Invalid messaging';
+        pub const INVALID_CALLER: felt252           = 'ACTIONS: Invalid caller';
+        pub const INVALID_COMMAND: felt252          = 'ACTIONS: Invalid command';
+        pub const INVALID_RECIPIENT: felt252        = 'ACTIONS: Invalid recipient';
+        pub const INVALID_AMOUNT: felt252           = 'ACTIONS: Invalid amount';
+        pub const INVALID_SN_CONTRACT: felt252      = 'ACTIONS: Invalid SN contract';
     }
 
     //*******************************************
@@ -98,14 +98,14 @@ pub mod actions_lore {
     //*******************************************
 
     fn dojo_init(ref self: ContractState,
-        messaging_contract: ContractAddress,
+        sn_contract: ContractAddress,
     ) {
         let mut world: WorldStorage = self.world_default();
         self.erc20.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
         );
-        world.initialize_actions_config(messaging_contract);
+        world.initialize_actions_config(sn_contract);
     }
     
     #[generate_trait]
@@ -130,7 +130,7 @@ pub mod actions_lore {
         let world: WorldStorage = self.world_default();
         // validate caller
         let actions_config: ActionsConfig = world.get_actions_config();
-        assert(from_address == actions_config.messaging_contract.into(), Errors::INVALID_CALLER);
+        assert(from_address == actions_config.sn_contract.into(), Errors::INVALID_CALLER);
         // parse payload
         let recipient: ContractAddress = (*payload.at(0)).try_into().unwrap();
         let actions: u8 = (*payload.at(1)).try_into().unwrap();
@@ -149,14 +149,14 @@ pub mod actions_lore {
         }
 
         /// Admin functions
-        fn set_messaging_contract(ref self: ContractState, messaging_contract: ContractAddress) {
+        fn set_sn_contract(ref self: ContractState, sn_contract: ContractAddress) {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_owner(@world);
             // set messaging contract
-            assert(messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
+            assert(sn_contract.is_non_zero(), Errors::INVALID_SN_CONTRACT);
             let mut actions_config: ActionsConfig = world.get_actions_config();
-            actions_config.messaging_contract = messaging_contract;
+            actions_config.sn_contract = sn_contract;
             world.write_model(@actions_config);
         }
     }

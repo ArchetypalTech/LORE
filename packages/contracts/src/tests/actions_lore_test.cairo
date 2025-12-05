@@ -76,17 +76,17 @@ fn test_mint_to_invalid_caller() {
 //
 
 #[test]
-fn test_set_messaging_contract() {
+fn test_set_sn_contract() {
     let mut sys: HelperSystems = helpers::setup_core();
     let msg1_contract: ContractAddress = 0x1234.try_into().unwrap();
     // again...
     helpers::set_caller(OWNER());
-    sys.actions.set_messaging_contract(msg1_contract);
-    assert_eq!(sys.world.get_actions_config().messaging_contract, msg1_contract);
+    sys.actions.set_sn_contract(msg1_contract);
+    assert_eq!(sys.world.get_actions_config().sn_contract, msg1_contract);
     // again...
     let msg2_contract: ContractAddress = 0x5678.try_into().unwrap();
-    sys.actions.set_messaging_contract(msg2_contract);
-    assert_eq!(sys.world.get_actions_config().messaging_contract, msg2_contract);
+    sys.actions.set_sn_contract(msg2_contract);
+    assert_eq!(sys.world.get_actions_config().sn_contract, msg2_contract);
 }
 
 #[test]
@@ -95,7 +95,7 @@ fn test_messaging_not_found() {
     let mut sys: HelperSystems = helpers::setup_core();
     let msg1_contract: ContractAddress = 0x1234.try_into().unwrap();
     helpers::set_caller(OWNER());
-    sys.actions.set_messaging_contract(msg1_contract);
+    sys.actions.set_sn_contract(msg1_contract);
     // message...
     helpers::set_caller(msg1_contract);
     let messaging_dispatcher: IMessagingDispatcher = _messaging_dispatcher(@sys);
@@ -107,19 +107,19 @@ fn test_messaging_not_found() {
 }
 
 #[test]
-#[should_panic(expected: ('ACTIONS: Invalid messaging','ENTRYPOINT_FAILED'))]
-fn test_set_messaging_contract_invalid_messaging_contract() {
+#[should_panic(expected: ('ACTIONS: Invalid SN contract','ENTRYPOINT_FAILED'))]
+fn test_set_sn_contract_invalid_sn_contract() {
     let mut sys: HelperSystems = helpers::setup_core();
     helpers::set_caller(OWNER());
-    sys.actions.set_messaging_contract(0x0.try_into().unwrap());
+    sys.actions.set_sn_contract(0x0.try_into().unwrap());
 }
 
 
 #[test]
 #[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
-fn test_set_messaging_contract_invalid_caller() {
+fn test_set_sn_contract_invalid_caller() {
     let mut sys: HelperSystems = helpers::setup_core();
     helpers::set_caller(OTHER());
-    sys.actions.set_messaging_contract(RECIPIENT());
+    sys.actions.set_sn_contract(RECIPIENT());
 }
 
