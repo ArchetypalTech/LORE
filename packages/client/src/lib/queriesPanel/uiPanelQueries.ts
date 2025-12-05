@@ -292,7 +292,9 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
       // }
       
       const exit34 = await queryExit(childInst33);
+      const exit34Entiy = await queryEntity(childInst33);
       console.log("DEBUG: queryExitsPerGame() exit34: ", exit34)
+      console.log("DEBUG: queryExitsPerGame() exit34Entiy: ", exit34Entiy)
       if (exit34) {
         // if child is exit, then query the exit using the game instance map
         const exit34Inst = BigInt(exit34.inst.toString());
@@ -301,20 +303,7 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
         const exit34_2 = await queryExitGIMap(gameInstMap5, exit34Inst);
         console.log("DEBUG: queryExitsPerGame() exit34_2: ", exit34_2)
         if (exit34_2) {
-          // If we have the exit component for the game instance,
-          // query the exit's entity model
-          const exit34_2Inst = BigInt(exit34_2.inst.toString());
-          const exit34_2Entity = await queryEntityGIMap(gameInstMap5, exit34_2Inst);
-          console.log("DEBUG: queryExitsPerGame() exit34_2Entity: ", exit34_2Entity);
-          const gameInstMap6 = await queryGameInstaceMap(gameId, exit34_2Inst);
-          console.log("DEBUG: queryExitsPerGame() gameInstMap6: ", gameInstMap6);
-          const exit34_2Entity1 = await queryEntityGIMap(gameInstMap6, exit34_2Inst);
-          console.log("DEBUG: queryExitsPerGame() exit34_2Entity1: ", exit34_2Entity1);
-          const exit34_2Entity2 = await queryEntity(exit34_2Inst);
-          console.log("DEBUG: queryExitsPerGame() exit34_2Entity2: ", exit34_2Entity2);
-          
-          
-          
+          // If we have the exit component for the game instance,         
           // query the exit's leads_to entity model
           const leads_to_inst = BigInt(exit34_2.leads_to.toString());
           exitLeadsTo = await queryEntityGIMap(gameInstMap5, leads_to_inst);
@@ -324,7 +313,7 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
           // Build the exitInfo object and add it to exits array
           exits.push({
             id: counter++,
-            name: exit34_2Entity1?.name ?? "unknown",
+            name: exit34Entiy?.name ?? "unknown",
             direction: stringCairoEnum(exit34_2.direction_type ?? "None"),
             destination: exit34_2.is_enterable ? (exitLeadsTo2?.name ?? "unknown") : "Unknown",
           });
