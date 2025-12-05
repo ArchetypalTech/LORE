@@ -9,6 +9,8 @@ pub struct ActionsConfig {
     pub sn_contract: ContractAddress,
 }
 
+const ACTIONS_KEY: felt252 = 1;
+
 
 //---------------------------------
 // Model Traits
@@ -23,12 +25,12 @@ use dojo::{
 pub impl ActionsConfigImpl of ActionsConfigTrait {
     fn initialize_actions_config(ref self: WorldStorage, sn_contract: ContractAddress) {
         let actions_config: ActionsConfig = ActionsConfig {
-            key: 1,
+            key: ACTIONS_KEY,
             sn_contract,
         };
         self.write_model(@actions_config);
     }
     fn get_actions_config(self: @WorldStorage) -> ActionsConfig {
-        (self.read_model(1))
+        (self.read_model(ACTIONS_KEY))
     }
 }

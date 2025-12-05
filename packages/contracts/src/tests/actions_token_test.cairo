@@ -6,7 +6,7 @@ use lore::models::{
 };
 use lore::tests::{helpers,
     helpers::{
-        IActionsLoreDispatcherTrait,
+        IActionsTokenDispatcherTrait,
         HelperSystems,
         OWNER, OTHER, RECIPIENT,
     }

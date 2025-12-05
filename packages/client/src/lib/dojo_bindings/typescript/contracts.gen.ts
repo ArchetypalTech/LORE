@@ -4,36 +4,36 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_actions_lore_allowance_calldata = (owner: string, spender: string): DojoCall => {
+	const build_actions_token_allowance_calldata = (owner: string, spender: string): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "allowance",
 			calldata: [owner, spender],
 		};
 	};
 
-	const actions_lore_allowance = async (owner: string, spender: string) => {
+	const actions_token_allowance = async (owner: string, spender: string) => {
 		try {
-			return await provider.call("lore", build_actions_lore_allowance_calldata(owner, spender));
+			return await provider.call("lore", build_actions_token_allowance_calldata(owner, spender));
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_lore_approve_calldata = (spender: string, amount: BigNumberish): DojoCall => {
+	const build_actions_token_approve_calldata = (spender: string, amount: BigNumberish): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "approve",
 			calldata: [spender, amount],
 		};
 	};
 
-	const actions_lore_approve = async (snAccount: Account | AccountInterface, spender: string, amount: BigNumberish) => {
+	const actions_token_approve = async (snAccount: Account | AccountInterface, spender: string, amount: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_lore_approve_calldata(spender, amount),
+				build_actions_token_approve_calldata(spender, amount),
 				"lore",
 			);
 		} catch (error) {
@@ -42,53 +42,53 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_lore_balanceOf_calldata = (account: string): DojoCall => {
+	const build_actions_token_balanceOf_calldata = (account: string): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "balanceOf",
 			calldata: [account],
 		};
 	};
 
-	const actions_lore_balanceOf = async (account: string) => {
+	const actions_token_balanceOf = async (account: string) => {
 		try {
-			return await provider.call("lore", build_actions_lore_balanceOf_calldata(account));
+			return await provider.call("lore", build_actions_token_balanceOf_calldata(account));
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_lore_decimals_calldata = (): DojoCall => {
+	const build_actions_token_decimals_calldata = (): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "decimals",
 			calldata: [],
 		};
 	};
 
-	const actions_lore_decimals = async () => {
+	const actions_token_decimals = async () => {
 		try {
-			return await provider.call("lore", build_actions_lore_decimals_calldata());
+			return await provider.call("lore", build_actions_token_decimals_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_lore_mintTo_calldata = (recipient: string, actions: BigNumberish): DojoCall => {
+	const build_actions_token_mintTo_calldata = (recipient: string, actions: BigNumberish): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "mint_to",
 			calldata: [recipient, actions],
 		};
 	};
 
-	const actions_lore_mintTo = async (snAccount: Account | AccountInterface, recipient: string, actions: BigNumberish) => {
+	const actions_token_mintTo = async (snAccount: Account | AccountInterface, recipient: string, actions: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_lore_mintTo_calldata(recipient, actions),
+				build_actions_token_mintTo_calldata(recipient, actions),
 				"lore",
 			);
 		} catch (error) {
@@ -97,36 +97,36 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_lore_name_calldata = (): DojoCall => {
+	const build_actions_token_name_calldata = (): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "name",
 			calldata: [],
 		};
 	};
 
-	const actions_lore_name = async () => {
+	const actions_token_name = async () => {
 		try {
-			return await provider.call("lore", build_actions_lore_name_calldata());
+			return await provider.call("lore", build_actions_token_name_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_lore_setSnContract_calldata = (snContract: string): DojoCall => {
+	const build_actions_token_setSnContract_calldata = (snContract: string): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "set_sn_contract",
 			calldata: [snContract],
 		};
 	};
 
-	const actions_lore_setSnContract = async (snAccount: Account | AccountInterface, snContract: string) => {
+	const actions_token_setSnContract = async (snAccount: Account | AccountInterface, snContract: string) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_lore_setSnContract_calldata(snContract),
+				build_actions_token_setSnContract_calldata(snContract),
 				"lore",
 			);
 		} catch (error) {
@@ -135,53 +135,53 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_lore_symbol_calldata = (): DojoCall => {
+	const build_actions_token_symbol_calldata = (): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "symbol",
 			calldata: [],
 		};
 	};
 
-	const actions_lore_symbol = async () => {
+	const actions_token_symbol = async () => {
 		try {
-			return await provider.call("lore", build_actions_lore_symbol_calldata());
+			return await provider.call("lore", build_actions_token_symbol_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_lore_totalSupply_calldata = (): DojoCall => {
+	const build_actions_token_totalSupply_calldata = (): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "totalSupply",
 			calldata: [],
 		};
 	};
 
-	const actions_lore_totalSupply = async () => {
+	const actions_token_totalSupply = async () => {
 		try {
-			return await provider.call("lore", build_actions_lore_totalSupply_calldata());
+			return await provider.call("lore", build_actions_token_totalSupply_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_lore_transfer_calldata = (recipient: string, amount: BigNumberish): DojoCall => {
+	const build_actions_token_transfer_calldata = (recipient: string, amount: BigNumberish): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "transfer",
 			calldata: [recipient, amount],
 		};
 	};
 
-	const actions_lore_transfer = async (snAccount: Account | AccountInterface, recipient: string, amount: BigNumberish) => {
+	const actions_token_transfer = async (snAccount: Account | AccountInterface, recipient: string, amount: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_lore_transfer_calldata(recipient, amount),
+				build_actions_token_transfer_calldata(recipient, amount),
 				"lore",
 			);
 		} catch (error) {
@@ -190,19 +190,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_lore_transferFrom_calldata = (sender: string, recipient: string, amount: BigNumberish): DojoCall => {
+	const build_actions_token_transferFrom_calldata = (sender: string, recipient: string, amount: BigNumberish): DojoCall => {
 		return {
-			contractName: "actions_lore",
+			contractName: "actions_token",
 			entrypoint: "transferFrom",
 			calldata: [sender, recipient, amount],
 		};
 	};
 
-	const actions_lore_transferFrom = async (snAccount: Account | AccountInterface, sender: string, recipient: string, amount: BigNumberish) => {
+	const actions_token_transferFrom = async (snAccount: Account | AccountInterface, sender: string, recipient: string, amount: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_lore_transferFrom_calldata(sender, recipient, amount),
+				build_actions_token_transferFrom_calldata(sender, recipient, amount),
 				"lore",
 			);
 		} catch (error) {
@@ -2307,29 +2307,29 @@ export function setupWorld(provider: DojoProvider) {
 
 
 	return {
-		actions_lore: {
-			allowance: actions_lore_allowance,
-			buildAllowanceCalldata: build_actions_lore_allowance_calldata,
-			approve: actions_lore_approve,
-			buildApproveCalldata: build_actions_lore_approve_calldata,
-			balanceOf: actions_lore_balanceOf,
-			buildBalanceOfCalldata: build_actions_lore_balanceOf_calldata,
-			decimals: actions_lore_decimals,
-			buildDecimalsCalldata: build_actions_lore_decimals_calldata,
-			mintTo: actions_lore_mintTo,
-			buildMintToCalldata: build_actions_lore_mintTo_calldata,
-			name: actions_lore_name,
-			buildNameCalldata: build_actions_lore_name_calldata,
-			setSnContract: actions_lore_setSnContract,
-			buildSetSnContractCalldata: build_actions_lore_setSnContract_calldata,
-			symbol: actions_lore_symbol,
-			buildSymbolCalldata: build_actions_lore_symbol_calldata,
-			totalSupply: actions_lore_totalSupply,
-			buildTotalSupplyCalldata: build_actions_lore_totalSupply_calldata,
-			transfer: actions_lore_transfer,
-			buildTransferCalldata: build_actions_lore_transfer_calldata,
-			transferFrom: actions_lore_transferFrom,
-			buildTransferFromCalldata: build_actions_lore_transferFrom_calldata,
+		actions_token: {
+			allowance: actions_token_allowance,
+			buildAllowanceCalldata: build_actions_token_allowance_calldata,
+			approve: actions_token_approve,
+			buildApproveCalldata: build_actions_token_approve_calldata,
+			balanceOf: actions_token_balanceOf,
+			buildBalanceOfCalldata: build_actions_token_balanceOf_calldata,
+			decimals: actions_token_decimals,
+			buildDecimalsCalldata: build_actions_token_decimals_calldata,
+			mintTo: actions_token_mintTo,
+			buildMintToCalldata: build_actions_token_mintTo_calldata,
+			name: actions_token_name,
+			buildNameCalldata: build_actions_token_name_calldata,
+			setSnContract: actions_token_setSnContract,
+			buildSetSnContractCalldata: build_actions_token_setSnContract_calldata,
+			symbol: actions_token_symbol,
+			buildSymbolCalldata: build_actions_token_symbol_calldata,
+			totalSupply: actions_token_totalSupply,
+			buildTotalSupplyCalldata: build_actions_token_totalSupply_calldata,
+			transfer: actions_token_transfer,
+			buildTransferCalldata: build_actions_token_transfer_calldata,
+			transferFrom: actions_token_transferFrom,
+			buildTransferFromCalldata: build_actions_token_transferFrom_calldata,
 		},
 		designer: {
 			createAction: designer_createAction,

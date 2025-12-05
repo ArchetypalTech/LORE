@@ -12,7 +12,7 @@ pub use lore::{
         prompt::{IPromptDispatcher, IPromptDispatcherTrait},
         game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
         trail_token::{ITrailTokenDispatcher, ITrailTokenDispatcherTrait},
-        actions_lore::{IActionsLoreDispatcher, IActionsLoreDispatcherTrait},
+        actions_token::{IActionsTokenDispatcher, IActionsTokenDispatcherTrait},
     },
     lib::{
         a_lexer::{ILexerLibraryDispatcher, ILexerDispatcherTrait},
@@ -26,7 +26,7 @@ pub mod SELECTORS {
     pub const DESIGNER: felt252 = selector_from_tag!("lore-designer");
     pub const GAME_TOKEN: felt252 = selector_from_tag!("lore-game_token");
     pub const TRAIL_TOKEN: felt252 = selector_from_tag!("lore-trail_token");
-    pub const ACTIONS_LORE: felt252 = selector_from_tag!("lore-actions_lore");
+    pub const ACTIONS_TOKEN: felt252 = selector_from_tag!("lore-actions_token");
 }
 
 #[generate_trait]
@@ -73,8 +73,8 @@ pub impl DnsImpl of DnsTrait {
         (self.find_contract_address(@"trail_token"))
     }
     #[inline(always)]
-    fn actions_lore_address(self: @WorldStorage) -> ContractAddress {
-        (self.find_contract_address(@"actions_lore"))
+    fn actions_token_address(self: @WorldStorage) -> ContractAddress {
+        (self.find_contract_address(@"actions_token"))
     }
     #[inline(always)]
     fn lexer_class_hash(self: @WorldStorage) -> ClassHash {
@@ -101,8 +101,8 @@ pub impl DnsImpl of DnsTrait {
         (ITrailTokenDispatcher{ contract_address: self.trail_token_address() })
     }
     #[inline(always)]
-    fn actions_lore_dispatcher(self: @WorldStorage) -> IActionsLoreDispatcher {
-        (IActionsLoreDispatcher{ contract_address: self.actions_lore_address() })
+    fn actions_token_dispatcher(self: @WorldStorage) -> IActionsTokenDispatcher {
+        (IActionsTokenDispatcher{ contract_address: self.actions_token_address() })
     }
     #[inline(always)]
     fn lexer_dispatcher(self: @WorldStorage) -> ILexerLibraryDispatcher {

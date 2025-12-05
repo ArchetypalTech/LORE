@@ -2,7 +2,7 @@ use starknet::{ContractAddress};
 use dojo::world::IWorldDispatcher;
 
 #[starknet::interface]
-pub trait IActionsLore<TState> {
+pub trait IActionsToken<TState> {
     // IWorldProvider
     fn world_dispatcher(self: @TState) -> IWorldDispatcher;
 
@@ -23,20 +23,20 @@ pub trait IActionsLore<TState> {
     fn transferFrom(ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
 
     //-----------------------------------
-    // IActionsPublicStarknet
+    // IActionsTokenPublic
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
 }
 
 #[starknet::interface]
-trait IActionsPublicStarknet<TState> {
+trait IActionsTokenPublic<TState> {
     // admin functions
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
 }
 
 #[dojo::contract]
-pub mod actions_lore {
+pub mod actions_token {
     use core::num::traits::Zero;
     use starknet::{ContractAddress, SyscallResultTrait};
     use dojo::{
@@ -139,7 +139,7 @@ pub mod actions_lore {
     }
 
     #[abi(embed_v0)]
-    impl IActionsPublicStarknetImpl of super::IActionsPublicStarknet<ContractState> {
+    impl IActionsTokenPublicImpl of super::IActionsTokenPublic<ContractState> {
         fn mint_to(ref self: ContractState, recipient: ContractAddress, actions: u8) {
             // validate caller
             self._assert_caller_is_admin(@self.world_default());
@@ -175,7 +175,7 @@ pub mod actions_lore {
             assert(self._caller_is_admin(world), Errors::INVALID_CALLER);
         }
         fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
-            ((*world.dispatcher).is_owner(SELECTORS::ACTIONS_LORE, starknet::get_caller_address()))
+            ((*world.dispatcher).is_owner(SELECTORS::ACTIONS_TOKEN, starknet::get_caller_address()))
         }
         fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
             (

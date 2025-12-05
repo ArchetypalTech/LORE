@@ -44,5 +44,5 @@ sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token purchased_sta
 # L3: validate balance (must not be zero)
 cd packages/contracts/
 sozo model get lore-ActionsConfig 1
-sozo call --world $L3_WORLD_ADDRESS lore-actions_lore balance_of $RECIPIENT
+sozo call --world $L3_WORLD_ADDRESS lore-actions_token balance_of $RECIPIENT
 ```

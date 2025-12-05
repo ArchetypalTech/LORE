@@ -14,7 +14,7 @@ pub use lore::{
         prompt::{IPromptDispatcher},
         game_token::{IGameTokenDispatcher},
         trail_token::{ITrailTokenDispatcher},
-        actions_lore::{IActionsLoreDispatcher, IActionsLoreDispatcherTrait},
+        actions_token::{IActionsTokenDispatcher, IActionsTokenDispatcherTrait},
     },
     models,
     models::{
@@ -62,7 +62,7 @@ pub struct HelperSystems {
     pub prompt:IPromptDispatcher,
     pub game_token:IGameTokenDispatcher,
     pub trail_token:ITrailTokenDispatcher,
-    pub actions:IActionsLoreDispatcher,
+    pub actions:IActionsTokenDispatcher,
 }
 
 //-----------------------------------
@@ -116,7 +116,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Contract(lore::systems::prompt::prompt::TEST_CLASS_HASH.into()),
             TestResource::Contract(lore::systems::game_token::game_token::TEST_CLASS_HASH.into()),
             TestResource::Contract(lore::systems::trail_token::trail_token::TEST_CLASS_HASH.into()),
-            TestResource::Contract(lore::systems::actions_lore::actions_lore::TEST_CLASS_HASH.into()),
+            TestResource::Contract(lore::systems::actions_token::actions_token::TEST_CLASS_HASH.into()),
             TestResource::Library((lore::lib::a_lexer::lexer::TEST_CLASS_HASH.into(), @"lexer", @"0_2_0")),
         ].span(),
     };
@@ -139,7 +139,7 @@ fn core_contract_defs() -> Span<ContractDef> {
         ContractDefTrait::new(@"lore", @"trail_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
             .with_init_calldata(array![].span()),
-        ContractDefTrait::new(@"lore", @"actions_lore")
+        ContractDefTrait::new(@"lore", @"actions_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
             .with_init_calldata(array![0x0.try_into().unwrap()].span()),
     ].span()
@@ -160,13 +160,13 @@ pub fn setup_core() -> HelperSystems {
     world.dispatcher.grant_owner(selector_from_tag!("lore-designer"), OWNER());
     world.dispatcher.grant_owner(selector_from_tag!("lore-prompt"), OWNER());
     world.dispatcher.grant_owner(selector_from_tag!("lore-game_token"), OWNER());
-    world.dispatcher.grant_owner(selector_from_tag!("lore-actions_lore"), OWNER());
+    world.dispatcher.grant_owner(selector_from_tag!("lore-actions_token"), OWNER());
 
     let designer: IDesignerDispatcher = IDesignerDispatcher { contract_address: world.designer_address() };
     let prompt: IPromptDispatcher = IPromptDispatcher { contract_address: world.prompt_address() };
     let game_token: IGameTokenDispatcher = IGameTokenDispatcher { contract_address: world.game_token_address() };
     let trail_token: ITrailTokenDispatcher = ITrailTokenDispatcher { contract_address: world.trail_token_address() };
-    let actions: IActionsLoreDispatcher = IActionsLoreDispatcher { contract_address: world.actions_lore_address() };
+    let actions: IActionsTokenDispatcher = IActionsTokenDispatcher { contract_address: world.actions_token_address() };
 
     // FIXME: Setup permissions
     world.dispatcher.grant_writer(selector_from_tag!("lore-Dict"), world.prompt_address());
