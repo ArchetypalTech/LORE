@@ -9,6 +9,7 @@ const cmd = [
 	`sozo build --profile ${config.mode} --typescript --bindings-output ../client/src/lib/dojo_bindings/`,
 	`sozo migrate --profile ${config.mode}`,
 	`sozo inspect --profile ${config.mode}`,
+	`touch target/${config.mode}/deployed`,
 ];
 
 const onComplete = async (watcher: FSWatcher) => {

@@ -1,7 +1,56 @@
 StateMaps {
     nonces: {},
     class_hashes: {},
-    storage: {},
+    storage: {
+        (
+            ContractAddress(
+                PatriciaKey(
+                    0x3313b16a5003d1f62691bfc2421698494ad0727b3cb0f574d3ec9bdab854d8b,
+                ),
+            ),
+            StorageKey(
+                PatriciaKey(
+                    0x4fc7b23d1ef6e4f099416be09d83699fe35126d2a42325636e93745a36ce3cb,
+                ),
+            ),
+        ): 0x1158e460913d00000,
+        (
+            ContractAddress(
+                PatriciaKey(
+                    0x3313b16a5003d1f62691bfc2421698494ad0727b3cb0f574d3ec9bdab854d8b,
+                ),
+            ),
+            StorageKey(
+                PatriciaKey(
+                    0x110e2f729c9c2b988559994a3daccd838cf52faf88e18101373e67dd061455a,
+                ),
+            ),
+        ): 0x1158e460913d00000,
+        (
+            ContractAddress(
+                PatriciaKey(
+                    0x2,
+                ),
+            ),
+            StorageKey(
+                PatriciaKey(
+                    0x0,
+                ),
+            ),
+        ): 0x4e2,
+        (
+            ContractAddress(
+                PatriciaKey(
+                    0x2,
+                ),
+            ),
+            StorageKey(
+                PatriciaKey(
+                    0x4fc7b23d1ef6e4f099416be09d83699fe35126d2a42325636e93745a36ce3cb,
+                ),
+            ),
+        ): 0x4e1,
+    },
     compiled_class_hashes: {},
     declared_contracts: {},
 }
