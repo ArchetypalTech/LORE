@@ -10,11 +10,10 @@ sierra-replace-ids = true
 [dependencies]
 starknet = ">=2.13.1"
 dojo = "=1.8.0"
-openzeppelin_token = "1.0.0"
-openzeppelin_introspection = "1.0.0"
-# piltover = { git = "https://github.com/keep-starknet-strange/piltover.git" }
-piltover = { git = "https://github.com/rsodre/piltover.git", branch = "openzeppelin_v1.0.0" }
-# piltover = { path = "../../../piltover" }
+openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
+openzeppelin_access = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
+openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
+nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", branch = "dojo_v1.7.0" }
 
 [dev-dependencies]
 cairo_test = ">=2.13.1"

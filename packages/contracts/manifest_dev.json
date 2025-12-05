@@ -8022,7 +8022,7 @@
     },
     {
       "type": "l1_handler",
-      "name": "purchased_starter_pack",
+      "name": "used_permit",
       "inputs": [
         {
           "name": "from_address",

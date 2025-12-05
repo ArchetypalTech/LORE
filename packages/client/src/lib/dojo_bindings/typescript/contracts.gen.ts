@@ -76,19 +76,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_token_mintTo_calldata = (recipient: string, actions: BigNumberish): DojoCall => {
+	const build_actions_token_mintTo_calldata = (recipient: string, actionsCount: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions_token",
 			entrypoint: "mint_to",
-			calldata: [recipient, actions],
+			calldata: [recipient, actionsCount],
 		};
 	};
 
-	const actions_token_mintTo = async (snAccount: Account | AccountInterface, recipient: string, actions: BigNumberish) => {
+	const actions_token_mintTo = async (snAccount: Account | AccountInterface, recipient: string, actionsCount: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_token_mintTo_calldata(recipient, actions),
+				build_actions_token_mintTo_calldata(recipient, actionsCount),
 				"lore",
 			);
 		} catch (error) {

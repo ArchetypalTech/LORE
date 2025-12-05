@@ -25,14 +25,14 @@ pub trait IActionsToken<TState> {
     //-----------------------------------
     // IActionsTokenPublic
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
-    fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u16);
 }
 
 #[starknet::interface]
 trait IActionsTokenPublic<TState> {
     // admin functions
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
-    fn mint_to(ref self: TState, recipient: ContractAddress, actions: u8);
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u16);
 }
 
 #[dojo::contract]
@@ -126,25 +126,27 @@ pub mod actions_token {
     /// * `from_address` - The Starknet contract sending the message.
     /// * `payload` - Expected value in the payload (automatically deserialized).
     #[l1_handler]
-    fn purchased_starter_pack(ref self: ContractState, from_address: felt252, payload: Array<felt252>) {
+    fn used_permit(ref self: ContractState, from_address: felt252, payload: Array<felt252>) {
         let world: WorldStorage = self.world_default();
         // validate caller
         let actions_config: ActionsConfig = world.get_actions_config();
         assert(from_address == actions_config.sn_contract.into(), Errors::INVALID_CALLER);
         // parse payload
         let recipient: ContractAddress = (*payload.at(0)).try_into().unwrap();
-        let actions: u8 = (*payload.at(1)).try_into().unwrap();
-        let amount: u256 = (actions.into() * CONST::ETH_TO_WEI);
+        let actions_count: u16 = (*payload.at(1)).try_into().unwrap();
+        let _permit_type: felt252 = *payload.at(2);
+        // mint actions
+        let amount: u256 = (actions_count.into() * CONST::ETH_TO_WEI);
         self._mint_to(recipient, amount);
     }
 
     #[abi(embed_v0)]
     impl IActionsTokenPublicImpl of super::IActionsTokenPublic<ContractState> {
-        fn mint_to(ref self: ContractState, recipient: ContractAddress, actions: u8) {
+        fn mint_to(ref self: ContractState, recipient: ContractAddress, actions_count: u16) {
             // validate caller
             self._assert_caller_is_admin(@self.world_default());
             // mint actions...
-            let amount: u256 = actions.into() * CONST::ETH_TO_WEI;
+            let amount: u256 = actions_count.into() * CONST::ETH_TO_WEI;
             self._mint_to(recipient, amount);
         }
 

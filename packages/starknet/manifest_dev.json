@@ -43,7 +43,7 @@
       "selector": "0x6e688c410e1b129fdf477922923bc00e8147708e267f92b89b754be7f9ffea5",
       "systems": [
         "dojo_init",
-        "purchased_starter_pack",
+        "used_permit",
         "consume_message_value",
         "set_messaging_contract",
         "set_appchain_contract",
@@ -125,7 +125,7 @@
         }
       ],
       "class_hash": "0x37378c360977d62d10aa73919c5a48770c37a695dc1fe8f8daf823417268440",
-      "tag": "lore_sn-MessagingConfig",
+      "tag": "lore_sn-PermitConfig",
       "selector": "0x5b323e345d35c1179f72618e7e975d90678a5f52f7450107b55e818c7808b61"
     }
   ],
@@ -1941,7 +1941,7 @@
       "inputs": [
         {
           "name": "model",
-          "type": "lore_sn::models::messaging::MessagingConfig"
+          "type": "lore_sn::models::messaging::PermitConfig"
         }
       ],
       "outputs": [],
@@ -1960,7 +1960,7 @@
       "inputs": [
         {
           "name": "value",
-          "type": "lore_sn::models::messaging::MessagingConfigValue"
+          "type": "lore_sn::models::messaging::PermitConfigValue"
         }
       ],
       "outputs": [],
@@ -2058,7 +2058,7 @@
     },
     {
       "type": "struct",
-      "name": "lore_sn::models::messaging::MessagingConfig",
+      "name": "lore_sn::models::messaging::PermitConfig",
       "members": [
         {
           "name": "key",
@@ -2076,7 +2076,7 @@
     },
     {
       "type": "struct",
-      "name": "lore_sn::models::messaging::MessagingConfigValue",
+      "name": "lore_sn::models::messaging::PermitConfigValue",
       "members": [
         {
           "name": "messaging_contract",
@@ -2090,17 +2090,17 @@
     },
     {
       "type": "event",
-      "name": "lore_sn::models::messaging::m_MessagingConfig::Event",
+      "name": "lore_sn::models::messaging::m_PermitConfig::Event",
       "kind": "enum",
       "variants": []
     },
     {
       "type": "interface",
-      "name": "lore_sn::systems::permit_token::IActionsPublicStarknet",
+      "name": "lore_sn::systems::permit_token::IActionsTokenPublic",
       "items": [
         {
           "type": "function",
-          "name": "purchased_starter_pack",
+          "name": "used_permit",
           "inputs": [
             {
               "name": "recipient",

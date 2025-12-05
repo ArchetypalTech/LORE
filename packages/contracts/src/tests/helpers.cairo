@@ -34,7 +34,7 @@ pub use lore::{
     constants::{errors::{}},
     lib::{
         utils::{ByteArrayTraitExt, SerializedAppend},
-        dns::{DnsTrait},
+        dns::{DnsTrait, SELECTORS},
     },
 };
 
@@ -157,10 +157,10 @@ pub fn setup_core() -> HelperSystems {
     world.sync_perms_and_inits(core_contract_defs());
 
     world.dispatcher.grant_owner(dojo::utils::bytearray_hash(@"lore"), OWNER());
-    world.dispatcher.grant_owner(selector_from_tag!("lore-designer"), OWNER());
-    world.dispatcher.grant_owner(selector_from_tag!("lore-prompt"), OWNER());
-    world.dispatcher.grant_owner(selector_from_tag!("lore-game_token"), OWNER());
-    world.dispatcher.grant_owner(selector_from_tag!("lore-actions_token"), OWNER());
+    world.dispatcher.grant_owner(SELECTORS::DESIGNER, OWNER());
+    world.dispatcher.grant_owner(SELECTORS::PROMPT, OWNER());
+    world.dispatcher.grant_owner(SELECTORS::GAME_TOKEN, OWNER());
+    world.dispatcher.grant_owner(SELECTORS::ACTIONS_TOKEN, OWNER());
 
     let designer: IDesignerDispatcher = IDesignerDispatcher { contract_address: world.designer_address() };
     let prompt: IPromptDispatcher = IPromptDispatcher { contract_address: world.prompt_address() };

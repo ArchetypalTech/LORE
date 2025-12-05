@@ -24,7 +24,7 @@ const TOKEN_ID_3_2: u256 = 6;
 
 #[starknet::interface]
 trait IMessaging<TState> {
-    fn purchased_starter_pack(ref self: TState, from_address: felt252, payload: Array<felt252>);
+    fn used_permit(ref self: TState, from_address: felt252, payload: Array<felt252>);
 }
 
 fn _messaging_dispatcher(sys: @HelperSystems) -> IMessagingDispatcher {
@@ -99,7 +99,7 @@ fn test_messaging_not_found() {
     // message...
     helpers::set_caller(msg1_contract);
     let messaging_dispatcher: IMessagingDispatcher = _messaging_dispatcher(@sys);
-    messaging_dispatcher.purchased_starter_pack(msg1_contract.into(), array![
+    messaging_dispatcher.used_permit(msg1_contract.into(), array![
         RECIPIENT().into(),
         100.into(),
     ]);

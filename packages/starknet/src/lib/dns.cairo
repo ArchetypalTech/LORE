@@ -9,10 +9,14 @@ use dojo::meta::interface::{
 pub use lore_sn::systems::{
     permit_token::{IPermitTokenDispatcher, IPermitTokenDispatcherTrait},
 };
+pub use lore_sn::lib::{
+    messaging::{IMessagingDispatcher, IMessagingDispatcherTrait},
+};
 
 pub mod SELECTORS {
     // systems
     pub const PERMIT_TOKEN: felt252 = selector_from_tag!("lore_sn-permit_token");
+    pub const MESSAGING_MOCK: felt252 = selector_from_tag!("lore_sn-messaging_mock");
 }
 
 #[generate_trait]
@@ -40,6 +44,10 @@ pub impl DnsImpl of DnsTrait {
     #[inline(always)]
     fn permit_token_address(self: @WorldStorage) -> ContractAddress {
         (self.find_contract_address(@"permit_token"))
+    }
+    #[inline(always)]
+    fn messaging_mock_address(self: @WorldStorage) -> ContractAddress {
+        (self.find_contract_address(@"messaging_mock"))
     }
 
     //--------------------------
@@ -71,6 +79,10 @@ pub impl DnsImpl of DnsTrait {
     #[inline(always)]
     fn permit_token_dispatcher(self: @WorldStorage) -> IPermitTokenDispatcher {
         (IPermitTokenDispatcher{ contract_address: self.permit_token_address() })
+    }
+    #[inline(always)]
+    fn messaging_mock_dispatcher(self: @WorldStorage) -> IMessagingDispatcher {
+        (IMessagingDispatcher{ contract_address: self.messaging_mock_address() })
     }
 
 }
