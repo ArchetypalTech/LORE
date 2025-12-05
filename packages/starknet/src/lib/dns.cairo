@@ -7,12 +7,12 @@ use dojo::meta::interface::{
 };
 
 pub use lore_sn::systems::{
-    actions_strk::{IActionsStarknetDispatcher, IActionsStarknetDispatcherTrait},
+    permit_token::{IPermitTokenDispatcher, IPermitTokenDispatcherTrait},
 };
 
 pub mod SELECTORS {
     // systems
-    pub const ACTIONS_TOKEN: felt252 = selector_from_tag!("lore_sn-actions_strk");
+    pub const PERMIT_TOKEN: felt252 = selector_from_tag!("lore_sn-permit_token");
 }
 
 #[generate_trait]
@@ -38,8 +38,8 @@ pub impl DnsImpl of DnsTrait {
     // system addresses
     //
     #[inline(always)]
-    fn actions_strk_address(self: @WorldStorage) -> ContractAddress {
-        (self.find_contract_address(@"actions_strk"))
+    fn permit_token_address(self: @WorldStorage) -> ContractAddress {
+        (self.find_contract_address(@"permit_token"))
     }
 
     //--------------------------
@@ -69,8 +69,8 @@ pub impl DnsImpl of DnsTrait {
     // dispatchers
     //
     #[inline(always)]
-    fn actions_strk_dispatcher(self: @WorldStorage) -> IActionsStarknetDispatcher {
-        (IActionsStarknetDispatcher{ contract_address: self.actions_strk_address() })
+    fn permit_token_dispatcher(self: @WorldStorage) -> IPermitTokenDispatcher {
+        (IPermitTokenDispatcher{ contract_address: self.permit_token_address() })
     }
 
 }

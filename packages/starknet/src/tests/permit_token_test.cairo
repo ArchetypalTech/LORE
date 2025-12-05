@@ -6,7 +6,7 @@ use lore_sn::models::{
 };
 use lore_sn::tests::{helpers,
     helpers::{
-        IActionsStarknetDispatcherTrait,
+        IPermitTokenDispatcherTrait,
         HelperSystems,
         // OWNER,
     },
@@ -34,6 +34,6 @@ fn setup(_fee_amount: u128) -> HelperSystems {
 #[test]
 fn test_initializer() {
     let mut sys: HelperSystems = setup(0);
-    assert_eq!(sys.actions.symbol(), "ACTIONS", "Symbol is wrong");
+    assert_eq!(sys.permit.symbol(), "ORUG_PERMIT", "Symbol is wrong");
 }
 

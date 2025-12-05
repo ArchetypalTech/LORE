@@ -11,7 +11,7 @@ use dojo_cairo_test::{
 };
 pub use lore_sn::lib::{
     dns::{DnsTrait,
-        IActionsStarknetDispatcher, IActionsStarknetDispatcherTrait
+        IPermitTokenDispatcher, IPermitTokenDispatcherTrait
     },
 };
 
@@ -30,7 +30,7 @@ pub fn RECIPIENT() -> ContractAddress { 0x444.try_into().unwrap() }
 #[derive(Copy, Drop)]
 pub struct HelperSystems {
     pub world: WorldStorage,
-    pub actions: IActionsStarknetDispatcher,
+    pub permit: IPermitTokenDispatcher,
 }
 
 fn namespace_def() -> NamespaceDef {
@@ -40,7 +40,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(lore_sn::models::actions_supply::m_ActionsSupply::TEST_CLASS_HASH.into()),
             TestResource::Model(lore_sn::models::messaging::m_MessagingConfig::TEST_CLASS_HASH.into()),
             TestResource::Model(lore_sn::components::coin_config::m_CoinConfig::TEST_CLASS_HASH.into()),
-            TestResource::Contract(lore_sn::systems::actions_strk::actions_strk::TEST_CLASS_HASH.into()),
+            TestResource::Contract(lore_sn::systems::permit_token::permit_token::TEST_CLASS_HASH.into()),
         ].span(),
     };
     (ndef)
@@ -60,7 +60,7 @@ pub fn setup_core() -> HelperSystems {
 
     let contract_defs: Span<ContractDef> = {
         [
-            ContractDefTrait::new(@"lore_sn", @"actions_strk")
+            ContractDefTrait::new(@"lore_sn", @"permit_token")
                 .with_writer_of([dojo::utils::bytearray_hash(@"lore_sn")].span())
                 .with_init_calldata(array![messaging_contract.into(), appchain_contract.into()].span()),
         ].span()
@@ -68,9 +68,9 @@ pub fn setup_core() -> HelperSystems {
 
     world.sync_perms_and_inits(contract_defs);
     world.dispatcher.grant_owner(dojo::utils::bytearray_hash(@"lore_sn"), OWNER());
-    world.dispatcher.grant_owner(lore_sn::lib::dns::SELECTORS::ACTIONS_TOKEN.into(), OWNER());
+    world.dispatcher.grant_owner(lore_sn::lib::dns::SELECTORS::PERMIT_TOKEN.into(), OWNER());
 
-    let actions: IActionsStarknetDispatcher = world.actions_strk_dispatcher();
+    let permit: IPermitTokenDispatcher = world.permit_token_dispatcher();
 
     testing::set_block_number(1);
     testing::set_block_timestamp(1);
@@ -78,6 +78,6 @@ pub fn setup_core() -> HelperSystems {
 
     (HelperSystems {
         world,
-        actions,
+        permit,
     })
 }

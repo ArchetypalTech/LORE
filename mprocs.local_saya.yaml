@@ -21,9 +21,9 @@ procs:
       #----------------
       echo ">>> L2: set_appchain_contract(${APPCHAIN_ADDRESS})"
       cd ../starknet
-      sozo -P ${PROFILE} execute --wait lore_sn-actions_strk set_appchain_contract ${APPCHAIN_ADDRESS}
+      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_appchain_contract ${APPCHAIN_ADDRESS}
       sozo -P ${PROFILE} model get lore_sn-MessagingConfig 1
-      export SN_ADDRESS=$(get_contract_address ${PROFILE} lore_sn-actions_strk)
+      export SN_ADDRESS=$(get_contract_address ${PROFILE} lore_sn-permit_token)
       #----------------
       echo ">>> L3: set_sn_contract(${SN_ADDRESS})"
       cd ../contracts
@@ -101,7 +101,7 @@ procs:
       # set_messaging_contract()
       #
       echo ">>> L2: set_messaging_contract(${PILTOVER_ADDRESS})"
-      sozo -P ${PROFILE} execute --wait lore_sn-actions_strk set_messaging_contract ${PILTOVER_ADDRESS}
+      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_messaging_contract ${PILTOVER_ADDRESS}
       sozo -P ${PROFILE} model get lore_sn-MessagingConfig 1
       #----------------
       echo "👍 Done!"

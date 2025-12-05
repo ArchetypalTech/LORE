@@ -2,7 +2,7 @@ use starknet::{ContractAddress};
 use dojo::world::IWorldDispatcher;
 
 #[starknet::interface]
-pub trait IActionsStarknet<TState> {
+pub trait IPermitToken<TState> {
     // IWorldProvider
     fn world_dispatcher(self: @TState) -> IWorldDispatcher;
 
@@ -23,7 +23,7 @@ pub trait IActionsStarknet<TState> {
     fn transferFrom(ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
 
     //-----------------------------------
-    // IActionsPublicStarknet
+    // IPermitTokenPublic
     fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
     fn consume_message_value(ref self: TState, value: felt252);
     fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
@@ -31,7 +31,7 @@ pub trait IActionsStarknet<TState> {
 }
 
 #[starknet::interface]
-trait IActionsPublicStarknet<TState> {
+trait IPermitTokenPublic<TState> {
     fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
     fn consume_message_value(ref self: TState, value: felt252);
     // admin functions
@@ -40,7 +40,7 @@ trait IActionsPublicStarknet<TState> {
 }
 
 #[dojo::contract]
-pub mod actions_strk {
+pub mod permit_token {
     use core::num::traits::Zero;
     use starknet::{ContractAddress};
     use dojo::{
@@ -92,15 +92,15 @@ pub mod actions_strk {
     use lore_sn::lib::dns::{SELECTORS};
 
     mod Errors {
-        pub const INVALID_CALLER: felt252               = 'ACTIONS: Invalid caller';
-        pub const INVALID_MESSAGING_CONTRACT: felt252   = 'ACTIONS: Invalid messaging';
-        pub const INVALID_APPCHAIN_CONTRACT: felt252    = 'ACTIONS: Invalid appchain';
-        pub const NOT_IMPLEMENTED: felt252              = 'ACTIONS: Not implemented';
+        pub const INVALID_CALLER: felt252               = 'PERMIT: Invalid caller';
+        pub const INVALID_MESSAGING_CONTRACT: felt252   = 'PERMIT: Invalid messaging';
+        pub const INVALID_APPCHAIN_CONTRACT: felt252    = 'PERMIT: Invalid appchain';
+        pub const NOT_IMPLEMENTED: felt252              = 'PERMIT: Not implemented';
     }
 
     //*******************************************
-    fn COIN_NAME() -> ByteArray {("Actions")}
-    fn COIN_SYMBOL() -> ByteArray {("ACTIONS")}
+    fn COIN_NAME() -> ByteArray {("Trail Permit")}
+    fn COIN_SYMBOL() -> ByteArray {("ORUG_PERMIT")}
     //*******************************************
 
     fn dojo_init(ref self: ContractState,
@@ -138,7 +138,7 @@ pub mod actions_strk {
     }
 
     #[abi(embed_v0)]
-    impl IActionsPublicStarknetImpl of super::IActionsPublicStarknet<ContractState> {
+    impl PermitTokenPublicImpl of super::IPermitTokenPublic<ContractState> {
         /// L2 > L3
         /// Sends a message with the given value.
         fn purchased_starter_pack(ref self: ContractState,
@@ -193,7 +193,7 @@ pub mod actions_strk {
             assert(self._caller_is_owner(world), Errors::INVALID_CALLER);
         }
         fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
-            ((*world.dispatcher).is_owner(SELECTORS::ACTIONS_TOKEN, starknet::get_caller_address()))
+            ((*world.dispatcher).is_owner(SELECTORS::PERMIT_TOKEN, starknet::get_caller_address()))
         }
 
         //

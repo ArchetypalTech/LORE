@@ -1,5 +1,5 @@
 pub mod systems {
-    pub mod actions_strk;
+    pub mod permit_token;
     pub mod fact_registry_mock;
 }
 
@@ -21,5 +21,5 @@ pub mod lib {
 #[cfg(test)]
 pub mod tests {
     pub mod helpers;
-    pub mod actions_strk_test;
+    pub mod permit_token_test;
 }

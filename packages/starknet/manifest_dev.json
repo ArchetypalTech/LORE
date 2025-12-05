@@ -39,7 +39,7 @@
         "0x0",
         "0x0"
       ],
-      "tag": "lore_sn-actions_strk",
+      "tag": "lore_sn-permit_token",
       "selector": "0x6e688c410e1b129fdf477922923bc00e8147708e267f92b89b754be7f9ffea5",
       "systems": [
         "dojo_init",
@@ -2096,7 +2096,7 @@
     },
     {
       "type": "interface",
-      "name": "lore_sn::systems::actions_strk::IActionsPublicStarknet",
+      "name": "lore_sn::systems::permit_token::IActionsPublicStarknet",
       "items": [
         {
           "type": "function",
@@ -2150,7 +2150,7 @@
     },
     {
       "type": "event",
-      "name": "lore_sn::systems::actions_strk::actions_strk::Event",
+      "name": "lore_sn::systems::permit_token::permit_token::Event",
       "kind": "enum",
       "variants": [
         {
