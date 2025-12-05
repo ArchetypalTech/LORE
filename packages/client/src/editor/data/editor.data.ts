@@ -1163,7 +1163,6 @@ export const queryInvItemGIMap = async (gameInst: bigint, origInst: bigint): Pro
 				).build()
 			).withEntityModels(["lore-InventoryItem"]);
 			
-			
 			const result_inv_item = await sdk.getEntities({ query: query_inv_item });
 			console.log("DEBUG: queryInvItemGIMap() result_inv_item: ", result_inv_item);
 

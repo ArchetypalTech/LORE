@@ -460,6 +460,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 	ui: (context: commandContext) => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		
 		const panel = UIPanelStore();
 
 		// ui show
