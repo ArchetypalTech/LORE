@@ -269,34 +269,22 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
 
     console.log("DEBUG: queryExitsPerGame() BREAK POINT");
 
-    const locationEntity22 = await queryEntityGIMap(game_inst_map, playerLocationInst);
-    console.log("DEBUG: queryExitsPerGame() locationEntity22: ", locationEntity22);
+    // query game instance map
+    const game_inst_map2 = await queryGameInstaceMap(gameId, playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() game_inst_map2: ", game_inst_map2);
 
-    const locationEntity22Inst = BigInt(locationEntity22!.inst!.toString());
-    console.log("DEBUG: queryExitsPerGame() locationEntity222Inst: ", locationEntity22Inst);
-    const parentToChildren22 =  await queryParentToChildrenGIMap(game_inst_map, locationEntity22Inst);
-    console.log("DEBUG: queryExitsPerGame() parentToChildren2: ", parentToChildren22);
+    // query parent to children
+    const parentToChildren2 =  await queryParentToChildrenGIMap(game_inst_map2, playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() parentToChildren2: ", parentToChildren2);
 
-    for ( const child of parentToChildren22.children ) {
-      console.log("DEBUG: queryExitsPerGame() child22: ", child);
-      const childInst22 = BigInt(child.toString());
-      console.log("DEBUG: queryExitsPerGame() childInst22: ", childInst22);
+    for ( const child of parentToChildren2.children ) {
+      const childInst33 = BigInt(child.toString());
+      const exit33 = await queryExitGIMap(game_inst_map2, childInst33);
+      console.log("DEBUG: queryExitsPerGame() exit33: ", exit33)
       
-      const childExit22 = await queryExitGIMap(game_inst_map, childInst22);
-      console.log("DEBUG: queryExitsPerGame() childExit22: ", childExit22)
-      if (childExit22) {
-        const childEntity22 = await queryEntityGIMap(game_inst_map, childInst22);
-        console.log("DEBUG: queryExitsPerGame() childEnity22: ", childEntity22);
-      }
-
-      const childExit222 = await queryExit(childInst22);
-      console.log("DEBUG: queryExitsPerGame() childExit222: ", childExit222)
-      if (childExit222) {
-        const childEntity222 = await queryEntity(childInst22);
-        console.log("DEBUG: queryExitsPerGame() childEnity222: ", childEntity222);
-      }
+      const exit34 = await queryExit(childInst33);
+      console.log("DEBUG: queryExitsPerGame() exit34: ", exit34)
     }
-
 
     console.log("DEBUG: queryExitsPerGame() exits: ", exits);
   } catch (error) {
@@ -345,26 +333,31 @@ const queryParentToChildren = async ( playerLocationInst: bigint): Promise<Parti
 
 const queryParentToChildrenGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partial<ParentToChildren> | undefined> => {
   let parentToChildren: Partial<ParentToChildren> | undefined;
-  const { sdk } = await InitDojo();
-  const queryValue = gameInst != 0n ? gameInst : objInst;
-  const query_obj_ParentToChildren = new ToriiQueryBuilder<SchemaType>()
-    .withCursor("")
-    .withLimit(1000)
-    .includeHashedKeys()
-    .withClause(
-      new ClauseBuilder<SchemaType>().keys(
-        ["lore-ParentToChildren"],
-          [bigintToHex128(queryValue)]
-      ).build()
-    )
-    .withEntityModels(["lore-ParentToChildren"]);
-  const result_obj_ParentToChildren = await sdk.getEntities({ query: query_obj_ParentToChildren });
-  console.log("DEBUG: queryObjExit() result_obj_ParentToChildrenGIMap: ", result_obj_ParentToChildren);
-  
-  const obj_ParentToChildren_item = result_obj_ParentToChildren.getItems().at(0);
-  console.log("DEBUG: queryObjExit() obj_exit_itemGIMap: ", obj_ParentToChildren_item);
+  try{
+    const { sdk } = await InitDojo();
+    const queryValue = gameInst != 0n ? gameInst : objInst;
+    const query_parentToChildren = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-ParentToChildren"],
+            [bigintToHex128(queryValue)]
+        ).build()
+      )
+      .withEntityModels(["lore-ParentToChildren"]);
+    const result_parentToChildrenn = await sdk.getEntities({ query: query_parentToChildren });
+    console.log("DEBUG: queryObjExit() result_parentToChildrenn: ", result_parentToChildrenn);
+    
+    const parentToChildren_item = result_parentToChildrenn.getItems().at(0);
+    console.log("DEBUG: queryObjExit() parentToChildren_item: ", parentToChildren_item);
 
-  parentToChildren = obj_ParentToChildren_item?.models?.lore?.ParentToChildren;
+    parentToChildren = parentToChildren_item?.models?.lore?.ParentToChildren;
+  } catch (error) {
+    console.error("Error fetching parent to children from Torii:", error);
+    throw error;
+  }
   return parentToChildren;
 };
 
@@ -475,4 +468,33 @@ const queryExit = async (inst: bigint): Promise<Partial<Exit> | undefined> => {
   
   exit = exit_item?.models?.lore?.Exit;
   return exit;
+};
+
+export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise<bigint> => {
+  let game_inst_map: bigint = 0n;
+  try{
+    const { sdk } = await InitDojo();
+    // Get the game instance using the location entity and the game id
+    const query_location_game_inst = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-GameInstanceMap"],
+          [bigintToHex128(gameId), bigintToAddress(inst)]
+        ).build()
+      ).withEntityModels(["lore-GameInstanceMap"]);
+    
+    const result_location_game_inst = await sdk.getEntities({ query: query_location_game_inst });
+    console.log("DEBUG: queryGameInstaceMap() result_location_game_inst: ", result_location_game_inst);
+
+    game_inst_map = BigInt(result_location_game_inst.getItems().at(0)?.models?.lore?.GameInstanceMap?.game_inst ?? 0);
+    
+    
+  } catch (error) {
+    console.error("Error fetching game instance map from Torii:", error);
+    throw error;
+  }
+  return game_inst_map; 
 };
