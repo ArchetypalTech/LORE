@@ -33,13 +33,13 @@
   },
   "contracts": [
     {
-      "address": "0x3313b16a5003d1f62691bfc2421698494ad0727b3cb0f574d3ec9bdab854d8b",
-      "class_hash": "0x5f1d4f62c780c44de0b4a8f062504ebe6810038136545991b467ba21c467f7b",
+      "address": "0x3bc6405f55d93687c1a94b19693cb94c408fefb7b84d03e6e80571fe5106858",
+      "class_hash": "0x3f3c614d1579518647e61b3b6f6f443333224248e34a3512ededd7105752099",
       "init_calldata": [
         "0x0"
       ],
       "tag": "lore-actions_token",
-      "selector": "0x4bf3c8f8bae224e5915fb4a9d5430d0e17d3714c90ab5bb27bbed14eaa14239",
+      "selector": "0x3acd8fea1d2a80933750e2cf4cabea5d4cff523a4eb2d9b282e7e192be55293",
       "systems": [
         "dojo_init",
         "set_sn_contract",
@@ -5429,8 +5429,8 @@
               "type": "core::starknet::contract_address::ContractAddress"
             },
             {
-              "name": "actions",
-              "type": "core::integer::u8"
+              "name": "actions_count",
+              "type": "core::integer::u16"
             }
           ],
           "outputs": [],

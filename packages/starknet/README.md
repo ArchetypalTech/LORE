@@ -34,13 +34,13 @@ bun run dev:saya
 Test messaging
 
 ```bash
-export L2_WORLD_ADDRESS=0x03bd2ce4af00a298fb73f997972c6cc39a6cab58f6bf9a1d16b98431da1b3dc7
+export L2_WORLD_ADDRESS=0x07d90bdb9b6af74c5c9c29e16a909e82e9faa78da2bf6c35b07504262592f17a
 export L3_WORLD_ADDRESS=0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403
 export RECIPIENT=0x1234
 # L2: send message to mint L3 actions
 cd packages/starknet/
 sozo model get lore_sn-PermitConfig 1
-sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token used_permit $RECIPIENT
+sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token purchased_starter_pack $RECIPIENT
 # L3: validate balance (must not be zero)
 cd packages/contracts/
 sozo model get lore-ActionsConfig 1

@@ -51,7 +51,7 @@ procs:
       KATANA_L3_BIN: ./bin/katana_l3
       SETTLEMENT_ACCOUNT_ADDRESS: 0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec
       SETTLEMENT_ACCOUNT_PRIVATE_KEY: 0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912
-      FACT_REGISTRY_MOCK_ADDRESS: 0x0574b73e6db9e1d7e875a15c52ac9de7b62873c5702eeedede54c8004fa405cb
+      FACT_REGISTRY_MOCK_ADDRESS: 0x04b973c6532f35626d58427905ee4cf4a401a6480fcb52904aa0a8696781e135
     shell: |
       sleep 1
       set -e # exit on error
@@ -67,7 +67,7 @@ procs:
       sozo declare target/dev/lore_sn_fact_registry_mock.contract_class.json \
         --katana-account katana0 \
         --rpc-url ${KATANA_L2_RPC}
-      sozo deploy 0x0056289bc807ecf889aee508909d6902ddf4b6cd77d7d0aaaeb5adc7aca3bd23 \
+      sozo deploy 0x0535ec5d0863cfcf53cf38176617a2898f3239b319ce5d63307aa96bbb036075 \
         --katana-account katana0 \
         --salt 0x1234 \
         --rpc-url ${KATANA_L2_RPC}
@@ -185,16 +185,6 @@ procs:
         --rollup-rpc ${KATANA_L3_RPC} \
         --mock-snos-from-pie \
         --mock-layout-bridge-program-hash 0x43c5c4cc37c4614d2cf3a833379052c3a38cd18d688b617e2c720e8f941cb8
-  client:
-    cwd: packages/client
-    env:
-      KATANA_L3_PORT: "5050"
-    shell: |
-      sleep 1
-      #----------------
-      wait-port ${KATANA_L3_PORT}
-      #----------------
-      bun run dev
   torii:
     cwd: packages/contracts
     env:
@@ -217,3 +207,13 @@ procs:
       torii --version
       torii --http.cors_origins "*" \
         --indexing.contracts erc721:${GAME_TOKEN_ADDRESS},erc721:${TRAIL_TOKEN_ADDRESS}
+  client:
+    cwd: packages/client
+    env:
+      KATANA_L3_PORT: "5050"
+    shell: |
+      sleep 1
+      #----------------
+      wait-port ${KATANA_L3_PORT}
+      #----------------
+      bun run dev
