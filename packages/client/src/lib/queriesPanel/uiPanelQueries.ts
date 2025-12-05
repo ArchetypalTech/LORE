@@ -303,11 +303,18 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
         if (exit34_2) {
           // If we have the exit component for the game instance,
           // query the exit's entity model
-          const exit34_2Inst = BigInt(exit34_2.inst!.toString());
+          const exit34_2Inst = BigInt(exit34_2.inst.toString());
           const exit34_2Entity = await queryEntityGIMap(gameInstMap5, exit34_2Inst);
           console.log("DEBUG: queryExitsPerGame() exit34_2Entity: ", exit34_2Entity);
+          const gameInstMap6 = await queryGameInstaceMap(gameId, exit34_2Inst);
+          console.log("DEBUG: queryExitsPerGame() gameInstMap6: ", gameInstMap6);
+          const exit34_2Entity1 = await queryEntityGIMap(gameInstMap6, exit34_2Inst);
+          console.log("DEBUG: queryExitsPerGame() exit34_2Entity1: ", exit34_2Entity1);
           const exit34_2Entity2 = await queryEntity(exit34_2Inst);
           console.log("DEBUG: queryExitsPerGame() exit34_2Entity2: ", exit34_2Entity2);
+          
+          
+          
           // query the exit's leads_to entity model
           const leads_to_inst = BigInt(exit34_2.leads_to.toString());
           exitLeadsTo = await queryEntityGIMap(gameInstMap5, leads_to_inst);
@@ -317,7 +324,7 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
           // Build the exitInfo object and add it to exits array
           exits.push({
             id: counter++,
-            name: exit34_2Entity2?.name ?? "unknown",
+            name: exit34_2Entity1?.name ?? "unknown",
             direction: stringCairoEnum(exit34_2.direction_type ?? "None"),
             destination: exit34_2.is_enterable ? (exitLeadsTo2?.name ?? "unknown") : "Unknown",
           });
