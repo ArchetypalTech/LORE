@@ -254,33 +254,31 @@ const queryParentToChildrenGIMap = async (
   let parentToChildren: Partial<ParentToChildren> | undefined;
   console.log("\n[PTC] Query ParentToChildren");
   console.log("[PTC] gameInst:", gameInst.toString(), "objInst:", objInst.toString());
-  try {
+  try{
     const { sdk } = await InitDojo();
     const queryValue = gameInst != 0n ? gameInst : objInst;
-
-    const query_parentToChildren =new ToriiQueryBuilder<SchemaType>()
-        .withCursor("")
-        .withLimit(1000)
-        .includeHashedKeys()
-        .withClause(
-          new ClauseBuilder<SchemaType>().keys(
-            ["lore-ParentToChildren"],
-              [bigintToHex128(queryValue)]
-          ).build()
-        ).withEntityModels(["lore-ParentToChildren"]);
+    const query_parentToChildren = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-ParentToChildren"],
+            [bigintToHex128(queryValue)]
+        ).build()
+      ).withEntityModels(["lore-ParentToChildren"]);
 
     const result = await sdk.getEntities({ query: query_parentToChildren });
-    console.log("[PTC] Result:", result);
-
+    console.log("[PTC]: query result: ", result);
+    
     const item = result.getItems().at(0);
-    console.log("[PTC] Item:", item);
+    console.log("[PTC]: Item: ", item);
+
     parentToChildren = item?.models?.lore?.ParentToChildren;
-    console.log("[PTC] parentToChildren:", parentToChildren);
   } catch (error) {
     console.error("Error fetching parent to children from Torii:", error);
     throw error;
   }
-  
   return parentToChildren;
 };
 
