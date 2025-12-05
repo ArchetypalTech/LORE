@@ -281,9 +281,27 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
       const childInst33 = BigInt(child.toString());
       const exit33 = await queryExitGIMap(game_inst_map2, childInst33);
       console.log("DEBUG: queryExitsPerGame() exit33: ", exit33)
+      if (exit33) {
+        const exit33Inst = BigInt(exit33.inst.toString());
+        const gameInstMap4 = await queryGameInstaceMap(gameId, exit33Inst);
+        console.log("DEBUG: queryExitsPerGame() gameInstMap4: ", gameInstMap4);
+        const exit33_2 = await queryExitGIMap(gameInstMap4, exit33Inst);
+        console.log("DEBUG: queryExitsPerGame() exit33_2: ", exit33_2)
+        const exit33_3 = await queryExit(exit33Inst);
+        console.log("DEBUG: queryExitsPerGame() exit33_3: ", exit33_3)
+      }
       
       const exit34 = await queryExit(childInst33);
       console.log("DEBUG: queryExitsPerGame() exit34: ", exit34)
+      if (exit34) {
+        const exit34Inst = BigInt(exit34.inst.toString());
+        const gameInstMap5 = await queryGameInstaceMap(gameId, exit34Inst);
+        console.log("DEBUG: queryExitsPerGame() gameInstMap5: ", gameInstMap5);
+        const exit34_2 = await queryExitGIMap(gameInstMap5, exit34Inst);
+        console.log("DEBUG: queryExitsPerGame() exit34_2: ", exit34_2)
+        const exit34_3 = await queryExit(exit34Inst);
+        console.log("DEBUG: queryExitsPerGame() exit34_3: ", exit34_3)
+      }
     }
 
     console.log("DEBUG: queryExitsPerGame() exits: ", exits);
@@ -345,8 +363,8 @@ const queryParentToChildrenGIMap = async (gameInst: bigint, objInst: bigint): Pr
           ["lore-ParentToChildren"],
             [bigintToHex128(queryValue)]
         ).build()
-      )
-      .withEntityModels(["lore-ParentToChildren"]);
+      ).withEntityModels(["lore-ParentToChildren"]);
+
     const result_parentToChildrenn = await sdk.getEntities({ query: query_parentToChildren });
     console.log("DEBUG: queryObjExit() result_parentToChildrenn: ", result_parentToChildrenn);
     
@@ -372,10 +390,10 @@ const queryExitGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partia
     .withClause(
       new ClauseBuilder<SchemaType>().keys(
         ["lore-Exit"],
-          [bigintToHex128(queryValue)]
+        [bigintToHex128(queryValue)]
       ).build()
-    )
-    .withEntityModels(["lore-Exit"]);
+    ).withEntityModels(["lore-Exit"]);
+
   const result_obj_exit = await sdk.getEntities({ query: query_obj_exit });
   console.log("DEBUG: queryObjExit() result_obj_exitGIMap: ", result_obj_exit);
   
