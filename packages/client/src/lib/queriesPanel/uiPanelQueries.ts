@@ -266,6 +266,33 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
         console.log("DEBUG: queryExitsPerGame() childEnity4-1: ", childEntity4);
       }
     }
+
+    console.log("DEBUG: queryExitsPerGame() BREAK POINT");
+
+    const parentToChildren22 =  await queryParentToChildrenGIMap(game_inst_map, playerLocationInst);
+    console.log("DEBUG: queryExitsPerGame() parentToChildren2: ", parentToChildren22);
+
+    for ( const child of parentToChildren22.children ) {
+      console.log("DEBUG: queryExitsPerGame() child22: ", child);
+      const childInst22 = BigInt(child.toString());
+      console.log("DEBUG: queryExitsPerGame() childInst22: ", childInst22);
+      
+      const childExit22 = await queryExitGIMap(game_inst_map, childInst22);
+      console.log("DEBUG: queryExitsPerGame() childExit22: ", childExit22)
+      if (childExit22) {
+        const childEntity22 = await queryEntityGIMap(game_inst_map, childInst22);
+        console.log("DEBUG: queryExitsPerGame() childEnity22: ", childEntity22);
+      }
+
+      const childExit222 = await queryExit(childInst22);
+      console.log("DEBUG: queryExitsPerGame() childExit222: ", childExit222)
+      if (childExit222) {
+        const childEntity222 = await queryEntity(childInst22);
+        console.log("DEBUG: queryExitsPerGame() childEnity222: ", childEntity222);
+      }
+    }
+
+
     console.log("DEBUG: queryExitsPerGame() exits: ", exits);
   } catch (error) {
     console.error("Error fetching exits from Torii:", error);
@@ -309,6 +336,31 @@ const queryParentToChildren = async ( playerLocationInst: bigint): Promise<Parti
     throw error;
   }
   return parent_to_children;
+};
+
+const queryParentToChildrenGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partial<ParentToChildren> | undefined> => {
+  let parentToChildren: Partial<ParentToChildren> | undefined;
+  const { sdk } = await InitDojo();
+  const queryValue = gameInst != 0n ? gameInst : objInst;
+  const query_obj_ParentToChildren = new ToriiQueryBuilder<SchemaType>()
+    .withCursor("")
+    .withLimit(1000)
+    .includeHashedKeys()
+    .withClause(
+      new ClauseBuilder<SchemaType>().keys(
+        ["lore-ParentToChildren"],
+          [bigintToHex128(queryValue)]
+      ).build()
+    )
+    .withEntityModels(["lore-ParentToChildren"]);
+  const result_obj_ParentToChildren = await sdk.getEntities({ query: query_obj_ParentToChildren });
+  console.log("DEBUG: queryObjExit() result_obj_ParentToChildrenGIMap: ", result_obj_ParentToChildren);
+  
+  const obj_ParentToChildren_item = result_obj_ParentToChildren.getItems().at(0);
+  console.log("DEBUG: queryObjExit() obj_exit_itemGIMap: ", obj_ParentToChildren_item);
+
+  parentToChildren = obj_ParentToChildren_item?.models?.lore?.ParentToChildren;
+  return parentToChildren;
 };
 
 const queryExitGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partial<Exit> | undefined> => {
