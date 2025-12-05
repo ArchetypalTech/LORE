@@ -234,6 +234,38 @@ export const queryExitsPerGame = async (
           ? (leadsToEntity?.name ?? "unknown")
           : "Unknown"
       });
+
+      // -----------------------------------------------------
+      // 4 use exitQuery to test
+      // -----------------------------------------------------
+      const childExit = await queryExit(childInst);
+      console.log("[Exits] Child Exit:", childExit);
+      if (!childExit) {
+        console.log("[Exits] childExit is NOT an exit.");
+        continue;
+      }
+      console.log("[Exits] childExit is an exit!");
+
+      // -----------------------------------------------------
+      // 4.1 Resolve leads_to — must resolve its own GIMap too
+      // -----------------------------------------------------
+      const leadsToInstChild = BigInt(childExit.leads_to.toString());
+      console.log("[Exits] leads_to inst:", leadsToInstChild.toString());
+
+      const leadsToGameInstChild = await queryGameInstaceMap(gameId, leadsToInstChild);
+      console.log("[Exits] leads_to GameInst:", leadsToGameInstChild.toString());
+
+      const leadsToEntityChild = await queryEntityGIMap(leadsToGameInstChild, leadsToInstChild);
+      console.log("[Exits] leads_to Entity:", leadsToEntityChild);
+
+      exits.push({
+        id: counter++,
+        name: exitEntity?.name ?? "unknown",
+        direction: stringCairoEnum(childExit.direction_type ?? "None"),
+        destination: childExit.is_enterable
+          ? (leadsToEntityChild?.name ?? "unknown")
+          : "Unknown"
+      });
     }
 
     console.log("\n=== [Exits] DONE ===");
@@ -302,8 +334,7 @@ const queryExitGIMap = async (
           ["lore-Exit"],
           [bigintToHex128(queryValue)]
         ).build()
-      )
-      .withEntityModels(["lore-Exit"]);
+      ).withEntityModels(["lore-Exit"]);
 
     const result = await sdk.getEntities({ query: query_exit });
     console.log("[ExitGIMap] Result:", result);
@@ -403,6 +434,33 @@ const queryEntityGIMap = async (gameInst: bigint, objInst: bigint): Promise<Part
 
   entity = obj_entity_item?.models?.lore?.Entity;
   return entity;
+};
+
+const queryExit = async (inst: bigint): Promise<Partial<Exit> | undefined> => {
+  let exit: Partial<Exit> | undefined;
+  const { sdk } = await InitDojo();
+  const query_exit = new ToriiQueryBuilder<SchemaType>()
+    .withCursor("")
+    .withLimit(1000)
+    .includeHashedKeys()
+    .withClause(
+      new ClauseBuilder<SchemaType>().keys(
+        ["lore-Exit"],
+        [bigintToHex128(inst)]
+      ).build()
+    )
+    .withEntityModels(["lore-Exit"]);
+  const result_exit = await sdk.getEntities({ query: query_exit });
+  console.log("DEBUG: queryExit() result_exit: ", result_exit);
+  
+  const exit_item = result_exit.getItems().find((item) => {
+    const instHex = item.models?.lore?.Exit?.inst;
+    return instHex !== undefined && BigInt(instHex) === inst;
+  });
+  console.log("DEBUG: queryExit() exit_item: ", exit_item);
+  
+  exit = exit_item?.models?.lore?.Exit;
+  return exit;
 };
 
 
