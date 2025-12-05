@@ -292,9 +292,8 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
       // }
       
       const exit34 = await queryExit(childInst33);
-      const exit34Entiy = await queryEntity(childInst33);
       console.log("DEBUG: queryExitsPerGame() exit34: ", exit34)
-      console.log("DEBUG: queryExitsPerGame() exit34Entiy: ", exit34Entiy)
+      
       if (exit34) {
         // if child is exit, then query the exit using the game instance map
         const exit34Inst = BigInt(exit34.inst.toString());
@@ -303,7 +302,9 @@ export const queryExitsPerGame = async (gameId: bigint, playerLocationInst: bigi
         const exit34_2 = await queryExitGIMap(gameInstMap5, exit34Inst);
         console.log("DEBUG: queryExitsPerGame() exit34_2: ", exit34_2)
         if (exit34_2) {
-          // If we have the exit component for the game instance,         
+          // If we have the exit component for the game instance,   
+          const exit34Entiy = await queryEntity(childInst33);  
+          console.log("DEBUG: queryExitsPerGame() exit34Entiy: ", exit34Entiy)    
           // query the exit's leads_to entity model
           const leads_to_inst = BigInt(exit34_2.leads_to.toString());
           exitLeadsTo = await queryEntityGIMap(gameInstMap5, leads_to_inst);
