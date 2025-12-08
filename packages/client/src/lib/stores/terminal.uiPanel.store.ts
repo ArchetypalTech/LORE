@@ -9,7 +9,7 @@ export type ExitInfo = {
 
 export type PuzzleInfo = {
   name: string;
-  executed: boolean;
+  executed: boolean | undefined;
 };
 
 export type UIPanelState = {

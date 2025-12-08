@@ -1,6 +1,7 @@
 import { 
   queryPlayerLocationPerGame,
   queryExitsPerGame,
+  queryPuzzlesPerGame,
 } from "../../lib/queriesPanel/uiPanelQueries";
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
 
@@ -17,16 +18,24 @@ export const queryPanelInfo = async (gameId: bigint) => {
   store.setLoading(true);
 
   try {
+    // 1. Get the player's location
     const [location_name, location_inst, playerInst] = await queryPlayerLocationPerGame(gameId);
     if (!location_name) return;
-    const exits = await queryExitsPerGame(gameId, location_inst!, playerInst!);
+    // 2. Get the location's exits
+    const exits = await queryExitsPerGame(gameId, location_inst!);
     console.log("DEBUG: queryPanelInfo() exits: ", exits);
+    // 3. Get the location's puzzles
+    const puzzles = await queryPuzzlesPerGame(gameId, location_inst!);
+    console.log("DEBUG: queryPanelInfo() puzzles: ", puzzles);
 
-    // update the store directly
+    // 4. Update the store directly
     useUIPanelStore.getState().setLocation(location_name);
     if (exits) {
       useUIPanelStore.getState().setExits(exits);
-    }    
+    }
+    if (puzzles) {
+      useUIPanelStore.getState().setPuzzles(puzzles);
+    }
   } catch (err) {
     console.error("Failed to query panel info:", err);
   } finally {
