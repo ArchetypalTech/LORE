@@ -335,8 +335,8 @@ export const queryExitsPerGame = async (
       });
     }
 
-    console.log("\n=== [Exits 2] DONE ===");
-    console.log("Collected exits2:", exits);
+    console.log("\n=== [Exits] DONE ===");
+    console.log("Collected exits:", exits);
 
   } catch (error) {
     console.error("Error fetching exits from Torii:", error);
