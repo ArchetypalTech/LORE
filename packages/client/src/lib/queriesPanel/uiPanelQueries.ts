@@ -305,7 +305,36 @@ export const queryExitsPerGame = async (
       const childExit =  await queryExitGIMap(childGameInst, childInst);
       console.log("[Exits] Child Exit:", childExit);
       if (!childExit) {
-        console.log("[Exits] Child is NOT an exit.");
+        console.log("[Exits] ChildExit not in queryGIMAP");
+
+        // 3.2.1 Find Exit via Query
+        const childExit2 =  await queryExit(childInst);
+        console.log("[Exits] ChildExit 2:", childExit2);
+        if (!childExit2) {
+          console.log("[Exits] ChildExit 2 not in query");
+          continue;
+        }
+        console.log("[Exits] ChildExit 2 in query");
+        
+        // 3.2.2 Get the exit ENTITY (static name)
+        const exitEntity =  await queryEntity(childInst);
+        console.log("[Exits] Exit 2 Entity (base inst):", exitEntity);
+
+        // 3.2.3 Resolve leads_to 
+        const leads_to_inst = BigInt(childExit2.leads_to.toString());
+        console.log("[Exits] leads_to inst 2:", leads_to_inst.toString());
+
+        const leads_to_entity = await queryEntity(leads_to_inst);
+        console.log("[Exits] leads_to Entity 2:", leads_to_entity);
+
+        exits.push({
+          id: counter++,
+          name: exitEntity?.name ?? "unknown exit",
+          direction: stringCairoEnum(childExit2.direction_type ?? "None"),
+          destination: childExit2.is_enterable
+            ? (leads_to_entity?.name ?? "unknown location")
+            : "Unknown"
+        });
         continue;
       }
       console.log("[Exits] Child IS an exit!");
