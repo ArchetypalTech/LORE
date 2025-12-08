@@ -483,7 +483,7 @@ export const queryPuzzlesPerGame = async (
 
     // ---------------------------------------------------------
     // 3. Query Children
-    const childrenPuzzles = await queryPuzzleChildren(playerLocationInst);
+    const childrenPuzzles = await queryPuzzleChildren(gameId, playerLocationInst);
     console.log("[Puzzles] Children Puzzles:", childrenPuzzles);
     if (childrenPuzzles) {
       puzzles.push(...childrenPuzzles);
@@ -555,7 +555,7 @@ const queryPuzzleLocation = async (locationInst: bigint): Promise<PuzzleInfo[] |
   return puzzles.length > 0 ? puzzles : undefined;
 }
 
-const queryPuzzleChildren = async (locationInst: bigint): Promise<PuzzleInfo[] | undefined> => {
+const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promise<PuzzleInfo[] | undefined> => {
   let puzzles: PuzzleInfo[] = [];
   try {
     console.log("\n=== [Puzzles] Children Puzzles START QUERY ===");
@@ -603,7 +603,7 @@ const queryPuzzleChildren = async (locationInst: bigint): Promise<PuzzleInfo[] |
             // -----------------------------------------------------
             // 2.4 Query the action executed
             // -----------------------------------------------------
-            const actionStatus = await queryActionExecuted(childInst, actionKey);
+            const actionStatus = await queryActionExecuted(gameId, childInst, actionKey);
             console.log("[Puzzles] Action Status 2:", actionStatus);
 
             if (!actionStatus) {
@@ -657,37 +657,8 @@ const queryAction = async (inst: bigint, key: bigint): Promise<Partial<Action> |
   return action;
 };
 
-const queryAction2 = async (inst: bigint, key: bigint): Promise<Partial<Action> | undefined> => {
-  let action: Partial<Action> | undefined;
-  try { 
-    const { sdk } = await InitDojo();
-    const query_action = new ToriiQueryBuilder<SchemaType>()
-      .withCursor("")
-      .withLimit(1000)
-      .includeHashedKeys()
-      .withClause(
-        new ClauseBuilder<SchemaType>().keys(
-          ["lore-Action"],
-          [bigintToAddress(inst), bigintToAddress(key)]
-        ).build()
-      )
-      .withEntityModels(["lore-Action"]);
-    const result_action = await sdk.getEntities({ query: query_action });
-    console.log("DEBUG: queryAction() result_action: ", result_action);
-    
-    const action_item = result_action.getItems().at(0);
-    console.log("DEBUG: queryAction() action_item: ", action_item);
-    action = action_item?.models?.lore?.Action;
-  } catch (error) {
-    console.error("Error fetching action from Torii:", error);
-    throw error;
-  }
-  return action;
-};
 
-
-
-const queryActionExecuted = async (inst: bigint, key: bigint): Promise<Partial<ActionExecuted> | undefined> => {
+const queryActionExecuted = async (gameId: bigint, inst: bigint, key: bigint): Promise<Partial<ActionExecuted> | undefined> => {
   let actionExecuted: Partial<ActionExecuted> | undefined;
   try { 
     const { sdk } = await InitDojo();
@@ -698,7 +669,7 @@ const queryActionExecuted = async (inst: bigint, key: bigint): Promise<Partial<A
       .withClause(
         new ClauseBuilder<SchemaType>().keys(
           ["lore-ActionExecuted"],
-          [bigintToAddress(inst), bigintToAddress(key)]
+          [bigintToHex128(gameId), bigintToAddress(inst), bigintToAddress(key)]
         ).build()
       )
       .withEntityModels(["lore-ActionExecuted"]);
