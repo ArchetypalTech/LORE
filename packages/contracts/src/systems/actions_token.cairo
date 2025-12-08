@@ -25,19 +25,19 @@ pub trait IActionsToken<TState> {
     //-----------------------------------
     // IActionsTokenPublic
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
-    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u16);
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
 #[starknet::interface]
 trait IActionsTokenPublic<TState> {
     // admin functions
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
-    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u16);
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
 #[dojo::contract]
 pub mod actions_token {
-    use core::num::traits::Zero;
+    use core::num::traits::{Zero, Bounded};
     use starknet::{ContractAddress, SyscallResultTrait};
     use dojo::{
         world::{WorldStorage, IWorldDispatcherTrait},
@@ -52,7 +52,6 @@ pub mod actions_token {
     // ERC-20 Start
     //
     use openzeppelin_token::erc20::ERC20Component;
-    use openzeppelin_token::erc20::ERC20HooksEmptyImpl;
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     #[abi(embed_v0)]
     impl ERC20MixinImpl = ERC20Component::ERC20MixinImpl<ContractState>;
@@ -73,13 +72,12 @@ pub mod actions_token {
     //-----------------------------------
 
     use lore::models::{
-        actions_config::{
-            ActionsConfig, ActionsConfigTrait,
-        },
+        actions_config::{ActionsConfig, ActionsConfigTrait},
+        player_account::{PlayerAccountTrait},
     };
     use lore::lib::{
         access::{AccessTrait},
-        dns::{SELECTORS},
+        dns::{DnsTrait, SELECTORS},
     };
     use lore::constants::constants::{CONST};
 
@@ -90,6 +88,7 @@ pub mod actions_token {
         pub const INVALID_RECIPIENT: felt252        = 'ACTIONS: Invalid recipient';
         pub const INVALID_AMOUNT: felt252           = 'ACTIONS: Invalid amount';
         pub const INVALID_SN_CONTRACT: felt252      = 'ACTIONS: Invalid SN contract';
+        pub const NOT_PERMITTED: felt252            = 'ACTIONS: Not permitted';
     }
 
     //*******************************************
@@ -127,27 +126,26 @@ pub mod actions_token {
     /// * `payload` - Expected value in the payload (automatically deserialized).
     #[l1_handler]
     fn used_permit(ref self: ContractState, from_address: felt252, payload: Array<felt252>) {
-        let world: WorldStorage = self.world_default();
+        let mut world: WorldStorage = self.world_default();
         // validate caller
         let actions_config: ActionsConfig = world.get_actions_config();
         assert(from_address == actions_config.sn_contract.into(), Errors::INVALID_CALLER);
         // parse payload
         let recipient: ContractAddress = (*payload.at(0)).try_into().unwrap();
-        let actions_count: u16 = (*payload.at(1)).try_into().unwrap();
+        let actions_count: u32 = (*payload.at(1)).try_into().unwrap();
         let _permit_type: felt252 = *payload.at(2);
         // mint actions
-        let amount: u256 = (actions_count.into() * CONST::ETH_TO_WEI);
-        self._mint_to(recipient, amount);
+        self._mint_to(ref world, recipient, actions_count);
     }
 
     #[abi(embed_v0)]
     impl IActionsTokenPublicImpl of super::IActionsTokenPublic<ContractState> {
-        fn mint_to(ref self: ContractState, recipient: ContractAddress, actions_count: u16) {
+        fn mint_to(ref self: ContractState, recipient: ContractAddress, actions_count: u32) {
             // validate caller
             self._assert_caller_is_admin(@self.world_default());
             // mint actions...
-            let amount: u256 = actions_count.into() * CONST::ETH_TO_WEI;
-            self._mint_to(recipient, amount);
+            let mut world: WorldStorage = self.world_default();
+            self._mint_to(ref world, recipient, actions_count);
         }
 
         /// Admin functions
@@ -187,10 +185,18 @@ pub mod actions_token {
         }
 
         // mint new actions to a recipient
-        fn _mint_to(ref self: ContractState, recipient: ContractAddress, amount: u256) {
+        fn _mint_to(ref self: ContractState, ref world: WorldStorage, recipient: ContractAddress, actions_count: u32) {
+            // mint actions
+            let amount: u256 = (actions_count.into() * CONST::ETH_TO_WEI);
             assert(recipient.is_non_zero(), Errors::INVALID_RECIPIENT);
             assert(amount.is_non_zero(), Errors::INVALID_AMOUNT);
             self.erc20.mint(recipient, amount);
+            // update player account
+            if (world.minted_actions(recipient, actions_count)) {
+                // first purchase: approve world contracts to spend actions
+                self.erc20._approve(recipient, starknet::get_contract_address(), Bounded::MAX);
+                self.erc20._approve(recipient, world.prompt_address(), Bounded::MAX);
+            }
         }
 
 
@@ -205,4 +211,32 @@ pub mod actions_token {
         }
     }
 
+    //-----------------------------------
+    // ERC20Hooks
+    // - block transfers, make it soulbound
+    //
+    impl ERC20HooksImpl of ERC20Component::ERC20HooksTrait<ContractState> {
+        fn before_update(
+            ref self: ERC20Component::ComponentState<ContractState>,
+            from: ContractAddress,
+            recipient: ContractAddress,
+            amount: u256,
+        ) {
+            let self: @ContractState = self.get_contract();
+            let world: WorldStorage = self.world_default();
+            if (from.is_non_zero() && !world.is_world_contract(starknet::get_caller_address())) {
+                // block transfers
+                assert(false, Errors::NOT_PERMITTED);
+            }
+        }
+
+        fn after_update(
+            ref self: ERC20Component::ComponentState<ContractState>,
+            from: ContractAddress,
+            recipient: ContractAddress,
+            amount: u256,
+        ) {
+            // let mut contract_state: ContractState = self.get_contract_mut();
+        }
+    }
 }

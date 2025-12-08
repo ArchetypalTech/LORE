@@ -7,6 +7,8 @@ pub struct PlayerAccount {
     #[key]
     pub player_address: ContractAddress,
     /// Properties ///
+    pub minted_actions_count: u32,
+    pub opened_permits_count: u32,
     pub current_game_id: u128,
 }
 
@@ -27,5 +29,14 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
             player_game.current_game_id = game_id;
             world.write_model(@player_game);
         }
+    }
+    // returns true if this the first purchase
+    fn minted_actions(ref self: WorldStorage, player_address: ContractAddress, actions_count: u32) -> bool {
+        let mut player_game: PlayerAccount = self.read_model(player_address);
+        let is_first_purchase: bool = (player_game.minted_actions_count == 0);
+        player_game.opened_permits_count += 1;
+        player_game.minted_actions_count += actions_count;
+        self.write_model(@player_game);
+        (is_first_purchase)
     }
 }

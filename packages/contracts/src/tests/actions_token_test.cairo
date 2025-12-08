@@ -72,6 +72,35 @@ fn test_mint_to_invalid_caller() {
 
 
 //-----------------------------------
+// transfers
+//
+
+#[test]
+fn test_transfer_from_prompt_contract() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OWNER());
+    sys.actions.mint_to(RECIPIENT(), 100);
+    assert_eq!(sys.actions.balance_of(RECIPIENT()), 100 * CONST::ETH_TO_WEI);
+    // mock prompt contract
+    helpers::set_caller(sys.prompt.contract_address);
+    sys.actions.transfer_from(RECIPIENT(), OTHER(), 80 * CONST::ETH_TO_WEI);
+    assert_eq!(sys.actions.balance_of(RECIPIENT()), 20 * CONST::ETH_TO_WEI);
+    assert_eq!(sys.actions.balance_of(OTHER()), 80 * CONST::ETH_TO_WEI);
+}
+
+#[test]
+#[should_panic(expected: ('ACTIONS: Not permitted','ENTRYPOINT_FAILED'))]
+fn test_transfer_not_permitted() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OWNER());
+    sys.actions.mint_to(RECIPIENT(), 100);
+    // try to transfer...
+    helpers::set_caller(RECIPIENT());
+    sys.actions.transfer(OTHER(), 100 * CONST::ETH_TO_WEI);
+}
+
+
+//-----------------------------------
 // messaging
 //
 
