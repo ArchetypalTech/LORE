@@ -4,8 +4,7 @@ import {
   queryPuzzlesPerGame,
 } from "../../lib/queriesPanel/uiPanelQueries";
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
-
-
+import { Check, HelpCircle } from "lucide-react";
 
 /**
  * Fetches the current player's location for a given gameId
@@ -19,7 +18,7 @@ export const queryPanelInfo = async (gameId: bigint) => {
 
   try {
     // 1. Get the player's location
-    const [location_name, location_inst, playerInst] = await queryPlayerLocationPerGame(gameId);
+    const [location_name, location_inst, _playerInst] = await queryPlayerLocationPerGame(gameId);
     if (!location_name) return;
     // 2. Get the location's exits
     const exits = await queryExitsPerGame(gameId, location_inst!);
@@ -90,12 +89,14 @@ export default function UIPanel() {
                 <li className="text-sm italic text-green-200">Updating...</li>
               ) : puzzles.length > 0 ? (
                 puzzles.map((p) => (
-                  <li key={p.name} className="border-b border-emerald-600/30 pb-1">
-                    <span className={p.executed ? "text-green-400" : "text-yellow-400"}>
-                      {p.executed ? "✓" : "?"}
-                    </span>
-                    <span>{p.name}</span>
-                  </li>
+                  <li key={p.name} className="flex items-center justify-between border-b border-emerald-600/30 pb-1">
+                  <span>{p.name}</span>
+                  {p.executed ? (
+                    <Check className="w-4 h-4 text-green-400 ml-2" />
+                  ) : (
+                    <HelpCircle className="w-4 h-4 text-yellow-400 ml-2" />
+                  )}
+                </li>
                 ))
               ) : (
                 <li className="text-sm italic text-green-200">No puzzles</li>

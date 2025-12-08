@@ -581,6 +581,64 @@ const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promis
         const childEntity = await queryEntity(childInst);
         console.log("[Puzzles] Child Entity:", childEntity);
 
+        if (!childEntity) {
+          console.log("[Puzzles] Child Entity is undefined");
+          // 2.1.1 try to get child through GameInstanceMap
+          const childGameInst = await queryGameInstaceMap(gameId, childInst);
+          console.log("[Puzzles] Child GameInstanceMap:", childGameInst);
+
+          const childEntity3 = await queryEntityGIMap(childGameInst, childInst);
+          console.log("[Puzzles] Child Entity 3:", childEntity3);
+          
+          if (!childEntity3) {
+            console.log("[Puzzles] Child Entity 3 is undefined");
+            continue;
+          }
+          
+          // 2.1.2 get action keys from child entity
+          const actions = childEntity3?.actions_keys ?? [];  
+          console.log("[Puzzles] Child Actions:", actions);
+          if (actions.length > 0) {
+            for (const action of actions) {
+              const actionKey = BigInt(action.toString());
+              if (actionKey == 0n) {
+                console.log("[Puzzles] Action for player is 0 skipping");
+                continue;
+              }
+              console.log("\n[Puzzles] Checking Child action:", actionKey.toString());
+
+              // 2.1.3 get action entity from child entity
+              const actionEntity = await queryAction(childInst, actionKey);
+              console.log("[Puzzles] Action Entity 2:", actionEntity);
+
+              const actionName = actionEntity?.name ?? "unknown";
+              console.log("[Puzzles] Action Name:", actionName);
+
+              // 2.1.4 get action status from child entity
+              const actionStatus = await queryActionExecuted(gameId, childInst, actionKey);
+              console.log("[Puzzles] Action Status 2:", actionStatus);
+
+              if (!actionStatus) {
+                console.log("[Puzzles] Action has not been registered yet.");
+                puzzles.push({
+                  name: actionName,
+                  executed: false,
+                });
+                continue;
+              }
+
+              // -----------------------------------------------------
+              // 2.5 Build the puzzle object and add it to puzzles array
+              // -----------------------------------------------------
+              puzzles.push({
+                name: actionName,
+                executed: actionStatus.is_executed,
+              });
+              continue;
+            }
+          }
+        }
+
         // -----------------------------------------------------
         // 2.2 Get Actions ID's from entity
         // -----------------------------------------------------
