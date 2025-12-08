@@ -42,6 +42,7 @@ pub mod models {
     pub mod index;
     pub mod inventory_item;
     pub mod player;
+    pub mod player_account;
     pub mod reactable;
     pub mod trigger;
     pub mod hub;

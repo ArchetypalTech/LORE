@@ -420,7 +420,7 @@ pub mod tests {
         models::{
             entity::{Entity},
             player::{Player, PlayerImpl},
-            game_token_info::{PlayerGameImpl},
+            player_account::{PlayerAccountImpl},
             trail_token_info::{TrailTokenInfo},
             area::{AreaComponent, Area},
             exit::{Exit, ExitComponent, ExitInstance},
@@ -444,7 +444,7 @@ pub mod tests {
         // mint a game
         helpers::set_caller(player_address);
         sys.prompt.prompt("", Option::None);
-        let game_id: u128 = PlayerGameImpl::current_game_id(@sys.world, player_address);
+        let game_id: u128 = PlayerAccountImpl::current_game_id(@sys.world, player_address);
         assert_gt!(sys.game_token.total_supply(), 0);
         assert_eq!(sys.game_token.owner_of(game_id.into()), player_address);
         // get player

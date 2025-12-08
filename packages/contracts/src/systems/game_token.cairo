@@ -129,12 +129,10 @@ pub mod game_token {
     use lore::models::{
         game_token_info::{
             GameTokenInfo, GameTokenInfoTrait,
-            PlayerGameTrait,
             GameCreatedEvent,
         },
-        trail_token_info::{
-            TrailProgressTrait,
-        },
+        player_account::{PlayerAccountTrait},
+        trail_token_info::{TrailProgressTrait},
     };
     use lore::constants::token_metadata::{orug_metadata, game_metadata};
     use lore::lib::{
@@ -203,7 +201,7 @@ pub mod game_token {
             });
 
             // switch to this game
-            PlayerGameTrait::switch_game_id(ref world, recipient, token_id);
+            PlayerAccountTrait::switch_game_id(ref world, recipient, token_id);
 
             // event...
             world.emit_event(@GameCreatedEvent{

@@ -12,7 +12,8 @@ use lore::{
         components::{Component},
         action::{ActionImpl},
         condition::{ConditionImpl},
-        game_token_info::{GameTokenInfo, PlayerGameTrait},
+        game_token_info::{GameTokenInfo},
+        player_account::{PlayerAccountTrait},
         trail_token_info::{TrailProgress, MAIN_TRAIL_ID},
         hub::{TrailTrait},
     },
@@ -369,7 +370,7 @@ fn system_command(
                 return Result::Err(Error::NotYourGame);
             }
             // switch game...
-            PlayerGameTrait::switch_game_id(ref world, player_address, game_id.low);
+            PlayerAccountTrait::switch_game_id(ref world, player_address, game_id.low);
             player.log_sys(ref world, format!("+sys+Loaded game-{:?}", game_id));
             return Result::Ok(());
         }

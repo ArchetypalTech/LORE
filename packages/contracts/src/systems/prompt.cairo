@@ -16,7 +16,7 @@ pub mod prompt {
     use lore::{
         models::{
             player::{Player, PlayerImpl, PlayerStory},
-            game_token_info::{PlayerGameTrait},
+            player_account::{PlayerAccountTrait},
         },
         lib::{
             c_handler::{handle_command},
@@ -99,7 +99,7 @@ pub mod prompt {
                             || world.is_player_admin(player_address)
                         ), Errors::NOT_YOUR_GAME);
                         // set as current
-                        PlayerGameTrait::switch_game_id(ref world, player_address, game_id);
+                        PlayerAccountTrait::switch_game_id(ref world, player_address, game_id);
                     }
                     // ok to play...
                     (game_id)
@@ -107,7 +107,7 @@ pub mod prompt {
                 Option::None => {
                     // player was not provided
                     // get current game
-                    let mut game_id: u128 = PlayerGameTrait::current_game_id(@world, player_address);
+                    let mut game_id: u128 = PlayerAccountTrait::current_game_id(@world, player_address);
                     if game_id == 0 {
                         // create new game
                         game_id = world.game_token_dispatcher().create_game(player_address);
@@ -116,7 +116,7 @@ pub mod prompt {
                     (game_id)
                 }
             };
-            let player = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
+            let player: Option<Player> = PlayerImpl::get_player_for_account(ref world, player_address, game_id);
             assert(player.is_some(), Errors::NO_PLAYER_COMPONENT);
             (player.unwrap())
         }
