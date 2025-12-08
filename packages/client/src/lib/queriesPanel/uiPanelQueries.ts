@@ -589,6 +589,10 @@ const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promis
         if (actions.length > 0) {
           for (const action of actions) {
             const actionKey = BigInt(action.toString());
+            if (actionKey == 0n) {
+              console.log("[Puzzles] Action for player is 0 skipping");
+              continue;
+            }
             console.log("\n[Puzzles] Checking Child action:", actionKey.toString());
 
             // -----------------------------------------------------
@@ -597,8 +601,8 @@ const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promis
             const actionEntity = await queryAction(childInst, actionKey);
             console.log("[Puzzles] Action Entity 2:", actionEntity);
 
-            const actionName = actionEntity?.name ?? "unknown2";
-            console.log("[Puzzles] Action Name 2:", actionName);
+            const actionName = actionEntity?.name ?? "unknown";
+            console.log("[Puzzles] Action Name:", actionName);
 
             // -----------------------------------------------------
             // 2.4 Query the action executed

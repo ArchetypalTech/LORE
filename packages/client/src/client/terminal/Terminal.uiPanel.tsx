@@ -89,9 +89,12 @@ export default function UIPanel() {
               {loading ? (
                 <li className="text-sm italic text-green-200">Updating...</li>
               ) : puzzles.length > 0 ? (
-                puzzles.map((e) => (
-                  <li key={e.name} className="border-b border-emerald-600/30 pb-1">
-                    {e.name}
+                puzzles.map((p) => (
+                  <li key={p.name} className="border-b border-emerald-600/30 pb-1">
+                    <span className={p.executed ? "text-green-400" : "text-yellow-400"}>
+                      {p.executed ? "✓" : "?"}
+                    </span>
+                    <span>{p.name}</span>
                   </li>
                 ))
               ) : (
