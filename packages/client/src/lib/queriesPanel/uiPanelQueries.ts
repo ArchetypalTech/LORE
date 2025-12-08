@@ -473,61 +473,20 @@ export const queryPuzzlesPerGame = async (
     console.log("[Puzzles] Location GameInst:", locationGameInst.toString());
 
     // ---------------------------------------------------------
-    // 2. Query Location Entity
+    // 2. Query Location Puzzles
     // ---------------------------------------------------------
-    const locationEntity = await queryEntityGIMap(locationGameInst, playerLocationInst);
-    console.log("[Puzzles] Location Entity:", locationEntity);
-
-    const locationEntity2 = await queryEntity(playerLocationInst);
-    console.log("[Puzzles] Location Entity 2:", locationEntity2);
+    const locationPuzzles = await queryPuzzleLocation(playerLocationInst);
+    console.log("[Puzzles] Location Puzzles:", locationPuzzles);
+    if (locationPuzzles) {
+      puzzles.push(...locationPuzzles);
+    }
 
     // ---------------------------------------------------------
-    // Get Actions ID's from entity
-    // ---------------------------------------------------------
-    const actions = locationEntity?.actions_keys ?? [];
-    console.log("[Puzzles] Actions:", actions);
-
-    const actions2 = locationEntity2?.actions_keys ?? [];
-    console.log("[Puzzles] Actions 2:", actions2);
-
-    for (const action of actions) {
-      const actionKey = BigInt(action.toString());
-      console.log("\n[Puzzles] Checking action:", actionKey.toString());
-
-      // -----------------------------------------------------
-      // 3.1 Query Original Action for static name
-      // -----------------------------------------------------
-      const actionEntity = await queryAction(locationEntity?.inst, actionKey);
-      console.log("[Puzzles] Action Entity:", actionEntity);
-
-      const actionEntity2 = await queryAction(locationEntity2?.inst, actionKey);
-      console.log("[Puzzles] Action Entity 2:", actionEntity2);
-
-      const actionName1 = actionEntity?.name ?? "unknown";
-      const actionName2 = actionEntity2?.name ?? "unknown2";
-      console.log("[Puzzles] Action Name:", actionName1);
-      console.log("[Puzzles] Action Name 2:", actionName2);
-
-      // -----------------------------------------------------
-      // 3.2 Query the action executed
-      // -----------------------------------------------------
-      const actionStatus = await queryActionExecuted(locationEntity?.inst, actionKey);
-      console.log("[Puzzles] Action Status:", actionStatus);
-      const actionStatus2 = await queryActionExecuted(locationEntity2?.inst, actionKey);
-      console.log("[Puzzles] Action Status 2:", actionStatus2);
-
-      if (!actionStatus) {
-        console.log("[Puzzles] Action has not been registered yet.");
-        continue;
-      }
-
-      // -----------------------------------------------------
-      // 3.3 Build the puzzle object and add it to puzzles array
-      // -----------------------------------------------------
-      puzzles.push({
-        name: actionName1,
-        executed: actionStatus.is_executed,
-      });
+    // 3. Query Children
+    const childrenPuzzles = await queryPuzzleChildren(playerLocationInst);
+    console.log("[Puzzles] Children Puzzles:", childrenPuzzles);
+    if (childrenPuzzles) {
+      puzzles.push(...childrenPuzzles);
     }
 
     console.log("\n=== [Puzzles] DONE ===");
@@ -538,6 +497,137 @@ export const queryPuzzlesPerGame = async (
   }
   return puzzles;
 };
+
+const queryPuzzleLocation = async (locationInst: bigint): Promise<PuzzleInfo[] | undefined> => {
+  let puzzles: PuzzleInfo[] = [];
+  try {
+    console.log("\n=== [Puzzles] Location Puzzles START QUERY ===");
+    // ---------------------------------------------------------
+    // 1. Query Location Entity
+    // ---------------------------------------------------------
+    const locationEntity = await queryEntity(locationInst);
+    console.log("[Puzzles] Location Entity:", locationEntity);
+
+    // ---------------------------------------------------------
+    // 2. Get Actions ID's from entity
+    // ---------------------------------------------------------
+
+    const actions = locationEntity?.actions_keys ?? [];
+    console.log("[Puzzles] Location Actions:", actions);
+    if (actions.length > 0) {
+      for (const action of actions) {
+        const actionKey = BigInt(action.toString());
+        console.log("\n[Puzzles] Checking Location action:", actionKey.toString());
+
+        // -----------------------------------------------------
+        // 2.1 Query Original Action for static name
+        // -----------------------------------------------------
+        const actionEntity = await queryAction(locationInst, actionKey);
+        console.log("[Puzzles] Action Entity 2:", actionEntity);
+
+        const actionName = actionEntity?.name ?? "unknown2";
+        console.log("[Puzzles] Action Name 2:", actionName);
+
+        // -----------------------------------------------------
+        // 2.2 Query the action executed
+        // -----------------------------------------------------
+        const actionStatus = await queryActionExecuted(locationInst, actionKey);
+        console.log("[Puzzles] Action Status 2:", actionStatus);
+
+        if (!actionStatus) {
+          console.log("[Puzzles] Action has not been registered yet.");
+          continue;
+        }
+
+        // -----------------------------------------------------
+        // 2.3 Build the puzzle object and add it to puzzles array
+        // -----------------------------------------------------
+        puzzles.push({
+          name: actionName,
+          executed: actionStatus.is_executed,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching puzzles from Torii:", error);
+    throw error;
+  }
+  return puzzles.length > 0 ? puzzles : undefined;
+}
+
+const queryPuzzleChildren = async (locationInst: bigint): Promise<PuzzleInfo[] | undefined> => {
+  let puzzles: PuzzleInfo[] = [];
+  try {
+    console.log("\n=== [Puzzles] Children Puzzles START QUERY ===");
+    // ---------------------------------------------------------
+    // 1. Get ParentToChildren
+    // ---------------------------------------------------------
+    const parentToChildren = await queryParentToChildrenGIMap(locationInst, locationInst);
+    console.log("[Puzzles] ParentToChildren:", parentToChildren);
+
+    // ---------------------------------------------------------
+    // 2. Get Children
+    // ---------------------------------------------------------
+    const children = parentToChildren?.children ?? [];
+    console.log("[Puzzles] Children:", children);
+    if (children.length > 0) {
+      for (const child of children) {
+        const childInst = BigInt(child.toString());
+        console.log("\n[Puzzles] Checking child:", childInst.toString());
+
+        // -----------------------------------------------------
+        // 2.1 Query Child Entity
+        // -----------------------------------------------------
+        const childEntity = await queryEntity(childInst);
+        console.log("[Puzzles] Child Entity:", childEntity);
+
+        // -----------------------------------------------------
+        // 2.2 Get Actions ID's from entity
+        // -----------------------------------------------------
+        const actions = childEntity?.actions_keys ?? [];  
+        console.log("[Puzzles] Child Actions:", actions);
+        if (actions.length > 0) {
+          for (const action of actions) {
+            const actionKey = BigInt(action.toString());
+            console.log("\n[Puzzles] Checking Child action:", actionKey.toString());
+
+            // -----------------------------------------------------
+            // 2.3 Query Original Action for static name
+            // -----------------------------------------------------
+            const actionEntity = await queryAction(childInst, actionKey);
+            console.log("[Puzzles] Action Entity 2:", actionEntity);
+
+            const actionName = actionEntity?.name ?? "unknown2";
+            console.log("[Puzzles] Action Name 2:", actionName);
+
+            // -----------------------------------------------------
+            // 2.4 Query the action executed
+            // -----------------------------------------------------
+            const actionStatus = await queryActionExecuted(childInst, actionKey);
+            console.log("[Puzzles] Action Status 2:", actionStatus);
+
+            if (!actionStatus) {
+              console.log("[Puzzles] Action has not been registered yet.");
+              continue;
+            }
+
+            // -----------------------------------------------------
+            // 2.5 Build the puzzle object and add it to puzzles array
+            // -----------------------------------------------------
+            puzzles.push({
+              name: actionName,
+              executed: actionStatus.is_executed,
+            });
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching puzzles from Torii:", error);
+    throw error;
+  }
+  return puzzles.length > 0 ? puzzles : undefined;
+}
 
 const queryAction = async (inst: bigint, key: bigint): Promise<Partial<Action> | undefined> => {
   let action: Partial<Action> | undefined;
