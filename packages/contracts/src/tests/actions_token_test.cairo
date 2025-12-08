@@ -3,10 +3,12 @@ use starknet::{ContractAddress};
 
 use lore::models::{
     actions_config::{ActionsConfigTrait},
+    player::{PlayerImpl},
 };
 use lore::tests::{helpers,
     helpers::{
         IActionsTokenDispatcherTrait,
+        IPromptDispatcherTrait,
         HelperSystems,
         OWNER, OTHER, RECIPIENT,
     }
@@ -97,6 +99,32 @@ fn test_transfer_not_permitted() {
     // try to transfer...
     helpers::set_caller(RECIPIENT());
     sys.actions.transfer(OTHER(), 100 * CONST::ETH_TO_WEI);
+}
+
+
+//-----------------------------------
+// spend
+//
+
+#[test]
+fn test_spend_actions_ok() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    // initialize player singleton
+    PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
+    // player_1 say anything... (will create a game)
+    let game_id_1: u128 = 1;
+    helpers::set_caller(helpers::PLAYER_1);
+    sys.prompt.prompt("", Option::None);
+    // balance: 0
+    sys.prompt.prompt("g_actions", Option::None);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 0");
+    // mint...
+    helpers::set_caller(OWNER());
+    sys.actions.mint_to(helpers::PLAYER_1, 100);
+    // balance: 100
+    helpers::set_caller(helpers::PLAYER_1);
+    sys.prompt.prompt("g_actions", Option::None);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 100");
 }
 
 

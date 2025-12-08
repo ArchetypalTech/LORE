@@ -10,10 +10,10 @@ use dojo_cairo_test::{
 
 pub use lore::{
     systems::{
-        designer::{IDesignerDispatcher},
-        prompt::{IPromptDispatcher},
-        game_token::{IGameTokenDispatcher},
-        trail_token::{ITrailTokenDispatcher},
+        designer::{IDesignerDispatcher, IDesignerDispatcherTrait},
+        prompt::{IPromptDispatcher, IPromptDispatcherTrait},
+        game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
+        trail_token::{ITrailTokenDispatcher, ITrailTokenDispatcherTrait},
         actions_token::{IActionsTokenDispatcher, IActionsTokenDispatcherTrait},
     },
     models,

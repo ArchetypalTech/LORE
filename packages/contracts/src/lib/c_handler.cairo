@@ -30,9 +30,13 @@ use lore::{
             ILexerDispatcherTrait,
             IGameTokenDispatcherTrait,
             ITrailTokenDispatcherTrait,
+            IActionsTokenDispatcherTrait,
         },
     },
-    constants::errors::Error,
+    constants::{
+        errors::Error,
+        constants::CONST,
+    },
 };
 
 pub fn handle_command(
@@ -386,6 +390,12 @@ fn system_command(
             player.log_sys(ref world, format!("+sys+act: {}", token_info.act_number));
             player.log_sys(ref world, format!("+sys+progress: {}%25", trail_progress.percentage));
             player.log_sys(ref world, format!("+sys+completed: {}", ByteArrayTraitExt::byte_array_from_bool(trail_progress.completed)));
+            return Result::Ok(());
+        }
+        if (system_command == "g_actions") {
+            let balance: u256 = world.actions_token_dispatcher().balance_of(player.address);
+            let actions_count: u256 = (balance / CONST::ETH_TO_WEI);
+            player.log_sys(ref world, format!("+sys+actions_balance: {}", actions_count.low));
             return Result::Ok(());
         }
         if (system_command == "g_player") {
