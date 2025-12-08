@@ -30,11 +30,16 @@ pub trait IActionsToken<TState> {
 }
 
 #[starknet::interface]
-trait IActionsTokenPublic<TState> {
+pub trait IActionsTokenPublic<TState> {
     // admin functions
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn set_action_cost_amount(ref self: TState, action_cost_amount: u256);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
+}
+
+#[starknet::interface]
+pub trait IActionsTokenProtected<TState> {
+    fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u256);
 }
 
 #[dojo::contract]
@@ -175,6 +180,21 @@ pub mod actions_token {
         }
     }
 
+    #[abi(embed_v0)]
+    impl IActionsTokenProtectedImpl of super::IActionsTokenProtected<ContractState> {
+        fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u256) {
+            let mut world: WorldStorage = self.world_default();
+            // validate caller
+            self._assert_caller_is_world_contract(@world);
+            // burn player actions
+            self.erc20.burn(player_address, actions_amount);
+            // // update player account
+            // let mut player_account: PlayerAccount = world.read_model(player_address);
+            // player_account.actions_balance -= actions_amount;
+            // world.write_model(@player_account);
+        }
+    }
+
     //-----------------------------------
     // Internal
     //
@@ -187,6 +207,10 @@ pub mod actions_token {
         #[inline(always)]
         fn _assert_caller_is_admin(self: @ContractState, world: @WorldStorage) {
             assert(self._caller_is_admin(world), Errors::INVALID_CALLER);
+        }
+        #[inline(always)]
+        fn _assert_caller_is_world_contract(self: @ContractState, world: @WorldStorage) {
+            assert(world.is_world_contract(starknet::get_caller_address()), Errors::INVALID_CALLER);
         }
         fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
             ((*world.dispatcher).is_owner(SELECTORS::ACTIONS_TOKEN, starknet::get_caller_address()))

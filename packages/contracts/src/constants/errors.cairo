@@ -62,4 +62,5 @@ pub enum Error {
     NoRoom,
     NotYourGame,
     NotEditor,
+    InsufficientActionsBalance,
 }

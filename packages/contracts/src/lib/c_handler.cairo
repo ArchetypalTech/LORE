@@ -316,9 +316,10 @@ fn system_command(
             return Result::Ok(());
         }
         if (system_command == "g_level") {
-            create_test_level(ref world);
-            player.log_sys(ref world, "+sys+created test level");
-            return Result::Ok(());
+            // create_test_level(ref world);
+            // player.log_sys(ref world, "+sys+created test level");
+            // return Result::Ok(());
+            return Result::Err(Error::Unimplemented);
         }
         if (system_command == "g_whereami") {
             player.log_sys(ref world, "+sys+you are here:");

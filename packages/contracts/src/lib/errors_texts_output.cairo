@@ -8,6 +8,10 @@ use lore::{
 #[generate_trait]
 pub impl ErrorOutputterImpl of ErrorOutputterTrait {
     fn output_error(self: Error, player: Player, ref world: WorldStorage) {
+        let message: ByteArray = self.error_message(ref world);
+        player.say(ref world, message);
+    }
+    fn error_message(self: Error, ref world: WorldStorage) -> ByteArray {
         let texts: Array<ByteArray> = match self {
             Error::Unimplemented => array!["This is not ready yet"],
             Error::NameNotMatch => array![
@@ -114,11 +118,11 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
             Error::NotInTheSameTrail => array![
                 "The target is outside the current trail.",
             ],
+            Error::InsufficientActionsBalance => array![
+                "You don't have enough actions to do that.",
+            ],
             _ => array![] // For errors with no message
         };
-
-        if texts.len() > 0 {
-            player.say(ref world, random_text(world, texts));
-        }
+        (random_text(world, texts))
     }
 }

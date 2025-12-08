@@ -12,7 +12,7 @@ pub use lore::{
         prompt::{IPromptDispatcher, IPromptDispatcherTrait},
         game_token::{IGameTokenDispatcher, IGameTokenDispatcherTrait},
         trail_token::{ITrailTokenDispatcher, ITrailTokenDispatcherTrait},
-        actions_token::{IActionsTokenDispatcher, IActionsTokenDispatcherTrait},
+        actions_token::{IActionsTokenDispatcher, IActionsTokenDispatcherTrait, IActionsTokenProtectedDispatcher, IActionsTokenProtectedDispatcherTrait},
     },
     lib::{
         a_lexer::{ILexerLibraryDispatcher, ILexerDispatcherTrait},
@@ -103,6 +103,10 @@ pub impl DnsImpl of DnsTrait {
     #[inline(always)]
     fn actions_token_dispatcher(self: @WorldStorage) -> IActionsTokenDispatcher {
         (IActionsTokenDispatcher{ contract_address: self.actions_token_address() })
+    }
+    #[inline(always)]
+    fn actions_token_protected_dispatcher(self: @WorldStorage) -> IActionsTokenProtectedDispatcher {
+        (IActionsTokenProtectedDispatcher{ contract_address: self.actions_token_address() })
     }
     #[inline(always)]
     fn lexer_dispatcher(self: @WorldStorage) -> ILexerLibraryDispatcher {

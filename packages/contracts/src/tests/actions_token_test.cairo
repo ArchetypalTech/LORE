@@ -1,20 +1,27 @@
 // use core::num::traits::Zero;
 use starknet::{ContractAddress};
 
-use lore::models::{
-    actions_config::{ActionsConfigTrait},
-    player::{Player, PlayerImpl},
-};
-use lore::types::{
-    command_type::{Command, CommandType},
-};
-use lore::lib::{
-    dns::{
-        DnsTrait,
-        IActionsTokenDispatcherTrait,
-        IPromptDispatcherTrait,
-        ILexerDispatcherTrait,
+use lore::{
+    models::{
+        actions_config::{ActionsConfigTrait},
+        player::{Player, PlayerImpl},
+        entity::{Entity},
+        area::{Area},
+        exit::{Exit},
     },
+    types::{
+        command_type::{Command, CommandType},
+    },
+    lib::{
+        dns::{
+            DnsTrait,
+            IActionsTokenDispatcherTrait,
+            IPromptDispatcherTrait,
+            ILexerDispatcherTrait,
+        },
+        errors_texts_output::{ErrorOutputterTrait},
+    },
+    constants::errors::{Error},
 };
 use lore::tests::{helpers,
     helpers::{
@@ -118,11 +125,21 @@ fn test_transfer_not_permitted() {
 #[test]
 fn test_spend_actions_ok() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
+    //
+    // set actions price
     helpers::set_caller(OWNER());
     let action_cost_amount: u256 = (1 * CONST::ETH_TO_WEI);
     sys.actions.set_action_cost_amount(action_cost_amount);
-    // initialize player singleton
-    PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
+    //
+    // initialize a world
+    let (_room_1_entity, area_1): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 1", "ROOM1", Option::None);
+    let (room_2_entity, _area_2): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 2", "ROOM2", Option::None);
+    let (_exit_2_entity, _exit_to_room_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit To Room 1", "to_room_1", @room_2_entity, area_1.inst);
+    // initialize player
+    let player: Player = PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
+    helpers::set_caller(helpers::OWNER());
+    player.move_to_room(ref sys.world, room_2_entity.inst);
+    //
     // player_1 say anything... (will create a game)
     let game_id_1: u128 = 1;
     helpers::set_caller(helpers::PLAYER_1);
@@ -130,13 +147,30 @@ fn test_spend_actions_ok() {
     // balance: 0
     sys.prompt.prompt("g_actions", Option::None);
     assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 0");
+    //
+    // try to spend actions...
+    let error_message: ByteArray = Error::InsufficientActionsBalance.error_message(ref sys.world);
+    assert_gt!(error_message.len(), 0, "Error message is empty");
+    sys.prompt.prompt("look around", Option::None);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), error_message);
+    //
     // mint actions to player...
     helpers::set_caller(OWNER());
     sys.actions.mint_to(helpers::PLAYER_1, 100);
     // balance: 100
     helpers::set_caller(helpers::PLAYER_1);
     sys.prompt.prompt("g_actions", Option::None);
+    assert_eq!(sys.actions.balance_of(helpers::PLAYER_1), 100 * CONST::ETH_TO_WEI);
     assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 100");
+    //
+    // try to spend actions...
+    sys.prompt.prompt("look around", Option::None);
+// helpers::print_game_story_last_line(@sys.world, game_id_1);
+    assert_ne!(helpers::game_story_last_line(@sys.world, game_id_1), error_message);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "hello");
+    assert_eq!(sys.actions.balance_of(helpers::PLAYER_1), 99 * CONST::ETH_TO_WEI);
+    sys.prompt.prompt("g_actions", Option::None);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 99");
 }
 
 

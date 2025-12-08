@@ -20,8 +20,8 @@ pub fn random_u16(seed: felt252) -> u16 {
 #[inline]
 pub fn random_text(world: WorldStorage, texts: Array<ByteArray>) -> ByteArray {
     let rng: u32 = random_u16(world.dispatcher.uuid().try_into().unwrap()).try_into().unwrap();
-    let description = texts.at(rng % texts.len()).clone();
-    description
+    let description: ByteArray = texts.at(rng % texts.len()).clone();
+    (description)
 }
 
 #[cfg(test)]

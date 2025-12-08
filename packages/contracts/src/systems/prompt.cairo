@@ -16,7 +16,7 @@ pub mod prompt {
     };
     use lore::{
         systems::{
-            actions_token::{IActionsTokenDispatcherTrait},
+            actions_token::{IActionsTokenDispatcherTrait, IActionsTokenProtectedDispatcherTrait},
         },
         models::{
             player::{Player, PlayerImpl, PlayerStory},
@@ -30,7 +30,7 @@ pub mod prompt {
             errors_texts_output::{ErrorOutputterImpl},
             dns::{DnsTrait, IGameTokenDispatcherTrait, ILexerDispatcherTrait},
         },
-        // constants::errors::{Error},
+        constants::errors::{Error},
     };
 
     mod Errors {
@@ -54,12 +54,18 @@ pub mod prompt {
                 player.log_command(ref world, cmd.clone());
                 match (world.lexer_dispatcher().parse(world, cmd, player)) {
                     Result::Ok(command) => {
+                        // calculate price per action
+                        let actions_amount: u256 = world.calculate_actions_cost(@command);
+                        if actions_amount.is_non_zero() && world.actions_token_dispatcher().balance_of(player.address) < actions_amount {
+                            ErrorOutputterImpl::output_error(Error::InsufficientActionsBalance, player, ref world);
+                            return;
+                        }
+                        // execute the command
                         match handle_command(@command, ref world, ref player) {
                             Result::Ok(()) => {
-                                let actions_amount: u256 = world.calculate_actions_cost(@command);
+                                // charge player
                                 if actions_amount.is_non_zero() {
-                                    // charge actions
-                                    // world.actions_token_dispatcher().charge_player_actions(player.address, actions_amount);
+                                    world.actions_token_protected_dispatcher().charge_player_actions(player.address, 0, actions_amount);
                                 }
                             },
                             Result::Err(error) => {
