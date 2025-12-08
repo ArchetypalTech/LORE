@@ -16,12 +16,11 @@ pub mod prompt {
     };
     use lore::{
         systems::{
-            actions_token::{IActionsTokenDispatcherTrait, IActionsTokenProtectedDispatcherTrait},
+            actions_token::{IActionsTokenProtectedDispatcherTrait},
         },
         models::{
             player::{Player, PlayerImpl, PlayerStory},
             player_account::{PlayerAccountTrait},
-            actions_config::{ActionsConfigTrait},
         },
         lib::{
             c_handler::{handle_command},
@@ -55,15 +54,16 @@ pub mod prompt {
                 match (world.lexer_dispatcher().parse(world, cmd, player)) {
                     Result::Ok(command) => {
                         // calculate price per action
-                        let actions_amount: u256 = world.calculate_actions_cost(@command);
-                        if actions_amount.is_non_zero() && world.actions_token_dispatcher().balance_of(player.address) < actions_amount {
-                            ErrorOutputterImpl::output_error(Error::InsufficientActionsBalance, player, ref world);
+                        let actions_amount: Result<u128, Error> = world.actions_token_protected_dispatcher().calculate_action_cost(player.address, command.command_type);
+                        if actions_amount.is_err() {
+                            ErrorOutputterImpl::output_error(actions_amount.unwrap_err(), player, ref world);
                             return;
                         }
                         // execute the command
                         match handle_command(@command, ref world, ref player) {
                             Result::Ok(()) => {
                                 // charge player
+                                let actions_amount: u128 = actions_amount.unwrap();
                                 if actions_amount.is_non_zero() {
                                     world.actions_token_protected_dispatcher().charge_player_actions(player.address, 0, actions_amount);
                                 }

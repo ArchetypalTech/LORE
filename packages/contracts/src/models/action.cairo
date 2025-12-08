@@ -228,7 +228,7 @@ pub impl ActionImpl of ActionTrait {
         });
     }
 
-    // fn enable_action(mut self: Action, mut world: WorldStorage) {
+    // fn enable_action(mut self: Action, ref world: WorldStorage) {
     //     self.is_enabled = true;
     //     world
     //         .write_member(
@@ -239,7 +239,7 @@ pub impl ActionImpl of ActionTrait {
     //     // world.write_model(@self);
     // }
 
-    // fn disable_action(mut self: Action, mut world: WorldStorage) {
+    // fn disable_action(mut self: Action, ref world: WorldStorage) {
     //     self.is_enabled = false;
     //     world
     //         .write_member(

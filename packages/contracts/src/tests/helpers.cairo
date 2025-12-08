@@ -99,6 +99,7 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::game_instance::m_GameInstanceMap::TEST_CLASS_HASH.into()),
             TestResource::Model(models::game_instance::m_GameInstanceKeyMap::TEST_CLASS_HASH.into()),
             TestResource::Model(models::player_account::m_PlayerAccount::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::player_account::m_PlayerBalances::TEST_CLASS_HASH.into()),
             TestResource::Model(models::actions_config::m_ActionsConfig::TEST_CLASS_HASH.into()),
             TestResource::Event(lore::lib::access::e_AccessGrantedEvent::TEST_CLASS_HASH.into()),
             // game_token
@@ -205,6 +206,27 @@ pub fn drop_all_events(address: ContractAddress) {
             core::option::Option::None => { break; },
         };
     }
+}
+
+// block number cheats...
+
+pub fn get_block_number() -> u64 {
+    let block_info: starknet::BlockInfo = starknet::get_block_info().unbox();
+    (block_info.block_number)
+}
+pub fn _next_block() -> (u64, u64) {
+    (elapse_block_timestamp(1000))
+}
+pub fn elapse_block_timestamp(delta: u64) -> (u64, u64) {
+    let new_timestamp: u64 = starknet::get_block_timestamp() + delta;
+    (set_block_timestamp(new_timestamp))
+}
+pub fn set_block_timestamp(new_timestamp: u64) -> (u64, u64) {
+    assert_ge!(new_timestamp, starknet::get_block_timestamp(), "set_block_timestamp() <<< Back in time...");
+    let new_block_number: u64 = get_block_number() + 1;
+    testing::set_block_number(new_block_number);
+    testing::set_block_timestamp(new_timestamp);
+    (new_block_number, new_timestamp)
 }
 
 

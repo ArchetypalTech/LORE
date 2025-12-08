@@ -1,9 +1,14 @@
 // use core::num::traits::Zero;
 use starknet::{ContractAddress};
+use dojo::{
+    // world::{WorldStorage},
+    model::{ModelStorage},
+};
 
 use lore::{
     models::{
         actions_config::{ActionsConfigTrait},
+        player_account::{PlayerBalances},
         player::{Player, PlayerImpl},
         entity::{Entity},
         area::{Area},
@@ -21,17 +26,22 @@ use lore::{
         },
         errors_texts_output::{ErrorOutputterTrait},
     },
-    constants::errors::{Error},
+    constants::{
+        errors::{Error},
+        constants::{TIMESTAMP},
+    },
 };
 use lore::tests::{helpers,
     helpers::{
         HelperSystems,
-        OWNER, OTHER, RECIPIENT,
+        OWNER, OTHER, RECIPIENT, PLAYER_1,
     }
 };
 use lore::constants::constants::{CONST};
 
 const AMOUNT: u128 = 1000 * CONST::ETH_TO_WEI.low;
+
+const CLAIM_INTERVAL: u64 = TIMESTAMP::ONE_HOUR;
 
 const TOKEN_ID_1_1: u256 = 1;
 const TOKEN_ID_1_2: u256 = 2;
@@ -122,55 +132,202 @@ fn test_transfer_not_permitted() {
 // spend
 //
 
-#[test]
-fn test_spend_actions_ok() {
-    let mut sys: helpers::HelperSystems = helpers::setup_core();
-    //
-    // set actions price
+fn _setup_level(ref sys: HelperSystems) -> u128 {
     helpers::set_caller(OWNER());
-    let action_cost_amount: u256 = (1 * CONST::ETH_TO_WEI);
+    // setup actions price
+    let action_cost_amount: u128 = (1 * CONST::ETH_TO_WEI.low);
     sys.actions.set_action_cost_amount(action_cost_amount);
-    //
     // initialize a world
     let (_room_1_entity, area_1): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 1", "ROOM1", Option::None);
     let (room_2_entity, _area_2): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 2", "ROOM2", Option::None);
     let (_exit_2_entity, _exit_to_room_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit To Room 1", "to_room_1", @room_2_entity, area_1.inst);
     // initialize player
     let player: Player = PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
-    helpers::set_caller(helpers::OWNER());
     player.move_to_room(ref sys.world, room_2_entity.inst);
     //
     // player_1 say anything... (will create a game)
-    let game_id_1: u128 = 1;
-    helpers::set_caller(helpers::PLAYER_1);
+    let game_id: u128 = 1;
+    helpers::set_caller(PLAYER_1);
     sys.prompt.prompt("", Option::None);
-    // balance: 0
-    sys.prompt.prompt("g_actions", Option::None);
-    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 0");
-    //
-    // try to spend actions...
+    (game_id)
+}
+
+fn _assert_error_no_balance(ref sys: HelperSystems, game_id: u128) {
     let error_message: ByteArray = Error::InsufficientActionsBalance.error_message(ref sys.world);
     assert_gt!(error_message.len(), 0, "Error message is empty");
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id), error_message);
+}
+
+fn _assert_balances(sys: @HelperSystems, player_address: ContractAddress, free_actions_count: u32, paid_actions_count: u32, prefix: ByteArray) {
+    let balances: PlayerBalances = (*sys.world).read_model(player_address);
+    assert_eq!(balances.free_actions_balance, free_actions_count.into() * CONST::ETH_TO_WEI.low, "[{}] free_actions_balance", prefix);
+    assert_eq!(balances.paid_actions_balance, paid_actions_count.into() * CONST::ETH_TO_WEI.low, "[{}] paid_actions_balance", prefix);
+    assert_eq!(sys.actions.balance_of(player_address).low, (free_actions_count + paid_actions_count).into() * CONST::ETH_TO_WEI.low, "[{}] balance_of", prefix);
+}
+
+#[test]
+fn test_spend_actions_ok() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    let game_id: u128 = _setup_level(ref sys);
+    //
+    // balance: 5 (initial free actions)
+    sys.prompt.prompt("g_actions", Option::None);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions_balance: 5");
+    // spend it all...
     sys.prompt.prompt("look around", Option::None);
-    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), error_message);
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    // balance: 0
+    sys.prompt.prompt("g_actions", Option::None);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions_balance: 0");
+    //
+    // try to spend actions...
+    sys.prompt.prompt("look around", Option::None);
+    _assert_error_no_balance(ref sys, game_id);
     //
     // mint actions to player...
     helpers::set_caller(OWNER());
-    sys.actions.mint_to(helpers::PLAYER_1, 100);
+    sys.actions.mint_to(PLAYER_1, 100);
     // balance: 100
-    helpers::set_caller(helpers::PLAYER_1);
+    helpers::set_caller(PLAYER_1);
     sys.prompt.prompt("g_actions", Option::None);
-    assert_eq!(sys.actions.balance_of(helpers::PLAYER_1), 100 * CONST::ETH_TO_WEI);
-    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 100");
+    assert_eq!(sys.actions.balance_of(PLAYER_1), 100 * CONST::ETH_TO_WEI);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions_balance: 100");
     //
     // try to spend actions...
     sys.prompt.prompt("look around", Option::None);
-// helpers::print_game_story_last_line(@sys.world, game_id_1);
-    assert_ne!(helpers::game_story_last_line(@sys.world, game_id_1), error_message);
-    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "hello");
-    assert_eq!(sys.actions.balance_of(helpers::PLAYER_1), 99 * CONST::ETH_TO_WEI);
+// helpers::print_game_story_last_line(@sys.world, game_id);
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "to_room_1");
+    assert_eq!(sys.actions.balance_of(PLAYER_1), 99 * CONST::ETH_TO_WEI);
     sys.prompt.prompt("g_actions", Option::None);
-    assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 99");
+    assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions_balance: 99");
+}
+
+
+//-----------------------------------
+// free actions
+//
+
+#[test]
+fn test_claim_free_actions_ok() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    let _game_id: u128 = _setup_level(ref sys);
+    //
+    // balance: 5 (initial free actions)
+    _assert_balances(@sys, PLAYER_1, 0, 0, "start");
+    sys.prompt.prompt("g_actions", Option::None);
+    _assert_balances(@sys, PLAYER_1, 5, 0, "start");
+    // spend it all...
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 4, 0, "start");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 3, 0, "start");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 2, 0, "start");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 1, 0, "start");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 0, "start");
+    // still cant claim because no purchase or subscription
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "spent initial");
+    helpers::elapse_block_timestamp(CLAIM_INTERVAL);
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "after 1 hour");
+    //
+    // mint actions to player...
+    helpers::set_caller(OWNER());
+    sys.actions.mint_to(PLAYER_1, 10);
+    _assert_balances(@sys, PLAYER_1, 0, 10, "after airdrop");
+    // now can claim...
+    helpers::set_caller(PLAYER_1);
+    assert_eq!(sys.actions.get_free_actions_count(), 1, "after airdrop");
+    helpers::elapse_block_timestamp(CLAIM_INTERVAL * 2);
+    assert_eq!(sys.actions.get_free_actions_count(), 3, "after 3 hours");
+    //
+    // claim...
+    sys.actions.claim_free_actions();
+    _assert_balances(@sys, PLAYER_1, 3, 10, "after airdrop");
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "after claim");
+}
+
+#[test]
+fn test_claim_free_actions_max() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    let _game_id: u128 = _setup_level(ref sys);
+    //
+    // balance: 5 (initial free actions)
+    // spend it all...
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 0, "spent initial");
+    // mint actions to player...
+    helpers::set_caller(OWNER());
+    sys.actions.mint_to(PLAYER_1, 10);
+    _assert_balances(@sys, PLAYER_1, 0, 10, "after airdrop");
+    // now can claim...
+    helpers::set_caller(PLAYER_1);
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "after airdrop");
+    helpers::elapse_block_timestamp(CLAIM_INTERVAL * 10);
+    assert_eq!(sys.actions.get_free_actions_count(), 5, "after 10 hours");
+    // claim...
+    sys.actions.claim_free_actions();
+    _assert_balances(@sys, PLAYER_1, 5, 10, "after airdrop");
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "after claim");
+}
+
+#[test]
+fn test_claim_spend_order() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    let game_id: u128 = _setup_level(ref sys);
+    //
+    // balance: 5 (initial free actions)
+    // spend it all...
+    helpers::set_caller(PLAYER_1);
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 4, 0, "spent 1");
+    // mint actions to player...
+    helpers::set_caller(OWNER());
+    sys.actions.mint_to(PLAYER_1, 5);
+    _assert_balances(@sys, PLAYER_1, 4, 5, "after airdrop");
+    // spend free...
+    helpers::set_caller(PLAYER_1);
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 3, 5, "spent 2");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 2, 5, "spent 3");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 1, 5, "spent 4");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 5, "spent 5");
+    // spend paid...
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 4, "spent 6");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 3, "spent 7");
+    // claim some more...
+    helpers::set_caller(PLAYER_1);
+    helpers::elapse_block_timestamp(CLAIM_INTERVAL * 2);
+    assert_eq!(sys.actions.get_free_actions_count(), 2, "claiming");
+    sys.actions.claim_free_actions();
+    _assert_balances(@sys, PLAYER_1, 2, 3, "after airdrop");
+    // spend it all...
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 1, 3, "spent 8");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 3, "spent 9");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 2, "spent 10");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 1, "spent 11");
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 0, 0, "spent 12");
+    // no more!
+    sys.prompt.prompt("look around", Option::None);
+    _assert_error_no_balance(ref sys, game_id);
 }
 
 
@@ -237,18 +394,18 @@ fn test_set_action_cost() {
     assert_eq!(command_null.command_type, CommandType::Unknown);
     assert_eq!(command_sys.command_type, CommandType::System);
     assert_eq!(command_action.command_type, CommandType::Action);
-    assert_eq!(sys.world.calculate_actions_cost(@command_null), 0, "initial cost");
-    assert_eq!(sys.world.calculate_actions_cost(@command_sys), 0, "initial cost");
-    assert_eq!(sys.world.calculate_actions_cost(@command_action), 0, "initial cost");
+    assert_eq!(sys.world.calculate_actions_cost(command_null.command_type), 0, "initial cost");
+    assert_eq!(sys.world.calculate_actions_cost(command_sys.command_type), 0, "initial cost");
+    assert_eq!(sys.world.calculate_actions_cost(command_action.command_type), 0, "initial cost");
     // set price
     helpers::set_caller(OWNER());
-    let amount: u256 = 100 * CONST::ETH_TO_WEI;
+    let amount: u128 = 100 * CONST::ETH_TO_WEI.low;
     sys.actions.set_action_cost_amount(amount);
     assert_eq!(sys.world.get_actions_config().action_cost_amount, amount);
     // validate action cost amount
-    assert_eq!(sys.world.calculate_actions_cost(@command_null), 0, "updated cost");
-    assert_eq!(sys.world.calculate_actions_cost(@command_sys), 0, "updated cost");
-    assert_eq!(sys.world.calculate_actions_cost(@command_action), amount, "updated cost");
+    assert_eq!(sys.world.calculate_actions_cost(command_null.command_type), 0, "updated cost");
+    assert_eq!(sys.world.calculate_actions_cost(command_sys.command_type), 0, "updated cost");
+    assert_eq!(sys.world.calculate_actions_cost(command_action.command_type), amount, "updated cost");
 }
 
 #[test]
@@ -256,6 +413,6 @@ fn test_set_action_cost() {
 fn test_set_action_cost_invalid_caller() {
     let mut sys: HelperSystems = helpers::setup_core();
     helpers::set_caller(OTHER());
-    let amount: u256 = 100 * CONST::ETH_TO_WEI;
+    let amount: u128 = 100 * CONST::ETH_TO_WEI.low;
     sys.actions.set_action_cost_amount(amount);
 }

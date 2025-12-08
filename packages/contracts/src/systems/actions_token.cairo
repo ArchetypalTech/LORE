@@ -1,5 +1,9 @@
 use starknet::{ContractAddress};
 use dojo::world::IWorldDispatcher;
+use lore::{
+    types::command_type::{CommandType},
+    constants::errors::{Error},
+};
 
 #[starknet::interface]
 pub trait IActionsToken<TState> {
@@ -24,22 +28,27 @@ pub trait IActionsToken<TState> {
 
     //-----------------------------------
     // IActionsTokenPublic
+    fn get_free_actions_count(self: @TState) -> u32;
+    fn claim_free_actions(ref self: TState) -> u32;
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
-    fn set_action_cost_amount(ref self: TState, action_cost_amount: u256);
+    fn set_action_cost_amount(ref self: TState, action_cost_amount: u128);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
 #[starknet::interface]
 pub trait IActionsTokenPublic<TState> {
+    fn get_free_actions_count(self: @TState) -> u32;
+    fn claim_free_actions(ref self: TState) -> u32;
     // admin functions
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
-    fn set_action_cost_amount(ref self: TState, action_cost_amount: u256);
+    fn set_action_cost_amount(ref self: TState, action_cost_amount: u128);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
 #[starknet::interface]
 pub trait IActionsTokenProtected<TState> {
-    fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u256);
+    fn calculate_action_cost(ref self: TState, player_address: ContractAddress, command_type: CommandType) -> Result<u128, Error>;
+    fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u128);
 }
 
 #[dojo::contract]
@@ -78,15 +87,23 @@ pub mod actions_token {
     // ERC-20 End
     //-----------------------------------
 
-    use lore::models::{
-        actions_config::{ActionsConfig, ActionsConfigTrait},
-        player_account::{PlayerAccountTrait},
+    use lore::{
+        models::{
+            actions_config::{ActionsConfig, ActionsConfigTrait},
+            player_account::{PlayerAccountTrait, ActionsSource},
+        },
+        types::{
+            command_type::{CommandType},
+        },
+        lib::{
+            access::{AccessTrait},
+            dns::{DnsTrait, SELECTORS},
+        },
+        constants::{
+            constants::{CONST},
+            errors::{Error},
+        },
     };
-    use lore::lib::{
-        access::{AccessTrait},
-        dns::{DnsTrait, SELECTORS},
-    };
-    use lore::constants::constants::{CONST};
 
 
     mod Errors {
@@ -112,7 +129,7 @@ pub mod actions_token {
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
         );
-        let action_cost_amount: u256 = (action_cost.into() * CONST::ETH_TO_WEI);
+        let action_cost_amount: u128 = (action_cost.into() * CONST::ETH_TO_WEI.low);
         world.initialize_actions_config(sn_contract, action_cost_amount);
     }
     
@@ -144,17 +161,27 @@ pub mod actions_token {
         let actions_count: u32 = (*payload.at(1)).try_into().unwrap();
         let _permit_type: felt252 = *payload.at(2);
         // mint actions
-        self._mint_to(ref world, recipient, actions_count);
+        self._mint_to(ref world, recipient, actions_count, ActionsSource::Purchase);
     }
 
     #[abi(embed_v0)]
     impl IActionsTokenPublicImpl of super::IActionsTokenPublic<ContractState> {
+        fn get_free_actions_count(self: @ContractState) -> u32 {
+            let world: WorldStorage = self.world_default();
+            (world.get_free_actions_count(starknet::get_caller_address()))
+        }
+        fn claim_free_actions(ref self: ContractState) -> u32 {
+            let mut world: WorldStorage = self.world_default();
+            let minted_actions_count: u32 = self._claim_free_actions(ref world, starknet::get_caller_address());
+            (minted_actions_count)
+        }
+
         fn mint_to(ref self: ContractState, recipient: ContractAddress, actions_count: u32) {
             // validate caller
             self._assert_caller_is_admin(@self.world_default());
             // mint actions...
             let mut world: WorldStorage = self.world_default();
-            self._mint_to(ref world, recipient, actions_count);
+            self._mint_to(ref world, recipient, actions_count, ActionsSource::Airdrop);
         }
 
         /// Admin functions
@@ -169,7 +196,7 @@ pub mod actions_token {
             world.write_model(@actions_config);
         }
 
-        fn set_action_cost_amount(ref self: ContractState, action_cost_amount: u256) {
+        fn set_action_cost_amount(ref self: ContractState, action_cost_amount: u128) {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_owner(@world);
@@ -182,16 +209,31 @@ pub mod actions_token {
 
     #[abi(embed_v0)]
     impl IActionsTokenProtectedImpl of super::IActionsTokenProtected<ContractState> {
-        fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u256) {
+        fn calculate_action_cost(ref self: ContractState, player_address: ContractAddress, command_type: CommandType) -> Result<u128, Error> {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_world_contract(@world);
-            // burn player actions
-            self.erc20.burn(player_address, actions_amount);
-            // // update player account
-            // let mut player_account: PlayerAccount = world.read_model(player_address);
-            // player_account.actions_balance -= actions_amount;
-            // world.write_model(@player_account);
+            // check if player has free actions to claim
+            self._claim_free_actions(ref world, player_address);
+            // calculate actions cost
+            let actions_amount: u128 = world.calculate_actions_cost(command_type);
+            if actions_amount.is_non_zero() && self.balance_of(player_address).low < actions_amount {
+                return Result::Err(Error::InsufficientActionsBalance);
+            }
+            (Result::Ok(actions_amount))
+        }
+
+        fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u128) {
+            let mut world: WorldStorage = self.world_default();
+            // validate caller
+            self._assert_caller_is_world_contract(@world);
+            if (trail_id.is_zero()) {
+                // burn player actions
+               self.erc20.burn(player_address, actions_amount.into());
+               world.spent_actions(player_address, actions_amount);
+            } else {
+                // TODO...
+            }
         }
     }
 
@@ -223,18 +265,26 @@ pub mod actions_token {
         }
 
         // mint new actions to a recipient
-        fn _mint_to(ref self: ContractState, ref world: WorldStorage, recipient: ContractAddress, actions_count: u32) {
+        fn _mint_to(ref self: ContractState, ref world: WorldStorage, recipient: ContractAddress, actions_count: u32, source: ActionsSource) {
             // mint actions
             let amount: u256 = (actions_count.into() * CONST::ETH_TO_WEI);
             assert(recipient.is_non_zero(), Errors::INVALID_RECIPIENT);
             assert(amount.is_non_zero(), Errors::INVALID_AMOUNT);
             self.erc20.mint(recipient, amount);
             // update player account
-            if (world.minted_actions(recipient, actions_count)) {
+            if (world.minted_actions(recipient, actions_count, source)) {
                 // first purchase: approve world contracts to spend actions
                 self.erc20._approve(recipient, starknet::get_contract_address(), Bounded::MAX);
                 self.erc20._approve(recipient, world.prompt_address(), Bounded::MAX);
             }
+        }
+
+        fn _claim_free_actions(ref self: ContractState, ref world: WorldStorage, player_address: ContractAddress) -> u32 {
+            let available_actions_count: u32 = (world.get_free_actions_count(player_address));
+            if available_actions_count > 0 {
+                self._mint_to(ref world, player_address, available_actions_count, ActionsSource::FreeClaimed);
+            }
+            (available_actions_count)
         }
 
 
