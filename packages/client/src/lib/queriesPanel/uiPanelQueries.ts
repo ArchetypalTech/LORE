@@ -234,11 +234,25 @@ export const queryExitsPerGame = async (
           ? (leadsToEntity?.name ?? "unknown")
           : "Unknown"
       });
+    }
+
+    console.log("\n=== [Exits 1] DONE ===");
+    console.log("Collected exits:", exits);
+
+    for (const child of parentToChildren.children) {
+      const childInst = BigInt(child.toString());
+      console.log("\n[Exits 2] Checking child:", childInst.toString());
 
       // -----------------------------------------------------
-      // 4 use exitQuery to test
+      // 4.1 Resolve GIMap(child) since exits differ per game
       // -----------------------------------------------------
-      const childExit = await queryExit(childInst);
+      const childGameInst = await queryGameInstaceMap(gameId, childInst);
+      console.log("[Exits 2] Child GameInst:", childGameInst.toString());
+
+      // -----------------------------------------------------
+      // 4.2 use exitQuery to test
+      // -----------------------------------------------------
+      const childExit =  await queryExit(childInst);
       console.log("[Exits] Child Exit:", childExit);
       if (!childExit) {
         console.log("[Exits] childExit is NOT an exit.");
@@ -247,7 +261,17 @@ export const queryExitsPerGame = async (
       console.log("[Exits] childExit is an exit!");
 
       // -----------------------------------------------------
-      // 4.1 Resolve leads_to — must resolve its own GIMap too
+      // 4.3 Get the exit ENTITY (static name)
+      // -----------------------------------------------------
+      const exitEntity = await queryEntity(childInst);
+      console.log("[Exits] Exit Entity (base inst):", exitEntity);
+
+      // -----------------------------------------------------
+      // 4.4 Resolve exit
+      // -----------------------------------------------------
+
+      // -----------------------------------------------------
+      // 4.5 Resolve leads_to — must resolve its own GIMap too
       // -----------------------------------------------------
       const leadsToInstChild = BigInt(childExit.leads_to.toString());
       console.log("[Exits] leads_to inst:", leadsToInstChild.toString());
@@ -268,8 +292,8 @@ export const queryExitsPerGame = async (
       });
     }
 
-    console.log("\n=== [Exits] DONE ===");
-    console.log("Collected exits:", exits);
+    console.log("\n=== [Exits 2] DONE ===");
+    console.log("Collected exits2:", exits);
 
   } catch (error) {
     console.error("Error fetching exits from Torii:", error);
