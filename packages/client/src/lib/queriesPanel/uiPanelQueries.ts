@@ -108,10 +108,11 @@ export const queryPlayerLocationGIMap = async (gameInst: bigint, origInst: bigin
       ).withEntityModels(["lore-Player"]);
       
       
-      const result_playerComp = await sdk.getEntities({ query: query_playerComp });
-      console.log("DEBUG: queryPlayerLocationGIMap() result_playerComp: ", result_playerComp);
+    const result_playerComp = await sdk.getEntities({ query: query_playerComp });
+    // console.log("DEBUG: queryPlayerLocationGIMap() result_playerComp: ", result_playerComp);
 
-      player_location = BigInt(result_playerComp.getItems().at(0)?.models?.lore?.Player?.location ?? 0);
+    player_location = BigInt(result_playerComp.getItems().at(0)?.models?.lore?.Player?.location ?? 0);
+
   } catch (error) {
     console.error("Error fetching player location item from Torii:", error);
     throw error;
@@ -121,8 +122,8 @@ export const queryPlayerLocationGIMap = async (gameInst: bigint, origInst: bigin
 
 export const queryPlayerLocationEntityGIMap = async (gameInst: bigint, origInst: bigint): Promise<string> => {
   let location_name: string = "";
-  console.log("\n[PLE] Query PlayerLocationEntityGIMap");
-  console.log("[PLE] gameInst:", gameInst.toString(), "origInst:", origInst.toString());
+  // console.log("\n[PLE] Query PlayerLocationEntityGIMap");
+  // console.log("[PLE] gameInst:", gameInst.toString(), "origInst:", origInst.toString());
   try{
     const { sdk } = await InitDojo();
     // get invItem
@@ -140,7 +141,7 @@ export const queryPlayerLocationEntityGIMap = async (gameInst: bigint, origInst:
       
       
       const result_query_Entity = await sdk.getEntities({ query: query_Entity });
-      console.log("DEBUG: queryPlayerLocationEntityGIMap() result_query_Entity: ", result_query_Entity);
+      // console.log("DEBUG: queryPlayerLocationEntityGIMap() result_query_Entity: ", result_query_Entity);
 
       location_name = (result_query_Entity.getItems().at(0)?.models?.lore?.Entity?.name ?? "undefined");
   } catch (error) {
@@ -161,23 +162,23 @@ export const queryExitsPerGame = async (
   let counter = 0;
 
   try {
-    console.log("\n=== [Exits] START QUERY ===");
-    console.log("PlayerLocationInst:", playerLocationInst.toString());
+    // console.log("\n=== [Exits] START QUERY ===");
+    // console.log("PlayerLocationInst:", playerLocationInst.toString());
 
     // ---------------------------------------------------------
     // 1. Resolve GameInstanceMap for the player's LOCATION
     // ---------------------------------------------------------
     const locationGameInst = await queryGameInstaceMap(gameId, playerLocationInst);
-    console.log("[Exits] Location GameInst:", locationGameInst.toString());
+    // console.log("[Exits] Location GameInst:", locationGameInst.toString());
 
     // ---------------------------------------------------------
     // 2. Query ParentToChildren using GIMap(location)
     // ---------------------------------------------------------
     const parentToChildren = await queryParentToChildrenGIMap(locationGameInst, playerLocationInst);
-    console.log("[Exits] ParentToChildren:", parentToChildren);
+    // console.log("[Exits] ParentToChildren:", parentToChildren);
 
     if (!parentToChildren || !parentToChildren.children) {
-      console.log("[Exits] No children found.");
+      // console.log("[Exits] No children found.");
       return exits;
     }
 
@@ -186,42 +187,42 @@ export const queryExitsPerGame = async (
     // ---------------------------------------------------------
     for (const child of parentToChildren.children) {
       const childInst = BigInt(child.toString());
-      console.log("\n[Exits] Checking child:", childInst.toString());
+      // console.log("\n[Exits] Checking child:", childInst.toString());
 
       // -----------------------------------------------------
       // 3.1 Get the exitChild from GIMap
       //  This is for the exit status per game
       // -----------------------------------------------------
       const childGameInst = await queryGameInstaceMap(gameId, childInst);
-      console.log("[Exits] Child GameInst:", childGameInst.toString());
+      // console.log("[Exits] Child GameInst:", childGameInst.toString());
 
       // -----------------------------------------------------
       // 3.2 Find Exit component via GIMap
       // -----------------------------------------------------
       const childExit =  await queryExitGIMap(childGameInst, childInst);
-      console.log("[Exits] Child Exit:", childExit);
+      // console.log("[Exits] Child Exit:", childExit);
       if (!childExit) {
-        console.log("[Exits] ChildExit not in queryGIMAP");
+        // console.log("[Exits] ChildExit not in queryGIMAP");
 
         // 3.2.1 Find Exit via Query
         const childExit2 =  await queryExit(childInst);
-        console.log("[Exits] ChildExit 2:", childExit2);
+        //console.log("[Exits] ChildExit 2:", childExit2);
         if (!childExit2) {
-          console.log("[Exits] ChildExit 2 not in query");
+          // console.log("[Exits] ChildExit 2 not in query");
           continue;
         }
-        console.log("[Exits] ChildExit 2 in query");
+        // console.log("[Exits] ChildExit 2 in query");
         
         // 3.2.2 Get the exit ENTITY (static name)
         const exitEntity =  await queryEntity(childInst);
-        console.log("[Exits] Exit 2 Entity (base inst):", exitEntity);
+        // console.log("[Exits] Exit 2 Entity (base inst):", exitEntity);
 
         // 3.2.3 Resolve leads_to 
         const leads_to_inst = BigInt(childExit2.leads_to.toString());
-        console.log("[Exits] leads_to inst 2:", leads_to_inst.toString());
+        // console.log("[Exits] leads_to inst 2:", leads_to_inst.toString());
 
         const leads_to_entity = await queryEntity(leads_to_inst);
-        console.log("[Exits] leads_to Entity 2:", leads_to_entity);
+        // console.log("[Exits] leads_to Entity 2:", leads_to_entity);
 
         exits.push({
           id: counter++,
@@ -233,22 +234,22 @@ export const queryExitsPerGame = async (
         });
         continue;
       }
-      console.log("[Exits] Child IS an exit!");
+      // console.log("[Exits] Child IS an exit!");
 
       // -----------------------------------------------------
       // 3.3 Get the exit Entity (static name)
       // -----------------------------------------------------
       const exitEntity =  await queryEntity(childInst);
-      console.log("[Exits] Exit Entity (base inst):", exitEntity);
+      // console.log("[Exits] Exit Entity (base inst):", exitEntity);
 
       // -----------------------------------------------------
       // 3.4 Get the leads_to entity
       // -----------------------------------------------------
       const leads_to_inst = BigInt(childExit.leads_to.toString());
-      console.log("[Exits] leads_to inst:", leads_to_inst.toString());
+      // console.log("[Exits] leads_to inst:", leads_to_inst.toString());
 
       const leads_to_entity = await queryEntity(leads_to_inst);
-      console.log("[Exits] leads_to Entity:", leads_to_entity);
+      // console.log("[Exits] leads_to Entity:", leads_to_entity);
 
       exits.push({
         id: counter++,
@@ -260,8 +261,8 @@ export const queryExitsPerGame = async (
       });
     }
 
-    console.log("\n=== [Exits] DONE ===");
-    console.log("Collected exits:", exits);
+    // console.log("\n=== [Exits] DONE ===");
+    // console.log("Collected exits:", exits);
 
   } catch (error) {
     console.error("Error fetching exits from Torii:", error);
@@ -276,8 +277,8 @@ const queryParentToChildrenGIMap = async (
   objInst: bigint
 ): Promise<Partial<ParentToChildren> | undefined> => {
   let parentToChildren: Partial<ParentToChildren> | undefined;
-  console.log("\n[PTC] Query ParentToChildren");
-  console.log("[PTC] gameInst:", gameInst.toString(), "objInst:", objInst.toString());
+  // console.log("\n[PTC] Query ParentToChildren");
+  // console.log("[PTC] gameInst:", gameInst.toString(), "objInst:", objInst.toString());
   try{
     const { sdk } = await InitDojo();
     const queryValue = gameInst != 0n ? gameInst : objInst;
@@ -293,10 +294,10 @@ const queryParentToChildrenGIMap = async (
       ).withEntityModels(["lore-ParentToChildren"]);
 
     const result = await sdk.getEntities({ query: query_parentToChildren });
-    console.log("[PTC]: query result: ", result);
+    // console.log("[PTC]: query result: ", result);
     
     const item = result.getItems().at(0);
-    console.log("[PTC]: Item: ", item);
+    // console.log("[PTC]: Item: ", item);
 
     parentToChildren = item?.models?.lore?.ParentToChildren;
   } catch (error) {
@@ -311,8 +312,8 @@ const queryExitGIMap = async (
   objInst: bigint
 ): Promise<Partial<Exit> | undefined> => {
   let exit: Partial<Exit> | undefined;
-  console.log("\n[ExitGIMap] Query Exit");
-  console.log("[ExitGIMap] gameInst:", gameInst.toString(), "objInst:", objInst.toString());
+  // console.log("\n[ExitGIMap] Query Exit");
+  // console.log("[ExitGIMap] gameInst:", gameInst.toString(), "objInst:", objInst.toString());
   try {
     const { sdk } = await InitDojo();
     const queryValue = gameInst != 0n ? gameInst : objInst;
@@ -329,12 +330,12 @@ const queryExitGIMap = async (
       ).withEntityModels(["lore-Exit"]);
 
     const result = await sdk.getEntities({ query: query_exit });
-    console.log("[ExitGIMap] Result:", result);
+    // console.log("[ExitGIMap] Result:", result);
 
     const item = result.getItems().at(0);
-    console.log("[ExitGIMap] Item:", item);
+    // console.log("[ExitGIMap] Item:", item);
     exit = item?.models?.lore?.Exit;
-    console.log("[ExitGIMap] exit:", exit);
+    // console.log("[ExitGIMap] exit:", exit);
   } catch (error) {
     console.error("Error fetching exit from Torii:", error);
     throw error;
@@ -360,7 +361,7 @@ export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise
       ).withEntityModels(["lore-GameInstanceMap"]);
     
     const result_game_inst = await sdk.getEntities({ query: query_game_inst });
-    console.log("DEBUG: queryGameInstaceMap() result_game_inst: ", result_game_inst);
+    // console.log("DEBUG: queryGameInstaceMap() result_game_inst: ", result_game_inst);
 
     game_inst_map = BigInt(result_game_inst.getItems().at(0)?.models?.lore?.GameInstanceMap?.game_inst ?? 0);
     
@@ -373,85 +374,68 @@ export const queryGameInstaceMap = async (gameId: bigint, inst: bigint): Promise
 
 const queryEntity = async (inst: bigint): Promise<Partial<Entity> | undefined> => {
   let entity: Partial<Entity> | undefined;
-  const { sdk } = await InitDojo();
-  const query_entity = new ToriiQueryBuilder<SchemaType>()
-    .withCursor("")
-    .withLimit(1000)
-    .includeHashedKeys()
-    .withClause(
-      new ClauseBuilder<SchemaType>().keys(
-        ["lore-Entity"],
-        [bigintToHex128(inst)]
-      ).build()
-    )
-    .withEntityModels(["lore-Entity"]);
-  const result_entity = await sdk.getEntities({ query: query_entity });
-  console.log("DEBUG: queryEntity() result_entity: ", result_entity);
-  
-  const entity_item = result_entity.getItems().find((item) => {
-    const instHex = item.models?.lore?.Entity?.inst;
-    console.log("DEBUG: queryEntity() instHex: ", instHex);
-    console.log("DEBUG: queryEntity() inst: ", inst);
-    return instHex !== undefined && BigInt(instHex) === inst;
-  });
-  console.log("DEBUG: queryEntity() entity_item: ", entity_item);
-  // if (!entity_item) {
-  //   console.error("ERROR: queryEntity() entity_item is undefined");
-  //   return undefined;
-  // }
-  entity = entity_item?.models?.lore?.Entity;
+  try {
+    const { sdk } = await InitDojo();
+    const query_entity = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-Entity"],
+          [bigintToHex128(inst)]
+        ).build()
+      )
+      .withEntityModels(["lore-Entity"]);
+    const result_entity = await sdk.getEntities({ query: query_entity });
+    // console.log("DEBUG: queryEntity() result_entity: ", result_entity);
+    
+    const entity_item = result_entity.getItems().find((item) => {
+      const instHex = item.models?.lore?.Entity?.inst;
+      // console.log("DEBUG: queryEntity() instHex: ", instHex);
+      // console.log("DEBUG: queryEntity() inst: ", inst);
+      return instHex !== undefined && BigInt(instHex) === inst;
+    });
+    // console.log("DEBUG: queryEntity() entity_item: ", entity_item);
+    
+    entity = entity_item?.models?.lore?.Entity;
+  } catch (error) {
+    console.error("Error fetching entity from Torii:", error);
+    throw error;
+  }
   return entity;
 };
 
-const queryEntityGIMap = async (gameInst: bigint, objInst: bigint): Promise<Partial<Entity> | undefined> => {
-  let entity: Partial<Entity> | undefined;
-  const { sdk } = await InitDojo();
-  const queryValue = gameInst != 0n ? gameInst : objInst;
-  const query_obj_entity = new ToriiQueryBuilder<SchemaType>()
-    .withCursor("")
-    .withLimit(1000)
-    .includeHashedKeys()
-    .withClause(
-      new ClauseBuilder<SchemaType>().keys(
-        ["lore-Entity"],
-          [bigintToHex128(queryValue)]
-      ).build()
-    )
-    .withEntityModels(["lore-Entity"]);
-  const result_obj_entity = await sdk.getEntities({ query: query_obj_entity });
-  console.log("DEBUG: queryObjEntity() result_obj_entityGIMap: ", result_obj_entity);
-  
-  const obj_entity_item = result_obj_entity.getItems().at(0);
-  console.log("DEBUG: queryObjEntity() obj_entity_itemGIMap: ", obj_entity_item);
-
-  entity = obj_entity_item?.models?.lore?.Entity;
-  return entity;
-};
 
 const queryExit = async (inst: bigint): Promise<Partial<Exit> | undefined> => {
   let exit: Partial<Exit> | undefined;
+  try {
   const { sdk } = await InitDojo();
-  const query_exit = new ToriiQueryBuilder<SchemaType>()
-    .withCursor("")
-    .withLimit(1000)
-    .includeHashedKeys()
-    .withClause(
-      new ClauseBuilder<SchemaType>().keys(
-        ["lore-Exit"],
-        [bigintToHex128(inst)]
-      ).build()
-    )
-    .withEntityModels(["lore-Exit"]);
-  const result_exit = await sdk.getEntities({ query: query_exit });
-  console.log("DEBUG: queryExit() result_exit: ", result_exit);
-  
-  const exit_item = result_exit.getItems().find((item) => {
-    const instHex = item.models?.lore?.Exit?.inst;
-    return instHex !== undefined && BigInt(instHex) === inst;
-  });
-  console.log("DEBUG: queryExit() exit_item: ", exit_item);
-  
-  exit = exit_item?.models?.lore?.Exit;
+    const query_exit = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-Exit"],
+          [bigintToHex128(inst)]
+        ).build()
+      )
+      .withEntityModels(["lore-Exit"]);
+    const result_exit = await sdk.getEntities({ query: query_exit });
+    // console.log("DEBUG: queryExit() result_exit: ", result_exit);
+    
+    const exit_item = result_exit.getItems().find((item) => {
+      const instHex = item.models?.lore?.Exit?.inst;
+      return instHex !== undefined && BigInt(instHex) === inst;
+    });
+    // console.log("DEBUG: queryExit() exit_item: ", exit_item);
+    
+    exit = exit_item?.models?.lore?.Exit;
+  } catch (error) {
+    console.error("Error fetching exit from Torii:", error);
+    throw error;
+  }
   return exit;
 };
 
@@ -463,20 +447,15 @@ export const queryPuzzlesPerGame = async (
   let puzzles: PuzzleInfo[] = [];
 
   try {
-    console.log("\n=== [Puzzles] START QUERY ===");
-    console.log("PlayerLocationInst:", playerLocationInst.toString());
+    // console.log("\n=== [Puzzles] START QUERY ===");
+    // console.log("PlayerLocationInst:", playerLocationInst.toString());
 
-    // ---------------------------------------------------------
-    // 1. Resolve GameInstanceMap for the player's LOCATION
-    // ---------------------------------------------------------
-    const locationGameInst = await queryGameInstaceMap(gameId, playerLocationInst);
-    console.log("[Puzzles] Location GameInst:", locationGameInst.toString());
 
     // ---------------------------------------------------------
     // 2. Query Location Puzzles
     // ---------------------------------------------------------
-    const locationPuzzles = await queryPuzzleLocation(playerLocationInst);
-    console.log("[Puzzles] Location Puzzles:", locationPuzzles);
+    const locationPuzzles = await queryPuzzleLocation(gameId, playerLocationInst);
+    // console.log("[Puzzles] Location Puzzles:", locationPuzzles);
     if (locationPuzzles) {
       puzzles.push(...locationPuzzles);
     }
@@ -484,13 +463,13 @@ export const queryPuzzlesPerGame = async (
     // ---------------------------------------------------------
     // 3. Query Children
     const childrenPuzzles = await queryPuzzleChildren(gameId, playerLocationInst);
-    console.log("[Puzzles] Children Puzzles:", childrenPuzzles);
+    // console.log("[Puzzles] Children Puzzles:", childrenPuzzles);
     if (childrenPuzzles) {
       puzzles.push(...childrenPuzzles);
     }
 
-    console.log("\n=== [Puzzles] DONE ===");
-    console.log("Collected puzzles:", puzzles);
+    // console.log("\n=== [Puzzles] DONE ===");
+    // console.log("Collected puzzles:", puzzles);
   } catch (error) {
     console.error("Error fetching puzzles from Torii:", error);
     throw error;
@@ -498,44 +477,48 @@ export const queryPuzzlesPerGame = async (
   return puzzles;
 };
 
-const queryPuzzleLocation = async (locationInst: bigint): Promise<PuzzleInfo[] | undefined> => {
+const queryPuzzleLocation = async (gameID: bigint, locationInst: bigint): Promise<PuzzleInfo[] | undefined> => {
   let puzzles: PuzzleInfo[] = [];
   try {
-    console.log("\n=== [Puzzles] Location Puzzles START QUERY ===");
+    // console.log("\n=== [Puzzles] Location Puzzles START QUERY ===");
     // ---------------------------------------------------------
     // 1. Query Location Entity
     // ---------------------------------------------------------
     const locationEntity = await queryEntity(locationInst);
-    console.log("[Puzzles] Location Entity:", locationEntity);
+    // console.log("[Puzzles] Location Entity:", locationEntity);
 
     // ---------------------------------------------------------
     // 2. Get Actions ID's from entity
     // ---------------------------------------------------------
 
     const actions = locationEntity?.actions_keys ?? [];
-    console.log("[Puzzles] Location Actions:", actions);
+    // console.log("[Puzzles] Location Actions:", actions);
     if (actions.length > 0) {
       for (const action of actions) {
         const actionKey = BigInt(action.toString());
-        console.log("\n[Puzzles] Checking Location action:", actionKey.toString());
+       //console.log("\n[Puzzles] Checking Location action:", actionKey.toString());
 
         // -----------------------------------------------------
         // 2.1 Query Original Action for static name
         // -----------------------------------------------------
         const actionEntity = await queryAction(locationInst, actionKey);
-        console.log("[Puzzles] Action Entity 2:", actionEntity);
+        // console.log("[Puzzles] Action Entity 2:", actionEntity);
 
-        const actionName = actionEntity?.name ?? "unknown2";
-        console.log("[Puzzles] Action Name 2:", actionName);
+        const actionName = actionEntity?.name ?? "unknown";
+        //console.log("[Puzzles] Action Name 2:", actionName);
 
         // -----------------------------------------------------
         // 2.2 Query the action executed
         // -----------------------------------------------------
-        const actionStatus = await queryActionExecuted(locationInst, actionKey);
-        console.log("[Puzzles] Action Status 2:", actionStatus);
+        const actionStatus = await queryActionExecuted(gameID, locationInst, actionKey);
+        //console.log("[Puzzles] Action Status 2:", actionStatus);
 
         if (!actionStatus) {
-          console.log("[Puzzles] Action has not been registered yet.");
+          //console.log("[Puzzles] Action has not been registered yet.");
+          puzzles.push({
+            name: actionName,
+            executed: false,
+          });
           continue;
         }
 
@@ -558,122 +541,68 @@ const queryPuzzleLocation = async (locationInst: bigint): Promise<PuzzleInfo[] |
 const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promise<PuzzleInfo[] | undefined> => {
   let puzzles: PuzzleInfo[] = [];
   try {
-    console.log("\n=== [Puzzles] Children Puzzles START QUERY ===");
+    // console.log("\n=== [Puzzles] Children Puzzles START QUERY ===");
     // ---------------------------------------------------------
     // 1. Get ParentToChildren through GameInstanceMap
     // ---------------------------------------------------------
     const locationGameInst = await queryGameInstaceMap(gameId, locationInst);
-    console.log("[Puzzles] Location GameInstanceMap:", locationGameInst);
+    //console.log("[Puzzles] Location GameInstanceMap:", locationGameInst);
 
     const parentToChildren = await queryParentToChildrenGIMap(locationGameInst, locationInst);
-    console.log("[Puzzles] ParentToChildren:", parentToChildren);
+    // console.log("[Puzzles] ParentToChildren:", parentToChildren);
 
     // ---------------------------------------------------------
     // 2. Get Children
     // ---------------------------------------------------------
     const children = parentToChildren?.children ?? [];
-    console.log("[Puzzles] Children:", children);
+    //console.log("[Puzzles] Children:", children);
     if (children.length > 0) {
       for (const child of children) {
         const childInst = BigInt(child.toString());
-        console.log("\n[Puzzles] Checking child:", childInst.toString());
+        // console.log("\n[Puzzles] Checking child:", childInst.toString());
 
         // -----------------------------------------------------
         // 2.1 Query Child Entity
         // -----------------------------------------------------
         const childEntity = await queryEntity(childInst);
-        console.log("[Puzzles] Child Entity:", childEntity);
+        // console.log("[Puzzles] Child Entity:", childEntity);
 
         if (!childEntity) {
-          console.log("[Puzzles] Child Entity is undefined");
+          // console.log("[Puzzles] Child Entity is undefined");
           continue;
-          // // 2.1.1 try to get child through GameInstanceMap
-          // const childGameInst = await queryGameInstaceMap(gameId, childInst);
-          // console.log("[Puzzles] Child GameInstanceMap:", childGameInst);
-
-          // const childEntity3 = await queryEntityGIMap(childGameInst, childInst);
-          // console.log("[Puzzles] Child Entity 3:", childEntity3);
-          
-          // if (!childEntity3) {
-          //   console.log("[Puzzles] Child Entity 3 is undefined");
-          //   continue;
-          // }
-          
-          // // 2.1.2 get action keys from child entity
-          // const actions = childEntity3?.actions_keys ?? [];  
-          // console.log("[Puzzles] Child Actions:", actions);
-          // if (actions.length > 0) {
-          //   for (const action of actions) {
-          //     const actionKey = BigInt(action.toString());
-          //     if (actionKey == 0n) {
-          //       console.log("[Puzzles] Action for player is 0 skipping");
-          //       continue;
-          //     }
-          //     console.log("\n[Puzzles] Checking Child action:", actionKey.toString());
-
-          //     // 2.1.3 get action entity from child entity
-          //     const actionEntity = await queryAction(childInst, actionKey);
-          //     console.log("[Puzzles] Action Entity 2:", actionEntity);
-
-          //     const actionName = actionEntity?.name ?? "unknown";
-          //     console.log("[Puzzles] Action Name:", actionName);
-
-          //     // 2.1.4 get action status from child entity
-          //     const actionStatus = await queryActionExecuted(gameId, childInst, actionKey);
-          //     console.log("[Puzzles] Action Status 2:", actionStatus);
-
-          //     if (!actionStatus) {
-          //       console.log("[Puzzles] Action has not been registered yet.");
-          //       puzzles.push({
-          //         name: actionName,
-          //         executed: false,
-          //       });
-          //       continue;
-          //     }
-
-          //     // -----------------------------------------------------
-          //     // 2.5 Build the puzzle object and add it to puzzles array
-          //     // -----------------------------------------------------
-          //     puzzles.push({
-          //       name: actionName,
-          //       executed: actionStatus.is_executed,
-          //     });
-          //     continue;
-          //   }
-          // }
         }
 
         // -----------------------------------------------------
         // 2.2 Get Actions ID's from entity
         // -----------------------------------------------------
         const actions = childEntity?.actions_keys ?? [];  
-        console.log("[Puzzles] Child Actions:", actions);
+        // console.log("[Puzzles] Child Actions:", actions);
         if (actions.length > 0) {
           for (const action of actions) {
             const actionKey = BigInt(action.toString());
             if (actionKey == 0n) {
-              console.log("[Puzzles] Action for player is 0 skipping");
+              // console.log("[Puzzles] Action for player is 0 skipping");
               continue;
             }
-            console.log("\n[Puzzles] Checking Child action:", actionKey.toString());
+            // console.log("\n[Puzzles] Checking Child action:", actionKey.toString());
 
             // -----------------------------------------------------
             // 2.3 Query Original Action for static name
             // -----------------------------------------------------
             const actionEntity = await queryAction(childInst, actionKey);
-            console.log("[Puzzles] Action Entity 2:", actionEntity);
+            // console.log("[Puzzles] Action Entity 2:", actionEntity);
 
             const actionName = actionEntity?.name ?? "unknown";
-            console.log("[Puzzles] Action Name:", actionName);
+            // console.log("[Puzzles] Action Name:", actionName);
 
             // -----------------------------------------------------
             // 2.4 Query the action executed
             // -----------------------------------------------------
             const actionStatus = await queryActionExecuted(gameId, childInst, actionKey);
-            console.log("[Puzzles] Action Status 2:", actionStatus);
+            // console.log("[Puzzles] Action Status 2:", actionStatus);
 
             if (!actionStatus) {
-              console.log("[Puzzles] Action has not been registered yet.");
+              // console.log("[Puzzles] Action has not been registered yet.");
               puzzles.push({
                 name: actionName,
                 executed: false,
@@ -715,10 +644,10 @@ const queryAction = async (inst: bigint, key: bigint): Promise<Partial<Action> |
       )
       .withEntityModels(["lore-Action"]);
     const result_action = await sdk.getEntities({ query: query_action });
-    console.log("DEBUG: queryAction() result_action: ", result_action);
+    // console.log("DEBUG: queryAction() result_action: ", result_action);
     
     const action_item = result_action.getItems().at(0);
-    console.log("DEBUG: queryAction() action_item: ", action_item);
+    // console.log("DEBUG: queryAction() action_item: ", action_item);
     action = action_item?.models?.lore?.Action;
   } catch (error) {
     console.error("Error fetching action from Torii:", error);
@@ -744,10 +673,10 @@ const queryActionExecuted = async (gameId: bigint, inst: bigint, key: bigint): P
       )
       .withEntityModels(["lore-ActionExecuted"]);
     const result_action = await sdk.getEntities({ query: query_action });
-    console.log("DEBUG: queryActionExecuted() result_action: ", result_action);
+    //console.log("DEBUG: queryActionExecuted() result_action: ", result_action);
     
     const action_item = result_action.getItems().at(0);
-    console.log("DEBUG: queryActionExecuted() action_item: ", action_item);
+    // console.log("DEBUG: queryActionExecuted() action_item: ", action_item);
     actionExecuted = action_item?.models?.lore?.ActionExecuted;
   } catch (error) {
     console.error("Error fetching action executed from Torii:", error);

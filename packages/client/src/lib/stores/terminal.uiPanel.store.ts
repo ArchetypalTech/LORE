@@ -32,40 +32,20 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
     // Default Values for testing
     visible: true,
 
-    location: "The Forgotten Dock",
+    location: "The Oruggin Trail",
 
     exits: [
       {
         id: 1,
-        name: "Rust-Eaten Gate",
-        direction: "north",
-        destination: "Abandoned Warehouse",
-      },
-      {
-        id: 2,
-        name: "Collapsed Pier",
-        direction: "east",
-        destination: "Tidepath Edge",
-      },
-      {
-        id: 3,
-        name: "Broken Tram Line",
-        direction: "south",
-        destination: "Lower Rail Tunnels",
+        name: "Anything",
+        direction: "Anywhere",
+        destination: "The one you set out for",
       },
     ],
 
     puzzles: [
       {
-        name: "Reactivate the tram control node",
-        executed: false,
-      },
-      {
-        name: "Decode the warehouse access sigil",
-        executed: false,
-      },
-      {
-        name: "Stabilize the tidepath frequency",
+        name: "Survive the journey",
         executed: false,
       },
     ],

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { 
   queryPlayerLocationPerGame,
   queryExitsPerGame,
@@ -20,12 +21,14 @@ export const queryPanelInfo = async (gameId: bigint) => {
     // 1. Get the player's location
     const [location_name, location_inst, _playerInst] = await queryPlayerLocationPerGame(gameId);
     if (!location_name) return;
+    
     // 2. Get the location's exits
     const exits = await queryExitsPerGame(gameId, location_inst!);
-    console.log("DEBUG: queryPanelInfo() exits: ", exits);
+    // console.log("DEBUG: queryPanelInfo() exits: ", exits);
+    
     // 3. Get the location's puzzles
     const puzzles = await queryPuzzlesPerGame(gameId, location_inst!);
-    console.log("DEBUG: queryPanelInfo() puzzles: ", puzzles);
+    // console.log("DEBUG: queryPanelInfo() puzzles: ", puzzles);
 
     // 4. Update the store directly
     useUIPanelStore.getState().setLocation(location_name);
@@ -45,7 +48,12 @@ export const queryPanelInfo = async (gameId: bigint) => {
 // --- UIPanel component ---
 export default function UIPanel() {
   const { location, exits, puzzles, loading } = useUIPanelStore((s) => s);
-
+  const spinner = ["▌","▀", "▐","▄"]
+  let [tick, setTick] = useState(0)
+  useEffect(() => {
+      let interval = setInterval(() => setTick((prev) => prev += 1), 200);
+      return () => clearInterval(interval)
+    }, [])
   return (
     <div className="ui-panel w-full p-4">
       <div className="backdrop-blur-md bg-black/60 rounded-2xl border border-emerald-500/40 shadow-xl p-4 text-green-300 font-primary">
@@ -55,7 +63,14 @@ export default function UIPanel() {
           <div>
             <h3 className="text-amber-300 font-bold mb-1">Location</h3>
             <p className="text-sm">
-              {loading ? <span className="italic">Updating...</span> : location || "Unknown"}
+              {loading ? (
+                <span className="flex items-center gap-2 italic">
+                  Updating...
+                  <span>{spinner[tick % spinner.length]}</span>
+                </span>
+              ) : (
+                location || "Unknown"
+              )}
             </p>
           </div>
 
@@ -64,7 +79,10 @@ export default function UIPanel() {
             <h3 className="text-amber-300 font-bold mb-1">Exits</h3>
             <ul className="space-y-1 text-sm">
               {loading ? (
-                <li className="text-sm italic text-green-200">Updating...</li>
+                <li className="flex items-center gap-2 text-sm italic text-green-200">
+                  Updating...
+                  <span>{spinner[tick % spinner.length]}</span>
+                </li>
               ) : exits.length > 0 ? (
                 exits.map((e) => (
                   <li key={e.id} className="border-b border-emerald-600/30 pb-1">
@@ -86,17 +104,23 @@ export default function UIPanel() {
             <h3 className="text-amber-300 font-bold mb-1">Puzzles</h3>
             <ul className="space-y-1 text-sm">
               {loading ? (
-                <li className="text-sm italic text-green-200">Updating...</li>
+                <li className="flex items-center gap-2 text-sm italic text-green-200">
+                  Updating...
+                  <span>{spinner[tick % spinner.length]}</span>
+                </li>
               ) : puzzles.length > 0 ? (
                 puzzles.map((p) => (
-                  <li key={p.name} className="flex items-center justify-between border-b border-emerald-600/30 pb-1">
-                  <span>{p.name}</span>
-                  {p.executed ? (
-                    <Check className="w-4 h-4 text-green-400 ml-2" />
-                  ) : (
-                    <HelpCircle className="w-4 h-4 text-yellow-400 ml-2" />
-                  )}
-                </li>
+                  <li
+                    key={p.name}
+                    className="flex items-center justify-between border-b border-emerald-600/30 pb-1"
+                  >
+                    <span>{p.name}</span>
+                    {p.executed ? (
+                      <Check className="w-4 h-4 text-green-400 ml-2" />
+                    ) : (
+                      <HelpCircle className="w-4 h-4 text-yellow-400 ml-2" />
+                    )}
+                  </li>
                 ))
               ) : (
                 <li className="text-sm italic text-green-200">No puzzles</li>
