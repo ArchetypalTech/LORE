@@ -640,7 +640,7 @@ const queryAction = async (inst: bigint, key: bigint): Promise<Partial<Action> |
       .withClause(
         new ClauseBuilder<SchemaType>().keys(
           ["lore-Action"],
-          [bigintToHex128(key), bigintToAddress(inst)]
+          [bigintToAddress(inst), bigintToAddress(key)]
         ).build()
       )
       .withEntityModels(["lore-Action"]);
@@ -657,6 +657,36 @@ const queryAction = async (inst: bigint, key: bigint): Promise<Partial<Action> |
   return action;
 };
 
+const queryAction2 = async (inst: bigint, key: bigint): Promise<Partial<Action> | undefined> => {
+  let action: Partial<Action> | undefined;
+  try { 
+    const { sdk } = await InitDojo();
+    const query_action = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-Action"],
+          [bigintToAddress(inst), bigintToAddress(key)]
+        ).build()
+      )
+      .withEntityModels(["lore-Action"]);
+    const result_action = await sdk.getEntities({ query: query_action });
+    console.log("DEBUG: queryAction() result_action: ", result_action);
+    
+    const action_item = result_action.getItems().at(0);
+    console.log("DEBUG: queryAction() action_item: ", action_item);
+    action = action_item?.models?.lore?.Action;
+  } catch (error) {
+    console.error("Error fetching action from Torii:", error);
+    throw error;
+  }
+  return action;
+};
+
+
+
 const queryActionExecuted = async (inst: bigint, key: bigint): Promise<Partial<ActionExecuted> | undefined> => {
   let actionExecuted: Partial<ActionExecuted> | undefined;
   try { 
@@ -668,7 +698,7 @@ const queryActionExecuted = async (inst: bigint, key: bigint): Promise<Partial<A
       .withClause(
         new ClauseBuilder<SchemaType>().keys(
           ["lore-ActionExecuted"],
-          [bigintToHex128(key), bigintToAddress(inst)]
+          [bigintToAddress(inst), bigintToAddress(key)]
         ).build()
       )
       .withEntityModels(["lore-ActionExecuted"]);
