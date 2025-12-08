@@ -253,40 +253,47 @@ export const queryExitsPerGame = async (
       // 4.2 use exitQuery to test
       // -----------------------------------------------------
       const childExit =  await queryExit(childInst);
-      console.log("[Exits] Child Exit:", childExit);
+      console.log("[Exits 2] Child Exit:", childExit);
       if (!childExit) {
-        console.log("[Exits] childExit is NOT an exit.");
+        console.log("[Exits 2] childExit is NOT an exit.");
         continue;
       }
-      console.log("[Exits] childExit is an exit!");
+      console.log("[Exits 2] childExit is an exit!");
 
       // -----------------------------------------------------
       // 4.3 Get the exit ENTITY (static name)
       // -----------------------------------------------------
       const exitEntity = await queryEntity(childInst);
-      console.log("[Exits] Exit Entity (base inst):", exitEntity);
+      console.log("[Exits 2] Exit Entity (base inst):", exitEntity);
 
       // -----------------------------------------------------
       // 4.4 Resolve exit
       // -----------------------------------------------------
+      const childExitInst = BigInt(childExit!.inst!.toString());
+      const childGameInst2 = await queryGameInstaceMap(gameId, childExitInst);
+      console.log("[Exits 2] Child GameInst2:", childGameInst2.toString());
 
+      const childExitGIMap = await queryExitGIMap(childGameInst2, childExitInst);
+      console.log("[Exits 2] Child Exit:", childExitGIMap);
       // -----------------------------------------------------
       // 4.5 Resolve leads_to — must resolve its own GIMap too
       // -----------------------------------------------------
-      const leadsToInstChild = BigInt(childExit.leads_to.toString());
-      console.log("[Exits] leads_to inst:", leadsToInstChild.toString());
+      const leadsToInstChild = BigInt(childExitGIMap.leads_to.toString());
+      console.log("[Exits 2] leads_to inst:", leadsToInstChild.toString());
 
       const leadsToGameInstChild = await queryGameInstaceMap(gameId, leadsToInstChild);
-      console.log("[Exits] leads_to GameInst:", leadsToGameInstChild.toString());
+      console.log("[Exits 2] leads_to GameInst:", leadsToGameInstChild.toString());
 
       const leadsToEntityChild = await queryEntityGIMap(leadsToGameInstChild, leadsToInstChild);
-      console.log("[Exits] leads_to Entity:", leadsToEntityChild);
+      console.log("[Exits 2] leads_to Entity:", leadsToEntityChild);
+      const leadsToEntityChild2 = await queryEntity(leadsToInstChild);
+      console.log("[Exits 2] leads_to Entity2:", leadsToEntityChild2);
 
       exits.push({
         id: counter++,
         name: exitEntity?.name ?? "unknown",
         direction: stringCairoEnum(childExit.direction_type ?? "None"),
-        destination: childExit.is_enterable
+        destination: childExitGIMap.is_enterable
           ? (leadsToEntityChild?.name ?? "unknown")
           : "Unknown"
       });
