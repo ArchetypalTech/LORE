@@ -141,7 +141,10 @@ fn core_contract_defs() -> Span<ContractDef> {
             .with_init_calldata(array![].span()),
         ContractDefTrait::new(@"lore", @"actions_token")
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
-            .with_init_calldata(array![0x0.try_into().unwrap()].span()),
+            .with_init_calldata(array![
+                0x0.try_into().unwrap(), // sn_contract
+                0, // actions are free for testing
+            ].span()),
     ].span()
 }
 

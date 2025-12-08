@@ -269,7 +269,7 @@ pub mod tests {
             description_text::{DescriptionText},
             reactable::{Reactable, ReactableImpl},
         },
-        types::{command_type::{Command, Token, TokenType}},
+        types::{command_type::{Command, CommandType, Token, TokenType}},
     };
 
     pub fn Reactable_create_prefab(ref world: WorldStorage, inst: felt252, new_entry: ByteArray) -> Reactable {
@@ -348,6 +348,7 @@ pub mod tests {
                     target: 0,
                 },
             ],
+            command_type: CommandType::Action,
         };
         let (prefab, world) = Reactable_create_prefab_world();
         let read_reactable: Reactable = Component::get_component(@world, prefab.inst, 0).unwrap();

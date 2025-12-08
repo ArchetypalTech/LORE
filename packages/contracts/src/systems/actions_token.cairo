@@ -25,6 +25,7 @@ pub trait IActionsToken<TState> {
     //-----------------------------------
     // IActionsTokenPublic
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
+    fn set_action_cost_amount(ref self: TState, action_cost_amount: u256);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
@@ -32,6 +33,7 @@ pub trait IActionsToken<TState> {
 trait IActionsTokenPublic<TState> {
     // admin functions
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
+    fn set_action_cost_amount(ref self: TState, action_cost_amount: u256);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
@@ -98,13 +100,15 @@ pub mod actions_token {
 
     fn dojo_init(ref self: ContractState,
         sn_contract: ContractAddress,
+        action_cost: u32,
     ) {
         let mut world: WorldStorage = self.world_default();
         self.erc20.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
         );
-        world.initialize_actions_config(sn_contract);
+        let action_cost_amount: u256 = (action_cost.into() * CONST::ETH_TO_WEI);
+        world.initialize_actions_config(sn_contract, action_cost_amount);
     }
     
     #[generate_trait]
@@ -157,6 +161,16 @@ pub mod actions_token {
             assert(sn_contract.is_non_zero(), Errors::INVALID_SN_CONTRACT);
             let mut actions_config: ActionsConfig = world.get_actions_config();
             actions_config.sn_contract = sn_contract;
+            world.write_model(@actions_config);
+        }
+
+        fn set_action_cost_amount(ref self: ContractState, action_cost_amount: u256) {
+            let mut world: WorldStorage = self.world_default();
+            // validate caller
+            self._assert_caller_is_owner(@world);
+            // set action cost amount
+            let mut actions_config: ActionsConfig = world.get_actions_config();
+            actions_config.action_cost_amount = action_cost_amount;
             world.write_model(@actions_config);
         }
     }

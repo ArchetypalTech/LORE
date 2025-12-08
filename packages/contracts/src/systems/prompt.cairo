@@ -9,14 +9,19 @@ pub trait IPrompt<T> {
 pub mod prompt {
     use super::{IPrompt};
     use starknet::{ContractAddress, get_caller_address};
+    use core::num::traits::{Zero};
     use dojo::{
         world::{WorldStorage},
         model::{ModelStorage},
     };
     use lore::{
+        systems::{
+            actions_token::{IActionsTokenDispatcherTrait},
+        },
         models::{
             player::{Player, PlayerImpl, PlayerStory},
             player_account::{PlayerAccountTrait},
+            actions_config::{ActionsConfigTrait},
         },
         lib::{
             c_handler::{handle_command},
@@ -25,7 +30,7 @@ pub mod prompt {
             errors_texts_output::{ErrorOutputterImpl},
             dns::{DnsTrait, IGameTokenDispatcherTrait, ILexerDispatcherTrait},
         },
-        constants::errors::{Error},
+        // constants::errors::{Error},
     };
 
     mod Errors {
@@ -48,15 +53,22 @@ pub mod prompt {
             if (cmd.len() > 0) {
                 player.log_command(ref world, cmd.clone());
                 match (world.lexer_dispatcher().parse(world, cmd, player)) {
-                    Result::Ok(result) => {
-                        let res: Result<(), Error> = handle_command(@result, ref world, ref player);
-                        if !res.is_ok() {
-                            let error: Error = res.unwrap_err();
-                            // println!("Error: {:?}", error);
-                            ErrorOutputterImpl::output_error(error, player, ref world);
+                    Result::Ok(command) => {
+                        match handle_command(@command, ref world, ref player) {
+                            Result::Ok(()) => {
+                                let actions_amount: u256 = world.calculate_actions_cost(@command);
+                                if actions_amount.is_non_zero() {
+                                    // charge actions
+                                    // world.actions_token_dispatcher().charge_player_actions(player.address, actions_amount);
+                                }
+                            },
+                            Result::Err(error) => {
+                                // println!("Error: {:?}", error);
+                                ErrorOutputterImpl::output_error(error, player, ref world);
+                            },
                         }
                     },
-                    Result::Err(_r) => {
+                    Result::Err(_) => {
                         player.say(ref world, random_text(world, random_error()));
                     },
                 }

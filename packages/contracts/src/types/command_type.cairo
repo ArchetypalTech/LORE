@@ -14,6 +14,17 @@ pub struct Command {
     pub action_type: u8,
     /// Array of tokens in the command
     pub tokens: Array<Token>,
+    /// Type of command (using CommandType enum as u8)
+    pub command_type: CommandType,
+}
+
+#[derive(Copy, Drop, Serde, Debug, Introspect, PartialEq, DojoStore, Default)]
+pub enum CommandType {
+    #[default]
+    Unknown,
+    System,
+    Action,
+    // View,
 }
 
 #[derive(Clone, Drop, Serde, Debug, Introspect, DojoStore, Default)]
@@ -168,7 +179,7 @@ pub impl CommandImpl of CommandTrait {
         (directions.span())
     }
 
-    fn get_Targets(self: @Command) -> Span<Token> {
+    fn get_targets(self: @Command) -> Span<Token> {
         let mut targets: Array<Token> = array![];
         for i in 0..self.tokens.len() {
             let token: Token = self.tokens.at(i).clone();

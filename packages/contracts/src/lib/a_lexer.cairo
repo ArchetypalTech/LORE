@@ -7,6 +7,7 @@ use lore::{
     },
     types::command_type::{
         Command, CommandTrait,
+        CommandType,
         Token, TokenType,
     },
     constants::errors::Error,
@@ -79,9 +80,10 @@ pub impl LexerImpl of LexerTrait {
             token_count: tokens.len().try_into().unwrap(),
             action_type: 0,
             tokens,
+            command_type: CommandType::Unknown,
         };
-        command = Self::match_player_context(world, player, command);
-        command = Self::post_process_command(world, player, command);
+        command.match_player_context(world, player);
+        command.post_process_command(world, player);
         command.pretty_print();
         Result::Ok(command)
     }
@@ -114,12 +116,12 @@ pub impl LexerImpl of LexerTrait {
         tokens
     }
 
-    fn match_player_context(world: @WorldStorage, player: Player, mut command: Command) -> Command {
+    fn match_player_context(ref self: Command, world: @WorldStorage, player: Player) {
         // get player for their context (room + room objects + inventory)
         let context: Array<Entity> = player.get_full_context(world);
         let mut newTokens: Array<Token> = array![];
-        for i in 0..command.tokens.len() {
-            let mut token: Token = command.tokens.at(i).clone();
+        for i in 0..self.tokens.len() {
+            let mut token: Token = self.tokens.at(i).clone();
             for item in context.clone() {
                 let names: Span<ByteArray> = item.get_names();
                 for name in names {
@@ -134,19 +136,24 @@ pub impl LexerImpl of LexerTrait {
             };
             newTokens.append(token);
         };
-        command.tokens = newTokens;
-        command
+        self.tokens = newTokens;
     }
 
-    fn post_process_command(world: @WorldStorage, player: Player, mut command: Command) -> Command {
+    fn post_process_command(ref self: Command, world: @WorldStorage, player: Player) {
         // here we do fancy stuff
         // when there is a preposition, can we assume the next token is a noun? we know more about
         // the context now and what objects we recognize. Do we need to figure out adjectives.
-        let _verbs: Span<Token> = command.get_verbs();
-        let _nouns: Span<Token> = command.get_nouns();
-        let _directions: Span<Token> = command.get_directions();
-        let _targets: Span<Token> = command.get_Targets();
-        command
+
+        // let _verbs: Span<Token> = self.get_verbs();
+        // let _nouns: Span<Token> = self.get_nouns();
+        // let _directions: Span<Token> = self.get_directions();
+        // let _targets: Span<Token> = self.get_targets();
+
+        if (self.is_system_command()) {
+            self.command_type = CommandType::System;
+        } else if (self.text.len() > 0) {
+            self.command_type = CommandType::Action;
+        }
     }
 
     fn lowercase(self: Array<ByteArray>) -> Array<ByteArray> {

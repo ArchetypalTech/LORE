@@ -19,6 +19,7 @@ use lore::{
     },
     types::command_type::{
         Command, CommandImpl,
+        CommandType,
         TokenType, Token,
     },
     lib::{
@@ -42,8 +43,7 @@ use lore::{
 pub fn handle_command(
     command: @Command, ref world: WorldStorage, ref player: Player,
 ) -> Result<(), Error> {
-    let sys_command: bool = command.is_system_command();
-    if sys_command {
+    if *command.command_type == CommandType::System {
         return system_command(command, ref world, ref player);
     }
     let verbs: Span<Token> = command.get_verbs();
@@ -453,6 +453,7 @@ mod tests {
                     target: 0,
                 },
             ],
+            command_type: CommandType::System,
         };
         // Handle the command
         let result: Result<(), Error> = handle_command(@command, ref sys.world, ref player);

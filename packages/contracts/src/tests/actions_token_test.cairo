@@ -3,12 +3,21 @@ use starknet::{ContractAddress};
 
 use lore::models::{
     actions_config::{ActionsConfigTrait},
-    player::{PlayerImpl},
+    player::{Player, PlayerImpl},
+};
+use lore::types::{
+    command_type::{Command, CommandType},
+};
+use lore::lib::{
+    dns::{
+        DnsTrait,
+        IActionsTokenDispatcherTrait,
+        IPromptDispatcherTrait,
+        ILexerDispatcherTrait,
+    },
 };
 use lore::tests::{helpers,
     helpers::{
-        IActionsTokenDispatcherTrait,
-        IPromptDispatcherTrait,
         HelperSystems,
         OWNER, OTHER, RECIPIENT,
     }
@@ -109,6 +118,9 @@ fn test_transfer_not_permitted() {
 #[test]
 fn test_spend_actions_ok() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::set_caller(OWNER());
+    let action_cost_amount: u256 = (1 * CONST::ETH_TO_WEI);
+    sys.actions.set_action_cost_amount(action_cost_amount);
     // initialize player singleton
     PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
     // player_1 say anything... (will create a game)
@@ -118,7 +130,7 @@ fn test_spend_actions_ok() {
     // balance: 0
     sys.prompt.prompt("g_actions", Option::None);
     assert_eq!(helpers::game_story_last_line(@sys.world, game_id_1), "+sys+actions_balance: 0");
-    // mint...
+    // mint actions to player...
     helpers::set_caller(OWNER());
     sys.actions.mint_to(helpers::PLAYER_1, 100);
     // balance: 100
@@ -180,3 +192,36 @@ fn test_set_sn_contract_invalid_caller() {
     sys.actions.set_sn_contract(RECIPIENT());
 }
 
+#[test]
+fn test_set_action_cost() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    // validate initial costs (zero)
+    let player: Player = PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
+    let command_null: Command = sys.world.lexer_dispatcher().parse(sys.world, "", player).unwrap();
+    let command_sys: Command = sys.world.lexer_dispatcher().parse(sys.world, "g_actions", player).unwrap();
+    let command_action: Command = sys.world.lexer_dispatcher().parse(sys.world, "look around", player).unwrap();
+    assert_eq!(command_null.command_type, CommandType::Unknown);
+    assert_eq!(command_sys.command_type, CommandType::System);
+    assert_eq!(command_action.command_type, CommandType::Action);
+    assert_eq!(sys.world.calculate_actions_cost(@command_null), 0, "initial cost");
+    assert_eq!(sys.world.calculate_actions_cost(@command_sys), 0, "initial cost");
+    assert_eq!(sys.world.calculate_actions_cost(@command_action), 0, "initial cost");
+    // set price
+    helpers::set_caller(OWNER());
+    let amount: u256 = 100 * CONST::ETH_TO_WEI;
+    sys.actions.set_action_cost_amount(amount);
+    assert_eq!(sys.world.get_actions_config().action_cost_amount, amount);
+    // validate action cost amount
+    assert_eq!(sys.world.calculate_actions_cost(@command_null), 0, "updated cost");
+    assert_eq!(sys.world.calculate_actions_cost(@command_sys), 0, "updated cost");
+    assert_eq!(sys.world.calculate_actions_cost(@command_action), amount, "updated cost");
+}
+
+#[test]
+#[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_set_action_cost_invalid_caller() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OTHER());
+    let amount: u256 = 100 * CONST::ETH_TO_WEI;
+    sys.actions.set_action_cost_amount(amount);
+}
