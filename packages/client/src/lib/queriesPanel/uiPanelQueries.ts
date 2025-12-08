@@ -608,6 +608,10 @@ const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promis
 
             if (!actionStatus) {
               console.log("[Puzzles] Action has not been registered yet.");
+              puzzles.push({
+                name: actionName,
+                executed: false,
+              });
               continue;
             }
 
