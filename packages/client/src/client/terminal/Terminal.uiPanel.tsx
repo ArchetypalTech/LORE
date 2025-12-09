@@ -45,6 +45,48 @@ export const queryPanelInfo = async (gameId: bigint) => {
   }
 };
 
+export const queryExitsInfo = async (gameId: bigint, locationInst: bigint) => {
+  if (!gameId) return;
+  const store = useUIPanelStore.getState();
+  store.setLoading(true);
+
+  try {
+    // 1. Get the exits
+    const exits = await queryExitsPerGame(gameId, locationInst);
+    // console.log("DEBUG: queryExitsInfo() exits: ", exits);
+    
+    // 2. Update the store directly
+    if (exits) {
+      useUIPanelStore.getState().setExits(exits);
+    }
+  } catch (err) {
+    console.error("Failed to query panel info:", err);
+  } finally {
+    store.setLoading(false);
+  }
+};
+
+export const queryPuzzlesInfo = async (gameId: bigint, locationInst: bigint) => {
+  if (!gameId) return;
+  const store = useUIPanelStore.getState();
+  store.setLoading(true);
+
+  try {
+    // 1. Get the puzzles
+    const puzzles = await queryPuzzlesPerGame(gameId, locationInst);
+    // console.log("DEBUG: queryPuzzlesInfo() puzzles: ", puzzles);
+    
+    // 2. Update the store directly
+    if (puzzles) {
+      useUIPanelStore.getState().setPuzzles(puzzles);
+    }
+  } catch (err) {
+    console.error("Failed to query panel info:", err);
+  } finally {
+    store.setLoading(false);
+  }
+};
+
 // --- UIPanel component ---
 export default function UIPanel() {
   const { location, exits, puzzles, loading } = useUIPanelStore((s) => s);
