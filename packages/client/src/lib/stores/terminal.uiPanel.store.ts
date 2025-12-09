@@ -62,6 +62,7 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
     setLoading: (v) => set({ loading: v }),
   });
 
+export const getLocation = () => get().location;
 const UIPanelStore = createFactory({});
 
 export default UIPanelStore;
