@@ -97,13 +97,21 @@ export default function UIPanel() {
       return () => clearInterval(interval)
     }, [])
   return (
-    <div className="ui-panel w-full p-4">
-      <div className="backdrop-blur-md bg-black/60 rounded-2xl border border-emerald-500/40 shadow-xl p-4 text-green-300 font-primary">
-        <div className="grid grid-cols-3 gap-4">
+    <div className="ui-panel w-full p-4 h-full">
+      <div className="backdrop-blur-md bg-black/60 rounded-2xl border border-emerald-500/40 shadow-xl p-4 text-green-300 font-primary h-full flex flex-col">
 
+        {/* Sticky Header */}
+        <div className="grid grid-cols-3 gap-4 sticky top-0 bg-black/60 backdrop-blur-md py-2 z-20 border-b border-emerald-500/30">
+          <h3 className="text-amber-300 font-bold text-lg">Current Location</h3>
+          <h3 className="text-amber-300 font-bold text-lg">Exits</h3>
+          <h3 className="text-amber-300 font-bold text-lg">Puzzles</h3>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="grid grid-cols-3 gap-4 overflow-y-auto mt-3 pr-2">
+          
           {/* Location */}
           <div>
-            <h3 className="text-amber-300 font-bold mb-1">Location</h3>
             <p className="text-sm">
               {loading ? (
                 <span className="flex items-center gap-2 italic">
@@ -118,35 +126,34 @@ export default function UIPanel() {
 
           {/* Exits */}
           <div>
-            <h3 className="text-amber-300 font-bold mb-1">Exits</h3>
             <ul className="space-y-1 text-sm">
               {loading ? (
-                <li className="flex items-center gap-2 text-sm italic text-green-200">
+                <li className="flex items-center gap-2 italic text-green-200">
                   Updating...
                   <span>{spinner[tick % spinner.length]}</span>
                 </li>
               ) : exits.length > 0 ? (
                 exits.map((e) => (
-                  <li key={e.id} className="border-b border-emerald-600/30 pb-1">
-                    <span className="text-green-200">{e.name}</span>
-                    {" — "}
-                    <span className="text-amber-300">{e.direction}</span>
-                    {" → "}
+                  <li
+                    key={e.id}
+                    className="border-b border-emerald-600/30 pb-1"
+                  >
+                    <span className="text-green-200">{e.name}</span>{" — "}
+                    <span className="text-amber-300">{e.direction}</span>{" → "}
                     <span className="text-green-400">{e.destination}</span>
                   </li>
                 ))
               ) : (
-                <li className="text-sm italic text-green-200">No exits</li>
+                <li className="italic text-green-200">No exits</li>
               )}
             </ul>
           </div>
 
           {/* Puzzles */}
           <div>
-            <h3 className="text-amber-300 font-bold mb-1">Puzzles</h3>
             <ul className="space-y-1 text-sm">
               {loading ? (
-                <li className="flex items-center gap-2 text-sm italic text-green-200">
+                <li className="flex items-center gap-2 italic text-green-200">
                   Updating...
                   <span>{spinner[tick % spinner.length]}</span>
                 </li>
@@ -165,7 +172,7 @@ export default function UIPanel() {
                   </li>
                 ))
               ) : (
-                <li className="text-sm italic text-green-200">No puzzles</li>
+                <li className="italic text-green-200">No puzzles</li>
               )}
             </ul>
           </div>
