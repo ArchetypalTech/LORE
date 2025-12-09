@@ -7,6 +7,9 @@ import {
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
 import { Check, HelpCircle } from "lucide-react";
 
+
+const spinner = ["▌","▀", "▐","▄"]
+
 /**
  * Fetches the current player's location for a given gameId
  * and updates the UIPanel store.
@@ -31,12 +34,12 @@ export const queryPanelInfo = async (gameId: bigint) => {
     // console.log("DEBUG: queryPanelInfo() puzzles: ", puzzles);
 
     // 4. Update the store directly
-    useUIPanelStore.getState().setLocation(location_name);
+    store.setLocation(location_name);
     if (exits) {
-      useUIPanelStore.getState().setExits(exits);
+      store.setExits(exits);
     }
     if (puzzles) {
-      useUIPanelStore.getState().setPuzzles(puzzles);
+      store.setPuzzles(puzzles);
     }
   } catch (err) {
     console.error("Failed to query panel info:", err);
@@ -57,7 +60,7 @@ export const queryExitsInfo = async (gameId: bigint, locationInst: bigint) => {
     
     // 2. Update the store directly
     if (exits) {
-      useUIPanelStore.getState().setExits(exits);
+      store.setExits(exits);
     }
   } catch (err) {
     console.error("Failed to query panel info:", err);
@@ -78,7 +81,7 @@ export const queryPuzzlesInfo = async (gameId: bigint, locationInst: bigint) => 
     
     // 2. Update the store directly
     if (puzzles) {
-      useUIPanelStore.getState().setPuzzles(puzzles);
+      store.setPuzzles(puzzles);
     }
   } catch (err) {
     console.error("Failed to query panel info:", err);
@@ -90,7 +93,6 @@ export const queryPuzzlesInfo = async (gameId: bigint, locationInst: bigint) => 
 // --- UIPanel component ---
 export default function UIPanel() {
   const { location, exits, puzzles, loading, loadingE, loadingP } = useUIPanelStore((s) => s);
-  const spinner = ["▌","▀", "▐","▄"]
   let [tick, setTick] = useState(0)
   useEffect(() => {
       let interval = setInterval(() => setTick((prev) => prev += 1), 200);
@@ -101,14 +103,14 @@ export default function UIPanel() {
       <div className="backdrop-blur-md bg-black/60 rounded-2xl border border-emerald-500/40 shadow-xl p-4 text-green-300 font-primary h-full flex flex-col">
 
         {/* Sticky Header */}
-        <div className="grid grid-cols-3 gap-4 sticky top-0 bg-black/60 backdrop-blur-md py-2 z-20 border-b border-emerald-500/30">
-          <h3 className="text-amber-300 font-bold text-lg">Current Location</h3>
-          <h3 className="text-amber-300 font-bold text-lg">Exits</h3>
-          <h3 className="text-amber-300 font-bold text-lg">Puzzles</h3>
+        <div className="grid grid-cols-[1fr_1.2fr_1.8fr] gap-4 sticky top-0 bg-black/60 backdrop-blur-md py-1 z-20 border-b border-emerald-500/30 items-center">
+          <h3 className="text-amber-300 font-bold text-base">Current Location</h3>
+          <h3 className="text-amber-300 font-bold text-base">Exits</h3>
+          <h3 className="text-amber-300 font-bold text-base">Puzzles</h3>
         </div>
 
         {/* Scrollable Content */}
-        <div className="grid grid-cols-3 gap-4 overflow-y-auto mt-3 pr-2 no-scrollbar">
+        <div className="grid grid-cols-[1fr_1.2fr_1.8fr] gap-4 overflow-y-auto mt-3 pr-2 no-scrollbar">
           
           {/* Location */}
           <div>
@@ -151,7 +153,11 @@ export default function UIPanel() {
 
           {/* Puzzles */}
           <div>
-            <ul className="space-y-1 text-sm">
+            <ul className={
+              puzzles.length > 3
+                ? "grid grid-cols-2 gap-2 text-sm"
+                : "text-sm"
+            }>
               {loading || loadingP ? (
                 <li className="flex items-center gap-2 italic text-green-200">
                   Updating...
