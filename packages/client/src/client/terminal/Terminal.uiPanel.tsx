@@ -108,7 +108,7 @@ export default function UIPanel() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="grid grid-cols-3 gap-4 overflow-y-auto mt-3 pr-2">
+        <div className="grid grid-cols-3 gap-4 overflow-y-auto mt-3 pr-2 no-scrollbar">
           
           {/* Location */}
           <div>
