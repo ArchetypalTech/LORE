@@ -18,6 +18,8 @@ export type UIPanelState = {
   exits: ExitInfo[];
   puzzles: PuzzleInfo[];
   loading: boolean;
+  loadingE: boolean;
+  loadingP: boolean;
 
   show: () => void;
   hide: () => void;
@@ -25,6 +27,8 @@ export type UIPanelState = {
   setExits: (v: ExitInfo[]) => void;
   setPuzzles: (v: PuzzleInfo[]) => void;
   setLoading: (v: boolean) => void;
+  setLoadingE: (v: boolean) => void;
+  setLoadingP: (v: boolean) => void;
 };
 
 const { get, set, useStore: useUIPanelStore, createFactory } =
@@ -51,6 +55,8 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
     ],
 
     loading: false,
+    loadingE: false,
+    loadingP: false,
 
     // ACTIONS
     show: () => set({ visible: true }),
@@ -60,6 +66,8 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
     setExits: (v) => set({ exits: v }),
     setPuzzles: (v) => set({ puzzles: v }),
     setLoading: (v) => set({ loading: v }),
+    setLoadingE: (v) => set({ loadingE: v }),
+    setLoadingP: (v) => set({ loadingP: v }),
   });
 
 export const getLocation = () => get().location;

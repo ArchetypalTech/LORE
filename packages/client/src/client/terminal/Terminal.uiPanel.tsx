@@ -48,7 +48,7 @@ export const queryPanelInfo = async (gameId: bigint) => {
 export const queryExitsInfo = async (gameId: bigint, locationInst: bigint) => {
   if (!gameId) return;
   const store = useUIPanelStore.getState();
-  store.setLoading(true);
+  store.setLoadingE(true);
 
   try {
     // 1. Get the exits
@@ -62,14 +62,14 @@ export const queryExitsInfo = async (gameId: bigint, locationInst: bigint) => {
   } catch (err) {
     console.error("Failed to query panel info:", err);
   } finally {
-    store.setLoading(false);
+    store.setLoadingE(false);
   }
 };
 
 export const queryPuzzlesInfo = async (gameId: bigint, locationInst: bigint) => {
   if (!gameId) return;
   const store = useUIPanelStore.getState();
-  store.setLoading(true);
+  store.setLoadingP(true);
 
   try {
     // 1. Get the puzzles
@@ -83,13 +83,13 @@ export const queryPuzzlesInfo = async (gameId: bigint, locationInst: bigint) => 
   } catch (err) {
     console.error("Failed to query panel info:", err);
   } finally {
-    store.setLoading(false);
+    store.setLoadingP(false);
   }
 };
 
 // --- UIPanel component ---
 export default function UIPanel() {
-  const { location, exits, puzzles, loading } = useUIPanelStore((s) => s);
+  const { location, exits, puzzles, loading, loadingE, loadingP } = useUIPanelStore((s) => s);
   const spinner = ["▌","▀", "▐","▄"]
   let [tick, setTick] = useState(0)
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function UIPanel() {
           {/* Exits */}
           <div>
             <ul className="space-y-1 text-sm">
-              {loading ? (
+              {loading || loadingE ? (
                 <li className="flex items-center gap-2 italic text-green-200">
                   Updating...
                   <span>{spinner[tick % spinner.length]}</span>
@@ -152,7 +152,7 @@ export default function UIPanel() {
           {/* Puzzles */}
           <div>
             <ul className="space-y-1 text-sm">
-              {loading ? (
+              {loading || loadingP ? (
                 <li className="flex items-center gap-2 italic text-green-200">
                   Updating...
                   <span>{spinner[tick % spinner.length]}</span>
