@@ -31,7 +31,7 @@ export default function Terminal({
 	const terminalInputRef = useRef<HTMLTextAreaElement>(null);
 	const [cursorPos, setCursorPos] = useState(0);
 	const textAnchorRef = useRef<HTMLInputElement>(null);
-	const scroller = useRef<HTMLElement>(null);
+	const scrollRef = useRef<HTMLDivElement>(null);
 
 	const {
 		status: { status },
@@ -91,7 +91,7 @@ export default function Terminal({
 
 	// Track user scroll position
 	useEffect(() => {
-		const el = scroller.current;
+		const el = scrollRef.current;
 		if (!el) return;
 
 		const handleScroll = () => {
@@ -106,7 +106,7 @@ export default function Terminal({
 
 	// Auto-scroll only if user is near bottom
 	useEffect(() => {
-		const el = scroller.current;
+		const el = scrollRef.current;
 		if (!el) return;
 		if (!userNearBottom) return;
 
@@ -122,7 +122,7 @@ export default function Terminal({
 	useEffect(() => {
 		if (!isPrinting) return;
 
-		const el = scroller.current;
+		const el = scrollRef.current;
 		if (!el) return;
 
 		requestAnimationFrame(() => {
@@ -245,7 +245,7 @@ export default function Terminal({
 		}
 
 		// Scroll listener
-		const scrollerEl = scroller.current;
+		const scrollerEl = scrollRef.current;
 		if (scrollerEl) scrollerEl.addEventListener("scroll", onActivity);
 
 		// Start the timer
@@ -312,8 +312,8 @@ export default function Terminal({
 		printingStatus(true);
 
 		if (textAnchorRef.current && terminalFormRef.current)
-			scroller.current?.scrollTo({
-				top: scroller.current.scrollHeight,
+			scrollRef.current?.scrollTo({
+				top: scrollRef.current.scrollHeight,
 				behavior: "smooth",
 			});
 		setTimeout(async () => await sendCommand(command, gameId), 1000);
@@ -349,7 +349,7 @@ export default function Terminal({
 					<div
 						id="scroller"
 						className="flex w-full flex-col items-end p-4"
-						ref={scroller}
+						ref={scrollRef}
 					>
 						{terminalContent.map((content, index) => (
 							<TerminalLine key={index} content={content} />
