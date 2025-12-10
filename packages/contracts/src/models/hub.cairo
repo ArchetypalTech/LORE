@@ -230,7 +230,7 @@ pub impl TrailImpl of TrailTrait {
     }
 
     //
-    // called when a new trial is minted
+    // called when a new trail is minted
     // from trail_token only!!!
     fn create_new_trail_entity(ref self: WorldStorage, trail_id: u128) {
         // Create a new entity for the trail

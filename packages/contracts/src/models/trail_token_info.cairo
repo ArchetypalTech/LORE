@@ -54,16 +54,9 @@ pub struct TrailCreatedEvent {
 //
 use core::num::traits::Zero;
 use lore::systems::trail_token::trail_token::{Errors as TrailErrors};
-// use lore::lib::dns::{DnsTrait, ITrailTokenDispatcherTrait};
-// use lore::models::{
-//     entity::{Entity},
-//     area::{Area, AreaComponent},
-//     player::{Player, PlayerImpl},
-// };
-// use lore::lib::{
-//     access::{AccessTrait},
-//     trophies::{Trophy, TrophyProgressTrait},
-// };
+use lore::models::{
+    entity::{Entity},
+};
 
 #[generate_trait]
 pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
@@ -71,11 +64,31 @@ pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
     fn exists(self: @TrailTokenInfo) -> bool {
         (self.seed.is_non_zero())
     }
+    //
+    // Trail name
+    //
+    fn get_trail_name(self: @WorldStorage, trail_id: u128) -> ByteArray {
+        let trail: TrailTokenInfo = self.read_model(trail_id);
+        let entity: Entity = self.read_model(trail.trail_inst);
+        (entity.name)
+    }
+    //
+    // return the amount of actions available for rewards
+    //
     #[inline(always)]
     fn claimable_actions_amount(self: @TrailTokenInfo) -> u128 {
         (*self.actions_amount_spent - *self.actions_amount_claimed)
     }
-    fn get_actions_spent_on_trail(ref self: WorldStorage, trail_id: u128, actions_amount: u128) {
+    fn get_claimable_actions_amount(self: @WorldStorage, trail_id: u128) -> u128 {
+        let trail: TrailTokenInfo = self.read_model(trail_id);
+        // validate if trail exists
+        assert(trail.exists(), TrailErrors::INVALID_TRAIL);
+        (trail.claimable_actions_amount())
+    }
+    //
+    // add actions a player has spent on trail
+    //
+    fn set_actions_spent_on_trail(ref self: WorldStorage, trail_id: u128, actions_amount: u128) {
         let mut trail: TrailTokenInfo = self.read_model(trail_id);
         // validate if trail exists
         assert(trail.exists(), TrailErrors::INVALID_TRAIL);
@@ -83,13 +96,10 @@ pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
         trail.actions_amount_spent += actions_amount;
         self.write_model(@trail);
     }
-    fn get_claimable_actions_amount(ref self: WorldStorage, trail_id: u128) -> u128 {
-        let trail: TrailTokenInfo = self.read_model(trail_id);
-        // validate if trail exists
-        assert(trail.exists(), TrailErrors::INVALID_TRAIL);
-        (trail.claimable_actions_amount())
-    }
-    fn claim_actions(ref self: WorldStorage, trail_id: u128, actions_amount: u128) {
+    //
+    // player used actions to claim rewards
+    //
+    fn set_actions_claimed_as_rewards(ref self: WorldStorage, trail_id: u128, actions_amount: u128) {
         let mut trail: TrailTokenInfo = self.read_model(trail_id);
         // validate if trail exists
         assert(trail.exists(), TrailErrors::INVALID_TRAIL);
@@ -98,42 +108,6 @@ pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
         // store claimed actions
         trail.actions_amount_claimed += actions_amount;
         self.write_model(@trail);
-    }
-    fn set_hub(ref world: WorldStorage, trail_id: u128, hub_inst: felt252) {
-        // // read room entity
-        // let room_entity: Entity = world.read_model(room_inst);
-        // let area: Option<Area> = AreaComponent::get_component(@world, room_inst, game_id);
-        // // update token info
-        // let mut game_info: GameTokenInfo = world.read_model(game_id);
-        // game_info.room_name = room_entity.name;
-        // match area {
-        //     Option::Some(area) => {
-        //         // emit achievement
-        //         let trophy: Trophy = TrophyProgressTrait::on_enter_room(@world, room_inst);
-        //         // find change in act
-        //         let act_number: u8 =
-        //             if (trophy == Trophy::Marshes) {2}
-        //             else if (trophy == Trophy::ForkstoneVerge) {3}
-        //             else {1};
-        //         // update token info
-        //         game_info.act_number = core::cmp::max(game_info.act_number, act_number);
-        //         game_info.progress = core::cmp::min(core::cmp::max(game_info.progress, area.progress_percentage), 100);
-        //         let completed: bool = (game_info.progress == 100);
-        //         if (completed && !game_info.completed) {
-        //             // completed for the first time: owner becomes editor
-        //             let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
-        //             world.set_player_is_editor(owner, true);
-        //         }
-        //         game_info.completed = completed;
-        //     },
-        //     Option::None => {
-        //         game_info.act_number = 0;
-        //         game_info.progress = 0;
-        //         game_info.completed = false;
-        //     }
-        // };
-        // world.write_model(@game_info);
-        // world.game_token_dispatcher().update_token_metadata(game_id.into());
     }
 }
 

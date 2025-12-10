@@ -18,10 +18,5 @@ pub struct PermitType {
     #[key]
     pub permit_type: felt252,
     /// Properties ///
-    pub actions_count: u16,
-}
-
-pub mod PERMIT_TYPES {
-    pub const STARTER_PACK: felt252 = 'STARTER_PACK';
-    pub const TRAIL_REWARD: felt252 = 'TRAIL_REWARD';
+    pub actions_count: u32,
 }

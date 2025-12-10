@@ -30,19 +30,27 @@ pub trait IActionsToken<TState> {
     // IActionsTokenPublic
     fn get_free_actions_count(self: @TState) -> u32;
     fn claim_free_actions(ref self: TState) -> u32;
+    fn get_claimable_trail_rewards_count(self: @TState, trail_id: u128) -> u32;
+    fn claim_trail_rewards(ref self: TState, trail_id: u128);
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn set_action_cost_amount(ref self: TState, action_cost_amount: u128);
-    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
+    fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
 }
 
 #[starknet::interface]
 pub trait IActionsTokenPublic<TState> {
+    // player functions
     fn get_free_actions_count(self: @TState) -> u32;
     fn claim_free_actions(ref self: TState) -> u32;
+    // editor functions
+    fn get_claimable_trail_rewards_count(self: @TState, trail_id: u128) -> u32;
+    fn claim_trail_rewards(ref self: TState, trail_id: u128);
     // admin functions
+    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn set_action_cost_amount(ref self: TState, action_cost_amount: u128);
-    fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
+    fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
 }
 
 #[starknet::interface]
@@ -99,8 +107,10 @@ pub mod actions_token {
         lib::{
             access::{AccessTrait},
             dns::{DnsTrait, SELECTORS},
+            arrays::{ArrayUtilsTrait},
         },
         constants::{
+            appchain::{PERMIT_TYPES},
             constants::{CONST},
             errors::{Error},
         },
@@ -114,6 +124,7 @@ pub mod actions_token {
         pub const INVALID_AMOUNT: felt252           = 'ACTIONS: Invalid amount';
         pub const INVALID_SN_CONTRACT: felt252      = 'ACTIONS: Invalid SN contract';
         pub const NOT_PERMITTED: felt252            = 'ACTIONS: Not permitted';
+        pub const NO_REWARDS_TO_CLAIM: felt252      = 'ACTIONS: No rewards to claim';
     }
 
     //*******************************************
@@ -167,15 +178,53 @@ pub mod actions_token {
 
     #[abi(embed_v0)]
     impl IActionsTokenPublicImpl of super::IActionsTokenPublic<ContractState> {
+
+        //-----------------------------------
+        // Player functions
+        //
+        
         fn get_free_actions_count(self: @ContractState) -> u32 {
             let world: WorldStorage = self.world_default();
             (world.get_free_actions_count(starknet::get_caller_address()))
         }
+
         fn claim_free_actions(ref self: ContractState) -> u32 {
             let mut world: WorldStorage = self.world_default();
             let minted_actions_count: u32 = self._claim_free_actions(ref world, starknet::get_caller_address());
             (minted_actions_count)
         }
+
+        //-----------------------------------
+        // Editor functions
+        //
+
+        fn get_claimable_trail_rewards_count(self: @ContractState, trail_id: u128) -> u32 {
+            let world: WorldStorage = self.world_default();
+            let (rewards_count, _): (u32, u128) = self._get_claimable_trail_rewards_count(@world, trail_id);
+            (rewards_count)
+        }
+        fn claim_trail_rewards(ref self: ContractState, trail_id: u128) {
+            let mut world: WorldStorage = self.world_default();
+            let (rewards_count, reward_actions_amount): (u32, u128) = self._get_claimable_trail_rewards_count(@world, trail_id);
+            assert(rewards_count > 0, Errors::NO_REWARDS_TO_CLAIM);
+            // claimed actions from this trail
+            world.set_actions_claimed_as_rewards(trail_id, reward_actions_amount);
+            //
+            // send message to L2 claiming actions as permits
+            //
+            // let trail_name: ByteArray = world.get_trail_name(trail_id);
+            let payload: Span<felt252> = array![
+                trail_id.into(),
+                PERMIT_TYPES::TRAIL_REWARD.into(),
+                rewards_count.into(),
+                // trail_name,
+            ].span();
+            self._send_message(@world, selector!("claim_trail_rewards"), payload);
+        }
+
+        //-----------------------------------
+        // Admin functions
+        //
 
         fn mint_to(ref self: ContractState, recipient: ContractAddress, actions_count: u32) {
             // validate caller
@@ -185,7 +234,6 @@ pub mod actions_token {
             self._mint_to(ref world, recipient, actions_count, ActionsSource::Airdrop);
         }
 
-        /// Admin functions
         fn set_sn_contract(ref self: ContractState, sn_contract: ContractAddress) {
             let mut world: WorldStorage = self.world_default();
             // validate caller
@@ -204,6 +252,16 @@ pub mod actions_token {
             // set action cost amount
             let mut actions_config: ActionsConfig = world.get_actions_config();
             actions_config.action_cost_amount = action_cost_amount;
+            world.write_model(@actions_config);
+        }
+        
+        fn set_trail_reward_actions_count(ref self: ContractState, trail_reward_actions_count: u32) {
+            let mut world: WorldStorage = self.world_default();
+            // validate caller
+            self._assert_caller_is_owner(@world);
+            // set trail reward actions count
+            let mut actions_config: ActionsConfig = world.get_actions_config();
+            actions_config.trail_reward_actions_count = trail_reward_actions_count;
             world.write_model(@actions_config);
         }
     }
@@ -230,7 +288,7 @@ pub mod actions_token {
             self._assert_caller_is_world_contract(@world);
             // accumulate actions spent on trail
             if (trail_id.is_non_zero()) {
-                TrailTokenInfoTrait::get_actions_spent_on_trail(ref world, trail_id, actions_amount);
+                world.set_actions_spent_on_trail(trail_id, actions_amount);
             }
             // burn player actions
             world.spent_actions(player_address, actions_amount);
@@ -265,6 +323,18 @@ pub mod actions_token {
             )
         }
 
+        fn _get_claimable_trail_rewards_count(self: @ContractState, world: @WorldStorage, trail_id: u128) -> (u32, u128) {
+            // get the total of spent actions on this trail, available for rewards
+            let actions_amount: u128 = world.get_claimable_actions_amount(trail_id);
+            let actions_count: u32 = (actions_amount / CONST::ETH_TO_WEI.low).try_into().unwrap();
+            // calculate the number of claimable rewards
+            let actions_config: ActionsConfig = world.get_actions_config();
+            let rewards_count: u32 = (actions_count / actions_config.trail_reward_actions_count);
+            // calculate the amount of actions to be used to claim the rewards
+            let reward_actions_amount: u128 = (rewards_count * actions_config.trail_reward_actions_count).try_into().unwrap();
+            (rewards_count, reward_actions_amount)
+        }
+
         // mint new actions to a recipient
         fn _mint_to(ref self: ContractState, ref world: WorldStorage, recipient: ContractAddress, actions_count: u32, source: ActionsSource) {
             // mint actions
@@ -293,10 +363,17 @@ pub mod actions_token {
         // L3 > L2 messaging
         // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/contract_msg_starknet.cairo
         //
-        fn _send_message(ref self: ContractState, to_address: ContractAddress, value: felt252) {
+        fn _send_message(ref self: ContractState, world: @WorldStorage, selector: felt252, values: Span<felt252>) {
             // Since the blockifier does not support sending to an address larger than `EthAddress`,
             // we send the address as the first value of the payload, and use the magic value `MSG` as the `to_address`.
-            send_message_to_l1_syscall(MSG_TO_L2_MAGIC, array![to_address.into(),value].span()).unwrap_syscall();
+            let actions_config: ActionsConfig = world.get_actions_config();
+            let to_address: ContractAddress = actions_config.sn_contract;
+            let mut payload: Array<felt252> = array![
+                to_address.into(),
+                selector,
+            ];
+            payload.extend_from_span(values);
+            send_message_to_l1_syscall(MSG_TO_L2_MAGIC, payload.span()).unwrap_syscall();
         }
     }
 

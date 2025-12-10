@@ -57,7 +57,7 @@ pub trait IPermitToken<TState> {
     fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
     fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
     fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
-    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u16);
+    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
     fn consume_message_value(ref self: TState, value: felt252);
 }
 
@@ -68,7 +68,7 @@ trait IPermitTokenPublic<TState> {
     fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
     fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
     fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
-    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u16);
+    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
     // messaging
     fn consume_message_value(ref self: TState, value: felt252);
 }
@@ -125,8 +125,9 @@ pub mod permit_token {
 
     use lore_sn::models::{
         permit_config::{PermitConfig, PermitConfigTrait},
-        permit_token_info::{PermitTokenInfo, PermitType, PERMIT_TYPES},
+        permit_token_info::{PermitTokenInfo, PermitType},
         permit_metadata::{permit_metadata, orug_metadata},
+        appchain::{PERMIT_TYPES},
     };
     use lore_sn::lib::{
         dns::{SELECTORS},
@@ -166,11 +167,11 @@ pub mod permit_token {
         // initialize permit types
         world.write_model(@PermitType {
             permit_type: PERMIT_TYPES::STARTER_PACK,
-            actions_count: 20,
+            actions_count: PERMIT_TYPES::STARTER_PACK_ACTIONS_COUNT,
         });
         world.write_model(@PermitType {
             permit_type: PERMIT_TYPES::TRAIL_REWARD,
-            actions_count: 20,
+            actions_count: PERMIT_TYPES::TRAIL_REWARD_ACTIONS_COUNT,
         });
     }
     
@@ -230,7 +231,7 @@ pub mod permit_token {
             self._assert_caller_is_owner(@world);
             world.set_cartridge_contract(cartridge_contract);
         }
-        fn set_permit_type(ref self: ContractState, permit_type: felt252, actions_count: u16) {
+        fn set_permit_type(ref self: ContractState, permit_type: felt252, actions_count: u32) {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_owner(@world);
             world.write_model(@PermitType {

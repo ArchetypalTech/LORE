@@ -10,6 +10,7 @@ pub struct ActionsConfig {
     pub action_cost_amount: u128,
     pub free_action_claim_interval: u64,    // every <free_action_claim_interval> seconds, players can claim 1 free action
     pub max_free_actions_count: u32,        // ...up to <max_free_actions_count>
+    pub trail_reward_actions_count: u32,    // how many actions to claim one trail reward on L2?
 }
 
 const ACTIONS_KEY: felt252 = 1;
@@ -26,6 +27,7 @@ use dojo::{
 use lore::{
     types::command_type::{CommandType},
     constants::constants::{TIMESTAMP},
+    constants::appchain::{PERMIT_TYPES},
 };
 
 #[generate_trait]
@@ -40,6 +42,7 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
             action_cost_amount,
             free_action_claim_interval: TIMESTAMP::ONE_HOUR,
             max_free_actions_count: 5,
+            trail_reward_actions_count: PERMIT_TYPES::TRAIL_REWARD_ACTIONS_COUNT,
         };
         self.write_model(@actions_config);
     }

@@ -4,6 +4,7 @@ pub mod systems {
 }
 
 pub mod models {
+    pub mod appchain;
     pub mod constants;
     pub mod permit_config;
     pub mod permit_token_info;
