@@ -28,7 +28,7 @@ export const Client = () => {
 	});
 
 	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
-	const { visible, exits, puzzles } = useUIPanelStore();
+	const { visible } = useUIPanelStore();
 
 	return (
 		<div
@@ -47,7 +47,10 @@ export const Client = () => {
 				/>
 			)}
 
-			<div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden pb-16">
+			<div
+				className={`relative w-full h-full flex flex-col items-center overflow-hidden
+					${visible ? "justify-start pb-32" : "justify-center pb-16"}`}
+			>
 
 				{visible && (
 					<>
