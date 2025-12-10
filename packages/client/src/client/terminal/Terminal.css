@@ -35,7 +35,7 @@ textarea {
 }
 
 #terminal {
-	@apply flex flex-col overflow-y-scroll flex w-[500px] max-w-[500px];
+	@apply flex-col-reverse overflow-y-scroll flex w-[500px] max-w-[500px];
 	scrollbar-width: none;
 }
 

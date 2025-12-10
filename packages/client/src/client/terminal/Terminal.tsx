@@ -21,7 +21,7 @@ export default function Terminal({
 	gameId?: BigNumberish;
 }) {
 	const gameId = useSyncGameId(inputGameId);
-
+	
 	const [inputValue, setInputValue] = useState("");
 	const [originalInputValue, setOriginalInputValue] = useState("");
 	const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -31,12 +31,12 @@ export default function Terminal({
 	const terminalInputRef = useRef<HTMLTextAreaElement>(null);
 	const [cursorPos, setCursorPos] = useState(0);
 	const textAnchorRef = useRef<HTMLInputElement>(null);
-	const scrollRef = useRef<HTMLDivElement>(null);
+	const scroller = useRef<HTMLDivElement>(null);
 
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
@@ -46,7 +46,7 @@ export default function Terminal({
 	const idleTimeoutRef = useRef<number | null>(null);
 	const IDLE_DELAY = 1 * 30 * 1000; // 30 seconds (30000 ms)
 	// 2 minutes (120000 ms)
-
+	
 	// helper: clear timer
 	const clearIdleTimer = () => {
 		if (idleTimeoutRef.current) {
@@ -89,56 +89,56 @@ export default function Terminal({
 		return () => clearTimeout(timeout);
 	}, [status]);
 
-	// Track user scroll position
+  // FIX ADDED: Track user scroll state
 	useEffect(() => {
-		const el = scrollRef.current;
-		if (!el) return;
+      const el = scroller.current;
+      if (!el) return;
 
-		const handleScroll = () => {
-			const atBottom =
-				el.scrollHeight - el.scrollTop - el.clientHeight < 50;
-			setUserNearBottom(atBottom);
-		};
+      const handleScroll = () => {
+          const atBottom =
+              el.scrollHeight - el.scrollTop - el.clientHeight > 50;
+          setUserNearBottom(atBottom);
+      };
 
-		el.addEventListener("scroll", handleScroll);
-		return () => el.removeEventListener("scroll", handleScroll);
-	}, []);
+      el.addEventListener("scroll", handleScroll);
+      return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
 
-	// Auto-scroll only if user is near bottom
+  // FIX ADDED: Auto-scroll only if user is near bottom
+  useEffect(() => {
+      const el = scroller.current;
+      if (!el) return;
+      if (!userNearBottom) return;
+
+      requestAnimationFrame(() => {
+          el.scrollTo({
+              top: el.scrollHeight,
+              behavior: "smooth",
+          });
+      });
+  }, [terminalContent, activeTypewriterLine, isPrinting, userNearBottom]);
+
+  // When printing STARTS → always force-scroll to bottom
 	useEffect(() => {
-		const el = scrollRef.current;
-		if (!el) return;
-		if (!userNearBottom) return;
+			if (!isPrinting) return; // only when printing begins
 
-		requestAnimationFrame(() => {
-			el.scrollTo({
-				top: el.scrollHeight,
-				behavior: "smooth",
+			const el = scroller.current;
+			if (!el) return;
+
+			requestAnimationFrame(() => {
+					el.scrollTo({
+							top: el.scrollHeight,
+							behavior: "smooth",
+					});
 			});
-		});
-	}, [terminalContent, activeTypewriterLine, isPrinting, userNearBottom]);
-
-	// ALWAYS scroll to bottom when printing *starts*
-	useEffect(() => {
-		if (!isPrinting) return;
-
-		const el = scrollRef.current;
-		if (!el) return;
-
-		requestAnimationFrame(() => {
-			el.scrollTo({
-				top: el.scrollHeight,
-				behavior: userNearBottom ? "smooth" : "auto",
-			});
-		});
 	}, [isPrinting]);
 
-	// Re-focus textarea whenever new content prints
-	useEffect(() => {
-		if (status === "inputEnabled" && !isPrinting) {
-			terminalInputRef.current?.focus();
-		}
-	}, [terminalContent, activeTypewriterLine, isPrinting, status]);
+  // Re-focus textarea whenever new content prints
+  useEffect(() => {
+      if (status === "inputEnabled" && !isPrinting) {
+          terminalInputRef.current?.focus();
+      }
+  }, [terminalContent, activeTypewriterLine, isPrinting, status]);
 
 	// update cursor position
 	useEffect(() => {
@@ -162,39 +162,39 @@ export default function Terminal({
 	}, []);
 
 	// Auto-refocus when clicking inside the terminal area (unless focus is locked)
-	useEffect(() => {
-		const handleClick = (e: MouseEvent) => {
-			const { focusLocked } = useTerminalStore.getState();
-			if (!focusLocked) return; // skip if focus is locked by another UI (e.g. wallet)
+useEffect(() => {
+	const handleClick = (e: MouseEvent) => {
+		const { focusLocked } = useTerminalStore.getState();
+		if (!focusLocked) return; // skip if focus is locked by another UI (e.g. wallet)
 
-			const terminalEl = terminalFormRef.current;
-			if (terminalEl && terminalEl.contains(e.target as Node)) {
-				terminalInputRef.current?.focus();
-			}
-		};
+		const terminalEl = terminalFormRef.current;
+		if (terminalEl && terminalEl.contains(e.target as Node)) {
+			terminalInputRef.current?.focus();
+		}
+	};
 
-		document.addEventListener("click", handleClick);
-		return () => document.removeEventListener("click", handleClick);
-	}, []);
+	document.addEventListener("click", handleClick);
+	return () => document.removeEventListener("click", handleClick);
+}, []);
 
-	// Auto-refocus when typing while terminal input is unfocused (unless locked)
-	useEffect(() => {
-		const handleKeydown = (e: globalThis.KeyboardEvent) => {
-			const { focusLocked } = useTerminalStore.getState();
-			if (!focusLocked) return;
+// Auto-refocus when typing while terminal input is unfocused (unless locked)
+useEffect(() => {
+	const handleKeydown = (e: globalThis.KeyboardEvent) => {
+		const { focusLocked } = useTerminalStore.getState();
+		if (!focusLocked) return;
 
-			const input = terminalInputRef.current;
-			if (!input) return;
+		const input = terminalInputRef.current;
+		if (!input) return;
 
-			if (document.activeElement !== input && status === "inputEnabled" && !isPrinting) {
-				e.preventDefault();
-				input.focus();
-			}
-		};
+		if (document.activeElement !== input && status === "inputEnabled" && !isPrinting) {
+			e.preventDefault();
+			input.focus();
+		}
+	};
 
-		window.addEventListener("keydown", handleKeydown);
-		return () => window.removeEventListener("keydown", handleKeydown);
-	}, [status, isPrinting]);
+	window.addEventListener("keydown", handleKeydown);
+	return () => window.removeEventListener("keydown", handleKeydown);
+}, [status, isPrinting]);
 
 	// Split handleKeyDown to reduce complexity
 	const handleUpArrow = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
@@ -245,7 +245,7 @@ export default function Terminal({
 		}
 
 		// Scroll listener
-		const scrollerEl = scrollRef.current;
+		const scrollerEl = scroller.current;
 		if (scrollerEl) scrollerEl.addEventListener("scroll", onActivity);
 
 		// Start the timer
@@ -312,8 +312,8 @@ export default function Terminal({
 		printingStatus(true);
 
 		if (textAnchorRef.current && terminalFormRef.current)
-			scrollRef.current?.scrollTo({
-				top: scrollRef.current.scrollHeight,
+			scroller.current?.scrollTo({
+				top: scroller.current.scrollHeight,
 				behavior: "smooth",
 			});
 		setTimeout(async () => await sendCommand(command, gameId), 1000);
@@ -327,7 +327,7 @@ export default function Terminal({
 
 	return (
 		<div className="flex h-full w-full items-center justify-center font-primary">
-			{/* Terminal form */}
+			 {/* Terminal form */}
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}
@@ -349,7 +349,7 @@ export default function Terminal({
 					<div
 						id="scroller"
 						className="flex w-full flex-col items-end p-4"
-						ref={scrollRef}
+						ref={scroller}
 					>
 						{terminalContent.map((content, index) => (
 							<TerminalLine key={index} content={content} />
@@ -359,11 +359,11 @@ export default function Terminal({
 
 						{status === "inputEnabled" && (
 							<div className="flex w-full flex-row gap-2">
-								<div
-									ref={textAnchorRef}
-									id="input-anchor"
-									className="font-secondary"
-								/>
+									<div
+											ref={textAnchorRef}
+											id="input-anchor"
+											className="font-secondary"
+									/>
 							</div>
 						)}
 					</div>
@@ -383,7 +383,7 @@ export default function Terminal({
 							ref={terminalInputRef}
 							onKeyDown={handleKeyDown}
 						></textarea>
-
+						
 						<div
 							className="crt-text fadeInOut absolute pointer-none top-[1.35em]"
 							style={{
