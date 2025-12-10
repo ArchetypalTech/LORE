@@ -91,6 +91,7 @@ pub mod actions_token {
         models::{
             actions_config::{ActionsConfig, ActionsConfigTrait},
             player_account::{PlayerAccountTrait, ActionsSource},
+            trail_token_info::{TrailTokenInfoTrait},
         },
         types::{
             command_type::{CommandType},
@@ -227,13 +228,13 @@ pub mod actions_token {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_world_contract(@world);
-            if (trail_id.is_zero()) {
-                // burn player actions
-               self.erc20.burn(player_address, actions_amount.into());
-               world.spent_actions(player_address, actions_amount);
-            } else {
-                // TODO...
+            // accumulate actions spent on trail
+            if (trail_id.is_non_zero()) {
+                TrailTokenInfoTrait::actions_spent_on_trail(ref world, trail_id, actions_amount);
             }
+            // burn player actions
+            world.spent_actions(player_address, actions_amount);
+            self.erc20.burn(player_address, actions_amount.into());
         }
     }
 

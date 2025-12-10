@@ -21,6 +21,7 @@ pub mod prompt {
         models::{
             player::{Player, PlayerImpl, PlayerStory},
             player_account::{PlayerAccountTrait},
+            hub::{TrailTrait},
         },
         lib::{
             c_handler::{handle_command},
@@ -65,7 +66,11 @@ pub mod prompt {
                                 // charge player
                                 let actions_amount: u128 = actions_amount.unwrap();
                                 if actions_amount.is_non_zero() {
-                                    world.actions_token_protected_dispatcher().charge_player_actions(player.address, 0, actions_amount);
+                                    world.actions_token_protected_dispatcher().charge_player_actions(
+                                        player.address,
+                                        world.get_entity_trail_id(player.inst),
+                                        actions_amount,
+                                    );
                                 }
                             },
                             Result::Err(error) => {

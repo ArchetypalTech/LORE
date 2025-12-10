@@ -8,8 +8,8 @@ pub struct ActionsConfig {
     //------
     pub sn_contract: ContractAddress,
     pub action_cost_amount: u128,
-    pub free_action_claim_interval: u64,
-    pub max_free_actions_count: u32,
+    pub free_action_claim_interval: u64,    // every <free_action_claim_interval> seconds, players can claim 1 free action
+    pub max_free_actions_count: u32,        // ...up to <max_free_actions_count>
 }
 
 const ACTIONS_KEY: felt252 = 1;

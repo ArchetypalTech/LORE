@@ -72,22 +72,22 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
         }
         // validate source
         let mut player_balances: PlayerBalances = self.read_model(player_address);
-        let action_amount: u128 = (actions_count.into() * CONST::ETH_TO_WEI.low);
+        let actions_amount: u128 = (actions_count.into() * CONST::ETH_TO_WEI.low);
         match source {
             ActionsSource::FreeClaimed => {
                 player_game.timestamp_free_actions_claimed = starknet::get_block_timestamp();
-                player_balances.free_actions_balance += action_amount;
+                player_balances.free_actions_balance += actions_amount;
             },
             ActionsSource::Purchase => {
                 player_game.purchase_count += 1;
-                player_balances.paid_actions_balance += action_amount;
+                player_balances.paid_actions_balance += actions_amount;
             },
             ActionsSource::Subscription => {
                 player_game.subscription_count += 1;
-                player_balances.sub_actions_balance += action_amount;
+                player_balances.sub_actions_balance += actions_amount;
             },
             ActionsSource::Airdrop => {
-                player_balances.paid_actions_balance += action_amount;
+                player_balances.paid_actions_balance += actions_amount;
             },
             ActionsSource::Unknown => {
                 assert(false, 'ACTIONS: Invalid source');

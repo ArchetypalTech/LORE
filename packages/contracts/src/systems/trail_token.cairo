@@ -141,9 +141,11 @@ pub mod trail_token {
     };
     use nft_combo::utils::renderer::{Attribute};
 
-    mod Errors {
-        pub const INVALID_CALLER: felt252   = 'TRAIL: Invalid caller';
-        pub const NOT_EDITOR: felt252       = 'TRAIL: Not editor';
+    pub mod Errors {
+        pub const INVALID_CALLER: felt252       = 'TRAIL: Invalid caller';
+        pub const NOT_EDITOR: felt252           = 'TRAIL: Not editor';
+        pub const INVALID_TRAIL: felt252        = 'TRAIL: Invalid trail';
+        pub const INSUFFICIENT_ACTIONS: felt252 = 'TRAIL: insufficient actions';
     }
 
     fn dojo_init(ref self: ContractState) {
@@ -199,6 +201,8 @@ pub mod trail_token {
                 minter_address: recipient,
                 seed,
                 trail_inst: 0,
+                actions_amount_spent: 0,
+                actions_amount_claimed: 0,
             });
 
             // event...
