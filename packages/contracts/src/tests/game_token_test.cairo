@@ -22,6 +22,7 @@ mod tests {
         },
         lib::{
             access::{AccessTrait, ROLES},
+            utils::{ByteArrayTraitExt},
         },
         constants::token_metadata::{game_metadata},
         tests::{
@@ -349,6 +350,13 @@ mod tests {
         sys.prompt.prompt("hello", Option::None);
         let story_len_2: u32 = helpers::game_story_len(@sys.world, game_id_2);
         assert_gt!(story_len_2, story_len_1, "story_len_2 > story_len_1 (2)");
+        //
+        // bad games...
+        sys.prompt.prompt("g_load_game 22", Option::None);
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id_2), "Not your game!");
+        sys.prompt.prompt("g_load_game", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_2, "g_load_game");
+        assert!(helpers::game_story_last_line(@sys.world, game_id_2).starts_with(@"+sys+usage:"));
     }
 
     #[test]

@@ -243,9 +243,10 @@ pub impl DictionaryImpl of DictionaryTrait {
         self.add_to_dictionary("g_create_game", TokenType::System, 2).unwrap();
         self.add_to_dictionary("g_load_game", TokenType::System, 2).unwrap();
         self.add_to_dictionary("g_game_id", TokenType::System, 2).unwrap();
-        self.add_to_dictionary("g_game_data", TokenType::System, 2).unwrap();
+        self.add_to_dictionary("g_game_info", TokenType::System, 2).unwrap();
         self.add_to_dictionary("g_player", TokenType::System, 2).unwrap();
         self.add_to_dictionary("g_create_trail", TokenType::System, 2).unwrap();
+        self.add_to_dictionary("g_trail_info", TokenType::System, 2).unwrap();
         self.add_to_dictionary("g_actions", TokenType::System, 2).unwrap();
     }
 }

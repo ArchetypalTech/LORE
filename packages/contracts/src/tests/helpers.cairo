@@ -238,10 +238,13 @@ pub fn game_story_len(world: @WorldStorage, game_id: u128) -> u32 {
     let story: PlayerStory = world.read_model(game_id);
     (story.story_line)
 }
-pub fn game_story_last_line(world: @WorldStorage, game_id: u128) -> ByteArray {
+pub fn game_story_line_backwards(world: @WorldStorage, game_id: u128, lines_back: u32) -> ByteArray {
     let story: PlayerStory = world.read_model(game_id);
-    let story_line: StoryLine = world.read_model((game_id, story.story_line),);
+    let story_line: StoryLine = world.read_model((game_id, story.story_line + 1 - lines_back),);
     (story_line.line)
+}
+pub fn game_story_last_line(world: @WorldStorage, game_id: u128) -> ByteArray {
+    (game_story_line_backwards(world, game_id, 1))
 }
 pub fn print_game_story_last_line(world: @WorldStorage, game_id: u128) {
     println!("_____last_line[{}]: [{:?}]", game_id, game_story_last_line(world, game_id));

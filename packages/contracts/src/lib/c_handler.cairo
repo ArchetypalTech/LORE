@@ -1,3 +1,4 @@
+use core::num::traits::Zero;
 use starknet::{ContractAddress, get_caller_address};
 use dojo::{world::WorldStorage, model::ModelStorage};
 use lore::{
@@ -14,7 +15,7 @@ use lore::{
         condition::{ConditionImpl},
         game_token_info::{GameTokenInfo},
         player_account::{PlayerAccountTrait},
-        trail_token_info::{TrailProgress, MAIN_TRAIL_ID},
+        trail_token_info::{TrailTokenInfo, TrailTokenInfoTrait, TrailProgress, MAIN_TRAIL_ID},
         hub::{TrailTrait},
     },
     types::command_type::{
@@ -25,6 +26,7 @@ use lore::{
     lib::{
         access::{AccessTrait},
         utils::ByteArrayTraitExt,
+        level_test::{create_test_level},
         dns::{
             DnsTrait,
             ILexerDispatcherTrait,
@@ -365,12 +367,44 @@ fn system_command(
             player.log_sys(ref world, format!("+sys+Created trail-{:?}", trail_id));
             return Result::Ok(());
         }
+        if (system_command == "g_trail_info") {
+            if (tokens.len() < 2) {
+                player.log_sys(ref world, "+sys+usage: g_trail_info <trail_id>");
+                return Result::Ok(());
+            }
+            let trail_id: u256 = tokens.at(1).text.to_felt252_decimal().unwrap().into();
+            if trail_id.is_zero() {
+                player.log_sys(ref world, "+sys+you are in the Oruggin Trail");
+                return Result::Ok(());
+            }
+            // get trail...
+            player.log_sys(ref world, format!("+sys+trail-{:?}", trail_id));
+            let trail_info: TrailTokenInfo = world.read_model(trail_id.low);
+            if !trail_info.exists() {
+                return Result::Err(Error::InvalidTrail);
+            }
+            let player_address: ContractAddress = get_caller_address();
+            let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id);
+            if (owner == player_address) {
+                player.log_sys(ref world, "+sys+owned by you!");
+                player.log_sys(ref world, format!("+sys+actions spent: {}", (trail_info.actions_amount_spent / CONST::ETH_TO_WEI.low)));
+                player.log_sys(ref world, format!("+sys+actions claimed: {}", (trail_info.actions_amount_claimed / CONST::ETH_TO_WEI.low)));
+                player.log_sys(ref world, format!("+sys+actions claimable: {}", (trail_info.claimable_actions_amount() / CONST::ETH_TO_WEI.low)));
+            } else {
+                player.log_sys(ref world, format!("+sys+owner: 0x{:x}", owner));
+                player.log_sys(ref world, "+sys+Not your trail!");
+            }
+            return Result::Ok(());
+        }
         if (system_command == "g_load_game") {
+            if (tokens.len() < 2) {
+                player.log_sys(ref world, "+sys+usage: g_load_game <game_id>");
+                return Result::Ok(());
+            }
             let player_address: ContractAddress = get_caller_address();
             let game_id: u256 = tokens.at(1).text.to_felt252_decimal().unwrap().into();
             // validate ownership
             if (!world.game_token_dispatcher().is_owner_of(player_address, game_id)) {
-                player.log_sys(ref world, format!("+sys+Not your game!"));
                 return Result::Err(Error::NotYourGame);
             }
             // switch game...
@@ -382,7 +416,7 @@ fn system_command(
             player.log_sys(ref world, format!("+sys+game-{:?}", player.game_id));
             return Result::Ok(());
         }
-        if (system_command == "g_game_data") {
+        if (system_command == "g_game_info") {
             let token_info: GameTokenInfo = world.read_model(player.game_id);
             let trail_progress: TrailProgress = world.read_model((player.game_id, MAIN_TRAIL_ID),);
             player.log_sys(ref world, format!("+sys+game-{:?}", token_info.game_id));

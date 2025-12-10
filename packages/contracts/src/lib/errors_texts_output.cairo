@@ -121,6 +121,12 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
             Error::InsufficientActionsBalance => array![
                 "You don't have enough actions to do that.",
             ],
+            Error::NotYourGame => array![
+                "Not your game!",
+            ],
+            Error::InvalidTrail => array![
+                "Trail does not exist",
+            ],
             _ => array![] // For errors with no message
         };
         (random_text(world, texts))

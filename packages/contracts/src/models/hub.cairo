@@ -564,6 +564,8 @@ pub mod tests {
         // initialize player singleton
         helpers::set_caller(OWNER());
         PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
+        // give recipient editor access
+        sys.designer.set_editor(recipient, true);
         // mint from command
         let supply: u128 = sys.trail_token.total_supply().low;
         helpers::set_caller(recipient);
@@ -575,6 +577,7 @@ pub mod tests {
         // find entity
         let trail_info: TrailTokenInfo = sys.world.read_model(trail_id);
         assert_ne!(trail_info.trail_inst, 0, "_mint_trail()");
+        assert_ne!(trail_info.seed, 0, "_mint_trail()");
         let entity: Entity = sys.world.read_model(trail_info.trail_inst);
         let trail: Trail = sys.world.read_model(trail_info.trail_inst);
         let exit: Exit = sys.world.read_model(trail_info.trail_inst);
@@ -782,7 +785,7 @@ pub mod tests {
         helpers::set_caller(helpers::OWNER());
         player.move_to_room(ref sys.world, room_2_entity.inst);
         //
-        // move to room 2
+        // move to room 1
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("use to_room_1", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id, "use to_room_1");
@@ -907,6 +910,42 @@ pub mod tests {
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
 // helpers::print_game_story_last_command(@sys.world, game_id, "look around (exit trail_2 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
-
+    }
+    
+    #[test]
+    fn test_trail_commands() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        // mint Trails
+        let (_entity_trail_1, mut _trail_1, _exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, helpers::PLAYER_1);
+        // player_1 say anything... (will create a game)
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("", Option::None);
+        let game_id_1: u128 = 1;
+        helpers::set_caller(helpers::PLAYER_2);
+        sys.prompt.prompt("", Option::None);
+        let game_id_2: u128 = 2;
+        // owner commands
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("g_trail_info 1", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_1, "g_trail_info 1");
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_1, 5), "+sys+trail-1");
+        assert!(helpers::game_story_line_backwards(@sys.world, game_id_1, 1).starts_with(@"+sys+actions"));
+        // owner commands
+        helpers::set_caller(helpers::PLAYER_2);
+        sys.prompt.prompt("g_trail_info 1", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_2, "g_trail_info 1");
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 3), "+sys+trail-1");
+        assert!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1).starts_with(@"+sys+Not your trail!"));
+        // invalid
+        sys.prompt.prompt("g_trail_info 2", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_2, "g_trail_info 1");
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1), "Trail does not exist");
+        // main
+        sys.prompt.prompt("g_trail_info 0", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_2, "g_trail_info 1");
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1), "+sys+you are in the Oruggin Trail");
+        // bad usage
+        sys.prompt.prompt("g_trail_info", Option::None);
+        assert!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1).starts_with(@"+sys+usage:"));
     }
 }

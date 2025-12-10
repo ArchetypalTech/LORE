@@ -67,10 +67,18 @@ use lore::systems::trail_token::trail_token::{Errors as TrailErrors};
 
 #[generate_trait]
 pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
-    fn actions_spent_on_trail(ref self: WorldStorage, trail_id: u128, actions_amount: u128) {
+    #[inline(always)]
+    fn exists(self: @TrailTokenInfo) -> bool {
+        (self.seed.is_non_zero())
+    }
+    #[inline(always)]
+    fn claimable_actions_amount(self: @TrailTokenInfo) -> u128 {
+        (*self.actions_amount_spent - *self.actions_amount_claimed)
+    }
+    fn get_actions_spent_on_trail(ref self: WorldStorage, trail_id: u128, actions_amount: u128) {
         let mut trail: TrailTokenInfo = self.read_model(trail_id);
         // validate if trail exists
-        assert(trail.seed.is_non_zero(), TrailErrors::INVALID_TRAIL);
+        assert(trail.exists(), TrailErrors::INVALID_TRAIL);
         // store spent actions
         trail.actions_amount_spent += actions_amount;
         self.write_model(@trail);
@@ -78,21 +86,18 @@ pub impl TrailTokenInfoImpl of TrailTokenInfoTrait {
     fn get_claimable_actions_amount(ref self: WorldStorage, trail_id: u128) -> u128 {
         let trail: TrailTokenInfo = self.read_model(trail_id);
         // validate if trail exists
-        assert(trail.seed.is_non_zero(), TrailErrors::INVALID_TRAIL);
-        (trail._claimable_actions_amount())
+        assert(trail.exists(), TrailErrors::INVALID_TRAIL);
+        (trail.claimable_actions_amount())
     }
     fn claim_actions(ref self: WorldStorage, trail_id: u128, actions_amount: u128) {
         let mut trail: TrailTokenInfo = self.read_model(trail_id);
         // validate if trail exists
-        assert(trail.seed.is_non_zero(), TrailErrors::INVALID_TRAIL);
+        assert(trail.exists(), TrailErrors::INVALID_TRAIL);
         // validate claiming amount
-        assert(actions_amount <= trail._claimable_actions_amount(), TrailErrors::INSUFFICIENT_ACTIONS);
+        assert(actions_amount <= trail.claimable_actions_amount(), TrailErrors::INSUFFICIENT_ACTIONS);
         // store claimed actions
         trail.actions_amount_claimed += actions_amount;
         self.write_model(@trail);
-    }
-    fn _claimable_actions_amount(self: @TrailTokenInfo) -> u128 {
-        (*self.actions_amount_spent - *self.actions_amount_claimed)
     }
     fn set_hub(ref world: WorldStorage, trail_id: u128, hub_inst: felt252) {
         // // read room entity

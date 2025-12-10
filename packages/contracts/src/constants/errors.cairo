@@ -59,8 +59,9 @@ pub enum Error {
     AlreadyStored,
     NotStored,
     // Player
+    NotEditor,
     NoRoom,
     NotYourGame,
-    NotEditor,
+    InvalidTrail,
     InsufficientActionsBalance,
 }

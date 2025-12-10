@@ -230,7 +230,7 @@ pub mod actions_token {
             self._assert_caller_is_world_contract(@world);
             // accumulate actions spent on trail
             if (trail_id.is_non_zero()) {
-                TrailTokenInfoTrait::actions_spent_on_trail(ref world, trail_id, actions_amount);
+                TrailTokenInfoTrait::get_actions_spent_on_trail(ref world, trail_id, actions_amount);
             }
             // burn player actions
             world.spent_actions(player_address, actions_amount);
