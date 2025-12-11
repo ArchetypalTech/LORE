@@ -26,8 +26,7 @@ import {
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
-import UIPanelStore from "@/lib/stores/terminal.uiPanel.store";
-import DefaultValues from "@/lib/stores/terminal.uiPanel.store";
+import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
 /**
@@ -332,6 +331,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		// Reset Info Panel
 		DefaultValues();
 		return;
 	},
@@ -486,7 +486,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			if (!gameId) return;
 			queryPanelInfo(BigInt(gameId));
 			addTerminalContent({
-				text: "UI panel shown.",
+				text: "Info Panel shown.",
 				format: "system",
 				useTypewriter: true,
 			});
@@ -497,7 +497,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "hide") {
 			panel.hide();
 			addTerminalContent({
-				text: "UI panel hidden.",
+				text: "Info Panel hidden.",
 				format: "system",
 				useTypewriter: true,
 			});
