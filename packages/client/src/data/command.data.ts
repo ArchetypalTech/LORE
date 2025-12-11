@@ -307,6 +307,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		// check for game
+		const gameId = GameStore().gameId;
+		const panel = UIPanelStore();
+		if (!gameId) {
+			// if no game, set default values for Info Panel
+			DefaultValues();
+			panel.show();
+		} else {
+			// if game, show Info Panel
+			panel.show();
+		}
 	},
 	wallet: async () => {
 		if (!WalletStore().isConnected) {

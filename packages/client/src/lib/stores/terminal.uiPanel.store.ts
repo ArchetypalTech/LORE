@@ -56,7 +56,7 @@ export const DefaultValues =  () => {
 const { get, set, useStore: useUIPanelStore, createFactory } =
   StoreBuilder<UIPanelState>({
     // Default Values for testing
-    visible: true,
+    visible: false,
 
     location: "The Oruggin Trail",
 
