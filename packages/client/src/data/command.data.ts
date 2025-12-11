@@ -27,6 +27,7 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore from "@/lib/stores/terminal.uiPanel.store";
+import DefaultValues from "@/lib/stores/terminal.uiPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
 /**
@@ -331,6 +332,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		DefaultValues();
 		return;
 	},
 	_bypass: ({ command }) => {

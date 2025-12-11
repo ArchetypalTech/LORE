@@ -31,6 +31,28 @@ export type UIPanelState = {
   setLoadingP: (v: boolean) => void;
 };
 
+export const DefaultValues =  () => {
+  const panel = UIPanelStore();
+  if (panel.visible) {
+    panel.setLocation("The Oruggin Trail");
+    panel.setExits([
+      {
+        id: 1,
+        name: "Anything",
+        direction: "Anywhere",
+        destination: "The one you set out for",
+      },
+    ]);
+    panel.setPuzzles([
+      {
+        name: "Survive the journey",
+        executed: false,
+      },
+    ]);
+  }
+}
+
+
 const { get, set, useStore: useUIPanelStore, createFactory } =
   StoreBuilder<UIPanelState>({
     // Default Values for testing
