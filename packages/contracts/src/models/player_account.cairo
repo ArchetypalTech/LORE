@@ -128,8 +128,8 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
         let player_game: PlayerAccount = self.read_model(player_address);
         let actions_config: ActionsConfig = self.get_actions_config();
         if (player_game.timestamp_joined.is_zero()) {
-            // new players get a full set of free actions
-            (actions_config.max_free_actions_count)
+            // new players get an initial set of free actions
+            (actions_config.initial_free_actions_count)
         } else if (player_game.minted_actions_count > actions_config.max_free_actions_count) {
             // have acquired more than the initial free actions
             let elapsed_since_last_claim: u64 = (starknet::get_block_timestamp() - player_game.timestamp_free_actions_claimed);

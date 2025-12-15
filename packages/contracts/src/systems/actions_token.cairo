@@ -35,6 +35,9 @@ pub trait IActionsToken<TState> {
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn set_action_cost_amount(ref self: TState, action_cost_amount: u128);
+    fn set_initial_free_actions_count(ref self: TState, initial_free_actions_count: u32);
+    fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
+    fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
 }
 
@@ -50,6 +53,9 @@ pub trait IActionsTokenPublic<TState> {
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn set_action_cost_amount(ref self: TState, action_cost_amount: u128);
+    fn set_initial_free_actions_count(ref self: TState, initial_free_actions_count: u32);
+    fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
+    fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
 }
 
@@ -65,7 +71,7 @@ pub mod actions_token {
     use starknet::{ContractAddress, SyscallResultTrait};
     use dojo::{
         world::{WorldStorage, IWorldDispatcherTrait},
-        model::ModelStorage,
+        // model::ModelStorage,
         // event::EventStorage,
     };
 
@@ -224,42 +230,46 @@ pub mod actions_token {
         //
 
         fn mint_to(ref self: ContractState, recipient: ContractAddress, actions_count: u32) {
-            // validate caller
-            self._assert_caller_is_admin(@self.world_default());
-            // mint actions...
             let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
             self._mint_to(ref world, recipient, actions_count, ActionsSource::Airdrop);
         }
 
         fn set_sn_contract(ref self: ContractState, sn_contract: ContractAddress) {
             let mut world: WorldStorage = self.world_default();
-            // validate caller
-            self._assert_caller_is_owner(@world);
-            // set messaging contract
+            self._assert_caller_is_admin(@world);
             assert(sn_contract.is_non_zero(), Errors::INVALID_SN_CONTRACT);
-            let mut actions_config: ActionsConfig = world.get_actions_config();
-            actions_config.sn_contract = sn_contract;
-            world.write_model(@actions_config);
+            world.set_sn_contract(sn_contract);
         }
 
         fn set_action_cost_amount(ref self: ContractState, action_cost_amount: u128) {
             let mut world: WorldStorage = self.world_default();
-            // validate caller
-            self._assert_caller_is_owner(@world);
-            // set action cost amount
-            let mut actions_config: ActionsConfig = world.get_actions_config();
-            actions_config.action_cost_amount = action_cost_amount;
-            world.write_model(@actions_config);
+            self._assert_caller_is_admin(@world);
+            world.set_action_cost_amount(action_cost_amount);
         }
-        
+
+        fn set_initial_free_actions_count(ref self: ContractState, initial_free_actions_count: u32) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            world.set_initial_free_actions_count(initial_free_actions_count);
+        }
+
+        fn set_max_free_actions_count(ref self: ContractState, max_free_actions_count: u32) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            world.set_max_free_actions_count(max_free_actions_count);
+        }
+
+        fn set_free_action_claim_interval(ref self: ContractState, free_action_claim_interval: u64) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            world.set_free_action_claim_interval(free_action_claim_interval);
+        }
+
         fn set_trail_reward_actions_count(ref self: ContractState, trail_reward_actions_count: u32) {
             let mut world: WorldStorage = self.world_default();
-            // validate caller
-            self._assert_caller_is_owner(@world);
-            // set trail reward actions count
-            let mut actions_config: ActionsConfig = world.get_actions_config();
-            actions_config.trail_reward_actions_count = trail_reward_actions_count;
-            world.write_model(@actions_config);
+            self._assert_caller_is_admin(@world);
+            world.set_trail_reward_actions_count(trail_reward_actions_count);
         }
     }
 

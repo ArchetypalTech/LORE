@@ -39,6 +39,12 @@ pub impl PermitConfigImpl of PermitConfigTrait {
         };
         self.write_model(@permit_config);
     }
+    fn get_permit_config(self: @WorldStorage) -> PermitConfig {
+        (self.read_model(PERMIT_KEY))
+    }
+    //
+    // admin setters
+    //
     fn set_messaging_contract(ref self: WorldStorage, messaging_contract: ContractAddress) {
         self.write_member(Model::<PermitConfig>::ptr_from_keys(PERMIT_KEY), selector!("messaging_contract"), messaging_contract);
     }
@@ -47,8 +53,5 @@ pub impl PermitConfigImpl of PermitConfigTrait {
     }
     fn set_cartridge_contract(ref self: WorldStorage, cartridge_contract: ContractAddress) {
         self.write_member(Model::<PermitConfig>::ptr_from_keys(PERMIT_KEY), selector!("cartridge_contract"), cartridge_contract);
-    }
-    fn get_permit_config(self: @WorldStorage) -> PermitConfig {
-        (self.read_model(PERMIT_KEY))
     }
 }

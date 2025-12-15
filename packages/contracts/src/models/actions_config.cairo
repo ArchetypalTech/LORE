@@ -8,8 +8,9 @@ pub struct ActionsConfig {
     //------
     pub sn_contract: ContractAddress,
     pub action_cost_amount: u128,
-    pub free_action_claim_interval: u64,    // every <free_action_claim_interval> seconds, players can claim 1 free action
-    pub max_free_actions_count: u32,        // ...up to <max_free_actions_count>
+    pub initial_free_actions_count: u32,    // amount of actions give to any player on first play
+    pub max_free_actions_count: u32,        // max number of free actions a player can have
+    pub free_action_claim_interval: u64,    // every x seconds, players can claim 1 free action
     pub trail_reward_actions_count: u32,    // how many actions to claim one trail reward on L2?
 }
 
@@ -40,8 +41,9 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
             key: ACTIONS_KEY,
             sn_contract,
             action_cost_amount,
-            free_action_claim_interval: TIMESTAMP::ONE_HOUR,
+            initial_free_actions_count: 5,
             max_free_actions_count: 5,
+            free_action_claim_interval: TIMESTAMP::ONE_HOUR,
             trail_reward_actions_count: PERMIT_TYPES::TRAIL_REWARD_ACTIONS_COUNT,
         };
         self.write_model(@actions_config);
@@ -58,5 +60,26 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
         } else {
             (0) // free command
         }
+    }
+    //
+    // admin setters
+    //
+    fn set_sn_contract(ref self: WorldStorage, sn_contract: ContractAddress) {
+        self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("sn_contract"), sn_contract);
+    }
+    fn set_action_cost_amount(ref self: WorldStorage, action_cost_amount: u128) {
+        self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("action_cost_amount"), action_cost_amount);
+    }
+    fn set_initial_free_actions_count(ref self: WorldStorage, initial_free_actions_count: u32) {
+        self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("initial_free_actions_count"), initial_free_actions_count);
+    }
+    fn set_max_free_actions_count(ref self: WorldStorage, max_free_actions_count: u32) {
+        self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("max_free_actions_count"), max_free_actions_count);
+    }
+    fn set_free_action_claim_interval(ref self: WorldStorage, free_action_claim_interval: u64) {
+        self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("free_action_claim_interval"), free_action_claim_interval);
+    }
+    fn set_trail_reward_actions_count(ref self: WorldStorage, trail_reward_actions_count: u32) {
+        self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("trail_reward_actions_count"), trail_reward_actions_count);
     }
 }

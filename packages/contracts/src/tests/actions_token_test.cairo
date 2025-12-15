@@ -7,7 +7,7 @@ use dojo::{
 
 use lore::{
     models::{
-        actions_config::{ActionsConfigTrait},
+        actions_config::{ActionsConfig, ActionsConfigTrait},
         player_account::{PlayerBalances},
         player::{Player, PlayerImpl},
         entity::{Entity},
@@ -376,14 +376,6 @@ fn test_set_sn_contract_invalid_sn_contract() {
 
 
 #[test]
-#[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
-fn test_set_sn_contract_invalid_caller() {
-    let mut sys: HelperSystems = helpers::setup_core();
-    helpers::set_caller(OTHER());
-    sys.actions.set_sn_contract(RECIPIENT());
-}
-
-#[test]
 fn test_set_action_cost() {
     let mut sys: HelperSystems = helpers::setup_core();
     // validate initial costs (zero)
@@ -409,10 +401,61 @@ fn test_set_action_cost() {
 }
 
 #[test]
+fn test_admin_setters() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    let config: ActionsConfig = sys.world.get_actions_config();
+    helpers::set_caller(OWNER());
+    sys.actions.set_initial_free_actions_count(123);
+    sys.actions.set_max_free_actions_count(123);
+    sys.actions.set_free_action_claim_interval(123);
+    sys.actions.set_trail_reward_actions_count(123);
+    let new_config: ActionsConfig = sys.world.get_actions_config();
+    assert_ne!(new_config.initial_free_actions_count, config.initial_free_actions_count);
+    assert_ne!(new_config.max_free_actions_count, config.max_free_actions_count);
+    assert_ne!(new_config.free_action_claim_interval, config.free_action_claim_interval);
+    assert_ne!(new_config.trail_reward_actions_count, config.trail_reward_actions_count);
+}
+
+#[test]
+#[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_set_sn_contract_invalid_caller() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OTHER());
+    sys.actions.set_sn_contract(RECIPIENT());
+}
+#[test]
 #[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
 fn test_set_action_cost_invalid_caller() {
     let mut sys: HelperSystems = helpers::setup_core();
     helpers::set_caller(OTHER());
     let amount: u128 = 100 * CONST::ETH_TO_WEI.low;
     sys.actions.set_action_cost_amount(amount);
+}
+#[test]
+#[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_set_initial_free_actions_count_invalid_caller() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OTHER());
+    sys.actions.set_initial_free_actions_count(123);
+}
+#[test]
+#[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_set_max_free_actions_count_invalid_caller() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OTHER());
+    sys.actions.set_max_free_actions_count(123);
+}
+#[test]
+#[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_set_free_action_claim_interval_invalid_caller() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OTHER());
+    sys.actions.set_free_action_claim_interval(123);
+}
+#[test]
+#[should_panic(expected: ('ACTIONS: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_set_trail_reward_actions_count_invalid_caller() {
+    let mut sys: HelperSystems = helpers::setup_core();
+    helpers::set_caller(OTHER());
+    sys.actions.set_trail_reward_actions_count(123);
 }
