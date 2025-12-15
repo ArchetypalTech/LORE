@@ -173,8 +173,8 @@ pub mod permit_token {
             actions_count: PERMIT_TYPES::STARTER_PACK_ACTIONS_COUNT,
         });
         world.write_model(@PermitType {
-            permit_type: PERMIT_TYPES::TRAIL_REWARD,
-            actions_count: PERMIT_TYPES::TRAIL_REWARD_ACTIONS_COUNT,
+            permit_type: PERMIT_TYPES::CREATOR_REWARD,
+            actions_count: PERMIT_TYPES::CREATOR_REWARD_ACTIONS_COUNT,
         });
     }
     

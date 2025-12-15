@@ -16,6 +16,16 @@ pub struct ActionsConfig {
 
 const ACTIONS_KEY: felt252 = 1;
 
+#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
+#[dojo::model]
+pub struct ActionsReward {
+    #[key]
+    pub player_address: ContractAddress,
+    /// Properties ///
+    pub collected_actions_amount: u128,     // amout of actions collected from user content
+    pub claimed_actions_amount: u128,       // amout of actions rewarded on L2
+}
+
 
 //---------------------------------
 // Model Traits
@@ -29,6 +39,7 @@ use lore::{
     types::command_type::{CommandType},
     constants::constants::{TIMESTAMP},
     constants::appchain::{PERMIT_TYPES},
+    systems::actions_token::actions_token::{Errors as ActionsErrors},
 };
 
 #[generate_trait]
@@ -44,7 +55,7 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
             initial_free_actions_count: 5,
             max_free_actions_count: 5,
             free_action_claim_interval: TIMESTAMP::ONE_HOUR,
-            trail_reward_actions_count: PERMIT_TYPES::TRAIL_REWARD_ACTIONS_COUNT,
+            trail_reward_actions_count: PERMIT_TYPES::CREATOR_REWARD_ACTIONS_COUNT,
         };
         self.write_model(@actions_config);
     }
@@ -81,5 +92,41 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
     }
     fn set_trail_reward_actions_count(ref self: WorldStorage, trail_reward_actions_count: u32) {
         self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("trail_reward_actions_count"), trail_reward_actions_count);
+    }
+}
+
+
+#[generate_trait]
+pub impl ActionsRewardImpl of ActionsRewardTrait {
+    //
+    // return the amount of actions available for rewards
+    //
+    #[inline(always)]
+    fn claimable_actions_amount(self: @ActionsReward) -> u128 {
+        (*self.collected_actions_amount - *self.claimed_actions_amount)
+    }
+    fn get_claimable_actions_amount(self: @WorldStorage, player_address: ContractAddress) -> u128 {
+        let trail: ActionsReward = self.read_model(player_address);
+        (trail.claimable_actions_amount())
+    }
+    //
+    // add actions a player has collected from user content
+    //
+    fn set_actions_collected_on_content(ref self: WorldStorage, player_address: ContractAddress, actions_amount: u128) {
+        let mut trail: ActionsReward = self.read_model(player_address);
+        // store collected actions
+        trail.collected_actions_amount += actions_amount;
+        self.write_model(@trail);
+    }
+    //
+    // player used actions to claim rewards
+    //
+    fn set_actions_claimed_as_rewards(ref self: WorldStorage, player_address: ContractAddress, actions_amount: u128) {
+        let mut trail: ActionsReward = self.read_model(player_address);
+        // validate claiming amount
+        assert(actions_amount <= trail.claimable_actions_amount(), ActionsErrors::INSUFFICIENT_ACTIONS);
+        // store claimed actions
+        trail.claimed_actions_amount += actions_amount;
+        self.write_model(@trail);
     }
 }

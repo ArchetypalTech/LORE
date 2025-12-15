@@ -16,6 +16,7 @@ use lore::{
         game_token_info::{GameTokenInfo},
         player_account::{PlayerAccountTrait},
         trail_token_info::{TrailTokenInfo, TrailTokenInfoTrait, TrailProgress, MAIN_TRAIL_ID},
+        actions_config::{ActionsReward, ActionsRewardTrait},
         hub::{TrailTrait},
     },
     types::command_type::{
@@ -26,7 +27,6 @@ use lore::{
     lib::{
         access::{AccessTrait},
         utils::ByteArrayTraitExt,
-        level_test::{create_test_level},
         dns::{
             DnsTrait,
             ILexerDispatcherTrait,
@@ -387,9 +387,6 @@ fn system_command(
             let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id);
             if (owner == player_address) {
                 player.log_sys(ref world, "+sys+owned by you!");
-                player.log_sys(ref world, format!("+sys+actions spent: {}", (trail_info.actions_amount_spent / CONST::ETH_TO_WEI.low)));
-                player.log_sys(ref world, format!("+sys+actions claimed: {}", (trail_info.actions_amount_claimed / CONST::ETH_TO_WEI.low)));
-                player.log_sys(ref world, format!("+sys+actions claimable: {}", (trail_info.claimable_actions_amount() / CONST::ETH_TO_WEI.low)));
             } else {
                 player.log_sys(ref world, format!("+sys+owner: 0x{:x}", owner));
                 player.log_sys(ref world, "+sys+Not your trail!");
@@ -428,8 +425,17 @@ fn system_command(
         }
         if (system_command == "g_actions") {
             let balance: u256 = world.actions_token_dispatcher().balance_of(player.address);
-            let actions_count: u256 = (balance / CONST::ETH_TO_WEI);
-            player.log_sys(ref world, format!("+sys+actions_balance: {}", actions_count.low));
+            let actions_count: u128 = (balance / CONST::ETH_TO_WEI).low;
+            player.log_sys(ref world, format!("+sys+actions balance: {}", actions_count));
+
+            let spending: ActionsReward = world.read_model(player.address);
+            if (spending.collected_actions_amount.is_non_zero()) {
+                player.log_sys(ref world, format!("+sys+actions spent: {}", (spending.collected_actions_amount / CONST::ETH_TO_WEI.low)));
+                player.log_sys(ref world, format!("+sys+actions claimed: {}", (spending.claimed_actions_amount / CONST::ETH_TO_WEI.low)));
+                player.log_sys(ref world, format!("+sys+actions claimable: {}", (spending.claimable_actions_amount() / CONST::ETH_TO_WEI.low)));
+            } else {
+                player.log_sys(ref world, "+sys+no actions spent");
+            }
             return Result::Ok(());
         }
         if (system_command == "g_player") {
@@ -452,6 +458,7 @@ mod tests {
     use lore::{
         models::player::{PlayerImpl},
         types::command_type::{Command, Token, TokenType},
+        lib::level_test::{create_test_level},
         lib::utils::ByteArrayTraitExt,
     };
 

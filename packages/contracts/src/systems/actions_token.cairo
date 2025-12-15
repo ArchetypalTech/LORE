@@ -30,8 +30,8 @@ pub trait IActionsToken<TState> {
     // IActionsTokenPublic
     fn get_free_actions_count(self: @TState) -> u32;
     fn claim_free_actions(ref self: TState) -> u32;
-    fn get_claimable_trail_rewards_count(self: @TState, trail_id: u128) -> u32;
-    fn claim_trail_rewards(ref self: TState, trail_id: u128);
+    fn get_claimable_rewards_count(self: @TState, player_address: ContractAddress) -> u32;
+    fn claim_rewards(ref self: TState, rewards_count: u32);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
     fn set_action_cost_amount(ref self: TState, action_cost_amount: u128);
@@ -47,8 +47,8 @@ pub trait IActionsTokenPublic<TState> {
     fn get_free_actions_count(self: @TState) -> u32;
     fn claim_free_actions(ref self: TState) -> u32;
     // editor functions
-    fn get_claimable_trail_rewards_count(self: @TState, trail_id: u128) -> u32;
-    fn claim_trail_rewards(ref self: TState, trail_id: u128);
+    fn get_claimable_rewards_count(self: @TState, player_address: ContractAddress) -> u32;
+    fn claim_rewards(ref self: TState, rewards_count: u32);
     // admin functions
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
@@ -100,16 +100,18 @@ pub mod actions_token {
 
     use lore::{
         models::{
-            actions_config::{ActionsConfig, ActionsConfigTrait},
+            actions_config::{ActionsConfig, ActionsConfigTrait, ActionsRewardTrait},
             player_account::{PlayerAccountTrait, ActionsSource},
-            trail_token_info::{TrailTokenInfoTrait},
         },
         types::{
             command_type::{CommandType},
         },
         lib::{
             access::{AccessTrait},
-            dns::{DnsTrait, SELECTORS},
+            dns::{
+                DnsTrait, SELECTORS,
+                ITrailTokenDispatcherTrait,
+            },
             arrays::{ArrayUtilsTrait},
         },
         constants::{
@@ -119,15 +121,15 @@ pub mod actions_token {
         },
     };
 
-
-    mod Errors {
+    pub mod Errors {
         pub const INVALID_CALLER: felt252           = 'ACTIONS: Invalid caller';
         pub const INVALID_COMMAND: felt252          = 'ACTIONS: Invalid command';
         pub const INVALID_RECIPIENT: felt252        = 'ACTIONS: Invalid recipient';
         pub const INVALID_AMOUNT: felt252           = 'ACTIONS: Invalid amount';
         pub const INVALID_SN_CONTRACT: felt252      = 'ACTIONS: Invalid SN contract';
         pub const NOT_PERMITTED: felt252            = 'ACTIONS: Not permitted';
-        pub const NO_REWARDS_TO_CLAIM: felt252      = 'ACTIONS: No rewards to claim';
+        pub const INVALID_REWARDS_COUNT: felt252    = 'ACTIONS: Invalid rewards count';
+        pub const INSUFFICIENT_ACTIONS: felt252     = 'ACTIONS: Insufficient actions';
     }
 
     //*******************************************
@@ -201,28 +203,27 @@ pub mod actions_token {
         // Editor functions
         //
 
-        fn get_claimable_trail_rewards_count(self: @ContractState, trail_id: u128) -> u32 {
+        fn get_claimable_rewards_count(self: @ContractState, player_address: ContractAddress) -> u32 {
             let world: WorldStorage = self.world_default();
-            let (rewards_count, _): (u32, u128) = self._get_claimable_trail_rewards_count(@world, trail_id);
+            let (rewards_count, _): (u32, u128) = self._get_claimable_rewards_count(@world, player_address);
             (rewards_count)
         }
-        fn claim_trail_rewards(ref self: ContractState, trail_id: u128) {
+        fn claim_rewards(ref self: ContractState, rewards_count: u32) {
             let mut world: WorldStorage = self.world_default();
-            let (rewards_count, reward_actions_amount): (u32, u128) = self._get_claimable_trail_rewards_count(@world, trail_id);
-            assert(rewards_count > 0, Errors::NO_REWARDS_TO_CLAIM);
-            // claimed actions from this trail
-            world.set_actions_claimed_as_rewards(trail_id, reward_actions_amount);
+            let caller: ContractAddress = starknet::get_caller_address();
+            let (claimable_rewards_count, claimable_reward_actions_amount): (u32, u128) = self._get_claimable_rewards_count(@world, caller);
+            assert(rewards_count.is_non_zero() && rewards_count <= claimable_rewards_count, Errors::INVALID_REWARDS_COUNT);
+            // claimed actions as rewards
+            world.set_actions_claimed_as_rewards(caller, claimable_reward_actions_amount);
             //
             // send message to L2 claiming actions as permits
             //
             // let trail_name: ByteArray = world.get_trail_name(trail_id);
             let payload: Span<felt252> = array![
-                trail_id.into(),
-                PERMIT_TYPES::TRAIL_REWARD.into(),
+                PERMIT_TYPES::CREATOR_REWARD.into(),
                 rewards_count.into(),
-                // trail_name,
             ].span();
-            self._send_message(@world, selector!("claim_trail_rewards"), payload);
+            self._send_message(@world, selector!("claim_permit_rewards"), payload);
         }
 
         //-----------------------------------
@@ -293,10 +294,15 @@ pub mod actions_token {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_world_contract(@world);
-            // accumulate actions spent on trail
+            // collect actions from user content
             if (trail_id.is_non_zero()) {
-                world.set_actions_spent_on_trail(trail_id, actions_amount);
+                let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id.into());
+                world.set_actions_collected_on_content(owner, actions_amount);
             }
+            
+            // TODO: share with creator
+            // TODO: not from ADMIN
+
             // burn player actions
             world.spent_actions(player_address, actions_amount);
             self.erc20.burn(player_address, actions_amount.into());
@@ -330,9 +336,9 @@ pub mod actions_token {
             )
         }
 
-        fn _get_claimable_trail_rewards_count(self: @ContractState, world: @WorldStorage, trail_id: u128) -> (u32, u128) {
-            // get the total of spent actions on this trail, available for rewards
-            let actions_amount: u128 = world.get_claimable_actions_amount(trail_id);
+        fn _get_claimable_rewards_count(self: @ContractState, world: @WorldStorage, player_address: ContractAddress) -> (u32, u128) {
+            // get the total of colleted actions from user content, available for rewards
+            let actions_amount: u128 = world.get_claimable_actions_amount(player_address);
             let actions_count: u32 = (actions_amount / CONST::ETH_TO_WEI.low).try_into().unwrap();
             // calculate the number of claimable rewards
             let actions_config: ActionsConfig = world.get_actions_config();
