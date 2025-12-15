@@ -14,6 +14,7 @@ openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", 
 openzeppelin_access = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", branch = "dojo_v1.7.0" }
+# piltover = { git = "https://github.com/cartridge-gg/piltover.git", rev = "c25af3d" }
 
 [dev-dependencies]
 cairo_test = ">=2.13.1"

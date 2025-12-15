@@ -1,6 +1,6 @@
 //-----------------------------------
 // from:
-// https://github.com/keep-starknet-strange/piltover/blob/main/src/messaging/types.cairo
+// https://github.com/cartridge-gg/piltover/blob/c25af3d8f8c694f55c53b1620553f159f4bbcdd4/src/messaging/types.cairo
 //
 
 pub type MessageHash = felt252;
@@ -27,7 +27,7 @@ pub enum MessageToStarknetStatus {
 
 //-----------------------------------
 // from:
-// https://github.com/keep-starknet-strange/piltover/blob/main/src/messaging/interface.cairo
+// https://github.com/cartridge-gg/piltover/blob/c25af3d8f8c694f55c53b1620553f159f4bbcdd4/src/messaging/interface.cairo
 //
 
 // use piltover::messaging::types::{

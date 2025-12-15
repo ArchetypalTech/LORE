@@ -83,6 +83,9 @@ pub mod permit_token {
         world::IWorldDispatcherTrait,
         // event::EventStorage,
     };
+
+    // piltover messaging interface
+    // use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
     use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
     //-----------------------------------

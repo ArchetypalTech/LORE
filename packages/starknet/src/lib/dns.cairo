@@ -9,9 +9,10 @@ use dojo::meta::interface::{
 pub use lore_sn::systems::{
     permit_token::{IPermitTokenDispatcher, IPermitTokenDispatcherTrait},
 };
-pub use lore_sn::lib::{
-    messaging::{IMessagingDispatcher, IMessagingDispatcherTrait},
-};
+
+// piltover messaging interface
+// use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
+pub use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
 pub mod SELECTORS {
     // systems

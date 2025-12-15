@@ -1,5 +1,8 @@
 use starknet::{ContractAddress};
-use lore_sn::lib::messaging::{MessageHash, Nonce};
+
+// piltover messaging interface
+// use piltover::messaging::types::{MessageHash, Nonce};
+pub use lore_sn::lib::messaging::{MessageHash, Nonce};
 
 #[starknet::interface]
 pub trait IMessagingMock<T> {

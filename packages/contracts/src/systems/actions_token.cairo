@@ -68,9 +68,6 @@ pub mod actions_token {
         model::ModelStorage,
         // event::EventStorage,
     };
-    use starknet::syscalls::send_message_to_l1_syscall;
-
-    const MSG_TO_L2_MAGIC: felt252 = 'MSG';
 
     //-----------------------------------
     // ERC-20 Start
@@ -369,11 +366,10 @@ pub mod actions_token {
             let actions_config: ActionsConfig = world.get_actions_config();
             let to_address: ContractAddress = actions_config.sn_contract;
             let mut payload: Array<felt252> = array![
-                to_address.into(),
                 selector,
             ];
             payload.extend_from_span(values);
-            send_message_to_l1_syscall(MSG_TO_L2_MAGIC, payload.span()).unwrap_syscall();
+            starknet::syscalls::send_message_to_l1_syscall(to_address.into(), payload.span()).unwrap_syscall();
         }
     }
 
