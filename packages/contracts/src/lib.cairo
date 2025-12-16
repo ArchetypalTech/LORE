@@ -66,6 +66,7 @@ pub mod tests {
     pub mod entity_test;
     pub mod game_token_test;
     pub mod trail_token_test;
+    pub mod hub_test;
     pub mod actions_token_test;
     pub mod helpers;
 }

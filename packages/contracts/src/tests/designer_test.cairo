@@ -15,13 +15,13 @@ mod tests {
             area::{Area, AreaComponent},
             description_text::{DescriptionText},
             player::{PlayerImpl},
-            hub::tests::{_mint_trail},
             hub::{Trail},
             exit::{Exit},
         },
         tests::{
             helpers,
             helpers::{OWNER, OTHER, RECIPIENT, ADMIN},
+            hub_test::tests::{_mint_trail},
         },
         
         lib:: {
