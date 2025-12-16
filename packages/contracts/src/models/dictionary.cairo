@@ -248,6 +248,7 @@ pub impl DictionaryImpl of DictionaryTrait {
         self.add_to_dictionary("g_create_trail", TokenType::System, 2).unwrap();
         self.add_to_dictionary("g_trail_info", TokenType::System, 2).unwrap();
         self.add_to_dictionary("g_actions", TokenType::System, 2).unwrap();
+        self.add_to_dictionary("g_claim_actions", TokenType::System, 2).unwrap();
     }
 }
 

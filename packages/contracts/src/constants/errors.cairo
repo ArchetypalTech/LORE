@@ -64,4 +64,5 @@ pub enum Error {
     NotYourGame,
     InvalidTrail,
     InsufficientActionsBalance,
+    InsufficientActionsToClaim,
 }

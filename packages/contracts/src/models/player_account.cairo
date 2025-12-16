@@ -35,6 +35,7 @@ pub enum ActionsSource {
     Airdrop,
     Purchase,
     Subscription,
+    ActionsClaimed,
 }
 
 
@@ -86,7 +87,8 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
                 player_game.subscription_count += 1;
                 player_balances.sub_actions_balance += actions_amount;
             },
-            ActionsSource::Airdrop => {
+            ActionsSource::Airdrop |
+            ActionsSource::ActionsClaimed => {
                 player_balances.paid_actions_balance += actions_amount;
             },
             ActionsSource::Unknown => {

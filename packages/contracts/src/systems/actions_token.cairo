@@ -31,7 +31,7 @@ pub trait IActionsToken<TState> {
     // IActionsTokenPublic
     fn get_free_actions_count(self: @TState) -> u32;
     fn claim_free_actions(ref self: TState) -> u32;
-    fn get_claimable_rewards_count(self: @TState, player_address: ContractAddress) -> u32;
+    fn get_claimable_rewards_count(self: @TState, recipient: ContractAddress) -> u32;
     fn claim_rewards(ref self: TState, rewards_count: u32);
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
     fn set_sn_contract(ref self: TState, sn_contract: ContractAddress);
@@ -48,7 +48,7 @@ pub trait IActionsTokenPublic<TState> {
     fn get_free_actions_count(self: @TState) -> u32;
     fn claim_free_actions(ref self: TState) -> u32;
     // editor functions
-    fn get_claimable_rewards_count(self: @TState, player_address: ContractAddress) -> u32;
+    fn get_claimable_rewards_count(self: @TState, recipient: ContractAddress) -> u32;
     fn claim_rewards(ref self: TState, rewards_count: u32);
     // admin functions
     fn mint_to(ref self: TState, recipient: ContractAddress, actions_count: u32);
@@ -64,6 +64,7 @@ pub trait IActionsTokenPublic<TState> {
 pub trait IActionsTokenProtected<TState> {
     fn calculate_action_cost(ref self: TState, player: Player, command_type: CommandType) -> Result<u128, Error>;
     fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u128);
+    fn claim_actions(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
 #[dojo::contract]
@@ -205,11 +206,12 @@ pub mod actions_token {
         // Editor functions
         //
 
-        fn get_claimable_rewards_count(self: @ContractState, player_address: ContractAddress) -> u32 {
+        fn get_claimable_rewards_count(self: @ContractState, recipient: ContractAddress) -> u32 {
             let world: WorldStorage = self.world_default();
-            let (rewards_count, _): (u32, u128) = self._get_claimable_rewards_count(@world, player_address);
+            let (rewards_count, _): (u32, u128) = self._get_claimable_rewards_count(@world, recipient);
             (rewards_count)
         }
+        
         fn claim_rewards(ref self: ContractState, rewards_count: u32) {
             let mut world: WorldStorage = self.world_default();
             let caller: ContractAddress = starknet::get_caller_address();
@@ -313,6 +315,17 @@ pub mod actions_token {
             // burn player actions
             world.spent_actions(player_address, actions_amount);
             self.erc20.burn(player_address, actions_amount.into());
+        }
+
+        // claim actions collected from player created trails
+        fn claim_actions(ref self: ContractState, recipient: ContractAddress, actions_count: u32) {
+            let mut world: WorldStorage = self.world_default();
+            // validate caller
+            self._assert_caller_is_world_contract(@world);
+            // mint actions...
+            self._mint_to(ref world, recipient, actions_count, ActionsSource::ActionsClaimed);
+            // update actions reward
+            world.set_actions_claimed_as_rewards(recipient, actions_count.into() * CONST::ETH_TO_WEI.low);
         }
     }
 

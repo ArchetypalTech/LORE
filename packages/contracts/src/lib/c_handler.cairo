@@ -16,7 +16,7 @@ use lore::{
         game_token_info::{GameTokenInfo},
         player_account::{PlayerAccountTrait},
         trail_token_info::{TrailTokenInfo, TrailTokenInfoTrait, TrailProgress, MAIN_TRAIL_ID},
-        actions_config::{ActionsReward, ActionsRewardTrait},
+        actions_config::{ActionsConfig, ActionsConfigTrait, ActionsReward, ActionsRewardTrait},
         hub::{TrailTrait},
     },
     types::command_type::{
@@ -33,6 +33,7 @@ use lore::{
             IGameTokenDispatcherTrait,
             ITrailTokenDispatcherTrait,
             IActionsTokenDispatcherTrait,
+            IActionsTokenProtectedDispatcherTrait,
         },
     },
     constants::{
@@ -426,14 +427,34 @@ fn system_command(
             let balance: u256 = world.actions_token_dispatcher().balance_of(player.address);
             let actions_count: u128 = (balance / CONST::ETH_TO_WEI).low;
             player.log_sys(ref world, format!("+sys+actions balance: {}", actions_count));
-
-            let spending: ActionsReward = world.read_model(player.address);
-            if (spending.collected_actions_amount.is_non_zero()) {
-                player.log_sys(ref world, format!("+sys+actions collected: {}", (spending.collected_actions_amount / CONST::ETH_TO_WEI.low)));
-                player.log_sys(ref world, format!("+sys+actions claimed: {}", (spending.claimed_actions_amount / CONST::ETH_TO_WEI.low)));
-                player.log_sys(ref world, format!("+sys+actions claimable: {}", (spending.claimable_actions_amount() / CONST::ETH_TO_WEI.low)));
+            let rewards: ActionsReward = world.read_model(player.address);
+            if (rewards.collected_actions_amount.is_non_zero() || rewards.claimed_actions_amount.is_non_zero()) {
+                let actions_config: ActionsConfig = world.get_actions_config();
+                let actions_collected: u128 = (rewards.collected_actions_amount / CONST::ETH_TO_WEI.low);
+                let actions_claimed: u128 = (rewards.claimed_actions_amount / CONST::ETH_TO_WEI.low);
+                let actions_claimable: u128 = (rewards.claimable_actions_amount() / CONST::ETH_TO_WEI.low);
+                let permits_claimable: u128 = (actions_claimable / actions_config.trail_reward_actions_count.into());
+                player.log_sys(ref world, format!("+sys+actions collected: {}", actions_collected));
+                player.log_sys(ref world, format!("+sys+actions claimed: {}", actions_claimed));
+                player.log_sys(ref world, format!("+sys+actions claimable: {}", actions_claimable));
+                player.log_sys(ref world, format!("+sys+permits claimable: {}", permits_claimable));
             // } else {
             //     player.log_sys(ref world, "+sys+no actions collected");
+            }
+            return Result::Ok(());
+        }
+        if (system_command == "g_claim_actions") {
+            let rewards: ActionsReward = world.read_model(player.address);
+            let actions_claimable_amount: u128 = rewards.claimable_actions_amount();
+            if (actions_claimable_amount.is_non_zero()) {
+                let actions_claimable: u32 = (actions_claimable_amount / CONST::ETH_TO_WEI.low).try_into().unwrap();
+                world.actions_token_protected_dispatcher().claim_actions(player.address, actions_claimable);
+                let balance: u256 = world.actions_token_dispatcher().balance_of(player.address);
+                let actions_balance: u128 = (balance / CONST::ETH_TO_WEI).low;
+                player.log_sys(ref world, format!("+sys+actions claimed: {}", actions_claimable));
+                player.log_sys(ref world, format!("+sys+actions balance: {}", actions_balance));
+            } else {
+                return Result::Err(Error::InsufficientActionsToClaim);
             }
             return Result::Ok(());
         }

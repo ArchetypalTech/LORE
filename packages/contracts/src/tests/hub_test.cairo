@@ -569,6 +569,41 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN tra
         let actions_reward: ActionsReward = sys.world.read_model(OWNER());
 // println!("actions_reward.collected_actions_amount: {}", actions_reward.collected_actions_amount);
         assert_gt!(actions_reward.collected_actions_amount, 0, "actions_reward.collected_actions_amount");
+        assert_eq!(actions_reward.claimed_actions_amount, 0, "actions_reward.claimed_actions_amount");
+
+        // check actions collected balance
+        let game_id_2: u128 = 2;
+        helpers::set_caller(helpers::OWNER());
+        sys.prompt.prompt("", Option::None); // creates game token
+        sys.prompt.prompt("g_actions", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_2, "g_actions");
+        let actions_balance: u128 = (sys.actions.balance_of(OWNER()).low / CONST::ETH_TO_WEI.low);
+        let actions_collected: u128 = (actions_reward.collected_actions_amount / CONST::ETH_TO_WEI.low);
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 5), format!("+sys+actions balance: {}", actions_balance));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 4), format!("+sys+actions collected: {}", actions_collected));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 3), "+sys+actions claimed: 0");
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 2), format!("+sys+actions claimable: {}", actions_collected));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1), "+sys+permits claimable: 0");
+
+        // claim collected actions as actions
+        sys.prompt.prompt("g_claim_actions", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_2, "g_claim_actions");
+        let actions_balance_after: u128 = actions_balance + actions_collected;
+        let actions_collected: u128 = (actions_reward.collected_actions_amount / CONST::ETH_TO_WEI.low);
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 2), format!("+sys+actions claimed: {}", actions_collected));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1), format!("+sys+actions balance: {}", actions_balance_after));
+        assert_eq!(sys.actions.balance_of(OWNER()), actions_balance_after.into() * CONST::ETH_TO_WEI);
+        let actions_reward: ActionsReward = sys.world.read_model(OWNER());
+        assert_gt!(actions_reward.collected_actions_amount, 0, "actions_reward.collected_actions_amount CLAIMED");
+        assert_eq!(actions_reward.claimed_actions_amount, actions_reward.collected_actions_amount, "actions_reward.claimed_actions_amount CLAIMED");
+
+        sys.prompt.prompt("g_actions", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id_2, "g_actions");
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 5), format!("+sys+actions balance: {}", actions_balance_after));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 4), format!("+sys+actions collected: {}", actions_collected));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 3), format!("+sys+actions claimed: {}", actions_collected));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 2), "+sys+actions claimable: 0");
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1), "+sys+permits claimable: 0");
     }
     
     #[test]

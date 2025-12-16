@@ -118,14 +118,17 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
             Error::NotInTheSameTrail => array![
                 "The target is outside the current trail.",
             ],
-            Error::InsufficientActionsBalance => array![
-                "You don't have enough actions to do that.",
-            ],
             Error::NotYourGame => array![
                 "Not your game!",
             ],
             Error::InvalidTrail => array![
                 "Trail does not exist",
+            ],
+            Error::InsufficientActionsBalance => array![
+                "You don't have enough actions to do that.",
+            ],
+            Error::InsufficientActionsToClaim => array![
+                "You don't have enough actions to claim.",
             ],
             _ => array![] // For errors with no message
         };
