@@ -13,6 +13,7 @@ pub mod tests {
             prompt::{IPromptDispatcherTrait},
             game_token::{IGameTokenDispatcherTrait},
             trail_token::{ITrailTokenDispatcherTrait},
+            actions_token::{IActionsTokenDispatcherTrait},
         },
         models::{
             entity::{Entity, EntityImpl},
@@ -24,6 +25,7 @@ pub mod tests {
             reactable::{ReactableInstance},
             container::{Container, ContainerComponent},
             inventory_item::{InventoryItem, InventoryItemComponent},
+            actions_config::{ActionsReward},
         },
         tests::{
             helpers,
@@ -33,6 +35,7 @@ pub mod tests {
             arrays::{ArrayTestUtilsTrait},
             utils::{ByteArrayTraitExt},
         },
+        constants::constants::CONST,
     };
 
     // based on game_token_test::test_token_winner_becomes_editor()
@@ -508,6 +511,64 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN tra
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
 // helpers::print_game_story_last_command(@sys.world, game_id, "look around (exit trail_2 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
+    }
+    
+    #[test]
+    fn test_spend_actions_in_trail() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        helpers::set_caller(helpers::OWNER());
+        sys.actions.set_action_cost_amount(1 * CONST::ETH_TO_WEI.low);
+        // create some rooms
+        let (room_1_entity, _area_1): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 1", "ROOM1", Option::None);
+        //
+        // create player
+        let game_id: u128 = 1;
+        let player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, 0);
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("", Option::None); // creates game token
+// helpers::print_game_story_last_command(@sys.world, game_id, "init");
+        // place in Room 2
+        helpers::set_caller(helpers::OWNER());
+        player.move_to_room(ref sys.world, room_1_entity.inst);
+        //
+        // Create Hub inside ROOM 1
+        helpers::set_caller(helpers::OWNER());
+        let mut hub_1: Hub = HubImpl::add_component(ref sys.world, room_1_entity.inst);
+        // sys.world.write_model(@hub_1);
+        sys.designer.create_hub(array![hub_1.clone()]);
+        // mint Trails
+        let (entity_trail_1, mut trail_1, mut exit_1): (Entity, Trail, Exit) = _mint_trail(ref sys, OWNER());
+        // add trails to hub
+        trail_1.hub_inst = hub_1.inst;
+        trail_1.is_published = true;
+        sys.designer.create_trail(array![trail_1.clone()]);
+        //
+        // Create areas inside trails
+        let (trail_1_area_entity, _trail_1_area): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Trail 1", "TRAIL1", Option::Some(@entity_trail_1));
+        let (_exit_1_entity, _exit_from_trail_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit From Trail 1", "trail_1_exit", @trail_1_area_entity, room_1_entity.inst);
+        exit_1.leads_to = trail_1_area_entity.inst;
+        sys.world.write_model(@exit_1);
+        //
+        // list rooms (with trail)
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("look around", Option::None); // will display the description
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around");
+        sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (+trail_1)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1"); // last exit available
+        //
+        // move to trail 1...
+        sys.prompt.prompt("use trail-1", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "use trail-1");
+        // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
+        sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_1 AGAIN)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_1_exit"); // last exit available
+        
+        // check trail collected actions
+        let actions_reward: ActionsReward = sys.world.read_model(OWNER());
+// println!("actions_reward.collected_actions_amount: {}", actions_reward.collected_actions_amount);
+        assert_gt!(actions_reward.collected_actions_amount, 0, "actions_reward.collected_actions_amount");
     }
     
     #[test]

@@ -171,8 +171,10 @@ fn test_spend_actions_ok() {
     let game_id: u128 = _setup_level(ref sys);
     //
     // balance: 5 (initial free actions)
+    assert_eq!(sys.actions.total_supply(), 0);
     sys.prompt.prompt("g_actions", Option::None);
     assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions balance: 5");
+    assert_eq!(sys.actions.total_supply(), 5 * CONST::ETH_TO_WEI);
     // spend it all...
     sys.prompt.prompt("look around", Option::None);
     sys.prompt.prompt("look around", Option::None);
@@ -182,6 +184,7 @@ fn test_spend_actions_ok() {
     // balance: 0
     sys.prompt.prompt("g_actions", Option::None);
     assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions balance: 0");
+    assert_eq!(sys.actions.total_supply(), 0);
     //
     // try to spend actions...
     sys.prompt.prompt("look around", Option::None);
@@ -195,6 +198,7 @@ fn test_spend_actions_ok() {
     sys.prompt.prompt("g_actions", Option::None);
     assert_eq!(sys.actions.balance_of(PLAYER_1), 100 * CONST::ETH_TO_WEI);
     assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions balance: 100");
+    assert_eq!(sys.actions.total_supply(), 100 * CONST::ETH_TO_WEI);
     //
     // try to spend actions...
     sys.prompt.prompt("look around", Option::None);
@@ -203,6 +207,7 @@ fn test_spend_actions_ok() {
     assert_eq!(sys.actions.balance_of(PLAYER_1), 99 * CONST::ETH_TO_WEI);
     sys.prompt.prompt("g_actions", Option::None);
     assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "+sys+actions balance: 99");
+    assert_eq!(sys.actions.total_supply(), 99 * CONST::ETH_TO_WEI);
 }
 
 
