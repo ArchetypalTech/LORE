@@ -1,6 +1,7 @@
 use starknet::{ContractAddress};
 use dojo::world::IWorldDispatcher;
 use lore::{
+    models::player::{Player},
     types::command_type::{CommandType},
     constants::errors::{Error},
 };
@@ -61,7 +62,7 @@ pub trait IActionsTokenPublic<TState> {
 
 #[starknet::interface]
 pub trait IActionsTokenProtected<TState> {
-    fn calculate_action_cost(ref self: TState, player_address: ContractAddress, command_type: CommandType) -> Result<u128, Error>;
+    fn calculate_action_cost(ref self: TState, player: Player, command_type: CommandType) -> Result<u128, Error>;
     fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u128);
 }
 
@@ -102,6 +103,7 @@ pub mod actions_token {
         models::{
             actions_config::{ActionsConfig, ActionsConfigTrait, ActionsRewardTrait},
             player_account::{PlayerAccountTrait, ActionsSource},
+            player::{Player},
         },
         types::{
             command_type::{CommandType},
@@ -276,18 +278,23 @@ pub mod actions_token {
 
     #[abi(embed_v0)]
     impl IActionsTokenProtectedImpl of super::IActionsTokenProtected<ContractState> {
-        fn calculate_action_cost(ref self: ContractState, player_address: ContractAddress, command_type: CommandType) -> Result<u128, Error> {
+        fn calculate_action_cost(ref self: ContractState, player: Player, command_type: CommandType) -> Result<u128, Error> {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_world_contract(@world);
-            // check if player has free actions to claim
-            self._claim_free_actions(ref world, player_address);
-            // calculate actions cost
-            let actions_amount: u128 = world.calculate_actions_cost(command_type);
-            if actions_amount.is_non_zero() && self.balance_of(player_address).low < actions_amount {
-                return Result::Err(Error::InsufficientActionsBalance);
+            // game zero is free (used for testing only)
+            if (player.game_id == 0) {
+                (Result::Ok(0))
+            } else {
+                // check if player has free actions to claim
+                self._claim_free_actions(ref world, player.address);
+                // calculate actions cost
+                let actions_amount: u128 = world.calculate_actions_cost(command_type);
+                if actions_amount.is_non_zero() && self.balance_of(player.address).low < actions_amount {
+                    return Result::Err(Error::InsufficientActionsBalance);
+                }
+                (Result::Ok(actions_amount))
             }
-            (Result::Ok(actions_amount))
         }
 
         fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u128) {

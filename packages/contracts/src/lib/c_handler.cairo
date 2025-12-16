@@ -386,10 +386,9 @@ fn system_command(
             let player_address: ContractAddress = get_caller_address();
             let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id);
             if (owner == player_address) {
-                player.log_sys(ref world, "+sys+owned by you!");
+                player.log_sys(ref world, "+sys+Your trail!");
             } else {
-                player.log_sys(ref world, format!("+sys+owner: 0x{:x}", owner));
-                player.log_sys(ref world, "+sys+Not your trail!");
+                player.log_sys(ref world, format!("+sys+Owner: 0x{:x}", owner));
             }
             return Result::Ok(());
         }
@@ -430,11 +429,11 @@ fn system_command(
 
             let spending: ActionsReward = world.read_model(player.address);
             if (spending.collected_actions_amount.is_non_zero()) {
-                player.log_sys(ref world, format!("+sys+actions spent: {}", (spending.collected_actions_amount / CONST::ETH_TO_WEI.low)));
+                player.log_sys(ref world, format!("+sys+actions collected: {}", (spending.collected_actions_amount / CONST::ETH_TO_WEI.low)));
                 player.log_sys(ref world, format!("+sys+actions claimed: {}", (spending.claimed_actions_amount / CONST::ETH_TO_WEI.low)));
                 player.log_sys(ref world, format!("+sys+actions claimable: {}", (spending.claimable_actions_amount() / CONST::ETH_TO_WEI.low)));
-            } else {
-                player.log_sys(ref world, "+sys+no actions spent");
+            // } else {
+            //     player.log_sys(ref world, "+sys+no actions collected");
             }
             return Result::Ok(());
         }

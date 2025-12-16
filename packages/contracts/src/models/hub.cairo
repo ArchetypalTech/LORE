@@ -878,17 +878,17 @@ pub mod tests {
         // list invetory
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("inventory", Option::None);
-// helpers::print_game_story_last_command(@sys.world, game_id, "inventory (hub)");
+helpers::print_game_story_last_command(@sys.world, game_id, "inventory (hub)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "item-1"); // last item available
 
         //
         // move to trail 2...
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("use trail-2", Option::None);
-// helpers::print_game_story_last_command(@sys.world, game_id, "use trail-21");
+helpers::print_game_story_last_command(@sys.world, game_id, "use trail-21");
         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
         sys.prompt.prompt("look around", Option::None);
-// helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
+helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_2_exit"); // last exit available
 
         //
@@ -928,14 +928,14 @@ pub mod tests {
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("g_trail_info 1", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id_1, "g_trail_info 1");
-        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_1, 5), "+sys+trail-1");
-        assert!(helpers::game_story_line_backwards(@sys.world, game_id_1, 1).starts_with(@"+sys+actions"));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_1, 2), "+sys+trail-1");
+        assert!(helpers::game_story_line_backwards(@sys.world, game_id_1, 1).starts_with(@"+sys+Your"));
         // owner commands
         helpers::set_caller(helpers::PLAYER_2);
         sys.prompt.prompt("g_trail_info 1", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id_2, "g_trail_info 1");
-        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 3), "+sys+trail-1");
-        assert!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1).starts_with(@"+sys+Not your trail!"));
+        assert_eq!(helpers::game_story_line_backwards(@sys.world, game_id_2, 2), "+sys+trail-1");
+        assert!(helpers::game_story_line_backwards(@sys.world, game_id_2, 1).starts_with(@"+sys+Owner"));
         // invalid
         sys.prompt.prompt("g_trail_info 2", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id_2, "g_trail_info 1");

@@ -55,7 +55,7 @@ pub mod prompt {
                 match (world.lexer_dispatcher().parse(world, cmd, player)) {
                     Result::Ok(command) => {
                         // calculate price per action
-                        let actions_amount: Result<u128, Error> = world.actions_token_protected_dispatcher().calculate_action_cost(player.address, command.command_type);
+                        let actions_amount: Result<u128, Error> = world.actions_token_protected_dispatcher().calculate_action_cost(player, command.command_type);
                         if actions_amount.is_err() {
                             ErrorOutputterImpl::output_error(actions_amount.unwrap_err(), player, ref world);
                             return;
