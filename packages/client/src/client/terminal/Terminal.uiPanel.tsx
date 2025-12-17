@@ -170,11 +170,38 @@ export default function UIPanel() {
                     className="flex items-center justify-between border-b border-emerald-600/30 pb-1"
                   >
                     <span>{p.name}</span>
-                    {p.executed ? (
-                      <Check className="w-4 h-4 text-green-400 ml-2" />
-                    ) : (
-                      <HelpCircle className="w-4 h-4 text-yellow-400 ml-2" />
-                    )}
+
+                    <span
+                      className="relative group ml-2"
+                      tabIndex={0} // enables mobile tap + keyboard focus
+                    >
+                      {p.executed ? (
+                        <Check className="w-4 h-4 text-green-400 cursor-help" />
+                      ) : (
+                        <HelpCircle className="w-4 h-4 text-yellow-400 cursor-help" />
+                      )}
+
+                      {/* Tooltip: For displaying the description of the puzzle */}
+                      <span
+                        className="
+                          pointer-events-none
+                          absolute bottom-full left-1/2 mb-2
+                          w-max max-w-[220px]
+                          -translate-x-1/2 translate-y-1
+                          rounded bg-emerald-900 px-2 py-1
+                          text-xs text-green-100 shadow-lg
+                          opacity-0
+                          transition-all duration-200 ease-out
+                          group-hover:opacity-100
+                          group-hover:translate-y-0
+                          group-focus-within:opacity-100
+                          group-focus-within:translate-y-0
+                          z-20
+                        "
+                      >
+                        {p.description}
+                      </span>
+                    </span>
                   </li>
                 ))
               ) : (

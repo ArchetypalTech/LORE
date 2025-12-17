@@ -505,6 +505,7 @@ const queryPuzzleLocation = async (gameID: bigint, locationInst: bigint): Promis
         // console.log("[Puzzles] Action Entity 2:", actionEntity);
 
         const actionName = actionEntity?.name ?? "unknown";
+        const actionDescription = actionEntity?.description ?? "unknown";
         //console.log("[Puzzles] Action Name 2:", actionName);
 
         // -----------------------------------------------------
@@ -517,6 +518,7 @@ const queryPuzzleLocation = async (gameID: bigint, locationInst: bigint): Promis
           //console.log("[Puzzles] Action has not been registered yet.");
           puzzles.push({
             name: actionName,
+            description: actionDescription,
             executed: false,
           });
           continue;
@@ -527,6 +529,7 @@ const queryPuzzleLocation = async (gameID: bigint, locationInst: bigint): Promis
         // -----------------------------------------------------
         puzzles.push({
           name: actionName,
+          description: actionDescription,
           executed: actionStatus.is_executed,
         });
       }
@@ -593,6 +596,7 @@ const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promis
             // console.log("[Puzzles] Action Entity 2:", actionEntity);
 
             const actionName = actionEntity?.name ?? "unknown";
+            const actionDescription = actionEntity?.description ?? "unknown";
             // console.log("[Puzzles] Action Name:", actionName);
 
             // -----------------------------------------------------
@@ -605,6 +609,7 @@ const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promis
               // console.log("[Puzzles] Action has not been registered yet.");
               puzzles.push({
                 name: actionName,
+                description: actionDescription,
                 executed: false,
               });
               continue;
@@ -615,6 +620,7 @@ const queryPuzzleChildren = async (gameId: bigint, locationInst: bigint): Promis
             // -----------------------------------------------------
             puzzles.push({
               name: actionName,
+              description: actionDescription,
               executed: actionStatus.is_executed,
             });
           }

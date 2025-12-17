@@ -9,6 +9,7 @@ export type ExitInfo = {
 
 export type PuzzleInfo = {
   name: string;
+  description: string;
   executed: boolean | undefined;
 };
 
@@ -46,6 +47,7 @@ export const DefaultValues =  () => {
     panel.setPuzzles([
       {
         name: "Survive the journey",
+        description: "Emabark on a journey and get to the end",
         executed: false,
       },
     ]);
@@ -72,6 +74,7 @@ const { get, set, useStore: useUIPanelStore, createFactory } =
     puzzles: [
       {
         name: "Survive the journey",
+        description: "Emabark on a journey and get to the end",
         executed: false,
       },
     ],
