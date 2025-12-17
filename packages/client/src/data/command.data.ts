@@ -527,7 +527,14 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	trailer: (context: commandContext) => {
 		if (context.args[0] as unknown as number) {
 			const newTimeout = context.args[0] as unknown as number;
+			console.log("newTimeout", newTimeout);
 			SetTimerForIdle(newTimeout);
 		}
+
+		addTerminalContent({
+			text: `You have ${coinsBalance} Usants coins`,
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 } as const;
