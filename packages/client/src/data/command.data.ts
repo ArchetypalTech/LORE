@@ -532,7 +532,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 
 		addTerminalContent({
-			text: `You have ${coinsBalance} Usants coins`,
+			text: "",
 			format: "hash",
 			useTypewriter: true,
 		});
