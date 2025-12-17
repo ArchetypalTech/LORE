@@ -28,6 +28,8 @@ import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
+import { SetTimerForIdle }  from "@/client/terminal/Terminal.tsx";
+
 
 /**
  * Context object passed to each terminal command handler
@@ -521,5 +523,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "error",
 			useTypewriter: true,
 		});
+	},
+	trailer: (context: commandContext) => {
+		if (context.args[0] as unknown as number) {
+			const newTimeout = context.args[0] as unknown as number;
+			SetTimerForIdle(newTimeout);
+		}
 	},
 } as const;

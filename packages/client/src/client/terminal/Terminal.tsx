@@ -15,6 +15,12 @@ import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { BigNumberish } from "starknet";
 import { useSyncGameId } from "@/lib/stores/game.store";
 
+
+export function SetTimerForIdle(newTimeout: number) {
+	const store = useTerminalStore();
+	store.setIdleTimeout(newTimeout);
+}
+
 export default function Terminal({
 	gameId: inputGameId,
 }: {
@@ -36,7 +42,7 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying, idleTimeout } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
@@ -44,7 +50,7 @@ export default function Terminal({
 	// --- IDLE VIDEO STATE ---
 	const [isIdle, setIsIdle] = useState(false);
 	const idleTimeoutRef = useRef<number | null>(null);
-	const IDLE_DELAY = 1 * 30 * 1000; // 30 seconds (30000 ms)
+	const IDLE_DELAY = 1 * 1000 * idleTimeout; // 30 seconds (30000 ms)
 	// 2 minutes (120000 ms)
 	
 	// helper: clear timer

@@ -34,6 +34,8 @@ const {
 	focusLocked: true as boolean,
 	idleVideoPlaying: false,
   setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
+	idleTimeout: 30 as number,
+	setIdleTimeout: (v: number) => set({ idleTimeout: v }),
 });
 
 /**
