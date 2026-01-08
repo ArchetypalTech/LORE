@@ -26,7 +26,9 @@ import {
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
-import UIPanelStore from "@/lib/stores/terminal.uiPanel.store";
+import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
+import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
+
 
 /**
  * Context object passed to each terminal command handler
@@ -304,6 +306,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		// check for game
+		const gameId = GameStore().gameId;
+		const panel = UIPanelStore();
+		if (!gameId) {
+			// if no game, set default values for Info Panel
+			DefaultValues();
+			panel.show();
+		} else {
+			// if game, show Info Panel
+			panel.show();
+		}
 	},
 	wallet: async () => {
 		if (!WalletStore().isConnected) {
@@ -328,6 +341,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		// Reset Info Panel
+		DefaultValues();
 		return;
 	},
 	_bypass: ({ command }) => {
@@ -425,10 +440,20 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	_triggers: () => {
 		const triggers = queryTriggers();
 		console.log("TRIGGERS RESULT", triggers);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_actions: () => {
 		const actions = queryExecActions();
 		console.log("ACTIONS RESULT", actions);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_components: async (context: commandContext) => {
 		let game_id = context.args.length > 0
@@ -458,13 +483,21 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 	},
 	ui: (context: commandContext) => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		
 		const panel = UIPanelStore();
 
 		// ui show
 		if (context.args[0] === "show") {
 			panel.show();
+			const gameId = GameStore().gameId;
+			if (!gameId) return;
+			queryPanelInfo(BigInt(gameId));
 			addTerminalContent({
-				text: "UI panel shown.",
+				text: "Info Panel shown.",
 				format: "system",
 				useTypewriter: true,
 			});
@@ -475,7 +508,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "hide") {
 			panel.hide();
 			addTerminalContent({
-				text: "UI panel hidden.",
+				text: "Info Panel hidden.",
 				format: "system",
 				useTypewriter: true,
 			});

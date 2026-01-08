@@ -1,7 +1,7 @@
 import JSONbig from "json-bigint";
 import { LORE_CONFIG } from "@lib/config";
 import { toast } from "sonner";
-import { addAddressPadding, type BigNumberish, num } from "starknet";
+import { addAddressPadding, type BigNumberish, num, wallet } from "starknet";
 import type { TokenBalances } from "@dojoengine/torii-client";
 import type {
 	Entity,
@@ -1066,7 +1066,6 @@ export const queryInvItemGIMap = async (gameInst: bigint, origInst: bigint): Pro
 				).build()
 			).withEntityModels(["lore-InventoryItem"]);
 			
-			
 			const result_inv_item = await sdk.getEntities({ query: query_inv_item });
 			console.log("DEBUG: queryInvItemGIMap() result_inv_item: ", result_inv_item);
 
@@ -1408,6 +1407,7 @@ const syncEntities = async () => {
 		throw error;
 	}
 };
+
 
 const EditorData = createFactory({
 	get,
