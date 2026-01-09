@@ -37,8 +37,7 @@ use dojo::{
 };
 use lore::{
     types::command_type::{CommandType},
-    constants::constants::{TIMESTAMP},
-    constants::appchain::{PERMIT_TYPES},
+    constants::appchain::{CONFIG, PERMIT_TYPES},
     systems::actions_token::actions_token::{Errors as ActionsErrors},
 };
 
@@ -46,16 +45,15 @@ use lore::{
 pub impl ActionsConfigImpl of ActionsConfigTrait {
     fn initialize_actions_config(ref self: WorldStorage,
         sn_contract: ContractAddress,
-        action_cost_amount: u128,
     ) {
         let actions_config: ActionsConfig = ActionsConfig {
             key: ACTIONS_KEY,
             sn_contract,
-            action_cost_amount,
-            initial_free_actions_count: 5,
-            max_free_actions_count: 5,
-            free_action_claim_interval: TIMESTAMP::ONE_HOUR,
+            action_cost_amount: CONFIG::ACTION_COST_AMOUNT,
+            initial_free_actions_count: CONFIG::INITIAL_FREE_ACTIONS_COUNT,
+            max_free_actions_count: CONFIG::MAX_FREE_ACTIONS_COUNT,
             trail_reward_actions_count: PERMIT_TYPES::CREATOR_REWARD_ACTIONS_COUNT,
+            free_action_claim_interval: CONFIG::FREE_ACTION_CLAIM_INTERVAL,
         };
         self.write_model(@actions_config);
     }

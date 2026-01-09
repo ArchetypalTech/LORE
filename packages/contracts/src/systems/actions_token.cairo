@@ -142,15 +142,13 @@ pub mod actions_token {
 
     fn dojo_init(ref self: ContractState,
         sn_contract: ContractAddress,
-        action_cost: u32,
     ) {
         let mut world: WorldStorage = self.world_default();
         self.erc20.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
         );
-        let action_cost_amount: u128 = (action_cost.into() * CONST::ETH_TO_WEI.low);
-        world.initialize_actions_config(sn_contract, action_cost_amount);
+        world.initialize_actions_config(sn_contract);
     }
     
     #[generate_trait]

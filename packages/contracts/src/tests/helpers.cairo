@@ -145,7 +145,6 @@ fn core_contract_defs() -> Span<ContractDef> {
             .with_writer_of([dojo::utils::bytearray_hash(@"lore"),].span())
             .with_init_calldata(array![
                 0x0.try_into().unwrap(), // sn_contract
-                0, // actions are free for testing
             ].span()),
     ].span()
 }
@@ -185,10 +184,13 @@ pub fn setup_core() -> HelperSystems {
     testing::set_block_number(1);
     testing::set_block_timestamp(1);
 
-    // burn entity 0 value
+    // force increment uuid (avoid entity 0 value)
     EntityImpl::create_entity(ref world, "entity_0");
 
     DictionaryTrait::initialize_dictionary(ref world);
+
+    // actions are free for testing
+    actions.set_action_cost_amount(0);
 
     (HelperSystems {
         world,
