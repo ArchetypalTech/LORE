@@ -58,7 +58,7 @@ pub trait IPermitToken<TState> {
     fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
     fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
     fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
-    fn consume_message_value(ref self: TState, value: felt252);
+    fn consume_message(ref self: TState, payload: Span<felt252>);
 }
 
 #[starknet::interface]
@@ -70,7 +70,7 @@ trait IPermitTokenPublic<TState> {
     fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
     fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
     // messaging
-    fn consume_message_value(ref self: TState, value: felt252);
+    fn consume_message(ref self: TState, payload: Span<felt252>);
 }
 
 #[dojo::contract]
@@ -130,7 +130,7 @@ pub mod permit_token {
         permit_config::{PermitConfig, PermitConfigTrait},
         permit_token_info::{PermitTokenInfo, PermitType},
         permit_metadata::{permit_metadata, orug_metadata},
-        appchain::{PERMIT_TYPES},
+        appchain::{APPCHAIN},
     };
     use lore_sn::lib::{
         dns::{SELECTORS},
@@ -169,12 +169,12 @@ pub mod permit_token {
         );
         // initialize permit types
         world.write_model(@PermitType {
-            permit_type: PERMIT_TYPES::STARTER_PACK,
-            actions_count: PERMIT_TYPES::STARTER_PACK_ACTIONS_COUNT,
+            permit_type: APPCHAIN::PERMIT_TYPES::STARTER_PACK,
+            actions_count: APPCHAIN::STARTER_PACK_ACTIONS_COUNT,
         });
         world.write_model(@PermitType {
-            permit_type: PERMIT_TYPES::CREATOR_REWARD,
-            actions_count: PERMIT_TYPES::CREATOR_REWARD_ACTIONS_COUNT,
+            permit_type: APPCHAIN::PERMIT_TYPES::CREATOR_REWARD,
+            actions_count: APPCHAIN::CREATOR_REWARD_ACTIONS_COUNT,
         });
     }
     
@@ -204,7 +204,7 @@ pub mod permit_token {
             let mut world: WorldStorage = self.world_default();
             world.write_model(@PermitTokenInfo {
                 permit_id: token_id,
-                permit_type: PERMIT_TYPES::STARTER_PACK,
+                permit_type: APPCHAIN::PERMIT_TYPES::STARTER_PACK,
                 is_used: false,
                 trail_name: "",
             });
@@ -247,11 +247,10 @@ pub mod permit_token {
         //-----------------------------------
         /// L3 > L2
         /// Consume a message registered by the appchain.
-        fn consume_message_value(ref self: ContractState,
-            value: felt252,
+        fn consume_message(ref self: ContractState,
+            payload: Span<felt252>,
         ) {
-            let payload: Span<felt252> = array![value].span();
-            self._consume_message_value(payload);
+            self._consume_message(payload);
         }
     }
 
@@ -312,7 +311,7 @@ pub mod permit_token {
             messaging.send_message_to_appchain(messaging_config.appchain_contract, selector, serialized_payload.span());
         }
 
-        fn _consume_message_value(ref self: ContractState,
+        fn _consume_message(ref self: ContractState,
             payload: Span<felt252>,
         ) {
             let messaging_config: PermitConfig = self.world_default().read_model(1);
@@ -332,6 +331,10 @@ pub mod permit_token {
 
             // msg successfully consumed, we can proceed and process the data
             // in the payload.
+            // for i in 0..payload.len() {
+            //     let payload_item: felt252 = *payload.at(i);
+            //     println!("payload[{}]: {}", i, payload_item);
+            // }
         }
     }
 

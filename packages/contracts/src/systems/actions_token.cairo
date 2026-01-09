@@ -40,6 +40,7 @@ pub trait IActionsToken<TState> {
     fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
     fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
+    fn send_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
 }
 
 #[starknet::interface]
@@ -58,6 +59,7 @@ pub trait IActionsTokenPublic<TState> {
     fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
     fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
+    fn send_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
 }
 
 #[starknet::interface]
@@ -74,7 +76,7 @@ pub mod actions_token {
     use dojo::{
         world::{WorldStorage, IWorldDispatcherTrait},
         // model::ModelStorage,
-        // event::EventStorage,
+        event::{EventStorage},
     };
 
     //-----------------------------------
@@ -115,10 +117,9 @@ pub mod actions_token {
                 DnsTrait, SELECTORS,
                 ITrailTokenDispatcherTrait,
             },
-            arrays::{ArrayUtilsTrait},
         },
         constants::{
-            appchain::{PERMIT_TYPES},
+            appchain::{APPCHAIN, AppchainEventTrait, AppchainMessageEvent},
             constants::{CONST},
             errors::{Error},
         },
@@ -221,11 +222,12 @@ pub mod actions_token {
             // send message to L2 claiming actions as permits
             //
             // let trail_name: ByteArray = world.get_trail_name(trail_id);
-            let payload: Span<felt252> = array![
-                PERMIT_TYPES::CREATOR_REWARD.into(),
-                rewards_count.into(),
-            ].span();
-            self._send_message(@world, selector!("claim_permit_rewards"), payload);
+            let event: AppchainMessageEvent = world.pack_mint_permit_rewards_event(
+                APPCHAIN::PERMIT_TYPES::CREATOR_REWARD,
+                caller,
+                rewards_count,
+            );
+            self._send_message(ref world, event);
         }
 
         //-----------------------------------
@@ -273,6 +275,21 @@ pub mod actions_token {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_admin(@world);
             world.set_trail_reward_actions_count(trail_reward_actions_count);
+        }
+
+        fn send_rewards(ref self: ContractState, recipient: ContractAddress, rewards_count: u32) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_owner(@world);
+            assert(rewards_count.is_non_zero(), Errors::INVALID_REWARDS_COUNT);
+            //
+            // send message to L2 claiming actions as permits
+            //
+            let event: AppchainMessageEvent = world.pack_mint_permit_rewards_event(
+                APPCHAIN::PERMIT_TYPES::FREE_REWARD,
+                recipient,
+                rewards_count,
+            );
+            self._send_message(ref world, event);
         }
     }
 
@@ -394,16 +411,13 @@ pub mod actions_token {
         // L3 > L2 messaging
         // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/contract_msg_starknet.cairo
         //
-        fn _send_message(ref self: ContractState, world: @WorldStorage, selector: felt252, values: Span<felt252>) {
-            // Since the blockifier does not support sending to an address larger than `EthAddress`,
-            // we send the address as the first value of the payload, and use the magic value `MSG` as the `to_address`.
+        fn _send_message(ref self: ContractState, ref world: WorldStorage, event: AppchainMessageEvent) {
+            // send message
             let actions_config: ActionsConfig = world.get_actions_config();
             let to_address: ContractAddress = actions_config.sn_contract;
-            let mut payload: Array<felt252> = array![
-                selector,
-            ];
-            payload.extend_from_span(values);
-            starknet::syscalls::send_message_to_l1_syscall(to_address.into(), payload.span()).unwrap_syscall();
+            starknet::syscalls::send_message_to_l1_syscall(to_address.into(), event.payload.span()).unwrap_syscall();
+            // dispatch event
+            world.emit_event(@event);
         }
     }
 
