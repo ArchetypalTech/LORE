@@ -33,8 +33,8 @@
   },
   "contracts": [
     {
-      "address": "0x7cae6259fab2de092ddb0e97a7233909ccbe161c8cf9ab3afcbf31f85598a5",
-      "class_hash": "0x5ff57bbfe6b402b4a57e72f0d7415306ee6a7eb742899804b68938ffc87361d",
+      "address": "0x7dc2fd2709fccf08bb3d87376057f612c7da1cdbb9f066ed7ad74b09a9ba7cb",
+      "class_hash": "0x5dfdd3eb54d079e095da9264b26c70bbc8ae99f43125733bd131bc5228239ce",
       "init_calldata": [
         "0x0",
         "0x0",
@@ -49,7 +49,7 @@
         "set_appchain_contract",
         "set_cartridge_contract",
         "set_permit_type",
-        "consume_message_value",
+        "consume_message",
         "upgrade",
         "safe_transfer_from",
         "transfer_from",
@@ -126,16 +126,64 @@
         },
         {
           "name": "actions_count",
-          "type": "core::integer::u16",
+          "type": "core::integer::u32",
           "key": false
         }
       ],
-      "class_hash": "0x656285130f91d4cb85a7d096f0e18ebd3673651509523461b9ee477262f5c61",
+      "class_hash": "0x78614f494dbfe36ffb386cc54226dd2c7760417fe9067218bad60f2e1dd13b8",
       "tag": "lore_sn-PermitType",
       "selector": "0x7caf7f9dbcbb4913459126a00f62c827f9ba7c37e5be402f2246f4530dc53e1"
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "caller_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "from_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "to_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "message_type",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "payload",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        }
+      ],
+      "class_hash": "0x66694f6d9c9f4a4d2cc239964c5ca77144e421123bfbd2d362bf3bd557810c6",
+      "tag": "lore_sn-AppchainMessageEvent",
+      "selector": "0x53747592e0b56248201d6f92208db88970ab41abd528ab924cc023c0ec09fc"
+    }
+  ],
   "external_contracts": [],
   "abis": [
     {
@@ -362,6 +410,41 @@
       "type": "interface",
       "name": "dojo::contract::interface::IContract",
       "items": []
+    },
+    {
+      "type": "struct",
+      "name": "dojo::event::event::EventDef",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "layout",
+          "type": "dojo::meta::layout::Layout"
+        },
+        {
+          "name": "schema",
+          "type": "dojo::meta::introspect::Struct"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::event::interface::IEvent",
+      "items": [
+        {
+          "type": "function",
+          "name": "definition",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::event::event::EventDef"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
     },
     {
       "type": "interface",
@@ -1950,8 +2033,8 @@
       "name": "ensure_abi",
       "inputs": [
         {
-          "name": "model",
-          "type": "lore_sn::models::permit_token_info::PermitType"
+          "name": "event",
+          "type": "lore_sn::models::appchain::AppchainMessageEvent"
         }
       ],
       "outputs": [],
@@ -1970,11 +2053,89 @@
       "inputs": [
         {
           "name": "value",
-          "type": "lore_sn::models::permit_token_info::PermitTypeValue"
+          "type": "lore_sn::models::appchain::AppchainMessageEventValue"
         }
       ],
       "outputs": [],
       "state_mutability": "view"
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::appchain::AppchainMessageEvent",
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "caller_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "from_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "to_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_type",
+          "type": "core::felt252"
+        },
+        {
+          "name": "payload",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::appchain::AppchainMessageEventValue",
+      "members": [
+        {
+          "name": "caller_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "from_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "to_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_type",
+          "type": "core::felt252"
+        },
+        {
+          "name": "payload",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::models::appchain::e_AppchainMessageEvent::Event",
+      "kind": "enum",
+      "variants": []
     },
     {
       "type": "struct",
@@ -2072,7 +2233,7 @@
         },
         {
           "name": "actions_count",
-          "type": "core::integer::u16"
+          "type": "core::integer::u32"
         }
       ]
     },
@@ -2082,7 +2243,7 @@
       "members": [
         {
           "name": "actions_count",
-          "type": "core::integer::u16"
+          "type": "core::integer::u32"
         }
       ]
     },
@@ -2164,7 +2325,7 @@
             },
             {
               "name": "actions_count",
-              "type": "core::integer::u16"
+              "type": "core::integer::u32"
             }
           ],
           "outputs": [],
@@ -2172,11 +2333,11 @@
         },
         {
           "type": "function",
-          "name": "consume_message_value",
+          "name": "consume_message",
           "inputs": [
             {
-              "name": "value",
-              "type": "core::felt252"
+              "name": "payload",
+              "type": "core::array::Span::<core::felt252>"
             }
           ],
           "outputs": [],

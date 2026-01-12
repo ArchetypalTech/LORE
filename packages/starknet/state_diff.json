@@ -1,55 +1,27 @@
 StateMaps {
-    nonces: {},
+    nonces: {
+        ContractAddress(
+            PatriciaKey(
+                0x1f401c745d3dba9b9da11921d1fb006c96f571e9039a0ece3f3b0dc14f04c3d,
+            ),
+        ): Nonce(
+            0x39,
+        ),
+    },
     class_hashes: {},
     storage: {
         (
             ContractAddress(
                 PatriciaKey(
-                    0x3bc6405f55d93687c1a94b19693cb94c408fefb7b84d03e6e80571fe5106858,
+                    0x6edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403,
                 ),
             ),
             StorageKey(
                 PatriciaKey(
-                    0x110e2f729c9c2b988559994a3daccd838cf52faf88e18101373e67dd061455a,
+                    0x2b1577440dd7bedf920cb6de2f9fc6bf7ba98c78c85a3fa1f8311aac95e1759,
                 ),
             ),
-        ): 0x1158e460913d00000,
-        (
-            ContractAddress(
-                PatriciaKey(
-                    0x2,
-                ),
-            ),
-            StorageKey(
-                PatriciaKey(
-                    0x4fc7b23d1ef6e4f099416be09d83699fe35126d2a42325636e93745a36ce3cb,
-                ),
-            ),
-        ): 0x4e1,
-        (
-            ContractAddress(
-                PatriciaKey(
-                    0x2,
-                ),
-            ),
-            StorageKey(
-                PatriciaKey(
-                    0x0,
-                ),
-            ),
-        ): 0x4e2,
-        (
-            ContractAddress(
-                PatriciaKey(
-                    0x3bc6405f55d93687c1a94b19693cb94c408fefb7b84d03e6e80571fe5106858,
-                ),
-            ),
-            StorageKey(
-                PatriciaKey(
-                    0x4fc7b23d1ef6e4f099416be09d83699fe35126d2a42325636e93745a36ce3cb,
-                ),
-            ),
-        ): 0x1158e460913d00000,
+        ): 0x2,
     },
     compiled_class_hashes: {},
     declared_contracts: {},

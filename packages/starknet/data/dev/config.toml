@@ -7,7 +7,7 @@ strk = "0x2e7442625bab778683501c0eadbc1ea17b3535da040a12ac7d281066e915eea"
 [settlement.starknet]
 rpc_url = "http://localhost:50000/"
 account = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-core_contract = "0x65d3f9cef44a371bb67a9b42c12d69e6e190c1e0688625f7e625fe1b1591aae"
+core_contract = "0x5cc04fa3bfe180fb461867bf8d8ed1ca44884db3ecf2373c7d14ecf5e247381"
 block = 4
 
 [settlement.starknet.id]

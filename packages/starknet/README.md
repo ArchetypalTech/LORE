@@ -50,13 +50,13 @@ sozo call --world $L2_WORLD_ADDRESS lore_sn-permit_token balance_of $RECIPIENT
 #
 # L3: validate actions balance (must be greater than zero)
 cd packages/contracts/
-sozo model get lore-ActionsConfig 1
 sozo call --world $L3_WORLD_ADDRESS lore-actions_token balance_of $RECIPIENT
 #
 # L3 > L2 messaging
 #
 # L3: send message to mint rewards on L2
 cd packages/contracts/
+sozo model get lore-ActionsConfig 1
 sozo execute --world $L3_WORLD_ADDRESS --wait lore-actions_token send_rewards $RECIPIENT 0x1
 # L3: find message event (the last one must be lore-AppchainMessageEvent)
 sozo events --world $L3_WORLD_ADDRESS | tail -n 9

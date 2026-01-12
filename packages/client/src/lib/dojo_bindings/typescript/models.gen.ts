@@ -30,6 +30,18 @@ export interface ActionExecuted {
 export interface ActionsConfig {
 	key: BigNumberish;
 	sn_contract: string;
+	action_cost_amount: BigNumberish;
+	initial_free_actions_count: BigNumberish;
+	max_free_actions_count: BigNumberish;
+	free_action_claim_interval: BigNumberish;
+	trail_reward_actions_count: BigNumberish;
+}
+
+// Type definition for `lore::models::actions_config::ActionsReward` struct
+export interface ActionsReward {
+	player_address: string;
+	collected_actions_amount: BigNumberish;
+	claimed_actions_amount: BigNumberish;
 }
 
 // Type definition for `lore::models::area::Area` struct
@@ -152,12 +164,6 @@ export interface GameTokenInfo {
 	act_number: BigNumberish;
 }
 
-// Type definition for `lore::models::game_token_info::PlayerGame` struct
-export interface PlayerGame {
-	player_address: string;
-	current_game_id: BigNumberish;
-}
-
 // Type definition for `lore::models::hub::Hub` struct
 export interface Hub {
 	inst: BigNumberish;
@@ -229,6 +235,25 @@ export interface StoryLine {
 	key: BigNumberish;
 	line: string;
 	line_type: StoryLineTypeEnum;
+}
+
+// Type definition for `lore::models::player_account::PlayerAccount` struct
+export interface PlayerAccount {
+	player_address: string;
+	timestamp_joined: BigNumberish;
+	timestamp_free_actions_claimed: BigNumberish;
+	minted_actions_count: BigNumberish;
+	purchase_count: BigNumberish;
+	subscription_count: BigNumberish;
+	current_game_id: BigNumberish;
+}
+
+// Type definition for `lore::models::player_account::PlayerBalances` struct
+export interface PlayerBalances {
+	player_address: string;
+	free_actions_balance: BigNumberish;
+	paid_actions_balance: BigNumberish;
+	sub_actions_balance: BigNumberish;
 }
 
 // Type definition for `lore::models::reactable::Reactable` struct
@@ -347,6 +372,18 @@ export interface Task {
 	id: BigNumberish;
 	total: BigNumberish;
 	description: string;
+}
+
+// Type definition for `lore::constants::appchain::AppchainMessageEvent` struct
+export interface AppchainMessageEvent {
+	uuid: BigNumberish;
+	caller_address: string;
+	from_address: string;
+	to_address: string;
+	block_number: BigNumberish;
+	block_timestamp: BigNumberish;
+	message_type: BigNumberish;
+	payload: Array<BigNumberish>;
 }
 
 // Type definition for `lore::lib::access::AccessGrantedEvent` struct
@@ -595,11 +632,76 @@ export const propertyType = [
 export type PropertyType = { [key in typeof propertyType[number]]: string };
 export type PropertyTypeEnum = CairoCustomEnum;
 
+// Type definition for `lore::constants::errors::Error` enum
+export const error = [
+	'Unimplemented',
+	'WordTooLong',
+	'LexerFailed',
+	'TestError',
+	'ActionFailed',
+	'NotSystemAction',
+	'EntityNotFound',
+	'NoDictionaryMatch',
+	'None',
+	'TriggerNotFound',
+	'NameTooLong',
+	'FailedToUpdateTriggerIndex',
+	'FailedToRemoveTriggerIndex',
+	'TriggerNotMeetConditions',
+	'OnceUseOnly',
+	'ConditionFailed',
+	'NotInTheSameTrail',
+	'EffectFailed',
+	'EffectNotFound',
+	'ReadOnlyVariable',
+	'NoPropertyRegistry',
+	'NoComponent',
+	'NoAreaComponent',
+	'NoExitComponent',
+	'NoReactableComponent',
+	'NoInventoryItemComponent',
+	'NoContainerComponent',
+	'NoPlayerComponent',
+	'NoTargetEntity',
+	'NameNotMatch',
+	'DirectionNotMatch',
+	'Unenterable',
+	'FailToReactTo',
+	'NoTarget',
+	'NotOpen',
+	'ContainerFull',
+	'CantStore',
+	'NoPersonalContainer',
+	'NoContainer',
+	'CantBePicked',
+	'CantBeStored',
+	'AlreadyStored',
+	'NotStored',
+	'NotEditor',
+	'NoRoom',
+	'NotYourGame',
+	'InvalidTrail',
+	'InsufficientActionsBalance',
+	'InsufficientActionsToClaim',
+] as const;
+export type Error = { [key in typeof error[number]]: string };
+export type ErrorEnum = CairoCustomEnum;
+
+// Type definition for `lore::types::command_type::CommandType` enum
+export const commandType = [
+	'Unknown',
+	'System',
+	'Action',
+] as const;
+export type CommandType = { [key in typeof commandType[number]]: string };
+export type CommandTypeEnum = CairoCustomEnum;
+
 export interface SchemaType extends ISchemaType {
 	lore: {
 		Action: Action,
 		ActionExecuted: ActionExecuted,
 		ActionsConfig: ActionsConfig,
+		ActionsReward: ActionsReward,
 		Area: Area,
 		Condition: Condition,
 		Container: Container,
@@ -613,7 +715,6 @@ export interface SchemaType extends ISchemaType {
 		GameInstanceKeyMap: GameInstanceKeyMap,
 		GameInstanceMap: GameInstanceMap,
 		GameTokenInfo: GameTokenInfo,
-		PlayerGame: PlayerGame,
 		Hub: Hub,
 		Trail: Trail,
 		ComponentVariable: ComponentVariable,
@@ -622,6 +723,8 @@ export interface SchemaType extends ISchemaType {
 		Player: Player,
 		PlayerStory: PlayerStory,
 		StoryLine: StoryLine,
+		PlayerAccount: PlayerAccount,
+		PlayerBalances: PlayerBalances,
 		Reactable: Reactable,
 		TrailProgress: TrailProgress,
 		TrailTokenInfo: TrailTokenInfo,
@@ -636,6 +739,7 @@ export interface SchemaType extends ISchemaType {
 		TrophyCreation: TrophyCreation,
 		TrophyProgression: TrophyProgression,
 		Task: Task,
+		AppchainMessageEvent: AppchainMessageEvent,
 		AccessGrantedEvent: AccessGrantedEvent,
 		GameCreatedEvent: GameCreatedEvent,
 		TrailCreatedEvent: TrailCreatedEvent,
@@ -674,6 +778,16 @@ export const schema: SchemaType = {
 		ActionsConfig: {
 			key: 0,
 			sn_contract: "",
+			action_cost_amount: 0,
+			initial_free_actions_count: 0,
+			max_free_actions_count: 0,
+			free_action_claim_interval: 0,
+			trail_reward_actions_count: 0,
+		},
+		ActionsReward: {
+			player_address: "",
+			collected_actions_amount: 0,
+			claimed_actions_amount: 0,
 		},
 		Area: {
 			inst: 0,
@@ -830,10 +944,6 @@ export const schema: SchemaType = {
 		room_name: "",
 			act_number: 0,
 		},
-		PlayerGame: {
-			player_address: "",
-			current_game_id: 0,
-		},
 		Hub: {
 			inst: 0,
 			is_hub: false,
@@ -936,6 +1046,21 @@ export const schema: SchemaType = {
 				SysResponse: undefined,
 				Debug: undefined,
 				Error: undefined, }),
+		},
+		PlayerAccount: {
+			player_address: "",
+			timestamp_joined: 0,
+			timestamp_free_actions_claimed: 0,
+			minted_actions_count: 0,
+			purchase_count: 0,
+			subscription_count: 0,
+			current_game_id: 0,
+		},
+		PlayerBalances: {
+			player_address: "",
+			free_actions_balance: 0,
+			paid_actions_balance: 0,
+			sub_actions_balance: 0,
 		},
 		Reactable: {
 			inst: 0,
@@ -1069,6 +1194,16 @@ export const schema: SchemaType = {
 			total: 0,
 		description: "",
 		},
+		AppchainMessageEvent: {
+			uuid: 0,
+			caller_address: "",
+			from_address: "",
+			to_address: "",
+			block_number: 0,
+			block_timestamp: 0,
+			message_type: 0,
+			payload: [0],
+		},
 		AccessGrantedEvent: {
 			address: "",
 			role: 0,
@@ -1135,6 +1270,7 @@ export enum ModelsMapping {
 	Action = 'lore-Action',
 	ActionExecuted = 'lore-ActionExecuted',
 	ActionsConfig = 'lore-ActionsConfig',
+	ActionsReward = 'lore-ActionsReward',
 	Area = 'lore-Area',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
@@ -1148,7 +1284,6 @@ export enum ModelsMapping {
 	GameInstanceKeyMap = 'lore-GameInstanceKeyMap',
 	GameInstanceMap = 'lore-GameInstanceMap',
 	GameTokenInfo = 'lore-GameTokenInfo',
-	PlayerGame = 'lore-PlayerGame',
 	Hub = 'lore-Hub',
 	Trail = 'lore-Trail',
 	ComponentVariable = 'lore-ComponentVariable',
@@ -1158,6 +1293,8 @@ export enum ModelsMapping {
 	PlayerStory = 'lore-PlayerStory',
 	StoryLine = 'lore-StoryLine',
 	StoryLineType = 'lore-StoryLineType',
+	PlayerAccount = 'lore-PlayerAccount',
+	PlayerBalances = 'lore-PlayerBalances',
 	Reactable = 'lore-Reactable',
 	TrailProgress = 'lore-TrailProgress',
 	TrailTokenInfo = 'lore-TrailTokenInfo',
@@ -1184,9 +1321,12 @@ export enum ModelsMapping {
 	TrophyCreation = 'achievement-TrophyCreation',
 	TrophyProgression = 'achievement-TrophyProgression',
 	Task = 'achievement-Task',
+	AppchainMessageEvent = 'lore-AppchainMessageEvent',
 	AccessGrantedEvent = 'lore-AccessGrantedEvent',
 	GameCreatedEvent = 'lore-GameCreatedEvent',
 	TrailCreatedEvent = 'lore-TrailCreatedEvent',
+	Error = 'lore-Error',
+	CommandType = 'lore-CommandType',
 	BatchMetadataUpdate = 'nft_combo-BatchMetadataUpdate',
 	ContractURIUpdated = 'nft_combo-ContractURIUpdated',
 	MetadataUpdate = 'nft_combo-MetadataUpdate',

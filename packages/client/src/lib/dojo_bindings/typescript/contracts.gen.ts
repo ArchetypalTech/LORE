@@ -59,6 +59,111 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_token_calculateActionCost_calldata = (player: models.Player, commandType: CairoCustomEnum): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "calculate_action_cost",
+			calldata: [player, commandType],
+		};
+	};
+
+	const actions_token_calculateActionCost = async (snAccount: Account | AccountInterface, player: models.Player, commandType: CairoCustomEnum) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_calculateActionCost_calldata(player, commandType),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_chargePlayerActions_calldata = (playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "charge_player_actions",
+			calldata: [playerAddress, trailId, actionsAmount],
+		};
+	};
+
+	const actions_token_chargePlayerActions = async (snAccount: Account | AccountInterface, playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_chargePlayerActions_calldata(playerAddress, trailId, actionsAmount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_claimActions_calldata = (recipient: string, actionsCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "claim_actions",
+			calldata: [recipient, actionsCount],
+		};
+	};
+
+	const actions_token_claimActions = async (snAccount: Account | AccountInterface, recipient: string, actionsCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_claimActions_calldata(recipient, actionsCount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_claimFreeActions_calldata = (): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "claim_free_actions",
+			calldata: [],
+		};
+	};
+
+	const actions_token_claimFreeActions = async (snAccount: Account | AccountInterface) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_claimFreeActions_calldata(),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_claimRewards_calldata = (rewardsCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "claim_rewards",
+			calldata: [rewardsCount],
+		};
+	};
+
+	const actions_token_claimRewards = async (snAccount: Account | AccountInterface, rewardsCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_claimRewards_calldata(rewardsCount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_token_decimals_calldata = (): DojoCall => {
 		return {
 			contractName: "actions_token",
@@ -70,6 +175,40 @@ export function setupWorld(provider: DojoProvider) {
 	const actions_token_decimals = async () => {
 		try {
 			return await provider.call("lore", build_actions_token_decimals_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_getClaimableRewardsCount_calldata = (recipient: string): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "get_claimable_rewards_count",
+			calldata: [recipient],
+		};
+	};
+
+	const actions_token_getClaimableRewardsCount = async (recipient: string) => {
+		try {
+			return await provider.call("lore", build_actions_token_getClaimableRewardsCount_calldata(recipient));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_getFreeActionsCount_calldata = (): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "get_free_actions_count",
+			calldata: [],
+		};
+	};
+
+	const actions_token_getFreeActionsCount = async () => {
+		try {
+			return await provider.call("lore", build_actions_token_getFreeActionsCount_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -114,6 +253,111 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_token_sendRewards_calldata = (recipient: string, rewardsCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "send_rewards",
+			calldata: [recipient, rewardsCount],
+		};
+	};
+
+	const actions_token_sendRewards = async (snAccount: Account | AccountInterface, recipient: string, rewardsCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_sendRewards_calldata(recipient, rewardsCount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_setActionCostAmount_calldata = (actionCostAmount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "set_action_cost_amount",
+			calldata: [actionCostAmount],
+		};
+	};
+
+	const actions_token_setActionCostAmount = async (snAccount: Account | AccountInterface, actionCostAmount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_setActionCostAmount_calldata(actionCostAmount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_setFreeActionClaimInterval_calldata = (freeActionClaimInterval: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "set_free_action_claim_interval",
+			calldata: [freeActionClaimInterval],
+		};
+	};
+
+	const actions_token_setFreeActionClaimInterval = async (snAccount: Account | AccountInterface, freeActionClaimInterval: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_setFreeActionClaimInterval_calldata(freeActionClaimInterval),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_setInitialFreeActionsCount_calldata = (initialFreeActionsCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "set_initial_free_actions_count",
+			calldata: [initialFreeActionsCount],
+		};
+	};
+
+	const actions_token_setInitialFreeActionsCount = async (snAccount: Account | AccountInterface, initialFreeActionsCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_setInitialFreeActionsCount_calldata(initialFreeActionsCount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_setMaxFreeActionsCount_calldata = (maxFreeActionsCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "set_max_free_actions_count",
+			calldata: [maxFreeActionsCount],
+		};
+	};
+
+	const actions_token_setMaxFreeActionsCount = async (snAccount: Account | AccountInterface, maxFreeActionsCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_setMaxFreeActionsCount_calldata(maxFreeActionsCount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_token_setSnContract_calldata = (snContract: string): DojoCall => {
 		return {
 			contractName: "actions_token",
@@ -127,6 +371,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_actions_token_setSnContract_calldata(snContract),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_setTrailRewardActionsCount_calldata = (trailRewardActionsCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "set_trail_reward_actions_count",
+			calldata: [trailRewardActionsCount],
+		};
+	};
+
+	const actions_token_setTrailRewardActionsCount = async (snAccount: Account | AccountInterface, trailRewardActionsCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_setTrailRewardActionsCount_calldata(trailRewardActionsCount),
 				"lore",
 			);
 		} catch (error) {
@@ -2314,14 +2579,40 @@ export function setupWorld(provider: DojoProvider) {
 			buildApproveCalldata: build_actions_token_approve_calldata,
 			balanceOf: actions_token_balanceOf,
 			buildBalanceOfCalldata: build_actions_token_balanceOf_calldata,
+			calculateActionCost: actions_token_calculateActionCost,
+			buildCalculateActionCostCalldata: build_actions_token_calculateActionCost_calldata,
+			chargePlayerActions: actions_token_chargePlayerActions,
+			buildChargePlayerActionsCalldata: build_actions_token_chargePlayerActions_calldata,
+			claimActions: actions_token_claimActions,
+			buildClaimActionsCalldata: build_actions_token_claimActions_calldata,
+			claimFreeActions: actions_token_claimFreeActions,
+			buildClaimFreeActionsCalldata: build_actions_token_claimFreeActions_calldata,
+			claimRewards: actions_token_claimRewards,
+			buildClaimRewardsCalldata: build_actions_token_claimRewards_calldata,
 			decimals: actions_token_decimals,
 			buildDecimalsCalldata: build_actions_token_decimals_calldata,
+			getClaimableRewardsCount: actions_token_getClaimableRewardsCount,
+			buildGetClaimableRewardsCountCalldata: build_actions_token_getClaimableRewardsCount_calldata,
+			getFreeActionsCount: actions_token_getFreeActionsCount,
+			buildGetFreeActionsCountCalldata: build_actions_token_getFreeActionsCount_calldata,
 			mintTo: actions_token_mintTo,
 			buildMintToCalldata: build_actions_token_mintTo_calldata,
 			name: actions_token_name,
 			buildNameCalldata: build_actions_token_name_calldata,
+			sendRewards: actions_token_sendRewards,
+			buildSendRewardsCalldata: build_actions_token_sendRewards_calldata,
+			setActionCostAmount: actions_token_setActionCostAmount,
+			buildSetActionCostAmountCalldata: build_actions_token_setActionCostAmount_calldata,
+			setFreeActionClaimInterval: actions_token_setFreeActionClaimInterval,
+			buildSetFreeActionClaimIntervalCalldata: build_actions_token_setFreeActionClaimInterval_calldata,
+			setInitialFreeActionsCount: actions_token_setInitialFreeActionsCount,
+			buildSetInitialFreeActionsCountCalldata: build_actions_token_setInitialFreeActionsCount_calldata,
+			setMaxFreeActionsCount: actions_token_setMaxFreeActionsCount,
+			buildSetMaxFreeActionsCountCalldata: build_actions_token_setMaxFreeActionsCount_calldata,
 			setSnContract: actions_token_setSnContract,
 			buildSetSnContractCalldata: build_actions_token_setSnContract_calldata,
+			setTrailRewardActionsCount: actions_token_setTrailRewardActionsCount,
+			buildSetTrailRewardActionsCountCalldata: build_actions_token_setTrailRewardActionsCount_calldata,
 			symbol: actions_token_symbol,
 			buildSymbolCalldata: build_actions_token_symbol_calldata,
 			totalSupply: actions_token_totalSupply,
