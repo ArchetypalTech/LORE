@@ -33,8 +33,11 @@ pub struct AppchainMessageEvent {
     #[key]
     pub uuid: u32,
     /// Properties ///
-    pub initiator_address: ContractAddress,
-    pub timestamp: u64,
+    pub caller_address: ContractAddress,
+    pub from_address: ContractAddress,
+    pub to_address: ContractAddress,
+    pub block_number: u64,
+    pub block_timestamp: u64,
     pub message_type: felt252,
     pub payload: Array<felt252>,
 }
@@ -86,8 +89,11 @@ pub impl AppchainEventImpl of AppchainEventTrait {
         }
         (AppchainMessageEvent {
             uuid,
-            initiator_address: starknet::get_caller_address(),
-            timestamp: starknet::get_block_timestamp(),
+            caller_address: starknet::get_caller_address(),
+            from_address: starknet::get_contract_address(),
+            to_address: 0x0.try_into().unwrap(),
+            block_number: starknet::get_block_number(),
+            block_timestamp: starknet::get_block_timestamp(),
             message_type,
             payload,
         })

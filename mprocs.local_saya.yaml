@@ -13,12 +13,12 @@ procs:
       rm -rf ../starknet/target/${PROFILE}
       rm -rf ../starknet/data/${PROFILE}
       #----------------
-      # set_appchain_contract()
-      #
       echo ">>> Waiting for L3 deployment..."
       wait-on -l ./target/${PROFILE}/deployed
       export APPCHAIN_ADDRESS=$(get_contract_address ${PROFILE} lore-actions_token)
       #----------------
+      # configure L2...
+      #
       cd ../starknet
       export SN_ADDRESS=$(get_contract_address ${PROFILE} lore_sn-permit_token)
       export CARTIDGE_ADDRESS=$(get_profile_env ${PROFILE} account_address)
@@ -28,8 +28,10 @@ procs:
       sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_cartridge_contract ${CARTIDGE_ADDRESS}
       sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
       #----------------
-      echo ">>> L3: set_sn_contract(${SN_ADDRESS})"
+      # Configure L3
+      #
       cd ../contracts
+      echo ">>> L3: set_sn_contract(${SN_ADDRESS})"
       sozo -P ${PROFILE} execute --wait lore-actions_token set_sn_contract ${SN_ADDRESS}
       sozo -P ${PROFILE} model get lore-ActionsConfig 1
       #----------------
@@ -99,7 +101,6 @@ procs:
       echo ">>> Deploying contracts..."
       sozo -P ${PROFILE} inspect
       sozo -P ${PROFILE} migrate
-      touch target/${PROFILE}/deployed
       #----------------
       # set_messaging_contract()
       #
@@ -107,6 +108,7 @@ procs:
       sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_messaging_contract ${PILTOVER_ADDRESS}
       sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
       #----------------
+      touch target/${PROFILE}/deployed
       echo "👍 Done!"
   l3_katana:
     cwd: packages/starknet

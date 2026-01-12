@@ -411,11 +411,11 @@ pub mod actions_token {
         // L3 > L2 messaging
         // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/contract_msg_starknet.cairo
         //
-        fn _send_message(ref self: ContractState, ref world: WorldStorage, event: AppchainMessageEvent) {
+        fn _send_message(ref self: ContractState, ref world: WorldStorage, mut event: AppchainMessageEvent) {
             // send message
             let actions_config: ActionsConfig = world.get_actions_config();
-            let to_address: ContractAddress = actions_config.sn_contract;
-            starknet::syscalls::send_message_to_l1_syscall(to_address.into(), event.payload.span()).unwrap_syscall();
+            event.to_address = actions_config.sn_contract;
+            starknet::syscalls::send_message_to_l1_syscall(event.to_address.into(), event.payload.span()).unwrap_syscall();
             // dispatch event
             world.emit_event(@event);
         }
