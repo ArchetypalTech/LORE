@@ -184,9 +184,6 @@ pub fn setup_core() -> HelperSystems {
     testing::set_block_number(1);
     testing::set_block_timestamp(1);
 
-    // force increment uuid (avoid entity 0 value)
-    EntityImpl::create_entity(ref world, "entity_0");
-
     DictionaryTrait::initialize_dictionary(ref world);
 
     // actions are free for testing

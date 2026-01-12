@@ -63,7 +63,7 @@ sozo events --world $L3_WORLD_ADDRESS | tail -n 9
 #
 # L2: consume message
 cd packages/contracts/
-sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token consume_message arr:0x0,0x4d494e545f5045524d49545f52455741524453,0x465245455f524557415244,0x1234,0x1
+sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token consume_message arr:0x1,0x4d494e545f5045524d49545f52455741524453,0x465245455f524557415244,0x1234,0x1
 # L2: validate permits balance (must be 0x2)
 sozo call --world $L2_WORLD_ADDRESS lore_sn-permit_token balance_of $RECIPIENT
 ```

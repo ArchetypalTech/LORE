@@ -121,9 +121,9 @@ pub mod designer {
     use starknet::ContractAddress;
     use core::num::traits::Zero;
     use dojo::{
-        model::ModelStorage,
-        world::WorldStorage,
-        event::EventStorage,
+        world::{WorldStorage, IWorldDispatcherTrait},
+        model::{ModelStorage},
+        event::{EventStorage},
     };
 
     //
@@ -196,6 +196,9 @@ pub mod designer {
 
     fn dojo_init(ref self: ContractState, admin_accounts: Array<ContractAddress>) {
         let mut world: WorldStorage = self.world_default();
+
+        // increment uuid (avoid entity 0x0)
+        let _: u32 = world.dispatcher.uuid();
 
         // initialize dictionary
         world.lexer_dispatcher().initialize_dictionary(world);
