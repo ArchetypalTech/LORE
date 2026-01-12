@@ -117,9 +117,10 @@ pub mod actions_token {
                 DnsTrait, SELECTORS,
                 ITrailTokenDispatcherTrait,
             },
+            messaging,
         },
         constants::{
-            appchain::{APPCHAIN, AppchainEventTrait, AppchainMessageEvent},
+            appchain::{APPCHAIN, AppchainPayloadTrait, AppchainMessageEvent},
             constants::{CONST},
             errors::{Error},
         },
@@ -222,12 +223,12 @@ pub mod actions_token {
             // send message to L2 claiming actions as permits
             //
             // let trail_name: ByteArray = world.get_trail_name(trail_id);
-            let event: AppchainMessageEvent = world.pack_mint_permit_rewards_event(
+            let payload: Array<felt252> = world.pack_mint_permit_rewards_payload(
                 APPCHAIN::PERMIT_TYPES::CREATOR_REWARD,
                 caller,
                 rewards_count,
             );
-            self._send_message(ref world, event);
+            self._send_message(ref world, payload);
         }
 
         //-----------------------------------
@@ -284,12 +285,12 @@ pub mod actions_token {
             //
             // send message to L2 claiming actions as permits
             //
-            let event: AppchainMessageEvent = world.pack_mint_permit_rewards_event(
+            let payload: Array<felt252> = world.pack_mint_permit_rewards_payload(
                 APPCHAIN::PERMIT_TYPES::FREE_REWARD,
                 recipient,
                 rewards_count,
             );
-            self._send_message(ref world, event);
+            self._send_message(ref world, payload);
         }
     }
 
@@ -411,10 +412,26 @@ pub mod actions_token {
         // L3 > L2 messaging
         // based on: https://github.com/glihm/starknet-messaging-dev/blob/l2-l3/cairo/src/contract_msg_starknet.cairo
         //
-        fn _send_message(ref self: ContractState, ref world: WorldStorage, mut event: AppchainMessageEvent) {
-            // send message
+        fn _send_message(ref self: ContractState, ref world: WorldStorage, payload: Array<felt252>) {
             let actions_config: ActionsConfig = world.get_actions_config();
-            event.to_address = actions_config.sn_contract;
+            // create event
+            let mut event: AppchainMessageEvent = AppchainMessageEvent {
+                uuid: payload.get_uuid(),
+                caller_address: starknet::get_caller_address(),
+                from_address: starknet::get_contract_address(),
+                to_address: actions_config.sn_contract,
+                message_hash: 0x0,
+                block_number: starknet::get_block_number(),
+                block_timestamp: starknet::get_block_timestamp(),
+                message_type: payload.get_message_type(),
+                payload,
+            };
+            event.message_hash = messaging::compute_message_hash_appc_to_sn(
+                event.from_address,
+                event.to_address,
+                event.payload.span(),
+            );
+            // send message
             starknet::syscalls::send_message_to_l1_syscall(event.to_address.into(), event.payload.span()).unwrap_syscall();
             // dispatch event
             world.emit_event(@event);

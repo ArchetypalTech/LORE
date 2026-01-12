@@ -38,6 +38,8 @@ pub struct AppchainMessageEvent {
     pub to_address: ContractAddress,
     pub block_number: u64,
     pub block_timestamp: u64,
+    pub message_hash: felt252,
+    /// ORUG message and payload
     pub message_type: felt252,
     pub payload: Array<felt252>,
 }
@@ -51,18 +53,32 @@ pub struct MintPermitRewardsPayload {
     pub actions_count: u32,
 }
 
-
 //---------------------------------
-// L3 Traits
+// Traits
 //
 #[generate_trait]
-pub impl AppchainEventImpl of AppchainEventTrait {
+pub impl AppchainPayloadImpl of AppchainPayloadTrait {
 
-    fn pack_mint_permit_rewards_event(ref self: WorldStorage,
+    //
+    // getters
+    //
+    #[inline(always)]
+    fn get_uuid(self: @Array<felt252>) -> u32 {
+        ((*self.at(0)).try_into().unwrap())
+    }
+    #[inline(always)]
+    fn get_message_type(self: @Array<felt252>) -> felt252 {
+        (*self.at(1))
+    }
+
+    //
+    // packers
+    //
+    fn pack_mint_permit_rewards_payload(ref self: WorldStorage,
         permit_type: felt252,
         recipient: ContractAddress,
         actions_count: u32,
-    ) -> AppchainMessageEvent {
+    ) -> Array<felt252> {
         assert(actions_count.is_non_zero(), 'APPCHAIN: Invalid actions count');
         assert(permit_type.is_non_zero(), 'APPCHAIN: Invalid permit type');
         assert(recipient.is_non_zero(), 'APPCHAIN: Invalid recipient');
@@ -71,15 +87,16 @@ pub impl AppchainEventImpl of AppchainEventTrait {
             recipient.into(),
             actions_count.into(),
         ].span();
-        (self._pack_message_event(APPCHAIN::MESSAGE_TYPES::MINT_PERMIT_REWARDS, values))
+        (self._pack_message_payload(APPCHAIN::MESSAGE_TYPES::MINT_PERMIT_REWARDS, values))
     }
 
-    // Internal functions
-    fn _pack_message_event(ref self: WorldStorage,
+    fn _pack_message_payload(ref self: WorldStorage,
         message_type: felt252,
         values: Span<felt252>,
-    ) -> AppchainMessageEvent {
+    ) -> Array<felt252> {
+        // unique identifier for the message
         let uuid: u32 = self.dispatcher.uuid();
+        // build payload
         let mut payload: Array<felt252> = array![
             uuid.into(),
             message_type,
@@ -87,25 +104,13 @@ pub impl AppchainEventImpl of AppchainEventTrait {
         for i in 0..values.len() {
             payload.append(*values.at(i));
         }
-        (AppchainMessageEvent {
-            uuid,
-            caller_address: starknet::get_caller_address(),
-            from_address: starknet::get_contract_address(),
-            to_address: 0x0.try_into().unwrap(),
-            block_number: starknet::get_block_number(),
-            block_timestamp: starknet::get_block_timestamp(),
-            message_type,
-            payload,
-        })
+        (payload)
     }
-}
 
+    //
+    // unpackers
+    //
 
-//---------------------------------
-// L2 Traits
-//
-#[generate_trait]
-pub impl AppchainPayloadImpl of AppchainPayloadTrait {
     fn unpack_mint_permit_rewards_payload(ref self: WorldStorage,
         payload: Span<felt252>,
     ) -> MintPermitRewardsPayload {
