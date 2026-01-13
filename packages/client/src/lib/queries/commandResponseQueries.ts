@@ -37,9 +37,11 @@ export const queryStories = async (): Promise<void> => {
 
     // IMPORTANT: for...of so we can await
     for (const story of playerStories) {
+      console.log(`[QUERY] story: ${story}`);
       const gameId = BigInt(story.game_id.toString());
       const latestKey = BigInt(story.story_line.toString());
       const gameIdStr = gameId.toString();
+      console.log(`[QUERY] gameId=${gameId} latestKey=${latestKey}`);
 
       const playerAddress = gameToPlayer[gameIdStr];
       if (!playerAddress) continue;
@@ -189,16 +191,18 @@ const queryPlayers = async (): Promise<Player[]> => {
   return players;
 };
 
-const queryStorylines = async (gameId: bigint, latestKey: bigint): Promise<StoryLine[]> => {
+// Query all the StoryLines for a given gameId
+const queryStorylines = async (gameId: bigint,latestKey: bigint): Promise<StoryLine[]> => {
+  console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} latestKey=${latestKey}`);
   const storylines: StoryLine[] = [];
-  const { sdk } = await InitDojo();
 
-  // Loop from 1 → latestKey
-  for (let key = 1n; key <= latestKey; key++) {
+  const { sdk } = await InitDojo();
+  // Loop backwards: latest → oldest
+  for (let key = latestKey; key >= 1n; key--) {
     try {
       const query_storyline = new ToriiQueryBuilder<SchemaType>()
         .withCursor("")
-        .withLimit(1) // Fetch one storyline at a time
+        .withLimit(1000)
         .includeHashedKeys()
         .withClause(
           new ClauseBuilder<SchemaType>()
@@ -210,8 +214,10 @@ const queryStorylines = async (gameId: bigint, latestKey: bigint): Promise<Story
         )
         .withEntityModels(["lore-StoryLine"]);
 
-      const result_storyline = await sdk.getEntities({ query: query_storyline });
-
+      const result_storyline = await sdk.getEntities({
+        query: query_storyline,
+      });
+      console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} key=${key} result=${result_storyline}`);
       result_storyline.getItems().forEach((entity) => {
         const model = entity.models?.lore?.StoryLine;
         if (
@@ -233,18 +239,10 @@ const queryStorylines = async (gameId: bigint, latestKey: bigint): Promise<Story
         `Error fetching StoryLine for gameId=${gameId} key=${key}:`,
         error
       );
-      // optionally continue to next key
+      // continue to next key
     }
   }
 
-  // Already queried in ascending order, but ensure sort just in case
-  storylines.sort((a, b) =>
-    BigInt(a.key.toString()) > BigInt(b.key.toString())
-      ? 1
-      : BigInt(a.key.toString()) < BigInt(b.key.toString())
-      ? -1
-      : 0
-  );
-
+  // No sort needed — already latest → oldest
   return storylines;
 };
