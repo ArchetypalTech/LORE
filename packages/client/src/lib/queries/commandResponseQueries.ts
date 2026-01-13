@@ -1,10 +1,9 @@
-import { getPlayerAddress } from "../../editor/lib/components";
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
-import { SchemaType, Player, PlayerStory, StoryLine, StoryLineType } from "@/lib/dojo_bindings/typescript/models.gen";
+import { SchemaType, Player, PlayerStory, StoryLine } from "@/lib/dojo_bindings/typescript/models.gen";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
-import { CairoCustomEnum, BigNumberish } from "starknet";
+import { CairoCustomEnum } from "starknet";
 import JSONbig from "json-bigint";
 
 
@@ -193,7 +192,7 @@ const queryPlayers = async (): Promise<Player[]> => {
 
 // Query all the StoryLines for a given gameId
 const queryStorylines = async (gameId: bigint,latestKey: bigint): Promise<StoryLine[]> => {
-  console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} latestKey=${latestKey}`);
+  // console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} latestKey=${latestKey}`);
   const storylines: StoryLine[] = [];
 
   const { sdk } = await InitDojo();
@@ -217,7 +216,7 @@ const queryStorylines = async (gameId: bigint,latestKey: bigint): Promise<StoryL
       const result_storyline = await sdk.getEntities({
         query: query_storyline,
       });
-      console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} key=${key} result=${result_storyline}`);
+      // console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} key=${key} result=${result_storyline}`);
       result_storyline.getItems().forEach((entity) => {
         const model = entity.models?.lore?.StoryLine;
         if (

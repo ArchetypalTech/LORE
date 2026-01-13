@@ -29,6 +29,7 @@ import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 import { queryStories } from "@/lib/queries/commandResponseQueries";
+import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 
 
 /**
@@ -473,15 +474,27 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		const components = await queryGameComponents(game_id);
 		console.log("COMPONENTS RESULT", components);
 	},
-	_gameData: async () => {
-		await queryStories();
-		console.log("GAME DATA IS FETCHED");
-		addTerminalContent({
-			text: "",
-			format: "hash",
-			useTypewriter: true,
-		});
-	},
+_gameData: async () => {
+  addTerminalContent({ text: "FETCHING GAME DATA...", format: "system", useTypewriter: true });
+  await sleep(500);
+
+  addTerminalContent({ text: "THIS MAY TAKE A WHILE...", format: "system", useTypewriter: true });
+  await sleep(500);
+
+  addTerminalContent({ text: "BETTER GET A COFFEE...", format: "system", useTypewriter: true });
+  await sleep(800);
+
+	const stopAmbient = startFetchingAmbientMessages();
+
+  await queryStories();
+	stopAmbient();
+
+  addTerminalContent({
+    text: "GAME DATA HAS BEEN FETCHED. CHECK YOUR DOWNLOADS FOLDER",
+    format: "system",
+    useTypewriter: true,
+  });
+},
 	connection: async () => {
 		const dest = {
 			endpoints: LORE_CONFIG.endpoints,
