@@ -11,28 +11,53 @@ import JSONbig from "json-bigint";
 // Call queries and generate json file
 export const queryStories = async (): Promise<void> => {
   try {
-    // Get all stories and players
     const [playerStories, players] = await queryPlayerStories();
 
-    // Map game_id to player address for quick lookup
+    // game_id -> player address
     const gameToPlayer: Record<string, string> = {};
-    players.forEach((player) => {
-      gameToPlayer[player.game_id.toString()] = player.address;
+    players.forEach((p) => {
+      gameToPlayer[p.game_id.toString()] = p.address;
     });
 
-    // Build grouped JSON
-    const grouped: Record<string, PlayerStory[]> = {};
+    /**
+     * Final structure:
+     * {
+     *   [playerAddress]: {
+     *     [gameId]: {
+     *       latest_story_line,
+     *       storylines: StoryLine[]
+     *     }
+     *   }
+     * }
+     */
+    const grouped: Record<
+      string,
+      Record<string, { latest_story_line: bigint; storylines: StoryLine[] }>
+    > = {};
 
-    playerStories.forEach((story) => {
-      const gameIdStr = story.game_id.toString();
+    // IMPORTANT: for...of so we can await
+    for (const story of playerStories) {
+      const gameId = BigInt(story.game_id.toString());
+      const latestKey = BigInt(story.story_line.toString());
+      const gameIdStr = gameId.toString();
+
       const playerAddress = gameToPlayer[gameIdStr];
-      if (!playerAddress) return; // Skip if no matching player
+      if (!playerAddress) continue;
 
-      if (!grouped[playerAddress]) grouped[playerAddress] = [];
-      grouped[playerAddress].push(story);
-    });
+      // Fetch all storylines for this game
+      const storylines = await queryStorylines(gameId, latestKey);
 
-    // JSON file name
+      if (!grouped[playerAddress]) {
+        grouped[playerAddress] = {};
+      }
+
+      grouped[playerAddress][gameIdStr] = {
+        latest_story_line: latestKey,
+        storylines,
+      };
+    }
+
+    // ---- Export JSON ----
     const formatter = new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
@@ -46,7 +71,6 @@ export const queryStories = async (): Promise<void> => {
       .format(new Date())
       .replace(/ /g, "_")}.json`;
 
-    // BigInt-safe stringify
     const json = JSONbig.stringify(grouped, null, 2);
 
     const blob = new Blob([json], { type: "application/json" });
@@ -163,4 +187,64 @@ const queryPlayers = async (): Promise<Player[]> => {
   }
 
   return players;
+};
+
+const queryStorylines = async (gameId: bigint, latestKey: bigint): Promise<StoryLine[]> => {
+  const storylines: StoryLine[] = [];
+  const { sdk } = await InitDojo();
+
+  // Loop from 1 → latestKey
+  for (let key = 1n; key <= latestKey; key++) {
+    try {
+      const query_storyline = new ToriiQueryBuilder<SchemaType>()
+        .withCursor("")
+        .withLimit(1) // Fetch one storyline at a time
+        .includeHashedKeys()
+        .withClause(
+          new ClauseBuilder<SchemaType>()
+            .keys(
+              ["lore-StoryLine"],
+              [bigintToHex128(gameId), bigintToAddress(key)]
+            )
+            .build()
+        )
+        .withEntityModels(["lore-StoryLine"]);
+
+      const result_storyline = await sdk.getEntities({ query: query_storyline });
+
+      result_storyline.getItems().forEach((entity) => {
+        const model = entity.models?.lore?.StoryLine;
+        if (
+          model &&
+          model.game_id !== undefined &&
+          model.key !== undefined &&
+          model.line !== undefined
+        ) {
+          storylines.push({
+            game_id: model.game_id,
+            key: model.key,
+            line: model.line,
+            line_type: model.line_type as CairoCustomEnum,
+          });
+        }
+      });
+    } catch (error) {
+      console.error(
+        `Error fetching StoryLine for gameId=${gameId} key=${key}:`,
+        error
+      );
+      // optionally continue to next key
+    }
+  }
+
+  // Already queried in ascending order, but ensure sort just in case
+  storylines.sort((a, b) =>
+    BigInt(a.key.toString()) > BigInt(b.key.toString())
+      ? 1
+      : BigInt(a.key.toString()) < BigInt(b.key.toString())
+      ? -1
+      : 0
+  );
+
+  return storylines;
 };
