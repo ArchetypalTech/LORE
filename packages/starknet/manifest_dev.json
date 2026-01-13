@@ -169,6 +169,11 @@
           "key": false
         },
         {
+          "name": "message_hash",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
           "name": "message_type",
           "type": "core::felt252",
           "key": false
@@ -179,7 +184,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x66694f6d9c9f4a4d2cc239964c5ca77144e421123bfbd2d362bf3bd557810c6",
+      "class_hash": "0x1faa158cda0478f0d14fc63a80acb5728dfe42a749b8842c1ee103009d26b11",
       "tag": "lore_sn-AppchainMessageEvent",
       "selector": "0x53747592e0b56248201d6f92208db88970ab41abd528ab924cc023c0ec09fc"
     }
@@ -2088,6 +2093,10 @@
           "type": "core::integer::u64"
         },
         {
+          "name": "message_hash",
+          "type": "core::felt252"
+        },
+        {
           "name": "message_type",
           "type": "core::felt252"
         },
@@ -2120,6 +2129,10 @@
         {
           "name": "block_timestamp",
           "type": "core::integer::u64"
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252"
         },
         {
           "name": "message_type",

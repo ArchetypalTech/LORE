@@ -29,7 +29,7 @@ private_key = "0x7230b49615d175307d580c33d6fda61fc7b9aec91df0f5c1a5ebe3b8cbfee02
 ```bash
 # Run L2+L3
 bun run dev:saya
-# ...wait unil initializer says: 👍 Done!
+# ...wait unil initializer says: 👍 Ready!!
 ```
 
 Test messaging

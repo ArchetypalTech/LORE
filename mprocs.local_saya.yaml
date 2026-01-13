@@ -14,18 +14,24 @@ procs:
       rm -rf ../starknet/data/${PROFILE}
       #----------------
       echo ">>> Waiting for L3 deployment..."
-      wait-on -l ./target/${PROFILE}/deployed
+      wait-on -l ../starknet/target/${PROFILE}/deployed
+      wait-on -l ../contracts/target/${PROFILE}/deployed
       export APPCHAIN_ADDRESS=$(get_contract_address ${PROFILE} lore-actions_token)
       #----------------
       # configure L2...
       #
       cd ../starknet
       export SN_ADDRESS=$(get_contract_address ${PROFILE} lore_sn-permit_token)
+      export DATA_PATH=./data/${PROFILE}
+      export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
       export CARTIDGE_ADDRESS=$(get_profile_env ${PROFILE} account_address)
+      echo ">>> L2: set_messaging_contract(${PILTOVER_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_messaging_contract ${PILTOVER_ADDRESS}
       echo ">>> L2: set_appchain_contract(${APPCHAIN_ADDRESS})"
       sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_appchain_contract ${APPCHAIN_ADDRESS}
       echo ">>> L2: set_cartridge_contract(${CARTIDGE_ADDRESS})"
       sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_cartridge_contract ${CARTIDGE_ADDRESS}
+      echo ">>> L2: PermitConfig:"
       sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
       #----------------
       # Configure L3
@@ -35,7 +41,8 @@ procs:
       sozo -P ${PROFILE} execute --wait lore-actions_token set_sn_contract ${SN_ADDRESS}
       sozo -P ${PROFILE} model get lore-ActionsConfig 1
       #----------------
-      echo "👍 Done!"
+      touch ../starknet/target/${PROFILE}/initialized
+      echo "👍 Ready!!"
   l2_katana:
     cwd: packages/starknet
     env:
@@ -92,24 +99,19 @@ procs:
       #----------------
       # validate piltover address
       #
-      PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
+      export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
       echo "!!! Validate: PILTOVER_ADDRESS=${PILTOVER_ADDRESS}"
       #----------------
       # deploy contracts...
       #
       wait-port ${KATANA_L2_PORT}
       echo ">>> Deploying contracts..."
+      sozo -P ${PROFILE} build
       sozo -P ${PROFILE} inspect
       sozo -P ${PROFILE} migrate
       #----------------
-      # set_messaging_contract()
-      #
-      echo ">>> L2: set_messaging_contract(${PILTOVER_ADDRESS})"
-      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_messaging_contract ${PILTOVER_ADDRESS}
-      sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
-      #----------------
-      touch target/${PROFILE}/deployed
-      echo "👍 Done!"
+      touch ../starknet/target/${PROFILE}/deployed
+      echo "👍 L2 Ready!"
   l3_katana:
     cwd: packages/starknet
     env:
@@ -142,14 +144,27 @@ procs:
   l3_contracts:
     cwd: packages/contracts
     env:
+      PROFILE: dev
       KATANA_L3_PORT: "5050"
     shell: |
       sleep 1
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
       #----------------
       # wait for katana_l3 init
       wait-port ${KATANA_L3_PORT}
+      echo ">>> Deploying contracts..."
+      sozo -P ${PROFILE} build
+      sozo -P ${PROFILE} inspect
+      sozo -P ${PROFILE} migrate
       #----------------
-      bun run dev:watch
+      touch ../contracts/target/${PROFILE}/deployed
+      echo "👍 L2 Ready!"
+      #----------------
+      # echo "👀 Watching..."
+      # bun run dev:watch
   saya:
     cwd: packages/starknet
     env:
@@ -157,27 +172,26 @@ procs:
       RUST_LOG: saya=debug
       KATANA_L2_RPC: http://localhost:50000
       KATANA_L3_RPC: http://localhost:5050
-      KATANA_L2_PORT: "50000"
-      KATANA_L3_PORT: "5050"
       SETTLEMENT_ACCOUNT_ADDRESS: 0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec
       SETTLEMENT_ACCOUNT_PRIVATE_KEY: 0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912
     shell: |
       sleep 1
       set -e # exit on error
       #----------------
-      export DATA_PATH=./data/${PROFILE}
-      echo ">>> Waiting for L3 init config... [${DATA_PATH}/config.toml]"
-      wait-on -l ${DATA_PATH}/config.toml
-      PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
-      echo ">>> PILTOVER_ADDRESS: [${PILTOVER_ADDRESS}]"
+      # wait for L2 and L3 to be deployed and initialized
+      wait-on -l ../starknet/target/${PROFILE}/initialized
       #----------------
-      # wait for katana_l3 init
-      wait-port ${KATANA_L2_PORT}
-      wait-port ${KATANA_L3_PORT}
+      # gather data...
+      #
+      export DATA_PATH=./data/${PROFILE}
+      export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
+      echo ">>> PILTOVER_ADDRESS: [${PILTOVER_ADDRESS}]"
+      echo ">>> SETTLEMENT_ACCOUNT_ADDRESS: [${SETTLEMENT_ACCOUNT_ADDRESS}]"
+      echo ">>> SETTLEMENT_ACCOUNT_PRIVATE_KEY: [${SETTLEMENT_ACCOUNT_PRIVATE_KEY}]"
       #----------------
       # sytart saya
       #
-      export DB_DIR=${DATA_PATH}
+      echo ">>> Starting Saya..."
       saya --version
       saya persistent start \
         --settlement-rpc ${KATANA_L2_RPC} \
