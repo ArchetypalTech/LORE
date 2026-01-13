@@ -474,9 +474,13 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		console.log("COMPONENTS RESULT", components);
 	},
 	_gameData: async () => {
-		const gameData = await queryStories();
+		await queryStories();
 		console.log("GAME DATA IS FETCHED");
-		console.log(gameData);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	connection: async () => {
 		const dest = {

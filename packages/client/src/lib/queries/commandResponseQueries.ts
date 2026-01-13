@@ -48,6 +48,7 @@ export const queryStories = async (): Promise<void> => {
 // Query all the PlayerStory
 const queryPlayerStories = async (): Promise<PlayerStory[]> => {
 	let playerStory: PlayerStory[] = [];
+
 	try {
 		const { sdk } = await InitDojo();
 
@@ -73,10 +74,25 @@ const queryPlayerStories = async (): Promise<PlayerStory[]> => {
 			}
 		});
 
+		// SORT: latest → oldest
+		playerStory.sort((a, b) => {
+			const gameA = BigInt(a.game_id.toString());
+			const gameB = BigInt(b.game_id.toString());
+
+			if (gameA !== gameB) {
+				return gameA < gameB ? 1 : -1;
+			}
+
+			const lineA = BigInt(a.story_line.toString());
+			const lineB = BigInt(b.story_line.toString());
+
+			return lineA < lineB ? 1 : -1;
+		});
+
 	} catch (error) {
 		console.error("Error fetching game ids from Torii:", error);
 		throw error;
 	}
 
-  return playerStory;
+	return playerStory;
 };
