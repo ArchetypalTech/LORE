@@ -382,6 +382,7 @@ export interface AppchainMessageEvent {
 	to_address: string;
 	block_number: BigNumberish;
 	block_timestamp: BigNumberish;
+	message_hash: BigNumberish;
 	message_type: BigNumberish;
 	payload: Array<BigNumberish>;
 }
@@ -1201,6 +1202,7 @@ export const schema: SchemaType = {
 			to_address: "",
 			block_number: 0,
 			block_timestamp: 0,
+			message_hash: 0,
 			message_type: 0,
 			payload: [0],
 		},

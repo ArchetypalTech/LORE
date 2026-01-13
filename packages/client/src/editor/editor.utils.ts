@@ -118,7 +118,7 @@ export const colorizeHash = (hash: string) => {
 };
 
 export const formatColorHash = (bigInt: BigNumberish) => {
-	return colorizeHash(bigInt.toString().slice(-9));
+	return colorizeHash((bigInt ?? 0).toString().slice(-9));
 };
 
 /**
