@@ -36,11 +36,11 @@ export const queryStories = async (): Promise<void> => {
 
     // IMPORTANT: for...of so we can await
     for (const story of playerStories) {
-      console.log(`[QUERY] story: ${story}`);
+      // console.log(`[QUERY] story: ${story}`);
       const gameId = BigInt(story.game_id.toString());
       const latestKey = BigInt(story.story_line.toString());
       const gameIdStr = gameId.toString();
-      console.log(`[QUERY] gameId=${gameId} latestKey=${latestKey}`);
+      // console.log(`[QUERY] gameId=${gameId} latestKey=${latestKey}`);
 
       const playerAddress = gameToPlayer[gameIdStr];
       if (!playerAddress) continue;
