@@ -28,6 +28,7 @@ import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
+import { queryStories } from "@/lib/queries/commandResponseQueries";
 
 
 /**
@@ -471,6 +472,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		const components = await queryGameComponents(game_id);
 		console.log("COMPONENTS RESULT", components);
+	},
+	_gameData: async () => {
+		const gameData = await queryStories();
+		console.log("GAME DATA IS FETCHED");
+		console.log(gameData);
 	},
 	connection: async () => {
 		const dest = {
