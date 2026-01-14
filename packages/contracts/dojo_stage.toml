@@ -24,6 +24,3 @@ private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4
 "lore-designer" = [
   "arr:0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7,0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae,0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F", # admins (tal-valdar, awtnmy, mataleone)
 ]
-
-[migration]
-manifest_abi_format = "per_contract"

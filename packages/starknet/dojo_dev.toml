@@ -25,7 +25,6 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 ]
 
 [migration]
-manifest_abi_format = "per_contract"
 skip_contracts = [
   "fact_registry_mock", # deployed manually
 ]
