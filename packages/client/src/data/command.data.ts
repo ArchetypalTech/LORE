@@ -4,6 +4,7 @@ import {
 	clearTerminalContent,
 	useTerminalStore,
 } from "@lib/stores/terminal.store";
+import { useEditorStore } from "@/lib/stores/editor.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
 import {
@@ -551,8 +552,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		const store = useTerminalStore.getState();
 		store.setPlayTrailer(!store.playTrailer);
 
+		const editorStore = useEditorStore.getState();
+		editorStore.setPlayTrailer(!editorStore.playTrailer);
+
 		addTerminalContent({
-			text: `Trailer ${store.playTrailer ? "enabled" : "disabled"}`,
+			text: `Trailer ${store.playTrailer ? "disabled" : "enabled"}`,
 			format: "system",
 			useTypewriter: true,
 		});
