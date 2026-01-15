@@ -32,8 +32,10 @@ const {
 	contentQueue: [] as TerminalContentItem[],
 	volumeAudio: 0.40,
 	focusLocked: true as boolean,
+	playTrailer: true,
 	idleVideoPlaying: false,
   setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
+	setPlayTrailer: (v: boolean) => set({ playTrailer: v }),
 });
 
 /**
@@ -132,6 +134,13 @@ export const nextItem = async (newContent: TerminalContentItem | null) => {
  */
 export function clearTerminalContent() {
 	set({ terminalContent: [] });
+}
+
+/**
+ * Helper toggle for turning on/off playTrailer
+ */
+export function toggleTrailer() {
+	set({ playTrailer: !get().playTrailer });
 }
 
 /**
