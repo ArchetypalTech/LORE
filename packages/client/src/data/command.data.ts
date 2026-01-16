@@ -2,7 +2,9 @@ import { LORE_CONFIG } from "@lib/config";
 import {
 	addTerminalContent,
 	clearTerminalContent,
+	useTerminalStore,
 } from "@lib/stores/terminal.store";
+import { useEditorStore } from "@/lib/stores/editor.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
 import {
@@ -28,6 +30,8 @@ import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
+import { queryStories } from "@/lib/queries/commandResponseQueries";
+import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 
 
 /**
@@ -471,6 +475,27 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		const components = await queryGameComponents(game_id);
 		console.log("COMPONENTS RESULT", components);
 	},
+	_gameData: async () => {
+		addTerminalContent({ text: "FETCHING GAME DATA...", format: "system", useTypewriter: true });
+		await sleep(500);
+
+		addTerminalContent({ text: "THIS MAY TAKE A WHILE...", format: "system", useTypewriter: true });
+		await sleep(500);
+
+		addTerminalContent({ text: "BETTER GET A COFFEE...", format: "system", useTypewriter: true });
+		await sleep(800);
+
+		const stopAmbient = startFetchingAmbientMessages();
+
+		await queryStories();
+		stopAmbient();
+
+		addTerminalContent({
+			text: "GAME DATA HAS BEEN FETCHED. CHECK YOUR DOWNLOADS FOLDER",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
 	connection: async () => {
 		const dest = {
 			rpcUrl: LORE_CONFIG.rpcUrl,
@@ -520,6 +545,19 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		addTerminalContent({
 			text: `Usage:\n  ui show\n  ui hide`,
 			format: "error",
+			useTypewriter: true,
+		});
+	},
+	_toggleTrailer: () => {
+		const store = useTerminalStore.getState();
+		store.setPlayTrailer(!store.playTrailer);
+
+		const editorStore = useEditorStore.getState();
+		editorStore.setPlayTrailer(!editorStore.playTrailer);
+
+		addTerminalContent({
+			text: `Trailer ${store.playTrailer ? "disabled" : "enabled"}`,
+			format: "system",
 			useTypewriter: true,
 		});
 	},

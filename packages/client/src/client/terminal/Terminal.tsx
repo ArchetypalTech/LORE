@@ -36,7 +36,7 @@ export default function Terminal({
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, playTrailer, setIdleVideoPlaying } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
@@ -58,6 +58,10 @@ export default function Terminal({
 	// reset timer & cancel idle
 	const resetIdleTimer = () => {
 		clearIdleTimer();
+
+		// If Trailer disabled → never enter idle mode
+		// read latest store value
+		if (!useTerminalStore.getState().playTrailer) return;
 
 		if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
 			setIsIdle(false);
@@ -274,6 +278,13 @@ useEffect(() => {
 		console.log("Idle state changed:", isIdle);
 		setIdleVideoPlaying(isIdle);
 	}, [isIdle, setIdleVideoPlaying]);
+
+	useEffect(() => {
+	if (!playTrailer) {
+		setIsIdle(false);
+		setIdleVideoPlaying(false);
+	}
+}, [playTrailer, setIdleVideoPlaying]);
 
 
 	const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {

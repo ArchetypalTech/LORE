@@ -15,7 +15,9 @@ const {
 	isAdmin: undefined as boolean | undefined,
 	isEditor: undefined as boolean | undefined,
 	idleVideoPlaying: false,
+	playTrailer: true,
   setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
+	setPlayTrailer: (v: boolean) => set({ playTrailer: v }),
 });
 
 /**
@@ -81,6 +83,13 @@ export const useCanEditEntity = (entityCollection: EntityCollection | undefined)
 	), [entityCollection])
 	return { canEdit };
 };
+
+/**
+ * Helper toggle for turning on/off playTrailer
+ */
+export function toggleTrailer() {
+	set({ playTrailer: !get().playTrailer });
+}
 
 export default EditorStore;
 export { useEditorStore };

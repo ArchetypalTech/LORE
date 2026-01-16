@@ -27,7 +27,7 @@ export const Client = () => {
 		}),
 	});
 
-	const idleVideoPlaying = useTerminalStore((state) => state.idleVideoPlaying);
+	const { idleVideoPlaying, playTrailer } = useTerminalStore();
 	const { visible } = useUIPanelStore();
 
 	return (
@@ -37,7 +37,7 @@ export const Client = () => {
 		>
 
 			{/* Idle video */}
-			{idleVideoPlaying && (
+			{playTrailer && idleVideoPlaying && (
 				<video
 					autoPlay
 					loop
