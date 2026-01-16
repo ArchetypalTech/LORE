@@ -11,11 +11,38 @@ import JSONbig from "json-bigint";
 export const queryStories = async (): Promise<void> => {
   try {
     const [playerStories, players] = await queryPlayerStories();
+    const allStorylines = await queryAllStorylines();
 
     // game_id -> player address
     const gameToPlayer: Record<string, string> = {};
     players.forEach((p) => {
       gameToPlayer[p.game_id.toString()] = p.address;
+    });
+
+    // game_id -> latest_story_line
+    const latestByGame: Record<string, bigint> = {};
+    playerStories.forEach((ps) => {
+      latestByGame[ps.game_id.toString()] = BigInt(ps.story_line.toString());
+    });
+
+    // game_id -> StoryLine[] (latest → oldest)
+    const storylinesByGame: Record<string, StoryLine[]> = {};
+
+    for (const line of allStorylines) {
+      const gameId = line.game_id.toString();
+
+      if (!storylinesByGame[gameId]) {
+        storylinesByGame[gameId] = [];
+      }
+
+      storylinesByGame[gameId].push(line);
+    }
+
+    // Sort each game's storylines latest → oldest
+    Object.values(storylinesByGame).forEach((lines) => {
+      lines.sort((a, b) =>
+        BigInt(a.key.toString()) < BigInt(b.key.toString()) ? 1 : -1
+      );
     });
 
     /**
@@ -24,7 +51,7 @@ export const queryStories = async (): Promise<void> => {
      *   [playerAddress]: {
      *     [gameId]: {
      *       latest_story_line,
-     *       storylines: StoryLine[]
+     *       storylines
      *     }
      *   }
      * }
@@ -34,27 +61,17 @@ export const queryStories = async (): Promise<void> => {
       Record<string, { latest_story_line: bigint; storylines: StoryLine[] }>
     > = {};
 
-    // IMPORTANT: for...of so we can await
-    for (const story of playerStories) {
-      // console.log(`[QUERY] story: ${story}`);
-      const gameId = BigInt(story.game_id.toString());
-      const latestKey = BigInt(story.story_line.toString());
-      const gameIdStr = gameId.toString();
-      // console.log(`[QUERY] gameId=${gameId} latestKey=${latestKey}`);
-
+    for (const gameIdStr of Object.keys(latestByGame)) {
       const playerAddress = gameToPlayer[gameIdStr];
       if (!playerAddress) continue;
-
-      // Fetch all storylines for this game
-      const storylines = await queryStorylines(gameId, latestKey);
 
       if (!grouped[playerAddress]) {
         grouped[playerAddress] = {};
       }
 
       grouped[playerAddress][gameIdStr] = {
-        latest_story_line: latestKey,
-        storylines,
+        latest_story_line: latestByGame[gameIdStr],
+        storylines: storylinesByGame[gameIdStr] ?? [],
       };
     }
 
@@ -73,7 +90,6 @@ export const queryStories = async (): Promise<void> => {
       .replace(/ /g, "_")}.json`;
 
     const json = JSONbig.stringify(grouped, null, 2);
-
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
@@ -245,3 +261,42 @@ const queryStorylines = async (gameId: bigint,latestKey: bigint): Promise<StoryL
   // No sort needed — already latest → oldest
   return storylines;
 };
+
+// Query all the StoryLines
+const queryAllStorylines = async (): Promise<StoryLine[]> => {
+  const storylines: StoryLine[] = [];
+
+  const { sdk } = await InitDojo();
+  try {
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(9000)
+      .includeHashedKeys()
+      .withEntityModels(["lore-StoryLine"]);
+    
+    const result = await sdk.getEntities({ query });
+
+    result.getItems().forEach((entity) => {
+      const model = entity.models?.lore?.StoryLine;
+      if (
+        model &&
+        model.game_id !== undefined &&
+        model.key !== undefined &&
+        model.line !== undefined
+      ) {
+        storylines.push({
+          game_id: model.game_id,
+          key: model.key,
+          line: model.line,
+          line_type: model.line_type as CairoCustomEnum,
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching StoryLines from Torii:", error);
+    throw error;
+  }
+
+  return storylines;
+};
+  
