@@ -10,11 +10,11 @@ import type {
 	PlayerStory,
 	StoryLine,
 	SchemaType,
-	PlayerGame,
+	PlayerAccount,
 } from "../dojo_bindings/typescript/models.gen";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
-import { bigintToHex128, decodeDojoText, processWhitespaceTags } from "../utils/utils";
+import { bigintToHex128, processWhitespaceTags } from "../utils/utils";
 import { addTerminalContent } from "./terminal.store";
 import { getPlayerAddress } from "@/editor/lib/components";
 import * as torii from "@dojoengine/torii-client";
@@ -239,7 +239,7 @@ const onReponseData = (
     }
 
 		// if the player's game was created or has changed
-		const playerGame: PlayerGame = responseData.PlayerGame as PlayerGame;
+		const playerGame: PlayerAccount = responseData.PlayerAccount as PlayerAccount;
     if (playerGame && playerGame.current_game_id !== undefined) {
 			if (BigInt(playerGame.player_address) === BigInt(getPlayerAddress())) {
 				GameStore().setPlayerGameId(playerGame.current_game_id);
