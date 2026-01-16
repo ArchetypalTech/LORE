@@ -6,6 +6,7 @@ import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
 import { getDojoSdk } from "./dojo.store";
 import type { SchemaType, PlayerGame } from "../dojo_bindings/typescript/models.gen";
+import { useMounted } from "../utils/useMounted";
 
 const {
 	get,
@@ -54,6 +55,7 @@ const GameStore = createFactory({
  */
 export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	const { gameId } = useGameStore();
+	const mounted = useMounted();
 
 	// set the editor game id, if provided
 	useEffect(() => {
@@ -99,10 +101,10 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 		}
 		// fetch the player game id
 		const address = BigInt(walletAddress || 0);
-		if (address != 0n && isConnected && inputGameId === undefined) {
+		if (address != 0n && isConnected && inputGameId === undefined && mounted) {
 			_fetch(address);
 		}
-	}, [walletAddress, isConnected, inputGameId]);
+	}, [walletAddress, isConnected, inputGameId, mounted]);
 
 	// return the current game id
 	return gameId;

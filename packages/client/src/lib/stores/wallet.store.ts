@@ -1,6 +1,6 @@
 import Controller, { type ControllerOptions } from "@cartridge/controller";
 import { LORE_CONFIG } from "@lib/config";
-import { Account, addAddressPadding } from "starknet";
+import { Account, addAddressPadding, ETransactionVersion } from "starknet";
 import { APP_EDITOR_DATA } from "@/data/app.data";
 import { StoreBuilder } from "../utils/storebuilder";
 
@@ -278,6 +278,8 @@ const connectBurnerWallet = async () => {
 			provider: LORE_CONFIG.provider.provider,
 			address: LORE_CONFIG.burnerAccount.address as string,
 			signer: LORE_CONFIG.burnerAccount.privateKey as string,
+			cairoVersion: "1",
+			transactionVersion: ETransactionVersion.V3,
 		});
 		const data = {
 			account: account,

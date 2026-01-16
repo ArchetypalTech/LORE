@@ -1,8 +1,7 @@
 import { LORE_CONFIG } from "@lib/config";
-import { BigNumberish, CairoOption, CairoOptionVariant, CallData, type RawArgsArray, Call, Account } from "starknet";
+import { BigNumberish, CairoOption, CairoOptionVariant, CallData, type RawArgsArray, Call, Account, byteArray } from "starknet";
 import { toCairoArray } from "@/editor/editor.utils";
 import { sendCommand } from "./terminalCommands/commandHandler";
-import { addAddressPadding } from "starknet";
 import { addTerminalContent } from "@lib/stores/terminal.store";
 import { DojoCall } from "@dojoengine/core";
 import WalletStore from "./stores/wallet.store";
@@ -20,22 +19,52 @@ async function execCommand(command: string, game_id?: BigNumberish | null | unde
 		return;
 	}
 
-	const { prompt } = LORE_CONFIG.world;
+	const account = WalletStore().account as Account;
+	let calls: Call[] = [];
+
 	try {
-		const account = WalletStore().account as Account;
-		const response = await prompt.prompt(
-			account,
-			command,
+		// Option 1: call contract through world
+		// const { prompt } = LORE_CONFIG.world;
+		// const response = await prompt.prompt(
+		// 	account,
+		// 	command,
+		// 	game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
+		// );
+
+		// Option 2: call contract from provider
+		// const { provider } = LORE_CONFIG;
+		// //@ts-ignore
+		// const response = await provider.prompt(
+		// 	account, [
+		// 	command,
+		// 	game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
+		// 	]
+		// );
+
+		// Option 3: call contract directly
+		const calldata = CallData.compile([
+			byteArray.byteArrayFromString(command),
 			game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
-		);
+		]);
+		calls.push({
+			contractAddress: LORE_CONFIG.contractAddresses.prompt,
+			entrypoint: "prompt",
+			calldata,
+		});
+
+		// make the call
+		console.log(`👉 execCommand(${game_id}) [${command}]`, calls);
+		const response = await account.execute(calls, {
+			tip: 0,
+		});
 		// wait for transaction async
 		if (response) {
 			await account.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
-				validateReceiptStatus(receipt); // just log!
+				validateReceiptStatus(receipt, calls); // just log!
 			});
 		}
 	} catch (error) {
-		console.error("Error sending command:", game_id, error as Error);
+		console.error(`❌ PROMPT ERROR: execCommand(${game_id}) [${command}]:`, calls, error as Error);
 		// case there is a TX error, add empty line to allow continue playing
 		addTerminalContent({
 					text: "",
@@ -100,47 +129,48 @@ async function execDesignerCall(props: DesignerCallProps) {
 		return;
 	}
 
+	const account = WalletStore().account as Account;
+	const calls: Call[] = [];
+
 	try {
 		// prepare the call
 		// based on contracts.gen.ts
 		const data = toCairoArray(args).flat() as RawArgsArray;
 		const calldata = CallData.compile(data);
-		const call: Call = {
+		calls.push({
 			contractAddress: LORE_CONFIG.contractAddresses.designer,
 			entrypoint,
 			calldata,
-		};
-		// console.log("DEBUG: CALLLDATA:", entrypoint, args, data, calldata, call);
-
+		});
 		// make the call
-		const account = WalletStore().account as Account;
-		const response = await account.execute([call], {
+		const response = await account.execute(calls, {
 			tip: 0,
 		});
 		// wait for transaction async
 		if (response) {
 			await account.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
-				validateReceiptStatus(receipt, [call]); // just log!
+				validateReceiptStatus(receipt, calls); // just log!
 			});
 			// we do a manual wait because the waitForTransaction is super slow
 			// await new Promise((r) => setTimeout(r, 500));
 		}
 	} catch (error) {
-		console.error("DESIGNER ERROR: execDesignerCall()", entrypoint, args);
+		console.error(`❌ DESIGNER ERROR: execDesignerCall() [${entrypoint}]:`, args, calls, error as Error);
 		throw new Error((error as Error).message);
 	}
 }
 
 function validateReceiptStatus(receipt: any, calls?: (Call | DojoCall)[]): boolean {
-  if (receipt.execution_status != 'SUCCEEDED') {
-    if (receipt.execution_status == 'REVERTED') {
-      console.error(`Transaction reverted:`, receipt.revert_reason, calls)
-    } else {
-      console.error(`Transaction error [${receipt.execution_status}]:`, receipt, calls)
-    }
-    return false
-  }
-  return true
+  if (receipt.execution_status == 'SUCCEEDED') {
+		console.log(`👍 Transaction sucessful:`, calls);
+		return true
+	}
+	if (receipt.execution_status == 'REVERTED') {
+		console.error(`⚠️ Transaction reverted [${receipt.revert_reason}]:`, calls, receipt)
+	} else {
+		console.error(`⚠️ Transaction error [${receipt.execution_status}]:`, calls, receipt)
+	}
+	return false
 }
 
 
