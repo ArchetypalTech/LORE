@@ -175,7 +175,7 @@ export const queryExitsPerGame = async (
     // 2. Query ParentToChildren using GIMap(location)
     // ---------------------------------------------------------
     const parentToChildren = await queryParentToChildrenGIMap(locationGameInst, playerLocationInst);
-    // console.log("[Exits] ParentToChildren:", parentToChildren);
+    console.log("[Exits] ParentToChildren:", parentToChildren);
 
     if (!parentToChildren || !parentToChildren.children) {
       // console.log("[Exits] No children found.");
@@ -267,39 +267,40 @@ export const queryExitsPerGame = async (
     // ---------------------------------------------------------
     // 4. Query PARENT Exits
     // ---------------------------------------------------------
-    const parentInst = BigInt(parentToChildren.inst.toString());
+    const parentInst = BigInt(parentToChildren.inst!.toString());
+    console.log("[Exits] Parent Inst:", parentInst.toString());
     // 4.1 Get the exitParent from GIMap
     //  This is for the exit status per game
     // ---------------------------------------------------------
     const parentGameInst = await queryGameInstaceMap(gameId, parentInst);
-    // console.log("[Exits] Parent GameInst:", parentGameInst.toString());
+    console.log("[Exits] Parent GameInst:", parentGameInst.toString());
 
     // ---------------------------------------------------------
     // 4.2 Find Exit component via GIMap
     // ---------------------------------------------------------
     const parentExit =  await queryExitGIMap(parentGameInst, parentInst);
-    // console.log("[Exits] Parent Exit:", parentExit);
+    console.log("[Exits] Parent Exit:", parentExit);
     if (!parentExit) {
-      // console.log("[Exits] ParentExit not in queryGIMAP");
+      console.log("[Exits] ParentExit not in queryGIMAP");
 
       // 4.2.1 Find Exit via Query
       const parentExit2 =  await queryExit(parentInst);
-      //console.log("[Exits] ParentExit 2:", parentExit2);
+      console.log("[Exits] ParentExit 2:", parentExit2);
       if (!parentExit2) {
-        // console.log("[Exits] ParentExit 2 not in query");
+        console.log("[Exits] ParentExit 2 not in query");
       }
-      // console.log("[Exits] ParentExit 2 in query");
+      console.log("[Exits] ParentExit 2 in query");
       
       // 4.2.2 Get the exit ENTITY (static name)
       const exitEntity =  await queryEntity(parentInst);
-      // console.log("[Exits] Exit 2 Entity (base inst):", exitEntity);
+      console.log("[Exits] Exit 2 Entity (base inst):", exitEntity);
 
       // 4.2.3 Resolve leads_to 
       const leads_to_inst = BigInt(parentExit2.leads_to.toString());
-      // console.log("[Exits] leads_to inst 2:", leads_to_inst.toString());
+      console.log("[Exits] leads_to inst 2:", leads_to_inst.toString());
 
       const leads_to_entity = await queryEntity(leads_to_inst);
-      // console.log("[Exits] leads_to Entity 2:", leads_to_entity);
+      console.log("[Exits] leads_to Entity 2:", leads_to_entity);
 
       exits.push({
         id: counter++,
@@ -310,22 +311,22 @@ export const queryExitsPerGame = async (
           : "Unknown"
       });
     }
-    // console.log("[Exits] Parent IS an exit!");
+    console.log("[Exits] Parent IS an exit!");
 
     // ---------------------------------------------------------
     // 4.3 Get the exit Entity (static name)
     // ---------------------------------------------------------
     const exitEntity =  await queryEntity(parentInst);
-    // console.log("[Exits] Exit Entity (base inst):", exitEntity);
+    console.log("[Exits] Exit Entity (base inst):", exitEntity);
 
     // ---------------------------------------------------------
     // 4.4 Get the leads_to entity
     // ---------------------------------------------------------
     const leads_to_inst = BigInt(parentExit.leads_to.toString());
-    // console.log("[Exits] leads_to inst:", leads_to_inst.toString());
+    console.log("[Exits] leads_to inst:", leads_to_inst.toString());
 
     const leads_to_entity = await queryEntity(leads_to_inst);
-    // console.log("[Exits] leads_to Entity:", leads_to_entity);
+    console.log("[Exits] leads_to Entity:", leads_to_entity);
 
     exits.push({
       id: counter++,
