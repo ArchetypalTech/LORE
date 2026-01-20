@@ -32,6 +32,7 @@ import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 import { queryStories } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
+import { reportBug } from "@/lib/utils/bugReport";
 
 
 /**
@@ -557,6 +558,19 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 
 		addTerminalContent({
 			text: `Trailer ${store.playTrailer ? "disabled" : "enabled"}`,
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_bugReport: () => {
+		reportBug();
+		addTerminalContent({
+			text: "Opening bug report form...",
+			format: "system",
+			useTypewriter: true,
+		});
+		addTerminalContent({
+			text: "Thank you for your feedback!",
 			format: "system",
 			useTypewriter: true,
 		});
