@@ -16,11 +16,17 @@ export const RightActionPanel = () => {
     await queryPanelInfo(gameId);
   };
 
+  const Testing = () => {
+    console.log("TESTING");
+  };
+
   const buttons = [
     { label: "Update Info Panel", onClick: handleUpdatePanel },
     { label: "Toggle Trailer", onClick: () => sendCommand("_toggleTrailer") },
+    { label: "Toggle Printing Speed", onClick: () => Testing },
     { label: "Help", onClick: () => sendCommand("help") },
     { label: "Report Bug", onClick: () => sendCommand("_bugReport") },
+    { label: "Wallet", onClick: () => sendCommand("wallet") },
   ];
 
   return (

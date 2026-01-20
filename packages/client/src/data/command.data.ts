@@ -29,7 +29,6 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
-import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 import { queryStories } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
@@ -528,15 +527,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "system",
 				useTypewriter: true,
 			});
-		// 	const gameId = GameStore().gameId;
-		// 	if (!gameId) return;
-		// 	queryPanelInfo(BigInt(gameId));
-		// 	addTerminalContent({
-		// 		text: "Info Panel shown.",
-		// 		format: "system",
-		// 		useTypewriter: true,
-		// 	});
-		// 	return;
+			return;
 		}
 
 		// ui hide

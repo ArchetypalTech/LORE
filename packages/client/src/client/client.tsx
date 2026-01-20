@@ -65,8 +65,8 @@ export const Client = () => {
 			<div className="flex-none h-3" />
 
 			{/* Artwork background */}
-			<div className="fixed z-[0] opacity-40 w-screen h-screen artwork-background">
-				<img src={bg} alt="oruggin-background" />
+			<div className="fixed inset-0 z-[0] opacity-40 artwork-background">
+				<img src={bg} alt="oruggin-background" className="w-full h-full object-cover" />
 			</div>
 
 			{/* Terminal */}
