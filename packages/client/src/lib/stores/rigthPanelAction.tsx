@@ -23,37 +23,23 @@ export const RightActionPanel = () => {
       <div className="flex flex-col gap-3 p-4 w-full
                       bg-black/60 border border-emerald-500/40
                       rounded-2xl shadow-xl text-green-300">
-        {/* Button 1 — Update Info Panel */}
-        <button
-          className="btn-action"
-          onClick={handleUpdatePanel}
-        >
-          Update Info Panel
-        </button>
-
-        {/* Button 2 — Toggle trailer */}
-        <button
-          className="btn-action"
-          onClick={() => sendCommand("_toggleTrailer")}
-        >
-          Toggle Trailer
-        </button>
-
-        {/* Button 3 — Help */}
-        <button
-          className="btn-action"
-          onClick={() => sendCommand("help")}
-        >
-          Help
-        </button>
-
-        {/* Button 4 — Report Bug */}
-        <button
-          className="btn-action"
-          onClick={() => sendCommand("_bugReport")}
-        >
-          Report Bug
-        </button>
+        {/* Buttons container */}
+        {[
+          { label: "Update Info Panel", onClick: handleUpdatePanel },
+          { label: "Toggle Trailer", onClick: () => sendCommand("_toggleTrailer") },
+          { label: "Help", onClick: () => sendCommand("help") },
+          { label: "Report Bug", onClick: () => sendCommand("_bugReport") },
+        ].map((btn, idx) => (
+          <button
+            key={idx}
+            onClick={btn.onClick}
+            className="w-full py-2 text-sm font-medium text-green-300 
+                      border border-emerald-500/40 rounded-lg
+                      hover:bg-emerald-500/10 transition-colors duration-200"
+          >
+            {btn.label}
+          </button>
+        ))}
       </div>
     </div>
   );
