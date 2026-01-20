@@ -2,7 +2,7 @@ import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import GameStore from "@/lib/stores/game.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
-const RightActionPanel = () => {
+export const RightActionPanel = () => {
 
   // Helper to safely get game ID as bigint | undefined
   const getGameID = (): bigint | undefined => {
