@@ -62,13 +62,6 @@ export const Client = () => {
 				</div>
 			)}
 
-			{/* Small gap between UIPanel and Right-Hand Panel */}
-			{visible && rightPanelVisible && (
-				<div className="flex gap-3 mt-2 z-50 px-4 max-w-[900px]">
-					<RightActionPanel horizontal />
-				</div>
-			)}
-
 			<div className="flex-none h-3" />
 
 			{/* Artwork background */}
@@ -77,9 +70,16 @@ export const Client = () => {
 			</div>
 
 			{/* Terminal */}
-			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
+			<div className="w-full flex justify-center">
 				<Terminal />
 			</div>
+
+			{/* Right-Hand Panel (attached to the right side, over terminal) */}
+			{rightPanelVisible && (
+				<div className="absolute right-4 top-4 flex flex-col gap-3 z-50">
+					<RightActionPanel />
+				</div>
+			)}
 
 		</div>
 

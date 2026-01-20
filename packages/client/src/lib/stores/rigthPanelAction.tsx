@@ -2,7 +2,8 @@ import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import GameStore from "@/lib/stores/game.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
-export const RightActionPanel = ({ horizontal }: { horizontal?: boolean }) => {
+export const RightActionPanel = () => {
+
   const getGameID = (): bigint | undefined => {
     const gameId = GameStore().gameId;
     if (!gameId) return undefined;
@@ -15,12 +16,33 @@ export const RightActionPanel = ({ horizontal }: { horizontal?: boolean }) => {
     await queryPanelInfo(gameId);
   };
 
+  const buttons = [
+    { label: "Update Info Panel", onClick: handleUpdatePanel },
+    { label: "Toggle Trailer", onClick: () => sendCommand("_toggleTrailer") },
+    { label: "Help", onClick: () => sendCommand("help") },
+    { label: "Report Bug", onClick: () => sendCommand("_bugReport") },
+  ];
+
   return (
-    <div className={`flex ${horizontal ? "flex-row" : "flex-col"} gap-3`}>
-      <button className="btn-action" onClick={handleUpdatePanel}>Update Info Panel</button>
-      <button className="btn-action" onClick={() => sendCommand("_toggleTrailer")}>Toggle Trailer</button>
-      <button className="btn-action" onClick={() => sendCommand("help")}>Help</button>
-      <button className="btn-action" onClick={() => sendCommand("_bugReport")}>Report Bug</button>
+    <div className="flex-none w-[100px] flex justify-center items-start">
+      <div className="flex flex-col gap-3 p-3
+                      bg-black/60 border border-emerald-500/40
+                      rounded-2xl shadow-xl text-green-300">
+        {buttons.map((btn, idx) => (
+          <button
+            key={idx}
+            onClick={btn.onClick}
+            className="w-full py-2 text-sm font-medium text-green-300 
+                      border border-emerald-500/40 rounded-lg
+                      hover:bg-emerald-500/10 transition-colors duration-200
+                      whitespace-normal break-words text-center"
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
+
+export default RightActionPanel;
