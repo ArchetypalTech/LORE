@@ -8,6 +8,8 @@ import { useTerminalStore } from "@lib/stores/terminal.store";
 import { useUIPanelStore } from "@lib/stores/terminal.uiPanel.store";
 import UIPanel from "./terminal/Terminal.uiPanel";
 import "../styles/uiPanel.css";
+import { useRightPanelStore } from "@lib/stores/rightPanel.store";
+import { RightActionPanel } from "@lib/stores/rigthPanelAction";
 
 export const Client = () => {
 	useHead({
@@ -29,6 +31,7 @@ export const Client = () => {
 
 	const { idleVideoPlaying, playTrailer } = useTerminalStore();
 	const { visible } = useUIPanelStore();
+	const { visible: rightPanelVisible } = useRightPanelStore();
 
 	return (
 		<div
@@ -66,9 +69,29 @@ export const Client = () => {
 					<img src={bg} alt="oruggin-background" />
 				</div>
 
-				{/* Terminal */}
+				{/* Terminal + Right Panel */}
 				<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
-					<Terminal/>
+					<div
+						className={`flex h-full items-center transition-all duration-300 ease-out
+							${rightPanelVisible ? "gap-4" : "gap-0"}`}
+					>
+						{/* Terminal */}
+						<div
+							className={`transition-all duration-300 ease-out
+								${rightPanelVisible ? "-translate-x-8" : "translate-x-0"}`}
+						>
+							<Terminal />
+						</div>
+
+						{/* Right-side action panel */}
+						{rightPanelVisible && (
+							<div className="flex-none w-[80px] h-full flex items-center">
+								<div className="bg-black/60 border border-amber-500 rounded-md p-2">
+									<RightActionPanel />
+								</div>
+							</div>
+						)}
+					</div>
 				</div>
 
 			</div>
