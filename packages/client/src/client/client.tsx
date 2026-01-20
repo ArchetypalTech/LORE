@@ -55,20 +55,17 @@ export const Client = () => {
 				${visible ? "justify-start pb-32" : "justify-center pb-16"}`}
 		>
 
-			{/* UIPanel + Right-Hand Panel wrapper */}
+			{/* UIPanel */}
 			{visible && (
-				<div className="relative flex w-full max-w-[900px] px-4 pt-4 flex-none">
-					{/* UIPanel */}
-					<div className="flex-1 max-h-[30vh] overflow-y-auto no-scrollbar z-40">
-						<UIPanel />
-					</div>
+				<div className="z-40 w-full max-w-[900px] px-4 pt-4 flex-none max-h-[30vh] overflow-y-auto no-scrollbar">
+					<UIPanel />
+				</div>
+			)}
 
-					{/* Right-Hand Panel attached to UIPanel */}
-					{rightPanelVisible && (
-						<div className="flex-none ml-4 -mt-2 z-50">
-							<RightActionPanel />
-						</div>
-					)}
+			{/* Small gap between UIPanel and Right-Hand Panel */}
+			{visible && rightPanelVisible && (
+				<div className="flex gap-3 mt-2 z-50 px-4 max-w-[900px]">
+					<RightActionPanel horizontal />
 				</div>
 			)}
 
