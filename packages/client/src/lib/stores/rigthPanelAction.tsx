@@ -1,29 +1,21 @@
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
-import GameStore from "@/lib/stores/game.store";
-import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
+import {
+  increaseTypewriterSpeed,
+  decreaseTypewriterSpeed,
+  useTerminalStore,
+} from "@lib/stores/terminal.store";
 
 export const RightActionPanel = () => {
 
-  const getGameID = (): bigint | undefined => {
-    const gameId = GameStore().gameId;
-    if (!gameId) return undefined;
-    return BigInt(gameId);
-  };
-
-  const handleUpdatePanel = async () => {
-    const gameId = getGameID();
-    if (!gameId) return;
-    await queryPanelInfo(gameId);
-  };
-
-  const Testing = () => {
-    console.log("TESTING");
-  };
+  const speed = useTerminalStore(s => s.typewriterSpeedMultiplier);
+  const atMax = speed >= 3;
+  const atMin = speed <= 0.33;
 
   const buttons = [
-    { label: "Update Info Panel", onClick: handleUpdatePanel },
     { label: "Toggle Trailer", onClick: () => sendCommand("_toggleTrailer") },
-    { label: "Toggle Printing Speed", onClick: () => Testing },
+    { label: "Print Speed −", onClick: decreaseTypewriterSpeed, disabled: atMin },
+    { label: `Speed ${speed.toFixed(2)}×`, onClick: () => { }, disabled: true },
+    { label: "Print Speed +", onClick: increaseTypewriterSpeed, disabled: atMax },
     { label: "Help", onClick: () => sendCommand("help") },
     { label: "Report Bug", onClick: () => sendCommand("_bugReport") },
     { label: "Wallet", onClick: () => sendCommand("wallet") },
@@ -38,10 +30,15 @@ export const RightActionPanel = () => {
           <button
             key={idx}
             onClick={btn.onClick}
-            className="w-full py-2 text-sm font-medium text-green-300 
-                      border border-emerald-500/40 rounded-lg
-                      hover:bg-emerald-500/10 transition-colors duration-200
-                      whitespace-normal break-words text-center"
+            disabled={btn.disabled}
+            className={`w-full py-2 text-sm font-medium text-green-300 
+            border border-emerald-500/40 rounded-lg
+            transition-colors duration-200
+            whitespace-normal break-words text-center
+            ${btn.disabled
+                ? "opacity-40 cursor-not-allowed"
+                : "hover:bg-emerald-500/10"
+              }`}
           >
             {btn.label}
           </button>
