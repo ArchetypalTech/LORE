@@ -10,7 +10,7 @@ export default function Typewriter() {
 	const minTypingDelay = 2;
 	const maxTypingDelay = 9;
 
-	const { activeTypewriterLine } = useTerminalStore();
+	const { activeTypewriterLine, typewriterSpeedMultiplier } = useTerminalStore();
 
 	useEffect(() => {
 		// Reset display content when activeTypewriterLine changes
@@ -35,33 +35,28 @@ export default function Typewriter() {
 
 		let currentIndex = 0;
 		const text = activeTypewriterLine.text;
+		const baseDelay = (activeTypewriterLine.speed || 6) *(Math.random() * (maxTypingDelay - minTypingDelay) + minTypingDelay);
+		const delay = baseDelay / typewriterSpeedMultiplier;
 
-		const interval = setInterval(
-			() => {
-				if (currentIndex >= text.length) {
-					clearInterval(interval);
-					nextItem(activeTypewriterLine);
-					return;
-				}
+		const interval = setInterval(() => {
+			if (currentIndex >= text.length) {
+				clearInterval(interval);
+				nextItem(activeTypewriterLine);
+				return;
+			}
 
-				const char = text[currentIndex];
-				setDisplayContent((prev) => {
-					if (!prev) return prev;
-					return { ...prev, text: prev.text + char };
-				});
-				currentIndex++;
-			},
-			(activeTypewriterLine.speed || 6) *
-				Math.random() *
-				(maxTypingDelay - minTypingDelay) +
-				minTypingDelay,
-		);
+			const char = text[currentIndex];
+			setDisplayContent((prev) =>
+				prev ? { ...prev, text: prev.text + char } : prev,
+			);
+			currentIndex++;
+		}, delay);
 
 		// Cleanup interval on unmount or when activeTypewriterLine changes
 		return () => {
 			clearInterval(interval);
 		};
-	}, [activeTypewriterLine]);
+	}, [activeTypewriterLine, typewriterSpeedMultiplier]);
 
 	if (displayContent === null) {
 		return null;

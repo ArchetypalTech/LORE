@@ -29,9 +29,10 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
-import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 import { queryStories } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
+import { reportBug } from "@/lib/utils/bugReport";
+import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
 
 
 /**
@@ -515,15 +516,14 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		
 		const panel = UIPanelStore();
+		const rightPanel = useRightPanelStore.getState();
 
 		// ui show
 		if (context.args[0] === "show") {
 			panel.show();
-			const gameId = GameStore().gameId;
-			if (!gameId) return;
-			queryPanelInfo(BigInt(gameId));
+			rightPanel.show();
 			addTerminalContent({
-				text: "Info Panel shown.",
+				text: "Displaying Auxiliary Panels.",
 				format: "system",
 				useTypewriter: true,
 			});
@@ -533,8 +533,9 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// ui hide
 		if (context.args[0] === "hide") {
 			panel.hide();
+			rightPanel.hide();
 			addTerminalContent({
-				text: "Info Panel hidden.",
+				text: "Hidding Auxiliary Panels.",
 				format: "system",
 				useTypewriter: true,
 			});
@@ -557,6 +558,19 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 
 		addTerminalContent({
 			text: `Trailer ${store.playTrailer ? "disabled" : "enabled"}`,
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_bugReport: () => {
+		reportBug();
+		addTerminalContent({
+			text: "Opening bug report form...",
+			format: "system",
+			useTypewriter: true,
+		});
+		addTerminalContent({
+			text: "Thank you for your feedback!",
 			format: "system",
 			useTypewriter: true,
 		});
