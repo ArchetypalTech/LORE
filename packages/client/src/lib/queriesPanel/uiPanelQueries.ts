@@ -308,10 +308,10 @@ export const queryExitRoomsPerGame = async (
     // Get the exitParent from GIMap
     // This is for the exit status per game
     // ---------------------------------------------------------
-    const parentGameInst = await queryGameInstaceMap(gameId, parentInst);
-    console.log("[Exit Room] Parent GameInst:", parentGameInst.toString());
+    // const parentGameInst = await queryGameInstaceMap(gameId, parentInst);
+    // console.log("[Exit Room] Parent GameInst:", parentGameInst.toString());
 
-    const parentExit =  await queryExitGIMap(parentGameInst, parentInst);
+    const parentExit =  await queryExitGIMap(locationGameInst, parentInst);
     console.log("[Exit Room] Parent Exit:", parentExit);
     if (!parentExit) {
       console.log("[Exit Room] ParentExit not in queryGIMAP");
@@ -319,19 +319,19 @@ export const queryExitRoomsPerGame = async (
       console.log("[Exit Room] ParentExit 2:", parentExit2);
       if (!parentExit2) {
         console.log("[Exit Room] ParentExit 2 not in query");
-        return exitRooms;
+        //return exitRooms;
       }
       console.log("[Exit Room] ParentExit 2 in query");
       // 3.1 Get the exit ENTITY (static name)
       const exitEntity =  await queryEntity(parentInst);
-      // console.log("[Exit Room] Exit 2 Entity (base inst):", exitEntity);
+      console.log("[Exit Room] Exit 2 Entity (base inst):", exitEntity);
 
       // 3.2 Resolve leads_to 
       const leads_to_inst = BigInt(parentExit2.leads_to.toString());
-      // console.log("[Exit Room] leads_to inst 2:", leads_to_inst.toString());
+      console.log("[Exit Room] leads_to inst 2:", leads_to_inst.toString());
 
       const leads_to_entity = await queryEntity(leads_to_inst);
-      // console.log("[Exit Room] leads_to Entity 2:", leads_to_entity);
+      console.log("[Exit Room] leads_to Entity 2:", leads_to_entity);
 
       exitRooms = ({
         id: counter++,
