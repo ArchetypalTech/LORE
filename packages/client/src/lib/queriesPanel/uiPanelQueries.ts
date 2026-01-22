@@ -296,7 +296,7 @@ export const queryExitRoomsPerGame = async (
     console.log("[Exit Room] ParentToChildren:", parentToChildren);
 
     if (!parentToChildren?.inst) {
-      console.log("[Exit Room] No parent");
+      console.log("[Exit Room] No parent inst");
       return exitRooms;
     }
     // ---------------------------------------------------------
@@ -305,7 +305,13 @@ export const queryExitRoomsPerGame = async (
     const parentInst = BigInt(parentToChildren.inst.toString());
     console.log("[Exit Room] ParentInst:", parentInst.toString());
 
-    const parentExit =  await queryExitGIMap(locationGameInst, parentInst);
+    // Get the exitParent from GIMap
+    // This is for the exit status per game
+    // ---------------------------------------------------------
+    const parentGameInst = await queryGameInstaceMap(gameId, parentInst);
+    console.log("[Exit Room] Parent GameInst:", parentGameInst.toString());
+
+    const parentExit =  await queryExitGIMap(parentGameInst, parentInst);
     console.log("[Exit Room] Parent Exit:", parentExit);
     if (!parentExit) {
       console.log("[Exit Room] ParentExit not in queryGIMAP");
@@ -342,16 +348,16 @@ export const queryExitRoomsPerGame = async (
     // 4. Get the exit entity
     // ---------------------------------------------------------
     const exitEntity =  await queryEntity(parentInst);
-    // console.log("[Exit Room] Exit Entity (base inst):", exitEntity);
+    console.log("[Exit Room] Exit Entity (base inst):", exitEntity);
 
     // ---------------------------------------------------------
     // 5. Get the leads_to entity
     // ---------------------------------------------------------
     const leads_to_inst = BigInt(parentExit.leads_to.toString());
-    // console.log("[Exit Room] leads_to inst:", leads_to_inst.toString());
+    console.log("[Exit Room] leads_to inst:", leads_to_inst.toString());
 
     const leads_to_entity = await queryEntity(leads_to_inst);
-    // console.log("[Exit Room] leads_to Entity:", leads_to_entity);
+    console.log("[Exit Room] leads_to Entity:", leads_to_entity);
 
     exitRooms = ({
       id: counter++,
