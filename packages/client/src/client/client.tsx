@@ -76,11 +76,17 @@ export const Client = () => {
 
 			  {/* Right-Hand Panel — same height as terminal */}
 				{rightPanelVisible && (
-					<div className="absolute right-4 top-0 h-full flex flex-col items-center z-50">
-						<RightActionPanel />
-					</div>
-				)}
-
+				<div
+					className="absolute right-4 z-50 flex flex-col items-center justify-center"
+					style={{
+						top: "50%", 
+						transform: "translateY(-50%)",
+						height: "auto", // lets it adjust naturally to its content
+					}}
+				>
+					<RightActionPanel />
+				</div>
+			)}
 		</div>
 
 		{/* Audio + Footer */}
