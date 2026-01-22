@@ -303,7 +303,19 @@ pub impl PlayerImpl of PlayerTrait {
                     let children_2: Span<Entity> = self._append_children_to_context(world, child_1, ref context);
                     for child_2 in children_2 {
                         // Go over 3rd level children
-                         self._append_children_to_context(world, child_2, ref context);
+                        let childre_3: Span<Entity> = self._append_children_to_context(world, child_2, ref context);
+                        for child_3 in childre_3 {
+                            // Go over 4th level children
+                            let children_4: Span<Entity> = self._append_children_to_context(world, child_3, ref context);
+                            for child_4 in children_4 {
+                                // Go over 5th level children
+                                let children_5: Span<Entity> = self._append_children_to_context(world, child_4, ref context);
+                                for child_5 in children_5 {
+                                    // Go over 6th level children
+                                    self._append_children_to_context(world, child_5, ref context);
+                                };
+                            };
+                        }
                     };
                 };
                 // Add trail to context so we can call commands like [exit trail]
