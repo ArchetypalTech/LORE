@@ -213,7 +213,7 @@ export const queryExitsPerGame = async (
     // 2. Query ParentToChildren using GIMap(location)
     // ---------------------------------------------------------
     const parentToChildren = await queryParentToChildrenGIMap(locationGameInst, playerLocationInst);
-    console.log("[Exits] ParentToChildren:", parentToChildren);
+    //console.log("[Exits] ParentToChildren:", parentToChildren);
 
     if (!parentToChildren || !parentToChildren.children) {
       // console.log("[Exits] No children found.");

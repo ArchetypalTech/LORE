@@ -7,7 +7,7 @@ import {
 } from "../../lib/queriesPanel/uiPanelQueries";
 import GameStore from "@/lib/stores/game.store";
 import { Tooltip } from "../../lib/queriesPanel/tooltip";
-import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
+import { useUIPanelStore, ExitInfo } from "../../lib/stores/terminal.uiPanel.store";
 import { Exit} from "@/lib/dojo_bindings/typescript/models.gen";
 import { Check, HelpCircle, RefreshCw } from "lucide-react";
 
@@ -23,6 +23,7 @@ export const queryPanelInfo = async (gameId: bigint) => {
   if (!gameId) return;
   const store = useUIPanelStore.getState();
   store.setLoading(true);
+  let finalExits: ExitInfo[] = [];
 
   try {
     // 1. Get the player's location
@@ -40,12 +41,15 @@ export const queryPanelInfo = async (gameId: bigint) => {
     // 4. Update the store directly
     store.setLocation(location_name);
     if (exits) {
-      store.setExits(exits);
+      finalExits = exits;
     }
+
     if (location_exit) {
       const exit_info_setup = await setupExitInfo(location_exit, location_name);
-      store.setExits([...store.exits, exit_info_setup]);
+      finalExits = [...finalExits, exit_info_setup];
     }
+
+    store.setExits(finalExits);
     if (puzzles) {
       store.setPuzzles(puzzles);
     }
@@ -60,6 +64,7 @@ export const queryExitsInfo = async (gameId: bigint, locationInst: bigint, locat
   if (!gameId) return;
   const store = useUIPanelStore.getState();
   store.setLoadingE(true);
+  let finalExits: ExitInfo[] = [];
 
   try {
     // 1. Get the exits
@@ -68,12 +73,14 @@ export const queryExitsInfo = async (gameId: bigint, locationInst: bigint, locat
 
     // 2. Update the store directly
     if (exits) {
-      store.setExits(exits);
+      finalExits = exits;
     }
     if (locationExit) {
       const exit_info_setup = await setupExitInfo(locationExit, locationName);
-      store.setExits([...store.exits, exit_info_setup]);
+      finalExits = [...finalExits, exit_info_setup];
     }
+
+    store.setExits(finalExits);
   } catch (err) {
     console.error("Failed to query panel info:", err);
   } finally {
