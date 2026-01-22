@@ -3,6 +3,7 @@ import {
   queryPlayerLocationPerGame,
   queryExitsPerGame,
   queryPuzzlesPerGame,
+  queryExitRoomsPerGame,
 } from "../../lib/queriesPanel/uiPanelQueries";
 import GameStore from "@/lib/stores/game.store";
 import { Tooltip } from "../../lib/queriesPanel/tooltip";
@@ -60,9 +61,16 @@ export const queryExitsInfo = async (gameId: bigint, locationInst: bigint) => {
     const exits = await queryExitsPerGame(gameId, locationInst);
     // console.log("DEBUG: queryExitsInfo() exits: ", exits);
 
-    // 2. Update the store directly
+    // 2. Get the exit rooms
+    const exitRooms = await queryExitRoomsPerGame(gameId, locationInst);
+    // console.log("DEBUG: queryExitsInfo() exitRooms: ", exitRooms);
+
+    // 3. Update the store directly
     if (exits) {
       store.setExits(exits);
+    }
+    if (exitRooms) {
+      store.setExits([...store.exits, exitRooms]);
     }
   } catch (err) {
     console.error("Failed to query panel info:", err);
