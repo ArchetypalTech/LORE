@@ -299,74 +299,34 @@ export const queryExitRoomsPerGame = async (
       console.log("[Exit Room] No parent inst");
       return exitRooms;
     }
-    // ---------------------------------------------------------
-    // 3. Find Exit component via GIMap
-    // ---------------------------------------------------------
+    
     const parentInst = BigInt(parentToChildren.inst.toString());
-    console.log("[Exit Room] ParentInst:", parentInst.toString());
-
-    // Get the exitParent from GIMap
-    // This is for the exit status per game
-    // ---------------------------------------------------------
-    // const parentGameInst = await queryGameInstaceMap(gameId, parentInst);
-    // console.log("[Exit Room] Parent GameInst:", parentGameInst.toString());
-
-    const parentExit =  await queryExitGIMap(locationGameInst, parentInst);
-    console.log("[Exit Room] Parent Exit:", parentExit);
-    if (!parentExit) {
-      console.log("[Exit Room] ParentExit not in queryGIMAP");
-      const parentExit2 =  await queryExit(parentInst);
-      console.log("[Exit Room] ParentExit 2:", parentExit2);
-      if (!parentExit2) {
-        console.log("[Exit Room] ParentExit 2 not in query");
-        //return exitRooms;
-      }
-      console.log("[Exit Room] ParentExit 2 in query");
-      // 3.1 Get the exit ENTITY (static name)
-      const exitEntity =  await queryEntity(parentInst);
-      console.log("[Exit Room] Exit 2 Entity (base inst):", exitEntity);
-
-      // 3.2 Resolve leads_to 
-      const leads_to_inst = BigInt(parentExit2.leads_to.toString());
-      console.log("[Exit Room] leads_to inst 2:", leads_to_inst.toString());
-
-      const leads_to_entity = await queryEntity(leads_to_inst);
-      console.log("[Exit Room] leads_to Entity 2:", leads_to_entity);
-
-      exitRooms = ({
-        id: counter++,
-        name: exitEntity?.name ?? "unknown exit",
-        direction: stringCairoEnum(parentExit2.direction_type ?? "None"),
-        destination: parentExit2.is_enterable
-          ? (leads_to_entity?.name ?? "unknown location")
-          : "Unknown"
-      });
-      return exitRooms;
-    }
-
     // ---------------------------------------------------------
     // 4. Get the exit entity
     // ---------------------------------------------------------
     const exitEntity =  await queryEntity(parentInst);
     console.log("[Exit Room] Exit Entity (base inst):", exitEntity);
 
-    // ---------------------------------------------------------
-    // 5. Get the leads_to entity
-    // ---------------------------------------------------------
-    const leads_to_inst = BigInt(parentExit.leads_to.toString());
-    console.log("[Exit Room] leads_to inst:", leads_to_inst.toString());
+    const exitRoom = await queryExit(parentInst);
+    console.log("[Exit Room] Exit:", exitRoom);
 
-    const leads_to_entity = await queryEntity(leads_to_inst);
-    console.log("[Exit Room] leads_to Entity:", leads_to_entity);
+    // // ---------------------------------------------------------
+    // // 5. Get the leads_to entity
+    // // ---------------------------------------------------------
+    // const leads_to_inst = BigInt(parentExit.leads_to.toString());
+    // console.log("[Exit Room] leads_to inst:", leads_to_inst.toString());
 
-    exitRooms = ({
-      id: counter++,
-      name: exitEntity?.name ?? "unknown exit",
-      direction: stringCairoEnum(parentExit.direction_type ?? "None"),
-      destination: parentExit.is_enterable
-        ? (leads_to_entity?.name ?? "unknown location")
-        : "Unknown"
-    });
+    // const leads_to_entity = await queryEntity(leads_to_inst);
+    // console.log("[Exit Room] leads_to Entity:", leads_to_entity);
+
+    // exitRooms = ({
+    //   id: counter++,
+    //   name: exitEntity?.name ?? "unknown exit",
+    //   direction: stringCairoEnum(parentExit.direction_type ?? "None"),
+    //   destination: parentExit.is_enterable
+    //     ? (leads_to_entity?.name ?? "unknown location")
+    //     : "Unknown"
+    // });
 
   } catch (error) {
     console.error("Error fetching exits from Torii:", error);
