@@ -4,7 +4,7 @@ import { ToriiQueryBuilder } from "@dojoengine/sdk";
 import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted } from "@/lib/dojo_bindings/typescript/models.gen";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
-import { ExitInfo, PuzzleInfo } from "../stores/terminal.uiPanel.store";
+import { ExitInfo, PuzzleInfo, useUIPanelStore } from "../stores/terminal.uiPanel.store";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 
 const normalizeAddressZero = (addr: string): string => {
@@ -12,11 +12,12 @@ const normalizeAddressZero = (addr: string): string => {
 }
 
 // Player location
-export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(string | undefined), (bigint| undefined), (bigint | undefined)]> => {
+export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(string | undefined), (bigint| undefined), (bigint | undefined), Partial<Exit> | undefined]> => {
   // console.log("DEBUG: queryPlayerLocationPerGame() gameId: ", gameId);
   let player_location: string | undefined;
   let location_inst: bigint | undefined;
   let playerInst: bigint | undefined;
+  let location_exit: Partial<Exit> | undefined;
   const player_address = getPlayerAddress();
   // console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
   try {
@@ -40,7 +41,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
     // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
     if (!playerInst) {
       console.error("ERROR: queryPlayerLocationPerGame() playerInst is undefined");
-      return ([undefined, undefined, undefined]);
+      return ([undefined, undefined, undefined, undefined]);
     }
     // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
 
@@ -56,13 +57,18 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
     const player_location_entity = await queryPlayerLocationEntityGIMap(game_inst_map, player_location_inst);
     //console.log("DEBUG: queryPlayerLocationEntityGIMap() player_location_entity: ", player_location_entity);
 
-    player_location = player_location_entity;
+    // query location exit
+    const location_exitR = await queryLocationExitGIMap(game_inst_map, player_location_inst);
+    //console.log("DEBUG: queryLocationExitGIMap() location_exit: ", location_exit);
+
+    player_location = player_location_entity?.name ?? "undefined";
     location_inst = player_location_inst;
+    location_exit = location_exitR;
   } catch (error) {
     console.error("Error fetching player location from Torii:", error);
     throw error;
   }
-  return ([player_location, location_inst, playerInst]);
+  return ([player_location, location_inst, playerInst, location_exit]);
 }
 
 export const queryGameInstaceMapByPlayer = async (gameId: bigint, inst: bigint): Promise<bigint> => {
@@ -120,8 +126,8 @@ export const queryPlayerLocationGIMap = async (gameInst: bigint, origInst: bigin
   return player_location;
 };
 
-export const queryPlayerLocationEntityGIMap = async (gameInst: bigint, origInst: bigint): Promise<string> => {
-  let location_name: string = "";
+export const queryPlayerLocationEntityGIMap = async (gameInst: bigint, origInst: bigint): Promise<Partial<Entity> | undefined> => {
+  let location_entity: Partial<Entity> | undefined;
   // console.log("\n[PLE] Query PlayerLocationEntityGIMap");
   // console.log("[PLE] gameInst:", gameInst.toString(), "origInst:", origInst.toString());
   try{
@@ -143,14 +149,46 @@ export const queryPlayerLocationEntityGIMap = async (gameInst: bigint, origInst:
       const result_query_Entity = await sdk.getEntities({ query: query_Entity });
       // console.log("DEBUG: queryPlayerLocationEntityGIMap() result_query_Entity: ", result_query_Entity);
 
-      location_name = (result_query_Entity.getItems().at(0)?.models?.lore?.Entity?.name ?? "undefined");
+      location_entity = (result_query_Entity.getItems().at(0)?.models?.lore?.Entity ?? undefined);
   } catch (error) {
     console.error("Error fetching player location item from Torii:", error);
     throw error;
   }
-  return location_name;
+  return location_entity;
 };
 
+export const queryLocationExitGIMap = async (gameInst: bigint, origInst: bigint): Promise<Partial<Exit> | undefined> => {
+  let location_exit: Partial<Exit> | undefined;
+  // console.log("\n[PLE] Query PlayerLocationEntityGIMap");
+  // console.log("[PLE] gameInst:", gameInst.toString(), "origInst:", origInst.toString());
+  try{
+    const { sdk } = await InitDojo();
+    // get invItem
+    const queryValue = gameInst != 0n ? gameInst : origInst;
+    const query_Entity = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-Exit"],
+          [bigintToHex128(queryValue)]
+        ).build()
+      ).withEntityModels(["lore-Exit"]);
+      
+      
+    const result_query_Entity = await sdk.getEntities({ query: query_Entity });
+    // console.log("DEBUG: queryPlayerLocationEntityGIMap() result_query_Entity: ", result_query_Entity);
+    if (result_query_Entity.getItems().length === 0) {
+      return undefined;
+    }
+    location_exit = result_query_Entity.getItems().at(0)?.models?.lore?.Exit;
+  } catch (error) {
+    console.error("Error fetching player location item from Torii:", error);
+    throw error;
+  }
+  return location_exit;
+};
 
 
 // Exits
@@ -272,73 +310,26 @@ export const queryExitsPerGame = async (
   return exits;
 };
 
-export const queryExitRoomsPerGame = async (
-  gameId: bigint,
-  locationInst: bigint
-): Promise<ExitInfo | undefined> => {
-  let exitRooms : ExitInfo | undefined;
-  let counter = 0;
+export const setupExitInfo = async (exitLocation: Partial<Exit>, locationName: string): Promise<ExitInfo> => {
+  let exit: ExitInfo | undefined;
+  let exitsCounter =  useUIPanelStore.getState().exits.length;
 
-  try {
-    console.log("\n=== [Exit Room] START QUERY ===");
-    // console.log("LocationInst:", locationInst.toString());
+  const leads_to_inst = BigInt(exitLocation.leads_to.toString());
+  // console.log("[setupExitInfo] leads_to inst:", leads_to_inst.toString());
 
-    // ---------------------------------------------------------
-    // 1. Resolve GameInstanceMap for the player's LOCATION
-    // ---------------------------------------------------------
-    const locationGameInst = await queryGameInstaceMap(gameId, locationInst);
-    console.log("[Exit Room] Location GameInst:", locationGameInst.toString());
+  const leads_to_entity = await queryEntity(leads_to_inst);
+  // console.log("[Exits] setupExitInfo Entity:", leads_to_entity);
 
-    // ---------------------------------------------------------
-    // 2. Query ParentToChildren using GIMap(location)
-    // ---------------------------------------------------------
-    const parentToChildren = await queryParentToChildrenGIMap(locationGameInst, locationInst);
-    console.log("[Exit Room] ParentToChildren:", parentToChildren);
-
-    if (!parentToChildren?.inst) {
-      console.log("[Exit Room] No parent inst");
-      return exitRooms;
-    }
-    
-    const parentInst = BigInt(parentToChildren.inst.toString());
-    // ---------------------------------------------------------
-    // 4. Get the exit entity
-    // ---------------------------------------------------------
-    const exitEntity =  await queryEntity(parentInst);
-    console.log("[Exit Room] Exit Entity (base inst):", exitEntity);
-
-    const exitRoom = await queryExit(parentInst);
-    console.log("[Exit Room] Exit:", exitRoom);
-
-    // // ---------------------------------------------------------
-    // // 5. Get the leads_to entity
-    // // ---------------------------------------------------------
-    // const leads_to_inst = BigInt(parentExit.leads_to.toString());
-    // console.log("[Exit Room] leads_to inst:", leads_to_inst.toString());
-
-    // const leads_to_entity = await queryEntity(leads_to_inst);
-    // console.log("[Exit Room] leads_to Entity:", leads_to_entity);
-
-    // exitRooms = ({
-    //   id: counter++,
-    //   name: exitEntity?.name ?? "unknown exit",
-    //   direction: stringCairoEnum(parentExit.direction_type ?? "None"),
-    //   destination: parentExit.is_enterable
-    //     ? (leads_to_entity?.name ?? "unknown location")
-    //     : "Unknown"
-    // });
-
-  } catch (error) {
-    console.error("Error fetching exits from Torii:", error);
-    throw error;
-  }
-
-  return exitRooms;
-};
-
-
-// TODO: queryParentExits
-// const queryParentExits
+  exit =({
+    id: exitsCounter++,
+    name: locationName ?? "unknown exit",
+    direction: stringCairoEnum(exitLocation.direction_type ?? "None"),
+    destination: exitLocation.is_enterable
+      ? (leads_to_entity?.name ?? "unknown location")
+      : "Unknown"
+  });
+  return exit;
+}
 
 const queryParentToChildrenGIMap = async (
   gameInst: bigint,

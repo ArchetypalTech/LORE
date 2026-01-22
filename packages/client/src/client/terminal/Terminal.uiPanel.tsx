@@ -3,11 +3,12 @@ import {
   queryPlayerLocationPerGame,
   queryExitsPerGame,
   queryPuzzlesPerGame,
-  queryExitRoomsPerGame,
+  setupExitInfo,
 } from "../../lib/queriesPanel/uiPanelQueries";
 import GameStore from "@/lib/stores/game.store";
 import { Tooltip } from "../../lib/queriesPanel/tooltip";
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
+import { Exit} from "@/lib/dojo_bindings/typescript/models.gen";
 import { Check, HelpCircle, RefreshCw } from "lucide-react";
 
 
@@ -25,7 +26,7 @@ export const queryPanelInfo = async (gameId: bigint) => {
 
   try {
     // 1. Get the player's location
-    const [location_name, location_inst, _playerInst] = await queryPlayerLocationPerGame(gameId);
+    const [location_name, location_inst, _playerInst, location_exit] = await queryPlayerLocationPerGame(gameId);
     if (!location_name) return;
 
     // 2. Get the location's exits
@@ -41,6 +42,10 @@ export const queryPanelInfo = async (gameId: bigint) => {
     if (exits) {
       store.setExits(exits);
     }
+    if (location_exit) {
+      const exit_info_setup = await setupExitInfo(location_exit, location_name);
+      store.setExits([...store.exits, exit_info_setup]);
+    }
     if (puzzles) {
       store.setPuzzles(puzzles);
     }
@@ -51,7 +56,7 @@ export const queryPanelInfo = async (gameId: bigint) => {
   }
 };
 
-export const queryExitsInfo = async (gameId: bigint, locationInst: bigint) => {
+export const queryExitsInfo = async (gameId: bigint, locationInst: bigint, locationName: string,locationExit: Partial<Exit> | undefined) => {
   if (!gameId) return;
   const store = useUIPanelStore.getState();
   store.setLoadingE(true);
@@ -61,16 +66,13 @@ export const queryExitsInfo = async (gameId: bigint, locationInst: bigint) => {
     const exits = await queryExitsPerGame(gameId, locationInst);
     // console.log("DEBUG: queryExitsInfo() exits: ", exits);
 
-    // 2. Get the exit rooms
-    const exitRooms = await queryExitRoomsPerGame(gameId, locationInst);
-    // console.log("DEBUG: queryExitsInfo() exitRooms: ", exitRooms);
-
-    // 3. Update the store directly
+    // 2. Update the store directly
     if (exits) {
       store.setExits(exits);
     }
-    if (exitRooms) {
-      store.setExits([...store.exits, exitRooms]);
+    if (locationExit) {
+      const exit_info_setup = await setupExitInfo(locationExit, locationName);
+      store.setExits([...store.exits, exit_info_setup]);
     }
   } catch (err) {
     console.error("Failed to query panel info:", err);
