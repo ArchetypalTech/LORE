@@ -20,6 +20,9 @@ import { addTerminalContent } from "./terminal.store";
 import { getPlayerAddress } from "@/editor/lib/components";
 import * as torii from "@dojoengine/torii-client";
 import GameStore from "./game.store";
+import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
+import { queryPlayerLocationPerGame} from "../../lib/queriesPanel/uiPanelQueries";
+import { queryPanelInfo, queryExitsInfo, queryPuzzlesInfo } from "@/client/terminal/Terminal.uiPanel";
 
 
 /**
@@ -188,6 +191,22 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	}
 
 	set({ lastProcessedText: newLines.map((s) => s.line).join("\n"), playerStory });
+	// Get Stored Player Location
+	const location = useUIPanelStore.getState().location;
+	// console.log("DEBUG: Stored location: ", location);
+	// Get location from query
+	const gameID = BigInt(gameId);
+	const [location_name, location_inst, _playerInst, location_exit] = await queryPlayerLocationPerGame(gameID);
+	// console.log("DEBUG: Query location_name: ", location_name);
+	// If stored location is different from query location, update store
+	if (location_name !== location) {
+		queryPanelInfo(gameID);
+	} else {
+		if (!location_inst) return;
+		// update exits and puzzles
+		queryExitsInfo(gameID, location_inst, location_name, location_exit);
+		queryPuzzlesInfo(gameID, location_inst);
+	}
 };
 
 const onPlayerStory = (playerStory: PlayerStory) => {

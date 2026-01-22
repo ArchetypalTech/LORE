@@ -31,12 +31,12 @@ export default function Terminal({
 	const terminalInputRef = useRef<HTMLTextAreaElement>(null);
 	const [cursorPos, setCursorPos] = useState(0);
 	const textAnchorRef = useRef<HTMLInputElement>(null);
-	const scroller = useRef<HTMLElement>(null);
+	const scroller = useRef<HTMLDivElement>(null);
 
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine, isPrinting, setIdleVideoPlaying  } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, playTrailer, setIdleVideoPlaying } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
 
 	const [userNearBottom, setUserNearBottom] = useState(true);
@@ -44,7 +44,7 @@ export default function Terminal({
 	// --- IDLE VIDEO STATE ---
 	const [isIdle, setIsIdle] = useState(false);
 	const idleTimeoutRef = useRef<number | null>(null);
-	const IDLE_DELAY = 1 * 30 * 1000; // 30 seconds (30000 ms)
+	const IDLE_DELAY = 1 * 1000 * 30; // 30 seconds (30000 ms)
 	// 2 minutes (120000 ms)
 	
 	// helper: clear timer
@@ -58,6 +58,10 @@ export default function Terminal({
 	// reset timer & cancel idle
 	const resetIdleTimer = () => {
 		clearIdleTimer();
+
+		// If Trailer disabled → never enter idle mode
+		// read latest store value
+		if (!useTerminalStore.getState().playTrailer) return;
 
 		if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
 			setIsIdle(false);
@@ -96,7 +100,7 @@ export default function Terminal({
 
       const handleScroll = () => {
           const atBottom =
-              el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+              el.scrollHeight - el.scrollTop - el.clientHeight > 50;
           setUserNearBottom(atBottom);
       };
 
@@ -118,14 +122,20 @@ export default function Terminal({
       });
   }, [terminalContent, activeTypewriterLine, isPrinting, userNearBottom]);
 
-  // FIX ADDED: When printing begins, force scroll to bottom once
-  useEffect(() => {
-      if (!isPrinting || !userNearBottom) return;
-      const el = scroller.current;
-      requestAnimationFrame(() => {
-          el?.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-      });
-  }, [isPrinting, userNearBottom]);
+  // When printing STARTS → always force-scroll to bottom
+	useEffect(() => {
+			if (!isPrinting) return; // only when printing begins
+
+			const el = scroller.current;
+			if (!el) return;
+
+			requestAnimationFrame(() => {
+					el.scrollTo({
+							top: el.scrollHeight,
+							behavior: "smooth",
+					});
+			});
+	}, [isPrinting]);
 
   // Re-focus textarea whenever new content prints
   useEffect(() => {
@@ -268,6 +278,13 @@ useEffect(() => {
 		console.log("Idle state changed:", isIdle);
 		setIdleVideoPlaying(isIdle);
 	}, [isIdle, setIdleVideoPlaying]);
+
+	useEffect(() => {
+	if (!playTrailer) {
+		setIsIdle(false);
+		setIdleVideoPlaying(false);
+	}
+}, [playTrailer, setIdleVideoPlaying]);
 
 
 	const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {

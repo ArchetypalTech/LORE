@@ -2,7 +2,9 @@ import { LORE_CONFIG } from "@lib/config";
 import {
 	addTerminalContent,
 	clearTerminalContent,
+	useTerminalStore,
 } from "@lib/stores/terminal.store";
+import { useEditorStore } from "@/lib/stores/editor.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
 import {
@@ -26,6 +28,12 @@ import {
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
+import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
+import { queryStories } from "@/lib/queries/commandResponseQueries";
+import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
+import { reportBug } from "@/lib/utils/bugReport";
+import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
+
 
 /**
  * Context object passed to each terminal command handler
@@ -305,6 +313,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		// check for game
+		const gameId = GameStore().gameId;
+		const panel = UIPanelStore();
+		if (!gameId) {
+			// if no game, set default values for Info Panel
+			DefaultValues();
+			panel.show();
+		} else {
+			// if game, show Info Panel
+			panel.show();
+		}
 	},
 	wallet: async () => {
 		if (!WalletStore().isConnected) {
@@ -329,6 +348,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		// Reset Info Panel
+		DefaultValues();
 		return;
 	},
 	_bypass: ({ command }) => {
@@ -426,10 +447,20 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	_triggers: () => {
 		const triggers = queryTriggers();
 		console.log("TRIGGERS RESULT", triggers);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_actions: () => {
 		const actions = queryExecActions();
 		console.log("ACTIONS RESULT", actions);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_components: async (context: commandContext) => {
 		let game_id = context.args.length > 0
@@ -446,6 +477,27 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		const components = await queryGameComponents(game_id);
 		console.log("COMPONENTS RESULT", components);
 	},
+	_gameData: async () => {
+		addTerminalContent({ text: "FETCHING GAME DATA...", format: "system", useTypewriter: true });
+		await sleep(500);
+
+		addTerminalContent({ text: "THIS MAY TAKE A WHILE...", format: "system", useTypewriter: true });
+		await sleep(500);
+
+		addTerminalContent({ text: "BETTER GET A COFFEE...", format: "system", useTypewriter: true });
+		await sleep(800);
+
+		const stopAmbient = startFetchingAmbientMessages();
+
+		await queryStories();
+		stopAmbient();
+
+		addTerminalContent({
+			text: "GAME DATA HAS BEEN FETCHED. CHECK YOUR DOWNLOADS FOLDER",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
 	connection: async () => {
 		const dest = {
 			endpoints: LORE_CONFIG.endpoints,
@@ -453,6 +505,72 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		};
 		addTerminalContent({
 			text: JSON.stringify(dest, null, 2),
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	ui: (context: commandContext) => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		
+		const panel = UIPanelStore();
+		const rightPanel = useRightPanelStore.getState();
+
+		// ui show
+		if (context.args[0] === "show") {
+			panel.show();
+			rightPanel.show();
+			addTerminalContent({
+				text: "Displaying Auxiliary Panels.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// ui hide
+		if (context.args[0] === "hide") {
+			panel.hide();
+			rightPanel.hide();
+			addTerminalContent({
+				text: "Hidding Auxiliary Panels.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// Invalid usage
+		addTerminalContent({
+			text: `Usage:\n  ui show\n  ui hide`,
+			format: "error",
+			useTypewriter: true,
+		});
+	},
+	_toggleTrailer: () => {
+		const store = useTerminalStore.getState();
+		store.setPlayTrailer(!store.playTrailer);
+
+		const editorStore = useEditorStore.getState();
+		editorStore.setPlayTrailer(!editorStore.playTrailer);
+
+		addTerminalContent({
+			text: `Trailer ${store.playTrailer ? "disabled" : "enabled"}`,
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_bugReport: () => {
+		reportBug();
+		addTerminalContent({
+			text: "Opening bug report form...",
+			format: "system",
+			useTypewriter: true,
+		});
+		addTerminalContent({
+			text: "Thank you for your feedback!",
 			format: "system",
 			useTypewriter: true,
 		});

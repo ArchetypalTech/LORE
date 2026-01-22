@@ -29,7 +29,7 @@ export const Editor = () => {
 	const { dataPool, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 	const { isEditor } = useSyncEditorPermissions();
-	const { setIdleVideoPlaying } = useEditorStore();
+	const {playTrailer, setIdleVideoPlaying } = useEditorStore();
 
 	useHead({
 		title: APP_EDITOR_SEO.title,
@@ -65,6 +65,10 @@ export const Editor = () => {
 		// reset timer & cancel idle
 		const resetIdleTimer = () => {
 			clearIdleTimer();
+
+			// If Trailer disabled → never enter idle mode
+			// read latest store value
+			if (!useEditorStore.getState().playTrailer) return;
 	
 			if (isIdle || useEditorStore.getState().idleVideoPlaying) {
 				setIsIdle(false);
@@ -120,6 +124,14 @@ export const Editor = () => {
 	useEffect(() => {
 		(async () => await EditorData().syncEntities())();
 	}, []);
+
+	useEffect(() => {
+		if (!playTrailer) {
+			setIsIdle(false);
+			setIdleVideoPlaying(false);
+		}
+	}, [playTrailer, setIdleVideoPlaying]);
+	
 
 	const isLoaded = (editorState === "loaded");
 
@@ -213,7 +225,7 @@ export const Editor = () => {
 				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"
 			>
 				{/* Fullscreen idle video overlay — now in front of terminal */}
-				{idleEditorVideoPlaying && (
+				{playTrailer && idleEditorVideoPlaying  && (
 					<video
 						autoPlay
 						loop
