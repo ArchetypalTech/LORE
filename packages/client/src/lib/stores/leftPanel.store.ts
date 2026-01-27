@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 type LeftPanelState = {
   visible: boolean;
+  disabled: boolean;
   actions: number;
   lastChange: "consume" | "gain" | null;
 
@@ -12,10 +13,13 @@ type LeftPanelState = {
   consumeAction: () => void;
   gain5Actions: () => void;
   gain1Actions: () => void;
+  disable: () => void;
+  enable: () => void;
 };
 
 export const useLeftPanelStore = create<LeftPanelState>((set, get) => ({
   visible: true,
+  disabled: true,
   actions: 20,
   lastChange: null,
 
@@ -39,4 +43,8 @@ export const useLeftPanelStore = create<LeftPanelState>((set, get) => ({
       actions: s.actions + 1,
       lastChange: "gain",
     })),
+  disable: () =>
+    set({disabled: true}),
+  enable: () =>
+    set({disabled: false}),
 }));

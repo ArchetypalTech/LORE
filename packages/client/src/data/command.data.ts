@@ -34,6 +34,7 @@ import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
 import { useLeftPanelStore } from "@/lib/stores/leftPanel.store";
+import _ from "json-bigint";
 
 
 /**
@@ -586,5 +587,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_gain1Actions: () => {
 		useLeftPanelStore.getState().gain1Actions();
+	},
+	_disableActionCart: () => {
+		useLeftPanelStore.getState().disable();
+	},
+	_enableActionCart: () => {
+		useLeftPanelStore.getState().enable();
 	},
 } as const;

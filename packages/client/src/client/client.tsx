@@ -35,7 +35,7 @@ export const Client = () => {
 	const { idleVideoPlaying, playTrailer } = useTerminalStore();
 	const { visible } = useUIPanelStore();
 	const { visible: rightPanelVisible } = useRightPanelStore();
-	const { visible: leftPanelVisible } = useLeftPanelStore();
+	const { visible: leftPanelVisible, disabled } = useLeftPanelStore();
 
 	return (
 		<div
@@ -79,7 +79,7 @@ export const Client = () => {
 			</div>
 
 				{/* Left-Hand Panel — Action Cart */}
-				{leftPanelVisible && (
+				{leftPanelVisible && !disabled && (
 					<div
 						className="absolute left-4 z-50 flex flex-col items-center justify-center"
 						style={{
@@ -91,7 +91,7 @@ export const Client = () => {
 						<LeftActionPanel />
 					</div>
 				)}
-				
+
 			  {/* Right-Hand Panel — same height as terminal */}
 				{rightPanelVisible && (
 				<div
