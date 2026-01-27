@@ -584,14 +584,34 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	_gain5Actions: () => {
 		useLeftPanelStore.getState().gain5Actions();
+		addTerminalContent({
+			text: "You have gained 5 actions!",
+			format: "system",
+			useTypewriter: true,
+		});
 	},
 	_gain1Actions: () => {
 		useLeftPanelStore.getState().gain1Actions();
+		addTerminalContent({
+			text: "You have gained 1 action!",
+			format: "system",
+			useTypewriter: true,
+		});
 	},
 	_disableActionCart: () => {
 		useLeftPanelStore.getState().disable();
+		addTerminalContent({
+			text: "You have disabled the action cart!",
+			format: "system",
+			useTypewriter: true,
+		});
 	},
 	_enableActionCart: () => {
 		useLeftPanelStore.getState().enable();
+		addTerminalContent({
+			text: "You have enabled the action cart!",
+			format: "system",
+			useTypewriter: true,
+		});
 	},
 } as const;
