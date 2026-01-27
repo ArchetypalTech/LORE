@@ -24,9 +24,11 @@ import {
 	effectType,
 	type Action,
 	type ParentToChildren,
+	type Hub,
+	type Trail,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
-import { type DesignerCall, SystemCalls } from "../lib/systemCalls";
+import { type DesignerEntrypoints, SystemCalls } from "../lib/systemCalls";
 import EditorData from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
@@ -103,6 +105,12 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Area" in collection && collection.Area !== undefined) {
 		await publishArea(collection.Area);
 	}
+	if ("Hub" in collection && collection.Hub !== undefined) {
+		await publishHub(collection.Hub);
+	}
+	if ("Trail" in collection && collection.Trail !== undefined) {
+		await publishTrail(collection.Trail);
+	}
 	if ("Exit" in collection && collection.Exit !== undefined) {
 		await publishExit(collection.Exit);
 	}
@@ -139,7 +147,9 @@ const publishEntity = async (entity: Entity) => {
 	const entityData = [
 		num.toBigInt(entity.inst.toString()),
 		entity.is_entity,
+		num.toBigInt(entity.trail_id?.toString() ?? "0"),
 		byteArray.byteArrayFromString(entity.name),
+		0n, // creator_address is managed on contract level
 		entity.alt_names.length > 0
 			? entity.alt_names
 				.filter((x) => x.length > 0)
@@ -148,7 +158,6 @@ const publishEntity = async (entity: Entity) => {
 		entity.actions_keys.length > 0
 			? entity.actions_keys.filter((x) => x !== num.toBigInt(0)).map((x) => num.toBigInt(x.toString()))
 			: 0,
-		0n, // creator_address is managed on contract level
 	];
 	await dispatchDesignerCall("create_entity", [entityData]);
 };
@@ -214,6 +223,28 @@ const publishArea = async (area: Area) => {
 		area.preserve_children ?? false,
 	];
 	await dispatchDesignerCall("create_area", [areaData]);
+};
+
+const publishHub = async (hub: Hub) => {
+	const hubData = [
+		num.toBigInt(hub.inst.toString()),
+		hub.is_hub,
+		hub.is_enabled,
+		hub.trails_insts.map((x) => num.toBigInt(x.toString())),
+		hub.grants_editor_access,
+	];
+	await dispatchDesignerCall("create_hub", [hubData]);
+};
+
+const publishTrail = async (trail: Trail) => {
+	const trailData = [
+		num.toBigInt(trail.inst.toString()),
+		trail.is_trail,
+		num.toBigInt(trail.trail_id.toString()),
+		num.toBigInt(trail.hub_inst.toString()),
+		trail.is_published,
+	];
+	await dispatchDesignerCall("create_trail", [trailData]);
 };
 
 const publishExit = async (exit: Exit) => {
@@ -424,6 +455,12 @@ const deleteCollection = async (model: EntityCollection) => {
 	if ("Area" in model && model.Area !== undefined) {
 		await dispatchDesignerCall("delete_area", [num.toBigInt(model.Area!.inst)]);
 	}
+	if ("Hub" in model && model.Hub !== undefined) {
+		await dispatchDesignerCall("delete_hub", [num.toBigInt(model.Hub!.inst)]);
+	}
+	if ("Trail" in model && model.Trail !== undefined) {
+		await dispatchDesignerCall("delete_trail", [num.toBigInt(model.Trail!.inst)]);
+	}
 	if ("Exit" in model && model.Exit !== undefined) {
 		await dispatchDesignerCall("delete_exit", [num.toBigInt(model.Exit!.inst)]);
 	}
@@ -501,19 +538,18 @@ const publishRegisterPropertyRegistry = async () => {
  * @returns The response from the API
  */
 export const dispatchDesignerCall = async (
-	call: DesignerCall,
+	entrypoint: DesignerEntrypoints,
 	args: unknown[],
 ) => {
 	try {
-		const response = await SystemCalls.execDesignerCall({ call, args });
+		await SystemCalls.execDesignerCall({ entrypoint, args });
 		Notifications().addPublishingLog(
-			new CustomEvent("designerCall", { detail: { call, args } }),
+			new CustomEvent("designerCall", { detail: { entrypoint, args } }),
 		);
-		return response.json();
 	} catch (error) {
 		Notifications().addPublishingLog(
 			new CustomEvent("error", {
-				detail: { error: { message: (error as Error).message }, call, args },
+				detail: { error: { message: (error as Error).message }, entrypoint, args },
 			}),
 		);
 		if ((error as Error).message.includes("too many")) {
@@ -522,7 +558,7 @@ export const dispatchDesignerCall = async (
 			);
 		}
 		throw new Error(
-			`Error sending designer call: ${(error as Error).message}, ${call}, ${args}`,
+			`Error sending designer call: ${entrypoint}, ${args}: ${(error as Error).message}`,
 		);
 	}
 };

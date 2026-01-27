@@ -26,11 +26,22 @@ export interface ActionExecuted {
 	is_executed: boolean;
 }
 
-// Type definition for `lore::models::admin::AccountPermissions` struct
-export interface AccountPermissions {
-	account_address: string;
-	is_admin: boolean;
-	is_editor: boolean;
+// Type definition for `lore::models::actions_config::ActionsConfig` struct
+export interface ActionsConfig {
+	key: BigNumberish;
+	sn_contract: string;
+	action_cost_amount: BigNumberish;
+	initial_free_actions_count: BigNumberish;
+	max_free_actions_count: BigNumberish;
+	free_action_claim_interval: BigNumberish;
+	trail_reward_actions_count: BigNumberish;
+}
+
+// Type definition for `lore::models::actions_config::ActionsReward` struct
+export interface ActionsReward {
+	player_address: string;
+	collected_actions_amount: BigNumberish;
+	claimed_actions_amount: BigNumberish;
 }
 
 // Type definition for `lore::models::area::Area` struct
@@ -72,6 +83,14 @@ export interface DescriptionText {
 	text: string;
 }
 
+// Type definition for `lore::models::dictionary::Dict` struct
+export interface Dict {
+	dict_key: BigNumberish;
+	word: string;
+	tokenType: TokenTypeEnum;
+	n_value: BigNumberish;
+}
+
 // Type definition for `lore::models::effect::Effect` struct
 export interface Effect {
 	inst: BigNumberish;
@@ -97,10 +116,11 @@ export interface ChildToParent {
 export interface Entity {
 	inst: BigNumberish;
 	is_entity: boolean;
+	trail_id: BigNumberish;
 	name: string;
+	creator_address: string;
 	alt_names: Array<string>;
 	actions_keys: Array<BigNumberish>;
-	creator_address: string;
 }
 
 // Type definition for `lore::models::entity::ParentToChildren` struct
@@ -135,6 +155,33 @@ export interface GameInstanceMap {
 	game_inst: BigNumberish;
 }
 
+// Type definition for `lore::models::game_token_info::GameTokenInfo` struct
+export interface GameTokenInfo {
+	game_id: BigNumberish;
+	minter_address: string;
+	seed: BigNumberish;
+	room_name: string;
+	act_number: BigNumberish;
+}
+
+// Type definition for `lore::models::hub::Hub` struct
+export interface Hub {
+	inst: BigNumberish;
+	is_hub: boolean;
+	is_enabled: boolean;
+	trails_insts: Array<BigNumberish>;
+	grants_editor_access: boolean;
+}
+
+// Type definition for `lore::models::hub::Trail` struct
+export interface Trail {
+	inst: BigNumberish;
+	is_trail: boolean;
+	trail_id: BigNumberish;
+	hub_inst: BigNumberish;
+	is_published: boolean;
+}
+
 // Type definition for `lore::models::index::ComponentVariable` struct
 export interface ComponentVariable {
 	inst: BigNumberish;
@@ -144,14 +191,6 @@ export interface ComponentVariable {
 	property_name: string;
 	value: string;
 	last_updated: BigNumberish;
-}
-
-// Type definition for `lore::models::index::Dict` struct
-export interface Dict {
-	dict_key: BigNumberish;
-	word: string;
-	tokenType: TokenTypeEnum;
-	n_value: BigNumberish;
 }
 
 // Type definition for `lore::models::index::PropertyRegistry` struct
@@ -198,6 +237,25 @@ export interface StoryLine {
 	line_type: StoryLineTypeEnum;
 }
 
+// Type definition for `lore::models::player_account::PlayerAccount` struct
+export interface PlayerAccount {
+	player_address: string;
+	timestamp_joined: BigNumberish;
+	timestamp_free_actions_claimed: BigNumberish;
+	minted_actions_count: BigNumberish;
+	purchase_count: BigNumberish;
+	subscription_count: BigNumberish;
+	current_game_id: BigNumberish;
+}
+
+// Type definition for `lore::models::player_account::PlayerBalances` struct
+export interface PlayerBalances {
+	player_address: string;
+	free_actions_balance: BigNumberish;
+	paid_actions_balance: BigNumberish;
+	sub_actions_balance: BigNumberish;
+}
+
 // Type definition for `lore::models::reactable::Reactable` struct
 export interface Reactable {
 	inst: BigNumberish;
@@ -209,21 +267,20 @@ export interface Reactable {
 	new_entry: string;
 }
 
-// Type definition for `lore::models::token_config::GameTokenInfo` struct
-export interface GameTokenInfo {
+// Type definition for `lore::models::trail_token_info::TrailProgress` struct
+export interface TrailProgress {
 	game_id: BigNumberish;
-	minter_address: string;
-	seed: BigNumberish;
-	room_name: string;
-	act_number: BigNumberish;
-	progress: BigNumberish;
+	trail_id: BigNumberish;
+	percentage: BigNumberish;
 	completed: boolean;
 }
 
-// Type definition for `lore::models::token_config::PlayerAccount` struct
-export interface PlayerAccount {
-	address: string;
-	current_game_id: BigNumberish;
+// Type definition for `lore::models::trail_token_info::TrailTokenInfo` struct
+export interface TrailTokenInfo {
+	trail_id: BigNumberish;
+	minter_address: string;
+	seed: BigNumberish;
+	trail_inst: BigNumberish;
 }
 
 // Type definition for `lore::models::trigger::Trigger` struct
@@ -317,11 +374,103 @@ export interface Task {
 	description: string;
 }
 
-// Type definition for `lore::models::token_config::GameCreatedEvent` struct
+// Type definition for `lore::constants::appchain::AppchainMessageEvent` struct
+export interface AppchainMessageEvent {
+	uuid: BigNumberish;
+	caller_address: string;
+	from_address: string;
+	to_address: string;
+	block_number: BigNumberish;
+	block_timestamp: BigNumberish;
+	message_hash: BigNumberish;
+	message_type: BigNumberish;
+	payload: Array<BigNumberish>;
+}
+
+// Type definition for `lore::lib::access::AccessGrantedEvent` struct
+export interface AccessGrantedEvent {
+	address: string;
+	role: BigNumberish;
+	granted: boolean;
+}
+
+// Type definition for `lore::models::game_token_info::GameCreatedEvent` struct
 export interface GameCreatedEvent {
-	contract_address: string;
 	game_id: BigNumberish;
 	recipient: string;
+}
+
+// Type definition for `lore::models::trail_token_info::TrailCreatedEvent` struct
+export interface TrailCreatedEvent {
+	trail_id: BigNumberish;
+	recipient: string;
+}
+
+// Type definition for `nft_combo::erc721::erc721_combo::ERC721ComboComponent::BatchMetadataUpdate` struct
+export interface BatchMetadataUpdate {
+	from_token_id: BigNumberish;
+	to_token_id: BigNumberish;
+}
+
+// Type definition for `nft_combo::erc721::erc721_combo::ERC721ComboComponent::MetadataUpdate` struct
+export interface MetadataUpdate {
+	token_id: BigNumberish;
+}
+
+// Type definition for `openzeppelin_access::accesscontrol::accesscontrol::AccessControlComponent::RoleAdminChanged` struct
+export interface RoleAdminChanged {
+	role: BigNumberish;
+	previous_admin_role: BigNumberish;
+	new_admin_role: BigNumberish;
+}
+
+// Type definition for `openzeppelin_access::accesscontrol::accesscontrol::AccessControlComponent::RoleGranted` struct
+export interface RoleGranted {
+	role: BigNumberish;
+	account: string;
+	sender: string;
+}
+
+// Type definition for `openzeppelin_access::accesscontrol::accesscontrol::AccessControlComponent::RoleRevoked` struct
+export interface RoleRevoked {
+	role: BigNumberish;
+	account: string;
+	sender: string;
+}
+
+// Type definition for `openzeppelin_token::erc20::erc20::ERC20Component::Approval` struct
+export interface Approval {
+	owner: string;
+	spender: string;
+	value: BigNumberish;
+}
+
+// Type definition for `openzeppelin_token::erc20::erc20::ERC20Component::Transfer` struct
+export interface Transfer {
+	from: string;
+	to: string;
+	value: BigNumberish;
+}
+
+// Type definition for `openzeppelin_token::erc721::erc721::ERC721Component::Approval` struct
+export interface Approval {
+	owner: string;
+	approved: string;
+	token_id: BigNumberish;
+}
+
+// Type definition for `openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll` struct
+export interface ApprovalForAll {
+	owner: string;
+	operator: string;
+	approved: boolean;
+}
+
+// Type definition for `openzeppelin_token::erc721::erc721::ERC721Component::Transfer` struct
+export interface Transfer {
+	from: string;
+	to: string;
+	token_id: BigNumberish;
 }
 
 // Type definition for `lore::models::player::StoryLineType` enum
@@ -484,15 +633,81 @@ export const propertyType = [
 export type PropertyType = { [key in typeof propertyType[number]]: string };
 export type PropertyTypeEnum = CairoCustomEnum;
 
+// Type definition for `lore::constants::errors::Error` enum
+export const error = [
+	'Unimplemented',
+	'WordTooLong',
+	'LexerFailed',
+	'TestError',
+	'ActionFailed',
+	'NotSystemAction',
+	'EntityNotFound',
+	'NoDictionaryMatch',
+	'None',
+	'TriggerNotFound',
+	'NameTooLong',
+	'FailedToUpdateTriggerIndex',
+	'FailedToRemoveTriggerIndex',
+	'TriggerNotMeetConditions',
+	'OnceUseOnly',
+	'ConditionFailed',
+	'NotInTheSameTrail',
+	'EffectFailed',
+	'EffectNotFound',
+	'ReadOnlyVariable',
+	'NoPropertyRegistry',
+	'NoComponent',
+	'NoAreaComponent',
+	'NoExitComponent',
+	'NoReactableComponent',
+	'NoInventoryItemComponent',
+	'NoContainerComponent',
+	'NoPlayerComponent',
+	'NoTargetEntity',
+	'NameNotMatch',
+	'DirectionNotMatch',
+	'Unenterable',
+	'FailToReactTo',
+	'NoTarget',
+	'NotOpen',
+	'ContainerFull',
+	'CantStore',
+	'NoPersonalContainer',
+	'NoContainer',
+	'CantBePicked',
+	'CantBeStored',
+	'AlreadyStored',
+	'NotStored',
+	'NotEditor',
+	'NoRoom',
+	'NotYourGame',
+	'InvalidTrail',
+	'InsufficientActionsBalance',
+	'InsufficientActionsToClaim',
+] as const;
+export type Error = { [key in typeof error[number]]: string };
+export type ErrorEnum = CairoCustomEnum;
+
+// Type definition for `lore::types::command_type::CommandType` enum
+export const commandType = [
+	'Unknown',
+	'System',
+	'Action',
+] as const;
+export type CommandType = { [key in typeof commandType[number]]: string };
+export type CommandTypeEnum = CairoCustomEnum;
+
 export interface SchemaType extends ISchemaType {
 	lore: {
 		Action: Action,
 		ActionExecuted: ActionExecuted,
-		AccountPermissions: AccountPermissions,
+		ActionsConfig: ActionsConfig,
+		ActionsReward: ActionsReward,
 		Area: Area,
 		Condition: Condition,
 		Container: Container,
 		DescriptionText: DescriptionText,
+		Dict: Dict,
 		Effect: Effect,
 		ChildToParent: ChildToParent,
 		Entity: Entity,
@@ -500,16 +715,20 @@ export interface SchemaType extends ISchemaType {
 		Exit: Exit,
 		GameInstanceKeyMap: GameInstanceKeyMap,
 		GameInstanceMap: GameInstanceMap,
+		GameTokenInfo: GameTokenInfo,
+		Hub: Hub,
+		Trail: Trail,
 		ComponentVariable: ComponentVariable,
-		Dict: Dict,
 		PropertyRegistry: PropertyRegistry,
 		InventoryItem: InventoryItem,
 		Player: Player,
 		PlayerStory: PlayerStory,
 		StoryLine: StoryLine,
-		Reactable: Reactable,
-		GameTokenInfo: GameTokenInfo,
 		PlayerAccount: PlayerAccount,
+		PlayerBalances: PlayerBalances,
+		Reactable: Reactable,
+		TrailProgress: TrailProgress,
+		TrailTokenInfo: TrailTokenInfo,
 		Trigger: Trigger,
 		TriggerExecuted: TriggerExecuted,
 		TriggerIndex: TriggerIndex,
@@ -521,7 +740,18 @@ export interface SchemaType extends ISchemaType {
 		TrophyCreation: TrophyCreation,
 		TrophyProgression: TrophyProgression,
 		Task: Task,
+		AppchainMessageEvent: AppchainMessageEvent,
+		AccessGrantedEvent: AccessGrantedEvent,
 		GameCreatedEvent: GameCreatedEvent,
+		TrailCreatedEvent: TrailCreatedEvent,
+		BatchMetadataUpdate: BatchMetadataUpdate,
+		MetadataUpdate: MetadataUpdate,
+		RoleAdminChanged: RoleAdminChanged,
+		RoleGranted: RoleGranted,
+		RoleRevoked: RoleRevoked,
+		Approval: Approval,
+		Transfer: Transfer,
+		ApprovalForAll: ApprovalForAll,
 	},
 }
 export const schema: SchemaType = {
@@ -546,10 +776,19 @@ export const schema: SchemaType = {
 			key: 0,
 			is_executed: false,
 		},
-		AccountPermissions: {
-			account_address: "",
-			is_admin: false,
-			is_editor: false,
+		ActionsConfig: {
+			key: 0,
+			sn_contract: "",
+			action_cost_amount: 0,
+			initial_free_actions_count: 0,
+			max_free_actions_count: 0,
+			free_action_claim_interval: 0,
+			trail_reward_actions_count: 0,
+		},
+		ActionsReward: {
+			player_address: "",
+			collected_actions_amount: 0,
+			claimed_actions_amount: 0,
 		},
 		Area: {
 			inst: 0,
@@ -601,6 +840,23 @@ export const schema: SchemaType = {
 			key: 0,
 		text: "",
 		},
+		Dict: {
+			dict_key: 0,
+		word: "",
+		tokenType: new CairoCustomEnum({ 
+					Unknown: "",
+				Verb: undefined,
+				Direction: undefined,
+				Article: undefined,
+				Preposition: undefined,
+				Pronoun: undefined,
+				Adjective: undefined,
+				Noun: undefined,
+				Quantifier: undefined,
+				Interrogative: undefined,
+				System: undefined, }),
+			n_value: 0,
+		},
 		Effect: {
 			inst: 0,
 			key: 0,
@@ -641,10 +897,11 @@ export const schema: SchemaType = {
 		Entity: {
 			inst: 0,
 			is_entity: false,
+			trail_id: 0,
 		name: "",
+			creator_address: "",
 			alt_names: [""],
 			actions_keys: [0],
-			creator_address: "",
 		},
 		ParentToChildren: {
 			inst: 0,
@@ -681,6 +938,27 @@ export const schema: SchemaType = {
 			inst: 0,
 			game_inst: 0,
 		},
+		GameTokenInfo: {
+			game_id: 0,
+			minter_address: "",
+			seed: 0,
+		room_name: "",
+			act_number: 0,
+		},
+		Hub: {
+			inst: 0,
+			is_hub: false,
+			is_enabled: false,
+			trails_insts: [0],
+			grants_editor_access: false,
+		},
+		Trail: {
+			inst: 0,
+			is_trail: false,
+			trail_id: 0,
+			hub_inst: 0,
+			is_published: false,
+		},
 		ComponentVariable: {
 			inst: 0,
 			key: 0,
@@ -701,23 +979,6 @@ export const schema: SchemaType = {
 		property_name: "",
 		value: "",
 			last_updated: 0,
-		},
-		Dict: {
-			dict_key: 0,
-		word: "",
-		tokenType: new CairoCustomEnum({ 
-					Unknown: "",
-				Verb: undefined,
-				Direction: undefined,
-				Article: undefined,
-				Preposition: undefined,
-				Pronoun: undefined,
-				Adjective: undefined,
-				Noun: undefined,
-				Quantifier: undefined,
-				Interrogative: undefined,
-				System: undefined, }),
-			n_value: 0,
 		},
 		PropertyRegistry: {
 		component_type: new CairoCustomEnum({ 
@@ -787,6 +1048,21 @@ export const schema: SchemaType = {
 				Debug: undefined,
 				Error: undefined, }),
 		},
+		PlayerAccount: {
+			player_address: "",
+			timestamp_joined: 0,
+			timestamp_free_actions_claimed: 0,
+			minted_actions_count: 0,
+			purchase_count: 0,
+			subscription_count: 0,
+			current_game_id: 0,
+		},
+		PlayerBalances: {
+			player_address: "",
+			free_actions_balance: 0,
+			paid_actions_balance: 0,
+			sub_actions_balance: 0,
+		},
 		Reactable: {
 			inst: 0,
 			is_reactable: false,
@@ -800,18 +1076,17 @@ export const schema: SchemaType = {
 			already_shown: false,
 		new_entry: "",
 		},
-		GameTokenInfo: {
+		TrailProgress: {
 			game_id: 0,
-			minter_address: "",
-			seed: 0,
-		room_name: "",
-			act_number: 0,
-			progress: 0,
+			trail_id: 0,
+			percentage: 0,
 			completed: false,
 		},
-		PlayerAccount: {
-			address: "",
-			current_game_id: 0,
+		TrailTokenInfo: {
+			trail_id: 0,
+			minter_address: "",
+			seed: 0,
+			trail_inst: 0,
 		},
 		Trigger: {
 			inst: 0,
@@ -920,21 +1195,89 @@ export const schema: SchemaType = {
 			total: 0,
 		description: "",
 		},
+		AppchainMessageEvent: {
+			uuid: 0,
+			caller_address: "",
+			from_address: "",
+			to_address: "",
+			block_number: 0,
+			block_timestamp: 0,
+			message_hash: 0,
+			message_type: 0,
+			payload: [0],
+		},
+		AccessGrantedEvent: {
+			address: "",
+			role: 0,
+			granted: false,
+		},
 		GameCreatedEvent: {
-			contract_address: "",
 			game_id: 0,
 			recipient: "",
+		},
+		TrailCreatedEvent: {
+			trail_id: 0,
+			recipient: "",
+		},
+		BatchMetadataUpdate: {
+		from_token_id: 0,
+		to_token_id: 0,
+		},
+		MetadataUpdate: {
+		token_id: 0,
+		},
+		RoleAdminChanged: {
+			role: 0,
+			previous_admin_role: 0,
+			new_admin_role: 0,
+		},
+		RoleGranted: {
+			role: 0,
+			account: "",
+			sender: "",
+		},
+		RoleRevoked: {
+			role: 0,
+			account: "",
+			sender: "",
+		},
+		Approval: {
+			owner: "",
+			spender: "",
+		value: 0,
+		},
+		Transfer: {
+			from: "",
+			to: "",
+		value: 0,
+		},
+		Approval: {
+			owner: "",
+			approved: "",
+		token_id: 0,
+		},
+		ApprovalForAll: {
+			owner: "",
+			operator: "",
+			approved: false,
+		},
+		Transfer: {
+			from: "",
+			to: "",
+		token_id: 0,
 		},
 	},
 };
 export enum ModelsMapping {
 	Action = 'lore-Action',
 	ActionExecuted = 'lore-ActionExecuted',
-	AccountPermissions = 'lore-AccountPermissions',
+	ActionsConfig = 'lore-ActionsConfig',
+	ActionsReward = 'lore-ActionsReward',
 	Area = 'lore-Area',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
 	DescriptionText = 'lore-DescriptionText',
+	Dict = 'lore-Dict',
 	Effect = 'lore-Effect',
 	ChildToParent = 'lore-ChildToParent',
 	Entity = 'lore-Entity',
@@ -942,17 +1285,21 @@ export enum ModelsMapping {
 	Exit = 'lore-Exit',
 	GameInstanceKeyMap = 'lore-GameInstanceKeyMap',
 	GameInstanceMap = 'lore-GameInstanceMap',
+	GameTokenInfo = 'lore-GameTokenInfo',
+	Hub = 'lore-Hub',
+	Trail = 'lore-Trail',
 	ComponentVariable = 'lore-ComponentVariable',
-	Dict = 'lore-Dict',
 	PropertyRegistry = 'lore-PropertyRegistry',
 	InventoryItem = 'lore-InventoryItem',
 	Player = 'lore-Player',
 	PlayerStory = 'lore-PlayerStory',
 	StoryLine = 'lore-StoryLine',
 	StoryLineType = 'lore-StoryLineType',
-	Reactable = 'lore-Reactable',
-	GameTokenInfo = 'lore-GameTokenInfo',
 	PlayerAccount = 'lore-PlayerAccount',
+	PlayerBalances = 'lore-PlayerBalances',
+	Reactable = 'lore-Reactable',
+	TrailProgress = 'lore-TrailProgress',
+	TrailTokenInfo = 'lore-TrailTokenInfo',
 	Trigger = 'lore-Trigger',
 	TriggerExecuted = 'lore-TriggerExecuted',
 	TriggerIndex = 'lore-TriggerIndex',
@@ -976,5 +1323,19 @@ export enum ModelsMapping {
 	TrophyCreation = 'achievement-TrophyCreation',
 	TrophyProgression = 'achievement-TrophyProgression',
 	Task = 'achievement-Task',
+	AppchainMessageEvent = 'lore-AppchainMessageEvent',
+	AccessGrantedEvent = 'lore-AccessGrantedEvent',
 	GameCreatedEvent = 'lore-GameCreatedEvent',
+	TrailCreatedEvent = 'lore-TrailCreatedEvent',
+	Error = 'lore-Error',
+	CommandType = 'lore-CommandType',
+	BatchMetadataUpdate = 'nft_combo-BatchMetadataUpdate',
+	ContractURIUpdated = 'nft_combo-ContractURIUpdated',
+	MetadataUpdate = 'nft_combo-MetadataUpdate',
+	RoleAdminChanged = 'openzeppelin_access-RoleAdminChanged',
+	RoleGranted = 'openzeppelin_access-RoleGranted',
+	RoleRevoked = 'openzeppelin_access-RoleRevoked',
+	Approval = 'openzeppelin_token-Approval',
+	Transfer = 'openzeppelin_token-Transfer',
+	ApprovalForAll = 'openzeppelin_token-ApprovalForAll',
 }

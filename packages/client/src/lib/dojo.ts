@@ -3,7 +3,6 @@ import {
 	init,
 	type StandardizedQueryResult,
 	ToriiQueryBuilder,
-	ClauseBuilder,
 } from "@dojoengine/sdk";
 import { LORE_CONFIG } from "@lib/config";
 import {
@@ -11,10 +10,8 @@ import {
 	schema,
 } from "@lib/dojo_bindings/typescript/models.gen";
 import { addAddressPadding } from "starknet";
-import { bigintToHex128 } from "@/lib/utils/utils";
 
 
-const gameId = 0n;
 /**
  * ## Initializes the Dojo SDK and configuration
  * @dev @dojoengine/sdk has WASM components which cannot be linked to in other parts of the client
@@ -25,23 +22,20 @@ const gameId = 0n;
  * @returns An object containing the initialized SDK, config, provider, and query functions
  */
 export const InitDojo = async () => {
-	const manifest = LORE_CONFIG.manifest.default;
-	const rpcUrl = LORE_CONFIG.endpoints.katana;
+	const manifest = LORE_CONFIG.dojo_manifest;
+	const rpcUrl = LORE_CONFIG.rpcUrl;
 	const dojoConfig = createDojoConfig({
 			manifest,
 			rpcUrl,
-			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			masterAddress: addAddressPadding(LORE_CONFIG.wallet.address),
-			masterPrivateKey: LORE_CONFIG.wallet.privateKey,
-			accountClassHash: LORE_CONFIG.manifest.world.class_hash,
-			feeTokenAddress: LORE_CONFIG.manifest.world.fee_token_address,
+			toriiUrl: LORE_CONFIG.toriiUrl,
+			masterAddress: LORE_CONFIG.burnerAccount ? addAddressPadding(LORE_CONFIG.burnerAccount.address) : undefined,
+			masterPrivateKey: LORE_CONFIG.burnerAccount ? addAddressPadding(LORE_CONFIG.burnerAccount.privateKey) : undefined,
 		});
-
 	const sdkConfig = {
 		client: {
 			rpcUrl,
-			toriiUrl: LORE_CONFIG.endpoints.torii.http,
-			worldAddress: addAddressPadding(dojoConfig.manifest.world.address),
+			toriiUrl: LORE_CONFIG.toriiUrl,
+			worldAddress: addAddressPadding(manifest.world.address),
 		},
 		// Those values are used
 		domain: {
@@ -81,6 +75,8 @@ export const InitDojo = async () => {
 					"lore-ParentToChildren",
 					"lore-ChildToParent",
 					"lore-PlayerStory",
+					"lore-Hub",
+					"lore-Trail",
 				]);
 			return query;
 		};

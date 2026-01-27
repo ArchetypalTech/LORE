@@ -7,6 +7,11 @@ use dojo::{
 use lore::{
     models::{
         game_instance::{Instance, GameModelImpl, GameInstImpl},
+        trail_token_info::{MAIN_TRAIL_ID},
+    },
+    lib::{
+        arrays::ArrayUtilsTrait,
+        utils::{HashImpl},
     },
 };
 
@@ -17,14 +22,16 @@ pub struct Entity {
     pub inst: felt252,
     pub is_entity: bool,
     /// Properties ///
+    /// the trail this Entity belongs to, or MAIN_TRAIL_ID (zero)
+    pub trail_id: u128,
     /// Name of the entity
     pub name: ByteArray,
+    /// Creator
+    pub creator_address: ContractAddress,
     /// Alternative names of the entity
     pub alt_names: Array<ByteArray>,
     /// Holds the keys of the actions that are attached to this entity
     pub actions_keys: Array<felt252>,
-    /// Creator
-    pub creator_address: ContractAddress,
 }
 
 #[derive(Clone, Drop, Serde, Introspect)]
@@ -55,22 +62,26 @@ pub struct ChildToParent {
 //
 #[generate_trait]
 pub impl EntityImpl of EntityTrait {
-    // used for tests
     fn create_entity(ref world: WorldStorage, name: ByteArray) -> Entity {
+        (Self::create_trail_entity(ref world, name, MAIN_TRAIL_ID))
+    }
+    fn create_trail_entity(ref world: WorldStorage, name: ByteArray, trail_id: u128) -> Entity {
+        let inst: felt252 = HashImpl::hash_values(['entity', world.dispatcher.uuid().try_into().unwrap()].span());
         let mut entity: Entity = Entity {
-            inst: world.dispatcher.uuid().try_into().unwrap(),
+            inst,
             is_entity: true,
+            trail_id,
             name,
             alt_names: array![],
             actions_keys: array![],
             creator_address: starknet::get_caller_address(),
         };
         world.write_model(@entity);
-        entity
+        (entity)
     }
 
     fn get_names(self: @Entity) -> Span<ByteArray> {
-        let mut names = self.alt_names.clone();
+        let mut names: Array<ByteArray> = self.alt_names.clone();
         names.append(self.name.clone());
         (names.span())
     }
@@ -79,7 +90,7 @@ pub impl EntityImpl of EntityTrait {
         if (self.name == name) {
             return true;
         }
-        let mut has_name = false;
+        let mut has_name: bool = false;
         for alt_name in self.alt_names.span() {
             if (alt_name == name) {
                 has_name = true;
@@ -99,7 +110,7 @@ pub impl EntityImpl of EntityTrait {
     }
 
     fn is_entity(world: @WorldStorage, inst: felt252) -> bool {
-        (Self::get_entity(world, inst).is_some())
+        (inst != 0 && world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("is_entity")))
     }
 
     fn can_edit_entity(world: @WorldStorage, inst: felt252, account_address: ContractAddress) -> bool {
@@ -112,31 +123,24 @@ pub impl EntityImpl of EntityTrait {
         let creator_address: ContractAddress = world.read_member(Model::<Entity>::ptr_from_keys(inst), selector!("creator_address"));
         (creator_address == account_address)
     }
-
+    
     //---------------------------------
     // Parents
     //
 
     fn has_children(self: @Entity, world: @WorldStorage, game_id: u128) -> bool {
-        let parent: ParentToChildren = world.read_game_model(*self.inst, game_id);
+        let parent: @ParentToChildren = @world.read_game_model(*self.inst, game_id);
         (parent.children.len() > 0)
     }
 
     fn contains_child(self: @Entity, world: @WorldStorage, inst: felt252, game_id: u128) -> bool {
-        let mut result = false;
-        let parent: ParentToChildren = world.read_game_model(*self.inst, game_id);
-        for child_inst in parent.children.span() {
-            if (child_inst == @inst) {
-                result = true;
-                break;
-            }
-        };
-        (result)
+        let parent: @ParentToChildren = @world.read_game_model(*self.inst, game_id);
+        (parent.children.contains(@inst))
     }
 
     fn get_children(self: @Entity, world: @WorldStorage, game_id: u128) -> Span<Entity> {
         let mut result: Array<Entity> = array![];
-        let parent: ParentToChildren = world.read_game_model(*self.inst, game_id);
+        let parent: @ParentToChildren = @world.read_game_model(*self.inst, game_id);
         for child_inst in parent.children.span() {
             let child_entity: Entity = world.read_model(*child_inst);
             result.append(child_entity);
@@ -187,6 +191,7 @@ pub impl EntityImpl of EntityTrait {
 
     fn set_parent(self: @Entity, ref world: WorldStorage, parent_entity: @Entity, game_id: u128) {
         assert(self.inst != parent_entity.inst, 'set_parent() parent self');
+        // assert(self.trail_id == parent_entity.trail_id, 'set_parent() invalid trail'); // items can be dropped in any trail
         // check if the entity is already a child
         let mut child: ChildToParent = world.read_game_model(*self.inst, game_id);
         if (@child.parent != parent_entity.inst) {
@@ -207,13 +212,7 @@ pub impl EntityImpl of EntityTrait {
     // internal
     //
     fn _remove_child(ref self: ParentToChildren, ref world: WorldStorage, child_inst: felt252, game_id: u128) {
-        let mut new_children: Array<felt252> = array![];
-        for i in self.children.span() {
-            if (*i != child_inst) {
-                new_children.append(*i);
-            }
-        };
-        self.children = new_children;
+        self.children = self.children.remove(@child_inst);
         self.is_parent = true;
         world.write_game_model(@self, game_id);
     }
@@ -250,6 +249,10 @@ pub impl ParentToChildrenInstance of Instance<ParentToChildren> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<ParentToChildren>::ptr_from_keys(inst), selector!("is_parent")))
     }
+    fn is_partially_mapped() -> bool {
+        (false)
+    }
+    fn partially_map_from(ref self: ParentToChildren, game_model: @ParentToChildren) {}
 }
 
 pub impl ChildToParentInstance of Instance<ChildToParent> {
@@ -268,4 +271,8 @@ pub impl ChildToParentInstance of Instance<ChildToParent> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<ChildToParent>::ptr_from_keys(inst), selector!("is_child")))
     }
+    fn is_partially_mapped() -> bool {
+        (false)
+    }
+    fn partially_map_from(ref self: ChildToParent, game_model: @ChildToParent) {}
 }

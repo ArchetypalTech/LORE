@@ -4,8 +4,9 @@ import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { useWalletStore } from "./wallet.store";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
-import { InitDojo } from "../dojo";
+import { getDojoSdk } from "./dojo.store";
 import type { SchemaType, PlayerAccount } from "../dojo_bindings/typescript/models.gen";
+import { useMounted } from "../utils/useMounted";
 
 const {
 	get,
@@ -54,6 +55,7 @@ const GameStore = createFactory({
  */
 export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	const { gameId } = useGameStore();
+	const mounted = useMounted();
 
 	// set the editor game id, if provided
 	useEffect(() => {
@@ -78,12 +80,12 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 				.withEntityModels(["lore-PlayerAccount"]);
 
 			try {
-				const { sdk } = await InitDojo();
+				const sdk = getDojoSdk();
 				const result = await sdk.getEntities({ query });
-				const playerAccount: PlayerAccount | undefined = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount;
-				console.log("useSyncGameId() playerAccount", playerAccount);
-				if (playerAccount) {
-					GameStore().setPlayerGameId(playerAccount.current_game_id);
+				const playerGame: PlayerAccount | undefined = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount;
+				console.log("useSyncGameId() playerGame", playerGame);
+				if (playerGame) {
+					GameStore().setPlayerGameId(playerGame.current_game_id);
 				} else {
 					sendCommand(`create game`);
 				}
@@ -99,10 +101,10 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 		}
 		// fetch the player game id
 		const address = BigInt(walletAddress || 0);
-		if (address != 0n && isConnected && inputGameId === undefined) {
+		if (address != 0n && isConnected && inputGameId === undefined && mounted) {
 			_fetch(address);
 		}
-	}, [walletAddress, isConnected, inputGameId]);
+	}, [walletAddress, isConnected, inputGameId, mounted]);
 
 	// return the current game id
 	return gameId;
