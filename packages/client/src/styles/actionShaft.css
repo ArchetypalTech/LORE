@@ -1,0 +1,11 @@
+@keyframes cart-shake {
+  0%   { transform: translateY(var(--y)) translateX(0); }
+  25%  { transform: translateY(var(--y)) translateX(-1px); }
+  50%  { transform: translateY(var(--y)) translateX(1px); }
+  75%  { transform: translateY(var(--y)) translateX(-1px); }
+  100% { transform: translateY(var(--y)) translateX(0); }
+}
+
+.cart-shake {
+  animation: cart-shake 0.25s ease-in-out;
+}

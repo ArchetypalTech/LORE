@@ -33,6 +33,7 @@ import { queryStories } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
+import { useLeftPanelStore } from "@/lib/stores/leftPanel.store";
 
 
 /**
@@ -291,6 +292,9 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
+
+			const leftPanel = useLeftPanelStore.getState();
+			leftPanel.show();
 		}
 
 		// Check properties
@@ -350,6 +354,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		// Reset Info Panel
 		DefaultValues();
+		const leftPanel = useLeftPanelStore.getState();
+		leftPanel.hide();
 		return;
 	},
 	_bypass: ({ command }) => {
@@ -574,5 +580,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 		});
+	},
+	_gain5Actions: () => {
+		useLeftPanelStore.getState().gain5Actions();
+	},
+	_gain1Actions: () => {
+		useLeftPanelStore.getState().gain1Actions();
 	},
 } as const;
