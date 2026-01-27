@@ -28,18 +28,3 @@ pub fn direction_one_letter(direction: @ByteArray) -> ByteArray {
     }
     text
 }
-
-
-pub mod CONST {
-    pub const ETH_TO_WEI: u256 = 1_000_000_000_000_000_000;
-}
-
-pub mod TIMESTAMP {
-    pub const ONE_MINUTE: u64   = 60;
-    pub const ONE_HOUR: u64     = 60 * 60;
-    pub const ONE_DAY: u64      = 60 * 60 * 24;
-    pub const ONE_WEEK: u64     = 60 * 60 * 24 * 7;
-    pub const TWO_WEEKS: u64    = 60 * 60 * 24 * 14;
-    pub const THREE_WEEKS: u64  = 60 * 60 * 24 * 21;
-    pub const FOUR_WEEKS: u64   = 60 * 60 * 24 * 28;
-}

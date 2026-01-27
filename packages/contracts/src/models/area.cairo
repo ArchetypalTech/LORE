@@ -45,14 +45,6 @@ pub impl AreaInstance of Instance<Area> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Area>::ptr_from_keys(inst), selector!("is_area")))
     }
-    fn is_partially_mapped() -> bool {
-        (true)
-    }
-    fn partially_map_from(ref self: Area, game_model: @Area) {
-        // map properties declared in VariablePropertyHelperTrait::register_properties()
-        self.is_area = *game_model.is_area;
-        self.is_spawn_point = *game_model.is_spawn_point;
-    }
 }
 
 pub impl AreaComponent of Component<Area> {
@@ -117,29 +109,29 @@ mod tests {
 
     #[test]
     fn test_area_create() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
-        let area: Area = AreaComponent::add_component(ref sys.world, 1);
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let area: Area = AreaComponent::add_component(ref world, 1);
         assert(area.is_area, 'area is area');
         assert(area.inst == 1, 'area.inst == 1');
-        assert(AreaInstance::has_component(@sys.world, area.inst), 'has_component()');
-        let component: Option<Area> = AreaComponent::get_component(@sys.world, area.inst, 0);
+        assert(AreaInstance::has_component(@world, area.inst), 'has_component()');
+        let component: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
         assert(component.is_some(), 'component.is_some()');
         assert(component.unwrap().inst() == area.inst, 'component.is_some()');
     }
 
     #[test]
     fn test_area_game_inst() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         //
         // create area
-        let area: Area = AreaComponent::add_component(ref sys.world, 111);
+        let area: Area = AreaComponent::add_component(ref world, 111);
         assert!(area.is_area);
         assert_eq!(area.inst, 111);
         //
         // read game inst version, same as inst
         let game_id: u128 = 222;
-        let comp_inst: Area = sys.world.read_game_model(area.inst, 0);
-        let mut comp_game: Area = sys.world.read_game_model(area.inst, game_id);
+        let comp_inst: Area = world.read_game_model(area.inst, 0);
+        let mut comp_game: Area = world.read_game_model(area.inst, game_id);
         assert!(comp_inst.is_component(), "baseline");
         assert!(comp_game.is_component(), "baseline");
         assert_eq!(comp_inst.inst(), area.inst, "baseline");
@@ -147,23 +139,23 @@ mod tests {
         assert_eq!(comp_game.is_spawn_point, false, "baseline");
         assert_eq!(comp_game.preserve_children, false, "baseline");
         // GameInstanceMap model does not exist yet
-        let map: GameInstanceMap = sys.world.read_model((game_id, area.inst),);
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
         assert_eq!(map.game_inst, 0, "baseline");
         //
         // save game inst version
         comp_game.is_spawn_point = true;
-        sys.world.write_game_model(@comp_game, game_id);
-        sys.world.write_game_model(@comp_inst, 0);
+        world.write_game_model(@comp_game, game_id);
+        world.write_game_model(@comp_inst, 0);
         // inst does not change!
         assert_eq!(comp_inst.inst(), area.inst, "saved");
         assert_eq!(comp_game.inst(), area.inst, "saved");
         // GameInstanceMap was created
-        let map: GameInstanceMap = sys.world.read_model((game_id, area.inst),);
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
         assert_ne!(map.game_inst, 0, "saved");
         //
         // read game inst version, updated, original is preserved
-        let new_comp_inst: Area = sys.world.read_game_model(area.inst, 0);
-        let new_comp_game: Area = sys.world.read_game_model(area.inst, game_id);
+        let new_comp_inst: Area = world.read_game_model(area.inst, 0);
+        let new_comp_game: Area = world.read_game_model(area.inst, game_id);
         assert!(new_comp_inst.is_component(), "new_component");
         assert!(new_comp_game.is_component(), "new_component");
         assert_eq!(new_comp_inst.inst(), area.inst, "new_component");
@@ -174,18 +166,18 @@ mod tests {
 
     #[test]
     fn test_area_game_comp() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (mut world, _, _, _, _, _) = helpers::setup_core();
         //
         // create area
-        let area: Area = AreaComponent::add_component(ref sys.world, 111);
+        let area: Area = AreaComponent::add_component(ref world, 111);
         assert!(area.is_area);
         assert_eq!(area.inst, 111);
         //
         // read game inst version, same as inst
         let game_id: u128 = 222;
-        let comp_null: Option<Area> = AreaComponent::get_component(@sys.world, 1234, 0);
-        let comp_inst: Option<Area> = AreaComponent::get_component(@sys.world, area.inst, 0);
-        let comp_game: Option<Area> = AreaComponent::get_component(@sys.world, area.inst, game_id);
+        let comp_null: Option<Area> = AreaComponent::get_component(@world, 1234, 0);
+        let comp_inst: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
+        let comp_game: Option<Area> = AreaComponent::get_component(@world, area.inst, game_id);
         assert!(comp_null.is_none(), "null");
         assert!(comp_inst.is_some(), "baseline");
         assert!(comp_game.is_some(), "baseline");
@@ -197,23 +189,23 @@ mod tests {
         assert_eq!(comp_game.inst(), area.inst, "baseline");
         assert_eq!(comp_game.is_spawn_point, false, "baseline");
         // GameInstanceMap model does not exist yet
-        let map: GameInstanceMap = sys.world.read_model((game_id, area.inst),);
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
         assert_eq!(map.game_inst, 0, "baseline");
         //
         // save game inst version
         comp_game.is_spawn_point = true;
-        comp_game.store(ref sys.world, game_id);
-        comp_inst.store(ref sys.world, 0);
+        comp_game.store(ref world, game_id);
+        comp_inst.store(ref world, 0);
         // inst does not change!
         assert_eq!(comp_inst.inst(), area.inst, "saved");
         assert_eq!(comp_game.inst(), area.inst, "saved");
         // GameInstanceMap was created
-        let map: GameInstanceMap = sys.world.read_model((game_id, area.inst),);
+        let map: GameInstanceMap = world.read_model((game_id, area.inst),);
         assert_ne!(map.game_inst, 0, "saved");
         //
         // read game inst version, updated, original is preserved
-        let new_comp_inst: Option<Area> = AreaComponent::get_component(@sys.world, area.inst, 0);
-        let new_comp_game: Option<Area> = AreaComponent::get_component(@sys.world, area.inst, game_id);
+        let new_comp_inst: Option<Area> = AreaComponent::get_component(@world, area.inst, 0);
+        let new_comp_game: Option<Area> = AreaComponent::get_component(@world, area.inst, game_id);
         assert!(new_comp_inst.is_some(), "new_component");
         assert!(new_comp_game.is_some(), "new_component");
         let new_comp_inst: Area = new_comp_inst.unwrap();

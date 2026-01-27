@@ -6,7 +6,7 @@
 
 ## ⚡ Setup
 
-### 📦 Install the repo with [Bun](https://bun.sh)
+#### 📦 Install the repo with [Bun](https://bun.sh)
 
 Clone the repository, then install dependencies with [Bun](https://bun.sh)
 
@@ -27,30 +27,11 @@ Since Dojo 1.5 Katana and Torii have been seperated and this quickstart won't wo
 bun run quickstart
 ```
 
-## 🔧 Manual dependency installation:
-
-```bash
-brew install asdf
-asdf plugin add scarb
-asdf plugin add dojo https://github.com/dojoengine/asdf-dojo
-
-asdf install scarb <version>
-asdf install dojo <version>
-```
-
-## 📦 Packages
-
-This is a monorepo containing the following packages:
-
-| **Package** | **Description**              |
-| ----------- | ---------------------------- |
-| `client`    | Game client                  |
-| `contracts` | L3 Dojo contracts (Katana)   |
-| `starknet`  | L2 Dojo contracts (Starknet) |
+<hr/>
 
 ## 🕹️ Development:
 
-### Development MODE (local):
+#### Development MODE (local):
 
 ```bash
 bun run dev
@@ -67,7 +48,7 @@ _will create a local SSL certificate with mkcert and asks for sudo password_
 
 - You may need to restart your browser in order to register new root ssl cert.
 
-### Slot MODE:
+#### Slot MODE:
 
 _will create a local SSL certificate with mkcert and asks for sudo password_
 
@@ -77,42 +58,28 @@ bun run dev:slot
 
 > 🎲 Slot MODE watches + compiles local contracts and allows you to deploy to slot & configures the client to connect to Slot at `https://localhost:5173` and `https://localhost:5173/editor` (use _https_)
 
-### Saya MODE:
-
-```bash
-bun run dev:saya
-```
-
-> 🎲 Saya mode will start two instances of Katana (one to simulate L2/Starknet and another for L3/Game) and a Saya server. See  [packages/starknet/README.md](./packages/starknet/README.md) for more info.
-
 <hr/>
 
 ## 🗺️ World deployment:
 
 Initial deployments start with an empty world, use the editor at `https://localhost:5173/editor` to create and publish a world.
 
+## 🔧 Manual dependency installation:
 
-## 🕹️ Playtesting:
+```bash
+brew install asdf
+asdf plugin add scarb
+asdf plugin add dojo https://github.com/dojoengine/asdf-dojo
 
-Every command now costs an amount of `actions`, an ERC-20 token.
-
-* Each command cost 1 action
-* Every new player gets 5 free actions to start
-* Every hour, 1 free action is given to the player
-* Use this command in-game to see your actions balance: `g_actions`
-
-You need actions to play even on localhost. There are two alternatives to playtest...
-
-```sh
-# Alternative 1: Grant actions to a player
-# example: mint 20 actions to account 0x1234 on profile dev
-cd packages/contracts
-./scripts/mint_actions_to.sh dev 0x1234 20
-
-# Alternative 2: Set actions cost free
-cd packages/contracts
-./scripts/set_action_cost_amount.sh dev 0
-
-# set back to 1 action/command (action is ERC-20 and have 18 decimals)
-./scripts/set_action_cost_amount.sh dev 1000000000000000000
+asdf install scarb <version>
+asdf install dojo <version>
 ```
+
+## 📦 Packages
+
+This is a monorepo containing the following packages:
+
+| **Package** | **Description** |
+| ----------- | --------------- |
+| `client`    | Game client     |
+| `contracts` | Dojo contracts  |

@@ -1,31 +1,33 @@
+# development localhost
+# procs:
+#   contracts:
+#     cwd: packages/contracts
+#     shell: wait-port 5050 && bun run dev:watch
+#   client:
+#     cwd: packages/client
+#     shell: bun run dev
+#   torii:
+#     cwd: packages/contracts
+#     # shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
+#     # shell: wait-port 5050 && torii --world "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae" --http.cors_origins "*"
+#     shell: wait-port 5050 && torii --version && torii --world "0x5c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01" --http.cors_origins "*" --indexing.contracts erc721:0x0186b579a7737f0bff938016263bed78a587a7db297e1bda2106cba34f817649
+#   katana:
+#     cwd: packages/contracts
+#     shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
+
+# staging localhost
 procs:
-  katana:
-    cwd: packages/contracts
-    shell: |
-      katana --version
-      katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
   contracts:
     cwd: packages/contracts
-    shell: |
-      wait-port 5050
-      bun run dev:watch
+    shell: wait-port 5050 && bun run dev:watch
   client:
     cwd: packages/client
     shell: bun run dev
   torii:
     cwd: packages/contracts
-    env:
-      PROFILE: dev
-    shell: |
-      source ../../scripts/utils.sh
-      export WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
-      export GAME_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-game_token)
-      export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-trail_token)
-      echo ">>> Dojo world: [${WORLD_ADDRESS}]"
-      echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
-      echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
-      wait-port 5050
-      torii --version
-      torii --http.cors_origins "*" \
-        --world ${WORLD_ADDRESS} \
-        --indexing.contracts erc721:$GAME_TOKEN_ADDRESS,erc721:$TRAIL_TOKEN_ADDRESS
+    # shell: wait-port 5050 && torii --world "0x545eeac1e37165b8aebc1af423f823b5dd941d82f1d16208eb4a26f562e3aa6" --http.cors_origins "*"
+    # shell: wait-port 5050 && torii --world "0x3e85f67a683208a20768683934c1570b7e6a4a5eb99afd06f70fb935f2454ae" --http.cors_origins "*"
+    shell: wait-port 5050 && torii --version && torii --world "0x05c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01" --http.cors_origins "*" --indexing.contracts erc721:0x0751d5c13b9bd01786fdc7b887151aa81a09bdb3c46c0df2aea1895faeccda6d
+  katana:
+    cwd: packages/contracts
+    shell: katana --version && katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster

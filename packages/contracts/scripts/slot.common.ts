@@ -1,27 +1,32 @@
 import { log } from "@clack/prompts";
 import { bgDarkGray, bgGreen, white } from "ansicolor";
 import { config, runCommands } from "./common";
+import { getContractByName } from "@dojoengine/core";
+import manifest_slot from '../manifest_slot.json';
 
-const _exit = (message: string) => {
-	log.error(message);
+export const worldAddress = config.dojo_config?.env?.world_address as string;
+export const rpcUrl = config.dojo_config?.env?.rpc_url as string;
+if (!worldAddress || !rpcUrl) {
+	log.error("World address or RPC URL not found");
 	process.exit(1);
 }
 
-export const rpcUrl = config.profile_config.rpcUrl;
-export const slotName = config.profile_config.slotName;
-export const worldAddress = config.profile_config.contractAddresses.world;
-export const gameTokenAddress = config.profile_config.contractAddresses.game_token;
-export const trailTokenAddress = config.profile_config.contractAddresses.trail_token;
+export const slotName = config.dojo_config?.env?.slot_name as string;
+if (!slotName) {
+	log.error(`${bgDarkGray(white("slot_name"))} not found in [env]`);
+	process.exit(1);
+}
 
-if (!rpcUrl) _exit(`Missing: ${bgDarkGray(white("RPC URL"))}`);
-if (!slotName) _exit(`Missing: ${bgDarkGray(white("Slot Name"))}`);
-if (!BigInt(worldAddress ?? 0)) _exit(`Missing: ${bgDarkGray(white("World Address"))}`);
-if (!BigInt(gameTokenAddress ?? 0)) _exit(`Missing: ${bgDarkGray(white("Game Token Address"))}`);
-if (!BigInt(trailTokenAddress ?? 0)) _exit(`Missing: ${bgDarkGray(white("Trail Token Address"))}`);
+const defaultVersion = config.scarb.dependencies.dojo.tag;
+
+// const katanaVersion = config.katana_version || defaultVersion;
+// const toriiVersion = config.torii_version || defaultVersion;
+
+export const gameTokenAddress = getContractByName(manifest_slot, 'lore', 'game_token').address;
 
 export const cmd_deploy_slot = [
-	`slot deployments create ${slotName} katana --version ${config.katana_version}`,
-	`slot deployments create ${slotName} torii --version ${config.torii_version} --world ${worldAddress} --rpc ${rpcUrl} --indexing.transactions --indexing.contracts erc721:${gameTokenAddress},erc721:${trailTokenAddress}  --sql.historical lore-TrophyProgression`,
+	`slot deployments create ${slotName} katana`,
+	`slot deployments create ${slotName} torii --world ${worldAddress} --rpc ${rpcUrl} --indexing.transactions --indexing.contracts erc721:${gameTokenAddress}  --sql.historical lore-TrophyProgression`,
 	`slot deployments list`,
 ];
 export const cmd_view_slot = [`slot deployments list`];
@@ -66,7 +71,6 @@ export const runSlotDeployment = async () => {
 	log.info(bgGreen(` 🪐 Deploying Contracts to slot `));
 	await runCommands(
 		[
-			`sozo --version`,
 			`sozo build --profile ${config.mode} --typescript --bindings-output ../client/src/lib/dojo_bindings/`,
 		],
 		false,

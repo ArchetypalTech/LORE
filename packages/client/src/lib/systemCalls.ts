@@ -1,10 +1,11 @@
 import { LORE_CONFIG } from "@lib/config";
-import { BigNumberish, CairoOption, CairoOptionVariant, CallData, type RawArgsArray, Call, Account, byteArray } from "starknet";
+import JSONbig from "json-bigint";
+import { BigNumberish, byteArray, CairoOption, CairoOptionVariant, CallData, InvokeFunctionResponse, type RawArgsArray, Call } from "starknet";
 import { toCairoArray } from "@/editor/editor.utils";
-import { sendCommand } from "./terminalCommands/commandHandler";
-import { addTerminalContent } from "@lib/stores/terminal.store";
-import { DojoCall } from "@dojoengine/core";
 import WalletStore from "./stores/wallet.store";
+import { sendCommand } from "./terminalCommands/commandHandler";
+import { addAddressPadding } from "starknet";
+import { addTerminalContent } from "@lib/stores/terminal.store";
 
 /**
  * Sends a command to the entity contract.
@@ -14,75 +15,61 @@ import WalletStore from "./stores/wallet.store";
  * @returns {Promise<void>}
  */
 async function execCommand(command: string, game_id?: BigNumberish | null | undefined): Promise<void> {
-	if (!WalletStore().isConnected) {
-		sendCommand("_not_yet_connected");
-		return;
+	// if using slot, send to controller
+	if (LORE_CONFIG.useController) {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
 	}
 
-	const account = WalletStore().account as Account;
-	let calls: Call[] = [];
-
 	try {
-		// Option 1: call contract through world
-		// const { prompt } = LORE_CONFIG.world;
-		// const response = await prompt.prompt(
-		// 	account,
-		// 	command,
-		// 	game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
-		// );
-
-		// Option 2: call contract from provider
-		// const { provider } = LORE_CONFIG;
-		// //@ts-ignore
-		// const response = await provider.prompt(
-		// 	account, [
-		// 	command,
-		// 	game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
-		// 	]
-		// );
-
-		// Option 3: call contract directly
+		const formData = new FormData();
+		formData.append("command", command);
+		formData.append("route", "sendMessage");
+		console.time("calltime");
+		console.log(command);
 		const calldata = CallData.compile([
 			byteArray.byteArrayFromString(command),
 			game_id == null ? new CairoOption(CairoOptionVariant.None) : new CairoOption(CairoOptionVariant.Some, game_id)
 		]);
-		calls.push({
-			contractAddress: LORE_CONFIG.contractAddresses.prompt,
-			entrypoint: "prompt",
-			calldata,
-		});
-
-		// make the call
-		console.log(`👉 execCommand(${game_id}) [${command}]`, calls);
-		const response = await account.execute(calls, {
-			tip: 0,
-		});
-		// wait for transaction async
-		if (response) {
-			await account.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
-				validateReceiptStatus(receipt, calls); // just log!
-			});
-		}
-	} catch (error) {
-		console.error(`❌ PROMPT ERROR: execCommand(${game_id}) [${command}]:`, calls, error as Error);
-		// case there is a TX error, add empty line to allow continue playing
-		addTerminalContent({
-					text: "",
-					format: "hash",
-					useTypewriter: true,
+		if (LORE_CONFIG.useController) {
+			console.log("[CONTROLLER] execControllerCommand:", game_id, command, calldata);
+			let calls: Call[] = [{
+					contractAddress: addAddressPadding(LORE_CONFIG.contracts.entity.address),
+					entrypoint: "prompt",
+					calldata,
+				}];
+			const response: InvokeFunctionResponse | undefined = await WalletStore().controller?.account?.execute(calls);
+			// wait for transaction async
+			if (response) {
+				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+					validateReceiptStatus(receipt, calls); // just log!
 				});
+			} 
+		} else {
+			console.log("[KATANA-DEV] execControllerCommand", command);
+			await LORE_CONFIG.contracts.entity.invoke("prompt", [calldata]);
+		}
+		console.timeEnd("calltime");
+	} catch (error) {
+		console.error("Error sending command:", game_id, error as Error);
+		// case there is a TX error, add empty line to allow continue playing
+				addTerminalContent({
+							text: "",
+							format: "hash",
+							useTypewriter: true,
+						});
 	}
 }
 
-export type DesignerEntrypoints =
+export type DesignerCall =
 	| "register_property_registry"
 	| "create_player"
 	| "create_entity"
 	| "create_reactable"
 	| "create_description_text"
 	| "create_area"
-	| "create_hub"
-	| "create_trail"
 	| "create_exit"
 	| "create_inventory_item"
 	| "create_container"
@@ -97,8 +84,6 @@ export type DesignerEntrypoints =
 	| "delete_reactable"
 	| "delete_description_text"
 	| "delete_area"
-	| "delete_hub"
-	| "delete_trail"
 	| "delete_exit"
 	| "delete_inventory_item"
 	| "delete_container"
@@ -110,7 +95,7 @@ export type DesignerEntrypoints =
 	| "delete_child";
 
 type DesignerCallProps = {
-	entrypoint: DesignerEntrypoints;
+	call: DesignerCall;
 	args: unknown[];
 };
 
@@ -123,54 +108,61 @@ type DesignerCallProps = {
  * @throws {Error} If the contract call fails
  */
 async function execDesignerCall(props: DesignerCallProps) {
-	const { entrypoint, args } = props;
-	if (!WalletStore().isConnected) {
-		sendCommand("_not_yet_connected");
-		return;
-	}
-
-	const account = WalletStore().account as Account;
-	const calls: Call[] = [];
-
+	const { call, args } = props;
 	try {
-		// prepare the call
-		// based on contracts.gen.ts
+		// other calls follow the same format Array<Object> see Cairo Models
+
 		const data = toCairoArray(args).flat() as RawArgsArray;
 		const calldata = CallData.compile(data);
-		calls.push({
-			contractAddress: LORE_CONFIG.contractAddresses.designer,
-			entrypoint,
-			calldata,
-		});
-		// make the call
-		const response = await account.execute(calls, {
-			tip: 0,
-		});
-		// wait for transaction async
-		if (response) {
-			await account.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
-				validateReceiptStatus(receipt, calls); // just log!
-			});
-			// we do a manual wait because the waitForTransaction is super slow
-			// await new Promise((r) => setTimeout(r, 500));
+
+		let response: InvokeFunctionResponse | undefined;
+		if (LORE_CONFIG.useController) {
+			if (!WalletStore().isConnected) {
+				throw new Error("Wallet not connected");
+			}
+			console.log("[CONTROLLER DESIGNERCALL]", call, args);
+			let calls: Call[] = [{
+					contractAddress: addAddressPadding(LORE_CONFIG.contracts.designer.address),
+					entrypoint: call,
+					calldata,
+				}];
+			response = await WalletStore().controller?.account?.execute(calls);
+			// wait for transaction async
+			if (response) {
+				WalletStore().controller?.account?.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+					validateReceiptStatus(receipt, calls); // just log!
+				});
+			}
+		} else {
+			response = await LORE_CONFIG.contracts.designer.invoke(call, calldata);
 		}
+
+		// we do a manual wait because the waitForTransaction is super slow
+		await new Promise((r) => setTimeout(r, 500));
+
+		return new Response(JSONbig.stringify(response), {
+			headers: {
+				"Content-Type": "application/json",
+			},
+			status: 200,
+		});
 	} catch (error) {
-		console.error(`❌ DESIGNER ERROR: execDesignerCall() [${entrypoint}]:`, args, calls, error as Error);
-		throw new Error((error as Error).message);
+		throw new Error(
+			`[${(error as Error).message}] @ execDesignerCall[${call}](args): ${JSONbig.stringify(args)} `,
+		);
 	}
 }
 
-function validateReceiptStatus(receipt: any, calls?: (Call | DojoCall)[]): boolean {
-  if (receipt.execution_status == 'SUCCEEDED') {
-		console.log(`👍 Transaction sucessful:`, calls);
-		return true
-	}
-	if (receipt.execution_status == 'REVERTED') {
-		console.error(`⚠️ Transaction reverted [${receipt.revert_reason}]:`, calls, receipt)
-	} else {
-		console.error(`⚠️ Transaction error [${receipt.execution_status}]:`, calls, receipt)
-	}
-	return false
+function validateReceiptStatus(receipt: any, calls: Call[]): boolean {
+  if (receipt.execution_status != 'SUCCEEDED') {
+    if (receipt.execution_status == 'REVERTED') {
+      console.error(`Transaction reverted:`, calls, receipt.revert_reason)
+    } else {
+      console.error(`Transaction error [${receipt.execution_status}]:`, calls, receipt)
+    }
+    return false
+  }
+  return true
 }
 
 

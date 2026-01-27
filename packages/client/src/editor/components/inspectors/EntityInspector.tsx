@@ -18,9 +18,6 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 			inst: (e, updatedObject) => {
 				updatedObject.inst = e.target.value;
 			},
-			trail_id: (e, updatedObject) => {
-				updatedObject.trail_id = e.target.value;
-			},
 			creator_address: (e, updatedObject) => {
 				updatedObject.creator_address = e.target.value;
 			},
@@ -49,12 +46,6 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 			<Input
 				id="inst"
 				value={componentObject.inst.toString()}
-				onChange={handleInputChange(undefined)}
-				readOnly={true}
-			/>
-			<Input
-				id="trail_id"
-				value={componentObject.trail_id?.toString() ?? "0"}
 				onChange={handleInputChange(undefined)}
 				readOnly={true}
 			/>
