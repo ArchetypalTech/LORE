@@ -9,15 +9,21 @@ type Props = {
 };
 
 export const ActionShaft = ({ actions }: Props) => {
-  const base = Math.min(actions, BASE_CAP);
-  const overflow = Math.max(actions - BASE_CAP, 0);
+  const safeActions = Math.max(0, actions);
+
+  const base = Math.min(safeActions, BASE_CAP);
+  const overflow = Math.max(safeActions - BASE_CAP, 0);
 
   const progress = base / BASE_CAP;
   const translateY =
     (1 - progress) * (SHAFT_HEIGHT - CART_HEIGHT);
 
-  const low = base > 0 && base <= 5;
+  const isEmpty = base === 0;
+  const isLow = base > 0 && base <= 5;
   const overflowActive = overflow > 0;
+
+  const displayValue = overflowActive ? safeActions : base;
+  const displayMax = overflowActive ? safeActions : BASE_CAP;
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -25,7 +31,11 @@ export const ActionShaft = ({ actions }: Props) => {
         className={`
           relative w-[32px] overflow-hidden rounded-lg
           bg-black/60 border
-          ${low ? "border-amber-400/60" : "border-emerald-500/40"}
+          ${isEmpty
+            ? "border-red-500/70 border-empty-pulse"
+            : isLow
+            ? "border-amber-400/70 border-low-pulse"
+            : "border-emerald-500/40"}
         `}
         style={{ height: SHAFT_HEIGHT }}
       >
@@ -42,10 +52,12 @@ export const ActionShaft = ({ actions }: Props) => {
             absolute left-1 right-1
             rounded-md border
             transition-transform duration-500 ease-out
-            ${low
+            ${isEmpty
+              ? "bg-red-500/20 border-red-400"
+              : isLow
               ? "bg-amber-500/30 border-amber-400"
               : "bg-emerald-500/30 border-emerald-400"}
-            ${low ? "cart-low-pulse" : ""}
+            ${isLow ? "cart-low-pulse" : ""}
             ${overflowActive ? "cart-overflow-glow" : ""}
           `}
           style={{
@@ -56,10 +68,7 @@ export const ActionShaft = ({ actions }: Props) => {
       </div>
 
       <span className="text-[10px] text-green-300 opacity-70">
-        {base}/{BASE_CAP}
-        {overflow > 0 && (
-          <span className="text-emerald-400"> +{overflow}</span>
-        )}
+        {displayValue}/{displayMax}
       </span>
     </div>
   );

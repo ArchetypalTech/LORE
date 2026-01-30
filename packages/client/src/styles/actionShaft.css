@@ -10,6 +10,30 @@
   }
 }
 
+@keyframes border-low-pulse {
+  0% {
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    border-color: rgba(251, 191, 36, 0.9);
+  }
+  100% {
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+}
+
+@keyframes border-empty-pulse {
+  0% {
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 1);
+  }
+  100% {
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+}
+
 .cart-low-pulse {
   animation: low-pulse 1.6s ease-in-out infinite;
 }
@@ -18,4 +42,12 @@
   box-shadow:
     0 0 6px rgba(52, 211, 153, 0.6),
     0 0 14px rgba(52, 211, 153, 0.8);
+}
+
+.border-low-pulse {
+  animation: border-low-pulse 1.6s ease-in-out infinite;
+}
+
+.border-empty-pulse {
+  animation: border-empty-pulse 1.2s ease-in-out infinite;
 }
