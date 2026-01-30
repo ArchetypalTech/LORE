@@ -10,6 +10,8 @@ import UIPanel from "./terminal/Terminal.uiPanel";
 import "../styles/uiPanel.css";
 import { useRightPanelStore } from "@lib/stores/rightPanel.store";
 import { RightActionPanel } from "@lib/stores/rigthPanelAction";
+import { useLeftPanelStore } from "@lib/stores/leftPanel.store";
+import { LeftActionPanel } from "@lib/stores/leftPanelAction";
 
 export const Client = () => {
 	useHead({
@@ -32,6 +34,7 @@ export const Client = () => {
 	const { idleVideoPlaying, playTrailer } = useTerminalStore();
 	const { visible } = useUIPanelStore();
 	const { visible: rightPanelVisible } = useRightPanelStore();
+	const { visible: leftPanelVisible, disabled } = useLeftPanelStore();
 
 	return (
 		<div
@@ -73,6 +76,20 @@ export const Client = () => {
 			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
 					<Terminal/>
 			</div>
+
+				{/* Left-Hand Panel — Action Cart */}
+				{leftPanelVisible && !disabled && (
+					<div
+						className="absolute left-4 z-50 flex flex-col items-center justify-center"
+						style={{
+							top: "50%",
+							transform: "translateY(-50%)",
+							height: "auto",
+						}}
+					>
+						<LeftActionPanel />
+					</div>
+				)}
 
 			  {/* Right-Hand Panel — same height as terminal */}
 				{rightPanelVisible && (

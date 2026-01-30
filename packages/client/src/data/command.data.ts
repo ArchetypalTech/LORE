@@ -33,7 +33,7 @@ import { queryStories } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
-
+import { useLeftPanelStore } from "@/lib/stores/leftPanel.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -290,6 +290,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
+			const leftPanel = useLeftPanelStore.getState();
+			leftPanel.show();
 		}
 
 		// Check properties
@@ -349,6 +351,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		// Reset Info Panel
 		DefaultValues();
+		const leftPanel = useLeftPanelStore.getState();
+		leftPanel.hide();
 		return;
 	},
 	_bypass: ({ command }) => {
@@ -571,6 +575,46 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		addTerminalContent({
 			text: "Thank you for your feedback!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_gain5Actions: () => {
+		useLeftPanelStore.getState().gain5Actions();
+		addTerminalContent({
+			text: "You have gained 5 actions!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_gain1Actions: () => {
+		useLeftPanelStore.getState().gain1Actions();
+		addTerminalContent({
+			text: "You have gained 1 action!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_consume6Actions: () => {
+		useLeftPanelStore.getState().consume6Actions();
+		addTerminalContent({
+			text: "You have consumed 6 actions!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_disableActionCart: () => {
+		useLeftPanelStore.getState().disable();
+		addTerminalContent({
+			text: "You have disabled the action cart!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_enableActionCart: () => {
+		useLeftPanelStore.getState().enable();
+		addTerminalContent({
+			text: "You have enabled the action cart!",
 			format: "system",
 			useTypewriter: true,
 		});
