@@ -11,6 +11,7 @@ type LeftPanelState = {
   hide: () => void;
 
   consumeAction: () => void;
+  consume6Actions: () => void;
   gain5Actions: () => void;
   gain1Actions: () => void;
   disable: () => void;
@@ -32,7 +33,11 @@ export const useLeftPanelStore = create<LeftPanelState>((set, get) => ({
       actions: Math.max(0, s.actions - 1),
       lastChange: "consume",
     })),
-
+  consume6Actions: () =>
+    set(s => ({
+      actions: Math.max(0, s.actions - 6),
+      lastChange: "consume",
+    })),
   gain5Actions: () =>
     set(s => ({
       actions: s.actions + 5,

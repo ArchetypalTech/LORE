@@ -598,6 +598,14 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
+	_consume6Actions: () => {
+		useLeftPanelStore.getState().consume6Actions();
+		addTerminalContent({
+			text: "You have consumed 6 actions!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
 	_disableActionCart: () => {
 		useLeftPanelStore.getState().disable();
 		addTerminalContent({

@@ -4,16 +4,6 @@ import { ActionShaft } from "../utils/actionShaft";
 export const LeftActionPanel = () => {
   const actions = useLeftPanelStore(s => s.actions);
 
-  const shafts: number[] = [];
-  let remaining = actions;
-
-  while (remaining > 0) {
-    shafts.push(remaining);
-    remaining -= 20;
-  }
-
-  if (shafts.length === 0) shafts.push(0);
-
   return (
     <div
       className="
@@ -27,15 +17,7 @@ export const LeftActionPanel = () => {
         ACTIONS
       </p>
 
-      <div className="flex flex-col gap-4">
-        {shafts.map((value, i) => (
-          <ActionShaft
-            key={i}
-            value={value}
-            isLast={i === shafts.length - 1}
-          />
-        ))}
-      </div>
+      <ActionShaft actions={actions} />
     </div>
   );
 };

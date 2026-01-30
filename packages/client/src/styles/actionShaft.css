@@ -1,11 +1,21 @@
-@keyframes cart-shake {
-  0%   { transform: translateY(var(--y)) translateX(0); }
-  25%  { transform: translateY(var(--y)) translateX(-1px); }
-  50%  { transform: translateY(var(--y)) translateX(1px); }
-  75%  { transform: translateY(var(--y)) translateX(-1px); }
-  100% { transform: translateY(var(--y)) translateX(0); }
+@keyframes low-pulse {
+  0% {
+    box-shadow: 0 0 4px rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 4px rgba(251, 191, 36, 0.4);
+  }
 }
 
-.cart-shake {
-  animation: cart-shake 0.25s ease-in-out;
+.cart-low-pulse {
+  animation: low-pulse 1.6s ease-in-out infinite;
+}
+
+.cart-overflow-glow {
+  box-shadow:
+    0 0 6px rgba(52, 211, 153, 0.6),
+    0 0 14px rgba(52, 211, 153, 0.8);
 }

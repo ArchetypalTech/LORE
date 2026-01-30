@@ -1,23 +1,23 @@
 import "../../styles/actionShaft.css";
 
-const ACTIONS_PER_SHAFT = 20;
+const BASE_CAP = 20;
 const SHAFT_HEIGHT = 120;
 const CART_HEIGHT = 20;
 
 type Props = {
-  value: number;
-  isLast: boolean;
+  actions: number;
 };
 
-export const ActionShaft = ({ value, isLast }: Props) => {
-  const clamped = Math.max(0, Math.min(value, ACTIONS_PER_SHAFT));
-  const progress = clamped / ACTIONS_PER_SHAFT;
+export const ActionShaft = ({ actions }: Props) => {
+  const base = Math.min(actions, BASE_CAP);
+  const overflow = Math.max(actions - BASE_CAP, 0);
 
+  const progress = base / BASE_CAP;
   const translateY =
     (1 - progress) * (SHAFT_HEIGHT - CART_HEIGHT);
 
-  const low = clamped <= 5;
-  const empty = clamped === 0;
+  const low = base > 0 && base <= 5;
+  const overflowActive = overflow > 0;
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -43,9 +43,10 @@ export const ActionShaft = ({ value, isLast }: Props) => {
             rounded-md border
             transition-transform duration-500 ease-out
             ${low
-              ? "bg-amber-500/30 border-amber-400 shadow-amber-400/60"
-              : "bg-emerald-500/30 border-emerald-400 shadow-emerald-400/60"}
-            ${empty && isLast ? "cart-shake" : ""}
+              ? "bg-amber-500/30 border-amber-400"
+              : "bg-emerald-500/30 border-emerald-400"}
+            ${low ? "cart-low-pulse" : ""}
+            ${overflowActive ? "cart-overflow-glow" : ""}
           `}
           style={{
             height: CART_HEIGHT,
@@ -55,7 +56,10 @@ export const ActionShaft = ({ value, isLast }: Props) => {
       </div>
 
       <span className="text-[10px] text-green-300 opacity-70">
-        {clamped}/{ACTIONS_PER_SHAFT}
+        {base}/{BASE_CAP}
+        {overflow > 0 && (
+          <span className="text-emerald-400"> +{overflow}</span>
+        )}
       </span>
     </div>
   );
