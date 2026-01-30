@@ -254,10 +254,15 @@ pub impl ByteArrayTraitExt of ByteArrayTrait {
         let mut remaining: u256 = value.try_into().unwrap();
         let mut result: ByteArray = "";
 
-        while remaining > 0 {
+        loop {
+            if remaining == 0 {
+                break;
+            }
+
             let (quotient, remainder) = DivRem::div_rem(remaining, 256);
             let byte: u8 = remainder.try_into().unwrap();
             result.append_byte(byte);
+
             remaining = quotient;
         };
 
@@ -517,7 +522,7 @@ mod tests {
         expected_w.append(expected_w3);
 
         // Apply map
-        let result_array: Array<ByteArray> = words.map(|word| (@word).to_lowercase());
+        let result_array = words.map(|word| (@word).to_lowercase());
 
         // Assert the transformation worked
         assert_eq!(result_array, expected_w, "should convert to lowercase");

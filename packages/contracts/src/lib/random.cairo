@@ -19,13 +19,9 @@ pub fn random_u16(seed: felt252) -> u16 {
 
 #[inline]
 pub fn random_text(world: WorldStorage, texts: Array<ByteArray>) -> ByteArray {
-    if (texts.len() > 0) {
-        let rng: u32 = random_u16(world.dispatcher.uuid().try_into().unwrap()).try_into().unwrap();
-        let description: ByteArray = texts.at(rng % texts.len()).clone();
-        (description)
-    } else {
-        ("????")
-    }
+    let rng: u32 = random_u16(world.dispatcher.uuid().try_into().unwrap()).try_into().unwrap();
+    let description = texts.at(rng % texts.len()).clone();
+    description
 }
 
 #[cfg(test)]
@@ -37,10 +33,10 @@ mod tests {
 
     #[test]
     fn Random_test_random_u8() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         let mut num = array![];
         for _ in 0..10_u8 {
-            let seed: felt252 = sys.world.dispatcher.uuid().try_into().unwrap();
+            let seed: felt252 = world.dispatcher.uuid().try_into().unwrap();
             let result: u8 = random_u8(seed);
             num.append(result);
         };
@@ -49,10 +45,10 @@ mod tests {
 
     #[test]
     fn Random_test_random_u16() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (world, _, _, _, _, _) = helpers::setup_core();
         let mut num = array![];
         for _ in 0..10_u8 {
-            let seed: felt252 = sys.world.dispatcher.uuid().try_into().unwrap();
+            let seed: felt252 = world.dispatcher.uuid().try_into().unwrap();
             let result: u16 = random_u16(seed);
             num.append(result);
         };

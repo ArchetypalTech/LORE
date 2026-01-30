@@ -2,12 +2,23 @@
 
 use lore::{
     types::{
+        command_type::{TokenType},
         component_type::{
             ComponentType,
         },
         property_type::{ComponentProperty},
     },
 };
+
+#[derive(Clone, Drop, Serde, Introspect, Debug)]
+#[dojo::model]
+pub struct Dict {
+    #[key]
+    pub dict_key: felt252,
+    pub word: ByteArray,
+    pub tokenType: TokenType,
+    pub n_value: felt252,
+}
 
 #[derive(Clone, Drop, Serde, Introspect, Debug, PartialEq)]
 #[dojo::model]

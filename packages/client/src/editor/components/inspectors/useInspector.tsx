@@ -137,11 +137,11 @@ export const useInspector = <T extends { inst: BigNumberish }>({
 							dangerouslySetInnerHTML={{
 								__html: Array.isArray(componentObject)
 									? formatColorHash(componentObject[0].inst)
-									: formatColorHash(componentObject.inst ?? 0),
+									: formatColorHash(componentObject.inst),
 							}}
 						/>
 						<div className="flex grow" />
-						{componentName !== "Entity" && handleRemove !== undefined && (
+						{componentName !== "Entity" && (
 							<Button
 								title={`Remove ${componentName} component`}
 								variant={"ghost"}

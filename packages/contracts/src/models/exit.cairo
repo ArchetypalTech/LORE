@@ -9,11 +9,12 @@ use lore::{
     },
     types::{
         component_type::{ExitActions, ActionMapExit},
-        command_type::{Command, CommandImpl, Token},
+        command_type::{Command, Token},
         action_type::TriggerContext,
         direction_type::{Direction, IntoDirectionByteArray},
     },
     lib::{
+        a_lexer::CommandImpl,
         utils::ByteArrayTraitExt,
     },
     constants::{
@@ -74,16 +75,6 @@ pub impl ExitInstance of Instance<Exit> {
     fn has_component(self: @WorldStorage, inst: felt252) -> bool {
         (inst != 0 && self.read_member(Model::<Exit>::ptr_from_keys(inst), selector!("is_exit")))
     }
-    fn is_partially_mapped() -> bool {
-        (true)
-    }
-    fn partially_map_from(ref self: Exit, game_model: @Exit) {
-        // map properties declared in VariablePropertyHelperTrait::register_properties()
-        self.is_exit = *game_model.is_exit;
-        self.is_enterable = *game_model.is_enterable;
-        self.leads_to = *game_model.leads_to;
-        self.direction_type = *game_model.direction_type;
-    }
 }
 
 pub impl ExitComponent of Component<Exit> {
@@ -117,7 +108,7 @@ pub impl ExitComponent of Component<Exit> {
     ) -> Result<(), Error> {
         // println!("Exit execute_command");
         let (action, _token) = get_action_token(@self, @world, command).unwrap();
-        let direction_tokens: Span<Token> = command.get_directions();
+        let direction_tokens = command.get_directions();
 
         match action.action_fn {
             ExitActions::UseExit => {
@@ -125,9 +116,9 @@ pub impl ExitComponent of Component<Exit> {
                     player.log_debug(ref world, format!("You go to {:?}", self));
                 }
 
-                let mut matchesName: bool = false;
-                let nouns: Span<Token> = command.get_nouns();
-                let names: Span<ByteArray> = self.entity(@world).get_names();
+                let mut matchesName = false;
+                let nouns = command.get_nouns();
+                let names = self.entity(@world).get_names();
                 for noun in nouns {
                     for name in names {
                         if noun.text == name {
@@ -137,7 +128,7 @@ pub impl ExitComponent of Component<Exit> {
                     }
                 };
 
-                let mut matchesDirection: bool = false;
+                let mut matchesDirection = false;
                 if (direction_tokens.len() > 0
                     && matches_direction(@self, world, player, direction_tokens).is_some()) {
                     matchesDirection = true;
@@ -158,18 +149,18 @@ pub impl ExitComponent of Component<Exit> {
                 }
 
                 // Move player to room
-                if (!player.move_to_room(ref world, self.leads_to)) {
+                if (!player.clone().move_to_room(ref world, self.leads_to)) {
                     return Result::Err(Error::Unenterable);
                 }
 
                 // Do action
                 // Check if the entity of the exit has an action
-                let pos_entity: Option<Entity> = EntityImpl::get_entity(@world, self.inst);
+                let pos_entity = EntityImpl::get_entity(@world, self.inst);
                 if pos_entity.is_none() {
                     return Result::Err(Error::NoTargetEntity);
                 }
-                let pos_entity: Entity = pos_entity.unwrap();
-                let pos_actions: Array<felt252> = pos_entity.actions_keys;
+                let pos_entity = pos_entity.unwrap();
+                let pos_actions = pos_entity.actions_keys;
                 if pos_actions.len() > 0 {
                     let mut actions: Array<Action> = ArrayTrait::new();
                     // For each action, execute it
@@ -177,14 +168,14 @@ pub impl ExitComponent of Component<Exit> {
                         let mut action: Action = world.read_model((pos_entity.inst, key));
                         actions.append(action);
                     };
-                    if actions.is_empty() {
+                    if actions.len() == 0 {
                         // No actions found, just return
                         return Result::Ok(());
                     }
                     // execute actions
                     for action in actions {
                         // context is not being used inside evaluations or processing.
-                        let context: TriggerContext = TriggerContext {
+                        let context = TriggerContext {
                             doer: *player.inst,
                             target1: self.leads_to, // would be the room that the player moved to
                             target2: 0,
@@ -226,10 +217,10 @@ pub impl ExitComponent of Component<Exit> {
 fn matches_direction(
     self: @Exit, world: WorldStorage, player: @Player, directions_token: Span<Token>,
 ) -> Option<felt252> {
-    if (directions_token.is_empty()) {
+    if (directions_token.len() == 0) {
         return Option::None;
     }
-    let exit_dir: ByteArray = ByteArrayTraitExt::byte_array_from_direction(*self.direction_type);
+    let exit_dir = ByteArrayTraitExt::byte_array_from_direction(*self.direction_type);
     let dir_text = constants::direction_one_letter(directions_token[0].text);
     // println!("area_dir: {:?}", directions_token[0]);
     if (exit_dir == dir_text) {

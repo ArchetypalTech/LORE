@@ -1,9 +1,8 @@
-import { useMemo, type ChangeEvent } from "react";
+import { type ChangeEvent } from "react";
 import {
 	type ActionMapInventoryItem,
 	type InventoryItem,
 	inventoryItemActions,
-	Entity,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
 	ActionMapEditor,
@@ -13,14 +12,12 @@ import {
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { EntitySelector } from "../EntitySelector";
-import { getEntity, useEditorData } from "../../data/editor.data";
+import { useEditorData } from "../../data/editor.data";
 
 export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 	componentObject,
 	...props
 }) => {
-  const entity = useMemo(() => getEntity(componentObject.inst)?.Entity, [componentObject]);
-
 	const { handleInputChange, Inspector } = useInspector<InventoryItem>({
 		componentObject,
 		...props,
@@ -83,7 +80,6 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
 				onChange={handleInputChange(undefined)}
 				dataPool={dataPool}
 				//readOnly={true}
-				sourceEntity={entity}
 			/>
 			<ActionMapEditor
 				id="action_map"

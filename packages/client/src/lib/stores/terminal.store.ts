@@ -15,8 +15,8 @@ export type TerminalContentItem = {
 	speed?: number;
 	style?: HTMLAttributes<HTMLDivElement>["style"];
 	isPrinting?: boolean;
-	enableAudio?: boolean;
-	volumeAudio?: number;
+	enableAudio: boolean;
+	volumeAudio: number;
 };
 
 const {
@@ -62,13 +62,13 @@ export function printingStatus(state: boolean) {
 }
 
 export function increaseVolume() {
-	let volume = get().volumeAudio ?? 0
+	let volume = get().volumeAudio
 	volume += 0.1
 	if(volume > 1 ) return 
 	set({ volumeAudio: volume });
 }
 export function decreaseVolume() {
-	let volume = get().volumeAudio ?? 0
+	let volume = get().volumeAudio
 	volume -= 0.1
 	if(volume < 0.1 ) return 
 	set({ volumeAudio: volume });

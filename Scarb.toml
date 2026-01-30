@@ -1,8 +1,0 @@
-# Virtual workspace
-# https://docs.swmansion.com/scarb/docs/reference/workspaces.html#virtual-workspace
-
-[workspace]
-members = []
-
-[workspace.package]
-cairo-version = ">=2.13.1"

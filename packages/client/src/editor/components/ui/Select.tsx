@@ -154,7 +154,7 @@ const SelectInput = React.forwardRef<
     disabled?: boolean;
     className?: string;
     onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-    options: Array<{ value: string; label: string | React.ReactNode }> | OptionType[];
+    options: Array<{ value: string; label: string }> | OptionType[];
   }
 >(({ id, value, defaultValue, onChange, options, disabled }, ref) => {
   const [internalValue, setInternalValue] = React.useState<string | undefined>(

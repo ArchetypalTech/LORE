@@ -72,21 +72,24 @@ pub struct ActionExecuted {
 pub impl ActionImpl of ActionTrait {
     fn register_action(ref world: WorldStorage, action: @Action) -> Result<(), Error> {
         // 0. Check if action is already in the entity array
-        let maybe_entity: Option<Entity> = EntityImpl::get_entity(@world, *action.inst);
-        if let Some(mut entity) = maybe_entity {
-            // Check if action is already registered
-            let mut found: bool = false;
-            for pos_action in entity.actions_keys.clone() {
-                if (*action.key == pos_action) {
-                    found = true;
-                    break;
+        let maybe_entity = EntityImpl::get_entity(@world, *action.inst);
+        match maybe_entity {
+            Option::Some(mut entity) => {
+                // Check if action is already registered
+                let mut found = false;
+                for pos_action in entity.actions_keys.clone() {
+                    if (*action.key == pos_action) {
+                        found = true;
+                        break;
+                    }
+                };
+                if found {
+                    // If found just update the action
+                    world.write_model(action);
+                    return Result::Ok(());
                 }
-            };
-            if found {
-                // If found just update the action
-                world.write_model(action);
-                return Result::Ok(());
-            }
+            },
+            Option::None => {},
         }
         // 1. Register action key in the entity
         let mut entity: Entity = EntityImpl::get_entity(@world, *action.inst).unwrap();
@@ -228,7 +231,7 @@ pub impl ActionImpl of ActionTrait {
         });
     }
 
-    // fn enable_action(mut self: Action, ref world: WorldStorage) {
+    // fn enable_action(mut self: Action, mut world: WorldStorage) {
     //     self.is_enabled = true;
     //     world
     //         .write_member(
@@ -239,7 +242,7 @@ pub impl ActionImpl of ActionTrait {
     //     // world.write_model(@self);
     // }
 
-    // fn disable_action(mut self: Action, ref world: WorldStorage) {
+    // fn disable_action(mut self: Action, mut world: WorldStorage) {
     //     self.is_enabled = false;
     //     world
     //         .write_member(
@@ -254,10 +257,7 @@ pub impl ActionImpl of ActionTrait {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dojo::{
-        world::WorldStorage,
-        // model::ModelStorage,
-    };
+    use dojo::{model::ModelStorage, world::WorldStorage};
     use lore::tests::helpers;
     use lore::{
         models::{
@@ -292,10 +292,10 @@ mod tests {
 
     fn create_rooms(ref world: WorldStorage) -> (Entity, Entity) {
         // create room entity 1
-        let mut room_entity_1: Entity = EntityImpl::create_entity(ref world, "room_entity_1");
+        let mut room_entity_1 = EntityImpl::create_entity(ref world, "room_entity_1");
         world.write_model(@room_entity_1);
         // create room entity 2
-        let mut room_entity_2: Entity = EntityImpl::create_entity(ref world, "room_entity_2");
+        let mut room_entity_2 = EntityImpl::create_entity(ref world, "room_entity_2");
         world.write_model(@room_entity_2);
 
         // ROOM 1 //
@@ -322,7 +322,7 @@ mod tests {
 
     fn create_door(ref world: WorldStorage, leads_to: felt252, direction: Direction) -> Entity {
         // create door entity
-        let mut door: Entity = EntityImpl::create_entity(ref world, "door");
+        let mut door = EntityImpl::create_entity(ref world, "door");
         world.write_model(@door);
         // add reactable component to door
         let mut reactable: Reactable = Component::add_component(ref world, door.inst);
@@ -369,7 +369,7 @@ mod tests {
 
     fn create_item(ref world: WorldStorage, owner_id: felt252) -> Entity {
         // create item entity
-        let mut item: Entity = EntityImpl::create_entity(ref world, "ball");
+        let mut item = EntityImpl::create_entity(ref world, "ball");
         item.alt_names = array!["ball"];
         world.write_model(@item);
         // add reactable component to item
@@ -527,29 +527,29 @@ mod tests {
     // However player1 does not have item
     // Result: door description and exit.is_enterable should not be updated
     fn test_enter_room_without_item() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
-        let (room_1, room_2) = create_rooms(ref sys.world);
+        let (room_1, room_2) = create_rooms(ref world);
 
         // create door entity in room 2 that leads to room 1 via south
-        let mut door = create_door(ref sys.world, room_1.inst, Direction::South);
-        door.set_parent(ref sys.world, @room_2, 0);
-        let old_insp_door: Reactable = sys.world.read_model(door.inst);
+        let mut door = create_door(ref world, room_1.inst, Direction::South);
+        door.set_parent(ref world, @room_2, 0);
+        let old_insp_door: Reactable = world.read_model(door.inst);
         let old_key: u32 = *old_insp_door.description.at(0);
-        let _old_txt: DescriptionText = sys.world.read_model((door.inst, old_key));
+        let _old_txt: DescriptionText = world.read_model((door.inst, old_key));
 
         // create item that is in room 1
-        let mut item = create_item(ref sys.world, room_1.inst);
-        item.set_parent(ref sys.world, @room_1, 0);
+        let mut item = create_item(ref world, room_1.inst);
+        item.set_parent(ref world, @room_1, 0);
 
         // create player
         let game_id: u128 = 123;
-        let mut player1 = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
-        sys.world.write_model(@player1);
+        let mut player1 = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        world.write_model(@player1);
 
         // Register variable properties
-        register_variable_properties(ref sys.world);
+        register_variable_properties(ref world);
 
         // TRIGGER that jumps when an action is executed
         let t_key: felt252 = 1;
@@ -557,7 +557,7 @@ mod tests {
         let mut trigger = @create_test_trigger(
             room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(ref sys.world, trigger);
+        let _result = TriggerImpl::register_trigger(ref world, trigger);
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
@@ -576,7 +576,7 @@ mod tests {
             Operator::Equals,
             array,
         );
-        sys.world.write_model(@condition);
+        world.write_model(@condition);
 
         // EFFECT TO APPLY WHEN PLAYER1 HAS ITEM
         // New Description door -> Reactable
@@ -632,8 +632,8 @@ mod tests {
             0,
             hex_value,
         );
-        sys.world.write_model(@effect);
-        sys.world.write_model(@effect2);
+        world.write_model(@effect);
+        world.write_model(@effect2);
 
         // TODO: create action
         let a_key: felt252 = 90527;
@@ -669,8 +669,8 @@ mod tests {
             success_response,
         );
         // Register the action
-        let _res = ActionImpl::register_action(ref sys.world, action);
-        assert(!action.is_executed(@sys.world, game_id), 'action not executed yet');
+        let _res = ActionImpl::register_action(ref world, action);
+        assert(!action.is_executed(@world, game_id), 'action not executed yet');
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -679,41 +679,41 @@ mod tests {
 
         // EXECUTE ACTION
         // 1. move player to room 2
-        player1.move_to_room(ref sys.world, room_2.inst);
+        player1.move_to_room(ref world, room_2.inst);
         // 2. Execute action
-        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref sys.world, @player1, @context);
+        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context);
         // // The one below are for testing individually
-        //let trig_res = trigger.evaluate_trigger(ref sys.world, game_id);
-        //let cond_res = condition.evaluate_condition(@sys.world, context);
-        //let eff_res1 = effect.apply_effect(ref sys.world, context, game_id);
-        //let eff_res2 = effect2.apply_effect(ref sys.world, context, game_id);
+        //let trig_res = trigger.evaluate_trigger(ref world, game_id);
+        //let cond_res = condition.evaluate_condition(@world, context);
+        //let eff_res1 = effect.apply_effect(ref world, context, game_id);
+        //let eff_res2 = effect2.apply_effect(ref world, context, game_id);
 
         // ASSERT //
         // 1. Trigger should jump
         assert(trig_res.is_ok(), 'Trigger should jump');
         // 2. Condition should fail as player does not have item
-        assert(!cond_res, 'Condition should fail');
+        assert((cond_res == false), 'Condition should fail');
         // 3. Effects should fail as condition is not met
         assert(eff_res.is_err(), 'Effects should fail');
         //assert(eff_res1.is_err(), 'Effects should fail');
         //assert(eff_res2.is_err(), 'Effects2 shoul fail');
         // 4. failed, not executed
-        assert(!action.is_executed(@sys.world, game_id), 'action executed');
+        assert(!action.is_executed(@world, game_id), 'action executed');
 
         // 3. Effects should not be update
-        let upd_door: Reactable = sys.world.read_game_model(door.inst, game_id);
-        let upd_door_exit: Exit = sys.world.read_game_model(door.inst, game_id);
+        let upd_door: Reactable = world.read_game_model(door.inst, game_id);
+        let upd_door_exit: Exit = world.read_game_model(door.inst, game_id);
         let key1: u32 = *upd_door.description.at(0);
         // let key2: u32 = *new_description.at(1);
-        let new_text1: DescriptionText = sys.world.read_model((upd_door.inst, key1));
-        let new_game_text1: DescriptionText = sys.world.read_game_model_key(upd_door.inst, key1, game_id);
-        // let _new_text2: DescriptionText = sys.world.read_model((upd_door.inst, key2));
+        let new_text1: DescriptionText = world.read_model((upd_door.inst, key1));
+        let new_game_text1: DescriptionText = world.read_game_model_key(upd_door.inst, key1, game_id);
+        // let _new_text2: DescriptionText = world.read_model((upd_door.inst, key2));
         assert_ne!(new_txt1.clone(), new_text1.text.clone(), "Description1 should not be updated");
         assert_ne!(new_txt1.clone(), new_game_text1.text.clone(), "Description1 should not be updated");
         // This one fails as there is no index 1 in the array
         //assert_ne!(upd_door.description[1].clone(), new_text2, "Description2 should not be
         //updated");
-        assert(!upd_door_exit.is_enterable, 'Exit should not be updated');
+        assert(upd_door_exit.is_enterable == false, 'Exit should not be updated');
     }
 
     #[test]
@@ -721,36 +721,36 @@ mod tests {
     // Condition: player1 has item
     // Effect: door description and exit.is_enterable changes
     fn test_enter_room_with_item() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let (mut world, _, _, _, player_1, _) = helpers::setup_core();
 
         // create rooms
-        let (room_1, room_2) = create_rooms(ref sys.world);
+        let (room_1, room_2) = create_rooms(ref world);
 
         // create door entity in room 2 that leads to room 1 via south
-        let mut door = create_door(ref sys.world, room_1.inst, Direction::South);
-        door.set_parent(ref sys.world, @room_2, 0);
-        let _old_reactable: Reactable = sys.world.read_model(door.inst);
-        let _old_exit: Exit = sys.world.read_model(door.inst);
+        let mut door = create_door(ref world, room_1.inst, Direction::South);
+        door.set_parent(ref world, @room_2, 0);
+        let _old_reactable: Reactable = world.read_model(door.inst);
+        let _old_exit: Exit = world.read_model(door.inst);
 
         // create item that is in room 1
-        let mut item = create_item(ref sys.world, room_1.inst);
-        item.set_parent(ref sys.world, @room_1, 0);
+        let mut item = create_item(ref world, room_1.inst);
+        item.set_parent(ref world, @room_1, 0);
 
         // create player
         let game_id: u128 = 456;
-        let mut player1 = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, game_id);
-        sys.world.write_model(@player1);
-        let player_entity: Entity = EntityImpl::get_entity(@sys.world, player1.inst).unwrap();
-        let mut player_container: Container = Component::add_component(ref sys.world, player_entity.inst);
+        let mut player1 = PlayerImpl::caller_as_player(ref world, player_1, game_id);
+        world.write_model(@player1);
+        let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
+        let mut player_container: Container = Component::add_component(ref world, player_entity.inst);
         player_container.is_container = true;
         player_container.can_be_opened = true;
         player_container.can_receive_items = true;
         player_container.is_open = true;
         player_container.num_slots = 2;
-        player_container.store(ref sys.world, 0);
+        player_container.store(ref world, 0);
 
         // Register variable properties
-        register_variable_properties(ref sys.world);
+        register_variable_properties(ref world);
 
         // TRIGGER that jumps when an action is executed
         // create trigger for when entering room 2
@@ -758,7 +758,7 @@ mod tests {
         let mut trigger = @create_test_trigger(
             room_2.inst, t_key, "TestTrigger", TriggerType::OnEnter,
         );
-        let _result = TriggerImpl::register_trigger(ref sys.world, trigger);
+        let _result = TriggerImpl::register_trigger(ref world, trigger);
 
         // CONDITION that checks if player has item
         let property: ByteArray = "owner_id";
@@ -777,7 +777,7 @@ mod tests {
             Operator::Equals,
             array,
         );
-        sys.world.write_model(@condition);
+        world.write_model(@condition);
 
         // EFFECT TO APPLY WHEN PLAYER1 HAS ITEM
         // New Description door -> Reactable
@@ -832,8 +832,8 @@ mod tests {
             0,
             hex_value,
         );
-        sys.world.write_model(@effect);
-        sys.world.write_model(@effect2);
+        world.write_model(@effect);
+        world.write_model(@effect2);
 
         // TODO: create action
         let a_key: felt252 = 90527;
@@ -868,7 +868,7 @@ mod tests {
             success_response,
         );
         // Register the action
-        let _result = ActionImpl::register_action(ref sys.world, action);
+        let _result = ActionImpl::register_action(ref world, action);
 
         // create trigger context
         let mut context: TriggerContext = create_test_trigger_context(
@@ -878,57 +878,57 @@ mod tests {
         // EXECUTE ACTION
         // 1. move player to room 1
         player1.location = room_1.inst;
-        player1.store(ref sys.world, game_id);
-        player1.move_to_room(ref sys.world, room_1.inst);
-        let player_entity: Entity = EntityImpl::get_entity(@sys.world, player1.inst).unwrap();
-        assert(!action.is_executed(@sys.world, game_id), 'action not executed yet');
+        player1.store(ref world, game_id);
+        player1.move_to_room(ref world, room_1.inst);
+        let player_entity: Entity = EntityImpl::get_entity(@world, player1.inst).unwrap();
+        assert(!action.is_executed(@world, game_id), 'action not executed yet');
 
         // 2. Pickup item
-        item.set_parent(ref sys.world, @player_entity, 0);
-        let player_container: Container = sys.world.read_model(player1.inst);
-        let mut itemInv: InventoryItem = sys.world.read_model(item.inst);
+        item.set_parent(ref world, @player_entity, 0);
+        let player_container: Container = world.read_model(player1.inst);
+        let mut itemInv: InventoryItem = world.read_model(item.inst);
         itemInv.owner_id = player_container.inst;
-        itemInv.store(ref sys.world, game_id);
+        itemInv.store(ref world, game_id);
         // 3. Check if item is owned by player1
         assert(itemInv.owner_id == player_container.inst, 'Item should be owned by player1');
         // 4. Move player to room 2
-        player1.move_to_room(ref sys.world, room_2.inst);
+        player1.move_to_room(ref world, room_2.inst);
         // 5. Execute action
-        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref sys.world, @player1, @context);
+        let (trig_res, cond_res, eff_res) = action.clone().process_action(ref world, @player1, @context);
         // // The one below are for testing individually
-        //let trig_res = trigger.evaluate_trigger(ref sys.world, game_id);
-        //let cond_res = condition.evaluate_condition(@sys.world, context);
-        //let eff_res1 = effect.apply_effect(ref sys.world, context, game_id);
-        //let eff_res2 = effect2.apply_effect(ref sys.world, context, game_id);
+        //let trig_res = trigger.evaluate_trigger(ref world, game_id);
+        //let cond_res = condition.evaluate_condition(@world, context);
+        //let eff_res1 = effect.apply_effect(ref world, context, game_id);
+        //let eff_res2 = effect2.apply_effect(ref world, context, game_id);
 
         // ASSERT //
         // 1. Trigger should jump
         assert(trig_res.is_ok(), 'Trigger should jump');
         // 2. Condition should fail as player does not have item
-        assert(cond_res, 'Condition should be true');
+        assert((cond_res == true), 'Condition should be true');
         // 3. Effects should fail as condition is not met
         assert(eff_res.is_ok(), 'Effects should pass');
         //assert(eff_res1.is_err(), 'Effects should fail');
         //assert(eff_res2.is_err(), 'Effects2 shoul fail');
         // 4. success, executed
-        assert(action.is_executed(@sys.world, game_id), 'action executed');
+        assert(action.is_executed(@world, game_id), 'action executed');
 
         // 3. Effects should be update
-        let upd_door: Reactable = sys.world.read_game_model(door.inst, game_id);
-        let upd_door_exit: Exit = sys.world.read_game_model(door.inst, game_id);
+        let upd_door: Reactable = world.read_game_model(door.inst, game_id);
+        let upd_door_exit: Exit = world.read_game_model(door.inst, game_id);
         let key1: u32 = *upd_door.description.at(0);
         let key2: u32 = *upd_door.description.at(1);
         // read_model() will return the original text
-        let original_text1: DescriptionText = sys.world.read_model((upd_door.inst, key1));
-        // let original_text2: DescriptionText = sys.world.read_model((upd_door.inst, key2));
+        let original_text1: DescriptionText = world.read_model((upd_door.inst, key1));
+        // let original_text2: DescriptionText = world.read_model((upd_door.inst, key2));
         // read_game_model_key() will return the updated text
-        let new_text1: DescriptionText = sys.world.read_game_model_key(upd_door.inst, key1, game_id);
-        let new_text2: DescriptionText = sys.world.read_game_model_key(upd_door.inst, key2, game_id);
+        let new_text1: DescriptionText = world.read_game_model_key(upd_door.inst, key1, game_id);
+        let new_text2: DescriptionText = world.read_game_model_key(upd_door.inst, key2, game_id);
         assert_eq!(new_txt1, new_text1.text.clone(), "Description1 should be updated");
         assert_eq!(new_txt2, new_text2.text.clone(), "Description2 should be updated");
         assert_ne!(new_txt1, original_text1.text.clone(), "Original Description1 should not be updated");
         // assert_ne!(new_txt2, original_text2.text.clone(), "Original Description2 should not be updated");
-        assert(upd_door_exit.is_enterable, 'Exit should be updated');
+        assert(upd_door_exit.is_enterable == true, 'Exit should be updated');
     }
 }
 

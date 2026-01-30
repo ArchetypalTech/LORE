@@ -4,7 +4,7 @@
 #
 
 # world
-world_address = "0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403"
+world_address = "0x710c2c00bbec1d59cabd2f99fdc4f266530be026cf96a37bae4ddf0715031c"
 rpc = "https://api.cartridge.gg/x/orug-slot/katana"
 
 [runner]
@@ -12,10 +12,7 @@ explorer = true              # Open World Explorer in browser (default: false)
 check_contracts = false       # Verify contracts before starting (default: false)
 
 [indexing]
-contracts = [
-  "erc721:0x6962da1f222d4c4209110aa24d0482c672678aa22fa91975b3bac65c5e09d67", # game_token
-  "erc721:0x97e9a41ae85099766f59ba50486b57b7236030389e4ac31ccd46d75039de2a", # trail_token
-]
+contracts = ["erc721:0x4a8a5ba466533ff3a29533213fb8f4eef4fa61792cbe71ddc072808d46f4703"]
 
 # Performance tuning
 events_chunk_size = 1024        # Events per RPC request (default: 1024)

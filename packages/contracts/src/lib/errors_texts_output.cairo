@@ -8,11 +8,7 @@ use lore::{
 #[generate_trait]
 pub impl ErrorOutputterImpl of ErrorOutputterTrait {
     fn output_error(self: Error, player: Player, ref world: WorldStorage) {
-        let message: ByteArray = self.error_message(ref world);
-        player.say(ref world, message);
-    }
-    fn error_message(self: Error, ref world: WorldStorage) -> ByteArray {
-        let texts: Array<ByteArray> = match self {
+        let texts = match self {
             Error::Unimplemented => array!["This is not ready yet"],
             Error::NameNotMatch => array![
                 "Does not exist",
@@ -89,9 +85,6 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
                 "It doesn't have a player component",
                 "It is not a player, therefore you can't do that",
             ],
-            Error::NotEditor => array![
-                "You need to be an editor to do that.",
-            ],
             Error::NoContainerComponent => array![
                 "It doesn't have a container component",
                 "It is not a container, therefore you can't do that",
@@ -115,23 +108,11 @@ pub impl ErrorOutputterImpl of ErrorOutputterTrait {
             Error::NoComponent => array![
                 "It doesn't have a component", "It is not a component, therefore you can't do that",
             ],
-            Error::NotInTheSameTrail => array![
-                "The target is outside the current trail.",
-            ],
-            Error::NotYourGame => array![
-                "Not your game!",
-            ],
-            Error::InvalidTrail => array![
-                "Trail does not exist",
-            ],
-            Error::InsufficientActionsBalance => array![
-                "You don't have enough actions to do that.",
-            ],
-            Error::InsufficientActionsToClaim => array![
-                "You don't have enough actions to claim.",
-            ],
             _ => array![] // For errors with no message
         };
-        (random_text(world, texts))
+
+        if texts.len() > 0 {
+            player.say(ref world, random_text(world, texts));
+        }
     }
 }

@@ -43,8 +43,7 @@ export default defineConfig(async ({ mode }) => {
 			https: true,
 			proxy: {
 				"/katana": {
-					target: "http://localhost:5050",
-					// target: "http://127.0.0.1:5050",
+					target: process.env.VITE_KATANA_HTTP_RPC,
 					changeOrigin: true,
 					rewrite: (path: string) => path.replace(/^\/katana/, ""),
 				},
@@ -57,7 +56,10 @@ export default defineConfig(async ({ mode }) => {
 				"@components": resolve(__dirname, "./src/components"),
 				"@lib": resolve(__dirname, "./src/lib"),
 				"@styles": resolve(__dirname, "./src/styles"),
-				"@editor": resolve(__dirname, "./src/editor")
+				"@editor": resolve(__dirname, "./src/editor"),
+				"@lore/contracts/manifest": isSlot
+					? "@lore/contracts/manifest_stage.json"
+					: "@lore/contracts/manifest_dev.json",
 			},
 		},
 	};

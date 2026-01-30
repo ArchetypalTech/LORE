@@ -43,11 +43,6 @@ pub trait Instance<M, +Drop<M>, +Model<M>> {
     fn is_component(self: @M) -> bool;
     // validate if an entity contains this component with key: (inst)
     fn has_component(self: @WorldStorage, inst: felt252) -> bool;
-    // check if this component game instances are partially mapped
-    fn is_partially_mapped() -> bool;
-    // partially map game model into self
-    // (properties from VariablePropertyHelperTrait::register_properties())
-    fn partially_map_from(ref self: M, game_model: @M);
 }
 
 // for models with keys: (inst, key)
@@ -119,22 +114,12 @@ pub impl GameModelImpl<M, +Drop<M>, +Clone<M>, +Model<M>, +Instance<M>> of GameM
     fn read_game_model(self: @WorldStorage, inst: felt252, game_id: u128) -> M {
         let game_inst: felt252 = GameInstImpl::game_inst(inst, game_id);
         (if Instance::<M>::has_component(self, game_inst) {
-            if (Instance::<M>::is_partially_mapped()) {
-                // read the original instance model
-                let mut result: M = self.read_model(inst);
-                // map fields from game model
-                let game_model: M = self.read_model(game_inst);
-                result.partially_map_from(@game_model);
-                // println!("+ read_game_model (partial) {}:{:x}:{:x}", game_id, inst, game_inst);
-                (result)
-            } else {
-                // read the game instance model
-                let mut result: M = self.read_model(game_inst);
-                // keep the original inst key
-                result.set_inst(inst);
-                // println!("+ read_game_model {}:{:x}:{:x}", game_id, inst, game_inst);
-                (result)
-            }
+            // read the game instance model
+            let mut result: M = self.read_model(game_inst);
+            // keep the original inst key
+            // println!("+ read_game_model {}:{:x}:{:x}", game_id, inst, game_inst);
+            result.set_inst(inst);
+            (result)
         } else {
             // println!("+ read_model ZERO:{:x}", inst);
             (self.read_model(inst))

@@ -1,4 +1,3 @@
-import path from "node:path";
 import type { Subprocess } from "bun";
 import { parse } from "smol-toml";
 import {
@@ -11,14 +10,13 @@ import {
 	black,
 	bgGreen,
 	bgRed,
-	bgYellow,
 } from "ansicolor";
 import { intro, log, outro, spinner } from "@clack/prompts";
 import mri from "mri";
 import { debounce } from "dettle";
 import { type FSWatcher, watch } from "node:fs";
+import path from "node:path";
 import { LORE_ICONS } from "@lore/client/src/data/app.icons";
-import { getProfileConfig, type ProfileConfig, type ProfileName } from "@lore/client/src/lib/config_profiles";
 
 const argv = process.argv.slice(2);
 const parsed = mri(argv, {
@@ -34,38 +32,58 @@ const parsed = mri(argv, {
 // @dev custom impl of spinner, did a PR to @clack/prompts but it's not merged yet
 // https://github.com/bombshell-dev/clack/pull/247
 export const loreSpinner = spinner({
-	//@ts-ignore
 	custom: {
 		frames: LORE_ICONS,
 		speed: 500,
 	},
 });
 
+const files = {
+	scarb: "Scarb.toml",
+	dojo_config: `dojo_${parsed.mode}.toml`,
+};
+
 console.log("\n");
 intro(`${yellow(`🧾 LOREKIT (${parsed.mode})`)}`);
 
-export type Config = {
+export type Config = ParsedConfig & {
+	dojo_config: {
+		env: {
+			world_address: string;
+			rpc_url: string;
+			slot_name?: string;
+		};
+	};
+	scarb: {
+		dependencies: {
+			dojo: {
+				tag: string;
+			};
+		};
+	};
 	mode: string;
 	katana_version?: string;
 	torii_version?: string;
-	profile_config: ProfileConfig;
 };
 
-// extract tool versions from .tool-versions file
-const toolVersions = await Bun.file("../../.tool-versions").text();
-const katana_version = toolVersions.match(/katana\s+([^\s]+)/)?.[1];
-const torii_version = toolVersions.match(/torii\s+([^\s]+)/)?.[1];
-
-// get main profile config
-const PROFILE_CONFIG: ProfileConfig = getProfileConfig(parsed.mode as ProfileName);
-// console.log(PROFILE_CONFIG);
+export type ParsedConfig = {
+	[K in keyof typeof files]?: Record<string, unknown>;
+};
 
 export const config = {
+	...(await Object.entries(files).reduce(
+		async (accPromise, [key, value]): Promise<ParsedConfig> => {
+			const acc = await accPromise;
+			const file = await Bun.file(value).text();
+			acc[key as keyof typeof files] = parse(file);
+			return acc;
+		},
+		Promise.resolve({} as ParsedConfig),
+	)),
 	mode: parsed.mode,
-	profile_config: PROFILE_CONFIG,
-	katana_version: parsed.katana_version || katana_version,
-	torii_version: parsed.torii_version || torii_version,
-};
+	katana_version: parsed.katana_version,
+	torii_version: parsed.torii_version,
+} as Config;
 
 // spawns and runs a child process
 const runProcess = async (command: string, silent = false, pipe = true) => {
@@ -142,7 +160,6 @@ export const startWatcher = async (
 			}
 			console.log(`Detected ${event}`, filename ? `in ${filename}` : "");
 			for (const cmd of commands) {
-				console.log(`\n${black(bgGreen(" Executing command:"))}${black(bgYellow(cmd))}\n`);
 				buildProcess = Bun.spawn(cmd.split(" "), {
 					stdout: "inherit",
 					stderr: "inherit",

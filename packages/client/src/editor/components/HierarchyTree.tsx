@@ -4,19 +4,18 @@ import {
 	type SortableTreeMove,
 	type TreeItems,
 } from "dnd-kit-tree";
-import { Eye, HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
+import { HousePlus, LogIn, PersonStanding, SquarePen } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { BigNumberish } from "starknet";
 import type { Entity } from "@/lib/dojo_bindings/typescript/models.gen";
-import { bigintEquals, bigintToHex, cn } from "@/lib/utils/utils";
+import { bigintToHex, cn } from "@/lib/utils/utils";
 import EditorData, { useEditorData } from "../data/editor.data";
 import { componentData } from "../lib/components";
 import type { EntityCollection } from "../lib/types";
 import { Button } from "./ui/Button";
 import { Select } from "./FormComponents";
 import EditorStore, { useEditorPermissions } from "@/lib/stores/editor.store";
-import { sendCommand } from "@/lib/terminalCommands/commandHandler";
-import { useOwnedTokenIds } from "@/lib/stores/token.store";
+import { useWalletStore } from "@/lib/stores/wallet.store";
 
 type TreeNodeData = {
 	entity: EntityCollection,
@@ -131,10 +130,10 @@ export const HierarchyTreeItem = ({
 							)}
 
 							{/* Entity name */}
-							<div className={`flex-grow whitespace-nowrap ml-7`}>{entity.Entity.name}</div>
+							<div className="flex-grow ml-2">{entity.Entity.name}</div>
 
 							{/* Icons */}
-							<div className={`absolute right opacity-50 hover:opacity-100 ${isCollapsible?"ml-3":"ml-1"}`}>
+							<div className="absolute left-[100%] ml-2 opacity-50 hover:opacity-100">
 								{icons.map(([key, value]) =>
 									value.icon ? (
 										<span key={key} title={key}>
@@ -206,14 +205,14 @@ const createTree = () => {
 };
 
 export const HierarchyTree = () => {
-	const { dataPool, isDirty, trailIdsFilter, selectedEntity } = useEditorData();
+	const { dataPool, isDirty, creatorsFilter, selectedEntity } = useEditorData();
 	const [data, setData] = useState(createTree().tree);
 
 	useEffect(() => {
 		dataPool;
 		isDirty;
 		setData(createTree().tree);
-	}, [dataPool, isDirty, trailIdsFilter]);
+	}, [dataPool, isDirty, creatorsFilter]);
 
 	// scroll to selected entity
 	const treeRef = useRef<HTMLDivElement>(null);
@@ -251,8 +250,7 @@ export const HierarchyTree = () => {
 						if (!newParent) throw new Error("Parent not found");
 						
 						// check if new parent is editable
-						// and parent is the same trail as the child
-						if (EditorStore().canEditEntity(newParent) && bigintEquals(child.Entity.trail_id, newParent.Entity.trail_id)) {
+						if (EditorStore().canEditEntity(newParent)) {
 							if (action.parentId === undefined) {
 								// remove from current parent
 								EditorData().removeParent(child);
@@ -274,11 +272,15 @@ const HierarchyTreeMenu = () => {
 	const { selectedEntity } = useEditorData();
 	const { isAdmin } = useEditorPermissions();
 
-	const { hasPlayer, canCreateEntity } = useMemo(() => {
+	const { hasPlayer, hasTrail, hasEntrance, canCreateEntity } = useMemo(() => {
 		const player = EditorData().getPlayerEntity();
+		const trail = EditorData().getPlayersTrailEntity();
+		const entrance = EditorData().getPlayersEntranceEntity();
 		const canCreateEntity = selectedEntity ? EditorStore().canEditEntity(EditorData().getEntity(selectedEntity)) : false;
 		return {
 			hasPlayer: Boolean(player),
+			hasTrail: Boolean(trail),
+			hasEntrance: Boolean(entrance),
 			canCreateEntity: canCreateEntity,
 		};
 	}, [selectedEntity]);
@@ -299,10 +301,15 @@ const HierarchyTreeMenu = () => {
 	} else {
 		return (
 			<>
-				<Button variant={"hero"} onClick={() => sendCommand("g_create_trail")}>
-					<HousePlus /> Create Trail
+				<Button variant={"hero"} onClick={() => EditorData().createOrSelectPlayersTrailEntity()}>
+					<HousePlus />
+					{hasTrail ? "Your Trail" : "Create Trail"}
 				</Button>
-				<Button variant={"hero"} disabled={!canCreateEntity} onClick={() => EditorData().newEntity()}>
+				<Button variant={"hero"} disabled={!hasTrail} onClick={() => EditorData().createOrSelectPlayersEntranceEntity()}>
+					<LogIn />
+					{hasEntrance ? "Your Entrance" : "Create Entrance"}
+				</Button>
+				<Button variant={"hero"} disabled={!(canCreateEntity && hasTrail)} onClick={() => EditorData().newEntity()}>
 					<SquarePen />
 					New Entity
 				</Button>
@@ -312,24 +319,26 @@ const HierarchyTreeMenu = () => {
 };
 
 type HierarchyTreeFilterOptions = "all" | "orug" | "mine";
-
-const _displayLabel = (text:string) => {
-	return <span style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "center" }}><Eye size={16} />&nbsp;{text}</span>;
-};
+const creatorWallets = [
+	BigInt('0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7'), // tal-valdar
+	BigInt('0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae'), // awtnmy
+	BigInt('0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F'), // mataleone
+	BigInt('0x03bf9ddf561897E5A6af8F443894D918a3CB123638A201556189Bf9B7f2581AE'), // pscho
+	BigInt('0x00EDF69f8Fe2Beea8FdD545380F6C86CE6300A1009F0540324c2D218BCeC19aC'), // edwingeral
+	BigInt('0x055ad6518bB4088Ff51f87663196C1489280cb36E98b8c790749A0E0393c4E0C'), // kishitemplar
+]
 
 const HierarchyTreeFilter = () => {
 	const { isAdmin } = useEditorPermissions();
-
-	// TODO... get owned trail ids
-	const { ownedTrailIds } = useOwnedTokenIds();
+	const { walletAddress } = useWalletStore();
 
 	const options = useMemo(() => (isAdmin ? [
-		{ value: "orug", label: _displayLabel("ORug") },
-		{ value: "all", label: _displayLabel("ORug + Trails") },
+		{ value: "orug", label: "Display ORug" },
+		{ value: "all", label: "Display ORug + Players" },
 	] : [
-		{ value: "all", label: _displayLabel("Orug + My Trails") },
-		{ value: "orug", label: _displayLabel("ORug") },
-		{ value: "mine", label: _displayLabel("My Trails") },
+		{ value: "all", label: "Display Orug + Mine" },
+		{ value: "orug", label: "Display ORug" },
+		{ value: "mine", label: "Display Mine" },
 	]), [isAdmin]);
 
 	const [filter, setFilter] = useState<HierarchyTreeFilterOptions>(isAdmin ? "orug" : "all");
@@ -339,13 +348,13 @@ const HierarchyTreeFilter = () => {
 
 	useEffect(() => {
 		if (filter === "all") {
-			EditorData().setTrailIdsFilter(isAdmin ? [] : [0n, ...ownedTrailIds]);
+			EditorData().setCreatorsFilter(isAdmin ? [] : [0n, ...creatorWallets, BigInt(walletAddress ?? 0)]);
 		} else if (filter === "orug") {
-			EditorData().setTrailIdsFilter([0n]);
+			EditorData().setCreatorsFilter([...creatorWallets]);
 		} else if (filter === "mine") {
-			EditorData().setTrailIdsFilter([...ownedTrailIds]);
+			EditorData().setCreatorsFilter([0n, BigInt(walletAddress ?? 0)]);
 		}
-	}, [filter, ownedTrailIds]);
+	}, [filter, walletAddress]);
 
 	return (
 		<Select
