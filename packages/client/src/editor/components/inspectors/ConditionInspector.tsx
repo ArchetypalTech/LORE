@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type Condition,
   operator,
   componentType,
+  Entity,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import {
   Input,
@@ -15,7 +16,7 @@ import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 import { stringCairoEnum } from "@/editor/lib/schemas";
-import { syncPropertyRegistry } from "../../data/editor.data";
+import { getEntity, syncPropertyRegistry } from "../../data/editor.data";
 import { CollapsibleComponent } from "../CollapsibleComponent";
 import { EntitySelector } from "../EntitySelector";
 import { useEditorData } from "../../data/editor.data";
@@ -32,6 +33,8 @@ const ConditionItem = ({
   handleInputChange: (idx: number) => any;
   Inspector: any;
 }) => {
+  const entity = useMemo(() => getEntity(conditionObj.inst)?.Entity, [conditionObj]);
+  
   const [propertyNames, setPropertyNames] = useState<string[]>([]);
   const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
 
@@ -76,6 +79,7 @@ const ConditionItem = ({
           value={conditionObj.target.toString()}
           onChange={handleInputChange(idx)}
           dataPool={dataPool}
+          sourceEntity={entity}
         />
         <CairoEnumSelect
           id="component"

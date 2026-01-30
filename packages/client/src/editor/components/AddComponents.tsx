@@ -4,9 +4,11 @@ import type { AnyObject, EntityCollection } from "../lib/types";
 import { Select } from "./FormComponents";
 import { Button } from "./ui/Button";
 import type { SelectInputRef } from "./ui/Select";
+import { useEditorPermissions } from "@/lib/stores/editor.store";
 
-const ALWAYS_INCLUDE = ["DescriptionText", "Trigger", "Effect", "Condition", "Action" ] as const;
-const ALWAYS_EXCLUDE = ["PlayerStory" ] as const;
+const ALWAYS_INCLUDE = ["DescriptionText", "Trigger", "Effect", "Condition", "Action"] as const;
+const ALWAYS_INCLUDE_IF_ADMIN = ["Hub"] as const;
+const ALWAYS_EXCLUDE = ["PlayerStory", "Trail"] as const;
 
 export const AddComponents = ({
 	editedEntity,
@@ -19,6 +21,7 @@ export const AddComponents = ({
 	) => Promise<void>;
 }) => {
 	const selectRef = useRef<SelectInputRef>(null!);
+	const { isAdmin } = useEditorPermissions();
 
 	const options = useMemo(() => {
 		const o = Object.entries(componentData)
@@ -30,8 +33,14 @@ export const AddComponents = ({
 				if (ALWAYS_EXCLUDE.includes(key as typeof ALWAYS_EXCLUDE[number])) {
 					return false;
 				}
+				if (key == "Hub" && editedEntity.Area === undefined) {
+					return false; // remove Hub ig Areais not present
+				}
+				if (isAdmin && ALWAYS_INCLUDE_IF_ADMIN.includes(key as typeof ALWAYS_INCLUDE_IF_ADMIN[number])) {
+					return true;
+				}
 				return (
-					editedEntity[key as keyof typeof editedEntity] === undefined &&
+					editedEntity[key as keyof typeof editedEntity] === undefined && // remove if already contains the component
 					value.creator !== undefined
 				);
 			})

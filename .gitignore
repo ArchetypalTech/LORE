@@ -24,6 +24,8 @@ target
 manifests
 katana_local_db
 torii_local_db
+temp
+bin
 
 # ssl
 packages/client/ssl/*

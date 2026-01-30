@@ -33,8 +33,6 @@ import { queryStories } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
-import { useLeftPanelStore } from "@/lib/stores/leftPanel.store";
-import _ from "json-bigint";
 
 
 /**
@@ -91,12 +89,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	[key: string]: (command: commandContext) => void;
 } = {
 	_bootLoader: () => {
-		if (LORE_CONFIG.useController) {
-			if (!WalletStore().isConnected) {
-				sendCommand("_connect_wallet");
-			} else {
-				sendCommand("_welcome_back");
-			}
+		if (!WalletStore().isConnected) {
+			sendCommand("_connect_wallet");
+		} else {
+			sendCommand("_welcome_back");
 		}
 
 		sendCommand("_hint");
@@ -169,9 +165,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		if (context.args[0] === "game") {
 			// "create game"
-			sendCommand(`g_create_game`);
-		  // send look around command
-			sendCommand(`look around`);
+			sendCommand(`g_create_game`).then(() => {
+				// send look around command
+				sendCommand(`look around`);
+			});
 		} else {
 			addTerminalContent({
 				text: `Did you mean [create game]?`,
@@ -293,9 +290,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-
-			const leftPanel = useLeftPanelStore.getState();
-			leftPanel.show();
 		}
 
 		// Check properties
@@ -355,8 +349,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		// Reset Info Panel
 		DefaultValues();
-		const leftPanel = useLeftPanelStore.getState();
-		leftPanel.hide();
 		return;
 	},
 	_bypass: ({ command }) => {
@@ -444,7 +436,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 			return;
 		}
-		const coinsBalance = await queryCoinsPerGame(game_id);
+		const coinsBalance = await queryCoinsPerGame(BigInt(game_id));
 		addTerminalContent({
 			text: `You have ${coinsBalance} Usants coins`,
 			format: "hash",
@@ -507,7 +499,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	connection: async () => {
 		const dest = {
-			endpoints: LORE_CONFIG.endpoints,
+			rpcUrl: LORE_CONFIG.rpcUrl,
+			toriiUrl: LORE_CONFIG.toriiUrl,
 			mode: import.meta.env.MODE,
 		};
 		addTerminalContent({
@@ -578,46 +571,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		addTerminalContent({
 			text: "Thank you for your feedback!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_gain5Actions: () => {
-		useLeftPanelStore.getState().gain5Actions();
-		addTerminalContent({
-			text: "You have gained 5 actions!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_gain1Actions: () => {
-		useLeftPanelStore.getState().gain1Actions();
-		addTerminalContent({
-			text: "You have gained 1 action!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_consume6Actions: () => {
-		useLeftPanelStore.getState().consume6Actions();
-		addTerminalContent({
-			text: "You have consumed 6 actions!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_disableActionCart: () => {
-		useLeftPanelStore.getState().disable();
-		addTerminalContent({
-			text: "You have disabled the action cart!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_enableActionCart: () => {
-		useLeftPanelStore.getState().enable();
-		addTerminalContent({
-			text: "You have enabled the action cart!",
 			format: "system",
 			useTypewriter: true,
 		});

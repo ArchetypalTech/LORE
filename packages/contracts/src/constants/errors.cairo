@@ -24,6 +24,7 @@ pub enum Error {
     // Conditions
     ConditionFailed,
     // Effects
+    NotInTheSameTrail,
     EffectFailed,
     EffectNotFound,
     ReadOnlyVariable,
@@ -58,6 +59,10 @@ pub enum Error {
     AlreadyStored,
     NotStored,
     // Player
+    NotEditor,
     NoRoom,
     NotYourGame,
+    InvalidTrail,
+    InsufficientActionsBalance,
+    InsufficientActionsToClaim,
 }
