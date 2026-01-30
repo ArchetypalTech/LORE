@@ -130,6 +130,8 @@ export const getProfileConfig = (profileName: ProfileName): ProfileConfig => {
 	if (!result) {
 		throw new Error(`Profile config for [${profileName}] not found`);
 	}
+	console.log("DEV MANIFEST:", result.dojo_manifest);
+	console.log("DEV MANIFEST.contracts:", result.dojo_manifest?.contracts);
 	result.contractAddresses = {
 		world: addAddressPadding(result.dojo_manifest.world.address),
 		prompt: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-prompt")?.address ?? '0x0'),
@@ -137,5 +139,6 @@ export const getProfileConfig = (profileName: ProfileName): ProfileConfig => {
 		game_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-game_token")?.address ?? '0x0'),
 		trail_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-trail_token")?.address ?? '0x0'),
 	};
+	console.log("DEV RESULT:", result);
 	return result;
 }

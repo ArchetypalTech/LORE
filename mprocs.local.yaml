@@ -16,16 +16,21 @@ procs:
     cwd: packages/contracts
     env:
       PROFILE: dev
-    shell: |
-      source ../../scripts/utils.sh
-      export WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
-      export GAME_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-game_token)
-      export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-trail_token)
-      echo ">>> Dojo world: [${WORLD_ADDRESS}]"
-      echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
-      echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
-      wait-port 5050
-      torii --version
-      torii --http.cors_origins "*" \
-        --world ${WORLD_ADDRESS} \
-        --indexing.contracts erc721:$GAME_TOKEN_ADDRESS,erc721:$TRAIL_TOKEN_ADDRESS
+    shell: ../../scripts/run_torii.sh
+  # torii:
+  #   cwd: packages/contracts
+  #   env:
+  #     PROFILE: dev
+  #   shell: |
+  #     . ../../scripts/utils.sh
+  #     export WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+  #     export GAME_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-game_token)
+  #     export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-trail_token)
+  #     echo ">>> Dojo world: [${WORLD_ADDRESS}]"
+  #     echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
+  #     echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
+  #     wait-port 5050
+  #     torii --version
+  #     torii --http.cors_origins "*" \
+  #       --world ${WORLD_ADDRESS} \
+  #       --indexing.contracts erc721:$GAME_TOKEN_ADDRESS,erc721:$TRAIL_TOKEN_ADDRESS

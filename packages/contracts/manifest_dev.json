@@ -176,7 +176,7 @@
   ],
   "libraries": [
     {
-      "class_hash": "0x26fd98314f09c269410fb66bdde841a1c1374926572d3c796554a6e128347ea",
+      "class_hash": "0xa787eac35c65986b787f42de952d18fa913bc1f231abba1b26aa31a3edf753",
       "tag": "lore-lexer_v0_2_0",
       "selector": "0x5d301a42d3e6f3f2601cfe7322127087a384cd0fb9f7b0c9ebc1828ee95acd1",
       "systems": [],
