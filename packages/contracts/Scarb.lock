@@ -4,32 +4,35 @@ version = 1
 [[package]]
 name = "achievement"
 version = "0.0.0"
-source = "git+https://github.com/cartridge-gg/arcade?rev=dd076d8a628b011fdc4cbcca0de7ec523ecd1d66#dd076d8a628b011fdc4cbcca0de7ec523ecd1d66"
+source = "git+https://github.com/cartridge-gg/arcade?rev=a4de9f4c38814a19716b6c5f9cbd4213645e9cb1#a4de9f4c38814a19716b6c5f9cbd4213645e9cb1"
 dependencies = [
  "dojo",
- "dojo_macros",
+ "dojo_cairo_macros",
 ]
 
 [[package]]
 name = "dojo"
-version = "1.7.0-alpha.4"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.4#7b78108ce7aea7753c0a9e34cb83465a76bbf2e4"
+version = "1.8.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:a9c35305a81e68a49de85b8f07c1f8a93e27492c6b16c304d1f7961dcd5d350f"
 dependencies = [
- "dojo_macros",
+ "dojo_cairo_macros",
 ]
+
+[[package]]
+name = "dojo_cairo_macros"
+version = "1.8.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:c4aa04037a0c5029b05b78229dae22bf02269b9912e8a8c12f8af34aa6b72051"
 
 [[package]]
 name = "dojo_cairo_test"
-version = "1.7.0-alpha.4"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.4#7b78108ce7aea7753c0a9e34cb83465a76bbf2e4"
+version = "1.8.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:0cab4c86390b6ee9c3969b82d27f46ecd7f14e686b9868528506103944638465"
 dependencies = [
  "dojo",
 ]
-
-[[package]]
-name = "dojo_macros"
-version = "1.7.0-alpha.4"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.4#7b78108ce7aea7753c0a9e34cb83465a76bbf2e4"
 
 [[package]]
 name = "graffiti"
@@ -38,13 +41,13 @@ source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea
 
 [[package]]
 name = "lore"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "achievement",
  "dojo",
  "dojo_cairo_test",
- "dojo_macros",
  "nft_combo",
+ "openzeppelin_access",
  "openzeppelin_introspection",
  "openzeppelin_token",
  "origami_random",
@@ -53,7 +56,7 @@ dependencies = [
 [[package]]
 name = "nft_combo"
 version = "1.1.0"
-source = "git+https://github.com/underware-gg/cairo-nft-combo?branch=scarb_2.12.2#571a5bae95d734179ef9386036284d0b19e529fb"
+source = "git+https://github.com/underware-gg/cairo-nft-combo?branch=dojo_v1.7.0#e4118ca5237d3c6f8003182202c77aef44cb97b6"
 dependencies = [
  "graffiti",
  "openzeppelin_introspection",

@@ -1,0 +1,23 @@
+#
+# torii config for profile [dev]
+#
+world_address = "0x02098ea5abf3d4e6cd95df962c58ab746d9a7fd67a47cada710ea2e491354cd2"
+rpc = "http://127.0.0.1:5050"
+
+[events]
+raw = true
+
+[sql]
+historical = []
+
+# [grpc]
+# subscription_buffer_size = 10000
+
+[indexing]
+world_block = 1
+# blocks_chunk_size = 10240 # default: 10240
+# max_concurrent_tasks = 40
+transactions = true
+controllers = true
+pending = true
+contracts = []

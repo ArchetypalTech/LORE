@@ -1,0 +1,30 @@
+[world]
+seed = "lore_sn"
+name = ">LORE Starknet"
+description = "> get started with LORE Starknet"
+
+[namespace]
+default = "lore_sn"
+
+[env]
+rpc_url = "http://localhost:50000/"
+slot_name = "lore_sn-stage"
+
+world_address = "0x07d90bdb9b6af74c5c9c29e16a909e82e9faa78da2bf6c35b07504262592f17a"
+account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+
+[writers]
+"lore_sn" = ["lore_sn-permit_token"]
+
+[init_call_args]
+"lore_sn-permit_token" = [
+  "0x0", # messaging/piltover address
+  "0x0", # appchain address
+  "0x0", # cartridge address
+]
+
+[migration]
+skip_contracts = [
+  "fact_registry_mock", # deployed manually
+]

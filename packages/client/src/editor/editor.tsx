@@ -13,10 +13,10 @@ import { EditorFooter } from "./components/EditorFooter";
 import { EditorHeader } from "./components/EditorHeader";
 import { EntityEditor } from "./components/EntityEditor";
 import { HierarchyTree } from "./components/HierarchyTree";
-import { Button } from "./components/ui/Button";
 import { NoEntity } from "./components/ui/NoEntity";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
+import { useSyncOwnedTokenIds } from "@/lib/stores/token.store";
 
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
@@ -29,6 +29,7 @@ export const Editor = () => {
 	const { dataPool, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 	const { isEditor } = useSyncEditorPermissions();
+	const { ownedTrailIds } = useSyncOwnedTokenIds();
 	const {playTrailer, setIdleVideoPlaying } = useEditorStore();
 
 	useHead({

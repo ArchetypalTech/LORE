@@ -1,0 +1,28 @@
+StateMaps {
+    nonces: {
+        ContractAddress(
+            PatriciaKey(
+                0x1f401c745d3dba9b9da11921d1fb006c96f571e9039a0ece3f3b0dc14f04c3d,
+            ),
+        ): Nonce(
+            0x39,
+        ),
+    },
+    class_hashes: {},
+    storage: {
+        (
+            ContractAddress(
+                PatriciaKey(
+                    0x6edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403,
+                ),
+            ),
+            StorageKey(
+                PatriciaKey(
+                    0x2b1577440dd7bedf920cb6de2f9fc6bf7ba98c78c85a3fa1f8311aac95e1759,
+                ),
+            ),
+        ): 0x2,
+    },
+    compiled_class_hashes: {},
+    declared_contracts: {},
+}

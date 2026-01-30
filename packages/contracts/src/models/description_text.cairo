@@ -68,14 +68,14 @@ mod tests {
 
     #[test]
     fn test_description_text_game_inst() {
-        let (mut world, _, _, _, _, _) = helpers::setup_core();
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
         //
         // create area
-        let desc_1_0: DescriptionText = _create_desc(ref world, 111, 0, "desc_1_0");
-        let desc_1_1: DescriptionText = _create_desc(ref world, 111, 1, "desc_1_1");
-        let desc_1_2: DescriptionText = _create_desc(ref world, 111, 2, "desc_1_2");
-        let desc_2_0: DescriptionText = _create_desc(ref world, 222, 0, "desc_2_0");
-        let desc_2_1: DescriptionText = _create_desc(ref world, 222, 1, "desc_2_1");
+        let desc_1_0: DescriptionText = _create_desc(ref sys.world, 111, 0, "desc_1_0");
+        let desc_1_1: DescriptionText = _create_desc(ref sys.world, 111, 1, "desc_1_1");
+        let desc_1_2: DescriptionText = _create_desc(ref sys.world, 111, 2, "desc_1_2");
+        let desc_2_0: DescriptionText = _create_desc(ref sys.world, 222, 0, "desc_2_0");
+        let desc_2_1: DescriptionText = _create_desc(ref sys.world, 222, 1, "desc_2_1");
         // validate InstanceKey
         assert_eq!(desc_1_0.inst(), desc_1_0.inst);
         assert_eq!(desc_1_1.inst(), desc_1_1.inst);
@@ -90,11 +90,11 @@ mod tests {
         //
         // read game inst version, same as inst
         let game_id: u128 = 888;
-        _assert_desc_models(@world, desc_1_0.inst, desc_1_0.key, game_id, @desc_1_0.text, @desc_1_0.text, "baseline desc_1_0");
-        _assert_desc_models(@world, desc_1_1.inst, desc_1_1.key, game_id, @desc_1_1.text, @desc_1_1.text, "baseline desc_1_1");
-        _assert_desc_models(@world, desc_1_2.inst, desc_1_2.key, game_id, @desc_1_2.text, @desc_1_2.text, "baseline desc_1_2");
-        _assert_desc_models(@world, desc_2_0.inst, desc_2_0.key, game_id, @desc_2_0.text, @desc_2_0.text, "baseline desc_2_0");
-        _assert_desc_models(@world, desc_2_1.inst, desc_2_1.key, game_id, @desc_2_1.text, @desc_2_1.text, "baseline desc_2_1");
+        _assert_desc_models(@sys.world, desc_1_0.inst, desc_1_0.key, game_id, @desc_1_0.text, @desc_1_0.text, "baseline desc_1_0");
+        _assert_desc_models(@sys.world, desc_1_1.inst, desc_1_1.key, game_id, @desc_1_1.text, @desc_1_1.text, "baseline desc_1_1");
+        _assert_desc_models(@sys.world, desc_1_2.inst, desc_1_2.key, game_id, @desc_1_2.text, @desc_1_2.text, "baseline desc_1_2");
+        _assert_desc_models(@sys.world, desc_2_0.inst, desc_2_0.key, game_id, @desc_2_0.text, @desc_2_0.text, "baseline desc_2_0");
+        _assert_desc_models(@sys.world, desc_2_1.inst, desc_2_1.key, game_id, @desc_2_1.text, @desc_2_1.text, "baseline desc_2_1");
         //
         // save game inst version
         let mut new_desc_1_0: DescriptionText = desc_1_0.clone();
@@ -107,23 +107,23 @@ mod tests {
         new_desc_1_2.text = "new_desc_1_2";
         new_desc_2_0.text = "new_desc_2_0";
         new_desc_2_1.text = "new_desc_2_1";
-        world.write_game_model_key(@new_desc_1_0, game_id);
-        world.write_game_model_key(@new_desc_1_1, game_id);
-        world.write_game_model_key(@new_desc_1_2, game_id);
-        world.write_game_model_key(@new_desc_2_0, game_id);
-        world.write_game_model_key(@new_desc_2_1, game_id);
+        sys.world.write_game_model_key(@new_desc_1_0, game_id);
+        sys.world.write_game_model_key(@new_desc_1_1, game_id);
+        sys.world.write_game_model_key(@new_desc_1_2, game_id);
+        sys.world.write_game_model_key(@new_desc_2_0, game_id);
+        sys.world.write_game_model_key(@new_desc_2_1, game_id);
         // game inst version
-        _assert_desc_models(@world, desc_1_0.inst, desc_1_0.key, game_id, @desc_1_0.text, @new_desc_1_0.text, "game desc_1_0");
-        _assert_desc_models(@world, desc_1_1.inst, desc_1_1.key, game_id, @desc_1_1.text, @new_desc_1_1.text, "game desc_1_1");
-        _assert_desc_models(@world, desc_1_2.inst, desc_1_2.key, game_id, @desc_1_2.text, @new_desc_1_2.text, "game desc_1_2");
-        _assert_desc_models(@world, desc_2_0.inst, desc_2_0.key, game_id, @desc_2_0.text, @new_desc_2_0.text, "game desc_2_0");
-        _assert_desc_models(@world, desc_2_1.inst, desc_2_1.key, game_id, @desc_2_1.text, @new_desc_2_1.text, "game desc_2_1");
+        _assert_desc_models(@sys.world, desc_1_0.inst, desc_1_0.key, game_id, @desc_1_0.text, @new_desc_1_0.text, "game desc_1_0");
+        _assert_desc_models(@sys.world, desc_1_1.inst, desc_1_1.key, game_id, @desc_1_1.text, @new_desc_1_1.text, "game desc_1_1");
+        _assert_desc_models(@sys.world, desc_1_2.inst, desc_1_2.key, game_id, @desc_1_2.text, @new_desc_1_2.text, "game desc_1_2");
+        _assert_desc_models(@sys.world, desc_2_0.inst, desc_2_0.key, game_id, @desc_2_0.text, @new_desc_2_0.text, "game desc_2_0");
+        _assert_desc_models(@sys.world, desc_2_1.inst, desc_2_1.key, game_id, @desc_2_1.text, @new_desc_2_1.text, "game desc_2_1");
         // other games are preserved
-        _assert_desc_models(@world, desc_1_0.inst, desc_1_0.key, game_id+1, @desc_1_0.text, @desc_1_0.text, "other desc_1_0");
-        _assert_desc_models(@world, desc_1_1.inst, desc_1_1.key, game_id+1, @desc_1_1.text, @desc_1_1.text, "other desc_1_1");
-        _assert_desc_models(@world, desc_1_2.inst, desc_1_2.key, game_id+1, @desc_1_2.text, @desc_1_2.text, "other desc_1_2");
-        _assert_desc_models(@world, desc_2_0.inst, desc_2_0.key, game_id+1, @desc_2_0.text, @desc_2_0.text, "other desc_2_0");
-        _assert_desc_models(@world, desc_2_1.inst, desc_2_1.key, game_id+1, @desc_2_1.text, @desc_2_1.text, "other desc_2_1");
+        _assert_desc_models(@sys.world, desc_1_0.inst, desc_1_0.key, game_id+1, @desc_1_0.text, @desc_1_0.text, "other desc_1_0");
+        _assert_desc_models(@sys.world, desc_1_1.inst, desc_1_1.key, game_id+1, @desc_1_1.text, @desc_1_1.text, "other desc_1_1");
+        _assert_desc_models(@sys.world, desc_1_2.inst, desc_1_2.key, game_id+1, @desc_1_2.text, @desc_1_2.text, "other desc_1_2");
+        _assert_desc_models(@sys.world, desc_2_0.inst, desc_2_0.key, game_id+1, @desc_2_0.text, @desc_2_0.text, "other desc_2_0");
+        _assert_desc_models(@sys.world, desc_2_1.inst, desc_2_1.key, game_id+1, @desc_2_1.text, @desc_2_1.text, "other desc_2_1");
     }
 
 }

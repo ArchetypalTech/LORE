@@ -54,9 +54,7 @@ pub trait IGameToken<TState> {
     // game_token
     fn create_game(ref self: TState, recipient: ContractAddress) -> u128;
     // fn burn(ref self: TState, token_id: u256);
-    fn set_paused(ref self: TState, is_paused: bool);
-    fn set_admin(ref self: TState, account_address: ContractAddress, is_admin: bool);
-    fn set_editor(ref self: TState, account_address: ContractAddress, is_editor: bool);
+    fn set_minting_paused(ref self: TState, is_paused: bool);
     fn update_token_metadata(ref self: TState, token_id: u256);
     fn update_tokens_metadata(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract_metadata(ref self: TState);
@@ -67,9 +65,7 @@ pub trait IGameTokenPublic<TState> {
     fn create_game(ref self: TState, recipient: ContractAddress) -> u128;
     // fn burn(ref self: TState, token_id: u256);
     // admin
-    fn set_paused(ref self: TState, is_paused: bool);
-    fn set_admin(ref self: TState, account_address: ContractAddress, is_admin: bool);
-    fn set_editor(ref self: TState, account_address: ContractAddress, is_editor: bool);
+    fn set_minting_paused(ref self: TState, is_paused: bool);
     fn update_token_metadata(ref self: TState, token_id: u256);
     fn update_tokens_metadata(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract_metadata(ref self: TState);
@@ -131,16 +127,17 @@ pub mod game_token {
     //-----------------------------------
 
     use lore::models::{
-        admin::{AccountPermissionsTrait},
-        token_config::{
+        game_token_info::{
             GameTokenInfo, GameTokenInfoTrait,
-            PlayerAccountTrait,
             GameCreatedEvent,
         },
+        player_account::{PlayerAccountTrait},
+        trail_token_info::{TrailProgressTrait},
     };
-    use lore::constants::{token as constants};
+    use lore::constants::token_metadata::{orug_metadata, game_metadata};
     use lore::lib::{
         dns::{SELECTORS},
+        access::{AccessTrait},
         utils::{HashImpl, ByteArrayTraitExt},
         trophies::{Trophy, TrophyTrait, TROPHIES},
     };
@@ -150,27 +147,18 @@ pub mod game_token {
         pub const INVALID_CALLER: felt252   = 'ORUG: Invalid caller';
     }
 
-    fn dojo_init(ref self: ContractState, admin_accounts: Array<ContractAddress>) {
+    fn dojo_init(ref self: ContractState) {
         // initialize ERC721
         self.erc721_combo.initializer(
-            constants::TOKEN_NAME(),
-            constants::TOKEN_SYMBOL(),
+            game_metadata::TOKEN_NAME(),
+            game_metadata::TOKEN_SYMBOL(),
             Option::None, // use hooks
             Option::None, // use hooks
             Option::None, // infinite supply
         );
 
-        // set deployer as admin
-        let mut world: WorldStorage = self.world_default();
-        let deployer_address: ContractAddress = starknet::get_execution_info().tx_info.account_contract_address;
-        AccountPermissionsTrait::set_is_admin(ref world, deployer_address, true);
-        AccountPermissionsTrait::set_is_editor(ref world, deployer_address, true);
-        // set admin accounts
-        for account_address in admin_accounts {
-            AccountPermissionsTrait::set_is_admin(ref world, account_address, true);
-            AccountPermissionsTrait::set_is_editor(ref world, account_address, true);
-        };
         // create trophies/achievements
+        let mut world: WorldStorage = self.world_default();
         self._create_trophies(ref world);
     }
 
@@ -209,9 +197,7 @@ pub mod game_token {
                 minter_address: recipient,
                 seed,
                 act_number: 1,
-                room_name: "The Void",
-                progress: 0,
-                completed: false,
+                room_name: "Nowhere",
             });
 
             // switch to this game
@@ -219,7 +205,6 @@ pub mod game_token {
 
             // event...
             world.emit_event(@GameCreatedEvent{
-                contract_address,
                 game_id: token_id,
                 recipient,
             });
@@ -235,20 +220,10 @@ pub mod game_token {
         //
         // admin
         //
-        fn set_paused(ref self: ContractState, is_paused: bool) {
+        fn set_minting_paused(ref self: ContractState, is_paused: bool) {
             let world: WorldStorage = self.world_default();
             self._assert_caller_is_admin(@world);
             self.erc721_combo._set_minting_paused(is_paused);
-        }
-        fn set_admin(ref self: ContractState, account_address: ContractAddress, is_admin: bool) {
-            let mut world: WorldStorage = self.world_default();
-            self._assert_caller_is_admin(@world);
-            AccountPermissionsTrait::set_is_admin(ref world, account_address, is_admin);
-        }
-        fn set_editor(ref self: ContractState, account_address: ContractAddress, is_editor: bool) {
-            let mut world: WorldStorage = self.world_default();
-            self._assert_caller_is_admin(@world);
-            AccountPermissionsTrait::set_is_editor(ref world, account_address, is_editor);
         }
         fn update_token_metadata(ref self: ContractState, token_id: u256) {
             // let mut world: WorldStorage = self.world_default();
@@ -292,7 +267,7 @@ pub mod game_token {
         fn _caller_is_admin(self: @ContractState, world: @WorldStorage) -> bool {
             (
                 self._caller_is_owner(world) ||
-                AccountPermissionsTrait::is_admin(world, starknet::get_caller_address())
+                world.is_player_admin(starknet::get_caller_address())
             )
         }
         
@@ -328,26 +303,27 @@ pub mod game_token {
     pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
         fn render_contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ContractMetadata> {
             // https://docs.opensea.io/docs/contract-level-metadata
-            let metadata = ContractMetadata {
+            let metadata: ContractMetadata = ContractMetadata {
                 name: self.name(),
                 symbol: self.symbol(),
-                description: constants::METADATA_DESCRIPTION(),
-                image: Option::Some(constants::CONTRACT_IMAGE()),
-                banner_image: Option::Some(constants::BANNER_IMAGE()),
+                description: orug_metadata::DESCRIPTION(),
+                image: Option::Some(orug_metadata::CONTRACT_IMAGE()),
+                banner_image: Option::Some(orug_metadata::BANNER_IMAGE()),
                 featured_image: Option::None,
-                external_link: Option::Some(constants::EXTERNAL_LINK()),
+                external_link: Option::Some(orug_metadata::EXTERNAL_LINK()),
                 collaborators: Option::None,
             };
             (Option::Some(metadata))
         }
 
         fn render_token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<TokenMetadata> {
-            let self = self.get_contract(); // get the component's contract state
+            let self: @ContractState = self.get_contract(); // get the component's contract state
             let mut world: WorldStorage = self.world_default();
             // attributes and metadata
-            let token_info: GameTokenInfo = world.read_model(token_id.low);
+            let game_id: u128 = token_id.low;
+            let token_info: GameTokenInfo = world.read_model(game_id);
             let mut attributes: Span<Attribute> = array![
-                Attribute {
+                Attribute { 
                     key: "Act",
                     value: format!("{}", token_info.act_number),
                 },
@@ -357,32 +333,32 @@ pub mod game_token {
                 },
                 Attribute {
                     key: "Progress",
-                    value: format!("{}%25", token_info.progress),
+                    value: format!("{}%25", world.current_trail_progress(token_info.game_id, 0)),
                 },
                 Attribute {
                     key: "Completed",
-                    value: ByteArrayTraitExt::byte_array_from_bool(token_info.completed),
+                    value: ByteArrayTraitExt::byte_array_from_bool(world.has_finished_trail(token_info.game_id, 0)),
                 },
                 Attribute {
                     key: "Vitality",
-                    value: if GameTokenInfoTrait::is_dead(@world, token_id.low) {"Dead"} else {"Alive"},
+                    value: if GameTokenInfoTrait::is_dead(@world, game_id) {"Dead"} else {"Alive"},
                 },
             ].span();
             let mut additional_metadata: Span<Attribute> = array![
                 Attribute {
                     key: "Seed",
-                    value: format!("{}", token_info.seed),
+                    value: format!("0x{:x}", token_info.seed),
                 },
             ].span();
             // https://docs.opensea.io/docs/metadata-standards#metadata-structure
-            let metadata = TokenMetadata {
+            let metadata: TokenMetadata = TokenMetadata {
                 token_id,
-                name: format!("{} #{}", constants::TOKEN_NAME(), token_id.low),
-                description: constants::METADATA_DESCRIPTION(),
-                image: Option::Some(constants::CONTRACT_IMAGE()),
+                name: format!("{} #{}", game_metadata::TOKEN_NAME(), game_id),
+                description: orug_metadata::DESCRIPTION(),
+                image: Option::Some(orug_metadata::CONTRACT_IMAGE()),
                 image_data: Option::None,
-                external_url: Option::Some(constants::EXTERNAL_LINK()), // TODO: format external token link
-                background_color: Option::Some(constants::BACKGROUND_COLOR()),
+                external_url: Option::Some(orug_metadata::EXTERNAL_LINK()), // TODO: format external token link
+                background_color: Option::Some(orug_metadata::BACKGROUND_COLOR()),
                 animation_url: Option::None,
                 youtube_url: Option::None,
                 attributes: Option::Some(attributes),
