@@ -16,7 +16,7 @@ const getOrFail = <T>(value: T | undefined, name?: string): T => {
 //
 
 const env = cleanEnv(import.meta.env, {
-	VITE_PROFILE: str({ default: undefined }),
+	VITE_PROFILE: str({ default: "slot" }),
 	VITE_RPC_URL: url({ default: undefined }),
 	VITE_TORII_URL: url({ default: undefined }),
 	VITE_BURNER_ADDRESS: str({ default: undefined }),
