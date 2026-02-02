@@ -19,7 +19,7 @@
     "ansicolor": "^2.0.3",
     "jq.node": "^3.0.0",
     "mprocs": "^0.7.3",
-    "semver": "^7.7.2",
+    "semver": "^7.7.3",
     "wait-on": "^9.0.3",
     "wait-port": "^1.1.0"
   },
