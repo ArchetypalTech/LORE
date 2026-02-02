@@ -19,7 +19,7 @@ type LeftPanelState = {
 };
 
 export const useLeftPanelStore = create<LeftPanelState>((set, get) => ({
-  visible: true,
+  visible: false,
   disabled: false,
   actions: 20,
   lastChange: null,

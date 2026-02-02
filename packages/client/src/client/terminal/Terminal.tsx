@@ -44,7 +44,7 @@ export default function Terminal({
 	// --- IDLE VIDEO STATE ---
 	const [isIdle, setIsIdle] = useState(false);
 	const idleTimeoutRef = useRef<number | null>(null);
-	const IDLE_DELAY = 1 * 1000 * 30; // 30 seconds (30000 ms)
+	const IDLE_DELAY = 2 * 1000 * 30; // 60 seconds (60000 ms)
 	// 2 minutes (120000 ms)
 	
 	// helper: clear timer

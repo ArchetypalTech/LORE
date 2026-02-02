@@ -48,7 +48,7 @@ export const Client = () => {
 				loop
 				playsInline
 				src="/video/ORugTrailer_NQ.mp4"
-				className="fixed inset-0 w-screen h-screen object-cover z-[50]"
+				className="fixed inset-0 w-screen h-screen object-cover z-[150]"
 			/>
 		)}
 

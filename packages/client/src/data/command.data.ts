@@ -521,11 +521,13 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		
 		const panel = UIPanelStore();
 		const rightPanel = useRightPanelStore.getState();
+		const leftPanel = useLeftPanelStore.getState();
 
 		// ui show
 		if (context.args[0] === "show") {
 			panel.show();
 			rightPanel.show();
+			leftPanel.show();
 			addTerminalContent({
 				text: "Displaying Auxiliary Panels.",
 				format: "system",
@@ -538,6 +540,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "hide") {
 			panel.hide();
 			rightPanel.hide();
+			leftPanel.hide();
 			addTerminalContent({
 				text: "Hidding Auxiliary Panels.",
 				format: "system",
