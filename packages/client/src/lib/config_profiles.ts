@@ -82,8 +82,8 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
   slot: {
 		profileName: "slot",
     dojo_manifest: manifest_slot,
-    chainName: "WP_LORE_V3",
-    chainId: bigintToHex(stringToFelt("WP_LORE_V3")),
+    chainName: "WP_ORUG_SLOT",
+    chainId: bigintToHex(stringToFelt("WP_ORUG_SLOT")),
     rpcUrl: "https://api.cartridge.gg/x/orug-slot/katana",
     toriiUrl: "https://api.cartridge.gg/x/orug-slot/torii",
     slotName: "orug-slot",
@@ -130,8 +130,6 @@ export const getProfileConfig = (profileName: ProfileName): ProfileConfig => {
 	if (!result) {
 		throw new Error(`Profile config for [${profileName}] not found`);
 	}
-	console.log("DEV MANIFEST:", result.dojo_manifest);
-	console.log("DEV MANIFEST.contracts:", result.dojo_manifest?.contracts);
 	result.contractAddresses = {
 		world: addAddressPadding(result.dojo_manifest.world.address),
 		prompt: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-prompt")?.address ?? '0x0'),
@@ -139,6 +137,5 @@ export const getProfileConfig = (profileName: ProfileName): ProfileConfig => {
 		game_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-game_token")?.address ?? '0x0'),
 		trail_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-trail_token")?.address ?? '0x0'),
 	};
-	console.log("DEV RESULT:", result);
 	return result;
 }
