@@ -7,22 +7,25 @@ import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo, PuzzleInfo, useUIPanelStore } from "../stores/terminal.uiPanel.store";
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import { useWalletStore } from "../stores/wallet.store";
+import { BigNumberish } from "starknet";
 
 const normalizeAddressZero = (addr: string): string => {
   return addr.replace(/^0x0+/, "0x").toLowerCase();
 }
+const fromWei = (value: BigNumberish): number =>
+  Number(BigInt(value) / 10n ** 18n);
 
 // ACTIONS TOKEN (free and paid)
-export const queryActionsToken = async (): Promise<Partial<PlayerBalances | undefined>> => {
-  let playerBalances: Partial<PlayerBalances | undefined>;
+export const queryActionsToken = async (): Promise<PlayerBalances | undefined> => {
+  let playerBalances: PlayerBalances | undefined;
   const { walletAddress, isConnected } = useWalletStore.getState();
-  
+
   if (!isConnected) {
     console.error("Error fetching player balance from Torii: Wallet is not connected");
     return undefined;
   }
+
   try {
-    // 1. Get the PlayerBalances through the walletAddress
     const { sdk } = await InitDojo();
     const query_playerBalances = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
@@ -33,17 +36,42 @@ export const queryActionsToken = async (): Promise<Partial<PlayerBalances | unde
           ["lore-PlayerBalances"],
           [walletAddress]
         ).build()
-      ).withEntityModels(["lore-PlayerBalances"]);
+      )
+      .withEntityModels(["lore-PlayerBalances"]);
     
     const result_playerBalances = await sdk.getEntities({ query: query_playerBalances });
-    // console.log("DEBUG: queryPlayerLocationPerGame() result_playerBalances: ", result_playerBalances);
-    playerBalances = result_playerBalances.getItems().at(0)?.models?.lore?.PlayerBalances;
+
+    const maybeBalances = result_playerBalances.getItems().at(0)?.models?.lore?.PlayerBalances;
+
+    if (!isPlayerBalances(maybeBalances)) {
+      return undefined;
+    }
+
+    playerBalances = maybeBalances;
+
+    // normalize balances from wei
+    playerBalances.free_actions_balance = fromWei(playerBalances.free_actions_balance);
+    playerBalances.paid_actions_balance = fromWei(playerBalances.paid_actions_balance);
+    playerBalances.sub_actions_balance = fromWei(playerBalances.sub_actions_balance);
+
   } catch (error) {
     console.error("Error fetching player balance from Torii:", error);
     throw error;
   }
 
   return playerBalances;
+};
+
+const isPlayerBalances = (
+  value: Partial<PlayerBalances> | undefined
+): value is PlayerBalances => {
+  return (
+    !!value &&
+    typeof value.player_address === "string" &&
+    value.free_actions_balance != null &&
+    value.paid_actions_balance != null &&
+    value.sub_actions_balance != null
+  );
 }
 
 // Player location
