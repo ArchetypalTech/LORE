@@ -1,4 +1,4 @@
-import { getPlayerAddress } from "../../editor/lib/components";
+// import { getPlayerAddress } from "../../editor/lib/components";
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
 import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted, PlayerBalances, Player } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -9,9 +9,10 @@ import { stringCairoEnum } from "@/editor/lib/schemas";
 import { useWalletStore } from "../stores/wallet.store";
 import { BigNumberish } from "starknet";
 
-const normalizeAddressZero = (addr: string): string => {
-  return addr.replace(/^0x0+/, "0x").toLowerCase();
-}
+// const normalizeAddressZero = (addr: string): string => {
+//   return addr.replace(/^0x0+/, "0x").toLowerCase();
+// }
+
 const fromWei = (value: BigNumberish): number =>
   Number(BigInt(value) / 10n ** 18n);
 
@@ -81,8 +82,8 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
   let location_inst: bigint | undefined;
   let playerInst: bigint | undefined;
   let location_exit: Partial<Exit> | undefined;
-  const player_address = getPlayerAddress();
-  console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
+  // const player_address = getPlayerAddress();
+  // console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
   try {
     // 1. Get the original player component
     const { sdk } = await InitDojo();
@@ -92,14 +93,14 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
       .includeHashedKeys()
       .withEntityModels(["lore-Player"]);
     const result_player = await sdk.getEntities({ query: query_player });
-    console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
+    // console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
 
     const player = result_player.getItems().find((item) => {
       const addr = item.models?.lore?.Player?.address;
       return addr;
      // return addr ? normalizeAddressZero(addr) === player_address : false;
     });
-    console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
+    // console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 
     playerInst = BigInt(player?.models?.lore?.Player?.inst ?? 0);
     // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
@@ -107,7 +108,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
       console.error("ERROR: queryPlayerLocationPerGame() playerInst is undefined");
       return ([undefined, undefined, undefined, undefined]);
     }
-    console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
+    // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
 
     // query game instance map player
     let game_inst_map: bigint = await queryGameInstaceMapByPlayer(gameId, playerInst);
