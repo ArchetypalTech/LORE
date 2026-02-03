@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCallback, useEffect } from "react";
 import type { BigNumberish } from "starknet";
 import { useCanEditEntity } from "@/lib/stores/editor.store";
@@ -109,6 +109,8 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
             .filter((x) => x !== undefined);
     }, [editedEntity, isDirty]);
 
+	const canDelete = useMemo(() => (editedEntity?.Trail === undefined), [editedEntity]);
+
 	if (!editedEntity?.Entity) {
 		return <NoEntity />;
 	}
@@ -127,11 +129,13 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
 					/>
 				}
 			>
-				<DeleteButton disabled={!canEdit}
-					onClick={async () => {
-						await EditorData().removeEntity(editedEntity);
-					}}
-				/>
+				{canDelete &&
+					<DeleteButton disabled={!canEdit}
+						onClick={async () => {
+							await EditorData().removeEntity(editedEntity);
+						}}
+					/>
+				}
 				<PublishButton disabled={!canEdit}
 					onClick={async () => {
 						await publishConfigToContract(
@@ -173,7 +177,7 @@ export const EntityEditor = ({ inst }: { inst: BigNumberish }) => {
                   componentObject={componentObject}
                   componentName={key}
                   handleEdit={handleEditComponent}
-                  handleRemove={handleRemoveComponent}
+                  handleRemove={canDelete ? handleRemoveComponent : undefined}
                 />
               )}
             </div>

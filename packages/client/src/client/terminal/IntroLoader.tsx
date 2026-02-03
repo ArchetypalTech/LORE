@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import DojoStore from "@lib/stores/dojo.store";
 
 export default function() {
   const binary = [
@@ -14,6 +15,7 @@ export default function() {
 			"110101"
 		]
   const spinner = ["▌","▀", "▐","▄"]
+  const text = "Logs are being printed on your browser console"
   let [tick, setTick] = useState(0)
   useEffect(() => {
     let interval = setInterval(() => setTick((prev) => prev += 1), 200);
@@ -22,11 +24,21 @@ export default function() {
   return (
     <div className="flex justify-between items-center flex-col gap-2">
       <small>status: initialised</small>
-    <div className="event-loader flex gap-4 text-3xl">
-      <span>{binary[tick % binary.length]}</span>
-      <span>{spinner[tick % spinner.length]}</span>
-    </div>  
+
+      {/* Spinner + binary */}
+      <div className="event-loader flex gap-4 text-3xl">
+        <span>{binary[tick % binary.length]}</span>
+        <span>{spinner[tick % spinner.length]}</span>
+      </div>
+
+      {/* Text below spinner */}
+      {DojoStore().isEditorMode && (
+        <div className="text-editor flex text-sm">
+          <small>{text}</small>
+        </div>
+      )}
+
       <small>game loading</small>
     </div>
-  )
+  );
 }

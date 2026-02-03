@@ -20,23 +20,24 @@ import { ActionInspector } from "../components/inspectors/ActionInspector";
 import { DescriptionTextInspector } from "../components/inspectors/DescriptionInspector";
 import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
-import { LORE_CONFIG } from "@/lib/config";
 import WalletStore from "@/lib/stores/wallet.store"
 import { BigNumberish, ec, shortString } from "starknet";
-import randomName from "@scaleway/random-name";
 import { bigintToAddress } from "@/lib/utils/utils";
+import { HubInspector } from "../components/inspectors/HubInspector";
+import { TrailInspector } from "../components/inspectors/TrailInspector";
 
-export const createDefaultEntity = (): WithStringEnums<
+export const createDefaultEntity = (trail_id?: BigNumberish): WithStringEnums<
 	Pick<SchemaType["lore"], "Entity">
 > => ({
 	Entity: {
 		...schema.lore.Entity,
 		inst: randomKey(),
 		is_entity: true,
+		trail_id: BigInt(trail_id ?? 0),
 		name: createRandomName(),
+		creator_address: bigintToAddress(getPlayerAddress()),
 		alt_names: [],
 		actions_keys: [],
-		creator_address: bigintToAddress(getPlayerAddress()),
 	},
 });
 
@@ -45,7 +46,6 @@ export const createPlayerEntity = (
 ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
 	const playerInst = getPlayerSingletonInst(); // singleton
 	const playerAddress = getPlayerAddress();
-	// const playerName = getPlayerName();
 	const playerName = "Player";
 	return {
 		// Adding the Entity as we need to set the inst to be the address
@@ -89,11 +89,10 @@ export const createPlayerComponent = (
 export const createPlayerStoryComponent = (
 	_entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "PlayerStory">> => {
-	const address = LORE_CONFIG.wallet.address;
 	return { 
 		PlayerStory: {
 			...schema.lore.PlayerStory,
-			inst: address,
+			game_id: 0,
 			story_line: 0,
 		}
 	};
@@ -108,6 +107,31 @@ export const createDefaultAreaComponent = (
 		is_area: true,
 		is_spawn_point: false,
 		progress_percentage: 0,
+	},
+});
+
+export const createDefaultHubComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Hub">> => ({
+	Hub: {
+		...schema.lore.Hub,
+		inst: entity.inst,
+		is_hub: true,
+		grants_editor_access: false,
+		trails_insts: [],
+	},
+});
+
+export const createDefaultTrailComponent = (
+	entity: Entity,
+): WithStringEnums<Pick<SchemaType["lore"], "Trail">> => ({
+	Trail: {
+		...schema.lore.Trail,
+		inst: entity.inst,
+		is_trail: true,
+		trail_id: 0,
+		hub_inst: 0,
+		is_published: false,
 	},
 });
 
@@ -208,7 +232,7 @@ export const createDefaultContainerComponent = (
 	},
 });
 
-export const createDefaultTrigger = (
+export const createDefaultTriggerComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Trigger">> => ({
 	Trigger: {
@@ -223,7 +247,7 @@ export const createDefaultTrigger = (
 	},
 });
 
-export const createDefaultCondition = (
+export const createDefaultConditionComponent = (
 	entity: Entity,
 ): WithStringEnums<Pick<SchemaType["lore"], "Condition">> => ({
 	Condition: {
@@ -314,68 +338,74 @@ export const componentData: {
 		icon: "👤",
 		creator: createPlayerComponent,
 		},
-	PlayerStory: {
-		order: 1,
-		inspector: PlayerStoryInspector,
-		icon: "👤",
-		creator: createPlayerStoryComponent,
-	},
 	Area: {
 		order: 2,
 		inspector: AreaInspector,
 		icon: "🥾",
 		creator: createDefaultAreaComponent,
 	},
-	Reactable: {
+	Hub: {
 		order: 3,
-		inspector: ReactableInspector,
-		icon: "🔍",
-		creator: createDefaultReactableComponent,
+		inspector: HubInspector,
+		icon: "🚏",
+		creator: createDefaultHubComponent,
+	},
+	Trail: {
+		order: 4,
+		inspector: TrailInspector,
+		icon: "🛤️",
+		creator: createDefaultTrailComponent,
 	},
 	Exit: {
-		order: 4,
+		order: 5,
 		inspector: ExitInspector,
 		icon: "🚪",
 		creator: createDefaultExitComponent,
 	},
+	Reactable: {
+		order: 6,
+		inspector: ReactableInspector,
+		icon: "🔍",
+		creator: createDefaultReactableComponent,
+	},
 	InventoryItem: {
-		order: 5,
+		order: 7,
 		inspector: InventoryItemInspector,
 		icon: "📦",
 		creator: createDefaultInventoryItemComponent,
 	},
 	Container: {
-		order: 6,
+		order: 8,
 		inspector: ContainerInspector,
 		icon: "🎒",
 		creator: createDefaultContainerComponent,
 	},
 	Trigger: {
-		order: 7,
+		order: 9,
 		inspector: TriggerInspector,
 		icon: "🛎️",
-		creator: createDefaultTrigger,
+		creator: createDefaultTriggerComponent,
 	},
 	Condition: {
-		order: 8,
+		order: 10,
 		inspector: ConditionInspector,
 		icon: "⚖️",
-		creator: createDefaultCondition,
+		creator: createDefaultConditionComponent,
 	},
 	Effect: {
-		order: 9,
+		order: 11,
 		inspector: EffectInspector,
 		icon: "✨",
 		creator: createDefaultEffectComponent,
 	},
 	Action: {
-		order: 10,
+		order: 12,
 		inspector: ActionInspector,
 		icon: "📝",
 		creator: createDefaultActionComponent,
 	},
 	DescriptionText: {
-		order: 11,
+		order: 13,
 		inspector: DescriptionTextInspector,
 		icon: "🔍",
 		creator: createDefaultDescriptionText,
@@ -383,33 +413,21 @@ export const componentData: {
 };
 
 export const getPlayerAddress = (): string => {
-	if (LORE_CONFIG.useController) {
-		const controllerAddress = WalletStore().controller?.account?.address;
-		if (controllerAddress) {
-			return controllerAddress;
-		}
-	}
-	return LORE_CONFIG.wallet.address;
+	return WalletStore().walletAddress ?? "";
 };
 
 export const getPlayerUsername = (): string => {
-	let username = 'Player';
-	if (LORE_CONFIG.useController && WalletStore().username) {
-		username = WalletStore().username as string;
-	}
-	return username;
+	return WalletStore().username ?? 'Player';
 };
 
 export const getPlayerEntranceInst = (): bigint => {
 	let entranceInst = 0n;
-	if (LORE_CONFIG.useController) {
-		const controllerAddress = WalletStore().controller?.account?.address;
-		if (controllerAddress) {
-			entranceInst = ec.starkCurve.poseidonHashMany([
-				BigInt(shortString.encodeShortString("Entrance")),
-				BigInt(controllerAddress),
-			]);
-		}
+	const address = WalletStore().walletAddress;
+	if (address) {
+		entranceInst = ec.starkCurve.poseidonHashMany([
+			BigInt(shortString.encodeShortString("Entrance")),
+			BigInt(address),
+		]);
 	}
 	return entranceInst;
 };
@@ -420,15 +438,4 @@ export const getPlayerSingletonInst = (game_id?: string): string => {
 
 export const getGameInst = (inst: string, game_id?: string): string => {
 	return (!game_id ? inst : ec.starkCurve.poseidonHashMany([BigInt(inst), BigInt(game_id)]).toString());
-};
-
-export const getPlayerName = (): string => {
-	if (LORE_CONFIG.useController) {
-		const { username } = WalletStore();
-		console.log("Controller username:", username);
-		if (username) {
-			return username;
-		}
-	}
-	return randomName();
 };

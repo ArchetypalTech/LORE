@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import WalletStore, { useWalletStore } from "./wallet.store";
 import { useMounted } from "@/lib/utils/useMounted";
-import { getAccountPermissions } from "@/editor/data/editor.data";
+import { getAccountRoles } from "@/editor/data/editor.data";
 import { EntityCollection } from "@/editor/lib/types";
 import { StoreBuilder } from "../utils/storebuilder";
 
@@ -14,6 +14,10 @@ const {
 	// editor permissions
 	isAdmin: undefined as boolean | undefined,
 	isEditor: undefined as boolean | undefined,
+	idleVideoPlaying: false,
+	playTrailer: true,
+  setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
+	setPlayTrailer: (v: boolean) => set({ playTrailer: v }),
 });
 
 /**
@@ -51,9 +55,9 @@ export const useSyncEditorPermissions = () => {
 	useEffect(() => {
 		if (mounted && walletAddress && isConnected) {
 			// get account permissions
-			getAccountPermissions(walletAddress as string).then((accountPermissions) => {
-				console.log("useSyncEditorPermissions() walletAddress:", accountPermissions);
-				EditorStore().setPermissions(accountPermissions?.is_admin ?? false, accountPermissions?.is_editor ?? false);
+			getAccountRoles(walletAddress as string).then((roles: string[]) => {
+				console.log("useSyncEditorPermissions() wallet roles:", roles);
+				EditorStore().setPermissions(roles.includes("ROLE_ADMIN") ?? false, roles.includes("ROLE_EDITOR") ?? false);
 			});
 		} else {
 			EditorStore().setPermissions(false, false);
@@ -79,6 +83,13 @@ export const useCanEditEntity = (entityCollection: EntityCollection | undefined)
 	), [entityCollection])
 	return { canEdit };
 };
+
+/**
+ * Helper toggle for turning on/off playTrailer
+ */
+export function toggleTrailer() {
+	set({ playTrailer: !get().playTrailer });
+}
 
 export default EditorStore;
 export { useEditorStore };

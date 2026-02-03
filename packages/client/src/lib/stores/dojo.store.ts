@@ -1,5 +1,4 @@
-import type { ParsedEntity, StandardizedQueryResult } from "@dojoengine/sdk";
-
+import type { ParsedEntity, SDK, StandardizedQueryResult } from "@dojoengine/sdk";
 import { InitDojo } from "@lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
 import { CairoCustomEnum, BigNumberish } from "starknet";
@@ -15,11 +14,14 @@ import type {
 } from "../dojo_bindings/typescript/models.gen";
 import { sendCommand } from "../terminalCommands/commandHandler";
 import { StoreBuilder } from "../utils/storebuilder";
-import { bigintToHex128, decodeDojoText, processWhitespaceTags } from "../utils/utils";
+import { bigintToHex128, processWhitespaceTags } from "../utils/utils";
 import { addTerminalContent } from "./terminal.store";
 import { getPlayerAddress } from "@/editor/lib/components";
 import * as torii from "@dojoengine/torii-client";
 import GameStore from "./game.store";
+import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
+import { queryPlayerLocationPerGame} from "../../lib/queriesPanel/uiPanelQueries";
+import { queryPanelInfo, queryExitsInfo, queryPuzzlesInfo } from "@/client/terminal/Terminal.uiPanel";
 
 
 /**
@@ -56,7 +58,19 @@ const {
 	// current story log
 	currentGameId: -1,
 	lastKeyUsed: -1,
+	// AppMode
+	// add these for app mode
+  isClientMode: false,
+  isEditorMode: false,
 });
+
+// Set app mode
+const setAppMode = (mode: "client" | "editor") => {
+  set({
+    isClientMode: mode === "client",
+    isEditorMode: mode === "editor",
+  });
+};
 
 const setStatus = (status: DojoStatus) => set({ status });
 
@@ -82,7 +96,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	// Fetch all StoryLines for this player
 	let allStoryLines: StoryLine[] = [];
 	try {
-		const { sdk } = await InitDojo();
+		const sdk = getDojoSdk();
 		const builder = new ToriiQueryBuilder<SchemaType>();
 		const query = builder
 			.withCursor("")
@@ -171,11 +185,29 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 				text: formatted,
 				format: sys ? "hash" : isError ? "error" : l.startsWith("> ") ? "input" : "out",
 				useTypewriter: true,
+				enableAudio: false,
+				volumeAudio: 1,
 			});
 		}
 	}
 
 	set({ lastProcessedText: newLines.map((s) => s.line).join("\n"), playerStory });
+	// Get Stored Player Location
+	const location = useUIPanelStore.getState().location;
+	// console.log("DEBUG: Stored location: ", location);
+	// Get location from query
+	const gameID = BigInt(gameId);
+	const [location_name, location_inst, _playerInst, location_exit] = await queryPlayerLocationPerGame(gameID);
+	// console.log("DEBUG: Query location_name: ", location_name);
+	// If stored location is different from query location, update store
+	if (location_name !== location) {
+		queryPanelInfo(gameID);
+	} else {
+		if (!location_inst) return;
+		// update exits and puzzles
+		queryExitsInfo(gameID, location_inst, location_name, location_exit);
+		queryPuzzlesInfo(gameID, location_inst);
+	}
 };
 
 const onPlayerStory = (playerStory: PlayerStory) => {
@@ -194,7 +226,9 @@ const onPlayerStory = (playerStory: PlayerStory) => {
 const onReponseData = (
     responseData: ParsedEntity<SchemaType>["models"]["lore"],
 ) => {
-    console.log("[DEBUG] onReponseData", responseData);
+		if (DojoStore().isEditorMode) {
+			console.log("[DEBUG] onReponseData", responseData);
+		}
 
     // Check if there’s a PlayerStory update
 		const playerStory: PlayerStory | undefined = responseData.PlayerStory as PlayerStory;
@@ -205,16 +239,22 @@ const onReponseData = (
     }
 
 		// if the player's game was created or has changed
-		const playerAccount: PlayerAccount = responseData.PlayerAccount as PlayerAccount;
-    if (playerAccount && playerAccount.current_game_id !== undefined) {
-			if (BigInt(playerAccount.address) === BigInt(getPlayerAddress())) {
-				GameStore().setPlayerGameId(playerAccount.current_game_id);
+		const playerGame: PlayerAccount = responseData.PlayerAccount as PlayerAccount;
+    if (playerGame && playerGame.current_game_id !== undefined) {
+			if (BigInt(playerGame.player_address) === BigInt(getPlayerAddress())) {
+				GameStore().setPlayerGameId(playerGame.current_game_id);
 				sendCommand("_current_game");
 			}
     }
 
     // Always sync EditorData for lore entities
-    EditorData().dojoSync(responseData as EntityCollection, { verbose: true });
+		if (DojoStore().isEditorMode) {
+			EditorData().dojoSync(responseData as EntityCollection, { verbose: true });
+		} 
+
+		if (DojoStore().isClientMode) {
+    	EditorData().dojoSync(responseData as EntityCollection, { verbose: false });
+		}
 };
 
 // Resets the local storage of the processed text and keys
@@ -323,7 +363,13 @@ const DojoStore = createFactory({
 	setStatus,
 	setOutputter,
 	initializeConfig,
+	setAppMode,
 });
 
 export default DojoStore;
 export { useDojoStore };
+
+// vanilla getters
+export const getDojoSdk = (): SDK<SchemaType> => {
+  return useDojoStore.getState().config?.sdk as SDK<SchemaType>;
+}

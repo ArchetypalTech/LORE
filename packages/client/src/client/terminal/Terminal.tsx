@@ -4,7 +4,7 @@ import {
 	printingStatus,
 	useTerminalStore,
 } from "@lib/stores/terminal.store";
-import type { FormEvent, KeyboardEvent } from "react";
+import type { FormEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import IntroLoader from "./IntroLoader";
 import LoadingMessage from "./Loader";
@@ -31,13 +31,49 @@ export default function Terminal({
 	const terminalInputRef = useRef<HTMLTextAreaElement>(null);
 	const [cursorPos, setCursorPos] = useState(0);
 	const textAnchorRef = useRef<HTMLInputElement>(null);
-	const scroller = useRef<HTMLElement>(null);
+	const scroller = useRef<HTMLDivElement>(null);
 
 	const {
 		status: { status },
 	} = useDojoStore();
-	const { terminalContent, activeTypewriterLine } = useTerminalStore();
+	const { terminalContent, activeTypewriterLine, isPrinting, playTrailer, setIdleVideoPlaying } = useTerminalStore();
 	// const { originalStoryLength } = useDojoStore();
+
+	const [userNearBottom, setUserNearBottom] = useState(true);
+
+	// --- IDLE VIDEO STATE ---
+	const [isIdle, setIsIdle] = useState(false);
+	const idleTimeoutRef = useRef<number | null>(null);
+	const IDLE_DELAY = 2 * 1000 * 30; // 60 seconds (60000 ms)
+	// 2 minutes (120000 ms)
+	
+	// helper: clear timer
+	const clearIdleTimer = () => {
+		if (idleTimeoutRef.current) {
+			window.clearTimeout(idleTimeoutRef.current);
+			idleTimeoutRef.current = null;
+		}
+	};
+
+	// reset timer & cancel idle
+	const resetIdleTimer = () => {
+		clearIdleTimer();
+
+		// If Trailer disabled → never enter idle mode
+		// read latest store value
+		if (!useTerminalStore.getState().playTrailer) return;
+
+		if (isIdle || useTerminalStore.getState().idleVideoPlaying) {
+			setIsIdle(false);
+			setIdleVideoPlaying(false);
+		}
+
+		idleTimeoutRef.current = window.setTimeout(() => {
+			console.log("Idle timer fired! Showing video");
+			setIsIdle(true);
+			setIdleVideoPlaying(true);
+		}, IDLE_DELAY);
+	};
 
 	useEffect(() => {
 		// Focus input on mount
@@ -56,6 +92,57 @@ export default function Terminal({
 
 		return () => clearTimeout(timeout);
 	}, [status]);
+
+  // FIX ADDED: Track user scroll state
+	useEffect(() => {
+      const el = scroller.current;
+      if (!el) return;
+
+      const handleScroll = () => {
+          const atBottom =
+              el.scrollHeight - el.scrollTop - el.clientHeight > 50;
+          setUserNearBottom(atBottom);
+      };
+
+      el.addEventListener("scroll", handleScroll);
+      return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // FIX ADDED: Auto-scroll only if user is near bottom
+  useEffect(() => {
+      const el = scroller.current;
+      if (!el) return;
+      if (!userNearBottom) return;
+
+      requestAnimationFrame(() => {
+          el.scrollTo({
+              top: el.scrollHeight,
+              behavior: "smooth",
+          });
+      });
+  }, [terminalContent, activeTypewriterLine, isPrinting, userNearBottom]);
+
+  // When printing STARTS → always force-scroll to bottom
+	useEffect(() => {
+			if (!isPrinting) return; // only when printing begins
+
+			const el = scroller.current;
+			if (!el) return;
+
+			requestAnimationFrame(() => {
+					el.scrollTo({
+							top: el.scrollHeight,
+							behavior: "smooth",
+					});
+			});
+	}, [isPrinting]);
+
+  // Re-focus textarea whenever new content prints
+  useEffect(() => {
+      if (status === "inputEnabled" && !isPrinting) {
+          terminalInputRef.current?.focus();
+      }
+  }, [terminalContent, activeTypewriterLine, isPrinting, status]);
 
 	// update cursor position
 	useEffect(() => {
@@ -78,8 +165,43 @@ export default function Terminal({
 		}
 	}, []);
 
+	// Auto-refocus when clicking inside the terminal area (unless focus is locked)
+useEffect(() => {
+	const handleClick = (e: MouseEvent) => {
+		const { focusLocked } = useTerminalStore.getState();
+		if (!focusLocked) return; // skip if focus is locked by another UI (e.g. wallet)
+
+		const terminalEl = terminalFormRef.current;
+		if (terminalEl && terminalEl.contains(e.target as Node)) {
+			terminalInputRef.current?.focus();
+		}
+	};
+
+	document.addEventListener("click", handleClick);
+	return () => document.removeEventListener("click", handleClick);
+}, []);
+
+// Auto-refocus when typing while terminal input is unfocused (unless locked)
+useEffect(() => {
+	const handleKeydown = (e: globalThis.KeyboardEvent) => {
+		const { focusLocked } = useTerminalStore.getState();
+		if (!focusLocked) return;
+
+		const input = terminalInputRef.current;
+		if (!input) return;
+
+		if (document.activeElement !== input && status === "inputEnabled" && !isPrinting) {
+			e.preventDefault();
+			input.focus();
+		}
+	};
+
+	window.addEventListener("keydown", handleKeydown);
+	return () => window.removeEventListener("keydown", handleKeydown);
+}, [status, isPrinting]);
+
 	// Split handleKeyDown to reduce complexity
-	const handleUpArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleUpArrow = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		e.preventDefault();
 		if (inputHistoryIndex === 0) {
 			setOriginalInputValue(inputValue);
@@ -90,7 +212,7 @@ export default function Terminal({
 		}
 	};
 
-	const handleDownArrow = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleDownArrow = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		// console.log(e, inputHistoryIndex);
 		e.preventDefault();
 		if (inputHistoryIndex > 0) {
@@ -105,7 +227,67 @@ export default function Terminal({
 		}
 	};
 
-	const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+	// ---------------------- IDLE DETECTION: listen to user activity ----------------------
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+
+		const onActivity = () => {
+			resetIdleTimer();
+		};
+
+		// Attach to window/document as before
+		window.addEventListener("mousemove", onActivity);
+		window.addEventListener("keydown", onActivity);
+		window.addEventListener("click", onActivity);
+		window.addEventListener("touchstart", onActivity);
+
+		// Also attach to the terminal form to catch clicks and keydowns inside textarea
+		const formEl = terminalFormRef.current;
+		if (formEl) {
+			formEl.addEventListener("keydown", onActivity);
+			formEl.addEventListener("click", onActivity);
+		}
+
+		// Scroll listener
+		const scrollerEl = scroller.current;
+		if (scrollerEl) scrollerEl.addEventListener("scroll", onActivity);
+
+		// Start the timer
+		resetIdleTimer();
+
+		return () => {
+			window.removeEventListener("mousemove", onActivity);
+			window.removeEventListener("keydown", onActivity);
+			window.removeEventListener("click", onActivity);
+			window.removeEventListener("touchstart", onActivity);
+
+			if (formEl) {
+				formEl.removeEventListener("keydown", onActivity);
+				formEl.removeEventListener("click", onActivity);
+			}
+
+			if (scrollerEl) scrollerEl.removeEventListener("scroll", onActivity);
+
+			clearIdleTimer();
+			setIdleVideoPlaying(false);
+		};
+	}, []);
+
+	// If idle state changes locally, ensure store is in sync (extra safety)
+	useEffect(() => {
+		console.log("Idle state changed:", isIdle);
+		setIdleVideoPlaying(isIdle);
+	}, [isIdle, setIdleVideoPlaying]);
+
+	useEffect(() => {
+	if (!playTrailer) {
+		setIsIdle(false);
+		setIdleVideoPlaying(false);
+	}
+}, [playTrailer, setIdleVideoPlaying]);
+
+
+	const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
 		focusInput();
 		switch (e.key) {
 			case "Enter":
@@ -136,12 +318,13 @@ export default function Terminal({
 		if (command === "") return;
 
 		setInputValue("");
+		setCursorPos(0);
 		setInputHistory([...inputHistory, command]);
 		printingStatus(true);
 
 		if (textAnchorRef.current && terminalFormRef.current)
-			terminalFormRef.current.scrollTo({
-				top: scroller.current?.clientHeight,
+			scroller.current?.scrollTo({
+				top: scroller.current.scrollHeight,
 				behavior: "smooth",
 			});
 		setTimeout(async () => await sendCommand(command, gameId), 1000);
@@ -155,6 +338,7 @@ export default function Terminal({
 
 	return (
 		<div className="flex h-full w-full items-center justify-center font-primary">
+			 {/* Terminal form */}
 			<form
 				ref={terminalFormRef}
 				onSubmit={handleSubmit}
@@ -185,12 +369,12 @@ export default function Terminal({
 						<Typewriter />
 
 						{status === "inputEnabled" && (
-							<div id="scroller" className="flex w-full flex-row gap-2">
-								<div
-									ref={textAnchorRef}
-									id="input-anchor"
-									className="font-secondary"
-								/>
+							<div className="flex w-full flex-row gap-2">
+									<div
+											ref={textAnchorRef}
+											id="input-anchor"
+											className="font-secondary"
+									/>
 							</div>
 						)}
 					</div>

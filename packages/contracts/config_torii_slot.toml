@@ -1,0 +1,52 @@
+#
+# torii config for profile [dev] 
+# instance [orug-slot]
+#
+
+# world
+world_address = "0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403"
+rpc = "https://api.cartridge.gg/x/orug-slot/katana"
+
+[runner]
+explorer = true              # Open World Explorer in browser (default: false)
+check_contracts = false       # Verify contracts before starting (default: false)
+
+[indexing]
+contracts = [
+  "erc721:0x74c534517b75a52396ce17aa88afe29fda1d576740f858e82f12c9fb6c6a3e0", # game_token
+  "erc721:0x324159839e4c8d7469a834f522a1720f148e4b299c2c42323602e54511f328a", # trail_token
+]
+
+# Performance tuning
+events_chunk_size = 1024        # Events per RPC request (default: 1024)
+blocks_chunk_size = 10240       # Blocks per DB commit (default: 10240)
+polling_interval = 350          # Check interval in ms (default: 500)
+max_concurrent_tasks = 100      # Parallel processing (default: 100)
+
+# Content selection
+pending = true                 # Include pending transactions
+transactions = true            # Store transaction data
+namespaces = []                # Specific namespaces only (empty = all)
+world_block = 0                # Starting block number (default: 0)
+
+
+# Advanced options
+controllers = false             # Index Cartridge controllers (default: false)
+strict_model_reader = false     # Read models from registration block (default: false)
+batch_chunk_size = 1024         # Batch request chunk size (default: 1024)
+
+[events]
+raw = false                     # Store raw blockchain events (dev only)
+
+[erc]
+max_metadata_tasks = 50    # Concurrent metadata tasks (default: 100)
+
+[sql]
+page_size = 4096              # Page size in bytes (default: 32768, range: 512-65536)
+cache_size = -500000           # Cache size: negative = KiB, positive = pages (default: -500MB)
+all_model_indices = false      # Auto-create all indices (resource intensive)
+
+# Historical data retention
+historical = ["lore-TrophyProgression"]
+
+# metrics: they are always served on /metrics endpoint of the deployment (only for slot instances)

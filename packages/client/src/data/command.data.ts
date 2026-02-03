@@ -2,13 +2,15 @@ import { LORE_CONFIG } from "@lib/config";
 import {
 	addTerminalContent,
 	clearTerminalContent,
+	useTerminalStore,
 } from "@lib/stores/terminal.store";
+import { useEditorStore } from "@/lib/stores/editor.store";
 import { sendCommand } from "@lib/terminalCommands/commandHandler";
 import { APP_DATA } from "@/data/app.data";
 import {
 	HELP_CONTAINER,
 	HELP_EXITS,
-	HELP_INSPECT,
+	HELP_INTERACT,
 	HELP_INVENTORY,
 	HELP_TEXTS,
 } from "@/data/help.data";
@@ -26,6 +28,12 @@ import {
 import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
+import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
+import { queryStories } from "@/lib/queries/commandResponseQueries";
+import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
+import { reportBug } from "@/lib/utils/bugReport";
+import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
+import { useLeftPanelStore } from "@/lib/stores/leftPanel.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -81,12 +89,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	[key: string]: (command: commandContext) => void;
 } = {
 	_bootLoader: () => {
-		if (LORE_CONFIG.useController) {
-			if (!WalletStore().isConnected) {
-				sendCommand("_connect_wallet");
-			} else {
-				sendCommand("_welcome_back");
-			}
+		if (!WalletStore().isConnected) {
+			sendCommand("_connect_wallet");
+		} else {
+			sendCommand("_welcome_back");
 		}
 
 		sendCommand("_hint");
@@ -159,9 +165,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		if (context.args[0] === "game") {
 			// "create game"
-			sendCommand(`g_create_game`);
-		  // send look around command
-			sendCommand(`look around`);
+			sendCommand(`g_create_game`).then(() => {
+				// send look around command
+				sendCommand(`look around`);
+			});
 		} else {
 			addTerminalContent({
 				text: `Did you mean [create game]?`,
@@ -259,6 +266,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	},
 	clear: () => {
 		clearTerminalContent();
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	connect: async () => {
 		if (WalletStore().isConnected) {
@@ -278,6 +290,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
+			sendCommand("ui show");
 		}
 
 		// Check properties
@@ -300,6 +313,20 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
+		// check for game
+		const gameId = GameStore().gameId;
+		//const panel = UIPanelStore();
+		
+		if (!gameId) {
+			// if no game, set default values for Info Panel
+			DefaultValues();
+			// panel.show();
+			sendCommand("ui show");
+		} else {
+			// if game, show Info Panel
+			//panel.show();
+			sendCommand("ui show");
+		}
 	},
 	wallet: async () => {
 		if (!WalletStore().isConnected) {
@@ -307,12 +334,20 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			return;
 		}
 		await WalletStore().openUserProfile();
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	disconnect: async () => {
 		if (!WalletStore().isConnected) {
 			sendCommand("_not_yet_connected");
 			return;
 		}
+		sendCommand("ui hide");
+		// Reset Info Panel
+		DefaultValues();		
 		await WalletStore().disconnectController();
 		addTerminalContent({
 			text: "disconnected",
@@ -332,7 +367,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		addTerminalContent({
 			text:
 				header +
-				"\n\n" +
+				"\n" +
 				Object.entries(HELP_TEXTS)
 					.map(
 						([cmd, content]) =>
@@ -343,10 +378,10 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	help_inspect: () => {
+	help_react: () => {
 		// Handle help inspect command
 		addTerminalContent({
-			text: `available commands:\n\n${Object.entries(HELP_INSPECT)
+			text: `available commands:\n\n${Object.entries(HELP_INTERACT)
 				.map(
 					([cmd, content]) =>
 						`> ${cmd.padEnd(10)}\n${content.description}\n${content.usage}\n${content.examples?.join("\n")}`,
@@ -406,7 +441,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 			return;
 		}
-		const coinsBalance = await queryCoinsPerGame(game_id);
+		const coinsBalance = await queryCoinsPerGame(BigInt(game_id));
 		addTerminalContent({
 			text: `You have ${coinsBalance} Usants coins`,
 			format: "hash",
@@ -416,10 +451,20 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 	_triggers: () => {
 		const triggers = queryTriggers();
 		console.log("TRIGGERS RESULT", triggers);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_actions: () => {
 		const actions = queryExecActions();
 		console.log("ACTIONS RESULT", actions);
+		addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 	},
 	_components: async (context: commandContext) => {
 		let game_id = context.args.length > 0
@@ -436,13 +481,121 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		const components = await queryGameComponents(game_id);
 		console.log("COMPONENTS RESULT", components);
 	},
+	_gameData: async () => {
+		addTerminalContent({ text: "FETCHING GAME DATA...", format: "system", useTypewriter: true });
+		await sleep(500);
+
+		addTerminalContent({ text: "THIS MAY TAKE A WHILE...", format: "system", useTypewriter: true });
+		await sleep(500);
+
+		addTerminalContent({ text: "BETTER GET A COFFEE...", format: "system", useTypewriter: true });
+		await sleep(800);
+
+		const stopAmbient = startFetchingAmbientMessages();
+
+		await queryStories();
+		stopAmbient();
+
+		addTerminalContent({
+			text: "GAME DATA HAS BEEN FETCHED. CHECK YOUR DOWNLOADS FOLDER",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
 	connection: async () => {
 		const dest = {
-			endpoints: LORE_CONFIG.endpoints,
+			rpcUrl: LORE_CONFIG.rpcUrl,
+			toriiUrl: LORE_CONFIG.toriiUrl,
 			mode: import.meta.env.MODE,
 		};
 		addTerminalContent({
 			text: JSON.stringify(dest, null, 2),
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	ui: (context: commandContext) => {
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		
+		const panel = UIPanelStore();
+		const rightPanel = useRightPanelStore.getState();
+		const leftPanel = useLeftPanelStore.getState();
+
+		// ui show
+		if (context.args[0] === "show") {
+			panel.show();
+			rightPanel.show();
+			leftPanel.refreshBalances();
+			leftPanel.show();
+			addTerminalContent({
+				text: "Displaying Auxiliary Panels.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// ui hide
+		if (context.args[0] === "hide") {
+			panel.hide();
+			rightPanel.hide();
+			leftPanel.hide();
+			addTerminalContent({
+				text: "Hidding Auxiliary Panels.",
+				format: "system",
+				useTypewriter: true,
+			});
+			return;
+		}
+
+		// Invalid usage
+		addTerminalContent({
+			text: `Usage:\n  ui show\n  ui hide`,
+			format: "error",
+			useTypewriter: true,
+		});
+	},
+	_toggleTrailer: () => {
+		const store = useTerminalStore.getState();
+		store.setPlayTrailer(!store.playTrailer);
+
+		const editorStore = useEditorStore.getState();
+		editorStore.setPlayTrailer(!editorStore.playTrailer);
+
+		addTerminalContent({
+			text: `Trailer ${store.playTrailer ? "disabled" : "enabled"}`,
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_bugReport: () => {
+		reportBug();
+		addTerminalContent({
+			text: "Opening bug report form...",
+			format: "system",
+			useTypewriter: true,
+		});
+		addTerminalContent({
+			text: "Thank you for your feedback!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_disableActionCart: () => {
+		useLeftPanelStore.getState().disable();
+		addTerminalContent({
+			text: "You have disabled the action cart!",
+			format: "system",
+			useTypewriter: true,
+		});
+	},
+	_enableActionCart: () => {
+		useLeftPanelStore.getState().enable();
+		addTerminalContent({
+			text: "You have enabled the action cart!",
 			format: "system",
 			useTypewriter: true,
 		});

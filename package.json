@@ -7,16 +7,20 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "mprocs --config ./mprocs.local.yaml # start developer mode",
-    "dev:slot": "mprocs --config ./mprocs.slot.yaml # start developer mode",
+    "dev": "mprocs --config ./mprocs.local.yaml",
+    "dev:saya": "mprocs --config ./mprocs.local_saya.yaml",
+    "dev:da": "mprocs --config ./mprocs.local_da.yaml",
+    "dev:slot": "mprocs --config ./mprocs.slot.yaml",
     "quickstart": "bun run ./scripts/quickstart.ts # 🧾 quickstart installer "
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/semver": "^7.7.1",
     "ansicolor": "^2.0.3",
+    "jq.node": "^3.0.0",
     "mprocs": "^0.7.3",
-    "semver": "^7.7.2",
+    "semver": "^7.7.3",
+    "wait-on": "^9.0.3",
     "wait-port": "^1.1.0"
   },
   "peerDependencies": {

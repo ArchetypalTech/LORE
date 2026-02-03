@@ -10,14 +10,30 @@ default = "lore"
 rpc_url = "http://localhost:5050/"
 slot_name = "lore-stage"
 
+world_address = "0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403"
 account_address = "0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819"
 private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4"
-world_address = "0x5c3d1e0a776820633ffe4139dd851e3b578ea06ec4458c354059253ac857c01"
+
+# katana_l3
+# account_address = "0x1f401c745d3dba9b9da11921d1fb006c96f571e9039a0ece3f3b0dc14f04c3d"
+# private_key = "0x7230b49615d175307d580c33d6fda61fc7b9aec91df0f5c1a5ebe3b8cbfee02"
+
+[lib_versions]
+"lore-lexer" = "0_2_0"
 
 [writers]
-"lore" = ["lore-prompt", "lore-designer", "lore-game_token"]
+"lore" = [
+  "lore-designer",
+  "lore-prompt",
+  "lore-game_token",
+  "lore-trail_token",
+  "lore-actions_token",
+]
 
 [init_call_args]
-"lore-game_token" = [
-  "arr:0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7,0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae,0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F", # admins (tal-valdar, awtnmy, mataleone)
+"lore-designer" = [
+  "arr:0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819,0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7,0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae,0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F", # admins (burner, tal-valdar, awtnmy, mataleone)
+]
+"lore-actions_token" = [
+  "0x0", # SN contract address
 ]

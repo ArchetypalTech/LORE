@@ -15,8 +15,8 @@ export type TerminalContentItem = {
 	speed?: number;
 	style?: HTMLAttributes<HTMLDivElement>["style"];
 	isPrinting?: boolean;
-	enableAudio: boolean;
-	volumeAudio: number;
+	enableAudio?: boolean;
+	volumeAudio?: number;
 };
 
 const {
@@ -29,8 +29,14 @@ const {
 	enableAudio: false as boolean,
 	terminalContent: [] as TerminalContentItem[],
 	activeTypewriterLine: null as TerminalContentItem | null,
+	typewriterSpeedMultiplier: 1, // (1 = normal speed / current speed)
 	contentQueue: [] as TerminalContentItem[],
-	volumeAudio: 0.35,
+	volumeAudio: 0.40,
+	focusLocked: true as boolean,
+	playTrailer: true,
+	idleVideoPlaying: false,
+  setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
+	setPlayTrailer: (v: boolean) => set({ playTrailer: v }),
 });
 
 /**
@@ -56,13 +62,13 @@ export function printingStatus(state: boolean) {
 }
 
 export function increaseVolume() {
-	let volume = get().volumeAudio
+	let volume = get().volumeAudio ?? 0
 	volume += 0.1
 	if(volume > 1 ) return 
 	set({ volumeAudio: volume });
 }
 export function decreaseVolume() {
-	let volume = get().volumeAudio
+	let volume = get().volumeAudio ?? 0
 	volume -= 0.1
 	if(volume < 0.1 ) return 
 	set({ volumeAudio: volume });
@@ -77,6 +83,20 @@ export function unMute() {
 	set({
 		enableAudio: true
 	});
+}
+
+/**
+ * Locks terminal focus so it won't steal input from other UI (e.g. wallet modals)
+ */
+export function lockTerminalFocus() {
+	set({ focusLocked: false });
+}
+
+/**
+ * Unlocks terminal focus so typing/clicking works again
+ */
+export function unlockTerminalFocus() {
+	set({ focusLocked: true });
 }
 
 /**
@@ -118,6 +138,35 @@ export function clearTerminalContent() {
 }
 
 /**
+ * Helper toggle for turning on/off playTrailer
+ */
+export function toggleTrailer() {
+	set({ playTrailer: !get().playTrailer });
+}
+
+const MIN_SPEED = 0.33; // ~3x slower
+const MAX_SPEED = 3;    // 3x faster
+const STEP = 0.25;
+
+/**
+ * Functions for increasing typewriter speed
+ */
+export function increaseTypewriterSpeed() {
+	const speed = get().typewriterSpeedMultiplier;
+	set({
+		typewriterSpeedMultiplier: Math.min(speed + STEP, MAX_SPEED),
+	});
+}
+
+export function decreaseTypewriterSpeed() {
+	const speed = get().typewriterSpeedMultiplier;
+	set({
+		typewriterSpeedMultiplier: Math.max(speed - STEP, MIN_SPEED),
+	});
+}
+
+
+/**
  * Factory function that returns all terminal store state and methods.
  * Can be used to access the terminal store outside of React components.
  * @returns {Object} The terminal store state and methods
@@ -126,6 +175,10 @@ const TerminalStore = createFactory({
 	addTerminalContent,
 	nextItem,
 	clearTerminalContent,
+	lockTerminalFocus,
+	unlockTerminalFocus,
+	increaseTypewriterSpeed,
+	decreaseTypewriterSpeed,
 });
 
 export default TerminalStore;

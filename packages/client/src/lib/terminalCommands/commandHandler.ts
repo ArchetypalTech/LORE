@@ -4,7 +4,7 @@ import WalletStore from "@lib/stores/wallet.store";
 import { SystemCalls } from "@lib/systemCalls";
 import { TERMINAL_SYSTEM_COMMANDS } from "../../data/command.data";
 import { BigNumberish } from "starknet";
-
+import {useLeftPanelStore} from "@lib/stores/leftPanel.store";
 
 /**
  * Handles terminal commands entered by the user
@@ -61,10 +61,22 @@ export const sendCommand = async <
 	}
 
 	try {
-		return await SystemCalls.execCommand(command, game_id);
+		await SystemCalls.execCommand(command, game_id);
+		// safety measure: consume action if command is not a system command
+		if (!context.cmd.startsWith("_")) {
+			await useLeftPanelStore.getState().refreshBalances();
+		}
+		return;
 	} catch (error) {
 		console.error("Error sending command:", error);
 	}
+
+	// case there is a TX error, add empty line
+	addTerminalContent({
+			text: "",
+			format: "hash",
+			useTypewriter: true,
+		});
 };
 
 /**
