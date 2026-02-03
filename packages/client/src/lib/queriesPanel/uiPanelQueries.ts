@@ -1,14 +1,48 @@
 import { getPlayerAddress } from "../../editor/lib/components";
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
-import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted } from "@/lib/dojo_bindings/typescript/models.gen";
+import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted, PlayerBalances } from "@/lib/dojo_bindings/typescript/models.gen";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo, PuzzleInfo, useUIPanelStore } from "../stores/terminal.uiPanel.store";
 import { stringCairoEnum } from "@/editor/lib/schemas";
+import { useWalletStore } from "../stores/wallet.store";
 
 const normalizeAddressZero = (addr: string): string => {
   return addr.replace(/^0x0+/, "0x").toLowerCase();
+}
+
+// ACTIONS TOKEN (free and paid)
+export const queryActionsToken = async (): Promise<Partial<PlayerBalances | undefined>> => {
+  let playerBalances: Partial<PlayerBalances | undefined>;
+  const { walletAddress, isConnected } = useWalletStore();
+  if (!isConnected) {
+    console.error("Error fetching player balance from Torii: Wallet is not connected");
+    return undefined;
+  }
+  try {
+    // 1. Get the PlayerBalances through the walletAddress
+    const { sdk } = await InitDojo();
+    const query_playerBalances = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-PlayerBalances"],
+          [walletAddress]
+        ).build()
+      ).withEntityModels(["lore-PlayerBalances"]);
+    
+    const result_playerBalances = await sdk.getEntities({ query: query_playerBalances });
+    // console.log("DEBUG: queryPlayerLocationPerGame() result_playerBalances: ", result_playerBalances);
+    playerBalances = result_playerBalances.getItems().at(0)?.models?.lore?.PlayerBalances;
+  } catch (error) {
+    console.error("Error fetching player balance from Torii:", error);
+    throw error;
+  }
+
+  return playerBalances;
 }
 
 // Player location
