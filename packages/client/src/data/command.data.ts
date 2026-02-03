@@ -321,11 +321,11 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			// if no game, set default values for Info Panel
 			DefaultValues();
 			// panel.show();
-			sendCommand(`ui show`);
+			sendCommand("ui show");
 		} else {
 			// if game, show Info Panel
 			//panel.show();
-			sendCommand(`ui show`);
+			sendCommand("ui show");
 		}
 	},
 	wallet: async () => {
@@ -355,7 +355,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		DefaultValues();
 		// const leftPanel = useLeftPanelStore.getState();
 		//leftPanel.hide();
-		sendCommand(`ui hide`);
+		sendCommand("ui hide");
 		return;
 	},
 	_bypass: ({ command }) => {
