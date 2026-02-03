@@ -290,7 +290,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-			sendCommand(`ui show`);
+			sendCommand("ui show");
 		}
 
 		// Check properties
@@ -345,17 +345,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_not_yet_connected");
 			return;
 		}
+		sendCommand("ui hide");
+		// Reset Info Panel
+		DefaultValues();		
 		await WalletStore().disconnectController();
 		addTerminalContent({
 			text: "disconnected",
 			format: "hash",
 			useTypewriter: true,
 		});
-		// Reset Info Panel
-		DefaultValues();
-		// const leftPanel = useLeftPanelStore.getState();
-		//leftPanel.hide();
-		sendCommand("ui hide");
 		return;
 	},
 	_bypass: ({ command }) => {
