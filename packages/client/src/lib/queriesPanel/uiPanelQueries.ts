@@ -96,9 +96,10 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
 
     const player = result_player.getItems().find((item) => {
       const addr = item.models?.lore?.Player?.address;
-      return addr ? normalizeAddressZero(addr) === player_address : false;
+      return addr;
+     // return addr ? normalizeAddressZero(addr) === player_address : false;
     });
-    // console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
+    console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 
     playerInst = BigInt(player?.models?.lore?.Player?.inst ?? 0);
     // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
@@ -106,7 +107,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
       console.error("ERROR: queryPlayerLocationPerGame() playerInst is undefined");
       return ([undefined, undefined, undefined, undefined]);
     }
-    // console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
+    console.log("DEBUG: queryPlayerLocationPerGame() playerInst: ", playerInst);
 
     // query game instance map player
     let game_inst_map: bigint = await queryGameInstaceMapByPlayer(gameId, playerInst);
