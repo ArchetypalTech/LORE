@@ -88,6 +88,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     toriiUrl: "https://api.cartridge.gg/x/orug-slot/torii",
     slotName: "orug-slot",
 		useController: true,
+		burnerAccount: burnerAccounts[0],
 		contractAddresses: {} as any,
   },
   stage: {
@@ -99,6 +100,7 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
     toriiUrl: "https://api.cartridge.gg/x/lore-stage/torii",
     slotName: "lore-stage",
 		useController: true,
+		burnerAccount: burnerAccounts[0],
 		contractAddresses: {} as any,
   },
   // sepolia: {

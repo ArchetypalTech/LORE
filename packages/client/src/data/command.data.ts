@@ -290,8 +290,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-			const leftPanel = useLeftPanelStore.getState();
-			leftPanel.show();
+			sendCommand("ui show");
 		}
 
 		// Check properties
@@ -316,14 +315,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		// check for game
 		const gameId = GameStore().gameId;
-		const panel = UIPanelStore();
+		//const panel = UIPanelStore();
+		
 		if (!gameId) {
 			// if no game, set default values for Info Panel
 			DefaultValues();
-			panel.show();
+			// panel.show();
+			sendCommand("ui show");
 		} else {
 			// if game, show Info Panel
-			panel.show();
+			//panel.show();
+			sendCommand("ui show");
 		}
 	},
 	wallet: async () => {
@@ -343,16 +345,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_not_yet_connected");
 			return;
 		}
+		sendCommand("ui hide");
+		// Reset Info Panel
+		DefaultValues();		
 		await WalletStore().disconnectController();
 		addTerminalContent({
 			text: "disconnected",
 			format: "hash",
 			useTypewriter: true,
 		});
-		// Reset Info Panel
-		DefaultValues();
-		const leftPanel = useLeftPanelStore.getState();
-		leftPanel.hide();
 		return;
 	},
 	_bypass: ({ command }) => {
@@ -527,6 +528,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "show") {
 			panel.show();
 			rightPanel.show();
+			leftPanel.refreshBalances();
 			leftPanel.show();
 			addTerminalContent({
 				text: "Displaying Auxiliary Panels.",
@@ -578,30 +580,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		addTerminalContent({
 			text: "Thank you for your feedback!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_gain5Actions: () => {
-		useLeftPanelStore.getState().gain5Actions();
-		addTerminalContent({
-			text: "You have gained 5 actions!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_gain1Actions: () => {
-		useLeftPanelStore.getState().gain1Actions();
-		addTerminalContent({
-			text: "You have gained 1 action!",
-			format: "system",
-			useTypewriter: true,
-		});
-	},
-	_consume6Actions: () => {
-		useLeftPanelStore.getState().consume6Actions();
-		addTerminalContent({
-			text: "You have consumed 6 actions!",
 			format: "system",
 			useTypewriter: true,
 		});

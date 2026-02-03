@@ -64,7 +64,7 @@ export const sendCommand = async <
 		await SystemCalls.execCommand(command, game_id);
 		// safety measure: consume action if command is not a system command
 		if (!context.cmd.startsWith("_")) {
-			useLeftPanelStore.getState().consumeAction();
+			await useLeftPanelStore.getState().refreshBalances();
 		}
 		return;
 	} catch (error) {

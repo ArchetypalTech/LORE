@@ -1,55 +1,42 @@
 import { create } from "zustand";
+import { queryActionsToken } from "@lib/queriesPanel/uiPanelQueries";
 
 type LeftPanelState = {
   visible: boolean;
   disabled: boolean;
-  actions: number;
-  lastChange: "consume" | "gain" | null;
+
+  freeActions: number;
+  paidActions: number;
+
+  refreshBalances: () => Promise<void>;
 
   toggle: () => void;
   show: () => void;
   hide: () => void;
-
-  consumeAction: () => void;
-  consume6Actions: () => void;
-  gain5Actions: () => void;
-  gain1Actions: () => void;
   disable: () => void;
   enable: () => void;
 };
 
-export const useLeftPanelStore = create<LeftPanelState>((set, get) => ({
+export const useLeftPanelStore = create<LeftPanelState>((set) => ({
   visible: false,
   disabled: false,
-  actions: 20,
-  lastChange: null,
+
+  freeActions: 0,
+  paidActions: 0,
+
+  refreshBalances: async () => {
+    const balances = await queryActionsToken();
+    if (!balances) return;
+
+    set({
+      freeActions: Number(balances.free_actions_balance ?? 0),
+      paidActions: Number(balances.paid_actions_balance ?? 0),
+    });
+  },
 
   toggle: () => set(s => ({ visible: !s.visible })),
   show: () => set({ visible: true }),
   hide: () => set({ visible: false }),
-
-  consumeAction: () =>
-    set(s => ({
-      actions: Math.max(0, s.actions - 1),
-      lastChange: "consume",
-    })),
-  consume6Actions: () =>
-    set(s => ({
-      actions: Math.max(0, s.actions - 6),
-      lastChange: "consume",
-    })),
-  gain5Actions: () =>
-    set(s => ({
-      actions: s.actions + 5,
-      lastChange: "gain",
-    })),
-  gain1Actions: () =>
-    set(s => ({
-      actions: s.actions + 1,
-      lastChange: "gain",
-    })),
-  disable: () =>
-    set({disabled: true}),
-  enable: () =>
-    set({disabled: false}),
+  disable: () => set({ disabled: true }),
+  enable: () => set({ disabled: false }),
 }));

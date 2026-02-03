@@ -1,14 +1,78 @@
-import { getPlayerAddress } from "../../editor/lib/components";
+// import { getPlayerAddress } from "../../editor/lib/components";
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
-import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted } from "@/lib/dojo_bindings/typescript/models.gen";
+import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted, PlayerBalances, Player } from "@/lib/dojo_bindings/typescript/models.gen";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo, PuzzleInfo, useUIPanelStore } from "../stores/terminal.uiPanel.store";
 import { stringCairoEnum } from "@/editor/lib/schemas";
+import { useWalletStore } from "../stores/wallet.store";
+import { BigNumberish } from "starknet";
 
-const normalizeAddressZero = (addr: string): string => {
-  return addr.replace(/^0x0+/, "0x").toLowerCase();
+// const normalizeAddressZero = (addr: string): string => {
+//   return addr.replace(/^0x0+/, "0x").toLowerCase();
+// }
+
+const fromWei = (value: BigNumberish): number =>
+  Number(BigInt(value) / 10n ** 18n);
+
+// ACTIONS TOKEN (free and paid)
+export const queryActionsToken = async (): Promise<PlayerBalances | undefined> => {
+  let playerBalances: PlayerBalances | undefined;
+  const { walletAddress, isConnected } = useWalletStore.getState();
+
+  if (!isConnected) {
+    console.error("Error fetching player balance from Torii: Wallet is not connected");
+    return undefined;
+  }
+
+  try {
+    const { sdk } = await InitDojo();
+    const query_playerBalances = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-PlayerBalances"],
+          [walletAddress]
+        ).build()
+      )
+      .withEntityModels(["lore-PlayerBalances"]);
+    
+    const result_playerBalances = await sdk.getEntities({ query: query_playerBalances });
+
+    const maybeBalances = result_playerBalances.getItems().at(0)?.models?.lore?.PlayerBalances;
+
+    if (!isPlayerBalances(maybeBalances)) {
+      return undefined;
+    }
+
+    playerBalances = maybeBalances;
+
+    // normalize balances from wei
+    playerBalances.free_actions_balance = fromWei(playerBalances.free_actions_balance);
+    playerBalances.paid_actions_balance = fromWei(playerBalances.paid_actions_balance);
+    playerBalances.sub_actions_balance = fromWei(playerBalances.sub_actions_balance);
+
+  } catch (error) {
+    console.error("Error fetching player balance from Torii:", error);
+    throw error;
+  }
+
+  return playerBalances;
+};
+
+const isPlayerBalances = (
+  value: Partial<PlayerBalances> | undefined
+): value is PlayerBalances => {
+  return (
+    !!value &&
+    typeof value.player_address === "string" &&
+    value.free_actions_balance != null &&
+    value.paid_actions_balance != null &&
+    value.sub_actions_balance != null
+  );
 }
 
 // Player location
@@ -18,7 +82,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
   let location_inst: bigint | undefined;
   let playerInst: bigint | undefined;
   let location_exit: Partial<Exit> | undefined;
-  const player_address = getPlayerAddress();
+  // const player_address = getPlayerAddress();
   // console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
   try {
     // 1. Get the original player component
@@ -33,7 +97,8 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
 
     const player = result_player.getItems().find((item) => {
       const addr = item.models?.lore?.Player?.address;
-      return addr ? normalizeAddressZero(addr) === player_address : false;
+      return addr;
+     // return addr ? normalizeAddressZero(addr) === player_address : false;
     });
     // console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 

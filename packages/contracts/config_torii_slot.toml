@@ -13,8 +13,8 @@ check_contracts = false       # Verify contracts before starting (default: false
 
 [indexing]
 contracts = [
-  "erc721:0x6962da1f222d4c4209110aa24d0482c672678aa22fa91975b3bac65c5e09d67", # game_token
-  "erc721:0x97e9a41ae85099766f59ba50486b57b7236030389e4ac31ccd46d75039de2a", # trail_token
+  "erc721:0x74c534517b75a52396ce17aa88afe29fda1d576740f858e82f12c9fb6c6a3e0", # game_token
+  "erc721:0x324159839e4c8d7469a834f522a1720f148e4b299c2c42323602e54511f328a", # trail_token
 ]
 
 # Performance tuning

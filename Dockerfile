@@ -1,21 +1,39 @@
 # Builder Stage / compiles contracts
 FROM oven/bun:latest as build
 
-# Define build arguments in the build stage
-ARG VITE_CONTROLLER_CHAINID
-ARG VITE_RPC_URL
-ARG VITE_TORII_URL
+#-----------------------------
+# Original Arguments - not used in testing new build version
+#-----------------------------
+
+# # Define build arguments in the build stage
+# ARG VITE_CONTROLLER_CHAINID
+# ARG VITE_RPC_URL
+# ARG VITE_TORII_URL
+# ARG VITE_BURNER_ADDRESS
+# ARG VITE_BURNER_PRIVATE_KEY
+# ARG VITE_SLOT
+# ARG VITE_PROFILE
+
+# # Set environment variables in the build stage
+# ENV VITE_CONTROLLER_CHAINID=${VITE_CONTROLLER_CHAINID}
+# ENV VITE_RPC_URL=${VITE_RPC_URL}
+# ENV VITE_TORII_URL=${VITE_TORII_URL}
+# ENV VITE_BURNER_ADDRESS=${VITE_BURNER_ADDRESS}
+# ENV VITE_BURNER_PRIVATE_KEY=${VITE_BURNER_PRIVATE_KEY}
+# ENV VITE_SLOT=${VITE_SLOT}
+# ENV VITE_PROFILE=${VITE_PROFILE}
+
+#-----------------------------
+
+# Profile is decided at build time
+ARG VITE_PROFILE=slot
+ENV VITE_PROFILE=${VITE_PROFILE}
+
+# Burner Arguments Optional runtime/build overrides (only if needed)
 ARG VITE_BURNER_ADDRESS
 ARG VITE_BURNER_PRIVATE_KEY
-ARG VITE_SLOT
-
-# Set environment variables in the build stage
-ENV VITE_CONTROLLER_CHAINID=${VITE_CONTROLLER_CHAINID}
-ENV VITE_RPC_URL=${VITE_RPC_URL}
-ENV VITE_TORII_URL=${VITE_TORII_URL}
 ENV VITE_BURNER_ADDRESS=${VITE_BURNER_ADDRESS}
 ENV VITE_BURNER_PRIVATE_KEY=${VITE_BURNER_PRIVATE_KEY}
-ENV VITE_SLOT=${VITE_SLOT}
 
 # Set workdir to the root of the project
 WORKDIR /app
@@ -26,7 +44,10 @@ COPY . .
 # Build the client package
 WORKDIR /app/packages/client
 RUN bun install
-RUN bun run build:slot
+# RUN bun run build:slot
+
+# Use Vite mode dynamically
+RUN bunx vite build --mode ${VITE_PROFILE}
 
 # Runtime Stage
 FROM oven/bun:slim as serve
