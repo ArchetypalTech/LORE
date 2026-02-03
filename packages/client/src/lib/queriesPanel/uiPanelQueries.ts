@@ -1,7 +1,7 @@
 import { getPlayerAddress } from "../../editor/lib/components";
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
-import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted, PlayerBalances } from "@/lib/dojo_bindings/typescript/models.gen";
+import { SchemaType, ParentToChildren, Entity, Exit, Action, ActionExecuted, PlayerBalances, Player } from "@/lib/dojo_bindings/typescript/models.gen";
 import { ClauseBuilder } from "@dojoengine/sdk";
 import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
 import { ExitInfo, PuzzleInfo, useUIPanelStore } from "../stores/terminal.uiPanel.store";
@@ -82,7 +82,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
   let playerInst: bigint | undefined;
   let location_exit: Partial<Exit> | undefined;
   const player_address = getPlayerAddress();
-  // console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
+  console.log("DEBUG: queryPlayerLocationPerGame() player_address: ", player_address);
   try {
     // 1. Get the original player component
     const { sdk } = await InitDojo();
@@ -92,7 +92,7 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
       .includeHashedKeys()
       .withEntityModels(["lore-Player"]);
     const result_player = await sdk.getEntities({ query: query_player });
-    // console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
+    console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
 
     const player = result_player.getItems().find((item) => {
       const addr = item.models?.lore?.Player?.address;
