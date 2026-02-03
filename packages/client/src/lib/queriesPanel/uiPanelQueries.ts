@@ -15,7 +15,8 @@ const normalizeAddressZero = (addr: string): string => {
 // ACTIONS TOKEN (free and paid)
 export const queryActionsToken = async (): Promise<Partial<PlayerBalances | undefined>> => {
   let playerBalances: Partial<PlayerBalances | undefined>;
-  const { walletAddress, isConnected } = useWalletStore();
+  const { walletAddress, isConnected } = useWalletStore.getState();
+  
   if (!isConnected) {
     console.error("Error fetching player balance from Torii: Wallet is not connected");
     return undefined;

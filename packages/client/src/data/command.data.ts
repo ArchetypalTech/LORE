@@ -290,8 +290,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-			const leftPanel = useLeftPanelStore.getState();
-			leftPanel.show();
+			sendCommand(`ui show`);
 		}
 
 		// Check properties
