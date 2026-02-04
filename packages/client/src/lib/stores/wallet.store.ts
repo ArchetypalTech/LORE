@@ -37,6 +37,10 @@ const {
 	isLoading: false,
 });
 
+const normalizeAddressZero = (addr: string): string => {
+  return addr.replace(/^0x0+/, "0x").toLowerCase();
+}
+
 /**
  * Sets up the Cartridge controller with required configuration.
  * Configures policies, chains, and tokens for the controller.
@@ -49,7 +53,7 @@ const setupController = async () => {
 		preset: "orug",
 		policies: {
 			contracts: {
-				[LORE_CONFIG.contractAddresses.prompt]: {
+				[normalizeAddressZero(LORE_CONFIG.contractAddresses.prompt)]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
@@ -59,7 +63,7 @@ const setupController = async () => {
 						},
 					],
 				},
-				[LORE_CONFIG.contractAddresses.designer]: {
+				[normalizeAddressZero(LORE_CONFIG.contractAddresses.designer)]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title} when using the editor tool`,
 					methods: [
