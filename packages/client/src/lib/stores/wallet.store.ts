@@ -53,6 +53,24 @@ const setupController = async () => {
 		preset: "orug",
 		policies: {
 			contracts: {
+				[normalizeAddressZero(LORE_CONFIG.contractAddresses.game_token)]: {
+					name: worldName, // Optional, can be added if you want a name
+					description: `Aprove consume / clame of game tokens in ${worldName}`,
+					methods: [
+						{
+							entrypoint: "calculate_action_cost",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} calculating the cost of an action`,
+						},
+						{
+							entrypoint: "charge_player_actions",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} charging the player actions`,
+						},
+						{
+							entrypoint: "claim_actions",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} claiming actions`,
+						},
+					],
+				},
 				[normalizeAddressZero(LORE_CONFIG.contractAddresses.prompt)]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
