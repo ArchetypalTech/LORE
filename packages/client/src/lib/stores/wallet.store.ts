@@ -75,7 +75,7 @@ const setupController = async () => {
 						}
 					],
 				},
-				[normalizeAddressZero(LORE_CONFIG.contractAddresses.prompt)]: {
+				[LORE_CONFIG.contractAddresses.prompt]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
