@@ -53,7 +53,7 @@ const setupController = async () => {
 		preset: "orug",
 		policies: {
 			contracts: {
-				[normalizeAddressZero(LORE_CONFIG.contractAddresses.game_token)]: {
+				[normalizeAddressZero(LORE_CONFIG.contractAddresses.trail_token)]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove consume / clame of game tokens in ${worldName}`,
 					methods: [
