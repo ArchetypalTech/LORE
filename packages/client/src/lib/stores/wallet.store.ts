@@ -53,7 +53,7 @@ const setupController = async () => {
 		preset: "orug",
 		policies: {
 			contracts: {
-				[normalizeAddressZero(LORE_CONFIG.contractAddresses.actions_token)]: {
+				[LORE_CONFIG.contractAddresses.actions_token]: {
 					name: worldName, // Optional, can be added if you want a name
 					description: `Aprove consume / clame of game tokens in ${worldName}`,
 					methods: [
@@ -85,7 +85,7 @@ const setupController = async () => {
 						},
 					],
 				},
-				[normalizeAddressZero(LORE_CONFIG.contractAddresses.designer)]: {
+				[LORE_CONFIG.contractAddresses.designer]: {
 					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title} when using the editor tool`,
 					methods: [
