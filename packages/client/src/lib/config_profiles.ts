@@ -58,6 +58,7 @@ export type ProfileConfig = {
 		designer: string;
 		game_token: string;
 		trail_token: string;
+		actions_token: string;
 	}
 };
 
@@ -138,6 +139,7 @@ export const getProfileConfig = (profileName: ProfileName): ProfileConfig => {
 		designer: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-designer")?.address ?? '0x0'),
 		game_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-game_token")?.address ?? '0x0'),
 		trail_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-trail_token")?.address ?? '0x0'),
+		actions_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-actions_token")?.address ?? '0x0'),
 	};
 	return result;
 }
