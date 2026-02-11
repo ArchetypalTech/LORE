@@ -57,7 +57,7 @@ procs:
       PROFILE: dev
       KATANA_L2_PORT: "50000"
       KATANA_L2_RPC: http://localhost:50000
-      KATANA_L3_BIN: ./bin/katana_l3
+      KATANA_L3_BIN: ./bin/katana-1.7.0-snos.4
       SETTLEMENT_ACCOUNT_ADDRESS: 0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec
       SETTLEMENT_ACCOUNT_PRIVATE_KEY: 0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912
       FACT_REGISTRY_MOCK_ADDRESS: 0x04b973c6532f35626d58427905ee4cf4a401a6480fcb52904aa0a8696781e135
@@ -116,7 +116,7 @@ procs:
     cwd: packages/starknet
     env:
       PROFILE: dev
-      KATANA_L3_BIN: ./bin/katana_l3
+      KATANA_L3_BIN: ./bin/katana-1.7.0-snos.4
       KATANA_L3_PORT: "5050"
       BLOCK_TIME: "30000"
       MAX_CAIRO_STEPS: "16000000"
