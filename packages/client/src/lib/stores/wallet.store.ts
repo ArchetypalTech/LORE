@@ -54,7 +54,7 @@ const setupController = async () => {
 		policies: {
 			contracts: {
 				[LORE_CONFIG.contractAddresses.actions_token]: {
-					name: worldName, // Optional, can be added if you want a name
+					// name: worldName, // Optional, can be added if you want a name
 					description: `Aprove consume / clame of game tokens in ${worldName}`,
 					methods: [
 						{
@@ -76,7 +76,7 @@ const setupController = async () => {
 					],
 				},
 				[LORE_CONFIG.contractAddresses.prompt]: {
-					name: worldName, // Optional, can be added if you want a name
+					// name: worldName, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${worldName}`,
 					methods: [
 						{
@@ -86,7 +86,7 @@ const setupController = async () => {
 					],
 				},
 				[LORE_CONFIG.contractAddresses.designer]: {
-					name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
+					// name: APP_EDITOR_DATA.title, // Optional, can be added if you want a name
 					description: `Aprove submitting transactions to ${APP_EDITOR_DATA.title} when using the editor tool`,
 					methods: [
 						{
@@ -234,6 +234,7 @@ const setupController = async () => {
 	};
 
 	try {
+		console.log("DEBUG: controllerConfig", controllerConfig);
 		const controller = new Controller(controllerConfig);
 		console.log("DEBUG: controller", controller);
 		set({
