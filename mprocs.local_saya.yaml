@@ -9,7 +9,7 @@ procs:
       #----------------
       # delete targets to wait for a fresh deployment
       echo ">>> Initializing..."
-      rm -rf ./target/${PROFILE}
+      rm -rf ../contracts/target/${PROFILE}
       rm -rf ../starknet/target/${PROFILE}
       rm -rf ../starknet/data/${PROFILE}
       #----------------
@@ -47,20 +47,25 @@ procs:
     cwd: packages/starknet
     env:
       KATANA_L2_PORT: "50000"
+      KATANA_L3_BIN: ./bin/katana-1.7.0-snos.4
     shell: |
       echo "Starting L2 Katana on port [${KATANA_L2_PORT}]..."
-      katana --version
-      katana --dev --dev.no-fee --http.port ${KATANA_L2_PORT}
+      ${KATANA_L3_BIN} --version
+      ${KATANA_L3_BIN} --dev --dev.no-fee --http.port ${KATANA_L2_PORT}
   l2_contracts:
     cwd: packages/starknet
     env:
       PROFILE: dev
       KATANA_L2_PORT: "50000"
-      KATANA_L2_RPC: http://localhost:50000
       KATANA_L3_BIN: ./bin/katana-1.7.0-snos.4
+      KATANA_L3_CHAIN: katana-l3
+      SETTLEMENT_RPC_URL: http://localhost:50000
+      SETTLEMENT_CHAIN_ID: KATANA
       SETTLEMENT_ACCOUNT_ADDRESS: 0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec
       SETTLEMENT_ACCOUNT_PRIVATE_KEY: 0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912
-      FACT_REGISTRY_MOCK_ADDRESS: 0x04b973c6532f35626d58427905ee4cf4a401a6480fcb52904aa0a8696781e135
+      FACT_REGISTRY_ADDRESS: 0x3eb0d510d1238120bf7f9d176faafe0c7066797a86be985855952f87769d3bd
+      CORE_CONTRACT_ADDRESS: 0x1c8a55203cd99a6bfaf7cd91ae2ad953eff67b584826edab1857ca2e3c5db5d
+      CORE_CONTRACT_DEPLOYED_BLOCK: "4"
     shell: |
       sleep 1
       set -e # exit on error
@@ -69,42 +74,47 @@ procs:
       echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
       #----------------
       # based on:
-      # https://github.com/glihm/starknet-messaging-dev/tree/l2-l3-saya?tab=readme-ov-file#setup-the-l2-starknet
+      # https://github.com/glihm/starknet-messaging-dev/blob/l2-l3-saya/README_saya.md#setup-the-l2-starknet
+      #
+      # wait for L2 katana to start...
+      wait-port ${KATANA_L2_PORT}
+      #
+      echo ">>> Declaring L2 mocked fact registry contract..."
+      saya core-contract declare-and-deploy-fact-registry-mock --salt 0x0
+      # will output: FACT_REGISTRY_ADDRESS
+      echo "!!! Validate: FACT_REGISTRY_ADDRESS=${FACT_REGISTRY_ADDRESS}"
       #
       echo ">>> Deploying L2 mocked fact registry contract..."
-      sozo -P ${PROFILE} build
-      sozo declare target/dev/lore_sn_fact_registry_mock.contract_class.json \
-        --katana-account katana0 \
-        --rpc-url ${KATANA_L2_RPC}
-      sozo deploy 0x0535ec5d0863cfcf53cf38176617a2898f3239b319ce5d63307aa96bbb036075 \
-        --katana-account katana0 \
-        --salt 0x1234 \
-        --rpc-url ${KATANA_L2_RPC}
-      # will output: FACT_REGISTRY_MOCK_ADDRESS
-      echo "!!! Validate: FACT_REGISTRY_MOCK_ADDRESS=${FACT_REGISTRY_MOCK_ADDRESS}"
+      saya core-contract declare
+      saya core-contract deploy --salt 0x0
+      saya core-contract setup-program --chain-id ${KATANA_L3_CHAIN}
+      # will output: CORE_CONTRACT_ADDRESS
+      echo "!!! Validate: CORE_CONTRACT_ADDRESS=${CORE_CONTRACT_ADDRESS}"
       #----------------
       # katana_l3 init
       #
-      echo ">>> Creating Katana L3 config..."
       export DATA_PATH=./data/${PROFILE}
       mkdir -p ${DATA_PATH}
+      echo ">>> Creating Katana L3 config..."
       ${KATANA_L3_BIN} init \
-        --settlement-chain ${KATANA_L2_RPC} \
-        --id katana-l3 \
-        --settlement-account-private-key ${SETTLEMENT_ACCOUNT_PRIVATE_KEY} \
-        --settlement-account-address ${SETTLEMENT_ACCOUNT_ADDRESS} \
-        --settlement-facts-registry ${FACT_REGISTRY_MOCK_ADDRESS} \
+        --settlement-chain ${SETTLEMENT_RPC_URL} \
+        --id ${KATANA_L3_CHAIN} \
+        --settlement-contract ${CORE_CONTRACT_ADDRESS} \
+        --settlement-contract-deployed-block ${CORE_CONTRACT_DEPLOYED_BLOCK} \
+        --settlement-facts-registry ${FACT_REGISTRY_ADDRESS} \
         --output-path ${DATA_PATH}
       # will output: PILTOVER_ADDRESS
       #----------------
       # validate piltover address
       #
+      ls -l ${DATA_PATH}/config.toml
       export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
-      echo "!!! Validate: PILTOVER_ADDRESS=${PILTOVER_ADDRESS}"
+      echo "!!! Validate if:           (PILTOVER_ADDRESS == CORE_CONTRACT_ADDRESS)"
+      echo "!!! PILTOVER_ADDRESS:      [${PILTOVER_ADDRESS}]"
+      echo "!!! CORE_CONTRACT_ADDRESS: [${CORE_CONTRACT_ADDRESS}]"
       #----------------
       # deploy contracts...
       #
-      wait-port ${KATANA_L2_PORT}
       echo ">>> Deploying contracts..."
       sozo -P ${PROFILE} build
       sozo -P ${PROFILE} inspect
@@ -120,6 +130,7 @@ procs:
       KATANA_L3_PORT: "5050"
       BLOCK_TIME: "30000"
       MAX_CAIRO_STEPS: "16000000"
+      RUST_LOG: "katana=info,rpc=info,node=info,messaging=trace,executor=trace,pool=trace"
     shell: |
       sleep 1
       #----------------
@@ -133,13 +144,15 @@ procs:
       # start katana L3...
       #
       echo ">>> Starting L3 Katana on port [${KATANA_L3_PORT}]..."
+      rm -rf /tmp/katana-l3
       ${KATANA_L3_BIN} --version
       ${KATANA_L3_BIN} \
-        --dev --dev.no-fee --dev.accounts 10 \
-        --http.cors_origins "*" \
-        --http.port ${KATANA_L3_PORT} \
-        --cartridge.controllers --cartridge.paymaster \
         --chain ${DATA_PATH} \
+        --db-dir /tmp/katana-l3 \
+        --http.port ${KATANA_L3_PORT} \
+        --dev --dev.no-fee
+        # --http.cors_origins "*" \
+        # --cartridge.controllers --cartridge.paymaster
         # --block-time ${BLOCK_TIME} --sequencing.block-max-cairo-steps ${MAX_CAIRO_STEPS}
   l3_contracts:
     cwd: packages/contracts
@@ -185,6 +198,8 @@ procs:
       #
       export DATA_PATH=./data/${PROFILE}
       export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
+      echo ">>> KATANA_L2_RPC: [${KATANA_L2_RPC}]"
+      echo ">>> KATANA_L3_RPC: [${KATANA_L3_RPC}]"
       echo ">>> PILTOVER_ADDRESS: [${PILTOVER_ADDRESS}]"
       echo ">>> SETTLEMENT_ACCOUNT_ADDRESS: [${SETTLEMENT_ACCOUNT_ADDRESS}]"
       echo ">>> SETTLEMENT_ACCOUNT_PRIVATE_KEY: [${SETTLEMENT_ACCOUNT_PRIVATE_KEY}]"
@@ -192,6 +207,7 @@ procs:
       # sytart saya
       #
       echo ">>> Starting Saya..."
+      rm -f ./saya.db
       saya --version
       saya persistent start \
         --settlement-rpc ${KATANA_L2_RPC} \
