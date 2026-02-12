@@ -50,3 +50,4 @@ allowed-libfuncs-list.name = "experimental"
 [profile.dev]
 [profile.slot]
 [profile.stage]
+[profile.saya-test]
