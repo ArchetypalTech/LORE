@@ -93,6 +93,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_connect_wallet");
 		} else {
 			sendCommand("_welcome_back");
+			sendCommand("ui show");
 		}
 
 		sendCommand("_hint");
@@ -290,7 +291,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-			sendCommand("ui show");
+			// sendCommand("ui show");
 		}
 
 		// Check properties
