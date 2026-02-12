@@ -149,8 +149,8 @@ procs:
       ${KATANA_L3_BIN} \
         --chain ${DATA_PATH} \
         --db-dir /tmp/katana-l3 \
-        --http.port ${KATANA_L3_PORT} \
-        --dev --dev.no-fee
+        --http.port ${KATANA_L3_PORT}
+        # --dev --dev.no-fee
         # --http.cors_origins "*" \
         # --cartridge.controllers --cartridge.paymaster
         # --block-time ${BLOCK_TIME} --sequencing.block-max-cairo-steps ${MAX_CAIRO_STEPS}
@@ -171,7 +171,7 @@ procs:
       echo ">>> Deploying contracts..."
       sozo -P ${PROFILE} build
       sozo -P ${PROFILE} inspect
-      sozo -P ${PROFILE} migrate
+      sozo -P ${PROFILE} migrate --l1-data-gas 20000000000 --l1-gas 20000000000 --l1-gas-price 20000000000 --l2-gas-price 20000000000 --l1-data-gas-price 20000000000 --l2-gas 20000000000
       #----------------
       touch ../contracts/target/${PROFILE}/deployed
       echo "👍 L2 Ready!"
