@@ -1,0 +1,13 @@
+[id]
+Id = "0x6b6174616e612d6c33"
+
+[fee-contract]
+strk = "0x2e7442625bab778683501c0eadbc1ea17b3535da040a12ac7d281066e915eea"
+
+[settlement.starknet]
+rpc_url = "http://localhost:50000/"
+core_contract = "0x1c8a55203cd99a6bfaf7cd91ae2ad953eff67b584826edab1857ca2e3c5db5d"
+block = 4
+
+[settlement.starknet.id]
+Id = "0x4b4154414e41"

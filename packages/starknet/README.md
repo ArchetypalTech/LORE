@@ -3,15 +3,16 @@
 Based on: [https://github.com/glihm/starknet-messaging-dev/tree/l2-l3-saya](https://github.com/glihm/starknet-messaging-dev/tree/l2-l3-saya)
 
 
-## Running Locally
+## TESTING Locally
 
-* Install tool versions specified [here](https://github.com/glihm/starknet-messaging-dev/tree/l2-l3-saya?tab=readme-ov-file#requirements)
+* Install tool versions specified [here](https://github.com/glihm/starknet-messaging-dev/blob/l2-l3-saya/README_saya.md#requirements)
 
 ### Katana L3
 
 Currently, we need a specific Katana version for L3
 
-* Copy `katana_l3` to `/packages/starknet/bin` (ask Glihm or copy from Docker image)
+* ~~Copy `katana_l3` to `/packages/starknet/bin` (ask Glihm or copy from Docker image)~~
+* Copy `katana-1.7.0-snos.4` to `/packages/starknet/bin` (ask Glihm or copy from Docker image)
 
 * Replace `account_address` and `private_key` in `/packages/contracts/dojo_dev.toml`:
 
@@ -61,9 +62,14 @@ sozo execute --world $L3_WORLD_ADDRESS --wait lore-actions_token send_rewards $R
 # L3: find message event (the last one must be lore-AppchainMessageEvent)
 sozo events --world $L3_WORLD_ADDRESS | tail -n 9
 #
-# L2: consume message
+# L2: consume message -- use the last 5 values from the printed event above
 cd packages/starknet/
-sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token consume_message arr:0x1,0x4d494e545f5045524d49545f52455741524453,0x465245455f524557415244,0x1234,0x1
+sozo execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token consume_message arr:\
+0x0000000000000000000000000000000000000000000000000000000000000001,\
+0x000000000000000000000000004d494e545f5045524d49545f52455741524453,\
+0x000000000000000000000000000000000000000000465245455f524557415244,\
+0x0000000000000000000000000000000000000000000000000000000000001234,\
+0x0000000000000000000000000000000000000000000000000000000000000001
 # L2: validate permits balance (must be 0x2)
 sozo call --world $L2_WORLD_ADDRESS lore_sn-permit_token balance_of $RECIPIENT
 ```
