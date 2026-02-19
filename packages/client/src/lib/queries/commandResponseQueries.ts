@@ -15,9 +15,9 @@ export const queryStories = async (): Promise<void> => {
 
     // Query all StoryLines of type error and the commands that caused them
     const errorCommandPairs = await queryStorylinesErrorsCommands();
-    console.log(`[QUERY] Found ${errorCommandPairs.length} error-command pairs`);
+    // console.log(`[QUERY] Found ${errorCommandPairs.length} error-command pairs`);
 
-    console.log("DEBUG: starting to sort");
+    // console.log("DEBUG: starting to sort");
     // Flatten pairs into a single StoryLine[]
     const allStorylinesErrors: StoryLine[] = [];
     errorCommandPairs.forEach(([error, command]) => {
@@ -120,7 +120,7 @@ export const queryStories = async (): Promise<void> => {
 
     URL.revokeObjectURL(url);
 
-    console.log("DEBUG: finished sorting");
+    // console.log("DEBUG: finished sorting");
   } catch (error) {
     console.error("Error querying or exporting grouped PlayerStories:", error);
     throw error;
