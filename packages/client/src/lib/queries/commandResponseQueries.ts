@@ -10,25 +10,41 @@ import JSONbig from "json-bigint";
 // Call queries and generate json file
 export const queryStories = async (): Promise<void> => {
   try {
+    // Query all the PlayerStories and Players
     const [playerStories, players] = await queryPlayerStories();
-    const allStorylines = await queryAllStorylines();
 
+    // Query all StoryLines of type error and the commands that caused them
+    const errorCommandPairs = await queryStorylinesErrorsCommands();
+
+    // Flatten pairs into a single StoryLine[]
+    const allStorylinesErrors: StoryLine[] = [];
+    errorCommandPairs.forEach(([error, command]) => {
+      allStorylinesErrors.push(error);
+      allStorylinesErrors.push(command);
+    });
+
+    // -------------------------------
     // game_id -> player address
+    // -------------------------------
     const gameToPlayer: Record<string, string> = {};
     players.forEach((p) => {
       gameToPlayer[p.game_id.toString()] = p.address;
     });
 
+    // -------------------------------
     // game_id -> latest_story_line
+    // -------------------------------
     const latestByGame: Record<string, bigint> = {};
     playerStories.forEach((ps) => {
       latestByGame[ps.game_id.toString()] = BigInt(ps.story_line.toString());
     });
 
-    // game_id -> StoryLine[] (latest → oldest)
+    // -------------------------------
+    // game_id -> StoryLine[]
+    // -------------------------------
     const storylinesByGame: Record<string, StoryLine[]> = {};
 
-    for (const line of allStorylines) {
+    for (const line of allStorylinesErrors) {
       const gameId = line.game_id.toString();
 
       if (!storylinesByGame[gameId]) {
@@ -38,7 +54,7 @@ export const queryStories = async (): Promise<void> => {
       storylinesByGame[gameId].push(line);
     }
 
-    // Sort each game's storylines latest → oldest
+    // Sort latest → oldest
     Object.values(storylinesByGame).forEach((lines) => {
       lines.sort((a, b) =>
         BigInt(a.key.toString()) < BigInt(b.key.toString()) ? 1 : -1
@@ -75,7 +91,9 @@ export const queryStories = async (): Promise<void> => {
       };
     }
 
-    // ---- Export JSON ----
+    // -------------------------------
+    // Export JSON
+    // -------------------------------
     const formatter = new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
@@ -99,7 +117,6 @@ export const queryStories = async (): Promise<void> => {
     a.click();
 
     URL.revokeObjectURL(url);
-
   } catch (error) {
     console.error("Error querying or exporting grouped PlayerStories:", error);
     throw error;
@@ -206,90 +223,82 @@ const queryPlayers = async (): Promise<Player[]> => {
   return players;
 };
 
-// Query all the StoryLines for a given gameId
-const queryStorylines = async (gameId: bigint,latestKey: bigint): Promise<StoryLine[]> => {
-  // console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} latestKey=${latestKey}`);
-  const storylines: StoryLine[] = [];
+// Query all StoryLines of type error and the commands that caused them
+const queryStorylinesErrorsCommands = async (): Promise<
+  [StoryLine, StoryLine][]
+> => {
+  const pairs: [StoryLine, StoryLine][] = [];
 
   const { sdk } = await InitDojo();
-  // Loop backwards: latest → oldest
-  for (let key = latestKey; key >= 1n; key--) {
-    try {
-      const query_storyline = new ToriiQueryBuilder<SchemaType>()
-        .withCursor("")
-        .withLimit(1000)
-        .includeHashedKeys()
-        .withClause(
-          new ClauseBuilder<SchemaType>()
-            .keys(
-              ["lore-StoryLine"],
-              [bigintToHex128(gameId), bigintToAddress(key)]
-            )
-            .build()
-        )
-        .withEntityModels(["lore-StoryLine"]);
 
-      const result_storyline = await sdk.getEntities({
-        query: query_storyline,
-      });
-      // console.log(`[QUERY] Fetching StoryLines for gameId=${gameId} key=${key} result=${result_storyline}`);
-      result_storyline.getItems().forEach((entity) => {
-        const model = entity.models?.lore?.StoryLine;
-        if (
-          model &&
-          model.game_id !== undefined &&
-          model.key !== undefined &&
-          model.line !== undefined
-        ) {
-          storylines.push({
-            game_id: model.game_id,
-            key: model.key,
-            line: model.line,
-            line_type: model.line_type as CairoCustomEnum,
-          });
-        }
-      });
-    } catch (error) {
-      console.error(
-        `Error fetching StoryLine for gameId=${gameId} key=${key}:`,
-        error
-      );
-      // continue to next key
-    }
-  }
-
-  // No sort needed — already latest → oldest
-  return storylines;
-};
-
-// Query all the StoryLines
-const queryAllStorylines = async (): Promise<StoryLine[]> => {
-  const storylines: StoryLine[] = [];
-
-  const { sdk } = await InitDojo();
   try {
     const query = new ToriiQueryBuilder<SchemaType>()
       .withCursor("")
       .withLimit(9000)
       .includeHashedKeys()
       .withEntityModels(["lore-StoryLine"]);
-    
-    const result = await sdk.getEntities({ query });
 
-    result.getItems().forEach((entity) => {
+    const result = await sdk.getEntities({ query });
+    const items = result.getItems();
+
+    // Step 1: Build lookup map (gameId-key → StoryLine model)
+    const storyLineMap = new Map<string, typeof items[number]["models"]["lore"]["StoryLine"]>();
+
+    items.forEach((entity) => {
       const model = entity.models?.lore?.StoryLine;
+      if (model && model.game_id !== undefined && model.key !== undefined) {
+        const mapKey = `${model.game_id.toString()}-${model.key.toString()}`;
+        storyLineMap.set(mapKey, model);
+      }
+    });
+
+    // Step 2: Loop once and match errors to their commands
+    items.forEach((entity) => {
+      const model = entity.models?.lore?.StoryLine;
+
       if (
         model &&
         model.game_id !== undefined &&
         model.key !== undefined &&
-        model.line !== undefined
+        model.line !== undefined &&
+        model.location !== undefined &&
+        model.line_type &&
+        "Error" in model.line_type
       ) {
-        storylines.push({
-          game_id: model.game_id,
-          key: model.key,
-          line: model.line,
-          line_type: model.line_type as CairoCustomEnum,
-        });
+        const gameIdStr = model.game_id.toString();
+        const errorKey = BigInt(model.key.toString());
+        const commandKey = errorKey - 1n;
+
+        const lookupKey = `${gameIdStr}-${commandKey.toString()}`;
+        const commandModel = storyLineMap.get(lookupKey);
+
+        if (
+          commandModel &&
+          commandModel.game_id !== undefined &&
+          commandModel.key !== undefined &&
+          commandModel.line_type &&
+          "Command" in commandModel.line_type &&
+          commandModel.line !== undefined &&
+          commandModel.location !== undefined
+        ) {
+          const errorStoryLine: StoryLine = {
+            game_id: model.game_id,
+            key: model.key,
+            line: model.line,
+            line_type: model.line_type,
+            location: model.location,
+          };
+
+          const commandStoryLine: StoryLine = {
+            game_id: commandModel.game_id,
+            key: commandModel.key,
+            line: commandModel.line,
+            line_type: commandModel.line_type,
+            location: commandModel.location,
+          };
+
+          pairs.push([errorStoryLine, commandStoryLine]);
+        }
       }
     });
   } catch (error) {
@@ -297,6 +306,5 @@ const queryAllStorylines = async (): Promise<StoryLine[]> => {
     throw error;
   }
 
-  return storylines;
+  return pairs;
 };
-  

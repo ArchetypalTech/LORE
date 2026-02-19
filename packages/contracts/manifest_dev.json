@@ -139,8 +139,8 @@
       ]
     },
     {
-      "address": "0x1968aa3dcaad3ca930835172d4f0be3578d2eb928450ceb78d1d50f82065c2a",
-      "class_hash": "0x78ae7ddc9c7701d6a60e64069f54904bde0828b99efe8dd7c03940e97765caa",
+      "address": "0x6d32ff8e7d0e7515e0b1418cb7f7fe08d09390c9f829b800f56fb4cf36edb6b",
+      "class_hash": "0x46637cee744d236230bd8904fb16fcf228671bd0867a06359b20c499b0edee2",
       "init_calldata": [],
       "tag": "lore-prompt",
       "selector": "0x7ce185ac93eb5e2a28b27a6bab8ce1cc608744ef663badb20489547ed1d20a0",
@@ -1107,9 +1107,14 @@
           "name": "line_type",
           "type": "lore::models::player::StoryLineType",
           "key": false
+        },
+        {
+          "name": "location",
+          "type": "core::felt252",
+          "key": false
         }
       ],
-      "class_hash": "0x1c7dabacc00a5d96f787956bb90ba8dbb44d0eca791ee34173b86ffedb760c4",
+      "class_hash": "0x751cf42141e8cc7182421c33ddc737ce0608a4d144114d7375251d1cda1e6af",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
@@ -5347,6 +5352,10 @@
         {
           "name": "line_type",
           "type": "lore::models::player::StoryLineType"
+        },
+        {
+          "name": "location",
+          "type": "core::felt252"
         }
       ]
     },
@@ -5391,6 +5400,10 @@
         {
           "name": "line_type",
           "type": "lore::models::player::StoryLineType"
+        },
+        {
+          "name": "location",
+          "type": "core::felt252"
         }
       ]
     },

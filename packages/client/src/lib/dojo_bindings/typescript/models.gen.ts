@@ -235,6 +235,7 @@ export interface StoryLine {
 	key: BigNumberish;
 	line: string;
 	line_type: StoryLineTypeEnum;
+	location: BigNumberish;
 }
 
 // Type definition for `lore::models::player_account::PlayerAccount` struct
@@ -1047,6 +1048,7 @@ export const schema: SchemaType = {
 				SysResponse: undefined,
 				Debug: undefined,
 				Error: undefined, }),
+			location: 0,
 		},
 		PlayerAccount: {
 			player_address: "",
