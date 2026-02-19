@@ -10,40 +10,28 @@ import JSONbig from "json-bigint";
 // Call queries and generate json file
 export const queryStories = async (): Promise<void> => {
   try {
-    // Query all the PlayerStories and Players
+    // ---------------------------------
+    // 1 Query PlayerStories & Players
+    // ---------------------------------
     const [playerStories, players] = await queryPlayerStories();
 
-    // Query all StoryLines of type error and the commands that caused them
+    // ---------------------------------
+    // 2 Query Error + Command pairs
+    // ---------------------------------
     const errorCommandPairs = await queryStorylinesErrorsCommands();
-    // console.log(`[QUERY] Found ${errorCommandPairs.length} error-command pairs`);
 
-    // console.log("DEBUG: starting to sort");
-    // Flatten pairs into a single StoryLine[]
+    // ---------------------------------
+    // 3 Flatten pairs → StoryLine[]
+    // ---------------------------------
     const allStorylinesErrors: StoryLine[] = [];
     errorCommandPairs.forEach(([error, command]) => {
       allStorylinesErrors.push(error);
       allStorylinesErrors.push(command);
     });
 
-    // -------------------------------
-    // game_id -> player address
-    // -------------------------------
-    const gameToPlayer: Record<string, string> = {};
-    players.forEach((p) => {
-      gameToPlayer[p.game_id.toString()] = p.address;
-    });
-
-    // -------------------------------
-    // game_id -> latest_story_line
-    // -------------------------------
-    const latestByGame: Record<string, bigint> = {};
-    playerStories.forEach((ps) => {
-      latestByGame[ps.game_id.toString()] = BigInt(ps.story_line.toString());
-    });
-
-    // -------------------------------
-    // game_id -> StoryLine[]
-    // -------------------------------
+    // ---------------------------------
+    // 4 game_id -> StoryLine[]
+    // ---------------------------------
     const storylinesByGame: Record<string, StoryLine[]> = {};
 
     for (const line of allStorylinesErrors) {
@@ -56,46 +44,68 @@ export const queryStories = async (): Promise<void> => {
       storylinesByGame[gameId].push(line);
     }
 
-    // Sort latest → oldest
+    // Sort each game's storylines latest → oldest
     Object.values(storylinesByGame).forEach((lines) => {
       lines.sort((a, b) =>
         BigInt(a.key.toString()) < BigInt(b.key.toString()) ? 1 : -1
       );
     });
 
-    /**
-     * Final structure:
-     * {
-     *   [playerAddress]: {
-     *     [gameId]: {
-     *       latest_story_line,
-     *       storylines
-     *     }
-     *   }
-     * }
-     */
+    // ---------------------------------
+    // 5 game_id -> player address
+    // ---------------------------------
+    const gameToPlayer: Record<string, string> = {};
+    players.forEach((p) => {
+      gameToPlayer[p.game_id.toString()] = p.address;
+    });
+
+    // ---------------------------------
+    // 6 game_id -> PlayerStory
+    // ---------------------------------
+    const playerStoryByGame: Record<string, PlayerStory> = {};
+    playerStories.forEach((ps) => {
+      playerStoryByGame[ps.game_id.toString()] = ps;
+    });
+
+    // ---------------------------------
+    // 7 Final grouped structure
+    // ---------------------------------
     const grouped: Record<
       string,
-      Record<string, { latest_story_line: bigint; storylines: StoryLine[] }>
+      Record<
+        string,
+        {
+          latest_story_line: bigint;
+          free_actions_count: bigint;
+          sub_actions_count: bigint;
+          paid_actions_count: bigint;
+          storylines: StoryLine[];
+        }
+      >
     > = {};
 
-    for (const gameIdStr of Object.keys(latestByGame)) {
+    for (const gameIdStr of Object.keys(playerStoryByGame)) {
       const playerAddress = gameToPlayer[gameIdStr];
       if (!playerAddress) continue;
+
+      const ps = playerStoryByGame[gameIdStr];
 
       if (!grouped[playerAddress]) {
         grouped[playerAddress] = {};
       }
 
       grouped[playerAddress][gameIdStr] = {
-        latest_story_line: latestByGame[gameIdStr],
+        latest_story_line: BigInt(ps.story_line.toString()),
+        free_actions_count: BigInt(ps.free_actions_count.toString()),
+        sub_actions_count: BigInt(ps.sub_actions_count.toString()),
+        paid_actions_count: BigInt(ps.paid_actions_count.toString()),
         storylines: storylinesByGame[gameIdStr] ?? [],
       };
     }
 
-    // -------------------------------
-    // Export JSON
-    // -------------------------------
+    // ---------------------------------
+    // 8 Export JSON
+    // ---------------------------------
     const formatter = new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
@@ -119,8 +129,6 @@ export const queryStories = async (): Promise<void> => {
     a.click();
 
     URL.revokeObjectURL(url);
-
-    // console.log("DEBUG: finished sorting");
   } catch (error) {
     console.error("Error querying or exporting grouped PlayerStories:", error);
     throw error;
