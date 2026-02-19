@@ -483,6 +483,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		console.log("COMPONENTS RESULT", components);
 	},
 	_gameData: async () => {
+		const terminalStore = useTerminalStore.getState();
+		terminalStore.setPrinting(true);
 		addTerminalContent({ text: "FETCHING GAME DATA...", format: "system", useTypewriter: true });
 		await sleep(500);
 
@@ -502,6 +504,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 		});
+		terminalStore.setPrinting(false);
 	},
 	connection: async () => {
 		const dest = {

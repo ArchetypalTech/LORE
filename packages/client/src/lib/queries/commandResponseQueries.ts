@@ -15,7 +15,9 @@ export const queryStories = async (): Promise<void> => {
 
     // Query all StoryLines of type error and the commands that caused them
     const errorCommandPairs = await queryStorylinesErrorsCommands();
+    console.log(`[QUERY] Found ${errorCommandPairs.length} error-command pairs`);
 
+    console.log("DEBUG: starting to sort");
     // Flatten pairs into a single StoryLine[]
     const allStorylinesErrors: StoryLine[] = [];
     errorCommandPairs.forEach(([error, command]) => {
@@ -117,6 +119,8 @@ export const queryStories = async (): Promise<void> => {
     a.click();
 
     URL.revokeObjectURL(url);
+
+    console.log("DEBUG: finished sorting");
   } catch (error) {
     console.error("Error querying or exporting grouped PlayerStories:", error);
     throw error;
@@ -262,8 +266,8 @@ const queryStorylinesErrorsCommands = async (): Promise<
         model.key !== undefined &&
         model.line !== undefined &&
         model.location !== undefined &&
-        model.line_type &&
-        "Error" in model.line_type
+        model.line_type !== undefined &&
+        model.line_type.toString() === "Error"
       ) {
         const gameIdStr = model.game_id.toString();
         const errorKey = BigInt(model.key.toString());
@@ -276,8 +280,8 @@ const queryStorylinesErrorsCommands = async (): Promise<
           commandModel &&
           commandModel.game_id !== undefined &&
           commandModel.key !== undefined &&
-          commandModel.line_type &&
-          "Command" in commandModel.line_type &&
+          commandModel.line_type !== undefined &&
+          commandModel.line_type.toString() === "Command" &&
           commandModel.line !== undefined &&
           commandModel.location !== undefined
         ) {
