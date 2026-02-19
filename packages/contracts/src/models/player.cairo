@@ -62,6 +62,8 @@ pub struct StoryLine {
     pub line: ByteArray,
     /// Line type
     pub line_type: StoryLineType,
+    /// location when the line was created
+    pub location: felt252,
 }
 
 #[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
@@ -264,6 +266,7 @@ pub impl PlayerImpl of PlayerTrait {
             key: player_story.story_line,
             line: text,
             line_type,
+            location: *self.location,
         });
     }
 

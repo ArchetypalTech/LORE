@@ -1,3 +1,4 @@
+use crate::models::player::PlayerTrait;
 use core::num::traits::Zero;
 use starknet::{ContractAddress, get_caller_address};
 use dojo::{world::WorldStorage, model::ModelStorage};
@@ -50,7 +51,7 @@ pub fn handle_command(
     }
     let verbs: Span<Token> = command.get_verbs();
     if verbs.is_empty() {
-        player.say(ref world, format!("I don't recognize the VERB(s) in: \"{}\"", command.text));
+        player.log_error(ref world, format!("I don't recognize the VERB(s) in: \"{}\"", command.text));
         return Result::Err(Error::ActionFailed);
     }
     let mut nouns: Span<Token> = command.get_nouns();
@@ -61,7 +62,7 @@ pub fn handle_command(
         for noun in nouns {
             let item: Option<Entity> = EntityImpl::get_entity(@world, *noun.target);
             if (item.is_none()) {
-                player.say(ref world, format!("I've heard about {} but it's not here", noun.text));
+                player.log_error(ref world, format!("I've heard about {} but it's not here", noun.text));
                 return Result::Err(Error::ActionFailed);
             }
             let item: Entity = item.unwrap();
@@ -244,12 +245,12 @@ pub fn handle_command(
             // if initial verb is not look
             // check if nouns or directions exist, if they do player recognize verb and target but cant execute command
             if nouns.len() > 0 {
-                player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
+                player.log_error(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
             } else if directions.len() > 0 {
-                player.say(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
+                player.log_error(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
             } else {
                 // the verb is recognized but the target/direction is not recognized
-                player.say(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
+                player.log_error(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
             }
             // return error
             return Result::Err(Error::ActionFailed);
@@ -257,12 +258,12 @@ pub fn handle_command(
         // it tokens lengt is more then,
         // check if nouns or directions exist, if they do player recognize verb and target but cant execute command
         if nouns.len() > 0 {
-            player.say(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
+            player.log_error(ref world, format!("I recognize the VERB(s) and the TARGET(s) in: \"{}\", but is not possible to execute your command", command.text));
         } else if directions.len() > 0 {
-            player.say(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
+            player.log_error(ref world, format!("I recognize the VERB(s) and the Direction in: \"{}\", but is not possible to execute your command", command.text));
         } else {
             // the verb is recognized but the target/direction is not recognized
-            player.say(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
+            player.log_error(ref world, format!("I recognize the VERB(s) in: \"{}\", but not the TARGET(s) or the Direction", command.text));
         }
         return Result::Err(Error::ActionFailed);
     }
