@@ -1,5 +1,6 @@
 use dojo::{world::WorldStorage, model::{ModelStorage}};
 use starknet::{ContractAddress};
+use lore::models::player::{PlayerStory};
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
@@ -104,23 +105,27 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
     }
 
     // called when a player spends actions
-    fn spent_actions(ref self: WorldStorage, player_address: ContractAddress, actions_amount: u128) {
+    fn spent_actions(ref self: WorldStorage, player_address: ContractAddress, actions_amount: u128, game_id: u128) {
         let mut player_balances: PlayerBalances = self.read_model(player_address);
         let mut due_amount: u128 = actions_amount;
+        let mut playerStory: PlayerStory = self.read_model(game_id);
         if player_balances.free_actions_balance.is_non_zero() {
             let amount: u128 = core::cmp::min(player_balances.free_actions_balance, due_amount);
             player_balances.free_actions_balance -= amount;
             due_amount -= amount;
+            playerStory.free_actions_count += amount;
         }
         if due_amount.is_non_zero() && player_balances.sub_actions_balance.is_non_zero() {
             let amount: u128 = core::cmp::min(player_balances.sub_actions_balance, due_amount);
             player_balances.sub_actions_balance -= amount;
             due_amount -= amount;
+            playerStory.sub_actions_count += amount;
         }
         if due_amount.is_non_zero() && player_balances.paid_actions_balance.is_non_zero() {
             let amount: u128 = core::cmp::min(player_balances.paid_actions_balance, due_amount);
             player_balances.paid_actions_balance -= amount;
             due_amount -= amount;
+            playerStory.paid_actions_count += amount;
         }
         self.write_model(@player_balances);
     }

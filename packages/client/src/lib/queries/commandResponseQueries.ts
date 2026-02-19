@@ -148,11 +148,14 @@ const queryPlayerStories = async (): Promise<[(PlayerStory[]), Player[]]> => {
 			if (
 				model &&
 				model.game_id !== undefined &&
-				model.story_line !== undefined
+				model.story_line !== undefined 
 			) {
 				playerStory.push({
 					game_id: model.game_id,
 					story_line: model.story_line,
+          free_actions_count: (model.free_actions_count?.toString() ?? "0"),
+          sub_actions_count: (model.sub_actions_count?.toString() ?? "0"),
+          paid_actions_count: (model.paid_actions_count?.toString() ?? "0"),
 				});
 			}
 		});

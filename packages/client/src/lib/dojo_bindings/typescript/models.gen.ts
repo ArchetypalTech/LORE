@@ -227,6 +227,9 @@ export interface Player {
 export interface PlayerStory {
 	game_id: BigNumberish;
 	story_line: BigNumberish;
+	free_actions_count: BigNumberish;
+	sub_actions_count: BigNumberish;
+	paid_actions_count: BigNumberish;
 }
 
 // Type definition for `lore::models::player::StoryLine` struct
@@ -1036,6 +1039,9 @@ export const schema: SchemaType = {
 		PlayerStory: {
 			game_id: 0,
 			story_line: 0,
+			free_actions_count: 0,
+			sub_actions_count: 0,
+			paid_actions_count: 0,
 		},
 		StoryLine: {
 			game_id: 0,

@@ -70,6 +70,7 @@ pub mod prompt {
                                         player.address,
                                         world.get_entity_trail_id(player.inst),
                                         actions_amount,
+                                        player.game_id,
                                     );
                                 }
                             },

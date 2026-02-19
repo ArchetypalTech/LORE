@@ -80,19 +80,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_token_chargePlayerActions_calldata = (playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish): DojoCall => {
+	const build_actions_token_chargePlayerActions_calldata = (playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions_token",
 			entrypoint: "charge_player_actions",
-			calldata: [playerAddress, trailId, actionsAmount],
+			calldata: [playerAddress, trailId, actionsAmount, gameId],
 		};
 	};
 
-	const actions_token_chargePlayerActions = async (snAccount: Account | AccountInterface, playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish) => {
+	const actions_token_chargePlayerActions = async (snAccount: Account | AccountInterface, playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_token_chargePlayerActions_calldata(playerAddress, trailId, actionsAmount),
+				build_actions_token_chargePlayerActions_calldata(playerAddress, trailId, actionsAmount, gameId),
 				"lore",
 			);
 		} catch (error) {
