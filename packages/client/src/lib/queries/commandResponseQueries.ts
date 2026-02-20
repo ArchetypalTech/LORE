@@ -125,8 +125,6 @@ export const queryStories = async (): Promise<void> => {
       8, // safe limit for 1000+ storylines
       async (line) => {
         const locationEntity = await queryErrorLocation(
-          BigInt(line.game_id.toString()),
-          BigInt(player.inst.toString()),
           BigInt(line.location.toString())
         );
 

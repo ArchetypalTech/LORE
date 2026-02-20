@@ -256,24 +256,17 @@ export const queryLocationExitGIMap = async (gameInst: bigint, origInst: bigint)
   return location_exit;
 };
 
-export const queryErrorLocation =  async (gameId: bigint, playerInst: bigint, locationofCommand: bigint): Promise<Partial<Entity> | undefined> => {
+export const queryErrorLocation =  async (locationofCommand: bigint): Promise<Partial<Entity> | undefined> => {
   let location_entity: Partial<Entity> | undefined;
-  
-  // query game instance map player
-  let game_inst_map: bigint = await queryGameInstaceMapByPlayer(gameId, playerInst);
-  // query player location
-  const player_location_inst = await queryPlayerLocationGIMap(game_inst_map, playerInst);
-  // query player location entity
-  const player_location_entity = await queryPlayerLocationEntityGIMap(game_inst_map, player_location_inst);
   // query entity from locationCommand
   const location_command_entity = await queryEntity(locationofCommand);
   console.log("DEBUG: queryErrorLocation() location_command_entity: ", location_command_entity);
   if (
-    player_location_entity &&
-    player_location_entity.name !== undefined &&
-    player_location_entity.inst !== undefined
+    location_command_entity &&
+    location_command_entity.name !== undefined &&
+    location_command_entity.inst !== undefined
   ) {
-    location_entity = player_location_entity;
+    location_entity = location_command_entity;
   }
   return location_entity;
 };
