@@ -260,7 +260,7 @@ export const queryErrorLocation =  async (locationofCommand: bigint): Promise<Pa
   let location_entity: Partial<Entity> | undefined;
   // query entity from locationCommand
   const location_command_entity = await queryEntity(locationofCommand);
-  console.log("DEBUG: queryErrorLocation() location_command_entity: ", location_command_entity);
+  // console.log("DEBUG: queryErrorLocation() location_command_entity: ", location_command_entity);
   if (
     location_command_entity &&
     location_command_entity.name !== undefined &&
