@@ -128,6 +128,7 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
             playerStory.paid_actions_count += amount;
         }
         self.write_model(@player_balances);
+        self.write_model(@playerStory);
     }
 
     // free actions
