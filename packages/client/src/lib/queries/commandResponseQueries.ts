@@ -1,9 +1,7 @@
 import { InitDojo } from "../dojo";
 import { ToriiQueryBuilder } from "@dojoengine/sdk";
 import { SchemaType, Player, PlayerStory, StoryLine } from "@/lib/dojo_bindings/typescript/models.gen";
-import { ClauseBuilder } from "@dojoengine/sdk";
-import { bigintToAddress, bigintToHex128 } from "@/lib/utils/utils";
-import { CairoCustomEnum } from "starknet";
+import { fromWei, queryErrorLocation } from "../queriesPanel/uiPanelQueries";
 import JSONbig from "json-bigint";
 
 
@@ -76,32 +74,77 @@ export const queryStories = async (): Promise<void> => {
         string,
         {
           latest_story_line: bigint;
-          free_actions_count: bigint;
-          sub_actions_count: bigint;
-          paid_actions_count: bigint;
-          storylines: StoryLine[];
+          free_actions_count: number;
+          sub_actions_count: number;
+          paid_actions_count: number;
+          storylines: (StoryLine & { locationName?: string })[];
         }
       >
     > = {};
 
     for (const gameIdStr of Object.keys(playerStoryByGame)) {
-      const playerAddress = gameToPlayer[gameIdStr];
-      if (!playerAddress) continue;
+    const playerAddress = gameToPlayer[gameIdStr];
+    if (!playerAddress) continue;
 
-      const ps = playerStoryByGame[gameIdStr];
+    const ps = playerStoryByGame[gameIdStr];
 
-      if (!grouped[playerAddress]) {
-        grouped[playerAddress] = {};
-      }
+    const player = players.find(
+      (p) => p.game_id.toString() === gameIdStr
+    );
+    if (!player) continue;
 
-      grouped[playerAddress][gameIdStr] = {
-        latest_story_line: BigInt(ps.story_line.toString()),
-        free_actions_count: BigInt(ps.free_actions_count.toString()),
-        sub_actions_count: BigInt(ps.sub_actions_count.toString()),
-        paid_actions_count: BigInt(ps.paid_actions_count.toString()),
-        storylines: storylinesByGame[gameIdStr] ?? [],
-      };
+    if (!grouped[playerAddress]) {
+      grouped[playerAddress] = {};
     }
+
+    // const enrichedStorylines = await Promise.all(
+    //   (storylinesByGame[gameIdStr] ?? []).map(async (line) => {
+    //     let locationName = "";
+
+    //     try {
+    //       const locationEntity = await queryErrorLocation(
+    //         BigInt(line.game_id.toString()),
+    //         BigInt(player.inst.toString()),
+    //         BigInt(line.location.toString())
+    //       );
+
+    //       locationName = locationEntity?.name?.toString() ?? "";
+    //     } catch (e) {
+    //       console.error("Error resolving location for storyline:", e);
+    //     }
+
+    //     return {
+    //       ...line,
+    //       locationName,
+    //     };
+    //   })
+    // );
+
+    const enrichedStorylines = await mapWithConcurrency(
+      storylinesByGame[gameIdStr] ?? [],
+      8, // safe limit for 1000+ storylines
+      async (line) => {
+        const locationEntity = await queryErrorLocation(
+          BigInt(line.game_id.toString()),
+          BigInt(player.inst.toString()),
+          BigInt(line.location.toString())
+        );
+
+        return {
+          ...line,
+          locationName: locationEntity?.name?.toString() ?? "",
+        };
+      }
+    );
+
+    grouped[playerAddress][gameIdStr] = {
+      latest_story_line: BigInt(ps.story_line.toString()),
+      free_actions_count: fromWei(ps.free_actions_count.toString()),
+      sub_actions_count: fromWei(ps.sub_actions_count.toString()),
+      paid_actions_count: fromWei(ps.paid_actions_count.toString()),
+      storylines: enrichedStorylines,
+    };
+  }
 
     // ---------------------------------
     // 8 Export JSON
@@ -323,3 +366,37 @@ const queryStorylinesErrorsCommands = async (): Promise<
 
   return pairs;
 };
+
+/**
+ * 
+ * Instead of firing all promises at once, it only runs up to limit promises in parallel.
+ * This avoids:
+ * Overloading the network (e.g., 1000 queryErrorLocation calls at once)
+ * Excessive memory usage
+ * Rate-limiting or throttling issues
+ */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  asyncMapper: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let currentIndex = 0;
+
+  async function worker() {
+    while (true) {
+      const index = currentIndex++;
+      if (index >= items.length) break;
+
+      results[index] = await asyncMapper(items[index]);
+    }
+  }
+
+  const workers = Array.from(
+    { length: Math.min(limit, items.length) },
+    () => worker()
+  );
+
+  await Promise.all(workers);
+  return results;
+}

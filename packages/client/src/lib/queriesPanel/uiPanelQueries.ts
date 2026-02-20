@@ -8,12 +8,13 @@ import { ExitInfo, PuzzleInfo, useUIPanelStore } from "../stores/terminal.uiPane
 import { stringCairoEnum } from "@/editor/lib/schemas";
 import { useWalletStore } from "../stores/wallet.store";
 import { BigNumberish } from "starknet";
+import { playerExists } from "@/editor/data/editor.data";
 
 // const normalizeAddressZero = (addr: string): string => {
 //   return addr.replace(/^0x0+/, "0x").toLowerCase();
 // }
 
-const fromWei = (value: BigNumberish): number =>
+export const fromWei = (value: BigNumberish): number =>
   Number(BigInt(value) / 10n ** 18n);
 
 // ACTIONS TOKEN (free and paid)
@@ -255,7 +256,27 @@ export const queryLocationExitGIMap = async (gameInst: bigint, origInst: bigint)
   return location_exit;
 };
 
-
+export const queryErrorLocation =  async (gameId: bigint, playerInst: bigint, locationofCommand: bigint): Promise<Partial<Entity> | undefined> => {
+  let location_entity: Partial<Entity> | undefined;
+  
+  // query game instance map player
+  let game_inst_map: bigint = await queryGameInstaceMapByPlayer(gameId, playerInst);
+  // query player location
+  const player_location_inst = await queryPlayerLocationGIMap(game_inst_map, playerInst);
+  // query player location entity
+  const player_location_entity = await queryPlayerLocationEntityGIMap(game_inst_map, player_location_inst);
+  // query entity from locationCommand
+  const location_command_entity = await queryEntity(locationofCommand);
+  console.log("DEBUG: queryErrorLocation() location_command_entity: ", location_command_entity);
+  if (
+    player_location_entity &&
+    player_location_entity.name !== undefined &&
+    player_location_entity.inst !== undefined
+  ) {
+    location_entity = player_location_entity;
+  }
+  return location_entity;
+};
 // Exits
 export const queryExitsPerGame = async (
   gameId: bigint,
