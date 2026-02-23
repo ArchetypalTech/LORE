@@ -34,15 +34,13 @@ export const queryStories = async (): Promise<void> => {
 
     for (const line of allStorylinesErrors) {
       const gameId = line.game_id.toString();
-
       if (!storylinesByGame[gameId]) {
         storylinesByGame[gameId] = [];
       }
-
       storylinesByGame[gameId].push(line);
     }
 
-    // Sort each game's storylines latest → oldest
+    // Sort latest → oldest
     Object.values(storylinesByGame).forEach((lines) => {
       lines.sort((a, b) =>
         BigInt(a.key.toString()) < BigInt(b.key.toString()) ? 1 : -1
@@ -83,70 +81,41 @@ export const queryStories = async (): Promise<void> => {
     > = {};
 
     for (const gameIdStr of Object.keys(playerStoryByGame)) {
-    const playerAddress = gameToPlayer[gameIdStr];
-    if (!playerAddress) continue;
+      const playerAddress = gameToPlayer[gameIdStr];
+      if (!playerAddress) continue;
 
-    const ps = playerStoryByGame[gameIdStr];
+      const ps = playerStoryByGame[gameIdStr];
+      if (!grouped[playerAddress]) grouped[playerAddress] = {};
 
-    const player = players.find(
-      (p) => p.game_id.toString() === gameIdStr
-    );
-    if (!player) continue;
+      const enrichedStorylines = await mapWithConcurrency(
+        storylinesByGame[gameIdStr] ?? [],
+        8,
+        async (line) => {
+          const locationEntity = await queryErrorLocation(
+            BigInt(line.location.toString())
+          );
 
-    if (!grouped[playerAddress]) {
-      grouped[playerAddress] = {};
+          return {
+            ...line,
+            locationName: locationEntity?.name?.toString() ?? "",
+          };
+        }
+      );
+
+      grouped[playerAddress][gameIdStr] = {
+        latest_story_line: BigInt(ps.story_line.toString()),
+        free_actions_count: fromWei(ps.free_actions_count.toString()),
+        sub_actions_count: fromWei(ps.sub_actions_count.toString()),
+        paid_actions_count: fromWei(ps.paid_actions_count.toString()),
+        storylines: enrichedStorylines,
+      };
     }
 
-    // const enrichedStorylines = await Promise.all(
-    //   (storylinesByGame[gameIdStr] ?? []).map(async (line) => {
-    //     let locationName = "";
-
-    //     try {
-    //       const locationEntity = await queryErrorLocation(
-    //         BigInt(line.game_id.toString()),
-    //         BigInt(player.inst.toString()),
-    //         BigInt(line.location.toString())
-    //       );
-
-    //       locationName = locationEntity?.name?.toString() ?? "";
-    //     } catch (e) {
-    //       console.error("Error resolving location for storyline:", e);
-    //     }
-
-    //     return {
-    //       ...line,
-    //       locationName,
-    //     };
-    //   })
-    // );
-
-    const enrichedStorylines = await mapWithConcurrency(
-      storylinesByGame[gameIdStr] ?? [],
-      8, // safe limit for 1000+ storylines
-      async (line) => {
-        const locationEntity = await queryErrorLocation(
-          BigInt(line.location.toString())
-        );
-
-        return {
-          ...line,
-          locationName: locationEntity?.name?.toString() ?? "",
-        };
-      }
-    );
-
-    grouped[playerAddress][gameIdStr] = {
-      latest_story_line: BigInt(ps.story_line.toString()),
-      free_actions_count: fromWei(ps.free_actions_count.toString()),
-      sub_actions_count: fromWei(ps.sub_actions_count.toString()),
-      paid_actions_count: fromWei(ps.paid_actions_count.toString()),
-      storylines: enrichedStorylines,
-    };
-  }
-
     // ---------------------------------
-    // 8 Export JSON
+    // 8 EXPORT SECTION (JSON + CSV)
     // ---------------------------------
+
+    const now = new Date();
     const formatter = new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
@@ -156,20 +125,91 @@ export const queryStories = async (): Promise<void> => {
       second: "2-digit",
     });
 
-    const filename = `player_data_${formatter
-      .format(new Date())
-      .replace(/ /g, "_")}.json`;
+    const formattedDate = formatter.format(now).replace(/ /g, "_");
+    const timestampISO = now.toISOString();
 
+    // ---------------- JSON ----------------
+    const jsonFilename = `player_data_${formattedDate}.json`;
     const json = JSONbig.stringify(grouped, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
+    const jsonBlob = new Blob([json], { type: "application/json" });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
 
-    URL.revokeObjectURL(url);
+    const jsonLink = document.createElement("a");
+    jsonLink.href = jsonUrl;
+    jsonLink.download = jsonFilename;
+    jsonLink.click();
+    URL.revokeObjectURL(jsonUrl);
+
+    // ---------------- CSV PREP ----------------
+    const currentRows: Record<string, any>[] = [];
+    const historicalRows: Record<string, any>[] = [];
+    const storylineRows: Record<string, any>[] = [];
+
+    for (const playerAddress in grouped) {
+      for (const gameId in grouped[playerAddress]) {
+        const game = grouped[playerAddress][gameId];
+
+        const baseRow = {
+          Snapshot_Timestamp: timestampISO,
+          Player_Address: playerAddress,
+          Game_ID: gameId,
+          Latest_Story_Line: Number(game.latest_story_line),
+          Free_Actions: game.free_actions_count,
+          Sub_Actions: game.sub_actions_count,
+          Paid_Actions: game.paid_actions_count,
+        };
+
+        currentRows.push(baseRow);
+        historicalRows.push(baseRow);
+
+        for (const line of game.storylines) {
+          storylineRows.push({
+            Snapshot_Timestamp: timestampISO,
+            Player_Address: playerAddress,
+            Game_ID: gameId,
+            Storyline_Key: Number(line.key),
+            Location_Name: line.locationName ?? "",
+            Line_Type: line.line_type,
+            Line_Text: line.line,
+          });
+        }
+      }
+    }
+
+    // ---------------- EXPORT CURRENT CSV ----------------
+    const currentCSV = convertToCSV(currentRows);
+    const currentBlob = new Blob([currentCSV], { type: "text/csv" });
+    const currentUrl = URL.createObjectURL(currentBlob);
+
+    const currentLink = document.createElement("a");
+    currentLink.href = currentUrl;
+    currentLink.download = `player_current_${formattedDate}.csv`;
+    currentLink.click();
+    URL.revokeObjectURL(currentUrl);
+
+    // ---------------- EXPORT HISTORICAL CSV ----------------
+    const historicalCSV = convertToCSV(historicalRows);
+    const historicalBlob = new Blob([historicalCSV], { type: "text/csv" });
+    const historicalUrl = URL.createObjectURL(historicalBlob);
+
+    const historicalLink = document.createElement("a");
+    historicalLink.href = historicalUrl;
+    historicalLink.download = `player_historical_${formattedDate}.csv`;
+    historicalLink.click();
+    URL.revokeObjectURL(historicalUrl);
+
+    // ---------------- EXPORT STORYLINES CSV ----------------
+    const storylineCSV = convertToCSV(storylineRows);
+    const storylineBlob = new Blob([storylineCSV], { type: "text/csv" });
+    const storylineUrl = URL.createObjectURL(storylineBlob);
+
+    const storylineLink = document.createElement("a");
+    storylineLink.href = storylineUrl;
+    storylineLink.download = `player_storylines_${formattedDate}.csv`;
+    storylineLink.click();
+    URL.revokeObjectURL(storylineUrl);
+
   } catch (error) {
     console.error("Error querying or exporting grouped PlayerStories:", error);
     throw error;
@@ -397,4 +437,20 @@ async function mapWithConcurrency<T, R>(
 
   await Promise.all(workers);
   return results;
+}
+
+// Helper: CSV Converter
+function convertToCSV(rows: Record<string, any>[]): string {
+  if (!rows.length) return "";
+
+  const headers = Object.keys(rows[0]);
+
+  const csv = [
+    headers.join(","),
+    ...rows.map((row) =>
+      headers.map((field) => JSON.stringify(row[field] ?? "")).join(",")
+    ),
+  ].join("\n");
+
+  return csv;
 }
