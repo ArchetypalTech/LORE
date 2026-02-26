@@ -38,3 +38,4 @@ allowed-libfuncs-list.name = "experimental"
 #
 [profile.dev]
 [profile.saya-test]
+[profile.sepolia]

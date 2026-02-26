@@ -1,7 +1,7 @@
 [world]
-seed = "lore_sn"
 name = ">LORE Starknet"
 description = "> get started with LORE Starknet"
+seed = "lore_sn"
 
 [namespace]
 default = "lore_sn"

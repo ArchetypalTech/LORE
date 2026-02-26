@@ -79,12 +79,12 @@ procs:
       # wait for L2 katana to start...
       wait-port ${KATANA_L2_PORT}
       #
-      echo ">>> Declaring L2 mocked fact registry contract..."
+      echo ">>> Deploying L2 mocked fact registry contract..."
       saya core-contract declare-and-deploy-fact-registry-mock --salt 0x0
       # will output: FACT_REGISTRY_ADDRESS
       echo "!!! Validate: FACT_REGISTRY_ADDRESS=${FACT_REGISTRY_ADDRESS}"
       #
-      echo ">>> Deploying L2 mocked fact registry contract..."
+      echo ">>> Deploying L2 core contract..."
       saya core-contract declare
       saya core-contract deploy --salt 0x0
       saya core-contract setup-program --chain-id ${KATANA_L3_CHAIN}
