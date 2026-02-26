@@ -1,55 +1,13 @@
 import {
-	getProfileEnv,
 	runProcess,
-	stringToFelt,
 	fileExistsAsync,
 } from "./common.ts";
+import { buildEnv } from "./env.ts";
 
 const PROFILE = process.argv[2];
 
-export const buildEnv = async () => {
-	console.log(`:: DEPLOY profile [${PROFILE}]`);
-	const seed = await getProfileEnv(PROFILE, "seed");
-	const SAYA_SALT = stringToFelt(seed ?? "");
-	const SETTLEMENT_RPC_URL = await getProfileEnv(PROFILE, "rpc_url");
-	const SETTLEMENT_CHAIN_ID = await getProfileEnv(PROFILE, "settlement_chain_id");
-	const CORE_CONTRACT_ADDRESS = await getProfileEnv(PROFILE, "core_contract_address");
-	const CORE_CONTRACT_DEPLOYED_BLOCK = await getProfileEnv(PROFILE, "core_contract_deployed_block");
-	const FACT_REGISTRY_ADDRESS = await getProfileEnv(PROFILE, "fact_registry_address");
-	const APPCHAIN_ID = await getProfileEnv(PROFILE, "appchain_id");
-	const APPCHAIN_CONFIG_PATH = `./data/${APPCHAIN_ID}`;
-	const KATANA_L3_BIN = `./bin/katana-1.7.0-snos.4`;
-	
-	console.log(`:: SETTLEMENT_CHAIN_ID (L2) [${SETTLEMENT_CHAIN_ID}]`);
-	console.log(`:: APPCHAIN_ID (L3) [${APPCHAIN_ID}]`);
-
-	// required env:
-	// SETTLEMENT_ACCOUNT_ADDRESS:...
-	// SETTLEMENT_ACCOUNT_PRIVATE_KEY:...
-	const env = {
-		// secrets, from .env
-		SETTLEMENT_ACCOUNT_ADDRESS: import.meta.env.SETTLEMENT_ACCOUNT_ADDRESS,
-		SETTLEMENT_ACCOUNT_PRIVATE_KEY: import.meta.env.SETTLEMENT_ACCOUNT_PRIVATE_KEY,
-		DOJO_ACCOUNT_ADDRESS: import.meta.env.DOJO_ACCOUNT_ADDRESS,
-		DOJO_PRIVATE_KEY: import.meta.env.DOJO_PRIVATE_KEY,
-		// used by sozo and saya
-		SETTLEMENT_CHAIN_ID,
-		SETTLEMENT_RPC_URL,
-		CORE_CONTRACT_ADDRESS,
-		CORE_CONTRACT_DEPLOYED_BLOCK,
-		FACT_REGISTRY_ADDRESS,
-		// required parameters
-		SAYA_SALT,
-		APPCHAIN_ID,
-		APPCHAIN_CONFIG_PATH,
-		KATANA_L3_BIN,
-	}
-
-	return env;
-};
-
 export const deployCoreContract = async () => {
-	const env = await buildEnv();
+	const env = await buildEnv(PROFILE);
 
 	if (!env.SAYA_SALT) throw new Error(`!! SAYA_SALT not found for profile [${PROFILE}]`);
 	if (!env.SETTLEMENT_CHAIN_ID) throw new Error(`!! SETTLEMENT_CHAIN_ID not found for profile [${PROFILE}]`);
@@ -90,7 +48,7 @@ export const deployCoreContract = async () => {
 };
 
 export const deployDojoContracts = async () => {
-	const env = await buildEnv();
+	const env = await buildEnv(PROFILE);
 
 	if (!env.DOJO_ACCOUNT_ADDRESS) throw new Error(`!! DOJO_ACCOUNT_ADDRESS env variable not set`);
 	if (!env.DOJO_PRIVATE_KEY) throw new Error(`!! DOJO_PRIVATE_KEY env variable not set`);

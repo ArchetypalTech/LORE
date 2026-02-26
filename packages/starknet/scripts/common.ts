@@ -19,21 +19,29 @@ export const getProfileEnv = async (profile: string, envName: string) => {
 	}
 };
 
-export const runProcess = async (command: string, env: any = {}) => {
+export const runProcess = async (command: string, env: any = {}, ignoreError: boolean = false) => {
 	console.log(`>> ${command}`);
 	const cmd = command.split(" ");
 	const proc = Bun.spawn(cmd, {
 		env: { ...import.meta.env, ...env },
 		onExit: async (proc, exitCode, signalCode, error) => {
 			if (error || exitCode !== 0) {
+				console.error(">>> runProcess() error:", error, exitCode);
+				if (!ignoreError) {
+					process.exit(exitCode);
+				}
 				throw error;
 			}
 		},
 	});
-	const output = await new Response(proc.stdout).text();
-	console.log(output);
-	await proc.exited;
-	return output;
+	try {
+		const output = await new Response(proc.stdout).text();
+		console.log(output);
+		await proc.exited;
+		return output;
+	} catch (error) {
+		return undefined;
+	}
 };
 
 export const stringToFelt = (v: string): BigNumberish => (v ? shortString.encodeShortString(v) : '0x0')

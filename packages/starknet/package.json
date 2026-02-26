@@ -3,7 +3,8 @@
 	"version": "0.1.0",
 	"type": "module",
 	"scripts": {
-		"sepolia:deploy": "bun scripts/deploy.ts sepolia"
+		"sepolia:deploy": "bun scripts/sn_deploy.ts sepolia",
+		"sepolia:slot": "bun scripts/sn_slot.ts sepolia"
 	},
 	"dependencies": {
 	},
