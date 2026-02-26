@@ -37,3 +37,12 @@ export const runProcess = async (command: string, env: any = {}) => {
 };
 
 export const stringToFelt = (v: string): BigNumberish => (v ? shortString.encodeShortString(v) : '0x0')
+
+export async function fileExistsAsync(path: string): Promise<boolean> {
+  try {
+    await fs.access(path, fs.constants.F_OK);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

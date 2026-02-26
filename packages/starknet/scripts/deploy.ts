@@ -1,40 +1,60 @@
-import { getProfileEnv, runProcess, stringToFelt } from "./common.ts";
+import {
+	getProfileEnv,
+	runProcess,
+	stringToFelt,
+	fileExistsAsync,
+} from "./common.ts";
 
 const PROFILE = process.argv[2];
 
-export const deployStarknet = async () => {
+export const buildEnv = async () => {
 	console.log(`:: DEPLOY profile [${PROFILE}]`);
 	const seed = await getProfileEnv(PROFILE, "seed");
-	const salt = stringToFelt(seed ?? "");
-	const rpc_url = await getProfileEnv(PROFILE, "rpc_url");
-	const settlement_chain_id = await getProfileEnv(PROFILE, "settlement_chain_id");
-	const appchain_id = await getProfileEnv(PROFILE, "appchain_id");
-	const core_contract_address = await getProfileEnv(PROFILE, "core_contract_address");
-	const core_contract_deployed_block = await getProfileEnv(PROFILE, "core_contract_deployed_block");
-	const fact_registry_address = await getProfileEnv(PROFILE, "fact_registry_address");
+	const SAYA_SALT = stringToFelt(seed ?? "");
+	const SETTLEMENT_RPC_URL = await getProfileEnv(PROFILE, "rpc_url");
+	const SETTLEMENT_CHAIN_ID = await getProfileEnv(PROFILE, "settlement_chain_id");
+	const CORE_CONTRACT_ADDRESS = await getProfileEnv(PROFILE, "core_contract_address");
+	const CORE_CONTRACT_DEPLOYED_BLOCK = await getProfileEnv(PROFILE, "core_contract_deployed_block");
+	const FACT_REGISTRY_ADDRESS = await getProfileEnv(PROFILE, "fact_registry_address");
+	const APPCHAIN_ID = await getProfileEnv(PROFILE, "appchain_id");
+	const APPCHAIN_CONFIG_PATH = `./data/${APPCHAIN_ID}`;
+	const KATANA_L3_BIN = `./bin/katana-1.7.0-snos.4`;
 	
-	console.log(`:: settlement_chain_id [${settlement_chain_id}]`);
-	console.log(`:: appchain_id [${appchain_id}]`);
-	console.log(`:: seed [${seed}]`);
-	console.log(`:: salt [${salt}]`);
+	console.log(`:: SETTLEMENT_CHAIN_ID (L2) [${SETTLEMENT_CHAIN_ID}]`);
+	console.log(`:: APPCHAIN_ID (L3) [${APPCHAIN_ID}]`);
 
 	// required env:
 	// SETTLEMENT_ACCOUNT_ADDRESS:...
 	// SETTLEMENT_ACCOUNT_PRIVATE_KEY:...
 	const env = {
+		// secrets, from .env
 		SETTLEMENT_ACCOUNT_ADDRESS: import.meta.env.SETTLEMENT_ACCOUNT_ADDRESS,
 		SETTLEMENT_ACCOUNT_PRIVATE_KEY: import.meta.env.SETTLEMENT_ACCOUNT_PRIVATE_KEY,
-		SETTLEMENT_CHAIN_ID: settlement_chain_id,
-		SETTLEMENT_RPC_URL: rpc_url,
-		CORE_CONTRACT_ADDRESS: core_contract_address,
-		CORE_CONTRACT_DEPLOYED_BLOCK: core_contract_deployed_block,
-		FACT_REGISTRY_ADDRESS: fact_registry_address,
+		DOJO_ACCOUNT_ADDRESS: import.meta.env.DOJO_ACCOUNT_ADDRESS,
+		DOJO_PRIVATE_KEY: import.meta.env.DOJO_PRIVATE_KEY,
+		// used by sozo and saya
+		SETTLEMENT_CHAIN_ID,
+		SETTLEMENT_RPC_URL,
+		CORE_CONTRACT_ADDRESS,
+		CORE_CONTRACT_DEPLOYED_BLOCK,
+		FACT_REGISTRY_ADDRESS,
+		// required parameters
+		SAYA_SALT,
+		APPCHAIN_ID,
+		APPCHAIN_CONFIG_PATH,
+		KATANA_L3_BIN,
 	}
 
-	if (!salt) throw new Error(`!! seed not found for profile [${PROFILE}]`);
-	if (!settlement_chain_id) throw new Error(`!! settlement_chain_id not found for profile [${PROFILE}]`);
-	if (!appchain_id) throw new Error(`!! appchain_id not found for profile [${PROFILE}]`);
-	if (!rpc_url) throw new Error(`!! rpc_url not found for profile [${PROFILE}]`);
+	return env;
+};
+
+export const deployCoreContract = async () => {
+	const env = await buildEnv();
+
+	if (!env.SAYA_SALT) throw new Error(`!! SAYA_SALT not found for profile [${PROFILE}]`);
+	if (!env.SETTLEMENT_CHAIN_ID) throw new Error(`!! SETTLEMENT_CHAIN_ID not found for profile [${PROFILE}]`);
+	if (!env.APPCHAIN_ID) throw new Error(`!! APPCHAIN_ID not found for profile [${PROFILE}]`);
+	if (!env.SETTLEMENT_RPC_URL) throw new Error(`!! SETTLEMENT_RPC_URL not found for profile [${PROFILE}]`);
 	if (!env.SETTLEMENT_ACCOUNT_ADDRESS) throw new Error(`!! SETTLEMENT_ACCOUNT_ADDRESS env variable not set`);
 	if (!env.SETTLEMENT_ACCOUNT_PRIVATE_KEY) throw new Error(`!! SETTLEMENT_ACCOUNT_PRIVATE_KEY env variable not set`);
 
@@ -42,19 +62,46 @@ export const deployStarknet = async () => {
 	console.log(`::`);
 	console.log(`:: Deploying core contract...`, env);
 	await runProcess(`saya core-contract declare`, env);
-	await runProcess(`saya core-contract deploy --salt ${salt}`, env);
+	await runProcess(`saya core-contract deploy --salt ${env.SAYA_SALT}`, env);
 	// core_contract_address is printed...
-	if (!core_contract_address) throw new Error(`!! core_contract_address not found for profile [${PROFILE}]`);
-	if (!core_contract_deployed_block) throw new Error(`!! core_contract_deployed_block not found for profile [${PROFILE}]`);
-	if (!fact_registry_address) throw new Error(`!! fact_registry_address not found for profile [${PROFILE}]`);
+	if (!env.CORE_CONTRACT_ADDRESS) throw new Error(`!! CORE_CONTRACT_ADDRESS not found for profile [${PROFILE}]`);
+	if (!env.CORE_CONTRACT_DEPLOYED_BLOCK) throw new Error(`!! CORE_CONTRACT_DEPLOYED_BLOCK not found for profile [${PROFILE}]`);
+	if (!env.FACT_REGISTRY_ADDRESS) throw new Error(`!! FACT_REGISTRY_ADDRESS not found for profile [${PROFILE}]`);
 	console.log(`:: Setting up program...`);
-	await runProcess(`saya core-contract setup-program --chain-id ${appchain_id}`, env);
+	await runProcess(`saya core-contract setup-program --chain-id ${env.APPCHAIN_ID}`, env);
+
+	// Build appchain config
+	console.log(`::`);
+	console.log(`:: Building appchain config...`);
+	if (!env.APPCHAIN_CONFIG_PATH) throw new Error(`!! APPCHAIN_CONFIG_PATH not found for profile [${PROFILE}]`);
+	if (!await fileExistsAsync(env.KATANA_L3_BIN)) throw new Error(`!! KATANA_L3_BIN not found [${env.KATANA_L3_BIN}]`);
+	const cmd = [
+		env.KATANA_L3_BIN,
+		`init`,
+		`--settlement-chain ${env.SETTLEMENT_RPC_URL}`,
+		`--id ${env.APPCHAIN_ID}`,
+		`--settlement-contract ${env.CORE_CONTRACT_ADDRESS}`,
+		`--settlement-contract-deployed-block ${env.CORE_CONTRACT_DEPLOYED_BLOCK}`,
+		`--settlement-facts-registry ${env.FACT_REGISTRY_ADDRESS}`,
+		`--output-path ${env.APPCHAIN_CONFIG_PATH}`
+	]
+	await runProcess(cmd.join(" "), env);
+	await runProcess(`ls -l ${env.APPCHAIN_CONFIG_PATH}`, env);
+};
+
+export const deployDojoContracts = async () => {
+	const env = await buildEnv();
+
+	if (!env.DOJO_ACCOUNT_ADDRESS) throw new Error(`!! DOJO_ACCOUNT_ADDRESS env variable not set`);
+	if (!env.DOJO_PRIVATE_KEY) throw new Error(`!! DOJO_PRIVATE_KEY env variable not set`);
 
 	// Deploy Dojo contracts
+	console.log(`::`);
 	console.log(`:: DEPLOYING DOJO CONTRACTS`);
 	await runProcess(`sozo build --profile ${PROFILE} --typescript`);
 	await runProcess(`sozo inspect --profile ${PROFILE}`);
 	await runProcess(`sozo migrate --profile ${PROFILE}`);
 };
 
-await deployStarknet();
+await deployCoreContract();
+await deployDojoContracts();
