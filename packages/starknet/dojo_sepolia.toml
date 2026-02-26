@@ -15,7 +15,7 @@ core_contract_address = "0x9496013cd0ffc7111c6c8358830d0f0453615b56f99a125878130
 core_contract_deployed_block = "6881095"
 fact_registry_address = "0x07d3550237ecf2d6ddef9b78e59b38647ee511467fe000ce276f245a006b40bc"
 
-world_address = "0x07d90bdb9b6af74c5c9c29e16a909e82e9faa78da2bf6c35b07504262592f17a"
+world_address = "0x0757293bbab55927b8990fc154a8b3e758a66e6ccb3f38ab701aa1f2e91f1f24"
 # account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
 # private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 

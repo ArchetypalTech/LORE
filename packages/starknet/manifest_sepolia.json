@@ -1,0 +1,3188 @@
+{
+  "world": {
+    "class_hash": "0x613551abceb2b37073b1149bb862ea70cf029981ce1ca47e9dd7c7ab97cb65d",
+    "address": "0x757293bbab55927b8990fc154a8b3e758a66e6ccb3f38ab701aa1f2e91f1f24",
+    "seed": "lore_sn_0_2_0",
+    "name": ">LORE Starknet",
+    "entrypoints": [
+      "uuid",
+      "set_metadata",
+      "register_namespace",
+      "register_event",
+      "register_model",
+      "register_contract",
+      "register_external_contract",
+      "register_library",
+      "init_contract",
+      "upgrade_event",
+      "upgrade_model",
+      "upgrade_contract",
+      "upgrade_external_contract",
+      "emit_event",
+      "emit_events",
+      "set_entity",
+      "set_entities",
+      "delete_entity",
+      "delete_entities",
+      "grant_owner",
+      "revoke_owner",
+      "grant_writer",
+      "revoke_writer",
+      "upgrade"
+    ]
+  },
+  "contracts": [
+    {
+      "address": "0x52073be9902c993ddb321883133b8c64e0a1c544af014c2a36c367fdcd8d2e6",
+      "class_hash": "0x5dfdd3eb54d079e095da9264b26c70bbc8ae99f43125733bd131bc5228239ce",
+      "init_calldata": [
+        "0x0",
+        "0x0",
+        "0x0"
+      ],
+      "tag": "lore_sn-permit_token",
+      "selector": "0x2d3a920998a56ef0bfbf8a5e791ba1c5db29d4f18866a2161472de9ea7794eb",
+      "systems": [
+        "dojo_init",
+        "purchased_starter_pack",
+        "set_messaging_contract",
+        "set_appchain_contract",
+        "set_cartridge_contract",
+        "set_permit_type",
+        "consume_message",
+        "upgrade",
+        "safe_transfer_from",
+        "transfer_from",
+        "approve",
+        "set_approval_for_all",
+        "safeTransferFrom",
+        "transferFrom",
+        "setApprovalForAll"
+      ]
+    }
+  ],
+  "libraries": [],
+  "models": [
+    {
+      "members": [
+        {
+          "name": "key",
+          "type": "core::felt252",
+          "key": true
+        },
+        {
+          "name": "messaging_contract",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "appchain_contract",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "cartridge_contract",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        }
+      ],
+      "class_hash": "0x5d0f0d48f7ff4aed422ed330a52ae5603d8d624014350145a278d10671d098b",
+      "tag": "lore_sn-PermitConfig",
+      "selector": "0x6be525a00ffdbe4f401e35d6adb121904d41b37843adfe76a74144893bd8f88"
+    },
+    {
+      "members": [
+        {
+          "name": "permit_id",
+          "type": "core::integer::u128",
+          "key": true
+        },
+        {
+          "name": "permit_type",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "is_used",
+          "type": "core::bool",
+          "key": false
+        },
+        {
+          "name": "trail_name",
+          "type": "core::byte_array::ByteArray",
+          "key": false
+        }
+      ],
+      "class_hash": "0x749c80aa4802a115ee5b8fd2bb4376e39b90fa57b64c9612319b065e459941e",
+      "tag": "lore_sn-PermitTokenInfo",
+      "selector": "0x2236270e21597bd9bcb5866b2c9500c5e9ea51aefe49d492694291b050e5385"
+    },
+    {
+      "members": [
+        {
+          "name": "permit_type",
+          "type": "core::felt252",
+          "key": true
+        },
+        {
+          "name": "actions_count",
+          "type": "core::integer::u32",
+          "key": false
+        }
+      ],
+      "class_hash": "0x78614f494dbfe36ffb386cc54226dd2c7760417fe9067218bad60f2e1dd13b8",
+      "tag": "lore_sn-PermitType",
+      "selector": "0x7caf7f9dbcbb4913459126a00f62c827f9ba7c37e5be402f2246f4530dc53e1"
+    }
+  ],
+  "events": [
+    {
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "caller_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "from_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "to_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "message_type",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "payload",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        }
+      ],
+      "class_hash": "0x1faa158cda0478f0d14fc63a80acb5728dfe42a749b8842c1ee103009d26b11",
+      "tag": "lore_sn-AppchainMessageEvent",
+      "selector": "0x53747592e0b56248201d6f92208db88970ab41abd528ab924cc023c0ec09fc"
+    }
+  ],
+  "external_contracts": [],
+  "abis": [
+    {
+      "type": "constructor",
+      "name": "constructor",
+      "inputs": []
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<(core::felt252, dojo::meta::introspect::Ty)>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<(core::felt252, dojo::meta::introspect::Ty)>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<core::array::Span::<core::felt252>>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<core::array::Span::<core::felt252>>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<core::felt252>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<core::integer::u8>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<core::integer::u8>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<dojo::meta::introspect::Member>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<dojo::meta::introspect::Member>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<dojo::meta::introspect::Ty>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<dojo::meta::introspect::Ty>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<dojo::meta::layout::FieldLayout>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<dojo::meta::layout::FieldLayout>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<dojo::meta::layout::Layout>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<dojo::meta::layout::Layout>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<dojo::model::definition::ModelIndex>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<dojo::model::definition::ModelIndex>"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "core::bool",
+      "variants": [
+        {
+          "name": "False",
+          "type": "()"
+        },
+        {
+          "name": "True",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::byte_array::ByteArray",
+      "members": [
+        {
+          "name": "data",
+          "type": "core::array::Array::<core::bytes_31::bytes31>"
+        },
+        {
+          "name": "pending_word",
+          "type": "core::felt252"
+        },
+        {
+          "name": "pending_word_len",
+          "type": "core::internal::bounded_int::BoundedInt::<0, 30>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::integer::u256",
+      "members": [
+        {
+          "name": "low",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "high",
+          "type": "core::integer::u128"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "core::option::Option::<core::integer::u32>",
+      "variants": [
+        {
+          "name": "Some",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "None",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::contract::components::upgradeable::IUpgradeable",
+      "items": [
+        {
+          "type": "function",
+          "name": "upgrade",
+          "inputs": [
+            {
+              "name": "new_class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "Upgraded",
+          "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::contract::components::world_provider::IWorldProvider",
+      "items": [
+        {
+          "type": "function",
+          "name": "world_dispatcher",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::world::iworld::IWorldDispatcher"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "interface",
+      "name": "dojo::contract::interface::IContract",
+      "items": []
+    },
+    {
+      "type": "struct",
+      "name": "dojo::event::event::EventDef",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "layout",
+          "type": "dojo::meta::layout::Layout"
+        },
+        {
+          "name": "schema",
+          "type": "dojo::meta::introspect::Struct"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::event::interface::IEvent",
+      "items": [
+        {
+          "type": "function",
+          "name": "definition",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::event::event::EventDef"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::meta::interface::IDeployedResource",
+      "items": [
+        {
+          "type": "function",
+          "name": "dojo_name",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::meta::interface::IStoredResource",
+      "items": [
+        {
+          "type": "function",
+          "name": "layout",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::meta::layout::Layout"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "schema",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::meta::introspect::Struct"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "dojo::meta::introspect::Enum",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::felt252"
+        },
+        {
+          "name": "attrs",
+          "type": "core::array::Span::<core::felt252>"
+        },
+        {
+          "name": "children",
+          "type": "core::array::Span::<(core::felt252, dojo::meta::introspect::Ty)>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "dojo::meta::introspect::Member",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::felt252"
+        },
+        {
+          "name": "attrs",
+          "type": "core::array::Span::<core::felt252>"
+        },
+        {
+          "name": "ty",
+          "type": "dojo::meta::introspect::Ty"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "dojo::meta::introspect::Struct",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::felt252"
+        },
+        {
+          "name": "attrs",
+          "type": "core::array::Span::<core::felt252>"
+        },
+        {
+          "name": "children",
+          "type": "core::array::Span::<dojo::meta::introspect::Member>"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "dojo::meta::introspect::Ty",
+      "variants": [
+        {
+          "name": "Primitive",
+          "type": "core::felt252"
+        },
+        {
+          "name": "Struct",
+          "type": "dojo::meta::introspect::Struct"
+        },
+        {
+          "name": "Enum",
+          "type": "dojo::meta::introspect::Enum"
+        },
+        {
+          "name": "Tuple",
+          "type": "core::array::Span::<dojo::meta::introspect::Ty>"
+        },
+        {
+          "name": "Array",
+          "type": "core::array::Span::<dojo::meta::introspect::Ty>"
+        },
+        {
+          "name": "ByteArray",
+          "type": "()"
+        },
+        {
+          "name": "FixedArray",
+          "type": "(core::array::Span::<dojo::meta::introspect::Ty>, core::integer::u32)"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "dojo::meta::layout::FieldLayout",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252"
+        },
+        {
+          "name": "layout",
+          "type": "dojo::meta::layout::Layout"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "dojo::meta::layout::Layout",
+      "variants": [
+        {
+          "name": "Fixed",
+          "type": "core::array::Span::<core::integer::u8>"
+        },
+        {
+          "name": "Struct",
+          "type": "core::array::Span::<dojo::meta::layout::FieldLayout>"
+        },
+        {
+          "name": "Tuple",
+          "type": "core::array::Span::<dojo::meta::layout::Layout>"
+        },
+        {
+          "name": "Array",
+          "type": "core::array::Span::<dojo::meta::layout::Layout>"
+        },
+        {
+          "name": "ByteArray",
+          "type": "()"
+        },
+        {
+          "name": "Enum",
+          "type": "core::array::Span::<dojo::meta::layout::FieldLayout>"
+        },
+        {
+          "name": "FixedArray",
+          "type": "(core::array::Span::<dojo::meta::layout::Layout>, core::integer::u32)"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "dojo::model::definition::ModelDef",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "layout",
+          "type": "dojo::meta::layout::Layout"
+        },
+        {
+          "name": "schema",
+          "type": "dojo::meta::introspect::Struct"
+        },
+        {
+          "name": "packed_size",
+          "type": "core::option::Option::<core::integer::u32>"
+        },
+        {
+          "name": "unpacked_size",
+          "type": "core::option::Option::<core::integer::u32>"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "dojo::model::definition::ModelIndex",
+      "variants": [
+        {
+          "name": "Keys",
+          "type": "core::array::Span::<core::felt252>"
+        },
+        {
+          "name": "Id",
+          "type": "core::felt252"
+        },
+        {
+          "name": "MemberId",
+          "type": "(core::felt252, core::felt252)"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::model::interface::IModel",
+      "items": [
+        {
+          "type": "function",
+          "name": "unpacked_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::option::Option::<core::integer::u32>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "packed_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::option::Option::<core::integer::u32>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "definition",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::model::definition::ModelDef"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "use_legacy_storage",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "dojo::model::metadata::ResourceMetadata",
+      "members": [
+        {
+          "name": "resource_id",
+          "type": "core::felt252"
+        },
+        {
+          "name": "metadata_uri",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "metadata_hash",
+          "type": "core::felt252"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::world::iworld::IUpgradeableWorld",
+      "items": [
+        {
+          "type": "function",
+          "name": "upgrade",
+          "inputs": [
+            {
+              "name": "new_class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "dojo::world::iworld::IWorld",
+      "items": [
+        {
+          "type": "function",
+          "name": "resource",
+          "inputs": [
+            {
+              "name": "selector",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "dojo::world::resource::Resource"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "world_version",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::felt252"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "uuid",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "metadata",
+          "inputs": [
+            {
+              "name": "resource_selector",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "dojo::model::metadata::ResourceMetadata"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "set_metadata",
+          "inputs": [
+            {
+              "name": "metadata",
+              "type": "dojo::model::metadata::ResourceMetadata"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "register_namespace",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "register_event",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "register_model",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "register_contract",
+          "inputs": [
+            {
+              "name": "salt",
+              "type": "core::felt252"
+            },
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "register_external_contract",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "contract_name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "instance_name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "block_number",
+              "type": "core::integer::u64"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "register_library",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            },
+            {
+              "name": "name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "version",
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "init_contract",
+          "inputs": [
+            {
+              "name": "selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "init_calldata",
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "upgrade_event",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "upgrade_model",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "upgrade_contract",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::class_hash::ClassHash"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "upgrade_external_contract",
+          "inputs": [
+            {
+              "name": "namespace",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "instance_name",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "block_number",
+              "type": "core::integer::u64"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "emit_event",
+          "inputs": [
+            {
+              "name": "event_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "keys",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "values",
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "emit_events",
+          "inputs": [
+            {
+              "name": "event_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "keys",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            },
+            {
+              "name": "values",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "entity",
+          "inputs": [
+            {
+              "name": "model_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "index",
+              "type": "dojo::model::definition::ModelIndex"
+            },
+            {
+              "name": "layout",
+              "type": "dojo::meta::layout::Layout"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "entities",
+          "inputs": [
+            {
+              "name": "model_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "indexes",
+              "type": "core::array::Span::<dojo::model::definition::ModelIndex>"
+            },
+            {
+              "name": "layout",
+              "type": "dojo::meta::layout::Layout"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "set_entity",
+          "inputs": [
+            {
+              "name": "model_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "index",
+              "type": "dojo::model::definition::ModelIndex"
+            },
+            {
+              "name": "values",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "layout",
+              "type": "dojo::meta::layout::Layout"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_entities",
+          "inputs": [
+            {
+              "name": "model_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "indexes",
+              "type": "core::array::Span::<dojo::model::definition::ModelIndex>"
+            },
+            {
+              "name": "values",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            },
+            {
+              "name": "layout",
+              "type": "dojo::meta::layout::Layout"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "delete_entity",
+          "inputs": [
+            {
+              "name": "model_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "index",
+              "type": "dojo::model::definition::ModelIndex"
+            },
+            {
+              "name": "layout",
+              "type": "dojo::meta::layout::Layout"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "delete_entities",
+          "inputs": [
+            {
+              "name": "model_selector",
+              "type": "core::felt252"
+            },
+            {
+              "name": "indexes",
+              "type": "core::array::Span::<dojo::model::definition::ModelIndex>"
+            },
+            {
+              "name": "layout",
+              "type": "dojo::meta::layout::Layout"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "is_owner",
+          "inputs": [
+            {
+              "name": "resource",
+              "type": "core::felt252"
+            },
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "grant_owner",
+          "inputs": [
+            {
+              "name": "resource",
+              "type": "core::felt252"
+            },
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "revoke_owner",
+          "inputs": [
+            {
+              "name": "resource",
+              "type": "core::felt252"
+            },
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "owners_count",
+          "inputs": [
+            {
+              "name": "resource",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u64"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_writer",
+          "inputs": [
+            {
+              "name": "resource",
+              "type": "core::felt252"
+            },
+            {
+              "name": "contract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "grant_writer",
+          "inputs": [
+            {
+              "name": "resource",
+              "type": "core::felt252"
+            },
+            {
+              "name": "contract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "revoke_writer",
+          "inputs": [
+            {
+              "name": "resource",
+              "type": "core::felt252"
+            },
+            {
+              "name": "contract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "dojo::world::iworld::IWorldDispatcher",
+      "members": [
+        {
+          "name": "contract_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "dojo::world::resource::Resource",
+      "variants": [
+        {
+          "name": "Model",
+          "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
+        },
+        {
+          "name": "Event",
+          "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
+        },
+        {
+          "name": "Contract",
+          "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
+        },
+        {
+          "name": "Namespace",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "World",
+          "type": "()"
+        },
+        {
+          "name": "Unregistered",
+          "type": "()"
+        },
+        {
+          "name": "Library",
+          "type": "(core::starknet::class_hash::ClassHash, core::felt252)"
+        },
+        {
+          "name": "ExternalContract",
+          "type": "(core::starknet::contract_address::ContractAddress, core::felt252)"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::ContractInitialized",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "init_calldata",
+          "type": "core::array::Span::<core::felt252>",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::ContractRegistered",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "namespace",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        },
+        {
+          "name": "salt",
+          "type": "core::felt252",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::ContractUpgraded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "WorldSpawned",
+          "type": "dojo::world::world_contract::world::WorldSpawned",
+          "kind": "nested"
+        },
+        {
+          "name": "WorldUpgraded",
+          "type": "dojo::world::world_contract::world::WorldUpgraded",
+          "kind": "nested"
+        },
+        {
+          "name": "NamespaceRegistered",
+          "type": "dojo::world::world_contract::world::NamespaceRegistered",
+          "kind": "nested"
+        },
+        {
+          "name": "ModelRegistered",
+          "type": "dojo::world::world_contract::world::ModelRegistered",
+          "kind": "nested"
+        },
+        {
+          "name": "EventRegistered",
+          "type": "dojo::world::world_contract::world::EventRegistered",
+          "kind": "nested"
+        },
+        {
+          "name": "ContractRegistered",
+          "type": "dojo::world::world_contract::world::ContractRegistered",
+          "kind": "nested"
+        },
+        {
+          "name": "ExternalContractRegistered",
+          "type": "dojo::world::world_contract::world::ExternalContractRegistered",
+          "kind": "nested"
+        },
+        {
+          "name": "ExternalContractUpgraded",
+          "type": "dojo::world::world_contract::world::ExternalContractUpgraded",
+          "kind": "nested"
+        },
+        {
+          "name": "ModelUpgraded",
+          "type": "dojo::world::world_contract::world::ModelUpgraded",
+          "kind": "nested"
+        },
+        {
+          "name": "EventUpgraded",
+          "type": "dojo::world::world_contract::world::EventUpgraded",
+          "kind": "nested"
+        },
+        {
+          "name": "ContractUpgraded",
+          "type": "dojo::world::world_contract::world::ContractUpgraded",
+          "kind": "nested"
+        },
+        {
+          "name": "ContractInitialized",
+          "type": "dojo::world::world_contract::world::ContractInitialized",
+          "kind": "nested"
+        },
+        {
+          "name": "LibraryRegistered",
+          "type": "dojo::world::world_contract::world::LibraryRegistered",
+          "kind": "nested"
+        },
+        {
+          "name": "EventEmitted",
+          "type": "dojo::world::world_contract::world::EventEmitted",
+          "kind": "nested"
+        },
+        {
+          "name": "MetadataUpdate",
+          "type": "dojo::world::world_contract::world::MetadataUpdate",
+          "kind": "nested"
+        },
+        {
+          "name": "StoreSetRecord",
+          "type": "dojo::world::world_contract::world::StoreSetRecord",
+          "kind": "nested"
+        },
+        {
+          "name": "StoreUpdateRecord",
+          "type": "dojo::world::world_contract::world::StoreUpdateRecord",
+          "kind": "nested"
+        },
+        {
+          "name": "StoreUpdateMember",
+          "type": "dojo::world::world_contract::world::StoreUpdateMember",
+          "kind": "nested"
+        },
+        {
+          "name": "StoreDelRecord",
+          "type": "dojo::world::world_contract::world::StoreDelRecord",
+          "kind": "nested"
+        },
+        {
+          "name": "WriterUpdated",
+          "type": "dojo::world::world_contract::world::WriterUpdated",
+          "kind": "nested"
+        },
+        {
+          "name": "OwnerUpdated",
+          "type": "dojo::world::world_contract::world::OwnerUpdated",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::EventEmitted",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "system_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "keys",
+          "type": "core::array::Span::<core::felt252>",
+          "kind": "data"
+        },
+        {
+          "name": "values",
+          "type": "core::array::Span::<core::felt252>",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::EventRegistered",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "namespace",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        },
+        {
+          "name": "address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::EventUpgraded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        },
+        {
+          "name": "address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "prev_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::ExternalContractRegistered",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "namespace",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "contract_name",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "instance_name",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "contract_selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        },
+        {
+          "name": "contract_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::ExternalContractUpgraded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "namespace",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "instance_name",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "contract_selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        },
+        {
+          "name": "contract_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::LibraryRegistered",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "namespace",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::MetadataUpdate",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "resource",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "uri",
+          "type": "core::byte_array::ByteArray",
+          "kind": "data"
+        },
+        {
+          "name": "hash",
+          "type": "core::felt252",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::ModelRegistered",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "name",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "namespace",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        },
+        {
+          "name": "address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::ModelUpgraded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        },
+        {
+          "name": "address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "prev_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::NamespaceRegistered",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "namespace",
+          "type": "core::byte_array::ByteArray",
+          "kind": "key"
+        },
+        {
+          "name": "hash",
+          "type": "core::felt252",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::OwnerUpdated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "resource",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "contract",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "value",
+          "type": "core::bool",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::StoreDelRecord",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "entity_id",
+          "type": "core::felt252",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::StoreSetRecord",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "entity_id",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "keys",
+          "type": "core::array::Span::<core::felt252>",
+          "kind": "data"
+        },
+        {
+          "name": "values",
+          "type": "core::array::Span::<core::felt252>",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::StoreUpdateMember",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "entity_id",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "member_selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "values",
+          "type": "core::array::Span::<core::felt252>",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::StoreUpdateRecord",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "selector",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "entity_id",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "values",
+          "type": "core::array::Span::<core::felt252>",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::WorldSpawned",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "creator",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::WorldUpgraded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "class_hash",
+          "type": "core::starknet::class_hash::ClassHash",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "dojo::world::world_contract::world::WriterUpdated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "resource",
+          "type": "core::felt252",
+          "kind": "key"
+        },
+        {
+          "name": "contract",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "value",
+          "type": "core::bool",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "dojo_init",
+      "inputs": [
+        {
+          "name": "messaging_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "appchain_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "cartridge_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ],
+      "outputs": [],
+      "state_mutability": "external"
+    },
+    {
+      "type": "function",
+      "name": "ensure_abi",
+      "inputs": [
+        {
+          "name": "event",
+          "type": "lore_sn::models::appchain::AppchainMessageEvent"
+        }
+      ],
+      "outputs": [],
+      "state_mutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ensure_unique",
+      "inputs": [],
+      "outputs": [],
+      "state_mutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ensure_values",
+      "inputs": [
+        {
+          "name": "value",
+          "type": "lore_sn::models::appchain::AppchainMessageEventValue"
+        }
+      ],
+      "outputs": [],
+      "state_mutability": "view"
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::appchain::AppchainMessageEvent",
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "caller_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "from_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "to_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "message_type",
+          "type": "core::felt252"
+        },
+        {
+          "name": "payload",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::appchain::AppchainMessageEventValue",
+      "members": [
+        {
+          "name": "caller_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "from_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "to_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "message_type",
+          "type": "core::felt252"
+        },
+        {
+          "name": "payload",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::models::appchain::e_AppchainMessageEvent::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::permit_config::PermitConfig",
+      "members": [
+        {
+          "name": "key",
+          "type": "core::felt252"
+        },
+        {
+          "name": "messaging_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "appchain_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "cartridge_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::permit_config::PermitConfigValue",
+      "members": [
+        {
+          "name": "messaging_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "appchain_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "cartridge_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::models::permit_config::m_PermitConfig::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::permit_token_info::PermitTokenInfo",
+      "members": [
+        {
+          "name": "permit_id",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "permit_type",
+          "type": "core::felt252"
+        },
+        {
+          "name": "is_used",
+          "type": "core::bool"
+        },
+        {
+          "name": "trail_name",
+          "type": "core::byte_array::ByteArray"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::permit_token_info::PermitTokenInfoValue",
+      "members": [
+        {
+          "name": "permit_type",
+          "type": "core::felt252"
+        },
+        {
+          "name": "is_used",
+          "type": "core::bool"
+        },
+        {
+          "name": "trail_name",
+          "type": "core::byte_array::ByteArray"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::permit_token_info::PermitType",
+      "members": [
+        {
+          "name": "permit_type",
+          "type": "core::felt252"
+        },
+        {
+          "name": "actions_count",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::models::permit_token_info::PermitTypeValue",
+      "members": [
+        {
+          "name": "actions_count",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::models::permit_token_info::m_PermitTokenInfo::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::models::permit_token_info::m_PermitType::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "interface",
+      "name": "lore_sn::systems::permit_token::IPermitTokenPublic",
+      "items": [
+        {
+          "type": "function",
+          "name": "purchased_starter_pack",
+          "inputs": [
+            {
+              "name": "recipient",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u128"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_messaging_contract",
+          "inputs": [
+            {
+              "name": "messaging_contract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_appchain_contract",
+          "inputs": [
+            {
+              "name": "appchain_contract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_cartridge_contract",
+          "inputs": [
+            {
+              "name": "cartridge_contract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_permit_type",
+          "inputs": [
+            {
+              "name": "permit_type",
+              "type": "core::felt252"
+            },
+            {
+              "name": "actions_count",
+              "type": "core::integer::u32"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "consume_message",
+          "inputs": [
+            {
+              "name": "payload",
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::systems::permit_token::permit_token::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "UpgradeableEvent",
+          "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "nested"
+        },
+        {
+          "name": "WorldProviderEvent",
+          "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "nested"
+        },
+        {
+          "name": "SRC5Event",
+          "type": "openzeppelin_introspection::src5::SRC5Component::Event",
+          "kind": "flat"
+        },
+        {
+          "name": "ERC721Event",
+          "type": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+          "kind": "flat"
+        },
+        {
+          "name": "ERC721ComboEvent",
+          "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
+          "kind": "flat"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::BatchMetadataUpdate",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "from_token_id",
+          "type": "core::integer::u256",
+          "kind": "key"
+        },
+        {
+          "name": "to_token_id",
+          "type": "core::integer::u256",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::ContractURIUpdated",
+      "kind": "struct",
+      "members": []
+    },
+    {
+      "type": "event",
+      "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "ContractURIUpdated",
+          "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::ContractURIUpdated",
+          "kind": "nested"
+        },
+        {
+          "name": "MetadataUpdate",
+          "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::MetadataUpdate",
+          "kind": "nested"
+        },
+        {
+          "name": "BatchMetadataUpdate",
+          "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::BatchMetadataUpdate",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::MetadataUpdate",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "nft_combo::erc721::interface::IERC721ComboABI",
+      "items": [
+        {
+          "type": "function",
+          "name": "supports_interface",
+          "inputs": [
+            {
+              "name": "interface_id",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "balance_of",
+          "inputs": [
+            {
+              "name": "account",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "owner_of",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "safe_transfer_from",
+          "inputs": [
+            {
+              "name": "from",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "to",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "data",
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "transfer_from",
+          "inputs": [
+            {
+              "name": "from",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "to",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "approve",
+          "inputs": [
+            {
+              "name": "to",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_approval_for_all",
+          "inputs": [
+            {
+              "name": "operator",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "approved",
+              "type": "core::bool"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_approved",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_approved_for_all",
+          "inputs": [
+            {
+              "name": "owner",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "operator",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "balanceOf",
+          "inputs": [
+            {
+              "name": "account",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "ownerOf",
+          "inputs": [
+            {
+              "name": "tokenId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "safeTransferFrom",
+          "inputs": [
+            {
+              "name": "from",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "to",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "tokenId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "data",
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "transferFrom",
+          "inputs": [
+            {
+              "name": "from",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "to",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "tokenId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "setApprovalForAll",
+          "inputs": [
+            {
+              "name": "operator",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "approved",
+              "type": "core::bool"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "getApproved",
+          "inputs": [
+            {
+              "name": "tokenId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "isApprovedForAll",
+          "inputs": [
+            {
+              "name": "owner",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "operator",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "name",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "symbol",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "token_uri",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "tokenURI",
+          "inputs": [
+            {
+              "name": "tokenId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "max_supply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "reserved_supply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "available_supply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "minted_supply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "total_supply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "last_token_id",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_minting_paused",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_minted_out",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_owner_of",
+          "inputs": [
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "token_exists",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "maxSupply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "reservedSupply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "availableSupply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "mintedSupply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "totalSupply",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "contract_uri",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "contractURI",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "royalty_info",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "sale_price",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::starknet::contract_address::ContractAddress, core::integer::u256)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "default_royalty",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "token_royalty",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "royaltyInfo",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "sale_price",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::starknet::contract_address::ContractAddress, core::integer::u256)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "defaultRoyalty",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "tokenRoyalty",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::starknet::contract_address::ContractAddress, core::integer::u128, core::integer::u128)"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_introspection::src5::SRC5Component::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "approved",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "operator",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "approved",
+          "type": "core::bool",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "Transfer",
+          "type": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
+          "kind": "nested"
+        },
+        {
+          "name": "Approval",
+          "type": "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
+          "kind": "nested"
+        },
+        {
+          "name": "ApprovalForAll",
+          "type": "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "from",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "to",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "key"
+        }
+      ]
+    }
+  ]
+}

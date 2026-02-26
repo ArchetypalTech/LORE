@@ -50,7 +50,11 @@ export const deployStarknet = async () => {
 	console.log(`:: Setting up program...`);
 	await runProcess(`saya core-contract setup-program --chain-id ${appchain_id}`, env);
 
-
+	// Deploy Dojo contracts
+	console.log(`:: DEPLOYING DOJO CONTRACTS`);
+	await runProcess(`sozo build --profile ${PROFILE} --typescript`);
+	await runProcess(`sozo inspect --profile ${PROFILE}`);
+	await runProcess(`sozo migrate --profile ${PROFILE}`);
 };
 
 await deployStarknet();
