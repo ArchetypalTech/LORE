@@ -19,9 +19,10 @@ asdf install
 
 Let's define some nomenclature:
 
-- PROFILE: `sepolia` or `mainnet`, on both L2 and L3 deployments.
+- `/packages/starknet` L2 profile: `sepolia` or `mainnet`
+- `/packages/contracts` L3 profile: `appchain-sepolia` or `appchain-mainnet`
 - Slot services: `lore_appchain_<PROFILE>` (katana and torii)
-- Appchain id: `lore-appchain-<PROFILE>`. Note: this is the config file used to deploy Katana, and not the same as chain id!
+- Appchain id: `lore-appchain-<PROFILE>`. Note: this is the config file used to deploy Katana, and the chain id
 
 Deployment is a multi-step process:
 
@@ -37,7 +38,7 @@ Deployment is a multi-step process:
 Use account and keys for STARKNET (sepolia/mainnet)
 
 ```bash
-# .env.sepolia
+# /packages/starknet/.env.sepolia
 export SETTLEMENT_ACCOUNT_ADDRESS=...
 export SETTLEMENT_ACCOUNT_PRIVATE_KEY=...
 export DOJO_ACCOUNT_ADDRESS=...
@@ -50,8 +51,8 @@ export DOJO_PRIVATE_KEY=...
 ```bash
 # Deploy to sepolia (mainnet is the same process)
 export PROFILE=sepolia
-. .env.sepolia
 cd packages/starknet
+. .env.sepolia
 bun run sepolia:sn_deploy $PROFILE
 ```
 
@@ -70,9 +71,24 @@ When it runs for the first time, it will deploy and print `Core contract address
 ```bash
 # Create L3 Katana on slot
 export PROFILE=sepolia
-. .env.sepolia
 cd packages/starknet
+. .env.sepolia
 bun run sepolia:sn_slot $PROFILE
+# verify chain id
+starkli chain-id  --rpc "https://api.cartridge.gg/x/lore-appchain-${PROFILE}/katana"
+0x57505f4c4f52455f415050434841494e (WP_LORE_APPCHAIN_SEPOLIA)
+# list accounts for contrats dojo config
+slot deployments logs "lore-appchain-${PROFILE}" katana --limit 100
+```
+
+### Step 3: Deploy L3 game contracts
+
+```bash
+# ! on a different terminal
+# Create L3 Katana on slot
+export PROFILE=appchain-sepolia
+cd packages/contracts
+bun run appchain-sepolia:migrate $PROFILE
 ```
 
 

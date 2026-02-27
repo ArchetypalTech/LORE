@@ -51,3 +51,4 @@ allowed-libfuncs-list.name = "experimental"
 [profile.slot]
 [profile.stage]
 [profile.saya-test]
+[profile.appchain-sepolia]
