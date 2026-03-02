@@ -1,22 +1,24 @@
 import { InitDojo } from "../dojo";
-import { ToriiQueryBuilder } from "@dojoengine/sdk";
-import { SchemaType, Player, PlayerStory, StoryLine } from "@/lib/dojo_bindings/typescript/models.gen";
+import { ToriiQueryBuilder, ClauseBuilder, SDK } from "@dojoengine/sdk";
+import { bigintToHex128 } from "@/lib/utils/utils";
+import { SchemaType, Player, PlayerStory, StoryLine, TrailProgress } from "@/lib/dojo_bindings/typescript/models.gen";
 import { fromWei, queryErrorLocation } from "../queriesPanel/uiPanelQueries";
 import JSONbig from "json-bigint";
 
-
+const trailID: bigint = 0n;
 // Call queries and generate json file
-export const queryStories = async (): Promise<void> => {
+export const queryGameData = async (): Promise<void> => {
+  const { sdk } = await InitDojo();
   try {
     // ---------------------------------
     // 1 Query PlayerStories & Players
     // ---------------------------------
-    const [playerStories, players] = await queryPlayerStories();
+    const [playerStories, players] = await queryPlayerStories(sdk);
 
     // ---------------------------------
     // 2 Query Error + Command pairs
     // ---------------------------------
-    const errorCommandPairs = await queryStorylinesErrorsCommands();
+    const errorCommandPairs = await queryStorylinesErrorsCommands(sdk);
 
     // ---------------------------------
     // 3 Flatten pairs → StoryLine[]
@@ -75,17 +77,34 @@ export const queryStories = async (): Promise<void> => {
           free_actions_count: number;
           sub_actions_count: number;
           paid_actions_count: number;
+          trailProgress?: {
+            percentage: string;
+            completed: boolean;
+          };
           storylines: (StoryLine & { locationName?: string })[];
         }
       >
     > = {};
 
-    for (const gameIdStr of Object.keys(playerStoryByGame)) {
+    const gameIds = Object.keys(playerStoryByGame);
+
+    // Use concurrency limit (adjust if needed)
+    const CONCURRENCY_LIMIT = 8;
+
+    await mapWithConcurrency(gameIds, CONCURRENCY_LIMIT, async (gameIdStr) => {
       const playerAddress = gameToPlayer[gameIdStr];
-      if (!playerAddress) continue;
+      if (!playerAddress) return;
 
       const ps = playerStoryByGame[gameIdStr];
       if (!grouped[playerAddress]) grouped[playerAddress] = {};
+
+      const gameIdBigInt = BigInt(gameIdStr);
+
+      const trailProgressEntity = await queryTrailProgress(
+        sdk,
+        gameIdBigInt,
+        trailID
+      );
 
       const enrichedStorylines = await mapWithConcurrency(
         storylinesByGame[gameIdStr] ?? [],
@@ -107,9 +126,17 @@ export const queryStories = async (): Promise<void> => {
         free_actions_count: fromWei(ps.free_actions_count.toString()),
         sub_actions_count: fromWei(ps.sub_actions_count.toString()),
         paid_actions_count: fromWei(ps.paid_actions_count.toString()),
+
+        trailProgress: trailProgressEntity
+          ? {
+              percentage: trailProgressEntity.percentage?.toString() ?? "0",
+              completed: trailProgressEntity.completed ?? false,
+            }
+          : undefined,
+
         storylines: enrichedStorylines,
       };
-    }
+    });
 
     // ---------------------------------
     // 8 EXPORT SECTION (JSON + CSV)
@@ -145,6 +172,7 @@ export const queryStories = async (): Promise<void> => {
     const currentRows: Record<string, any>[] = [];
     const historicalRows: Record<string, any>[] = [];
     const storylineRows: Record<string, any>[] = [];
+    const trailProgressRows: Record<string, any>[] = [];
 
     for (const playerAddress in grouped) {
       for (const gameId in grouped[playerAddress]) {
@@ -163,6 +191,7 @@ export const queryStories = async (): Promise<void> => {
         currentRows.push(baseRow);
         historicalRows.push(baseRow);
 
+        // ---- Storylines ----
         for (const line of game.storylines) {
           storylineRows.push({
             Snapshot_Timestamp: timestampISO,
@@ -174,6 +203,16 @@ export const queryStories = async (): Promise<void> => {
             Line_Text: line.line,
           });
         }
+
+        // ---- Trail Progress ----
+        trailProgressRows.push({
+          Snapshot_Timestamp: timestampISO,
+          Player_Address: playerAddress,
+          Game_ID: gameId,
+          Trail_ID: trailID.toString(),
+          Percentage: game.trailProgress?.percentage ?? "0",
+          Completed: game.trailProgress?.completed ?? false,
+        });
       }
     }
 
@@ -210,6 +249,18 @@ export const queryStories = async (): Promise<void> => {
     storylineLink.click();
     URL.revokeObjectURL(storylineUrl);
 
+    // ---------------- EXPORT TRAIL PROGRESS CSV ----------------
+    const trailCSV = convertToCSV(trailProgressRows);
+    const trailBlob = new Blob([trailCSV], { type: "text/csv" });
+    const trailUrl = URL.createObjectURL(trailBlob);
+
+    const trailLink = document.createElement("a");
+    trailLink.href = trailUrl;
+    trailLink.download = `player_trailprogress_${formattedDate}.csv`;
+    trailLink.click();
+
+    URL.revokeObjectURL(trailUrl);
+
   } catch (error) {
     console.error("Error querying or exporting grouped PlayerStories:", error);
     throw error;
@@ -217,13 +268,11 @@ export const queryStories = async (): Promise<void> => {
 };
 
 // Query all the PlayerStory
-const queryPlayerStories = async (): Promise<[(PlayerStory[]), Player[]]> => {
+const queryPlayerStories = async (sdk: SDK<SchemaType>): Promise<[(PlayerStory[]), Player[]]> => {
 	let playerStory: PlayerStory[] = [];
   let players: Player[] = [];
 
 	try {
-		const { sdk } = await InitDojo();
-
 		const query = new ToriiQueryBuilder<SchemaType>()
 			.withCursor("")
 			.withLimit(3000)
@@ -320,12 +369,10 @@ const queryPlayers = async (): Promise<Player[]> => {
 };
 
 // Query all StoryLines of type error and the commands that caused them
-const queryStorylinesErrorsCommands = async (): Promise<
+const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
   [StoryLine, StoryLine][]
 > => {
   const pairs: [StoryLine, StoryLine][] = [];
-
-  const { sdk } = await InitDojo();
 
   try {
     const query = new ToriiQueryBuilder<SchemaType>()
@@ -403,6 +450,43 @@ const queryStorylinesErrorsCommands = async (): Promise<
   }
 
   return pairs;
+};
+
+// Query all the trail_token_info::progress
+const queryTrailProgress = async (sdk: SDK<SchemaType>, gameID: bigint, trailID: bigint): Promise<Partial<TrailProgress> | undefined> => {
+  let trailProgress: Partial<TrailProgress> | undefined;
+  try {
+    const query = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-TrailProgress"],
+          [bigintToHex128(gameID), bigintToHex128(trailID)]
+        ).build()
+      ).withEntityModels(["lore-TrailProgress"]);
+    
+    const result = await sdk.getEntities({ query });
+
+    const item = result.getItems().at(0);
+    const posTrailProgress = item?.models?.lore?.TrailProgress;
+    
+    if ( posTrailProgress &&
+      posTrailProgress.game_id !== undefined &&
+      posTrailProgress.trail_id !== undefined &&
+      posTrailProgress.percentage !== undefined &&
+      posTrailProgress.completed !== undefined
+    ) {
+      trailProgress = posTrailProgress;
+      console.log("trailProgress for gameID:", gameID.toString(), "trailID:", trailID.toString(), ":", trailProgress);
+    }
+    
+  } catch (error) {
+    console.error("Error fetching trail progress from Torii:", error);
+    throw error;
+  }
+  return trailProgress;
 };
 
 /**

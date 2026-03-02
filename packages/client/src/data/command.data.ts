@@ -29,7 +29,7 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
-import { queryStories } from "@/lib/queries/commandResponseQueries";
+import { queryGameData } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
@@ -496,7 +496,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 
 		const stopAmbient = startFetchingAmbientMessages();
 
-		await queryStories();
+		await queryGameData();
 		stopAmbient();
 
 		addTerminalContent({
