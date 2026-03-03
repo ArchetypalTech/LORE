@@ -12,7 +12,8 @@ import { useRightPanelStore } from "@lib/stores/rightPanel.store";
 import { RightActionPanel } from "@lib/stores/rigthPanelAction";
 import { useLeftPanelStore } from "@lib/stores/leftPanel.store";
 import { LeftActionPanel } from "@lib/stores/leftPanelAction";
-
+import { sendCommand } from "@lib/terminalCommands/commandHandler";
+import { useWalletStore } from "@/lib/stores/wallet.store";
 
 export const Client = () => {
 	useHead({
@@ -36,6 +37,7 @@ export const Client = () => {
 	const { visible } = useUIPanelStore();
 	const { visible: rightPanelVisible } = useRightPanelStore();
 	const { visible: leftPanelVisible, disabled } = useLeftPanelStore();
+	const isConnected = useWalletStore((state) => state.isConnected);
 
 	return (
 		<div
@@ -72,6 +74,22 @@ export const Client = () => {
 			<div className="fixed inset-0 z-[0] opacity-40 artwork-background">
 				<img src={bg} alt="oruggin-background" className="w-full h-full object-cover" />
 			</div>
+
+			{/* Connect Wallet Button for Itch.io*/}
+			{!isConnected && (
+				<div className="flex justify-center mb-4 z-50 w-full max-w-md px-4">
+					<button
+						onClick={() => sendCommand("connect")}
+						className={`w-full py-2 text-sm font-medium text-green-300 
+							border border-emerald-500/40 rounded-lg
+							transition-colors duration-200
+							whitespace-normal break-words text-center
+							hover:bg-emerald-500/10 hover:border-emerald-400`}
+					>
+						Connect
+					</button>
+				</div>
+			)}
 
 			{/* Terminal */}
 			<div className="crt buzzing flex h-full md:max-h-[70%] w-full items-center justify-center">
