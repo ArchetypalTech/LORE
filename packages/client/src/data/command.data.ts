@@ -96,6 +96,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				sendCommand("_connect_wallet");
 			} else {
 				sendCommand("_welcome_back");
+				sendCommand("ui show");
 			}
 		}
 
