@@ -293,9 +293,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-
-			const leftPanel = useLeftPanelStore.getState();
-			leftPanel.show();
+			// sendCommand("ui show");
 		}
 
 		// Check properties
@@ -320,14 +318,17 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		});
 		// check for game
 		const gameId = GameStore().gameId;
-		const panel = UIPanelStore();
+		//const panel = UIPanelStore();
+		
 		if (!gameId) {
 			// if no game, set default values for Info Panel
 			DefaultValues();
-			panel.show();
+			// panel.show();
+			sendCommand("ui show");
 		} else {
 			// if game, show Info Panel
-			panel.show();
+			//panel.show();
+			sendCommand("ui show");
 		}
 	},
 	wallet: async () => {
@@ -347,16 +348,15 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_not_yet_connected");
 			return;
 		}
+		sendCommand("ui hide");
+		// Reset Info Panel
+		DefaultValues();		
 		await WalletStore().disconnectController();
 		addTerminalContent({
 			text: "disconnected",
 			format: "hash",
 			useTypewriter: true,
 		});
-		// Reset Info Panel
-		DefaultValues();
-		const leftPanel = useLeftPanelStore.getState();
-		leftPanel.hide();
 		return;
 	},
 	_bypass: ({ command }) => {
