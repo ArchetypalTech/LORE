@@ -50,11 +50,18 @@ export const queryGameData = async (): Promise<void> => {
     });
 
     // ---------------------------------
-    // 5 game_id -> player address
+    // 5 game_id -> player address + is_dead
     // ---------------------------------
-    const gameToPlayer: Record<string, string> = {};
+    const gameToPlayer: Record<
+      string,
+      { address: string; isDead: boolean }
+    > = {};
+
     players.forEach((p) => {
-      gameToPlayer[p.game_id.toString()] = p.address;
+      gameToPlayer[p.game_id.toString()] = {
+        address: p.address,
+        isDead: p.is_dead,
+      };
     });
 
     // ---------------------------------
@@ -80,6 +87,7 @@ export const queryGameData = async (): Promise<void> => {
           trailProgress?: {
             percentage: string;
             completed: boolean;
+            isDead: boolean;
           };
           storylines: (StoryLine & { locationName?: string })[];
         }
@@ -92,11 +100,15 @@ export const queryGameData = async (): Promise<void> => {
     const CONCURRENCY_LIMIT = 8;
 
     await mapWithConcurrency(gameIds, CONCURRENCY_LIMIT, async (gameIdStr) => {
-      const playerAddress = gameToPlayer[gameIdStr];
-      if (!playerAddress) return;
+      const playerData = gameToPlayer[gameIdStr];
+      if (!playerData) return;
 
       const ps = playerStoryByGame[gameIdStr];
-      if (!grouped[playerAddress]) grouped[playerAddress] = {};
+      const { address: playerAddress, isDead } = playerData;
+
+      if (!grouped[playerAddress]) {
+        grouped[playerAddress] = {};
+      }
 
       const gameIdBigInt = BigInt(gameIdStr);
 
@@ -131,8 +143,13 @@ export const queryGameData = async (): Promise<void> => {
           ? {
               percentage: trailProgressEntity.percentage?.toString() ?? "0",
               completed: trailProgressEntity.completed ?? false,
+              isDead,
             }
-          : undefined,
+          : {
+              percentage: "0",
+              completed: false,
+              isDead,
+            },
 
         storylines: enrichedStorylines,
       };
@@ -212,6 +229,7 @@ export const queryGameData = async (): Promise<void> => {
           Trail_ID: trailID.toString(),
           Percentage: game.trailProgress?.percentage ?? "0",
           Completed: game.trailProgress?.completed ?? false,
+          Is_Dead: game.trailProgress?.isDead ?? false,
         });
       }
     }
