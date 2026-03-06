@@ -38,7 +38,7 @@ export const burnerAccounts = [
 // Profiles 
 //
 
-export type ProfileName = "dev" | "slot" | "stage";// | "sepolia" | "mainnet";
+export type ProfileName = "dev" | "slot" | "stage" | "appchain-sepolia";// | "sepolia" | "mainnet";
 
 export type ProfileConfig = {
 	profileName: ProfileName;
@@ -58,6 +58,7 @@ export type ProfileConfig = {
 		designer: string;
 		game_token: string;
 		trail_token: string;
+		actions_token: string;
 	}
 };
 
@@ -103,17 +104,18 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
 		burnerAccount: burnerAccounts[0],
 		contractAddresses: {} as any,
   },
-  // sepolia: {
-	// 	profileName: "sepolia",
-  //   dojo_manifest: {},
-  //   chainName: "SN_SEPOLIA",
-  //   chainId: bigintToHex(stringToFelt("SN_SEPOLIA")),
-  //   rpcUrl: "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9",
-  //   // rpcUrl: "https://starknet-sepolia.public.blastapi.io",
-  //   toriiUrl: "https://api.cartridge.gg/x/lore-sepolia/torii",
-  //   slotName: 'lore-sepolia',
-	//   contractAddresses: {} as any,
-  // },
+  "appchain-sepolia": {
+    profileName: "appchain-sepolia",
+    dojo_manifest: {},
+    chainName: "WP_LORE_APPCHAIN",
+    chainId: bigintToHex(stringToFelt("WP_LORE_APPCHAIN")),
+    rpcUrl: "https://api.cartridge.gg/x/lore-appchain/katana",
+    toriiUrl: "https://api.cartridge.gg/x/lore-appchain/torii",
+    slotName: "lore-appchain",
+		useController: true,
+		burnerAccount: burnerAccounts[0],
+		contractAddresses: {} as any,
+  },
   // mainnet: {
 	// 	profileName: "mainnet",
   //   dojo_manifest: {},
@@ -133,11 +135,12 @@ export const getProfileConfig = (profileName: ProfileName): ProfileConfig => {
 		throw new Error(`Profile config for [${profileName}] not found`);
 	}
 	result.contractAddresses = {
-		world: addAddressPadding(result.dojo_manifest.world.address),
-		prompt: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-prompt")?.address ?? '0x0'),
-		designer: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-designer")?.address ?? '0x0'),
-		game_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-game_token")?.address ?? '0x0'),
-		trail_token: addAddressPadding(result.dojo_manifest.contracts.find((c: any) => c.tag === "lore-trail_token")?.address ?? '0x0'),
+		world: addAddressPadding(result.dojo_manifest.world?.address ?? '0x0'),
+		prompt: addAddressPadding(result.dojo_manifest.contracts?.find((c: any) => c.tag === "lore-prompt")?.address ?? '0x0'),
+		designer: addAddressPadding(result.dojo_manifest.contracts?.find((c: any) => c.tag === "lore-designer")?.address ?? '0x0'),
+		game_token: addAddressPadding(result.dojo_manifest.contracts?.find((c: any) => c.tag === "lore-game_token")?.address ?? '0x0'),
+		trail_token: addAddressPadding(result.dojo_manifest.contracts?.find((c: any) => c.tag === "lore-trail_token")?.address ?? '0x0'),
+		actions_token: addAddressPadding(result.dojo_manifest.contracts?.find((c: any) => c.tag === "lore-actions_token")?.address ?? '0x0'),
 	};
 	return result;
 }

@@ -29,7 +29,7 @@ import DojoStore from "@/lib/stores/dojo.store";
 import WalletStore from "@/lib/stores/wallet.store";
 import GameStore from "@/lib/stores/game.store";
 import UIPanelStore, {DefaultValues} from "@/lib/stores/terminal.uiPanel.store";
-import { queryStories } from "@/lib/queries/commandResponseQueries";
+import { queryGameData } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
@@ -93,6 +93,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_connect_wallet");
 		} else {
 			sendCommand("_welcome_back");
+			sendCommand("ui show");
 		}
 
 		sendCommand("_hint");
@@ -290,7 +291,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-			sendCommand("ui show");
+			// sendCommand("ui show");
 		}
 
 		// Check properties
@@ -482,6 +483,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		console.log("COMPONENTS RESULT", components);
 	},
 	_gameData: async () => {
+		const terminalStore = useTerminalStore.getState();
+		terminalStore.setPrinting(true);
 		addTerminalContent({ text: "FETCHING GAME DATA...", format: "system", useTypewriter: true });
 		await sleep(500);
 
@@ -493,7 +496,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 
 		const stopAmbient = startFetchingAmbientMessages();
 
-		await queryStories();
+		await queryGameData();
 		stopAmbient();
 
 		addTerminalContent({
@@ -501,6 +504,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "system",
 			useTypewriter: true,
 		});
+		terminalStore.setPrinting(false);
 	},
 	connection: async () => {
 		const dest = {

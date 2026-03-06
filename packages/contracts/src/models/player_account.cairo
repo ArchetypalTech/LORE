@@ -1,5 +1,6 @@
 use dojo::{world::WorldStorage, model::{ModelStorage}};
 use starknet::{ContractAddress};
+use lore::models::player::{PlayerStory};
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
@@ -104,25 +105,30 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
     }
 
     // called when a player spends actions
-    fn spent_actions(ref self: WorldStorage, player_address: ContractAddress, actions_amount: u128) {
+    fn spent_actions(ref self: WorldStorage, player_address: ContractAddress, actions_amount: u128, game_id: u128) {
         let mut player_balances: PlayerBalances = self.read_model(player_address);
         let mut due_amount: u128 = actions_amount;
+        let mut playerStory: PlayerStory = self.read_model(game_id);
         if player_balances.free_actions_balance.is_non_zero() {
             let amount: u128 = core::cmp::min(player_balances.free_actions_balance, due_amount);
             player_balances.free_actions_balance -= amount;
             due_amount -= amount;
+            playerStory.free_actions_count += amount;
         }
         if due_amount.is_non_zero() && player_balances.sub_actions_balance.is_non_zero() {
             let amount: u128 = core::cmp::min(player_balances.sub_actions_balance, due_amount);
             player_balances.sub_actions_balance -= amount;
             due_amount -= amount;
+            playerStory.sub_actions_count += amount;
         }
         if due_amount.is_non_zero() && player_balances.paid_actions_balance.is_non_zero() {
             let amount: u128 = core::cmp::min(player_balances.paid_actions_balance, due_amount);
             player_balances.paid_actions_balance -= amount;
             due_amount -= amount;
+            playerStory.paid_actions_count += amount;
         }
         self.write_model(@player_balances);
+        self.write_model(@playerStory);
     }
 
     // free actions
@@ -135,10 +141,14 @@ pub impl PlayerAccountImpl of PlayerAccountTrait {
         } else if (player_game.minted_actions_count > actions_config.max_free_actions_count) {
             // have acquired more than the initial free actions
             let elapsed_since_last_claim: u64 = (starknet::get_block_timestamp() - player_game.timestamp_free_actions_claimed);
-            (core::cmp::min(
+            let available_actions_count: u32 = core::cmp::min(
                 (elapsed_since_last_claim / actions_config.free_action_claim_interval).try_into().unwrap(),
                 actions_config.max_free_actions_count,
-            ))
+            );
+            // cap to player balance
+            let mut player_balances: PlayerBalances = self.read_model(player_address);
+            let free_actions_balance_count: u32 = (player_balances.free_actions_balance / CONST::ETH_TO_WEI.low).try_into().unwrap();
+            (available_actions_count - core::cmp::min(free_actions_balance_count, available_actions_count))
         } else {
             (0) // must acquire some actions first
         }

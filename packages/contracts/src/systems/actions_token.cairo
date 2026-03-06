@@ -65,7 +65,7 @@ pub trait IActionsTokenPublic<TState> {
 #[starknet::interface]
 pub trait IActionsTokenProtected<TState> {
     fn calculate_action_cost(ref self: TState, player: Player, command_type: CommandType) -> Result<u128, Error>;
-    fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u128);
+    fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u128, game_id: u128);
     fn claim_actions(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
@@ -315,7 +315,7 @@ pub mod actions_token {
             }
         }
 
-        fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u128) {
+        fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u128, game_id: u128) {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_world_contract(@world);
@@ -329,7 +329,7 @@ pub mod actions_token {
             // TODO: not from ADMIN
 
             // burn player actions
-            world.spent_actions(player_address, actions_amount);
+            world.spent_actions(player_address, actions_amount, game_id);
             self.erc20.burn(player_address, actions_amount.into());
         }
 

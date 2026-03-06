@@ -1,0 +1,248 @@
+procs:
+  initializer:
+    cwd: packages/contracts
+    env:
+      PROFILE: saya-test
+    shell: |
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      #----------------
+      # delete targets to wait for a fresh deployment
+      echo ">>> Initializing..."
+      rm -rf ../contracts/target/${PROFILE}
+      rm -rf ../starknet/target/${PROFILE}
+      rm -rf ../starknet/data/${PROFILE}
+      #----------------
+      echo ">>> Waiting for L3 deployment..."
+      wait-on -l ../starknet/target/${PROFILE}/deployed
+      wait-on -l ../contracts/target/${PROFILE}/deployed
+      export APPCHAIN_ADDRESS=$(get_contract_address ${PROFILE} lore-actions_token)
+      #----------------
+      # configure L2...
+      #
+      cd ../starknet
+      export SN_ADDRESS=$(get_contract_address ${PROFILE} lore_sn-permit_token)
+      export DATA_PATH=./data/${PROFILE}
+      export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
+      export CARTIDGE_ADDRESS=$(get_profile_env ${PROFILE} account_address)
+      echo ">>> L2: set_messaging_contract(${PILTOVER_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_messaging_contract ${PILTOVER_ADDRESS}
+      echo ">>> L2: set_appchain_contract(${APPCHAIN_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_appchain_contract ${APPCHAIN_ADDRESS}
+      echo ">>> L2: set_cartridge_contract(${CARTIDGE_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_cartridge_contract ${CARTIDGE_ADDRESS}
+      echo ">>> L2: PermitConfig:"
+      sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
+      #----------------
+      # Configure L3
+      #
+      cd ../contracts
+      echo ">>> L3: set_sn_contract(${SN_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore-actions_token set_sn_contract ${SN_ADDRESS}
+      sozo -P ${PROFILE} model get lore-ActionsConfig 1
+      #----------------
+      touch ../starknet/target/${PROFILE}/initialized
+      echo "👍 Ready!!"
+  l2_katana:
+    cwd: packages/starknet
+    env:
+      KATANA_L2_PORT: "50000"
+      KATANA_L3_BIN: ./bin/katana-1.7.0-snos.4
+    shell: |
+      echo "Starting L2 Katana on port [${KATANA_L2_PORT}]..."
+      ${KATANA_L3_BIN} --version
+      ${KATANA_L3_BIN} --dev --dev.no-fee --http.port ${KATANA_L2_PORT}
+  l2_contracts:
+    cwd: packages/starknet
+    env:
+      PROFILE: saya-test
+      KATANA_L2_PORT: "50000"
+      KATANA_L3_BIN: ./bin/katana-1.7.0-snos.4
+      KATANA_L3_CHAIN: katana-l3
+      SETTLEMENT_RPC_URL: http://localhost:50000
+      SETTLEMENT_CHAIN_ID: KATANA
+      SETTLEMENT_ACCOUNT_ADDRESS: 0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec
+      SETTLEMENT_ACCOUNT_PRIVATE_KEY: 0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912
+      FACT_REGISTRY_ADDRESS: 0x3eb0d510d1238120bf7f9d176faafe0c7066797a86be985855952f87769d3bd
+      CORE_CONTRACT_ADDRESS: 0x1c8a55203cd99a6bfaf7cd91ae2ad953eff67b584826edab1857ca2e3c5db5d
+      CORE_CONTRACT_DEPLOYED_BLOCK: "4"
+    shell: |
+      sleep 1
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
+      #----------------
+      # based on:
+      # https://github.com/glihm/starknet-messaging-dev/blob/l2-l3-saya/README_saya.md#setup-the-l2-starknet
+      #
+      # wait for L2 katana to start...
+      wait-port ${KATANA_L2_PORT}
+      #
+      echo ">>> Deploying L2 mocked fact registry contract..."
+      saya core-contract declare-and-deploy-fact-registry-mock --salt 0x0
+      # will output: FACT_REGISTRY_ADDRESS
+      echo "!!! Validate: FACT_REGISTRY_ADDRESS=${FACT_REGISTRY_ADDRESS}"
+      #
+      echo ">>> Deploying L2 core contract..."
+      saya core-contract declare
+      saya core-contract deploy --salt 0x0
+      saya core-contract setup-program --chain-id ${KATANA_L3_CHAIN}
+      # will output: CORE_CONTRACT_ADDRESS
+      echo "!!! Validate: CORE_CONTRACT_ADDRESS=${CORE_CONTRACT_ADDRESS}"
+      #----------------
+      # katana_l3 init
+      #
+      export DATA_PATH=./data/${PROFILE}
+      mkdir -p ${DATA_PATH}
+      echo ">>> Creating Katana L3 config..."
+      ${KATANA_L3_BIN} init \
+        --settlement-chain ${SETTLEMENT_RPC_URL} \
+        --id ${KATANA_L3_CHAIN} \
+        --settlement-contract ${CORE_CONTRACT_ADDRESS} \
+        --settlement-contract-deployed-block ${CORE_CONTRACT_DEPLOYED_BLOCK} \
+        --settlement-facts-registry ${FACT_REGISTRY_ADDRESS} \
+        --output-path ${DATA_PATH}
+      # will output: PILTOVER_ADDRESS
+      #----------------
+      # validate piltover address
+      #
+      ls -l ${DATA_PATH}/config.toml
+      export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
+      echo "!!! Validate if:           (PILTOVER_ADDRESS == CORE_CONTRACT_ADDRESS)"
+      echo "!!! PILTOVER_ADDRESS:      [${PILTOVER_ADDRESS}]"
+      echo "!!! CORE_CONTRACT_ADDRESS: [${CORE_CONTRACT_ADDRESS}]"
+      #----------------
+      # deploy contracts...
+      #
+      echo ">>> Deploying contracts..."
+      sozo -P ${PROFILE} build
+      sozo -P ${PROFILE} inspect
+      sozo -P ${PROFILE} migrate
+      #----------------
+      touch ../starknet/target/${PROFILE}/deployed
+      echo "👍 L2 Ready!"
+  l3_katana:
+    cwd: packages/starknet
+    env:
+      PROFILE: saya-test
+      KATANA_L3_BIN: ./bin/katana-1.7.0-snos.4
+      KATANA_L3_PORT: "5050"
+      BLOCK_TIME: "30000"
+      MAX_CAIRO_STEPS: "16000000"
+      RUST_LOG: "katana=info,rpc=info,node=info,messaging=trace,executor=trace,pool=trace"
+    shell: |
+      sleep 1
+      #----------------
+      # wait for katana_l3 init file
+      #
+      sleep 1
+      export DATA_PATH=./data/${PROFILE}
+      echo ">>> Waiting for L3 init config... [${DATA_PATH}/config.toml]"
+      wait-on -l ${DATA_PATH}/config.toml
+      #----------------
+      # start katana L3...
+      #
+      echo ">>> Starting L3 Katana on port [${KATANA_L3_PORT}]..."
+      rm -rf /tmp/katana-l3
+      ${KATANA_L3_BIN} --version
+      ${KATANA_L3_BIN} \
+        --chain ${DATA_PATH} \
+        --db-dir /tmp/katana-l3 \
+        --http.port ${KATANA_L3_PORT}
+        # --dev --dev.no-fee
+        # --http.cors_origins "*" \
+        # --cartridge.controllers --cartridge.paymaster
+        # --block-time ${BLOCK_TIME} --sequencing.block-max-cairo-steps ${MAX_CAIRO_STEPS}
+  l3_contracts:
+    cwd: packages/contracts
+    env:
+      PROFILE: saya-test
+      KATANA_L3_PORT: "5050"
+    shell: |
+      sleep 1
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
+      #----------------
+      # wait for katana_l3 init
+      wait-port ${KATANA_L3_PORT}
+      echo ">>> Deploying contracts..."
+      sozo -P ${PROFILE} build
+      sozo -P ${PROFILE} inspect
+      sozo -P ${PROFILE} migrate --l1-data-gas 20000000000 --l1-gas 20000000000 --l1-gas-price 20000000000 --l2-gas-price 20000000000 --l1-data-gas-price 20000000000 --l2-gas 20000000000
+      #----------------
+      touch ../contracts/target/${PROFILE}/deployed
+      echo "👍 L2 Ready!"
+  saya:
+    cwd: packages/starknet
+    env:
+      PROFILE: saya-test
+      RUST_LOG: saya=debug
+      KATANA_L2_RPC: http://localhost:50000
+      KATANA_L3_RPC: http://localhost:5050
+      SETTLEMENT_ACCOUNT_ADDRESS: 0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec
+      SETTLEMENT_ACCOUNT_PRIVATE_KEY: 0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912
+    shell: |
+      sleep 1
+      set -e # exit on error
+      #----------------
+      # wait for L2 and L3 to be deployed and initialized
+      wait-on -l ../starknet/target/${PROFILE}/initialized
+      #----------------
+      # gather data...
+      #
+      export DATA_PATH=./data/${PROFILE}
+      export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
+      echo ">>> KATANA_L2_RPC: [${KATANA_L2_RPC}]"
+      echo ">>> KATANA_L3_RPC: [${KATANA_L3_RPC}]"
+      echo ">>> PILTOVER_ADDRESS: [${PILTOVER_ADDRESS}]"
+      echo ">>> SETTLEMENT_ACCOUNT_ADDRESS: [${SETTLEMENT_ACCOUNT_ADDRESS}]"
+      echo ">>> SETTLEMENT_ACCOUNT_PRIVATE_KEY: [${SETTLEMENT_ACCOUNT_PRIVATE_KEY}]"
+      #----------------
+      # sytart saya
+      #
+      echo ">>> Starting Saya..."
+      rm -f ./saya.db
+      saya --version
+      saya persistent start \
+        --settlement-rpc ${KATANA_L2_RPC} \
+        --settlement-piltover-address ${PILTOVER_ADDRESS} \
+        --settlement-account-address ${SETTLEMENT_ACCOUNT_ADDRESS} \
+        --settlement-account-private-key ${SETTLEMENT_ACCOUNT_PRIVATE_KEY} \
+        --rollup-rpc ${KATANA_L3_RPC} \
+        --mock-snos-from-pie \
+        --mock-layout-bridge-program-hash 0x43c5c4cc37c4614d2cf3a833379052c3a38cd18d688b617e2c720e8f941cb8
+  # torii:
+  #   cwd: packages/contracts
+  #   env:
+  #     PROFILE: saya-test
+  #     KATANA_L3_PORT: "5050"
+  #   shell: |
+  #     sleep 1
+  #     set -e # exit on error
+  #     source ../../scripts/utils.sh
+  #     export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+  #     export GAME_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-game_token)
+  #     export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-trail_token)
+  #     echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
+  #     echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
+  #     echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
+  #     #----------------
+  #     wait-port ${KATANA_L3_PORT}
+  #     #----------------
+  #     # start Torii
+  #     torii --version
+  #     torii --http.cors_origins "*" \
+  #       --indexing.contracts erc721:${GAME_TOKEN_ADDRESS},erc721:${TRAIL_TOKEN_ADDRESS}
+  # client:
+  #   cwd: packages/client
+  #   env:
+  #     KATANA_L3_PORT: "5050"
+  #   shell: |
+  #     sleep 1
+  #     #----------------
+  #     wait-port ${KATANA_L3_PORT}
+  #     #----------------
+  #     bun run dev

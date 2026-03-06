@@ -34,7 +34,7 @@
   "contracts": [
     {
       "address": "0x704db189edff5fa82b61cbc5290167e773055029e2f62c035a28d9c30b5b87b",
-      "class_hash": "0x1ed30fadc442e7a63f9b4013219e533dbbe01a1ff32e6f6edae9f3c4367ff82",
+      "class_hash": "0x2bfb4e9505f45cb9284466a11dcbbf1c4221416e85e4bb9c259c39caca01724",
       "init_calldata": [
         "0x0"
       ],
@@ -140,7 +140,7 @@
     },
     {
       "address": "0x1968aa3dcaad3ca930835172d4f0be3578d2eb928450ceb78d1d50f82065c2a",
-      "class_hash": "0x78ae7ddc9c7701d6a60e64069f54904bde0828b99efe8dd7c03940e97765caa",
+      "class_hash": "0x74a535d06a30acd6dd1bd7ea5cfc0874d3270d020afabec3b521443cbd83dae",
       "init_calldata": [],
       "tag": "lore-prompt",
       "selector": "0x7ce185ac93eb5e2a28b27a6bab8ce1cc608744ef663badb20489547ed1d20a0",
@@ -1021,9 +1021,24 @@
           "name": "story_line",
           "type": "core::integer::u32",
           "key": false
+        },
+        {
+          "name": "free_actions_count",
+          "type": "core::integer::u128",
+          "key": false
+        },
+        {
+          "name": "sub_actions_count",
+          "type": "core::integer::u128",
+          "key": false
+        },
+        {
+          "name": "paid_actions_count",
+          "type": "core::integer::u128",
+          "key": false
         }
       ],
-      "class_hash": "0xfa89ba6b455f003b359f768c1a49ede28bc61a5963a384ee8bd2c55bf30a1c",
+      "class_hash": "0x2e3eeed1cea2932853f8b49863ff61d9df2cfecba989f382a929f0a41844f3c",
       "tag": "lore-PlayerStory",
       "selector": "0x6e53919f65474ab8e20728f119321dd5b0beffcaf7677f67afbb2f82f05aae0"
     },
@@ -1107,9 +1122,14 @@
           "name": "line_type",
           "type": "lore::models::player::StoryLineType",
           "key": false
+        },
+        {
+          "name": "location",
+          "type": "core::felt252",
+          "key": false
         }
       ],
-      "class_hash": "0x1c7dabacc00a5d96f787956bb90ba8dbb44d0eca791ee34173b86ffedb760c4",
+      "class_hash": "0x751cf42141e8cc7182421c33ddc737ce0608a4d144114d7375251d1cda1e6af",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
@@ -5285,6 +5305,18 @@
         {
           "name": "story_line",
           "type": "core::integer::u32"
+        },
+        {
+          "name": "free_actions_count",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "sub_actions_count",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "paid_actions_count",
+          "type": "core::integer::u128"
         }
       ]
     },
@@ -5295,6 +5327,18 @@
         {
           "name": "story_line",
           "type": "core::integer::u32"
+        },
+        {
+          "name": "free_actions_count",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "sub_actions_count",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "paid_actions_count",
+          "type": "core::integer::u128"
         }
       ]
     },
@@ -5347,6 +5391,10 @@
         {
           "name": "line_type",
           "type": "lore::models::player::StoryLineType"
+        },
+        {
+          "name": "location",
+          "type": "core::felt252"
         }
       ]
     },
@@ -5391,6 +5439,10 @@
         {
           "name": "line_type",
           "type": "lore::models::player::StoryLineType"
+        },
+        {
+          "name": "location",
+          "type": "core::felt252"
         }
       ]
     },
@@ -5880,6 +5932,10 @@
             },
             {
               "name": "actions_amount",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "game_id",
               "type": "core::integer::u128"
             }
           ],

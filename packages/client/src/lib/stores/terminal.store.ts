@@ -37,6 +37,7 @@ const {
 	idleVideoPlaying: false,
   setIdleVideoPlaying: (v: boolean) => set({ idleVideoPlaying: v }),
 	setPlayTrailer: (v: boolean) => set({ playTrailer: v }),
+	setPrinting: (v: boolean) => set({ isPrinting: v }),
 });
 
 /**

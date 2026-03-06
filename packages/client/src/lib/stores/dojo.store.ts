@@ -119,6 +119,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 				model.game_id !== undefined &&
 				model.key !== undefined &&
 				model.line &&
+				model.location !== undefined &&
 				String(model.game_id) === String(playerStory.game_id)
 			) {
 				allStoryLines.push({
@@ -126,6 +127,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 					key: model.key,
 					line: model.line,
 					line_type: model.line_type as CairoCustomEnum,
+					location: model.location,
 				});
 			}
 		});

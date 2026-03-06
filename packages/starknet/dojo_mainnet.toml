@@ -1,18 +1,23 @@
 [world]
 name = ">LORE Starknet"
 description = "> get started with LORE Starknet"
-seed = "lore_sn"
+seed = "lore_sn_0_2_0"
 
 [namespace]
 default = "lore_sn"
 
 [env]
-rpc_url = "http://localhost:50000/"
+rpc_url = "https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9"
 slot_name = "lore_sn-stage"
+settlement_chain_id = "SM_MAIN"
+appchain_id = "lore_appchain"
+core_contract_address = ""
+core_contract_deployed_block = ""
+fact_registry_address = "0x014bf62fadb41d8f899bb5afeeb2da486fcfd8431852def56c5f10e45ae72765"
 
 world_address = "0x07d90bdb9b6af74c5c9c29e16a909e82e9faa78da2bf6c35b07504262592f17a"
-account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+# account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+# private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 [writers]
 "lore_sn" = ["lore_sn-permit_token"]

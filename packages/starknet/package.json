@@ -1,0 +1,17 @@
+{
+	"name": "@lore/starknet",
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"sepolia:deploy": "bun scripts/sn_deploy.ts sepolia",
+		"sepolia:slot": "bun scripts/sn_slot.ts sepolia"
+	},
+	"dependencies": {
+	},
+	"devDependencies": {
+    "starknet": "^8.5.4"
+	},
+	"engines": {
+		"bun": "latest"
+	}
+}

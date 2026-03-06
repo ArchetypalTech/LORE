@@ -17,6 +17,7 @@ use lore::{
 };
 
 pub type CounterType = u32;
+pub type ActionCounterType = u128;
 
 #[derive(Copy, Drop, Serde, Introspect, PartialEq, Debug)]
 #[dojo::model]
@@ -46,6 +47,12 @@ pub struct PlayerStory {
     /// Properties ///
     /// Current story line - latest
     pub story_line: CounterType,
+    // counter for free actions used
+    pub free_actions_count: ActionCounterType,
+    // counter for sub_actions used
+    pub sub_actions_count: ActionCounterType,
+    // counter for paid actions used
+    pub paid_actions_count: ActionCounterType,
 }
 
 // story by game instance
@@ -62,6 +69,8 @@ pub struct StoryLine {
     pub line: ByteArray,
     /// Line type
     pub line_type: StoryLineType,
+    /// location when the line was created
+    pub location: felt252,
 }
 
 #[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
@@ -264,6 +273,7 @@ pub impl PlayerImpl of PlayerTrait {
             key: player_story.story_line,
             line: text,
             line_type,
+            location: *self.location,
         });
     }
 

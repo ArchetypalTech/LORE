@@ -6,7 +6,8 @@
 		"dev:watch": "FORCE_COLOR=3 bun scripts/dev.watch.ts --mode dev",
 		"slot:deploy": "FORCE_COLOR=3 bun scripts/slot.deploy.ts --mode slot",
 		"slot:upgrade": "FORCE_COLOR=3 bun scripts/slot.upgrade.ts --mode slot",
-		"slot:watch": "FORCE_COLOR=3 bun scripts/slot.watch.ts --mode slot"
+		"slot:watch": "FORCE_COLOR=3 bun scripts/slot.watch.ts --mode slot",
+		"appchain-sepolia:migrate": "FORCE_COLOR=3 bun scripts/appchain.deploy.ts --mode appchain-sepolia"
 	},
 	"dependencies": {
 		"@lore/client": "workspace:*"

@@ -227,6 +227,9 @@ export interface Player {
 export interface PlayerStory {
 	game_id: BigNumberish;
 	story_line: BigNumberish;
+	free_actions_count: BigNumberish;
+	sub_actions_count: BigNumberish;
+	paid_actions_count: BigNumberish;
 }
 
 // Type definition for `lore::models::player::StoryLine` struct
@@ -235,6 +238,26 @@ export interface StoryLine {
 	key: BigNumberish;
 	line: string;
 	line_type: StoryLineTypeEnum;
+	location: BigNumberish;
+}
+
+// Type definition for `lore::models::player_account::PlayerAccount` struct
+export interface PlayerAccount {
+	player_address: string;
+	timestamp_joined: BigNumberish;
+	timestamp_free_actions_claimed: BigNumberish;
+	minted_actions_count: BigNumberish;
+	purchase_count: BigNumberish;
+	subscription_count: BigNumberish;
+	current_game_id: BigNumberish;
+}
+
+// Type definition for `lore::models::player_account::PlayerBalances` struct
+export interface PlayerBalances {
+	player_address: string;
+	free_actions_balance: BigNumberish;
+	paid_actions_balance: BigNumberish;
+	sub_actions_balance: BigNumberish;
 }
 
 // Type definition for `lore::models::player_account::PlayerAccount` struct
@@ -1035,6 +1058,9 @@ export const schema: SchemaType = {
 		PlayerStory: {
 			game_id: 0,
 			story_line: 0,
+			free_actions_count: 0,
+			sub_actions_count: 0,
+			paid_actions_count: 0,
 		},
 		StoryLine: {
 			game_id: 0,
@@ -1047,6 +1073,22 @@ export const schema: SchemaType = {
 				SysResponse: undefined,
 				Debug: undefined,
 				Error: undefined, }),
+			location: 0,
+		},
+		PlayerAccount: {
+			player_address: "",
+			timestamp_joined: 0,
+			timestamp_free_actions_claimed: 0,
+			minted_actions_count: 0,
+			purchase_count: 0,
+			subscription_count: 0,
+			current_game_id: 0,
+		},
+		PlayerBalances: {
+			player_address: "",
+			free_actions_balance: 0,
+			paid_actions_balance: 0,
+			sub_actions_balance: 0,
 		},
 		PlayerAccount: {
 			player_address: "",
