@@ -260,6 +260,25 @@ export interface PlayerBalances {
 	sub_actions_balance: BigNumberish;
 }
 
+// Type definition for `lore::models::player_account::PlayerAccount` struct
+export interface PlayerAccount {
+	player_address: string;
+	timestamp_joined: BigNumberish;
+	timestamp_free_actions_claimed: BigNumberish;
+	minted_actions_count: BigNumberish;
+	purchase_count: BigNumberish;
+	subscription_count: BigNumberish;
+	current_game_id: BigNumberish;
+}
+
+// Type definition for `lore::models::player_account::PlayerBalances` struct
+export interface PlayerBalances {
+	player_address: string;
+	free_actions_balance: BigNumberish;
+	paid_actions_balance: BigNumberish;
+	sub_actions_balance: BigNumberish;
+}
+
 // Type definition for `lore::models::reactable::Reactable` struct
 export interface Reactable {
 	inst: BigNumberish;
@@ -1055,6 +1074,21 @@ export const schema: SchemaType = {
 				Debug: undefined,
 				Error: undefined, }),
 			location: 0,
+		},
+		PlayerAccount: {
+			player_address: "",
+			timestamp_joined: 0,
+			timestamp_free_actions_claimed: 0,
+			minted_actions_count: 0,
+			purchase_count: 0,
+			subscription_count: 0,
+			current_game_id: 0,
+		},
+		PlayerBalances: {
+			player_address: "",
+			free_actions_balance: 0,
+			paid_actions_balance: 0,
+			sub_actions_balance: 0,
 		},
 		PlayerAccount: {
 			player_address: "",
