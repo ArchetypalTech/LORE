@@ -87,7 +87,8 @@ bun run dev:saya
 
 <hr/>
 
-## 🗺️ World deployment:
+
+## 🗺️ O'Ruggin Trail story deployment:
 
 Initial deployments start with an empty world, use the editor at `https://localhost:5173/editor` to create and publish a world.
 

@@ -1,0 +1,13 @@
+[id]
+Id = "0x6c6f72655f617070636861696e"
+
+[fee-contract]
+strk = "0x2e7442625bab778683501c0eadbc1ea17b3535da040a12ac7d281066e915eea"
+
+[settlement.starknet]
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9"
+core_contract = "0x9496013cd0ffc7111c6c8358830d0f0453615b56f99a1258781301c90401ab"
+block = 6881095
+
+[settlement.starknet.id]
+Named = "Sepolia"

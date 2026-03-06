@@ -268,20 +268,38 @@ fn test_claim_free_actions_max() {
     sys.prompt.prompt("look around", Option::None);
     sys.prompt.prompt("look around", Option::None);
     sys.prompt.prompt("look around", Option::None);
+    // spent all free actions
     _assert_balances(@sys, PLAYER_1, 0, 0, "spent initial");
     // mint actions to player...
     helpers::set_caller(OWNER());
     sys.actions.mint_to(PLAYER_1, 10);
-    _assert_balances(@sys, PLAYER_1, 0, 10, "after airdrop");
+    _assert_balances(@sys, PLAYER_1, 0, 10, "1 - airdrop");
     // now can claim...
     helpers::set_caller(PLAYER_1);
-    assert_eq!(sys.actions.get_free_actions_count(), 0, "after airdrop");
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "1 - zero");
     helpers::elapse_block_timestamp(CLAIM_INTERVAL * 10);
-    assert_eq!(sys.actions.get_free_actions_count(), 5, "after 10 hours");
+    assert_eq!(sys.actions.get_free_actions_count(), 5, "1 - can claim 5");
     // claim...
     sys.actions.claim_free_actions();
-    _assert_balances(@sys, PLAYER_1, 5, 10, "after airdrop");
-    assert_eq!(sys.actions.get_free_actions_count(), 0, "after claim");
+    _assert_balances(@sys, PLAYER_1, 5, 10, "2 - balances");
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "2 - zero");
+    // claim again, no changes
+    helpers::elapse_block_timestamp(CLAIM_INTERVAL * 10);
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "2 - still zero");
+    sys.actions.claim_free_actions();
+    _assert_balances(@sys, PLAYER_1, 5, 10, "3 - balances");
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "3 - zero");
+    // spend 2, claim 2...
+    sys.prompt.prompt("look around", Option::None); // will up 1 automatically
+    sys.prompt.prompt("look around", Option::None);
+    sys.prompt.prompt("look around", Option::None);
+    _assert_balances(@sys, PLAYER_1, 3, 10, "4 - balances");
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "4 - 0");
+    helpers::elapse_block_timestamp(CLAIM_INTERVAL * 10);
+    assert_eq!(sys.actions.get_free_actions_count(), 2, "4 - 2");
+    sys.actions.claim_free_actions();
+    _assert_balances(@sys, PLAYER_1, 5, 10, "5 - balances");
+    assert_eq!(sys.actions.get_free_actions_count(), 0, "5 - zero");
 }
 
 #[test]

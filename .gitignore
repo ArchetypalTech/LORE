@@ -30,3 +30,6 @@ bin
 # ssl
 packages/client/ssl/*
 !packages/client/ssl/.gitkeep
+packages/starknet/data/db/*
+.env.sepolia
+.env.mainnet
