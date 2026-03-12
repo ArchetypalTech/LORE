@@ -613,7 +613,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 
 		if (context.args[1] !== "actions") {
 			addTerminalContent({
-				text: `Usage: [mint <amount> actions]`,
+				text: "Usage: mint [amount] actions",
 				format: "error",
 				useTypewriter: true,
 			});
@@ -624,10 +624,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		let recipient = WalletStore().walletAddress;
 		let amount = context.args[0];
 		let amountConverted = BigInt(amount);
-		console.log("DEBUG: mint account", account);
-		console.log("DEBUG: mint recipient", recipient);
-		console.log("DEBUG: mint amount", amount);
-		console.log("DEBUG: mint amount", amountConverted);
+		
 		if (account !== undefined && recipient !== undefined && amountConverted !== undefined) {
 			await world.actions_token.mintTo(account, recipient, amountConverted )
 		} else {
@@ -642,5 +639,9 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			});
 			return;
 		}
+		// If mint was successful, refresh left panel + send command to confirm amount
+		const leftPanel = useLeftPanelStore.getState();
+		leftPanel.refreshBalances();
+		sendCommand("g_actions");
 	},
 	} as const;
