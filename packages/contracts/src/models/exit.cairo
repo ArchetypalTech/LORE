@@ -118,7 +118,9 @@ pub impl ExitComponent of Component<Exit> {
         // println!("Exit execute_command");
         let (action, _token) = get_action_token(@self, @world, command).unwrap();
         let direction_tokens: Span<Token> = command.get_directions();
-
+        player.log_sys(ref world, format!("exit: {:?}", self));
+        player.log_sys(ref world, format!("command: {:?}", command));
+        player.log_sys(ref world, format!("direction_tokens: {:?}", direction_tokens));
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
@@ -139,7 +141,7 @@ pub impl ExitComponent of Component<Exit> {
 
                 let mut matchesDirection: bool = false;
                 if (direction_tokens.len() > 0
-                    && matches_direction(@self, world, player, direction_tokens).is_some()) {
+                    && matches_direction(@self, ref world, player, direction_tokens).is_some()) {
                     matchesDirection = true;
                 }
 
@@ -224,13 +226,17 @@ pub impl ExitComponent of Component<Exit> {
 
 
 fn matches_direction(
-    self: @Exit, world: WorldStorage, player: @Player, directions_token: Span<Token>,
+    self: @Exit, ref world: WorldStorage, player: @Player, directions_token: Span<Token>,
 ) -> Option<felt252> {
     if (directions_token.is_empty()) {
         return Option::None;
     }
     let exit_dir: ByteArray = ByteArrayTraitExt::byte_array_from_direction(*self.direction_type);
     let dir_text = constants::direction_one_letter(directions_token[0].text);
+    player.log_sys(ref world, format!("exit: {:?}", self));
+    player.log_sys(ref world, format!("directions_token[0]: {:?}", directions_token[0]));
+    player.log_sys(ref world, format!("exit_dir: {:?}", exit_dir));
+    player.log_sys(ref world, format!("dir_text: {:?}", dir_text));
     // println!("area_dir: {:?}", directions_token[0]);
     if (exit_dir == dir_text) {
         return Option::Some(*self.leads_to);
