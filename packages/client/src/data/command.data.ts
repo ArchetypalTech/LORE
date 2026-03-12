@@ -604,7 +604,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	mint: (context: commandContext) => {
+	mint: async (context: commandContext) => {
 		// Check if player is connected
 		if (!WalletStore().isConnected) {
 			sendCommand("_not_yet_connected");
@@ -629,7 +629,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		console.log("DEBUG: mint amount", amount);
 		console.log("DEBUG: mint amount", amountConverted);
 		if (account !== undefined && recipient !== undefined && amountConverted !== undefined) {
-			world.actions_token.mintTo(account, recipient, amountConverted )
+			await world.actions_token.mintTo(account, recipient, amountConverted )
 		} else {
 			addTerminalContent({
 				text: `Error: Missing arguments -> ${JSON.stringify({
