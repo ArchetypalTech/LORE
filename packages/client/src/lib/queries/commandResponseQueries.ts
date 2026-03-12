@@ -218,6 +218,7 @@ export const queryGameData = async (): Promise<void> => {
             Location_Name: line.locationName ?? "",
             Line_Type: line.line_type,
             Line_Text: line.line,
+            Timestamp: line.timestamp,
           });
         }
 
@@ -424,7 +425,8 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
         model.line !== undefined &&
         model.location !== undefined &&
         model.line_type !== undefined &&
-        model.line_type.toString() === "Error"
+        model.line_type.toString() === "Error" &&
+        model.timestamp !== undefined
       ) {
         const gameIdStr = model.game_id.toString();
         const errorKey = BigInt(model.key.toString());
@@ -440,7 +442,8 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
           commandModel.line_type !== undefined &&
           commandModel.line_type.toString() === "Command" &&
           commandModel.line !== undefined &&
-          commandModel.location !== undefined
+          commandModel.location !== undefined &&
+          commandModel.timestamp !== undefined
         ) {
           const errorStoryLine: StoryLine = {
             game_id: model.game_id,
@@ -448,6 +451,7 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
             line: model.line,
             line_type: model.line_type,
             location: model.location,
+            timestamp: model.timestamp,
           };
 
           const commandStoryLine: StoryLine = {
@@ -456,6 +460,7 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
             line: commandModel.line,
             line_type: commandModel.line_type,
             location: commandModel.location,
+            timestamp: commandModel.timestamp,
           };
 
           pairs.push([errorStoryLine, commandStoryLine]);
