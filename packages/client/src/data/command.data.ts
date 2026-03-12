@@ -610,10 +610,19 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			sendCommand("_not_yet_connected");
 			return;
 		}
+
+		if (context.args[1] !== "actions") {
+			addTerminalContent({
+				text: `Usage: [mint <amount> actions]`,
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
 		let world = LORE_CONFIG.world;
 		let account = WalletStore().account;
 		let recipient = WalletStore().walletAddress;
-		let amount = context.args[1];
+		let amount = context.args[0];
 		let amountConverted = BigInt(amount);
 		console.log("DEBUG: mint account", account);
 		console.log("DEBUG: mint recipient", recipient);

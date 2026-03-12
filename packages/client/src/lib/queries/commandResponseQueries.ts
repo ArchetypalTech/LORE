@@ -4,6 +4,7 @@ import { bigintToHex128 } from "@/lib/utils/utils";
 import { SchemaType, Player, PlayerStory, StoryLine, TrailProgress } from "@/lib/dojo_bindings/typescript/models.gen";
 import { fromWei, queryErrorLocation } from "../queriesPanel/uiPanelQueries";
 import JSONbig from "json-bigint";
+import { BigNumberish } from "starknet";
 
 const trailID: bigint = 0n;
 // Call queries and generate json file
@@ -89,7 +90,7 @@ export const queryGameData = async (): Promise<void> => {
             completed: boolean;
             isDead: boolean;
           };
-          storylines: (StoryLine & { locationName?: string })[];
+          storylines: (StoryLine & { locationName?: string, convertedTimestamp?: string })[];
         }
       >
     > = {};
@@ -129,6 +130,7 @@ export const queryGameData = async (): Promise<void> => {
           return {
             ...line,
             locationName: locationEntity?.name?.toString() ?? "",
+            convertedTimestamp: formatTimestamp(line.timestamp),
           };
         }
       );
@@ -218,7 +220,8 @@ export const queryGameData = async (): Promise<void> => {
             Location_Name: line.locationName ?? "",
             Line_Type: line.line_type,
             Line_Text: line.line,
-            Timestamp: line.timestamp,
+            Timestamp_Unix: line.timestamp,
+            Timestamp_Readable: line.convertedTimestamp,
           });
         }
 
@@ -560,4 +563,19 @@ function convertToCSV(rows: Record<string, any>[]): string {
   ].join("\n");
 
   return csv;
+}
+
+// Helper: Convert timestamp to date
+const formatTimestamp = (timestamp: BigNumberish): string => {
+  const seconds = Number(BigInt(timestamp.toString()));
+  const date = new Date(seconds * 1000);
+
+  return new Intl.DateTimeFormat("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
 }
