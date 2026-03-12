@@ -604,4 +604,34 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-} as const;
+	mint: (context: commandContext) => {
+		// Check if player is connected
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+		let world = LORE_CONFIG.world;
+		let account = WalletStore().account;
+		let recipient = WalletStore().walletAddress;
+		let amount = context.args[1];
+		let amountConverted = BigInt(amount);
+		console.log("DEBUG: mint account", account);
+		console.log("DEBUG: mint recipient", recipient);
+		console.log("DEBUG: mint amount", amount);
+		console.log("DEBUG: mint amount", amountConverted);
+		if (account !== undefined && recipient !== undefined && amountConverted !== undefined) {
+			world.actions_token.mintTo(account, recipient, amountConverted )
+		} else {
+			addTerminalContent({
+				text: `Error: Missing arguments -> ${JSON.stringify({
+					account,
+					recipient,
+					amount: amountConverted
+				})}`,
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+	},
+	} as const;
