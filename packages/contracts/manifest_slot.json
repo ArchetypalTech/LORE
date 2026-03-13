@@ -140,7 +140,7 @@
     },
     {
       "address": "0x1968aa3dcaad3ca930835172d4f0be3578d2eb928450ceb78d1d50f82065c2a",
-      "class_hash": "0x4d7d2cd84acb7172d6ec2423f1cd99cea4df10011d9ec8a9e8bb6e9ea73c3c3",
+      "class_hash": "0x498ad411751d4c752fee087f573dad0b141eea75792326cd1411f28f45d17c5",
       "init_calldata": [],
       "tag": "lore-prompt",
       "selector": "0x7ce185ac93eb5e2a28b27a6bab8ce1cc608744ef663badb20489547ed1d20a0",
