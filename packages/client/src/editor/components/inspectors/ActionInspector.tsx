@@ -154,6 +154,7 @@ export const ActionInspector: ComponentInspector<Action> = ({
                 value={componentObj.trigger.map(([a, b]) => [a.toString(), b])}
                 onChange={handleInputChange(idx)}
                 dataPool={dataPool}
+                sourceEntity={entity}
               />
               <ConditionSelector
                 id="conditions"
