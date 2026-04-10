@@ -31,7 +31,6 @@ export const TriggerSelector = ({
         type: "array",
       },
     } as unknown as ChangeEvent<HTMLInputElement>;
-
     onChange(syntheticEvent);
   };
 
@@ -65,10 +64,13 @@ export const TriggerSelector = ({
 
         return bigintEquals(entity.trail_id, sourceEntity.trail_id);
       })
-      .map(([address, val]) => ({
-        label: val.Entity.name,
-        value: address,
-      }));
+      .map(([address, val]) => {
+        const entity = val.Entity;
+        return {
+          label: entity.name,
+          value: address,
+        };
+      });
   }, [dataPool, sourceEntity]);
 
   const getTriggerOptions = (entityId: string) => {

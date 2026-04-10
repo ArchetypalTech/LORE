@@ -161,12 +161,14 @@ export const ActionInspector: ComponentInspector<Action> = ({
                 value={componentObj.conditions.map(([a, b]) => [a.toString(), b])}
                 onChange={handleInputChange(idx)}
                 dataPool={dataPool}
+                sourceEntity={entity}
               />
               <EffectSelector
                 id="effects"
                 value={componentObj.effects.map(([a, b]) => [a.toString(), b])}
                 onChange={handleInputChange(idx)}
                 dataPool={dataPool}
+                sourceEntity={entity}
               />
               <TextAreaArray
                 id="failing_response"
