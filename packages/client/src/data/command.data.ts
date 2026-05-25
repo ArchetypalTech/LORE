@@ -518,7 +518,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	ui: (context: commandContext) => {
+	ui: async (context: commandContext) => {
 		if (!WalletStore().isConnected) {
 			sendCommand("_not_yet_connected");
 			return;
@@ -532,7 +532,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "show") {
 			panel.show();
 			rightPanel.show();
-			leftPanel.refreshBalances();
+			await leftPanel.refreshBalances();
 			leftPanel.show();
 			addTerminalContent({
 				text: "Displaying Auxiliary Panels.",
@@ -641,7 +641,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		}
 		// If mint was successful, refresh left panel + send command to confirm amount
 		const leftPanel = useLeftPanelStore.getState();
-		leftPanel.refreshBalances();
+		await leftPanel.refreshBalances();
 		sendCommand("g_actions");
 	},
 	} as const;

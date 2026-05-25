@@ -216,7 +216,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 
 	// update left panel
 	const leftPanel = useLeftPanelStore.getState();
-	leftPanel.refreshBalances();
+	await leftPanel.refreshBalances();
 };
 
 const onPlayerStory = (playerStory: PlayerStory) => {

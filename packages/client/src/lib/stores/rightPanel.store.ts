@@ -6,7 +6,7 @@ export const useRightPanelStore = create<{
   show: () => void;
   hide: () => void;
 }>(set => ({
-  visible: false,
+  visible: true,
   toggle: () => set(s => ({ visible: !s.visible })),
   show: () => set({ visible: true }),
   hide: () => set({ visible: false }),
