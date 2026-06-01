@@ -80,6 +80,32 @@
         "vite-plugin-wasm": "^3.4.1",
       },
     },
+    "packages/client-sn": {
+      "name": "@lore/client-sn",
+      "version": "0.0.0",
+      "dependencies": {
+        "@cartridge/connector": "0.13.5",
+        "@cartridge/controller": "0.13.5",
+        "@dojoengine/core": "1.8.8",
+        "@lore/starknet": "workspace:*",
+        "@starknet-react/chains": "^5.0.1",
+        "@starknet-react/core": "^5.0.1",
+        "get-starknet-core": "^4.0.0",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0",
+        "starknet": "^8.5.4",
+      },
+      "devDependencies": {
+        "@types/react": "^19.1.10",
+        "@types/react-dom": "^19.1.8",
+        "@vitejs/plugin-react": "^4.7.0",
+        "typescript": "^5.7.3",
+        "vite": "^7.1.6",
+        "vite-plugin-mkcert": "^1.17.8",
+        "vite-plugin-top-level-await": "^1.5.0",
+        "vite-plugin-wasm": "^3.4.1",
+      },
+    },
     "packages/contracts": {
       "name": "@lore/contracts",
       "version": "0.1.0",
@@ -175,6 +201,8 @@
     "@bufbuild/protobuf": ["@bufbuild/protobuf@2.8.0", "", {}, "sha512-r1/0w5C9dkbcdjyxY8ZHsC5AOWg4Pnzhm2zu7LO4UHSounp2tMm6Y+oioV9zlGbLveE7YaWRDUk48WLxRDgoqg=="],
 
     "@bufbuild/protoplugin": ["@bufbuild/protoplugin@2.8.0", "", { "dependencies": { "@bufbuild/protobuf": "2.8.0", "@typescript/vfs": "^1.5.2", "typescript": "5.4.5" } }, "sha512-kwZeZAz6jmDC571Wf/f5cDX02IjvPmtdspdxW/hbLS+bnZHkXMW4StaW+irGd4TkykvHD4fFgBnPG/O1x8OgXw=="],
+
+    "@cartridge/connector": ["@cartridge/connector@0.13.5", "", { "dependencies": { "@cartridge/controller": "0.13.5" }, "peerDependencies": { "@starknet-react/core": "^5.0.1" } }, "sha512-28SWwpi/6wKlvtOvDffrgoVXWyxApYkuebOlsNYg3UOEbWBBMHhaDO/lZ20qbh6AznmLOB2Wrx/PC2JKo8SirA=="],
 
     "@cartridge/controller": ["@cartridge/controller@0.13.5", "", { "dependencies": { "@cartridge/controller-wasm": "0.9.3", "@cartridge/penpal": "^6.2.4", "@starknet-io/get-starknet-wallet-standard": "5.0.0-beta.0", "@starknet-io/types-js": "0.9.1", "@telegram-apps/sdk": "^2.4.0", "@turnkey/sdk-browser": "^4.0.0", "@walletconnect/ethereum-provider": "^2.20.0", "bs58": "^6.0.0", "cbor-x": "^1.5.0", "ethers": "^6.13.5", "micro-sol-signer": "^0.5.0", "mipd": "^0.0.7", "open": "^10.1.0", "starknet": "^8.5.2" } }, "sha512-Q3HlGM7T73GUJsdg4qswzxGmgUeCBBYEOquSyJR5e25JEOs25cXokiOXoxPMYVlYLYpzqlannMlGkkiVO/9qFw=="],
 
@@ -361,6 +389,8 @@
     "@lit/reactive-element": ["@lit/reactive-element@2.1.0", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.2.0" } }, "sha512-L2qyoZSQClcBmq0qajBVbhYEcG6iK0XfLn66ifLe/RfC0/ihpc+pl0Wdn8bJ8o+hj38cG0fGXRgSS20MuXn7qA=="],
 
     "@lore/client": ["@lore/client@workspace:packages/client"],
+
+    "@lore/client-sn": ["@lore/client-sn@workspace:packages/client-sn"],
 
     "@lore/contracts": ["@lore/contracts@workspace:packages/contracts"],
 
