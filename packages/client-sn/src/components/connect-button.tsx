@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
+import { NetworkBadge } from "@/components/network-badge";
 import { controllerConnector } from "@/dojo/connector";
+import { shortAddress } from "@/lib/utils";
 
 export function ConnectButton() {
 	const { connect } = useConnect();
@@ -22,10 +24,10 @@ export function ConnectButton() {
 		controllerConnector.controller.openProfile("inventory");
 
 	return (
-		<>
+		<div className="flex flex-row items-center gap-4">
 			{isConnected ? (
 				<button type="button" onClick={openInventory}>
-					{username ?? `${address?.slice(0, 6)}…${address?.slice(-4)}`}
+					{username ?? shortAddress(address)}
 				</button>
 			) : (
 				<button
@@ -36,15 +38,18 @@ export function ConnectButton() {
 				</button>
 			)}
 
-			{isConnected && (
-				<button
-					type="button"
-					className="btn-link"
-					onClick={() => disconnect()}
-				>
-					Disconnect
-				</button>
-			)}
-		</>
+			<div className="flex flex-col items-start gap-1 text-sm opacity-60">
+				<NetworkBadge />
+				{isConnected && (
+					<button
+						type="button"
+						className="bg-transparent px-2 py-1 text-sm text-[#888] underline"
+						onClick={() => disconnect()}
+					>
+						Disconnect
+					</button>
+				)}
+			</div>
+		</div>
 	);
 }

@@ -1,16 +1,17 @@
 import type { PropsWithChildren } from "react";
-import { sepolia } from "@starknet-react/chains";
 import { jsonRpcProvider, StarknetConfig } from "@starknet-react/core";
 import { controllerConnector } from "@/dojo/connector";
-import { RPC_URL } from "@/dojo/dojoConfig";
+import { selectedProfileConfig } from "@/dojo/dojoConfig";
 
-const provider = jsonRpcProvider({ rpc: () => ({ nodeUrl: RPC_URL }) });
+const provider = jsonRpcProvider({
+	rpc: () => ({ nodeUrl: selectedProfileConfig.rpcUrl }),
+});
 
 export function StarknetProvider({ children }: PropsWithChildren) {
 	return (
 		<StarknetConfig
 			autoConnect
-			chains={[sepolia]}
+			chains={[selectedProfileConfig.chain]}
 			connectors={[controllerConnector]}
 			provider={provider}
 		>

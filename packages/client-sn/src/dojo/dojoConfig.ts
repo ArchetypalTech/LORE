@@ -1,17 +1,29 @@
 import { createDojoConfig } from "@dojoengine/core";
-// L2 Starknet world manifest. client-sn always targets packages/starknet (lore_sn),
-// never the L3 packages/contracts (lore) engine.
-import manifest from "@lore/starknet/manifest_sepolia.json";
+import {
+	getProfileConfig,
+	type ProfileConfig,
+	type ProfileName,
+} from "./config_profiles";
 
-/** Dojo namespace of the L2 world (see packages/starknet/dojo_sepolia.toml). */
-export const NAMESPACE = "lore_sn";
+// Select the active profile. Override with VITE_PROFILE in .env
+// (e.g. VITE_PROFILE=dev), otherwise fall back to the Vite mode, then sepolia.
+const selectedProfile: ProfileName =
+	(import.meta.env.VITE_PROFILE as ProfileName) ||
+	(import.meta.env.MODE as ProfileName) ||
+	"sepolia";
 
-/** Cartridge-hosted Starknet Sepolia RPC the L2 world is deployed to. */
-export const RPC_URL = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9";
+const profile: ProfileConfig = getProfileConfig(selectedProfile);
 
-/** Torii indexer for the L2 world (Cartridge slot `lore_sn-stage`). */
-export const TORII_URL = "https://api.cartridge.gg/x/lore_sn-stage/torii";
+/** The resolved config for the active profile — import this where config is needed. */
+export const selectedProfileConfig: ProfileConfig = {
+	...profile,
+	rpcUrl: import.meta.env.VITE_RPC_URL || profile.rpcUrl,
+	toriiUrl: import.meta.env.VITE_TORII_URL || profile.toriiUrl,
+	slotName: import.meta.env.VITE_SLOT || profile.slotName,
+};
 
-export const dojoConfig = createDojoConfig({ manifest });
+export const dojoConfig = createDojoConfig({
+	manifest: selectedProfileConfig.dojo_manifest,
+});
 
-export const WORLD_ADDRESS = dojoConfig.manifest.world.address;
+console.log("DEBUG: selectedProfileConfig:", selectedProfileConfig);

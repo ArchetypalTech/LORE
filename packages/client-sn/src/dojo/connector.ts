@@ -1,11 +1,10 @@
 import { ControllerConnector } from "@cartridge/connector";
 import type { SessionPolicies } from "@cartridge/controller";
 import { constants } from "starknet";
-import { NAMESPACE, RPC_URL } from "./dojoConfig";
+import { selectedProfileConfig } from "./dojoConfig";
 
-// `lore_sn-permit_token` on Starknet Sepolia (manifest_sepolia.json).
-const PERMIT_TOKEN_ADDRESS =
-	"0x52073be9902c993ddb321883133b8c64e0a1c544af014c2a36c367fdcd8d2e6";
+// `lore_sn-permit_token` for the active profile (resolved from its manifest).
+const PERMIT_TOKEN_ADDRESS = selectedProfileConfig.contractAddresses.permit_token;
 
 const policies: SessionPolicies = {
 	contracts: {
@@ -21,11 +20,12 @@ const policies: SessionPolicies = {
 
 /**
  * Single Controller connector instance for the app.
- * Connects to the L2 Starknet Sepolia world (lore_sn).
+ * Connects to the L2 Starknet world (lore_sn) for the active profile.
  */
 export const controllerConnector = new ControllerConnector({
-	namespace: NAMESPACE,
-	chains: [{ rpcUrl: RPC_URL }],
+	namespace: selectedProfileConfig.namespace,
+	chains: [{ rpcUrl: selectedProfileConfig.rpcUrl }],
 	defaultChainId: constants.StarknetChainId.SN_SEPOLIA,
+	preset: "orug",
 	policies,
 });
