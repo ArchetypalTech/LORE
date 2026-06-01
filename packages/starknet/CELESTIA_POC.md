@@ -18,13 +18,19 @@ export CELESTIA_TOKEN=...
 
 ```bash
 cd packages/starknet
-. .env.sepolia
+source .env.sepolia
 export APPCHAIN_ID=lore_appchain
 export KATANA_L3_BIN=./bin/katana-1.7.0-snos.4
 export KATANA_L3_PORT=5050
 export DATA_PATH=./data/${APPCHAIN_ID}
 export KATANA_L3_DB_PATH=./data/db/${APPCHAIN_ID}
-# rm -rf ${KATANA_L3_DB_PATH}
+echo ">>> APPCHAIN_ID: [${APPCHAIN_ID}]"
+echo ">>> DATA_PATH: [${DATA_PATH}]"
+echo ">>> KATANA_L3_PORT: [${KATANA_L3_PORT}]"
+echo ">>> KATANA_L3_BIN: [${KATANA_L3_BIN}]"
+echo ">>> KATANA_L3_DB_PATH: [${KATANA_L3_DB_PATH}]"
+# delete database to deploy a new appchain
+rm -rf ${KATANA_L3_DB_PATH}
 ${KATANA_L3_BIN} --version
 ${KATANA_L3_BIN} \
   --chain ${DATA_PATH} \
@@ -51,11 +57,12 @@ PREFUNDED ACCOUNTS
 Execute only once, as we're using a local database.
 
 ```bash
-export PROFILE=saya-test
 cd packages/contracts
+export PROFILE=saya-test
 sozo -P ${PROFILE} build
 sozo -P ${PROFILE} inspect
-sozo -P ${PROFILE} migrate --l1-data-gas 20000000000 --l1-gas 20000000000 --l1-gas-price 20000000000 --l2-gas-price 20000000000 --l1-data-gas-price 20000000000 --l2-gas 20000000000
+sozo -P ${PROFILE} migrate
+# sozo -P ${PROFILE} migrate --l1-data-gas 20000000000 --l1-gas 20000000000 --l1-gas-price 20000000000 --l2-gas-price 20000000000 --l1-data-gas-price 20000000000 --l2-gas 20000000000
 ```
 
 
@@ -82,9 +89,9 @@ echo ">>> SETTLEMENT_ACCOUNT_PRIVATE_KEY: [${SETTLEMENT_ACCOUNT_PRIVATE_KEY}]"
 echo ">>> CELESTIA_RPC: [${CELESTIA_RPC}]"
 echo ">>> CELESTIA_TOKEN: [${CELESTIA_TOKEN}]"
 #----------------
-# sytart saya
+# start saya
 #
-rm -rf ${DB_DIR}/saya.db
+# rm -rf ${DB_DIR}/saya.db
 echo ">>> Starting Saya..."
 saya --version
 saya persistent start \
