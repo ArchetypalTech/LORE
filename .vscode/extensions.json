@@ -3,6 +3,7 @@
 		"starkware.cairo1",
 		"formulahendry.auto-rename-tag",
 		"oven.bun-vscode",
-		"oxc.oxc-vscode"
+		"oxc.oxc-vscode",
+		"bradlc.vscode-tailwindcss"
 	]
 }

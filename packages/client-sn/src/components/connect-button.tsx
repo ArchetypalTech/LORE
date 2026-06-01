@@ -24,13 +24,12 @@ export function ConnectButton() {
 	return (
 		<>
 			{isConnected ? (
-				<button type="button" style={styles.button} onClick={openInventory}>
+				<button type="button" onClick={openInventory}>
 					{username ?? `${address?.slice(0, 6)}…${address?.slice(-4)}`}
 				</button>
 			) : (
 				<button
 					type="button"
-					style={styles.button}
 					onClick={() => connect({ connector: controllerConnector })}
 				>
 					Connect Controller
@@ -40,7 +39,7 @@ export function ConnectButton() {
 			{isConnected && (
 				<button
 					type="button"
-					style={styles.disconnect}
+					className="btn-link"
 					onClick={() => disconnect()}
 				>
 					Disconnect
@@ -49,27 +48,3 @@ export function ConnectButton() {
 		</>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	button: {
-		marginTop: "1rem",
-		padding: "0.75rem 1.5rem",
-		fontSize: "1rem",
-		fontFamily: "inherit",
-		color: "#0a0a0a",
-		background: "#e6e6e6",
-		border: "none",
-		borderRadius: "0.5rem",
-		cursor: "pointer",
-	},
-	disconnect: {
-		padding: "0.25rem 0.5rem",
-		fontSize: "0.8rem",
-		fontFamily: "inherit",
-		color: "#888",
-		background: "transparent",
-		border: "none",
-		cursor: "pointer",
-		textDecoration: "underline",
-	},
-};

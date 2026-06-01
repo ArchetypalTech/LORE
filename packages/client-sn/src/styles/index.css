@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Base element styling — a plain element looks right with no class. */
+@layer base {
+	body {
+		@apply bg-[#0a0a0a] font-mono text-[#e6e6e6];
+	}
+
+	button {
+		@apply cursor-pointer rounded-lg border-none bg-[#e6e6e6] px-6 py-3 font-mono text-base text-[#0a0a0a];
+	}
+
+	.page h1 {
+		@apply m-0 text-4xl tracking-[0.05em];
+	}
+
+	.page p {
+		@apply m-0 opacity-60;
+	}
+}
+
+/* Classes are only for variants and special/layout stylings. */
+@layer components {
+	.page {
+		@apply flex min-h-screen flex-col items-center justify-center gap-3;
+	}
+
+	/* Variant: render a button as an inline text link. */
+	.btn-link {
+		@apply bg-transparent px-2 py-1 text-sm text-[#888] underline;
+	}
+}
