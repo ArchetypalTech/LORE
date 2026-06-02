@@ -22,7 +22,7 @@ import GameStore from "./game.store";
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
 import { queryPlayerLocationPerGame} from "../../lib/queriesPanel/uiPanelQueries";
 import { queryPanelInfo, queryExitsInfo, queryPuzzlesInfo } from "@/client/terminal/Terminal.uiPanel";
-import {useLeftPanelStore} from "@lib/stores/leftPanel.store";
+import {updateBalances} from "@lib/stores/leftPanel.store";
 
 
 /**
@@ -215,8 +215,8 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 	}
 
 	// update left panel
-	const leftPanel = useLeftPanelStore.getState();
-	await leftPanel.refreshBalances();
+	await updateBalances();
+	console.log("Outputter updated, balances refreshed");
 };
 
 const onPlayerStory = (playerStory: PlayerStory) => {

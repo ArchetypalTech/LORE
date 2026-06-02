@@ -33,7 +33,7 @@ import { queryGameData } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
-import { useLeftPanelStore } from "@/lib/stores/leftPanel.store";
+import { useLeftPanelStore, updateBalances } from "@/lib/stores/leftPanel.store";
 
 /**
  * Context object passed to each terminal command handler
@@ -532,7 +532,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "show") {
 			panel.show();
 			rightPanel.show();
-			await leftPanel.refreshBalances();
+			await updateBalances();
+			console.log("Showing UI panels, balances updated");
 			leftPanel.show();
 			addTerminalContent({
 				text: "Displaying Auxiliary Panels.",
@@ -545,7 +546,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// ui hide
 		if (context.args[0] === "hide") {
 			panel.hide();
-			rightPanel.hide();
+			// rightPanel.hide();
 			leftPanel.hide();
 			addTerminalContent({
 				text: "Hidding Auxiliary Panels.",
@@ -640,8 +641,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			return;
 		}
 		// If mint was successful, refresh left panel + send command to confirm amount
-		const leftPanel = useLeftPanelStore.getState();
-		await leftPanel.refreshBalances();
+		// const leftPanel = useLeftPanelStore.getState();
+		await updateBalances();
 		sendCommand("g_actions");
 	},
 	} as const;
