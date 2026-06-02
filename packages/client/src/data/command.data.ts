@@ -532,9 +532,12 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		if (context.args[0] === "show") {
 			panel.show();
 			rightPanel.show();
-			await updateBalances();
-			console.log("Showing UI panels, balances updated");
 			leftPanel.show();
+			try {
+				await updateBalances();
+			} catch (e) {
+				console.error("Failed to fetch balances on ui show:", e);
+			}
 			addTerminalContent({
 				text: "Displaying Auxiliary Panels.",
 				format: "system",
