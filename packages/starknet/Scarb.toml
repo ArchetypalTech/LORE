@@ -10,10 +10,11 @@ sierra-replace-ids = true
 [dependencies]
 starknet = ">=2.13.1"
 dojo = "=1.8.0"
-openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-openzeppelin_access = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", branch = "dojo_v1.7.0" }
+openzeppelin_token = "3.0.0"
+openzeppelin_access = "3.0.0"
+openzeppelin_introspection = "3.0.0"
+nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.2.2" }
+bundle = { git = "https://github.com/cartridge-gg/arcade", rev = "9da344a0" }
 # piltover = { git = "https://github.com/cartridge-gg/piltover.git", rev = "c25af3d" }
 
 [dev-dependencies]
@@ -24,7 +25,17 @@ dojo_cairo_test = "=1.8.0"
 allow-prebuilt-plugins = ["dojo_cairo_macros"]
 
 [[target.starknet-contract]]
-build-external-contracts = ["dojo::world::world_contract::world"]
+build-external-contracts = [
+  "dojo::world::world_contract::world",
+  "bundle::models::index::m_Bundle",
+  "bundle::models::index::m_BundleIssuance",
+  "bundle::models::index::m_BundleReferral",
+  "bundle::models::index::m_BundleGroup",
+  "bundle::models::index::m_BundleVoucher",
+  "bundle::events::index::e_BundleRegistered",
+  "bundle::events::index::e_BundleUpdated",
+  "bundle::events::index::e_BundleIssued",
+]
 allowed-libfuncs-list.name = "experimental"
 
 # debug contract size issues

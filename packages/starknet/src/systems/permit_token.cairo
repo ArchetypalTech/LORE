@@ -89,18 +89,22 @@ pub mod permit_token {
     use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
     //-----------------------------------
-    // ERC721 start
+    // ERC721+components start
     //
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::ERC721Component;
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent;
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent::{ERC721HooksImpl};
     use nft_combo::utils::renderer::{ContractMetadata, TokenMetadata};
+    use bundle::component::Component as BundleComponent;
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: ERC721ComboComponent, storage: erc721_combo, event: ERC721ComboEvent);
+    component!(path: BundleComponent, storage: bundle, event: BundleEvent);
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
     impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
+    impl BundleInternalImpl = BundleComponent::InternalImpl<ContractState>;
+    impl BundleFeeImpl of BundleComponent::BundleFeeTrait<ContractState> {}
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
     #[storage]
@@ -111,6 +115,8 @@ pub mod permit_token {
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
         erc721_combo: ERC721ComboComponent::Storage,
+        #[substorage(v0)]
+        bundle: BundleComponent::Storage,
     }
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -121,9 +127,11 @@ pub mod permit_token {
         ERC721Event: ERC721Component::Event,
         #[flat]
         ERC721ComboEvent: ERC721ComboComponent::Event,
+        #[flat]
+        BundleEvent: BundleComponent::Event,
     }
     //
-    // ERC721 end
+    // ERC721+components end
     //-----------------------------------
 
     use lore_sn::models::{
@@ -137,6 +145,8 @@ pub mod permit_token {
         utils::{ByteArrayTrait},
     };
     use nft_combo::utils::renderer::{Attribute};
+    use bundle::component::Component::{BundleQuote, BundleTrait};
+    use bundle::interface::IBundle;
 
     mod Errors {
         pub const INVALID_CALLER: felt252               = 'PERMIT: Invalid caller';
@@ -256,6 +266,73 @@ pub mod permit_token {
 
 
     //-----------------------------------
+    // Bundle interface
+    //
+    impl BundleImpl of BundleTrait<ContractState> {
+        fn on_issue(
+            ref self: BundleComponent::ComponentState<ContractState>,
+            recipient: ContractAddress,
+            bundle_id: u32,
+            quantity: u32,
+        ) {
+        }
+        fn supply(
+            self: @BundleComponent::ComponentState<ContractState>, bundle_id: u32,
+        ) -> Option<u32> {
+            Option::None
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl IBundleImpl of IBundle<ContractState> {
+        fn get_metadata(self: @ContractState, bundle_id: u32) -> ByteArray {
+            let mut world: WorldStorage = self.world_default();
+            self.bundle.get_metadata(world, bundle_id)
+        }
+
+        fn quote(
+            self: @ContractState,
+            bundle_id: u32,
+            quantity: u32,
+            has_referrer: bool,
+            client_percentage: u8,
+        ) -> BundleQuote {
+            let mut world: WorldStorage = self.world_default();
+            self.bundle.quote(world, bundle_id, quantity, has_referrer, client_percentage)
+        }
+
+        fn issue(
+            ref self: ContractState,
+            recipient: ContractAddress,
+            bundle_id: u32,
+            quantity: u32,
+            referrer: Option<ContractAddress>,
+            referrer_group: Option<felt252>,
+            client: Option<ContractAddress>,
+            client_percentage: u8,
+            voucher_key: Option<felt252>,
+            signature: Option<Span<felt252>>,
+        ) {
+            let mut world: WorldStorage = self.world_default();
+            self
+                .bundle
+                .issue(
+                    world,
+                    recipient,
+                    bundle_id,
+                    quantity,
+                    referrer,
+                    referrer_group,
+                    client,
+                    client_percentage,
+                    voucher_key,
+                    signature,
+                )
+        }
+    }
+
+
+    //-----------------------------------
     // Internal
     //
     #[generate_trait]
@@ -355,6 +432,7 @@ pub mod permit_token {
                 featured_image: Option::None,
                 external_link: Option::Some(orug_metadata::EXTERNAL_LINK()),
                 collaborators: Option::None,
+                background_color: Option::Some(orug_metadata::BACKGROUND_COLOR()),
             };
             (Option::Some(metadata))
         }

@@ -2,6 +2,16 @@
 version = 1
 
 [[package]]
+name = "bundle"
+version = "0.0.0"
+source = "git+https://github.com/cartridge-gg/arcade?rev=9da344a0#9da344a040073182ed65c67863d43ee30aebc718"
+dependencies = [
+ "dojo",
+ "graffiti",
+ "openzeppelin",
+]
+
+[[package]]
 name = "dojo"
 version = "1.8.0"
 source = "registry+https://scarbs.xyz/"
@@ -28,12 +38,18 @@ dependencies = [
 [[package]]
 name = "graffiti"
 version = "0.1.0"
-source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea299ed556900564ff2"
+source = "git+https://github.com/bal7hazar/graffiti.git?rev=e8b0854#e8b0854798ebbcebde504ea299ed556900564ff2"
+
+[[package]]
+name = "graffiti_rsodre"
+version = "0.1.0"
+source = "git+https://github.com/rsodre/graffiti?rev=graffiti_rsodre#e82b61cf83f37e66063057301becee35f8fa64d7"
 
 [[package]]
 name = "lore_sn"
 version = "0.2.0"
 dependencies = [
+ "bundle",
  "dojo",
  "dojo_cairo_test",
  "nft_combo",
@@ -44,49 +60,147 @@ dependencies = [
 
 [[package]]
 name = "nft_combo"
-version = "1.1.0"
-source = "git+https://github.com/underware-gg/cairo-nft-combo?branch=dojo_v1.7.0#e4118ca5237d3c6f8003182202c77aef44cb97b6"
+version = "1.2.0"
+source = "git+https://github.com/underware-gg/cairo-nft-combo?tag=v1.2.2#6d320476875bf38edb9790a8668708eb0592cce2"
 dependencies = [
- "graffiti",
+ "graffiti_rsodre",
+ "openzeppelin",
+]
+
+[[package]]
+name = "openzeppelin"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:ded6f53e0b50a3583f72c556d9ca508e627d175c6f01a2f5124f2e9a052ac985"
+dependencies = [
+ "openzeppelin_access",
+ "openzeppelin_account",
+ "openzeppelin_finance",
+ "openzeppelin_governance",
+ "openzeppelin_interfaces",
  "openzeppelin_introspection",
+ "openzeppelin_merkle_tree",
+ "openzeppelin_presets",
+ "openzeppelin_security",
  "openzeppelin_token",
+ "openzeppelin_upgrades",
+ "openzeppelin_utils",
 ]
 
 [[package]]
 name = "openzeppelin_access"
-version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:2c7fab22d2601fca4f456c81272637f2563a423652d1671383bbe3d007803977"
 dependencies = [
+ "openzeppelin_interfaces",
  "openzeppelin_introspection",
- "openzeppelin_utils",
 ]
 
 [[package]]
 name = "openzeppelin_account"
-version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:b46f41be21fff6692d32949664d2f0dd1919c741346a676d6e0f1fe2ea576999"
 dependencies = [
+ "openzeppelin_interfaces",
  "openzeppelin_introspection",
  "openzeppelin_utils",
 ]
+
+[[package]]
+name = "openzeppelin_finance"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:f77f4f5262666d8033f16b3a7df839ed2abb699a09ad33099c7bb6bf2807fec1"
+dependencies = [
+ "openzeppelin_access",
+ "openzeppelin_interfaces",
+ "openzeppelin_token",
+]
+
+[[package]]
+name = "openzeppelin_governance"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:b76c87f72b1481a62e3c6904a9a3da5cfc4de8b5a86a4742de30f1e2984c7e2b"
+dependencies = [
+ "openzeppelin_access",
+ "openzeppelin_interfaces",
+ "openzeppelin_introspection",
+ "openzeppelin_token",
+ "openzeppelin_utils",
+]
+
+[[package]]
+name = "openzeppelin_interfaces"
+version = "2.1.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:f69fdb36eb894a0e0732385e723c5ff56d8cb4c1d49b29446c77eefac00b02a5"
 
 [[package]]
 name = "openzeppelin_introspection"
-version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:ee491981a69736cde220f8b7dd290b6d8620c85ee6b83c81f665f5bef78b62b1"
+dependencies = [
+ "openzeppelin_interfaces",
+]
 
 [[package]]
-name = "openzeppelin_token"
-version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+name = "openzeppelin_merkle_tree"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:3417680a1f672bd6cfb54962481f6b96d72f6510be2658d17c8356709b5c950a"
+
+[[package]]
+name = "openzeppelin_presets"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:1facc433476df1c36ecb33e3a10b6a5fb219c670c437b43696788843fbc0bc25"
 dependencies = [
  "openzeppelin_access",
  "openzeppelin_account",
+ "openzeppelin_finance",
+ "openzeppelin_interfaces",
+ "openzeppelin_introspection",
+ "openzeppelin_token",
+ "openzeppelin_upgrades",
+ "openzeppelin_utils",
+]
+
+[[package]]
+name = "openzeppelin_security"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:470f2debae50e03f1435874bc697a0825c257edcad4d1a0cc134e40360e6aba8"
+dependencies = [
+ "openzeppelin_interfaces",
+]
+
+[[package]]
+name = "openzeppelin_token"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:5ce19d297251d9f11acc38a3e3e2faeb2e73b003c8de2f02c7c5d06d9161a5fc"
+dependencies = [
+ "openzeppelin_access",
+ "openzeppelin_interfaces",
  "openzeppelin_introspection",
  "openzeppelin_utils",
 ]
 
 [[package]]
+name = "openzeppelin_upgrades"
+version = "3.0.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:1b148d5da1ae90a056b455e8865260423c5491a82777377abfdc68fd8e7d0675"
+
+[[package]]
 name = "openzeppelin_utils"
-version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+version = "2.1.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:4d5504fef1c5a6d9fee6a3ae392004a4a24b4b3ccb790c5e5217da96beb73e08"
+dependencies = [
+ "openzeppelin_interfaces",
+]
