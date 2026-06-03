@@ -534,6 +534,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			rightPanel.show();
 			leftPanel.show();
 			try {
+				sendCommand("g_actions");
 				await updateBalances();
 			} catch (e) {
 				console.error("Failed to fetch balances on ui show:", e);

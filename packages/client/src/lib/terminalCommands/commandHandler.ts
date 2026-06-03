@@ -65,7 +65,7 @@ export const sendCommand = async <
 		// safety measure: consume action if command is not a system command
 		if (!context.cmd.startsWith("_")) {
 			await updateBalances();
-			console.log("Command executed, balances updated");
+			// console.log("Command executed, balances updated");
 		}
 		return;
 	} catch (error) {

@@ -216,7 +216,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 
 	// update left panel
 	await updateBalances();
-	console.log("Outputter updated, balances refreshed");
+	// console.log("Outputter updated, balances refreshed");
 };
 
 const onPlayerStory = (playerStory: PlayerStory) => {
