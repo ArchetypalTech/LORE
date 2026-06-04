@@ -256,7 +256,7 @@ export function setupWorld(provider: DojoProvider) {
 	const build_actions_token_sendRewards_calldata = (recipient: string, rewardsCount: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions_token",
-			entrypoint: "send_rewards",
+			entrypoint: "airdrop_rewards",
 			calldata: [recipient, rewardsCount],
 		};
 	};

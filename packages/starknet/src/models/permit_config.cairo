@@ -23,6 +23,8 @@ use dojo::{
     model::{ModelStorage, Model},
     // event::EventStorage,
 };
+use lore_sn::systems::permit_token::permit_token::{Errors as PermitErrors};
+    
 
 #[generate_trait]
 pub impl PermitConfigImpl of PermitConfigTrait {
@@ -53,5 +55,12 @@ pub impl PermitConfigImpl of PermitConfigTrait {
     }
     fn set_cartridge_contract(ref self: WorldStorage, cartridge_contract: ContractAddress) {
         self.write_member(Model::<PermitConfig>::ptr_from_keys(PERMIT_KEY), selector!("cartridge_contract"), cartridge_contract);
+    }
+    //
+    // asserts
+    //
+    fn assert_caller_is_cartridge_contract(self: @WorldStorage) {
+        let cartridge_contract = self.read_member(Model::<PermitConfig>::ptr_from_keys(PERMIT_KEY), selector!("cartridge_contract"));
+        assert(cartridge_contract == starknet::get_caller_address(), PermitErrors::INVALID_CALLER);
     }
 }

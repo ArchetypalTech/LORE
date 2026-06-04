@@ -40,7 +40,7 @@ pub trait IActionsToken<TState> {
     fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
     fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
-    fn send_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
+    fn airdrop_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
 }
 
 #[starknet::interface]
@@ -59,7 +59,7 @@ pub trait IActionsTokenPublic<TState> {
     fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
     fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
-    fn send_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
+    fn airdrop_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
 }
 
 #[starknet::interface]
@@ -224,7 +224,7 @@ pub mod actions_token {
             //
             // let trail_name: ByteArray = world.get_trail_name(trail_id);
             let payload: Array<felt252> = world.pack_mint_permit_rewards_payload(
-                APPCHAIN::PERMIT_TYPES::CREATOR_REWARD,
+                APPCHAIN::PERMIT_TYPES::REWARD_CREATOR,
                 caller,
                 rewards_count,
             );
@@ -278,7 +278,7 @@ pub mod actions_token {
             world.set_trail_reward_actions_count(trail_reward_actions_count);
         }
 
-        fn send_rewards(ref self: ContractState, recipient: ContractAddress, rewards_count: u32) {
+        fn airdrop_rewards(ref self: ContractState, recipient: ContractAddress, rewards_count: u32) {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_owner(@world);
             assert(rewards_count.is_non_zero(), Errors::INVALID_REWARDS_COUNT);
@@ -286,7 +286,7 @@ pub mod actions_token {
             // send message to L2 claiming actions as permits
             //
             let payload: Array<felt252> = world.pack_mint_permit_rewards_payload(
-                APPCHAIN::PERMIT_TYPES::FREE_REWARD,
+                APPCHAIN::PERMIT_TYPES::REWARD_AIRDROP,
                 recipient,
                 rewards_count,
             );

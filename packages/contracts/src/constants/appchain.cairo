@@ -9,17 +9,18 @@ use dojo::world::{WorldStorage, IWorldDispatcherTrait};
 
 pub mod APPCHAIN {
     // initial config
-    pub const STARTER_PACK_ACTIONS_COUNT: u32 = 20;
-    pub const CREATOR_REWARD_ACTIONS_COUNT: u32 = 20;
+    pub const PERMIT_ACTIONS_COUNT: u32 = 20;
+    pub const REWARD_ACTIONS_COUNT: u32 = 20;
 
     pub mod MESSAGE_TYPES {
         pub const MINT_PERMIT_REWARDS: felt252 = 'MINT_PERMIT_REWARDS';
     }
 
     pub mod PERMIT_TYPES {
-        pub const STARTER_PACK: felt252 = 'STARTER_PACK';
-        pub const CREATOR_REWARD: felt252 = 'CREATOR_REWARD';
-        pub const FREE_REWARD: felt252 = 'FREE_REWARD';
+        pub const PERMIT_BUNDLE: felt252 = 'PERMIT_BUNDLE';
+        pub const PERMIT_AIRDROP: felt252 = 'PERMIT_AIRDROP';
+        pub const REWARD_CREATOR: felt252 = 'REWARD_CREATOR';
+        pub const REWARD_AIRDROP: felt252 = 'REWARD_AIRDROP';
     }
 }
 

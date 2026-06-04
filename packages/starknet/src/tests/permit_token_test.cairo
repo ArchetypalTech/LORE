@@ -25,8 +25,8 @@ const TOKEN_ID_3_1: u256 = 5;
 const TOKEN_ID_3_2: u256 = 6;
 
 fn _mint_token(ref sys: HelperSystems, recipient: ContractAddress) {
-    helpers::impersonate(helpers::cartridge_contract());
-    sys.permit.purchased_starter_pack(recipient);
+    helpers::impersonate(OWNER());
+    sys.permit.airdrop_starter_pack(recipient);
 }
 
 //
@@ -85,11 +85,53 @@ fn test_token_mint() {
     assert_eq!(token_info_3.is_used, true, "token_3");
 }
 
+#[test]
+fn test_airdrop_ok() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::impersonate(OWNER());
+    sys.permit.airdrop_starter_pack(OTHER());
+}
+
+#[test]
+#[should_panic(expected: ('PERMIT: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_airdrop_other() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::impersonate(OTHER());
+    sys.permit.airdrop_starter_pack(OTHER());
+}
+
+#[test]
+fn test_purchase_from_cartridge_contract_ok() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::impersonate(helpers::cartridge_contract());
+    sys.permit.purchased_starter_pack(OWNER());
+}
 
 #[test]
 #[should_panic(expected: ('PERMIT: Invalid caller','ENTRYPOINT_FAILED'))]
 fn test_purchase_not_cartridge_contract() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
-    helpers::impersonate(OWNER());
+    helpers::impersonate(OTHER());
     sys.permit.purchased_starter_pack(OTHER());
 }
+
+#[test]
+#[should_panic(expected: ('PERMIT: Invalid caller','ENTRYPOINT_FAILED'))]
+fn test_used_permit_not_owner() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::impersonate(helpers::cartridge_contract());
+    let token_id: u128 = sys.permit.purchased_starter_pack(OTHER());
+    helpers::impersonate(OWNER());
+    sys.permit.use_permit(token_id);
+}
+
+#[test]
+#[should_panic(expected: ('PERMIT: Already used','ENTRYPOINT_FAILED'))]
+fn test_used_permit_already_used() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::impersonate(helpers::cartridge_contract());
+    let token_id: u128 = sys.permit.purchased_starter_pack(OTHER());
+    helpers::impersonate(OTHER());
+    sys.permit.use_permit(token_id);
+}
+

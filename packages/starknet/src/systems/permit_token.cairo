@@ -53,13 +53,17 @@ pub trait IPermitToken<TState> {
 
     //-----------------------------------
     // IPermitTokenPublic
-    fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
+    fn purchased_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
+    fn airdrop_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
+    fn use_permit(ref self: TState, token_id: u128);
     fn consume_message(ref self: TState, payload: Span<felt252>);
 }
 
 #[starknet::interface]
 trait IPermitTokenPublic<TState> {
     fn purchased_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
+    fn airdrop_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
+    fn use_permit(ref self: TState, token_id: u128);
     // messaging
     fn consume_message(ref self: TState, payload: Span<felt252>);
 }
@@ -118,7 +122,7 @@ pub mod permit_token {
     //-----------------------------------
 
     use lore_sn::models::{
-        permit_config::{PermitConfig},
+        permit_config::{PermitConfig, PermitConfigTrait},
         permit_token_info::{PermitTokenInfo, PermitType},
         permit_metadata::{permit_metadata, orug_metadata},
         appchain::{APPCHAIN},
@@ -129,7 +133,7 @@ pub mod permit_token {
     };
     use nft_combo::utils::renderer::{Attribute};
 
-    mod Errors {
+    pub mod Errors {
         pub const INVALID_CALLER: felt252               = 'PERMIT: Invalid caller';
         pub const INVALID_MESSAGING_CONTRACT: felt252   = 'PERMIT: Invalid messaging';
         pub const INVALID_APPCHAIN_CONTRACT: felt252    = 'PERMIT: Invalid appchain';
@@ -158,31 +162,45 @@ pub mod permit_token {
 
     #[abi(embed_v0)]
     impl PermitTokenPublicImpl of super::IPermitTokenPublic<ContractState> {
-        /// L2 > L3
-        /// Sends a message with the given value.
+        /// will trigger L2 > L3 message
         fn purchased_starter_pack(ref self: ContractState,
             recipient: ContractAddress,
         ) -> u128 {
             let mut world: WorldStorage = self.world_default();
-            let permit_config: PermitConfig = world.read_model(1);
-            assert(permit_config.cartridge_contract == starknet::get_caller_address(), Errors::INVALID_CALLER);
-
+            world.assert_caller_is_cartridge_contract();
             // mint
-            let token_id: u128 = self.erc721_combo._mint_next(recipient).low;
-
-            // save token
-            let mut world: WorldStorage = self.world_default();
-            world.write_model(@PermitTokenInfo {
-                permit_id: token_id,
-                permit_type: APPCHAIN::PERMIT_TYPES::STARTER_PACK,
-                is_used: false,
-                trail_name: "",
-            });
-
+            let token_id: u128 = self._mint_starter_pack(ref world,
+                recipient,
+                APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE,
+            );
             // use automatically
             self._use_permit(ref world, token_id);
-
             (token_id)
+        }
+
+        /// will trigger L2 > L3 message
+        fn airdrop_starter_pack(ref self: ContractState,
+            recipient: ContractAddress,
+        ) -> u128 {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_owner(@world);
+            // mint
+            let token_id: u128 = self._mint_starter_pack(ref world,
+                recipient,
+                APPCHAIN::PERMIT_TYPES::PERMIT_AIRDROP,
+            );
+            // use automatically
+            self._use_permit(ref world, token_id);
+            (token_id)
+        }
+
+        /// will trigger L2 > L3 message
+        fn use_permit(ref self: ContractState,
+            token_id: u128,
+        ) {
+            let mut world: WorldStorage = self.world_default();
+            assert(self.erc721_combo.is_owner_of(starknet::get_caller_address(), token_id.into()), Errors::INVALID_CALLER);
+            self._use_permit(ref world, token_id);
         }
 
         //-----------------------------------
@@ -209,7 +227,30 @@ pub mod permit_token {
             ((*world.dispatcher).is_owner(SELECTORS::PERMIT_TOKEN, starknet::get_caller_address()))
         }
 
-        fn _use_permit(ref self: ContractState, ref world: WorldStorage, permit_id: u128) {
+        fn _mint_starter_pack(ref self: ContractState,
+            ref world: WorldStorage,
+            recipient: ContractAddress,
+            permit_type: felt252,
+        ) -> u128 {
+            // mint
+            let token_id: u128 = self.erc721_combo._mint_next(recipient).low;
+
+            // save token
+            let mut world: WorldStorage = self.world_default();
+            world.write_model(@PermitTokenInfo {
+                permit_id: token_id,
+                permit_type,
+                is_used: false,
+                trail_name: "",
+            });
+
+            (token_id)
+        }
+
+        fn _use_permit(ref self: ContractState,
+            ref world: WorldStorage,
+            permit_id: u128,
+        ) {
             // set used
             let mut permit_info: PermitTokenInfo = world.read_model(permit_id);
             assert(!permit_info.is_used, Errors::PERMIT_ALREADY_USED);
@@ -238,7 +279,8 @@ pub mod permit_token {
             selector: felt252,
             payload: Span<felt252>,
         ) {
-            let messaging_config: PermitConfig = self.world_default().read_model(1);
+            let world: WorldStorage = self.world_default();
+            let messaging_config: PermitConfig = world.get_permit_config();
             assert(messaging_config.messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
             assert(messaging_config.appchain_contract.is_non_zero(), Errors::INVALID_APPCHAIN_CONTRACT);
 
@@ -255,7 +297,8 @@ pub mod permit_token {
         fn _consume_message(ref self: ContractState,
             payload: Span<felt252>,
         ) {
-            let messaging_config: PermitConfig = self.world_default().read_model(1);
+            let world: WorldStorage = self.world_default();
+            let messaging_config: PermitConfig = world.get_permit_config();
             assert(messaging_config.messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
             assert(messaging_config.appchain_contract.is_non_zero(), Errors::INVALID_APPCHAIN_CONTRACT);
 

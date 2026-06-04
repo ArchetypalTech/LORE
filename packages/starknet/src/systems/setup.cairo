@@ -104,12 +104,20 @@ pub mod setup {
         );
         // initialize permit types
         world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::STARTER_PACK,
-            actions_count: APPCHAIN::STARTER_PACK_ACTIONS_COUNT,
+            permit_type: APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE,
+            actions_count: APPCHAIN::PERMIT_ACTIONS_COUNT,
         });
         world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::CREATOR_REWARD,
-            actions_count: APPCHAIN::CREATOR_REWARD_ACTIONS_COUNT,
+            permit_type: APPCHAIN::PERMIT_TYPES::PERMIT_AIRDROP,
+            actions_count: APPCHAIN::PERMIT_ACTIONS_COUNT,
+        });
+        world.write_model(@PermitType {
+            permit_type: APPCHAIN::PERMIT_TYPES::REWARD_CREATOR,
+            actions_count: APPCHAIN::REWARD_ACTIONS_COUNT,
+        });
+        world.write_model(@PermitType {
+            permit_type: APPCHAIN::PERMIT_TYPES::REWARD_AIRDROP,
+            actions_count: APPCHAIN::REWARD_ACTIONS_COUNT,
         });
     }
 
@@ -157,15 +165,14 @@ pub mod setup {
     // Bundle interface
     //
     impl BundleImpl of BundleTrait<ContractState> {
-        fn on_issue(
-            ref self: BundleComponent::ComponentState<ContractState>,
+        fn on_issue(ref self: BundleComponent::ComponentState<ContractState>,
             recipient: ContractAddress,
             bundle_id: u32,
             quantity: u32,
         ) {
         }
-        fn supply(
-            self: @BundleComponent::ComponentState<ContractState>, bundle_id: u32,
+        fn supply(self: @BundleComponent::ComponentState<ContractState>,
+            bundle_id: u32,
         ) -> Option<u32> {
             Option::None
         }
@@ -173,13 +180,14 @@ pub mod setup {
 
     #[abi(embed_v0)]
     impl IBundleImpl of IBundle<ContractState> {
-        fn get_metadata(self: @ContractState, bundle_id: u32) -> ByteArray {
+        fn get_metadata(self: @ContractState,
+            bundle_id: u32,
+        ) -> ByteArray {
             let mut world: WorldStorage = self.world_default();
             self.bundle.get_metadata(world, bundle_id)
         }
 
-        fn quote(
-            self: @ContractState,
+        fn quote(self: @ContractState,
             bundle_id: u32,
             quantity: u32,
             has_referrer: bool,
@@ -189,8 +197,7 @@ pub mod setup {
             self.bundle.quote(world, bundle_id, quantity, has_referrer, client_percentage)
         }
 
-        fn issue(
-            ref self: ContractState,
+        fn issue(ref self: ContractState,
             recipient: ContractAddress,
             bundle_id: u32,
             quantity: u32,

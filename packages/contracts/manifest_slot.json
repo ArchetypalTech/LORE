@@ -51,7 +51,7 @@
         "set_max_free_actions_count",
         "set_free_action_claim_interval",
         "set_trail_reward_actions_count",
-        "send_rewards",
+        "airdrop_rewards",
         "calculate_action_cost",
         "charge_player_actions",
         "claim_actions",
@@ -6104,7 +6104,7 @@
         },
         {
           "type": "function",
-          "name": "send_rewards",
+          "name": "airdrop_rewards",
           "inputs": [
             {
               "name": "recipient",
