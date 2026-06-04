@@ -10,9 +10,9 @@ import { useWalletStore } from "../stores/wallet.store";
 import { BigNumberish } from "starknet";
 import { playerExists } from "@/editor/data/editor.data";
 
-// const normalizeAddressZero = (addr: string): string => {
-//   return addr.replace(/^0x0+/, "0x").toLowerCase();
-// }
+const normalizeAddressZero = (addr: string): string => {
+  return addr.replace(/^0x0+/, "0x").toLowerCase();
+};
 
 export const fromWei = (value: BigNumberish): number =>
   Number(BigInt(value) / 10n ** 18n);
@@ -96,10 +96,11 @@ export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(stri
     const result_player = await sdk.getEntities({ query: query_player });
     // console.log("DEBUG: queryPlayerLocationPerGame() result_player: ", result_player);
 
+    const { walletAddress } = useWalletStore.getState();
     const player = result_player.getItems().find((item) => {
       const addr = item.models?.lore?.Player?.address;
-      return addr;
-     // return addr ? normalizeAddressZero(addr) === player_address : false;
+      if (!addr || !walletAddress) return false;
+      return normalizeAddressZero(addr) === normalizeAddressZero(walletAddress);
     });
     // console.log("DEBUG: queryPlayerLocationPerGame() player: ", player);
 
