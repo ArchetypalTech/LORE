@@ -34,6 +34,7 @@ import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
 import { useLeftPanelStore, updateBalances } from "@/lib/stores/leftPanel.store";
+import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
 /**
  * Context object passed to each terminal command handler
@@ -291,7 +292,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-			// sendCommand("ui show");
 		}
 
 		// Check properties
@@ -314,20 +314,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
-		// check for game
-		const gameId = GameStore().gameId;
-		//const panel = UIPanelStore();
-		
-		if (!gameId) {
-			// if no game, set default values for Info Panel
-			DefaultValues();
-			// panel.show();
-			sendCommand("ui show");
-		} else {
-			// if game, show Info Panel
-			//panel.show();
-			sendCommand("ui show");
-		}
+		// UI show
+		sendCommand("ui show");
 	},
 	wallet: async () => {
 		if (!WalletStore().isConnected) {
@@ -527,11 +515,25 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		const panel = UIPanelStore();
 		const rightPanel = useRightPanelStore.getState();
 		const leftPanel = useLeftPanelStore.getState();
-
+		
 		// ui show
 		if (context.args[0] === "show") {
+			// Top Panel Show - Location + Exits + Puzzles
 			panel.show();
+			// check for game
+			const gameId = GameStore().gameId;
+			if (!gameId) {
+				// if no game, set default values for Info Panel
+				DefaultValues();
+			} else {
+				// if game, show query Info Panel data and show ui
+				let GameID = BigInt(gameId);
+				queryPanelInfo(GameID);
+			}
+
+			// Right Panel Show - Settings + Wallet
 			rightPanel.show();
+			// Left Panel Show - Actions Tokens 
 			leftPanel.show();
 			try {
 				sendCommand("g_actions");
