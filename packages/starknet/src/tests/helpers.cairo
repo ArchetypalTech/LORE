@@ -11,7 +11,8 @@ use dojo_cairo_test::{
 };
 pub use lore_sn::lib::{
     dns::{DnsTrait,
-        IPermitTokenDispatcher, IPermitTokenDispatcherTrait
+        ISetupDispatcher, ISetupDispatcherTrait,
+        IPermitTokenDispatcher, IPermitTokenDispatcherTrait,
     },
 };
 
@@ -37,6 +38,7 @@ pub fn RECIPIENT() -> ContractAddress { 0x444.try_into().unwrap() }
 #[derive(Copy, Drop)]
 pub struct HelperSystems {
     pub world: WorldStorage,
+    pub setup: ISetupDispatcher,
     pub permit: IPermitTokenDispatcher,
     pub messaging: IMessagingDispatcher,
 }
@@ -45,11 +47,20 @@ fn namespace_def() -> NamespaceDef {
     let ndef: NamespaceDef = NamespaceDef {
         namespace: "lore_sn",
         resources: [
-            TestResource::Model(lore_sn::models::permit_config::m_PermitConfig::TEST_CLASS_HASH.into()),
-            TestResource::Model(lore_sn::models::permit_token_info::m_PermitTokenInfo::TEST_CLASS_HASH.into()),
-            TestResource::Model(lore_sn::models::permit_token_info::m_PermitType::TEST_CLASS_HASH.into()),
-            TestResource::Contract(lore_sn::systems::permit_token::permit_token::TEST_CLASS_HASH.into()),
-            TestResource::Contract(lore_sn::tests::messaging_mock::messaging_mock::TEST_CLASS_HASH.into()),
+            TestResource::Model(lore_sn::models::permit_config::m_PermitConfig::TEST_CLASS_HASH),
+            TestResource::Model(lore_sn::models::permit_token_info::m_PermitTokenInfo::TEST_CLASS_HASH),
+            TestResource::Model(lore_sn::models::permit_token_info::m_PermitType::TEST_CLASS_HASH),
+            TestResource::Model(bundle::models::index::m_Bundle::TEST_CLASS_HASH),
+            TestResource::Model(bundle::models::index::m_BundleIssuance::TEST_CLASS_HASH),
+            TestResource::Model(bundle::models::index::m_BundleReferral::TEST_CLASS_HASH),
+            TestResource::Model(bundle::models::index::m_BundleGroup::TEST_CLASS_HASH),
+            TestResource::Model(bundle::models::index::m_BundleVoucher::TEST_CLASS_HASH),
+            TestResource::Event(bundle::events::index::e_BundleRegistered::TEST_CLASS_HASH),
+            TestResource::Event(bundle::events::index::e_BundleUpdated::TEST_CLASS_HASH),
+            TestResource::Event(bundle::events::index::e_BundleIssued::TEST_CLASS_HASH),
+            TestResource::Contract(lore_sn::systems::permit_token::permit_token::TEST_CLASS_HASH),
+            TestResource::Contract(lore_sn::systems::setup::setup::TEST_CLASS_HASH),
+            TestResource::Contract(lore_sn::tests::messaging_mock::messaging_mock::TEST_CLASS_HASH),
         ].span(),
     };
     (ndef)
@@ -64,21 +75,25 @@ pub fn setup_core() -> HelperSystems {
     );
 
     let permit: IPermitTokenDispatcher = world.permit_token_dispatcher();
+    let setup: ISetupDispatcher = world.setup_dispatcher();
     let messaging: IMessagingDispatcher = world.messaging_mock_dispatcher();
 
     let contract_defs: Span<ContractDef> = {
         [
-            ContractDefTrait::new(@"lore_sn", @"permit_token")
+            ContractDefTrait::new(@"lore_sn", @"setup")
                 .with_writer_of([dojo::utils::bytearray_hash(@"lore_sn")].span())
                 .with_init_calldata(array![
                     messaging.contract_address.into(),
                     appchain_contract().into(),
                     cartridge_contract().into()].span()),
+            ContractDefTrait::new(@"lore_sn", @"permit_token")
+                .with_writer_of([dojo::utils::bytearray_hash(@"lore_sn")].span()),
         ].span()
     };
 
     world.sync_perms_and_inits(contract_defs);
     world.dispatcher.grant_owner(dojo::utils::bytearray_hash(@"lore_sn"), OWNER());
+    world.dispatcher.grant_owner(lore_sn::lib::dns::SELECTORS::SETUP, OWNER());
     world.dispatcher.grant_owner(lore_sn::lib::dns::SELECTORS::PERMIT_TOKEN, OWNER());
 
     testing::set_block_number(1);
@@ -87,6 +102,7 @@ pub fn setup_core() -> HelperSystems {
 
     (HelperSystems {
         world,
+        setup,
         permit,
         messaging,
     })

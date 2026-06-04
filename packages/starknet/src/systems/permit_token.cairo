@@ -54,21 +54,12 @@ pub trait IPermitToken<TState> {
     //-----------------------------------
     // IPermitTokenPublic
     fn purchased_starter_pack(ref self: TState, recipient: ContractAddress);
-    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
-    fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
-    fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
-    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
     fn consume_message(ref self: TState, payload: Span<felt252>);
 }
 
 #[starknet::interface]
 trait IPermitTokenPublic<TState> {
     fn purchased_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
-    // admin functions
-    fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
-    fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
-    fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
-    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
     // messaging
     fn consume_message(ref self: TState, payload: Span<felt252>);
 }
@@ -96,15 +87,11 @@ pub mod permit_token {
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent;
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent::{ERC721HooksImpl};
     use nft_combo::utils::renderer::{ContractMetadata, TokenMetadata};
-    use bundle::component::Component as BundleComponent;
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: ERC721ComboComponent, storage: erc721_combo, event: ERC721ComboEvent);
-    component!(path: BundleComponent, storage: bundle, event: BundleEvent);
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
     impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
-    impl BundleInternalImpl = BundleComponent::InternalImpl<ContractState>;
-    impl BundleFeeImpl of BundleComponent::BundleFeeTrait<ContractState> {}
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
     #[storage]
@@ -115,8 +102,6 @@ pub mod permit_token {
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
         erc721_combo: ERC721ComboComponent::Storage,
-        #[substorage(v0)]
-        bundle: BundleComponent::Storage,
     }
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -127,15 +112,13 @@ pub mod permit_token {
         ERC721Event: ERC721Component::Event,
         #[flat]
         ERC721ComboEvent: ERC721ComboComponent::Event,
-        #[flat]
-        BundleEvent: BundleComponent::Event,
     }
     //
     // ERC721+components end
     //-----------------------------------
 
     use lore_sn::models::{
-        permit_config::{PermitConfig, PermitConfigTrait},
+        permit_config::{PermitConfig},
         permit_token_info::{PermitTokenInfo, PermitType},
         permit_metadata::{permit_metadata, orug_metadata},
         appchain::{APPCHAIN},
@@ -145,23 +128,16 @@ pub mod permit_token {
         utils::{ByteArrayTrait},
     };
     use nft_combo::utils::renderer::{Attribute};
-    use bundle::component::Component::{BundleQuote, BundleTrait};
-    use bundle::interface::IBundle;
 
     mod Errors {
         pub const INVALID_CALLER: felt252               = 'PERMIT: Invalid caller';
         pub const INVALID_MESSAGING_CONTRACT: felt252   = 'PERMIT: Invalid messaging';
         pub const INVALID_APPCHAIN_CONTRACT: felt252    = 'PERMIT: Invalid appchain';
-        pub const INVALID_CARTIDGE_CONTRACT: felt252    = 'PERMIT: Invalid cartridge';
         pub const PERMIT_ALREADY_USED: felt252          = 'PERMIT: Already used';
         pub const INVALID_ACTIONS_COUNT: felt252        = 'PERMIT: Invalid actions count';
     }
 
-    fn dojo_init(ref self: ContractState,
-        messaging_contract: ContractAddress,
-        appchain_contract: ContractAddress,
-        cartridge_contract: ContractAddress,
-    ) {
+    fn dojo_init(ref self: ContractState) {
         // initialize ERC721
         self.erc721_combo.initializer(
             permit_metadata::TOKEN_NAME(),
@@ -170,22 +146,6 @@ pub mod permit_token {
             Option::None, // use hooks
             Option::None, // infinite supply
         );
-        // initialize permit config
-        let mut world: WorldStorage = self.world_default();
-        world.initialize_permit_config(
-            messaging_contract,
-            appchain_contract,
-            cartridge_contract,
-        );
-        // initialize permit types
-        world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::STARTER_PACK,
-            actions_count: APPCHAIN::STARTER_PACK_ACTIONS_COUNT,
-        });
-        world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::CREATOR_REWARD,
-            actions_count: APPCHAIN::CREATOR_REWARD_ACTIONS_COUNT,
-        });
     }
     
     #[generate_trait]
@@ -225,35 +185,6 @@ pub mod permit_token {
             (token_id)
         }
 
-        /// Admin functions
-        fn set_messaging_contract(ref self: ContractState, messaging_contract: ContractAddress) {
-            assert(messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
-            let mut world: WorldStorage = self.world_default();
-            self._assert_caller_is_owner(@world);
-            world.set_messaging_contract(messaging_contract);
-        }
-        fn set_appchain_contract(ref self: ContractState, appchain_contract: ContractAddress) {   
-            assert(appchain_contract.is_non_zero(), Errors::INVALID_APPCHAIN_CONTRACT);
-            let mut world: WorldStorage = self.world_default();
-            self._assert_caller_is_owner(@world);
-            world.set_appchain_contract(appchain_contract);
-        }
-        fn set_cartridge_contract(ref self: ContractState, cartridge_contract: ContractAddress) {
-            assert(cartridge_contract.is_non_zero(), Errors::INVALID_CARTIDGE_CONTRACT);
-            let mut world: WorldStorage = self.world_default();
-            self._assert_caller_is_owner(@world);
-            world.set_cartridge_contract(cartridge_contract);
-        }
-        fn set_permit_type(ref self: ContractState, permit_type: felt252, actions_count: u32) {
-            let mut world: WorldStorage = self.world_default();
-            self._assert_caller_is_owner(@world);
-            world.write_model(@PermitType {
-                permit_type,
-                actions_count,
-            });
-        }
-
-
         //-----------------------------------
         /// L3 > L2
         /// Consume a message registered by the appchain.
@@ -261,73 +192,6 @@ pub mod permit_token {
             payload: Span<felt252>,
         ) {
             self._consume_message(payload);
-        }
-    }
-
-
-    //-----------------------------------
-    // Bundle interface
-    //
-    impl BundleImpl of BundleTrait<ContractState> {
-        fn on_issue(
-            ref self: BundleComponent::ComponentState<ContractState>,
-            recipient: ContractAddress,
-            bundle_id: u32,
-            quantity: u32,
-        ) {
-        }
-        fn supply(
-            self: @BundleComponent::ComponentState<ContractState>, bundle_id: u32,
-        ) -> Option<u32> {
-            Option::None
-        }
-    }
-
-    #[abi(embed_v0)]
-    impl IBundleImpl of IBundle<ContractState> {
-        fn get_metadata(self: @ContractState, bundle_id: u32) -> ByteArray {
-            let mut world: WorldStorage = self.world_default();
-            self.bundle.get_metadata(world, bundle_id)
-        }
-
-        fn quote(
-            self: @ContractState,
-            bundle_id: u32,
-            quantity: u32,
-            has_referrer: bool,
-            client_percentage: u8,
-        ) -> BundleQuote {
-            let mut world: WorldStorage = self.world_default();
-            self.bundle.quote(world, bundle_id, quantity, has_referrer, client_percentage)
-        }
-
-        fn issue(
-            ref self: ContractState,
-            recipient: ContractAddress,
-            bundle_id: u32,
-            quantity: u32,
-            referrer: Option<ContractAddress>,
-            referrer_group: Option<felt252>,
-            client: Option<ContractAddress>,
-            client_percentage: u8,
-            voucher_key: Option<felt252>,
-            signature: Option<Span<felt252>>,
-        ) {
-            let mut world: WorldStorage = self.world_default();
-            self
-                .bundle
-                .issue(
-                    world,
-                    recipient,
-                    bundle_id,
-                    quantity,
-                    referrer,
-                    referrer_group,
-                    client,
-                    client_percentage,
-                    voucher_key,
-                    signature,
-                )
         }
     }
 

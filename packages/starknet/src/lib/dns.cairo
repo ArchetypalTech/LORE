@@ -8,6 +8,7 @@ use dojo::meta::interface::{
 
 pub use lore_sn::systems::{
     permit_token::{IPermitTokenDispatcher, IPermitTokenDispatcherTrait},
+    setup::{ISetupDispatcher, ISetupDispatcherTrait},
 };
 
 // piltover messaging interface
@@ -16,6 +17,7 @@ pub use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrai
 
 pub mod SELECTORS {
     // systems
+    pub const SETUP: felt252 = selector_from_tag!("lore_sn-setup");
     pub const PERMIT_TOKEN: felt252 = selector_from_tag!("lore_sn-permit_token");
     pub const MESSAGING_MOCK: felt252 = selector_from_tag!("lore_sn-messaging_mock");
 }
@@ -42,6 +44,10 @@ pub impl DnsImpl of DnsTrait {
     //--------------------------
     // system addresses
     //
+    #[inline(always)]
+    fn setup_address(self: @WorldStorage) -> ContractAddress {
+        (self.find_contract_address(@"setup"))
+    }
     #[inline(always)]
     fn permit_token_address(self: @WorldStorage) -> ContractAddress {
         (self.find_contract_address(@"permit_token"))
@@ -77,6 +83,10 @@ pub impl DnsImpl of DnsTrait {
     //--------------------------
     // dispatchers
     //
+    #[inline(always)]
+    fn setup_dispatcher(self: @WorldStorage) -> ISetupDispatcher {
+        (ISetupDispatcher{ contract_address: self.setup_address() })
+    }
     #[inline(always)]
     fn permit_token_dispatcher(self: @WorldStorage) -> IPermitTokenDispatcher {
         (IPermitTokenDispatcher{ contract_address: self.permit_token_address() })

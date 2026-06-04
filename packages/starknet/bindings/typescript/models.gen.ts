@@ -1,6 +1,48 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { BigNumberish } from 'starknet';
+import { CairoOption, CairoOptionVariant, BigNumberish } from 'starknet';
+
+// Type definition for `bundle::models::index::Bundle` struct
+export interface Bundle {
+	id: BigNumberish;
+	referral_percentage: BigNumberish;
+	reissuable: boolean;
+	price: BigNumberish;
+	payment_token: string;
+	payment_receiver: string;
+	total_issued: BigNumberish;
+	created_at: BigNumberish;
+	metadata: string;
+	contract: string;
+	allower: string;
+}
+
+// Type definition for `bundle::models::index::BundleGroup` struct
+export interface BundleGroup {
+	id: BigNumberish;
+	total_fees: BigNumberish;
+	total_referrals: BigNumberish;
+}
+
+// Type definition for `bundle::models::index::BundleIssuance` struct
+export interface BundleIssuance {
+	bundle_id: BigNumberish;
+	recipient: string;
+	issued_at: BigNumberish;
+}
+
+// Type definition for `bundle::models::index::BundleReferral` struct
+export interface BundleReferral {
+	id: string;
+	total_fees: BigNumberish;
+	total_referrals: BigNumberish;
+}
+
+// Type definition for `bundle::models::index::BundleVoucher` struct
+export interface BundleVoucher {
+	key: BigNumberish;
+	recipient: string;
+}
 
 // Type definition for `lore_sn::models::permit_config::PermitConfig` struct
 export interface PermitConfig {
@@ -24,6 +66,39 @@ export interface PermitType {
 	actions_count: BigNumberish;
 }
 
+// Type definition for `bundle::events::index::BundleIssued` struct
+export interface BundleIssued {
+	recipient: string;
+	bundle_id: BigNumberish;
+	payment_token: string;
+	amount: BigNumberish;
+	quantity: BigNumberish;
+	referrer: CairoOption<string>;
+	referrer_group: CairoOption<BigNumberish>;
+	time: BigNumberish;
+}
+
+// Type definition for `bundle::events::index::BundleRegistered` struct
+export interface BundleRegistered {
+	bundle_id: BigNumberish;
+	referral_percentage: BigNumberish;
+	reissuable: boolean;
+	time: BigNumberish;
+	payment_receiver: string;
+}
+
+// Type definition for `bundle::events::index::BundleUpdated` struct
+export interface BundleUpdated {
+	bundle_id: BigNumberish;
+	referral_percentage: BigNumberish;
+	reissuable: boolean;
+	price: BigNumberish;
+	payment_token: string;
+	metadata: string;
+	time: BigNumberish;
+	payment_receiver: string;
+}
+
 // Type definition for `lore_sn::models::appchain::AppchainMessageEvent` struct
 export interface AppchainMessageEvent {
 	uuid: BigNumberish;
@@ -35,6 +110,17 @@ export interface AppchainMessageEvent {
 	message_hash: BigNumberish;
 	message_type: BigNumberish;
 	payload: Array<BigNumberish>;
+}
+
+// Type definition for `bundle::component::Component::BundleQuote` struct
+export interface BundleQuote {
+	base_price: BigNumberish;
+	referral_fee: BigNumberish;
+	client_fee: BigNumberish;
+	protocol_fee: BigNumberish;
+	total_cost: BigNumberish;
+	payment_token: string;
+	contract: string;
 }
 
 // Type definition for `nft_combo::erc721::erc721_combo::ERC721ComboComponent::BatchMetadataUpdate` struct
@@ -71,10 +157,19 @@ export interface Transfer {
 
 export interface SchemaType extends ISchemaType {
 	lore_sn: {
+		Bundle: Bundle,
+		BundleGroup: BundleGroup,
+		BundleIssuance: BundleIssuance,
+		BundleReferral: BundleReferral,
+		BundleVoucher: BundleVoucher,
 		PermitConfig: PermitConfig,
 		PermitTokenInfo: PermitTokenInfo,
 		PermitType: PermitType,
+		BundleIssued: BundleIssued,
+		BundleRegistered: BundleRegistered,
+		BundleUpdated: BundleUpdated,
 		AppchainMessageEvent: AppchainMessageEvent,
+		BundleQuote: BundleQuote,
 		BatchMetadataUpdate: BatchMetadataUpdate,
 		MetadataUpdate: MetadataUpdate,
 		Approval: Approval,
@@ -84,6 +179,38 @@ export interface SchemaType extends ISchemaType {
 }
 export const schema: SchemaType = {
 	lore_sn: {
+		Bundle: {
+			id: 0,
+			referral_percentage: 0,
+			reissuable: false,
+		price: 0,
+			payment_token: "",
+			payment_receiver: "",
+			total_issued: 0,
+			created_at: 0,
+		metadata: "",
+			contract: "",
+			allower: "",
+		},
+		BundleGroup: {
+			id: 0,
+			total_fees: 0,
+			total_referrals: 0,
+		},
+		BundleIssuance: {
+			bundle_id: 0,
+			recipient: "",
+			issued_at: 0,
+		},
+		BundleReferral: {
+			id: "",
+			total_fees: 0,
+			total_referrals: 0,
+		},
+		BundleVoucher: {
+			key: 0,
+			recipient: "",
+		},
 		PermitConfig: {
 			key: 0,
 			messaging_contract: "",
@@ -100,6 +227,33 @@ export const schema: SchemaType = {
 			permit_type: 0,
 			actions_count: 0,
 		},
+		BundleIssued: {
+			recipient: "",
+			bundle_id: 0,
+			payment_token: "",
+		amount: 0,
+			quantity: 0,
+			referrer: new CairoOption(CairoOptionVariant.None),
+			referrer_group: new CairoOption(CairoOptionVariant.None),
+			time: 0,
+		},
+		BundleRegistered: {
+			bundle_id: 0,
+			referral_percentage: 0,
+			reissuable: false,
+			time: 0,
+			payment_receiver: "",
+		},
+		BundleUpdated: {
+			bundle_id: 0,
+			referral_percentage: 0,
+			reissuable: false,
+		price: 0,
+			payment_token: "",
+		metadata: "",
+			time: 0,
+			payment_receiver: "",
+		},
 		AppchainMessageEvent: {
 			uuid: 0,
 			caller_address: "",
@@ -110,6 +264,15 @@ export const schema: SchemaType = {
 			message_hash: 0,
 			message_type: 0,
 			payload: [0],
+		},
+		BundleQuote: {
+		base_price: 0,
+		referral_fee: 0,
+		client_fee: 0,
+		protocol_fee: 0,
+		total_cost: 0,
+			payment_token: "",
+			contract: "",
 		},
 		BatchMetadataUpdate: {
 		from_token_id: 0,
@@ -136,10 +299,19 @@ export const schema: SchemaType = {
 	},
 };
 export enum ModelsMapping {
+	Bundle = 'bundle-Bundle',
+	BundleGroup = 'bundle-BundleGroup',
+	BundleIssuance = 'bundle-BundleIssuance',
+	BundleReferral = 'bundle-BundleReferral',
+	BundleVoucher = 'bundle-BundleVoucher',
 	PermitConfig = 'lore_sn-PermitConfig',
 	PermitTokenInfo = 'lore_sn-PermitTokenInfo',
 	PermitType = 'lore_sn-PermitType',
+	BundleIssued = 'bundle-BundleIssued',
+	BundleRegistered = 'bundle-BundleRegistered',
+	BundleUpdated = 'bundle-BundleUpdated',
 	AppchainMessageEvent = 'lore_sn-AppchainMessageEvent',
+	BundleQuote = 'bundle-BundleQuote',
 	BatchMetadataUpdate = 'nft_combo-BatchMetadataUpdate',
 	ContractURIUpdated = 'nft_combo-ContractURIUpdated',
 	MetadataUpdate = 'nft_combo-MetadataUpdate',

@@ -381,90 +381,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_permit_token_setAppchainContract_calldata = (appchainContract: string): DojoCall => {
-		return {
-			contractName: "permit_token",
-			entrypoint: "set_appchain_contract",
-			calldata: [appchainContract],
-		};
-	};
-
-	const permit_token_setAppchainContract = async (snAccount: Account | AccountInterface, appchainContract: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_permit_token_setAppchainContract_calldata(appchainContract),
-				"lore_sn",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_permit_token_setCartridgeContract_calldata = (cartridgeContract: string): DojoCall => {
-		return {
-			contractName: "permit_token",
-			entrypoint: "set_cartridge_contract",
-			calldata: [cartridgeContract],
-		};
-	};
-
-	const permit_token_setCartridgeContract = async (snAccount: Account | AccountInterface, cartridgeContract: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_permit_token_setCartridgeContract_calldata(cartridgeContract),
-				"lore_sn",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_permit_token_setMessagingContract_calldata = (messagingContract: string): DojoCall => {
-		return {
-			contractName: "permit_token",
-			entrypoint: "set_messaging_contract",
-			calldata: [messagingContract],
-		};
-	};
-
-	const permit_token_setMessagingContract = async (snAccount: Account | AccountInterface, messagingContract: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_permit_token_setMessagingContract_calldata(messagingContract),
-				"lore_sn",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_permit_token_setPermitType_calldata = (permitType: BigNumberish, actionsCount: BigNumberish): DojoCall => {
-		return {
-			contractName: "permit_token",
-			entrypoint: "set_permit_type",
-			calldata: [permitType, actionsCount],
-		};
-	};
-
-	const permit_token_setPermitType = async (snAccount: Account | AccountInterface, permitType: BigNumberish, actionsCount: BigNumberish) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_permit_token_setPermitType_calldata(permitType, actionsCount),
-				"lore_sn",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_permit_token_supportsInterface_calldata = (interfaceId: BigNumberish): DojoCall => {
 		return {
 			contractName: "permit_token",
@@ -588,6 +504,145 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_setup_getMetadata_calldata = (bundleId: BigNumberish): DojoCall => {
+		return {
+			contractName: "setup",
+			entrypoint: "get_metadata",
+			calldata: [bundleId],
+		};
+	};
+
+	const setup_getMetadata = async (bundleId: BigNumberish) => {
+		try {
+			return await provider.call("lore_sn", build_setup_getMetadata_calldata(bundleId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_setup_issue_calldata = (recipient: string, bundleId: BigNumberish, quantity: BigNumberish, referrer: CairoOption<string>, referrerGroup: CairoOption<BigNumberish>, client: CairoOption<string>, clientPercentage: BigNumberish, voucherKey: CairoOption<BigNumberish>, signature: CairoOption<Array<BigNumberish>>): DojoCall => {
+		return {
+			contractName: "setup",
+			entrypoint: "issue",
+			calldata: [recipient, bundleId, quantity, referrer, referrerGroup, client, clientPercentage, voucherKey, signature],
+		};
+	};
+
+	const setup_issue = async (snAccount: Account | AccountInterface, recipient: string, bundleId: BigNumberish, quantity: BigNumberish, referrer: CairoOption<string>, referrerGroup: CairoOption<BigNumberish>, client: CairoOption<string>, clientPercentage: BigNumberish, voucherKey: CairoOption<BigNumberish>, signature: CairoOption<Array<BigNumberish>>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_setup_issue_calldata(recipient, bundleId, quantity, referrer, referrerGroup, client, clientPercentage, voucherKey, signature),
+				"lore_sn",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_setup_quote_calldata = (bundleId: BigNumberish, quantity: BigNumberish, hasReferrer: boolean, clientPercentage: BigNumberish): DojoCall => {
+		return {
+			contractName: "setup",
+			entrypoint: "quote",
+			calldata: [bundleId, quantity, hasReferrer, clientPercentage],
+		};
+	};
+
+	const setup_quote = async (bundleId: BigNumberish, quantity: BigNumberish, hasReferrer: boolean, clientPercentage: BigNumberish) => {
+		try {
+			return await provider.call("lore_sn", build_setup_quote_calldata(bundleId, quantity, hasReferrer, clientPercentage));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_setup_setAppchainContract_calldata = (appchainContract: string): DojoCall => {
+		return {
+			contractName: "setup",
+			entrypoint: "set_appchain_contract",
+			calldata: [appchainContract],
+		};
+	};
+
+	const setup_setAppchainContract = async (snAccount: Account | AccountInterface, appchainContract: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_setup_setAppchainContract_calldata(appchainContract),
+				"lore_sn",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_setup_setCartridgeContract_calldata = (cartridgeContract: string): DojoCall => {
+		return {
+			contractName: "setup",
+			entrypoint: "set_cartridge_contract",
+			calldata: [cartridgeContract],
+		};
+	};
+
+	const setup_setCartridgeContract = async (snAccount: Account | AccountInterface, cartridgeContract: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_setup_setCartridgeContract_calldata(cartridgeContract),
+				"lore_sn",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_setup_setMessagingContract_calldata = (messagingContract: string): DojoCall => {
+		return {
+			contractName: "setup",
+			entrypoint: "set_messaging_contract",
+			calldata: [messagingContract],
+		};
+	};
+
+	const setup_setMessagingContract = async (snAccount: Account | AccountInterface, messagingContract: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_setup_setMessagingContract_calldata(messagingContract),
+				"lore_sn",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_setup_setPermitType_calldata = (permitType: BigNumberish, actionsCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "setup",
+			entrypoint: "set_permit_type",
+			calldata: [permitType, actionsCount],
+		};
+	};
+
+	const setup_setPermitType = async (snAccount: Account | AccountInterface, permitType: BigNumberish, actionsCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_setup_setPermitType_calldata(permitType, actionsCount),
+				"lore_sn",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 
 
 	return {
@@ -634,14 +689,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildSafeTransferFromCalldata: build_permit_token_safeTransferFrom_calldata,
 			setApprovalForAll: permit_token_setApprovalForAll,
 			buildSetApprovalForAllCalldata: build_permit_token_setApprovalForAll_calldata,
-			setAppchainContract: permit_token_setAppchainContract,
-			buildSetAppchainContractCalldata: build_permit_token_setAppchainContract_calldata,
-			setCartridgeContract: permit_token_setCartridgeContract,
-			buildSetCartridgeContractCalldata: build_permit_token_setCartridgeContract_calldata,
-			setMessagingContract: permit_token_setMessagingContract,
-			buildSetMessagingContractCalldata: build_permit_token_setMessagingContract_calldata,
-			setPermitType: permit_token_setPermitType,
-			buildSetPermitTypeCalldata: build_permit_token_setPermitType_calldata,
 			supportsInterface: permit_token_supportsInterface,
 			buildSupportsInterfaceCalldata: build_permit_token_supportsInterface_calldata,
 			symbol: permit_token_symbol,
@@ -656,6 +703,22 @@ export function setupWorld(provider: DojoProvider) {
 			buildTotalSupplyCalldata: build_permit_token_totalSupply_calldata,
 			transferFrom: permit_token_transferFrom,
 			buildTransferFromCalldata: build_permit_token_transferFrom_calldata,
+		},
+		setup: {
+			getMetadata: setup_getMetadata,
+			buildGetMetadataCalldata: build_setup_getMetadata_calldata,
+			issue: setup_issue,
+			buildIssueCalldata: build_setup_issue_calldata,
+			quote: setup_quote,
+			buildQuoteCalldata: build_setup_quote_calldata,
+			setAppchainContract: setup_setAppchainContract,
+			buildSetAppchainContractCalldata: build_setup_setAppchainContract_calldata,
+			setCartridgeContract: setup_setCartridgeContract,
+			buildSetCartridgeContractCalldata: build_setup_setCartridgeContract_calldata,
+			setMessagingContract: setup_setMessagingContract,
+			buildSetMessagingContractCalldata: build_setup_setMessagingContract_calldata,
+			setPermitType: setup_setPermitType,
+			buildSetPermitTypeCalldata: build_setup_setPermitType_calldata,
 		},
 	};
 }

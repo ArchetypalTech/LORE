@@ -3,7 +3,6 @@ use starknet::{ContractAddress};
 use dojo::model::{ModelStorage};
 
 use lore_sn::models::{
-    permit_config::{PermitConfigTrait},
     permit_token_info::{PermitTokenInfo},
     permit_metadata::{permit_metadata}
 };
@@ -93,63 +92,4 @@ fn test_purchase_not_cartridge_contract() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(OWNER());
     sys.permit.purchased_starter_pack(OTHER());
-}
-
-
-//-----------------------------------
-// admin functions
-//
-
-#[test]
-fn test_set_messaging_contract() {
-    let mut sys: HelperSystems = helpers::setup_core();
-    let address: ContractAddress = 0x1234.try_into().unwrap();
-    helpers::impersonate(OWNER());
-    sys.permit.set_messaging_contract(address);
-    assert_eq!(sys.world.get_permit_config().messaging_contract, address);
-}
-
-#[test]
-fn test_set_appchain_contract() {
-    let mut sys: HelperSystems = helpers::setup_core();
-    let address: ContractAddress = 0x1234.try_into().unwrap();
-    helpers::impersonate(OWNER());
-    sys.permit.set_appchain_contract(address);
-    assert_eq!(sys.world.get_permit_config().appchain_contract, address);
-}
-
-#[test]
-fn test_set_cartridge_contract() {
-    let mut sys: HelperSystems = helpers::setup_core();
-    let address: ContractAddress = 0x1234.try_into().unwrap();
-    helpers::impersonate(OWNER());
-    sys.permit.set_cartridge_contract(address);
-    assert_eq!(sys.world.get_permit_config().cartridge_contract, address);
-}
-
-#[test]
-#[should_panic(expected: ('PERMIT: Invalid caller','ENTRYPOINT_FAILED'))]
-fn test_set_messaging_contract_not_owner() {
-    let mut sys: HelperSystems = helpers::setup_core();
-    let address: ContractAddress = 0x1234.try_into().unwrap();
-    helpers::impersonate(OTHER());
-    sys.permit.set_messaging_contract(address);
-}
-
-#[test]
-#[should_panic(expected: ('PERMIT: Invalid caller','ENTRYPOINT_FAILED'))]
-fn test_set_appchain_contract_not_owner() {
-    let mut sys: HelperSystems = helpers::setup_core();
-    let address: ContractAddress = 0x1234.try_into().unwrap();
-    helpers::impersonate(OTHER());
-    sys.permit.set_appchain_contract(address);
-}
-
-#[test]
-#[should_panic(expected: ('PERMIT: Invalid caller','ENTRYPOINT_FAILED'))]
-fn test_set_cartridge_contract_not_owner() {
-    let mut sys: HelperSystems = helpers::setup_core();
-    let address: ContractAddress = 0x1234.try_into().unwrap();
-    helpers::impersonate(OTHER());
-    sys.permit.set_cartridge_contract(address);
 }

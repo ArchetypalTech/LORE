@@ -1,4 +1,5 @@
 pub mod systems {
+    pub mod setup;
     pub mod permit_token;
     pub mod fact_registry_mock;
 }
@@ -20,6 +21,7 @@ pub mod lib {
 #[cfg(test)]
 pub mod tests {
     pub mod helpers;
+    pub mod setup_test;
     pub mod permit_token_test;
     pub mod messaging_mock;
 }
