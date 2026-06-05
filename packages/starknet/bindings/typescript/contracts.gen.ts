@@ -305,19 +305,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_permit_token_purchasedBundle_calldata = (recipient: string, quantity: BigNumberish, useTokens: boolean): DojoCall => {
+	const build_permit_token_purchasedBundle_calldata = (recipient: string, permitType: BigNumberish, quantity: BigNumberish, useTokens: boolean): DojoCall => {
 		return {
 			contractName: "permit_token",
 			entrypoint: "purchased_bundle",
-			calldata: [recipient, quantity, useTokens],
+			calldata: [recipient, permitType, quantity, useTokens],
 		};
 	};
 
-	const permit_token_purchasedBundle = async (snAccount: Account | AccountInterface, recipient: string, quantity: BigNumberish, useTokens: boolean) => {
+	const permit_token_purchasedBundle = async (snAccount: Account | AccountInterface, recipient: string, permitType: BigNumberish, quantity: BigNumberish, useTokens: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_permit_token_purchasedBundle_calldata(recipient, quantity, useTokens),
+				build_permit_token_purchasedBundle_calldata(recipient, permitType, quantity, useTokens),
 				"lore_sn",
 			);
 		} catch (error) {
@@ -622,27 +622,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_setup_setCartridgeContract_calldata = (cartridgeContract: string): DojoCall => {
-		return {
-			contractName: "setup",
-			entrypoint: "set_cartridge_contract",
-			calldata: [cartridgeContract],
-		};
-	};
-
-	const setup_setCartridgeContract = async (snAccount: Account | AccountInterface, cartridgeContract: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_setup_setCartridgeContract_calldata(cartridgeContract),
-				"lore_sn",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_setup_setMessagingContract_calldata = (messagingContract: string): DojoCall => {
 		return {
 			contractName: "setup",
@@ -664,19 +643,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_setup_setPermitType_calldata = (permitType: BigNumberish, actionsCount: BigNumberish): DojoCall => {
+	const build_setup_updateBundles_calldata = (): DojoCall => {
 		return {
 			contractName: "setup",
-			entrypoint: "set_permit_type",
-			calldata: [permitType, actionsCount],
+			entrypoint: "update_bundles",
+			calldata: [],
 		};
 	};
 
-	const setup_setPermitType = async (snAccount: Account | AccountInterface, permitType: BigNumberish, actionsCount: BigNumberish) => {
+	const setup_updateBundles = async (snAccount: Account | AccountInterface) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_setup_setPermitType_calldata(permitType, actionsCount),
+				build_setup_updateBundles_calldata(),
 				"lore_sn",
 			);
 		} catch (error) {
@@ -759,12 +738,10 @@ export function setupWorld(provider: DojoProvider) {
 			buildQuoteCalldata: build_setup_quote_calldata,
 			setAppchainContract: setup_setAppchainContract,
 			buildSetAppchainContractCalldata: build_setup_setAppchainContract_calldata,
-			setCartridgeContract: setup_setCartridgeContract,
-			buildSetCartridgeContractCalldata: build_setup_setCartridgeContract_calldata,
 			setMessagingContract: setup_setMessagingContract,
 			buildSetMessagingContractCalldata: build_setup_setMessagingContract_calldata,
-			setPermitType: setup_setPermitType,
-			buildSetPermitTypeCalldata: build_setup_setPermitType_calldata,
+			updateBundles: setup_updateBundles,
+			buildUpdateBundlesCalldata: build_setup_updateBundles_calldata,
 		},
 	};
 }

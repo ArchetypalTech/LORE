@@ -49,7 +49,6 @@ export interface PermitConfig {
 	key: BigNumberish;
 	messaging_contract: string;
 	appchain_contract: string;
-	cartridge_contract: string;
 }
 
 // Type definition for `lore_sn::models::permit_token_info::PermitTokenInfo` struct
@@ -58,12 +57,6 @@ export interface PermitTokenInfo {
 	permit_type: BigNumberish;
 	is_used: boolean;
 	trail_name: string;
-}
-
-// Type definition for `lore_sn::models::permit_token_info::PermitType` struct
-export interface PermitType {
-	permit_type: BigNumberish;
-	actions_count: BigNumberish;
 }
 
 // Type definition for `bundle::events::index::BundleIssued` struct
@@ -164,7 +157,6 @@ export interface SchemaType extends ISchemaType {
 		BundleVoucher: BundleVoucher,
 		PermitConfig: PermitConfig,
 		PermitTokenInfo: PermitTokenInfo,
-		PermitType: PermitType,
 		BundleIssued: BundleIssued,
 		BundleRegistered: BundleRegistered,
 		BundleUpdated: BundleUpdated,
@@ -215,17 +207,12 @@ export const schema: SchemaType = {
 			key: 0,
 			messaging_contract: "",
 			appchain_contract: "",
-			cartridge_contract: "",
 		},
 		PermitTokenInfo: {
 			permit_id: 0,
 			permit_type: 0,
 			is_used: false,
 		trail_name: "",
-		},
-		PermitType: {
-			permit_type: 0,
-			actions_count: 0,
 		},
 		BundleIssued: {
 			recipient: "",
@@ -306,7 +293,6 @@ export enum ModelsMapping {
 	BundleVoucher = 'bundle-BundleVoucher',
 	PermitConfig = 'lore_sn-PermitConfig',
 	PermitTokenInfo = 'lore_sn-PermitTokenInfo',
-	PermitType = 'lore_sn-PermitType',
 	BundleIssued = 'bundle-BundleIssued',
 	BundleRegistered = 'bundle-BundleRegistered',
 	BundleUpdated = 'bundle-BundleUpdated',

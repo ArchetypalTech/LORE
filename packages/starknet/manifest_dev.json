@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x613551abceb2b37073b1149bb862ea70cf029981ce1ca47e9dd7c7ab97cb65d",
-    "address": "0x7d9d9a0ab2e6da1a7a834c6882bb82c6701cac67c60892549a35527fe4847fc",
-    "seed": "lore_sn_0_2_3",
+    "address": "0x7e55c5b13a4d1a2a08dd09561c14e9a3c98cca9482cd5a479a373b0488d0fdb",
+    "seed": "lore_sn_0_2_5",
     "name": ">LORE Starknet",
     "entrypoints": [
       "uuid",
@@ -33,8 +33,8 @@
   },
   "contracts": [
     {
-      "address": "0x400b817e67781c25a9fe51b5881543594a35b981b4a290326d4f20d9e6fe868",
-      "class_hash": "0x11d294b0f3b197ec8a7f51f84bb8a5aa27125dd73412c807c46e9d4fb493001",
+      "address": "0x190095702bd73b4df73b4b1adeccead913087066ba6a92a8df806655a15d4f4",
+      "class_hash": "0x13a31dcbda93332912e513fac247aba18e1bcb88d0796101c891ec05ebc828",
       "init_calldata": [],
       "tag": "lore_sn-permit_token",
       "selector": "0x2d3a920998a56ef0bfbf8a5e791ba1c5db29d4f18866a2161472de9ea7794eb",
@@ -55,11 +55,9 @@
       ]
     },
     {
-      "address": "0x7eae4ed4aa0ddd8c470f39e47d8f35136ef160ac321bfde3a30c9852aebbc51",
-      "class_hash": "0x6e06fd200ba1dcf391a4a14b5b99078da00fa134ce14887ae6372b3aa9ad549",
+      "address": "0x73a50e34855cd4049db69417034dce74ce90366825ad508515bc81a06795414",
+      "class_hash": "0x29236cfec63197f693cb4071ad46a570530f3f6f71e447a2430c1cae7423f76",
       "init_calldata": [
-        "0x0",
-        "0x0",
         "0x0",
         "0x0"
       ],
@@ -69,8 +67,7 @@
         "dojo_init",
         "set_messaging_contract",
         "set_appchain_contract",
-        "set_cartridge_contract",
-        "set_permit_type",
+        "update_bundles",
         "issue",
         "upgrade"
       ]
@@ -239,14 +236,9 @@
           "name": "appchain_contract",
           "type": "core::starknet::contract_address::ContractAddress",
           "key": false
-        },
-        {
-          "name": "cartridge_contract",
-          "type": "core::starknet::contract_address::ContractAddress",
-          "key": false
         }
       ],
-      "class_hash": "0x5d0f0d48f7ff4aed422ed330a52ae5603d8d624014350145a278d10671d098b",
+      "class_hash": "0x4c0548fbf59acdbebcd447415aaf5d05caf1624a93f1f5b0b2cfeb176eaaa7b",
       "tag": "lore_sn-PermitConfig",
       "selector": "0x6be525a00ffdbe4f401e35d6adb121904d41b37843adfe76a74144893bd8f88"
     },
@@ -276,23 +268,6 @@
       "class_hash": "0x749c80aa4802a115ee5b8fd2bb4376e39b90fa57b64c9612319b065e459941e",
       "tag": "lore_sn-PermitTokenInfo",
       "selector": "0x2236270e21597bd9bcb5866b2c9500c5e9ea51aefe49d492694291b050e5385"
-    },
-    {
-      "members": [
-        {
-          "name": "permit_type",
-          "type": "core::felt252",
-          "key": true
-        },
-        {
-          "name": "actions_count",
-          "type": "core::integer::u32",
-          "key": false
-        }
-      ],
-      "class_hash": "0x78614f494dbfe36ffb386cc54226dd2c7760417fe9067218bad60f2e1dd13b8",
-      "tag": "lore_sn-PermitType",
-      "selector": "0x7caf7f9dbcbb4913459126a00f62c827f9ba7c37e5be402f2246f4530dc53e1"
     }
   ],
   "events": [
@@ -2944,14 +2919,6 @@
         {
           "name": "appchain_contract",
           "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "cartridge_contract",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "usdc_contract",
-          "type": "core::starknet::contract_address::ContractAddress"
         }
       ],
       "outputs": [],
@@ -3089,10 +3056,6 @@
         {
           "name": "appchain_contract",
           "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "cartridge_contract",
-          "type": "core::starknet::contract_address::ContractAddress"
         }
       ]
     },
@@ -3106,10 +3069,6 @@
         },
         {
           "name": "appchain_contract",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "cartridge_contract",
           "type": "core::starknet::contract_address::ContractAddress"
         }
       ]
@@ -3161,38 +3120,8 @@
       ]
     },
     {
-      "type": "struct",
-      "name": "lore_sn::models::permit_token_info::PermitType",
-      "members": [
-        {
-          "name": "permit_type",
-          "type": "core::felt252"
-        },
-        {
-          "name": "actions_count",
-          "type": "core::integer::u32"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "lore_sn::models::permit_token_info::PermitTypeValue",
-      "members": [
-        {
-          "name": "actions_count",
-          "type": "core::integer::u32"
-        }
-      ]
-    },
-    {
       "type": "event",
       "name": "lore_sn::models::permit_token_info::m_PermitTokenInfo::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
-      "type": "event",
-      "name": "lore_sn::models::permit_token_info::m_PermitType::Event",
       "kind": "enum",
       "variants": []
     },
@@ -3219,6 +3148,10 @@
             {
               "name": "recipient",
               "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "permit_type",
+              "type": "core::felt252"
             },
             {
               "name": "quantity",
@@ -3336,29 +3269,8 @@
         },
         {
           "type": "function",
-          "name": "set_cartridge_contract",
-          "inputs": [
-            {
-              "name": "cartridge_contract",
-              "type": "core::starknet::contract_address::ContractAddress"
-            }
-          ],
-          "outputs": [],
-          "state_mutability": "external"
-        },
-        {
-          "type": "function",
-          "name": "set_permit_type",
-          "inputs": [
-            {
-              "name": "permit_type",
-              "type": "core::felt252"
-            },
-            {
-              "name": "actions_count",
-              "type": "core::integer::u32"
-            }
-          ],
+          "name": "update_bundles",
+          "inputs": [],
           "outputs": [],
           "state_mutability": "external"
         }
