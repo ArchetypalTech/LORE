@@ -7,7 +7,7 @@ export function setupWorld(provider: DojoProvider) {
 	const build_permit_token_airdropStarterPack_calldata = (recipient: string): DojoCall => {
 		return {
 			contractName: "permit_token",
-			entrypoint: "airdrop_starter_pack",
+			entrypoint: "airdrop_bundle",
 			calldata: [recipient],
 		};
 	};
@@ -308,7 +308,7 @@ export function setupWorld(provider: DojoProvider) {
 	const build_permit_token_purchasedStarterPack_calldata = (recipient: string): DojoCall => {
 		return {
 			contractName: "permit_token",
-			entrypoint: "purchased_starter_pack",
+			entrypoint: "purchased_bundle",
 			calldata: [recipient],
 		};
 	};

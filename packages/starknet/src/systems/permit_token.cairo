@@ -53,17 +53,19 @@ pub trait IPermitToken<TState> {
 
     //-----------------------------------
     // IPermitTokenPublic
-    fn purchased_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
-    fn airdrop_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
-    fn use_permit(ref self: TState, token_id: u128);
+    fn use_permits(ref self: TState, token_ids: Span<u128>);
+    fn purchased_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
+    fn airdrop_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
     fn consume_message(ref self: TState, payload: Span<felt252>);
 }
 
 #[starknet::interface]
 trait IPermitTokenPublic<TState> {
-    fn purchased_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
-    fn airdrop_starter_pack(ref self: TState, recipient: ContractAddress) -> u128;
-    fn use_permit(ref self: TState, token_id: u128);
+    // public
+    fn use_permits(ref self: TState, token_ids: Span<u128>);
+    // admin
+    fn purchased_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
+    fn airdrop_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
     // messaging
     fn consume_message(ref self: TState, payload: Span<felt252>);
 }
@@ -84,7 +86,7 @@ pub mod permit_token {
     use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
     //-----------------------------------
-    // ERC721+components start
+    // ERC721 start
     //
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::ERC721Component;
@@ -118,17 +120,17 @@ pub mod permit_token {
         ERC721ComboEvent: ERC721ComboComponent::Event,
     }
     //
-    // ERC721+components end
+    // ERC721 end
     //-----------------------------------
 
     use lore_sn::models::{
         permit_config::{PermitConfig, PermitConfigTrait},
-        permit_token_info::{PermitTokenInfo, PermitType},
+        permit_token_info::{PermitTokenInfo, PermitTokenInfoTrait, PermitType},
         permit_metadata::{permit_metadata, orug_metadata},
         appchain::{APPCHAIN},
     };
     use lore_sn::lib::{
-        dns::{SELECTORS},
+        dns::{DnsTrait, SELECTORS},
         utils::{ByteArrayTrait},
     };
     use nft_combo::utils::renderer::{Attribute};
@@ -162,45 +164,64 @@ pub mod permit_token {
 
     #[abi(embed_v0)]
     impl PermitTokenPublicImpl of super::IPermitTokenPublic<ContractState> {
-        /// will trigger L2 > L3 message
-        fn purchased_starter_pack(ref self: ContractState,
+        fn purchased_bundle(ref self: ContractState,
             recipient: ContractAddress,
-        ) -> u128 {
+            quantity: u32,
+            use_tokens: bool,
+        ) -> Span<u128> {
             let mut world: WorldStorage = self.world_default();
-            world.assert_caller_is_cartridge_contract();
+            assert(world.caller_is_world_contract(), Errors::INVALID_CALLER);
             // mint
-            let token_id: u128 = self._mint_starter_pack(ref world,
+            let token_ids: Span<u128> = self._mint_bundles(ref world,
                 recipient,
+                quantity,
                 APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE,
             );
             // use automatically
-            self._use_permit(ref world, token_id);
-            (token_id)
+            if (use_tokens) {
+                for mut i in 0..quantity {
+                    self._use_permit(ref world, *token_ids[i]);
+                    i += 1;
+                }
+            }
+            (token_ids)
         }
 
-        /// will trigger L2 > L3 message
-        fn airdrop_starter_pack(ref self: ContractState,
+        fn airdrop_bundle(ref self: ContractState,
             recipient: ContractAddress,
-        ) -> u128 {
+            quantity: u32,
+            use_tokens: bool,
+        ) -> Span<u128> {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_owner(@world);
             // mint
-            let token_id: u128 = self._mint_starter_pack(ref world,
+            let token_ids: Span<u128> = self._mint_bundles(ref world,
                 recipient,
+                quantity,
                 APPCHAIN::PERMIT_TYPES::PERMIT_AIRDROP,
             );
             // use automatically
-            self._use_permit(ref world, token_id);
-            (token_id)
+            if (use_tokens) {
+                for mut i in 0..quantity {
+                    self._use_permit(ref world, *token_ids[i]);
+                    i += 1;
+                }
+            }
+            (token_ids)
         }
 
         /// will trigger L2 > L3 message
-        fn use_permit(ref self: ContractState,
-            token_id: u128,
+        fn use_permits(ref self: ContractState,
+            token_ids: Span<u128>,
         ) {
             let mut world: WorldStorage = self.world_default();
-            assert(self.erc721_combo.is_owner_of(starknet::get_caller_address(), token_id.into()), Errors::INVALID_CALLER);
-            self._use_permit(ref world, token_id);
+            let caller = starknet::get_caller_address();
+            for mut i in 0..token_ids.len() {
+                let token_id = *token_ids[i];
+                assert(self.erc721_combo.is_owner_of(caller, token_id.into()), Errors::INVALID_CALLER);
+                self._use_permit(ref world, token_id);
+                i += 1;
+            }
         }
 
         //-----------------------------------
@@ -227,24 +248,31 @@ pub mod permit_token {
             ((*world.dispatcher).is_owner(SELECTORS::PERMIT_TOKEN, starknet::get_caller_address()))
         }
 
-        fn _mint_starter_pack(ref self: ContractState,
+        fn _mint_bundles(ref self: ContractState,
             ref world: WorldStorage,
             recipient: ContractAddress,
+            quantity: u32,
             permit_type: felt252,
-        ) -> u128 {
-            // mint
-            let token_id: u128 = self.erc721_combo._mint_next(recipient).low;
+        ) -> Span<u128> {
+            let mut token_ids: Array<u128> = array![];
 
-            // save token
-            let mut world: WorldStorage = self.world_default();
-            world.write_model(@PermitTokenInfo {
-                permit_id: token_id,
-                permit_type,
-                is_used: false,
-                trail_name: "",
-            });
+            while token_ids.len() < quantity {
+                // mint
+                let token_id: u128 = self.erc721_combo._mint_next(recipient).low;
 
-            (token_id)
+                // save token
+                let mut world: WorldStorage = self.world_default();
+                world.write_model(@PermitTokenInfo {
+                    permit_id: token_id,
+                    permit_type,
+                    is_used: false,
+                    trail_name: "",
+                });
+
+                token_ids.append(token_id);
+            }
+
+            (token_ids.span())
         }
 
         fn _use_permit(ref self: ContractState,
@@ -252,10 +280,9 @@ pub mod permit_token {
             permit_id: u128,
         ) {
             // set used
-            let mut permit_info: PermitTokenInfo = world.read_model(permit_id);
+            let permit_info: PermitTokenInfo = world.read_model(permit_id);
             assert(!permit_info.is_used, Errors::PERMIT_ALREADY_USED);
-            permit_info.is_used = true;
-            world.write_model(@permit_info);
+            world.set_is_used(permit_id);
             //
             // mint actions to permit owner in L3
             let permit_type: PermitType = world.read_model(permit_info.permit_type);

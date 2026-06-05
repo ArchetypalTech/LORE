@@ -9,10 +9,9 @@ const PERMIT_TOKEN_ADDRESS = selectedProfileConfig.contractAddresses.permit_toke
 const policies: SessionPolicies = {
 	contracts: {
 		[PERMIT_TOKEN_ADDRESS]: {
-			description: "Starter pack purchase and approvals for >LORE on Starknet",
+			description: ">ORUG Permit token",
 			methods: [
-				{ name: "Buy starter pack", entrypoint: "purchased_starter_pack" },
-				{ name: "Approve", entrypoint: "approve" },
+				{ name: "Use Permits", entrypoint: "use_permits" },
 			],
 		},
 	},

@@ -17,9 +17,7 @@ pub trait ISetup<TState> {
     //-----------------------------------
     // IBundle
     fn get_metadata(self: @TState, bundle_id: u32) -> ByteArray;
-    fn quote(
-        self: @TState, bundle_id: u32, quantity: u32, has_referrer: bool, client_percentage: u8,
-    ) -> BundleQuote;
+    fn quote(self: @TState, bundle_id: u32, quantity: u32, has_referrer: bool, client_percentage: u8) -> BundleQuote;
     fn issue(
         ref self: TState,
         recipient: ContractAddress,
@@ -54,7 +52,7 @@ pub mod setup {
     };
 
     //-----------------------------------
-    // Bundle component
+    // components start
     //
     use bundle::component::Component as BundleComponent;
     use bundle::component::Component::{BundleQuote, BundleTrait};
@@ -73,6 +71,9 @@ pub mod setup {
         #[flat]
         BundleEvent: BundleComponent::Event,
     }
+    //
+    // components end
+    //-----------------------------------
 
     use lore_sn::models::{
         permit_config::{PermitConfigTrait},
@@ -80,7 +81,15 @@ pub mod setup {
         appchain::{APPCHAIN},
     };
     use lore_sn::lib::{
-        dns::{SELECTORS},
+        dns::{
+            DnsTrait, SELECTORS,
+            IPermitTokenDispatcherTrait,
+        },
+        bundle:: {BundleMetadata},
+    };
+    use bundle::models::{
+        index::{Bundle},
+        bundle::{BundleAssertTrait},
     };
 
     mod Errors {
@@ -119,6 +128,19 @@ pub mod setup {
             permit_type: APPCHAIN::PERMIT_TYPES::REWARD_AIRDROP,
             actions_count: APPCHAIN::REWARD_ACTIONS_COUNT,
         });
+        // create bundle 0
+        let payment_tokens = array![].span();
+        let conditions = array![].span();
+        let _bundle_id = self.bundle.register(
+            world: world,
+            referral_percentage: 0,
+            reissuable: true,
+            price: 0,
+            payment_token: 0.try_into().unwrap(),
+            payment_receiver: 0.try_into().unwrap(),
+            metadata: BundleMetadata::bundle(payment_tokens, conditions),
+            allower: 0.try_into().unwrap(),
+        );
     }
 
     #[generate_trait]
@@ -170,6 +192,11 @@ pub mod setup {
             bundle_id: u32,
             quantity: u32,
         ) {
+            let mut contract = self.get_contract_mut();
+            let mut world: WorldStorage = contract.world_default();
+            // mint bundles
+            let mut permit_token_dispatcher = world.permit_token_dispatcher();
+            permit_token_dispatcher.purchased_bundle(recipient, quantity, false);
         }
         fn supply(self: @BundleComponent::ComponentState<ContractState>,
             bundle_id: u32,
@@ -209,6 +236,11 @@ pub mod setup {
             signature: Option<Span<felt252>>,
         ) {
             let mut world: WorldStorage = self.world_default();
+            world.assert_caller_is_cartridge_contract();
+            // assert bundle exists
+            let bundle: Bundle = world.read_model(bundle_id);
+            bundle.assert_does_exist();
+            // issue...
             self
                 .bundle
                 .issue(

@@ -15,6 +15,7 @@ pub mod models {
 pub mod lib {
     pub mod dns;
     pub mod messaging;
+    pub mod bundle;
     pub mod utils;
 }
 

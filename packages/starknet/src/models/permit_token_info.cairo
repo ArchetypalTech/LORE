@@ -24,3 +24,21 @@ pub struct PermitType {
     /// Properties ///
     pub actions_count: u32,
 }
+
+
+
+//---------------------------------
+// Model Traits
+//
+use dojo::{
+    world::WorldStorage,
+    model::{ModelStorage, Model},
+    // event::EventStorage,
+};
+
+#[generate_trait]
+pub impl PermitTokenInfoImpl of PermitTokenInfoTrait {
+    fn set_is_used(ref self: WorldStorage, permit_id: u128) {
+        self.write_member(Model::<PermitTokenInfo>::ptr_from_keys(permit_id), selector!("is_used"), true);
+    }
+}

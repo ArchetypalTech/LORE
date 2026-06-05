@@ -131,7 +131,7 @@ export PROFILE=saya-test
 # L2: send message to mint actions on L3
 cd packages/starknet/
 sozo -P $PROFILE model get lore_sn-PermitConfig 1
-sozo -P $PROFILE execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token purchased_starter_pack $RECIPIENT
+sozo -P $PROFILE execute --world $L2_WORLD_ADDRESS --wait lore_sn-permit_token purchased_bundle $RECIPIENT
 # L2: validate permits balance (must be 0x1)
 sozo -P $PROFILE call --world $L2_WORLD_ADDRESS lore_sn-permit_token balance_of $RECIPIENT
 #

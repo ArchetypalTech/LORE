@@ -78,6 +78,9 @@ pub fn setup_core() -> HelperSystems {
     let setup: ISetupDispatcher = world.setup_dispatcher();
     let messaging: IMessagingDispatcher = world.messaging_mock_dispatcher();
 
+    testing::set_block_number(1);
+    testing::set_block_timestamp(1);
+
     let contract_defs: Span<ContractDef> = {
         [
             ContractDefTrait::new(@"lore_sn", @"setup")
@@ -85,7 +88,8 @@ pub fn setup_core() -> HelperSystems {
                 .with_init_calldata(array![
                     messaging.contract_address.into(),
                     appchain_contract().into(),
-                    cartridge_contract().into()].span()),
+                    cartridge_contract().into()
+                ].span()),
             ContractDefTrait::new(@"lore_sn", @"permit_token")
                 .with_writer_of([dojo::utils::bytearray_hash(@"lore_sn")].span()),
         ].span()
@@ -96,8 +100,6 @@ pub fn setup_core() -> HelperSystems {
     world.dispatcher.grant_owner(lore_sn::lib::dns::SELECTORS::SETUP, OWNER());
     world.dispatcher.grant_owner(lore_sn::lib::dns::SELECTORS::PERMIT_TOKEN, OWNER());
 
-    testing::set_block_number(1);
-    testing::set_block_timestamp(1);
     impersonate(OWNER());
 
     (HelperSystems {

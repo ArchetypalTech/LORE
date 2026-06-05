@@ -44,7 +44,7 @@
       "selector": "0x2d3a920998a56ef0bfbf8a5e791ba1c5db29d4f18866a2161472de9ea7794eb",
       "systems": [
         "dojo_init",
-        "purchased_starter_pack",
+        "purchased_bundle",
         "set_messaging_contract",
         "set_appchain_contract",
         "set_cartridge_contract",
@@ -2278,7 +2278,7 @@
       "items": [
         {
           "type": "function",
-          "name": "purchased_starter_pack",
+          "name": "purchased_bundle",
           "inputs": [
             {
               "name": "recipient",
