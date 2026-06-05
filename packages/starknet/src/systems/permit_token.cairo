@@ -170,7 +170,7 @@ pub mod permit_token {
             use_tokens: bool,
         ) -> Span<u128> {
             let mut world: WorldStorage = self.world_default();
-            assert(world.caller_is_world_contract(), Errors::INVALID_CALLER);
+            assert(starknet::get_caller_address() == world.setup_address(), Errors::INVALID_CALLER);
             // mint
             let token_ids: Span<u128> = self._mint_bundles(ref world,
                 recipient,

@@ -103,6 +103,7 @@ pub mod setup {
         messaging_contract: ContractAddress,
         appchain_contract: ContractAddress,
         cartridge_contract: ContractAddress,
+        usdc_contract: ContractAddress,
     ) {
         // initialize permit config
         let mut world: WorldStorage = self.world_default();
@@ -136,8 +137,8 @@ pub mod setup {
             referral_percentage: 0,
             reissuable: true,
             price: 0,
-            payment_token: 0.try_into().unwrap(),
-            payment_receiver: 0.try_into().unwrap(),
+            payment_token: usdc_contract,
+            payment_receiver: starknet::get_contract_address(),
             metadata: BundleMetadata::bundle(payment_tokens, conditions),
             allower: 0.try_into().unwrap(),
         );

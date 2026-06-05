@@ -19,9 +19,10 @@ world_address = "0x05c43099eee9d89488d20337155242a5110e926024e38a75f9ac99766f77e
 
 [init_call_args]
 "lore_sn-setup" = [
-  "0x0", # messaging/piltover address
-  "0x0", # appchain address
-  "0x0", # cartridge address
+  "0x0",                                                                # messaging/piltover address
+  "0x0",                                                                # appchain address
+  "0x0",                                                                # cartridge address
+  "0x0512feac6339ff7889822cb5aa2a86c848e9d392bb0e3e237c008674feed8343", # USDC
 ]
 
 [migration]
