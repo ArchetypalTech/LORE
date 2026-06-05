@@ -4,19 +4,19 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_permit_token_airdropStarterPack_calldata = (recipient: string): DojoCall => {
+	const build_permit_token_airdropBundle_calldata = (recipient: string, quantity: BigNumberish, useTokens: boolean): DojoCall => {
 		return {
 			contractName: "permit_token",
 			entrypoint: "airdrop_bundle",
-			calldata: [recipient],
+			calldata: [recipient, quantity, useTokens],
 		};
 	};
 
-	const permit_token_airdropStarterPack = async (snAccount: Account | AccountInterface, recipient: string) => {
+	const permit_token_airdropBundle = async (snAccount: Account | AccountInterface, recipient: string, quantity: BigNumberish, useTokens: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_permit_token_airdropStarterPack_calldata(recipient),
+				build_permit_token_airdropBundle_calldata(recipient, quantity, useTokens),
 				"lore_sn",
 			);
 		} catch (error) {
@@ -305,19 +305,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_permit_token_purchasedStarterPack_calldata = (recipient: string): DojoCall => {
+	const build_permit_token_purchasedBundle_calldata = (recipient: string, quantity: BigNumberish, useTokens: boolean): DojoCall => {
 		return {
 			contractName: "permit_token",
 			entrypoint: "purchased_bundle",
-			calldata: [recipient],
+			calldata: [recipient, quantity, useTokens],
 		};
 	};
 
-	const permit_token_purchasedStarterPack = async (snAccount: Account | AccountInterface, recipient: string) => {
+	const permit_token_purchasedBundle = async (snAccount: Account | AccountInterface, recipient: string, quantity: BigNumberish, useTokens: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_permit_token_purchasedStarterPack_calldata(recipient),
+				build_permit_token_purchasedBundle_calldata(recipient, quantity, useTokens),
 				"lore_sn",
 			);
 		} catch (error) {
@@ -525,19 +525,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_permit_token_usePermit_calldata = (tokenId: BigNumberish): DojoCall => {
+	const build_permit_token_usePermits_calldata = (tokenIds: Array<BigNumberish>): DojoCall => {
 		return {
 			contractName: "permit_token",
-			entrypoint: "use_permit",
-			calldata: [tokenId],
+			entrypoint: "use_permits",
+			calldata: [tokenIds],
 		};
 	};
 
-	const permit_token_usePermit = async (snAccount: Account | AccountInterface, tokenId: BigNumberish) => {
+	const permit_token_usePermits = async (snAccount: Account | AccountInterface, tokenIds: Array<BigNumberish>) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_permit_token_usePermit_calldata(tokenId),
+				build_permit_token_usePermits_calldata(tokenIds),
 				"lore_sn",
 			);
 		} catch (error) {
@@ -689,8 +689,8 @@ export function setupWorld(provider: DojoProvider) {
 
 	return {
 		permit_token: {
-			airdropStarterPack: permit_token_airdropStarterPack,
-			buildAirdropStarterPackCalldata: build_permit_token_airdropStarterPack_calldata,
+			airdropBundle: permit_token_airdropBundle,
+			buildAirdropBundleCalldata: build_permit_token_airdropBundle_calldata,
 			approve: permit_token_approve,
 			buildApproveCalldata: build_permit_token_approve_calldata,
 			availableSupply: permit_token_availableSupply,
@@ -723,8 +723,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildNameCalldata: build_permit_token_name_calldata,
 			ownerOf: permit_token_ownerOf,
 			buildOwnerOfCalldata: build_permit_token_ownerOf_calldata,
-			purchasedStarterPack: permit_token_purchasedStarterPack,
-			buildPurchasedStarterPackCalldata: build_permit_token_purchasedStarterPack_calldata,
+			purchasedBundle: permit_token_purchasedBundle,
+			buildPurchasedBundleCalldata: build_permit_token_purchasedBundle_calldata,
 			reservedSupply: permit_token_reservedSupply,
 			buildReservedSupplyCalldata: build_permit_token_reservedSupply_calldata,
 			royaltyInfo: permit_token_royaltyInfo,
@@ -747,8 +747,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildTotalSupplyCalldata: build_permit_token_totalSupply_calldata,
 			transferFrom: permit_token_transferFrom,
 			buildTransferFromCalldata: build_permit_token_transferFrom_calldata,
-			usePermit: permit_token_usePermit,
-			buildUsePermitCalldata: build_permit_token_usePermit_calldata,
+			usePermits: permit_token_usePermits,
+			buildUsePermitsCalldata: build_permit_token_usePermits_calldata,
 		},
 		setup: {
 			getMetadata: setup_getMetadata,

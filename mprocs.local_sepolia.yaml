@@ -64,6 +64,19 @@ procs:
       #----------------
       touch ../starknet/target/${PROFILE}/deployed
       echo "👍 L2 Ready!"
+  l2_client:
+    cwd: packages/client-sn
+    env:
+      PROFILE: sepolia
+    shell: |
+      sleep 1
+      set -e # exit on error
+      #----------------
+      # wait for L2 to be deployed and initialized
+      wait-on -l ../starknet/target/${PROFILE}/initialized
+      #----------------
+      # start client
+      bun run dev
   l3_katana:
     cwd: packages/starknet
     env:
@@ -169,9 +182,13 @@ procs:
         --attestor-poll-interval-ms      "1000" \
         --idle-timeout-secs              "30"
 
-  
-  
-  
+
+
+
+
+
+
+
   # torii:
   #   cwd: packages/contracts
   #   env:

@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x613551abceb2b37073b1149bb862ea70cf029981ce1ca47e9dd7c7ab97cb65d",
-    "address": "0x5c43099eee9d89488d20337155242a5110e926024e38a75f9ac99766f77e7d2",
-    "seed": "lore_sn_0_2_1",
+    "address": "0x7d9d9a0ab2e6da1a7a834c6882bb82c6701cac67c60892549a35527fe4847fc",
+    "seed": "lore_sn_0_2_3",
     "name": ">LORE Starknet",
     "entrypoints": [
       "uuid",
@@ -33,16 +33,16 @@
   },
   "contracts": [
     {
-      "address": "0x1546a624c5f632bc7d3c1517f3a2f1a445add42bc0d68d38e0a3d45b76991d",
-      "class_hash": "0x24c39f56753edb7a9ca55cb0e198cb5d51e41e07393465552a96233b58e26cb",
+      "address": "0x400b817e67781c25a9fe51b5881543594a35b981b4a290326d4f20d9e6fe868",
+      "class_hash": "0x7b81096961033437db97e13b832d19ae50d18e09109e32332ff4b356b7ecc34",
       "init_calldata": [],
       "tag": "lore_sn-permit_token",
       "selector": "0x2d3a920998a56ef0bfbf8a5e791ba1c5db29d4f18866a2161472de9ea7794eb",
       "systems": [
         "dojo_init",
+        "use_permits",
         "purchased_bundle",
         "airdrop_bundle",
-        "use_permit",
         "consume_message",
         "upgrade",
         "safe_transfer_from",
@@ -55,12 +55,13 @@
       ]
     },
     {
-      "address": "0x5d682829aeb63c5f1c4aeeebcce178b9e8ac396dea9e86c24620d495eebefb2",
-      "class_hash": "0x2c154b109b5eebcb5ba1d874c19bc06f4bf5962b04b7ace1bb2592520a6a76b",
+      "address": "0x546a290ba95047b1a0c18b78f0f1cd97d584e2fe082a3ac4a67fd36b2a415bc",
+      "class_hash": "0x6e06fd200ba1dcf391a4a14b5b99078da00fa134ce14887ae6372b3aa9ad549",
       "init_calldata": [
         "0x0",
         "0x0",
-        "0x0"
+        "0x0",
+        "0x0512feac6339ff7889822cb5aa2a86c848e9d392bb0e3e237c008674feed8343"
       ],
       "tag": "lore_sn-setup",
       "selector": "0x3a8670af3a7658378e9832394c4b1b009dbe0fe005ea7b26262cff8e2d4cd23",
@@ -1090,6 +1091,16 @@
         {
           "name": "snapshot",
           "type": "@core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::array::Span::<core::integer::u128>",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<core::integer::u128>"
         }
       ]
     },
@@ -2937,6 +2948,10 @@
         {
           "name": "cartridge_contract",
           "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "usdc_contract",
+          "type": "core::starknet::contract_address::ContractAddress"
         }
       ],
       "outputs": [],
@@ -3187,16 +3202,36 @@
       "items": [
         {
           "type": "function",
+          "name": "use_permits",
+          "inputs": [
+            {
+              "name": "token_ids",
+              "type": "core::array::Span::<core::integer::u128>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
           "name": "purchased_bundle",
           "inputs": [
             {
               "name": "recipient",
               "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "quantity",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "use_tokens",
+              "type": "core::bool"
             }
           ],
           "outputs": [
             {
-              "type": "core::integer::u128"
+              "type": "core::array::Span::<core::integer::u128>"
             }
           ],
           "state_mutability": "external"
@@ -3208,25 +3243,21 @@
             {
               "name": "recipient",
               "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "quantity",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "use_tokens",
+              "type": "core::bool"
             }
           ],
           "outputs": [
             {
-              "type": "core::integer::u128"
+              "type": "core::array::Span::<core::integer::u128>"
             }
           ],
-          "state_mutability": "external"
-        },
-        {
-          "type": "function",
-          "name": "use_permit",
-          "inputs": [
-            {
-              "name": "token_id",
-              "type": "core::integer::u128"
-            }
-          ],
-          "outputs": [],
           "state_mutability": "external"
         },
         {
