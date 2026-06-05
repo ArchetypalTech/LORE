@@ -112,22 +112,22 @@ procs:
   l3_contracts:
     cwd: packages/contracts
     env:
-      PROFILE: sepolia
+      PROFILE: appchain-sepolia
       KATANA_PORT: "6969"
+      KATANA_CHAIN_ID: MY_APPCHAIN_DEV
     shell: |
       sleep 1
       set -e # exit on error
       source ../../scripts/utils.sh
       export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
       echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
-      echo ">>> Deployer: [${DOJO_ACCOUNT_ADDRESS}]"
       #----------------
       # wait for katana_l3 init
       wait-port ${KATANA_PORT}
       echo ">>> Deploying contracts..."
       sozo -P ${PROFILE} build
-      sozo -P ${PROFILE} inspect
-      # sozo -P ${PROFILE} migrate --l1-data-gas 20000000000 --l1-gas 20000000000 --l1-gas-price 20000000000 --l2-gas-price 20000000000 --l1-data-gas-price 20000000000 --l2-gas 20000000000
+      # sozo -P ${PROFILE} inspect
+      # echo SKIPPING MIGRATONS
       sozo -P ${PROFILE} migrate
       #----------------
       touch ../contracts/target/${PROFILE}/deployed

@@ -53,7 +53,7 @@ asdf install scarb 2.13.1
 asdf install scarb 2.15.0
 #
 # Now build (-> ./target/release/katana).
-cargo build --release -p katana
+cargo build --release --features tee-mock -p katana
 cp ./target/release/katana ../../katana-tee
 #
 # cleanup

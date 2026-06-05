@@ -107,9 +107,9 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
   "appchain-sepolia": {
     profileName: "appchain-sepolia",
     dojo_manifest: {},
-    chainName: "WP_LORE_APPCHAIN",
-    chainId: bigintToHex(stringToFelt("WP_LORE_APPCHAIN")),
-    rpcUrl: "https://api.cartridge.gg/x/lore-appchain/katana",
+    chainName: "MY_APPCHAIN_DEV",
+    chainId: bigintToHex(stringToFelt("MY_APPCHAIN_DEV")),
+    rpcUrl: "http://localhost:6969",
     toriiUrl: "https://api.cartridge.gg/x/lore-appchain/torii",
     slotName: "lore-appchain",
 		useController: true,

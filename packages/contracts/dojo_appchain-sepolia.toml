@@ -7,12 +7,12 @@ description = "> get started with LORE"
 default = "lore"
 
 [env]
-rpc_url = "https://api.cartridge.gg/x/lore-appchain/katana"
+rpc_url = "http://localhost:6969/"
 slot_name = "lore-appchain"
 
 world_address = "0x06edbd6fb23929a69ff0fef81f09e3c7689ac01050e4ddb43dc6273f18b37403"
-account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+account_address = "0xdcbeb1f415c0c3e8ae300f3550ff9d649c03c2aeea5ec15f9862139ac3857b"
+private_key = "0x51a7efdede848dadeeecae66e5bdc2db1ae589aee3f1b8b25d2cfcdf9571f27"
 
 [lib_versions]
 "lore-lexer" = "0_2_0"
