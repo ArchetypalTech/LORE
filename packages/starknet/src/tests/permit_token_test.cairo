@@ -139,26 +139,18 @@ fn test_purchase_not_world_contract() {
 //
 
 #[test]
-fn test_issue_from_cartridge_ok() {
+fn test_issue_ok() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
-    helpers::impersonate(helpers::cartridge_contract());
+    helpers::impersonate(OWNER());
     sys.setup.issue(OTHER(), BUNDLE_ID, 1, Option::None, Option::None, Option::None, 0, Option::None, Option::None);
     assert_eq!(sys.permit.balance_of(OTHER()), 1, "balance_of");
-}
-
-#[test]
-#[should_panic(expected: ('PERMIT: Invalid caller','ENTRYPOINT_FAILED'))]
-fn test_issue_not_cartridge() {
-    let mut sys: helpers::HelperSystems = helpers::setup_core();
-    helpers::impersonate(OTHER());
-    sys.permit.purchased_bundle(OTHER(), 1, false);
 }
 
 #[test]
 #[should_panic(expected: ('Bundle: not found','ENTRYPOINT_FAILED'))]
 fn test_issue_invalid_bundle() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
-    helpers::impersonate(helpers::cartridge_contract());
+    helpers::impersonate(OWNER());
     sys.setup.issue(OTHER(), BUNDLE_ID+1, 1, Option::None, Option::None, Option::None, 0, Option::None, Option::None);
 }
 

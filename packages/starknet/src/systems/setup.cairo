@@ -11,7 +11,6 @@ pub trait ISetup<TState> {
     // ISetupPublic (admin)
     fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
     fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
-    fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
     fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
 
     //-----------------------------------
@@ -37,7 +36,6 @@ trait ISetupPublic<TState> {
     // admin functions
     fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
     fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
-    fn set_cartridge_contract(ref self: TState, cartridge_contract: ContractAddress);
     fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
 }
 
@@ -102,7 +100,6 @@ pub mod setup {
     fn dojo_init(ref self: ContractState,
         messaging_contract: ContractAddress,
         appchain_contract: ContractAddress,
-        cartridge_contract: ContractAddress,
         usdc_contract: ContractAddress,
     ) {
         // initialize permit config
@@ -110,7 +107,6 @@ pub mod setup {
         world.initialize_permit_config(
             messaging_contract,
             appchain_contract,
-            cartridge_contract,
         );
         // initialize permit types
         world.write_model(@PermitType {
@@ -166,12 +162,6 @@ pub mod setup {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_owner(@world);
             world.set_appchain_contract(appchain_contract);
-        }
-        fn set_cartridge_contract(ref self: ContractState, cartridge_contract: ContractAddress) {
-            assert(cartridge_contract.is_non_zero(), Errors::INVALID_CARTIDGE_CONTRACT);
-            let mut world: WorldStorage = self.world_default();
-            self._assert_caller_is_owner(@world);
-            world.set_cartridge_contract(cartridge_contract);
         }
         fn set_permit_type(ref self: ContractState, permit_type: felt252, actions_count: u32) {
             let mut world: WorldStorage = self.world_default();
@@ -237,7 +227,6 @@ pub mod setup {
             signature: Option<Span<felt252>>,
         ) {
             let mut world: WorldStorage = self.world_default();
-            world.assert_caller_is_cartridge_contract();
             // assert bundle exists
             let bundle: Bundle = world.read_model(bundle_id);
             bundle.assert_does_exist();

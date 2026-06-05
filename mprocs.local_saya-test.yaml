@@ -29,8 +29,6 @@ procs:
       sozo -P ${PROFILE} execute --wait lore_sn-setup set_messaging_contract ${PILTOVER_ADDRESS}
       echo ">>> L2: set_appchain_contract(${APPCHAIN_ADDRESS})"
       sozo -P ${PROFILE} execute --wait lore_sn-setup set_appchain_contract ${APPCHAIN_ADDRESS}
-      echo ">>> L2: set_cartridge_contract(${CARTIDGE_ADDRESS})"
-      sozo -P ${PROFILE} execute --wait lore_sn-setup set_cartridge_contract ${CARTIDGE_ADDRESS}
       echo ">>> L2: PermitConfig:"
       sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
       #----------------
