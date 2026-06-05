@@ -1,5 +1,6 @@
 import { type Chain, devnet, mainnet, sepolia } from "@starknet-react/chains";
 import { addAddressPadding } from "starknet";
+import { getContractByName } from '@dojoengine/core';
 import { bigintToHex, stringToFelt } from "@/lib/utils";
 // L2 Starknet world manifests. client-sn always targets packages/starknet (lore_sn),
 // never the L3 packages/contracts (lore) engine.
@@ -37,6 +38,7 @@ export type ProfileConfig = {
 	contractAddresses: {
 		world: string;
 		permit_token: string;
+		setup: string;
 	};
 };
 
@@ -92,11 +94,8 @@ export const getProfileConfig = (profileName: ProfileName): ProfileConfig => {
 	}
 	result.contractAddresses = {
 		world: addAddressPadding(result.dojo_manifest.world?.address ?? "0x0"),
-		permit_token: addAddressPadding(
-			result.dojo_manifest.contracts?.find(
-				(c: any) => c.tag === `${NAMESPACE}-permit_token`,
-			)?.address ?? "0x0",
-		),
+		permit_token: getContractByName(result.dojo_manifest, NAMESPACE, 'permit_token')?.address ?? "0x0",
+		setup: getContractByName(result.dojo_manifest, NAMESPACE, 'setup')?.address ?? "0x0",
 	};
 	return result;
 };
