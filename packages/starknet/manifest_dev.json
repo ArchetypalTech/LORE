@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x613551abceb2b37073b1149bb862ea70cf029981ce1ca47e9dd7c7ab97cb65d",
-    "address": "0x7d90bdb9b6af74c5c9c29e16a909e82e9faa78da2bf6c35b07504262592f17a",
-    "seed": "lore_sn",
+    "address": "0x5c43099eee9d89488d20337155242a5110e926024e38a75f9ac99766f77e7d2",
+    "seed": "lore_sn_0_2_1",
     "name": ">LORE Starknet",
     "entrypoints": [
       "uuid",
@@ -33,22 +33,16 @@
   },
   "contracts": [
     {
-      "address": "0x7dc2fd2709fccf08bb3d87376057f612c7da1cdbb9f066ed7ad74b09a9ba7cb",
-      "class_hash": "0x5dfdd3eb54d079e095da9264b26c70bbc8ae99f43125733bd131bc5228239ce",
-      "init_calldata": [
-        "0x0",
-        "0x0",
-        "0x0"
-      ],
+      "address": "0x1546a624c5f632bc7d3c1517f3a2f1a445add42bc0d68d38e0a3d45b76991d",
+      "class_hash": "0x24c39f56753edb7a9ca55cb0e198cb5d51e41e07393465552a96233b58e26cb",
+      "init_calldata": [],
       "tag": "lore_sn-permit_token",
       "selector": "0x2d3a920998a56ef0bfbf8a5e791ba1c5db29d4f18866a2161472de9ea7794eb",
       "systems": [
         "dojo_init",
         "purchased_starter_pack",
-        "set_messaging_contract",
-        "set_appchain_contract",
-        "set_cartridge_contract",
-        "set_permit_type",
+        "airdrop_starter_pack",
+        "use_permit",
         "consume_message",
         "upgrade",
         "safe_transfer_from",
@@ -59,10 +53,175 @@
         "transferFrom",
         "setApprovalForAll"
       ]
+    },
+    {
+      "address": "0x5d682829aeb63c5f1c4aeeebcce178b9e8ac396dea9e86c24620d495eebefb2",
+      "class_hash": "0x2c154b109b5eebcb5ba1d874c19bc06f4bf5962b04b7ace1bb2592520a6a76b",
+      "init_calldata": [
+        "0x0",
+        "0x0",
+        "0x0"
+      ],
+      "tag": "lore_sn-setup",
+      "selector": "0x3a8670af3a7658378e9832394c4b1b009dbe0fe005ea7b26262cff8e2d4cd23",
+      "systems": [
+        "dojo_init",
+        "set_messaging_contract",
+        "set_appchain_contract",
+        "set_cartridge_contract",
+        "set_permit_type",
+        "issue",
+        "upgrade"
+      ]
     }
   ],
   "libraries": [],
   "models": [
+    {
+      "members": [
+        {
+          "name": "id",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8",
+          "key": false
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool",
+          "key": false
+        },
+        {
+          "name": "price",
+          "type": "core::integer::u256",
+          "key": false
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "total_issued",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "created_at",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "metadata",
+          "type": "core::byte_array::ByteArray",
+          "key": false
+        },
+        {
+          "name": "contract",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "allower",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        }
+      ],
+      "class_hash": "0x4dd989b8e777ff770905994783570d06fae691b301d95efdcc8d217568338b7",
+      "tag": "lore_sn-Bundle",
+      "selector": "0xc4c1c2adc629ee3e948cd80de266c6dfc33a34745baa88d7fe95024c0a572e"
+    },
+    {
+      "members": [
+        {
+          "name": "id",
+          "type": "core::felt252",
+          "key": true
+        },
+        {
+          "name": "total_fees",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "total_referrals",
+          "type": "core::integer::u64",
+          "key": false
+        }
+      ],
+      "class_hash": "0x73e35b535ae77ec3cbe4dc1cae493ae59d69f5859f9e3d8ca72bc866a7ee878",
+      "tag": "lore_sn-BundleGroup",
+      "selector": "0x57805936e6094f9f1b54ed67eae68b683cf61ccece3c7e49d0b3cc7a09488ec"
+    },
+    {
+      "members": [
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "issued_at",
+          "type": "core::integer::u64",
+          "key": false
+        }
+      ],
+      "class_hash": "0x22192a3beb0de39d469febf959e64485648412b22352d9cd10e0aa52690fe48",
+      "tag": "lore_sn-BundleIssuance",
+      "selector": "0x56f83e4d1c296f7c8b273caf6ff429914fe9cd5d860d8df8a3039e616497f9"
+    },
+    {
+      "members": [
+        {
+          "name": "id",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "total_fees",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "total_referrals",
+          "type": "core::integer::u64",
+          "key": false
+        }
+      ],
+      "class_hash": "0x26cae110fae34ce3a9a4e4ffa63658d1dc1a824caab297ecb6c017785ce92ac",
+      "tag": "lore_sn-BundleReferral",
+      "selector": "0x50257e8c1407f2899d6b7e9ef1b8ce9738f7519ac2f5f1c60912d4de4b6c7a2"
+    },
+    {
+      "members": [
+        {
+          "name": "key",
+          "type": "core::felt252",
+          "key": true
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        }
+      ],
+      "class_hash": "0x56794c7e01990d3e6454da93fd1c3226f9773121f881754120dd22e7f332dfe",
+      "tag": "lore_sn-BundleVoucher",
+      "selector": "0x15d2b6521cd5d26604d73d006e57b0624bc6848599ad2a690056974a38b3379"
+    },
     {
       "members": [
         {
@@ -187,10 +346,718 @@
       "class_hash": "0x1faa158cda0478f0d14fc63a80acb5728dfe42a749b8842c1ee103009d26b11",
       "tag": "lore_sn-AppchainMessageEvent",
       "selector": "0x53747592e0b56248201d6f92208db88970ab41abd528ab924cc023c0ec09fc"
+    },
+    {
+      "members": [
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256",
+          "key": false
+        },
+        {
+          "name": "quantity",
+          "type": "core::integer::u32",
+          "key": false
+        },
+        {
+          "name": "referrer",
+          "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>",
+          "key": false
+        },
+        {
+          "name": "referrer_group",
+          "type": "core::option::Option::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64",
+          "key": false
+        }
+      ],
+      "class_hash": "0x7252b7ed6b7699825ecb8306e2e44d3bcea66748796244ff30990b11da4d707",
+      "tag": "lore_sn-BundleIssued",
+      "selector": "0xff0a1f6e58ab79c22f2a9da6fbfdec24181464b20c3fab6e3be0c62a5c0d31"
+    },
+    {
+      "members": [
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8",
+          "key": false
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool",
+          "key": false
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        }
+      ],
+      "class_hash": "0x5ae9c4e8262fa242de23de11dc78aa16d2581533e798bd6113ae99535c9cbee",
+      "tag": "lore_sn-BundleRegistered",
+      "selector": "0x2866e81ecc6a79f26f72401005e97bd8da5bd1ba2bf9801978bd91da90db998"
+    },
+    {
+      "members": [
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8",
+          "key": false
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool",
+          "key": false
+        },
+        {
+          "name": "price",
+          "type": "core::integer::u256",
+          "key": false
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        },
+        {
+          "name": "metadata",
+          "type": "core::byte_array::ByteArray",
+          "key": false
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": false
+        }
+      ],
+      "class_hash": "0x1507f042e469d428e2fbe0c6dfbc5020e742b052ee818e5292a0f102bbcdcd5",
+      "tag": "lore_sn-BundleUpdated",
+      "selector": "0x65fed2c61e88c17186a21a78af7486b2078247483ac5d6f81d9de1f5716cec1"
     }
   ],
   "external_contracts": [],
   "abis": [
+    {
+      "type": "struct",
+      "name": "bundle::component::Component::BundleQuote",
+      "members": [
+        {
+          "name": "base_price",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "referral_fee",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "client_fee",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "protocol_fee",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "total_cost",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "bundle::component::Component::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "struct",
+      "name": "bundle::events::index::BundleIssued",
+      "members": [
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "quantity",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "referrer",
+          "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+        },
+        {
+          "name": "referrer_group",
+          "type": "core::option::Option::<core::felt252>"
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::events::index::BundleIssuedValue",
+      "members": [
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "quantity",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "referrer",
+          "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+        },
+        {
+          "name": "referrer_group",
+          "type": "core::option::Option::<core::felt252>"
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::events::index::BundleRegistered",
+      "members": [
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool"
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::events::index::BundleRegisteredValue",
+      "members": [
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool"
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::events::index::BundleUpdated",
+      "members": [
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool"
+        },
+        {
+          "name": "price",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "metadata",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::events::index::BundleUpdatedValue",
+      "members": [
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool"
+        },
+        {
+          "name": "price",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "metadata",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "time",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "bundle::events::index::e_BundleIssued::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "bundle::events::index::e_BundleRegistered::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "bundle::events::index::e_BundleUpdated::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "interface",
+      "name": "bundle::interface::IBundle",
+      "items": [
+        {
+          "type": "function",
+          "name": "get_metadata",
+          "inputs": [
+            {
+              "name": "bundle_id",
+              "type": "core::integer::u32"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "quote",
+          "inputs": [
+            {
+              "name": "bundle_id",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "quantity",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "has_referrer",
+              "type": "core::bool"
+            },
+            {
+              "name": "client_percentage",
+              "type": "core::integer::u8"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bundle::component::Component::BundleQuote"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "issue",
+          "inputs": [
+            {
+              "name": "recipient",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "bundle_id",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "quantity",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "referrer",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "referrer_group",
+              "type": "core::option::Option::<core::felt252>"
+            },
+            {
+              "name": "client",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "client_percentage",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "voucher_key",
+              "type": "core::option::Option::<core::felt252>"
+            },
+            {
+              "name": "signature",
+              "type": "core::option::Option::<core::array::Span::<core::felt252>>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::Bundle",
+      "members": [
+        {
+          "name": "id",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool"
+        },
+        {
+          "name": "price",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "total_issued",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "created_at",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "metadata",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "allower",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleGroup",
+      "members": [
+        {
+          "name": "id",
+          "type": "core::felt252"
+        },
+        {
+          "name": "total_fees",
+          "type": "core::felt252"
+        },
+        {
+          "name": "total_referrals",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleGroupValue",
+      "members": [
+        {
+          "name": "total_fees",
+          "type": "core::felt252"
+        },
+        {
+          "name": "total_referrals",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleIssuance",
+      "members": [
+        {
+          "name": "bundle_id",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "issued_at",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleIssuanceValue",
+      "members": [
+        {
+          "name": "issued_at",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleReferral",
+      "members": [
+        {
+          "name": "id",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "total_fees",
+          "type": "core::felt252"
+        },
+        {
+          "name": "total_referrals",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleReferralValue",
+      "members": [
+        {
+          "name": "total_fees",
+          "type": "core::felt252"
+        },
+        {
+          "name": "total_referrals",
+          "type": "core::integer::u64"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleValue",
+      "members": [
+        {
+          "name": "referral_percentage",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "reissuable",
+          "type": "core::bool"
+        },
+        {
+          "name": "price",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "payment_token",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "payment_receiver",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "total_issued",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "created_at",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "metadata",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "contract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "allower",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleVoucher",
+      "members": [
+        {
+          "name": "key",
+          "type": "core::felt252"
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "bundle::models::index::BundleVoucherValue",
+      "members": [
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "bundle::models::index::m_Bundle::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "bundle::models::index::m_BundleGroup::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "bundle::models::index::m_BundleIssuance::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "bundle::models::index::m_BundleReferral::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "bundle::models::index::m_BundleVoucher::Event",
+      "kind": "enum",
+      "variants": []
+    },
     {
       "type": "constructor",
       "name": "constructor",
@@ -334,11 +1201,53 @@
     },
     {
       "type": "enum",
+      "name": "core::option::Option::<core::array::Span::<core::felt252>>",
+      "variants": [
+        {
+          "name": "Some",
+          "type": "core::array::Span::<core::felt252>"
+        },
+        {
+          "name": "None",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "core::option::Option::<core::felt252>",
+      "variants": [
+        {
+          "name": "Some",
+          "type": "core::felt252"
+        },
+        {
+          "name": "None",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "enum",
       "name": "core::option::Option::<core::integer::u32>",
       "variants": [
         {
           "name": "Some",
           "type": "core::integer::u32"
+        },
+        {
+          "name": "None",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "core::option::Option::<core::starknet::contract_address::ContractAddress>",
+      "variants": [
+        {
+          "name": "Some",
+          "type": "core::starknet::contract_address::ContractAddress"
         },
         {
           "name": "None",
@@ -2039,7 +2948,7 @@
       "inputs": [
         {
           "name": "event",
-          "type": "lore_sn::models::appchain::AppchainMessageEvent"
+          "type": "bundle::events::index::BundleUpdated"
         }
       ],
       "outputs": [],
@@ -2058,7 +2967,7 @@
       "inputs": [
         {
           "name": "value",
-          "type": "lore_sn::models::appchain::AppchainMessageEventValue"
+          "type": "bundle::events::index::BundleUpdatedValue"
         }
       ],
       "outputs": [],
@@ -2294,6 +3203,84 @@
         },
         {
           "type": "function",
+          "name": "airdrop_starter_pack",
+          "inputs": [
+            {
+              "name": "recipient",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u128"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "use_permit",
+          "inputs": [
+            {
+              "name": "token_id",
+              "type": "core::integer::u128"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "consume_message",
+          "inputs": [
+            {
+              "name": "payload",
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::systems::permit_token::permit_token::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "UpgradeableEvent",
+          "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "nested"
+        },
+        {
+          "name": "WorldProviderEvent",
+          "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "nested"
+        },
+        {
+          "name": "SRC5Event",
+          "type": "openzeppelin_introspection::src5::SRC5Component::Event",
+          "kind": "flat"
+        },
+        {
+          "name": "ERC721Event",
+          "type": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+          "kind": "flat"
+        },
+        {
+          "name": "ERC721ComboEvent",
+          "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
+          "kind": "flat"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "lore_sn::systems::setup::ISetupPublic",
+      "items": [
+        {
+          "type": "function",
           "name": "set_messaging_contract",
           "inputs": [
             {
@@ -2343,24 +3330,12 @@
           ],
           "outputs": [],
           "state_mutability": "external"
-        },
-        {
-          "type": "function",
-          "name": "consume_message",
-          "inputs": [
-            {
-              "name": "payload",
-              "type": "core::array::Span::<core::felt252>"
-            }
-          ],
-          "outputs": [],
-          "state_mutability": "external"
         }
       ]
     },
     {
       "type": "event",
-      "name": "lore_sn::systems::permit_token::permit_token::Event",
+      "name": "lore_sn::systems::setup::setup::Event",
       "kind": "enum",
       "variants": [
         {
@@ -2374,18 +3349,8 @@
           "kind": "nested"
         },
         {
-          "name": "SRC5Event",
-          "type": "openzeppelin_introspection::src5::SRC5Component::Event",
-          "kind": "flat"
-        },
-        {
-          "name": "ERC721Event",
-          "type": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
-          "kind": "flat"
-        },
-        {
-          "name": "ERC721ComboEvent",
-          "type": "nft_combo::erc721::erc721_combo::ERC721ComboComponent::Event",
+          "name": "BundleEvent",
+          "type": "bundle::component::Component::Event",
           "kind": "flat"
         }
       ]

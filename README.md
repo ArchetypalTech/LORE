@@ -77,13 +77,25 @@ bun run dev:slot
 
 > 🎲 Slot MODE watches + compiles local contracts and allows you to deploy to slot & configures the client to connect to Slot at `https://localhost:5173` and `https://localhost:5173/editor` (use _https_)
 
-### Saya MODE:
+
+### Dev Sepolia MODE:
 
 ```bash
-bun run dev:saya
+bun run dev:sepolia
 ```
 
-> 🎲 Saya mode will start two instances of Katana (one to simulate L2/Starknet and another for L3/Game) and a Saya server. See  [packages/starknet/README.md](./packages/starknet/README.md) for more info.
+> ⚠️ Dev Sepolia mode will start one instance of Katana and one Saya server.
+> See [DEV-SEPOLIA.md](./packages/starknet/DEV-SEPOLIA.md) for more info.
+
+
+### Saya Appchain MODE (deprecated):
+
+```bash
+bun run dev:saya-test
+```
+
+> ❌ Saya mode will start two instances of Katana (one to simulate L2/Starknet and another for L3/Game) and a Saya server.
+> See [DEV-SAYA-TEST.md](./packages/starknet/DEV-SAYA-TEST.md) for more info.
 
 <hr/>
 

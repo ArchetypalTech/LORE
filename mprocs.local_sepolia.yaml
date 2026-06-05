@@ -1,0 +1,206 @@
+procs:
+  initializer:
+    cwd: packages/contracts
+    env:
+      PROFILE: sepolia
+    shell: |
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      #----------------
+      # delete targets to wait for a fresh deployment
+      echo ">>> Initializing..."
+      rm -rf ../contracts/target/${PROFILE}
+      rm -rf ../starknet/target/${PROFILE}
+      rm -rf ../starknet/data/${PROFILE}
+      #----------------
+      echo ">>> Waiting for L3 deployment..."
+      wait-on -l ../starknet/target/${PROFILE}/deployed
+      wait-on -l ../contracts/target/${PROFILE}/deployed
+      export APPCHAIN_ADDRESS=$(get_contract_address ${PROFILE} lore-actions_token)
+      #----------------
+      # configure L2...
+      #
+      cd ../starknet
+      source .env.dev-sepolia
+      export PERMIT_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore_sn-permit_token)
+      echo ">>> L2: set_messaging_contract(${PILTOVER_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore_sn-setup set_messaging_contract ${PILTOVER_ADDRESS}
+      echo ">>> L2: set_appchain_contract(${APPCHAIN_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore_sn-setup set_appchain_contract ${APPCHAIN_ADDRESS}
+      echo ">>> L2: set_cartridge_contract(${CARTIDGE_ADDRESS})"
+      # sozo -P ${PROFILE} execute --wait lore_sn-setup set_cartridge_contract ${CARTIDGE_ADDRESS}
+      echo ">>> L2: PermitConfig:"
+      sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
+      #----------------
+      # Configure L3
+      #
+      cd ../contracts
+      echo ">>> L3: set_sn_contract(${PERMIT_TOKEN_ADDRESS})"
+      sozo -P ${PROFILE} execute --wait lore-actions_token set_sn_contract ${PERMIT_TOKEN_ADDRESS}
+      sozo -P ${PROFILE} model get lore-ActionsConfig 1
+      #----------------
+      touch ../starknet/target/${PROFILE}/initialized
+      echo "👍 Ready!!"
+  l2_contracts:
+    cwd: packages/starknet
+    env:
+      PROFILE: sepolia
+    shell: |
+      sleep 1
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      source .env.dev-sepolia
+      export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
+      echo ">>> Deployer: [${DOJO_ACCOUNT_ADDRESS}]"
+      #----------------
+      # deploy contracts...
+      #
+      echo ">>> Deploying contracts..."
+      sozo --version
+      sozo -P ${PROFILE} build --typescript
+      sozo -P ${PROFILE} inspect
+      sozo -P ${PROFILE} migrate
+      #----------------
+      touch ../starknet/target/${PROFILE}/deployed
+      echo "👍 L2 Ready!"
+  l3_katana:
+    cwd: packages/starknet
+    env:
+      PROFILE: sepolia
+      KATANA_TEE_BIN: ./bin/katana-tee
+      KATANA_PORT: "6969"
+      CHAIN_CONFIG_PATH: ./data/dev-sepolia/chain-config
+      CHAIN_DATA_PATH: ./data/dev-sepolia/chain-data
+    shell: |
+      sleep 1
+      #----------------
+      # wait for katana_l3 init file
+      #
+      sleep 1
+      #----------------
+      # start katana L3...
+      # 
+      # https://github.com/dojoengine/katana/blob/main/docs/tee-deployment.md#2-run-katana-dev
+      #
+      mkdir -p ${CHAIN_DATA_PATH}
+      echo ">>> Starting L3 Katana on port [${KATANA_PORT}]..."
+      ls -l ${KATANA_TEE_BIN}
+      ${KATANA_TEE_BIN} --version
+      ${KATANA_TEE_BIN} \
+        --chain ${CHAIN_CONFIG_PATH} \
+        --http.addr 0.0.0.0 \
+        --http.port ${KATANA_PORT} \
+        --http.cors-origins "*" \
+        --explorer \
+        --tee mock \
+        --dev --dev.no-fee \
+        --data-dir ${CHAIN_DATA_PATH} \
+        --invoke-max-steps   100000000 \
+        --validate-max-steps  10000000
+  l3_contracts:
+    cwd: packages/contracts
+    env:
+      PROFILE: sepolia
+      KATANA_PORT: "6969"
+    shell: |
+      sleep 1
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
+      echo ">>> Deployer: [${DOJO_ACCOUNT_ADDRESS}]"
+      #----------------
+      # wait for katana_l3 init
+      wait-port ${KATANA_PORT}
+      echo ">>> Deploying contracts..."
+      sozo -P ${PROFILE} build
+      sozo -P ${PROFILE} inspect
+      # sozo -P ${PROFILE} migrate --l1-data-gas 20000000000 --l1-gas 20000000000 --l1-gas-price 20000000000 --l2-gas-price 20000000000 --l1-data-gas-price 20000000000 --l2-gas 20000000000
+      sozo -P ${PROFILE} migrate
+      #----------------
+      touch ../contracts/target/${PROFILE}/deployed
+      echo "👍 L2 Ready!"
+  saya:
+    cwd: packages/starknet
+    env:
+      PROFILE: sepolia
+      SAYA_TEE_BIN: ./bin/saya-tee
+      STARKNET_RPC_URL: https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9
+      KATANA_RPC: http://localhost:6969
+      CHAIN_CONFIG_PATH: ./data/dev-sepolia/chain-config
+      SAYA_DATA_PATH: ./data/dev-sepolia/saya
+    shell: |
+      sleep 1
+      set -e # exit on error
+      source .env.dev-sepolia
+      #----------------
+      # wait for L2 and L3 to be deployed and initialized
+      wait-on -l ../starknet/target/${PROFILE}/initialized
+      #----------------
+      # gather data...
+      #
+      export DATA_PATH=./data/${PROFILE}
+      export PILTOVER_ADDRESS=$(grep '^core_contract' ${CHAIN_CONFIG_PATH}/config.toml | head -1 | awk -F'"' '{print $2}')
+      echo ">>> KATANA_RPC: [${KATANA_RPC}]"
+      echo ">>> PILTOVER_ADDRESS: [${PILTOVER_ADDRESS}]"
+      echo ">>> FACT_REGISTRY_ADDRESS: [${FACT_REGISTRY_ADDRESS}]"
+      echo ">>> DEPLOYER_ADDRESS: [${DEPLOYER_ADDRESS}]"
+      echo ">>> DEPLOYER_PRIVATE_KEY: [${DEPLOYER_PRIVATE_KEY}]"
+      echo ">>> PROVER_PRIVATE_KEY: [${PROVER_PRIVATE_KEY}]"
+      #----------------
+      # sytart saya
+      #
+      echo ">>> Starting Saya on [${SAYA_DATA_PATH}]..."
+      mkdir -p ${SAYA_DATA_PATH}
+      ls -l ${SAYA_TEE_BIN}
+      ${SAYA_TEE_BIN} --version
+      ${SAYA_TEE_BIN} tee start \
+        --mock-prove \
+        --rollup-rpc                     "${KATANA_RPC}" \
+        --settlement-rpc                 "${STARKNET_RPC_URL}" \
+        --settlement-piltover-address    "${PILTOVER_ADDRESS}" \
+        --settlement-account-address     "${DEPLOYER_ADDRESS}" \
+        --settlement-account-private-key "${DEPLOYER_PRIVATE_KEY}" \
+        --tee-registry-address           "${FACT_REGISTRY_ADDRESS}" \
+        --prover-private-key             "${PROVER_PRIVATE_KEY}" \
+        --db-dir                         "${SAYA_DATA_PATH}" \
+        --batch-size                     "1" \
+        --attestor-poll-interval-ms      "1000" \
+        --idle-timeout-secs              "30"
+
+  
+  
+  
+  # torii:
+  #   cwd: packages/contracts
+  #   env:
+  #     PROFILE: sepolia
+  #     KATANA_L3_PORT: "6969"
+  #   shell: |
+  #     sleep 1
+  #     set -e # exit on error
+  #     source ../../scripts/utils.sh
+  #     export DOJO_WORLD_ADDRESS=$(get_profile_env ${PROFILE} world_address)
+  #     export GAME_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-game_token)
+  #     export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${PROFILE} lore-trail_token)
+  #     echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
+  #     echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
+  #     echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
+  #     #----------------
+  #     wait-port ${KATANA_L3_PORT}
+  #     #----------------
+  #     # start Torii
+  #     torii --version
+  #     torii --http.cors_origins "*" \
+  #       --indexing.contracts erc721:${GAME_TOKEN_ADDRESS},erc721:${TRAIL_TOKEN_ADDRESS}
+  # client:
+  #   cwd: packages/client
+  #   env:
+  #     KATANA_L3_PORT: "6969"
+  #   shell: |
+  #     sleep 1
+  #     #----------------
+  #     wait-port ${KATANA_L3_PORT}
+  #     #----------------
+  #     bun run dev

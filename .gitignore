@@ -10,8 +10,9 @@ pnpm-lock.*
 **/._.DS_Store
 
 # env files
-.env*.local
-.env
+.env*
+!.env.clear
+!.env*.example
 
 # local 
 local.*
@@ -25,11 +26,10 @@ manifests
 katana_local_db
 torii_local_db
 temp
-bin
+**/bin/*
+!**/bin/.gitkeep
 
 # ssl
 packages/client/ssl/*
 !packages/client/ssl/.gitkeep
 packages/starknet/data/db/*
-.env.sepolia
-.env.mainnet

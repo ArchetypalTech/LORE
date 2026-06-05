@@ -26,11 +26,11 @@ procs:
       export PILTOVER_ADDRESS=$(grep '^core_contract' ${DATA_PATH}/config.toml | sed -E 's/core_contract = "([^"]+)"/\1/')
       export CARTIDGE_ADDRESS=$(get_profile_env ${PROFILE} account_address)
       echo ">>> L2: set_messaging_contract(${PILTOVER_ADDRESS})"
-      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_messaging_contract ${PILTOVER_ADDRESS}
+      sozo -P ${PROFILE} execute --wait lore_sn-setup set_messaging_contract ${PILTOVER_ADDRESS}
       echo ">>> L2: set_appchain_contract(${APPCHAIN_ADDRESS})"
-      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_appchain_contract ${APPCHAIN_ADDRESS}
+      sozo -P ${PROFILE} execute --wait lore_sn-setup set_appchain_contract ${APPCHAIN_ADDRESS}
       echo ">>> L2: set_cartridge_contract(${CARTIDGE_ADDRESS})"
-      sozo -P ${PROFILE} execute --wait lore_sn-permit_token set_cartridge_contract ${CARTIDGE_ADDRESS}
+      sozo -P ${PROFILE} execute --wait lore_sn-setup set_cartridge_contract ${CARTIDGE_ADDRESS}
       echo ">>> L2: PermitConfig:"
       sozo -P ${PROFILE} model get lore_sn-PermitConfig 1
       #----------------

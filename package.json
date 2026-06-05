@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "mprocs --config ./mprocs.local.yaml",
     "dev:saya-test": "mprocs --config ./mprocs.local_saya-test.yaml",
+    "dev:sepolia": "mprocs --config ./mprocs.local_sepolia.yaml",
     "dev:da": "mprocs --config ./mprocs.local_da.yaml",
     "dev:slot": "mprocs --config ./mprocs.slot.yaml",
     "quickstart": "bun run ./scripts/quickstart.ts # 🧾 quickstart installer "
