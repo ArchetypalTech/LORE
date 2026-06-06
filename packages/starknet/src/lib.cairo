@@ -6,16 +6,15 @@ pub mod systems {
 
 pub mod models {
     pub mod appchain;
-    pub mod constants;
     pub mod permit_config;
     pub mod permit_token_info;
-    pub mod permit_metadata;
 }
 
 pub mod lib {
+    pub mod bundle;
+    pub mod constants;
     pub mod dns;
     pub mod messaging;
-    pub mod bundle;
     pub mod utils;
 }
 

@@ -4,14 +4,10 @@ use dojo::world::{WorldStorage, IWorldDispatcherTrait};
 
 //---------------------------------
 // L2/L3 constants
-// must always be in sync
+// must always be in sync (contracts/starknet)
 //
 
 pub mod APPCHAIN {
-    // initial config
-    pub const PERMIT_ACTIONS_COUNT: u32 = 20;
-    pub const REWARD_ACTIONS_COUNT: u32 = 20;
-
     pub mod MESSAGE_TYPES {
         pub const MINT_PERMIT_REWARDS: felt252 = 'MINT_PERMIT_REWARDS';
     }
@@ -23,6 +19,18 @@ pub mod APPCHAIN {
         pub const REWARD_AIRDROP: felt252 = 'REWARD_AIRDROP';
     }
 }
+
+#[generate_trait]
+pub impl PermitTypeImpl of PermitTypeTrait {
+    fn actions_count(self: felt252) -> u32 {
+        if self == APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE { 20 }
+        else if self == APPCHAIN::PERMIT_TYPES::PERMIT_AIRDROP { 20 }
+        else if self == APPCHAIN::PERMIT_TYPES::REWARD_CREATOR { 20 }
+        else if self == APPCHAIN::PERMIT_TYPES::REWARD_AIRDROP { 20 }
+        else { 0 }
+    }
+}
+
 
 //---------------------------------
 // Events
@@ -55,7 +63,7 @@ pub struct MintPermitRewardsPayload {
 }
 
 //---------------------------------
-// Traits
+// Appchain Traits
 //
 #[generate_trait]
 pub impl AppchainPayloadImpl of AppchainPayloadTrait {

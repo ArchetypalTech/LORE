@@ -4,7 +4,10 @@ use dojo::model::{ModelStorage};
 
 use lore_sn::models::{
     permit_token_info::{PermitTokenInfo},
-    permit_metadata::{permit_metadata}
+    appchain::APPCHAIN::PERMIT_TYPES,
+};
+use lore_sn::lib::{
+    constants::{permit_metadata, CONST},
 };
 use lore_sn::tests::{helpers,
     helpers::{
@@ -14,11 +17,12 @@ use lore_sn::tests::{helpers,
         OWNER, OTHER,
     },
 };
-use lore_sn::models::constants::{CONST};
 
 const AMOUNT: u128 = 1000 * CONST::ETH_TO_WEI.low;
 
 const BUNDLE_ID: u32 = 0;
+const BUNDLE_ID_RESERVED: u32 = 1;
+const BUNDLE_ID_INVALID: u32 = 10;
 
 const TOKEN_ID_1_1: u256 = 1;
 const TOKEN_ID_1_2: u256 = 2;
@@ -54,6 +58,29 @@ fn test_token_token_uri() {
     let uri: ByteArray = sys.permit.token_uri(1);
     assert_gt!(uri.len(), 1000, "token_uri.len()");
     println!("PERMIT TOKEN URI: [{}]", uri);
+}
+
+#[test]
+fn test_permit_metadata() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    let metadata: ByteArray = sys.setup.get_metadata(BUNDLE_ID);
+    println!("PERMIT METADATA: [{}]", metadata);
+    assert_gt!(metadata.len(), 100, "metadata.len()");
+}
+
+#[test]
+fn test_permit_metadata_reserved() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    let metadata: ByteArray = sys.setup.get_metadata(BUNDLE_ID_RESERVED);
+    println!("RESERVED PERMIT METADATA: [{}]", metadata);
+    assert_lt!(metadata.len(), 20, "metadata.len()");
+}
+
+#[test]
+#[should_panic(expected: ('Bundle: not found','ENTRYPOINT_FAILED'))]
+fn test_permit_metadata_invalid_bundle() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    let _metadata: ByteArray = sys.setup.get_metadata(BUNDLE_ID_INVALID);
 }
 
 
@@ -122,8 +149,16 @@ fn test_airdrop_other() {
 fn test_purchase_from_world_contract_ok() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(sys.setup.contract_address);
-    sys.permit.purchased_bundle(OTHER(), 1, false);
+    sys.permit.purchased_bundle(OTHER(), PERMIT_TYPES::PERMIT_BUNDLE, 1, false);
     assert_eq!(sys.permit.balance_of(OTHER()), 1, "balance_of");
+}
+
+#[test]
+#[should_panic(expected: ('PERMIT: Invalid permit','ENTRYPOINT_FAILED'))]
+fn test_purchase_invalid_permit_type() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::impersonate(sys.setup.contract_address);
+    sys.permit.purchased_bundle(OTHER(), 'INVALID', 1, false);
 }
 
 #[test]
@@ -131,7 +166,7 @@ fn test_purchase_from_world_contract_ok() {
 fn test_purchase_not_world_contract() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(OTHER());
-    sys.permit.purchased_bundle(OTHER(), 1, false);
+    sys.permit.purchased_bundle(OTHER(), PERMIT_TYPES::PERMIT_BUNDLE, 1, false);
 }
 
 //
@@ -147,11 +182,19 @@ fn test_issue_ok() {
 }
 
 #[test]
+#[should_panic(expected: ('PERMIT: Invalid permit','ENTRYPOINT_FAILED','ENTRYPOINT_FAILED'))]
+fn test_issue_reserved_bundle() {
+    let mut sys: helpers::HelperSystems = helpers::setup_core();
+    helpers::impersonate(OWNER());
+    sys.setup.issue(OTHER(), BUNDLE_ID_RESERVED, 1, Option::None, Option::None, Option::None, 0, Option::None, Option::None);
+}
+
+#[test]
 #[should_panic(expected: ('Bundle: not found','ENTRYPOINT_FAILED'))]
 fn test_issue_invalid_bundle() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(OWNER());
-    sys.setup.issue(OTHER(), BUNDLE_ID+1, 1, Option::None, Option::None, Option::None, 0, Option::None, Option::None);
+    sys.setup.issue(OTHER(), BUNDLE_ID_INVALID, 1, Option::None, Option::None, Option::None, 0, Option::None, Option::None);
 }
 
 //
@@ -162,7 +205,7 @@ fn test_issue_invalid_bundle() {
 fn test_used_permit_ok() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(sys.setup.contract_address);
-    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), 2, false);
+    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), PERMIT_TYPES::PERMIT_BUNDLE, 2, false);
     helpers::impersonate(OTHER());
     sys.permit.use_permits(token_ids);
     let token_info_0: PermitTokenInfo = sys.world.read_model(*token_ids[0]);
@@ -176,7 +219,7 @@ fn test_used_permit_ok() {
 fn test_used_permit_twice() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(sys.setup.contract_address);
-    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), 1, false);
+    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), PERMIT_TYPES::PERMIT_BUNDLE, 1, false);
     helpers::impersonate(OTHER());
     sys.permit.use_permits(token_ids);
     sys.permit.use_permits(token_ids);
@@ -187,7 +230,7 @@ fn test_used_permit_twice() {
 fn test_used_permit_not_owner() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(sys.setup.contract_address);
-    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), 1, false);
+    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), PERMIT_TYPES::PERMIT_BUNDLE, 1, false);
     helpers::impersonate(OWNER());
     sys.permit.use_permits(token_ids);
 }
@@ -197,7 +240,7 @@ fn test_used_permit_not_owner() {
 fn test_used_permit_auto_used() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
     helpers::impersonate(sys.setup.contract_address);
-    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), 1, true);
+    let token_ids: Span<u128> = sys.permit.purchased_bundle(OTHER(), PERMIT_TYPES::PERMIT_BUNDLE, 1, true);
     helpers::impersonate(OTHER());
     sys.permit.use_permits(token_ids);
 }

@@ -11,7 +11,7 @@ pub trait ISetup<TState> {
     // ISetupPublic (admin)
     fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
     fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
-    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
+    fn update_bundles(ref self: TState);
 
     //-----------------------------------
     // IBundle
@@ -36,7 +36,7 @@ trait ISetupPublic<TState> {
     // admin functions
     fn set_messaging_contract(ref self: TState, messaging_contract: ContractAddress);
     fn set_appchain_contract(ref self: TState, appchain_contract: ContractAddress);
-    fn set_permit_type(ref self: TState, permit_type: felt252, actions_count: u32);
+    fn update_bundles(ref self: TState);
 }
 
 #[dojo::contract]
@@ -75,15 +75,13 @@ pub mod setup {
 
     use lore_sn::models::{
         permit_config::{PermitConfigTrait},
-        permit_token_info::{PermitType},
-        appchain::{APPCHAIN},
     };
     use lore_sn::lib::{
         dns::{
             DnsTrait, SELECTORS,
             IPermitTokenDispatcherTrait,
         },
-        bundle:: {BundleMetadata},
+        bundle::{BUNDLE_COUNT, PermitBundleTrait, BundleDescriptor},
     };
     use bundle::models::{
         index::{Bundle},
@@ -95,12 +93,12 @@ pub mod setup {
         pub const INVALID_MESSAGING_CONTRACT: felt252   = 'SETUP: Invalid messaging';
         pub const INVALID_APPCHAIN_CONTRACT: felt252    = 'SETUP: Invalid appchain';
         pub const INVALID_CARTIDGE_CONTRACT: felt252    = 'SETUP: Invalid cartridge';
+        pub const INVALID_BUNDLE_ID: felt252            = 'SETUP: Invalid bundle id';
     }
 
     fn dojo_init(ref self: ContractState,
         messaging_contract: ContractAddress,
         appchain_contract: ContractAddress,
-        usdc_contract: ContractAddress,
     ) {
         // initialize permit config
         let mut world: WorldStorage = self.world_default();
@@ -108,36 +106,21 @@ pub mod setup {
             messaging_contract,
             appchain_contract,
         );
-        // initialize permit types
-        world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE,
-            actions_count: APPCHAIN::PERMIT_ACTIONS_COUNT,
-        });
-        world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::PERMIT_AIRDROP,
-            actions_count: APPCHAIN::PERMIT_ACTIONS_COUNT,
-        });
-        world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::REWARD_CREATOR,
-            actions_count: APPCHAIN::REWARD_ACTIONS_COUNT,
-        });
-        world.write_model(@PermitType {
-            permit_type: APPCHAIN::PERMIT_TYPES::REWARD_AIRDROP,
-            actions_count: APPCHAIN::REWARD_ACTIONS_COUNT,
-        });
         // create bundle 0
-        let payment_tokens = array![].span();
-        let conditions = array![].span();
-        let _bundle_id = self.bundle.register(
-            world: world,
-            referral_percentage: 0,
-            reissuable: true,
-            price: 0,
-            payment_token: usdc_contract,
-            payment_receiver: starknet::get_contract_address(),
-            metadata: BundleMetadata::bundle(payment_tokens, conditions),
-            allower: 0.try_into().unwrap(),
-        );
+        for i in 0..BUNDLE_COUNT {
+            let bundle_id = self.bundle.register(
+                world: world,
+                referral_percentage: 0,
+                reissuable: false,
+                price: 0,
+                payment_token: 0.try_into().unwrap(),
+                payment_receiver: 0.try_into().unwrap(),
+                metadata: "{\"name\":\"Reserved\"}",
+                allower: 0.try_into().unwrap(),
+            );
+            assert(bundle_id == i, Errors::INVALID_BUNDLE_ID);
+        }
+        self._update_bundles(ref world);
     }
 
     #[generate_trait]
@@ -163,13 +146,17 @@ pub mod setup {
             self._assert_caller_is_owner(@world);
             world.set_appchain_contract(appchain_contract);
         }
-        fn set_permit_type(ref self: ContractState, permit_type: felt252, actions_count: u32) {
+
+        //
+        // to update bundles
+        // 1. edit to_bundle_descriptor()
+        // 2. deploy a contract update
+        // 3. call this function
+        fn update_bundles(ref self: ContractState) {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_owner(@world);
-            world.write_model(@PermitType {
-                permit_type,
-                actions_count,
-            });
+            // update existing bundles
+            self._update_bundles(ref world);
         }
     }
 
@@ -187,7 +174,8 @@ pub mod setup {
             let mut world: WorldStorage = contract.world_default();
             // mint bundles
             let mut permit_token_dispatcher = world.permit_token_dispatcher();
-            permit_token_dispatcher.purchased_bundle(recipient, quantity, false);
+            let permit_type = bundle_id.to_permit_type();
+            permit_token_dispatcher.purchased_bundle(recipient, permit_type, quantity, false);
         }
         fn supply(self: @BundleComponent::ComponentState<ContractState>,
             bundle_id: u32,
@@ -260,6 +248,31 @@ pub mod setup {
         }
         fn _caller_is_owner(self: @ContractState, world: @WorldStorage) -> bool {
             ((*world.dispatcher).is_owner(SELECTORS::SETUP, starknet::get_caller_address()))
+        }
+        fn _update_bundles(ref self: ContractState, ref world: WorldStorage) {
+            for bundle_id in 0..BUNDLE_COUNT {
+                let descriptor: Option<BundleDescriptor> = bundle_id.to_bundle_descriptor(@world);
+                match descriptor {
+                    Option::Some(descriptor) => {
+                        self.bundle.update(
+                            world: world,
+                            bundle_id: bundle_id,
+                            referral_percentage: descriptor.referral_percentage,
+                            reissuable: descriptor.reissuable,
+                            price: descriptor.price,
+                            payment_token: descriptor.payment_token,
+                            payment_receiver: descriptor.payment_receiver,
+                            allower: descriptor.allower,
+                        );
+                        self.bundle.update_metadata(
+                            world: world,
+                            bundle_id: bundle_id,
+                            metadata: descriptor.to_bundle_metadata(),
+                        );
+                    },
+                    Option::None => {break;},
+                };
+            }
         }
     }
 }

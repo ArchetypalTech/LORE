@@ -26,7 +26,6 @@ pub fn impersonate(caller: ContractAddress) {
 }
 
 pub fn appchain_contract() -> ContractAddress { 0x1234.try_into().unwrap() }
-pub fn usdc_contract() -> ContractAddress { 0x999.try_into().unwrap() }
 
 pub fn ZERO()      -> ContractAddress { 0x0.try_into().unwrap() }
 pub fn OWNER()     -> ContractAddress { 0x111.try_into().unwrap() } // mock owner of duelists 1-2
@@ -49,7 +48,6 @@ fn namespace_def() -> NamespaceDef {
         resources: [
             TestResource::Model(lore_sn::models::permit_config::m_PermitConfig::TEST_CLASS_HASH),
             TestResource::Model(lore_sn::models::permit_token_info::m_PermitTokenInfo::TEST_CLASS_HASH),
-            TestResource::Model(lore_sn::models::permit_token_info::m_PermitType::TEST_CLASS_HASH),
             TestResource::Model(bundle::models::index::m_Bundle::TEST_CLASS_HASH),
             TestResource::Model(bundle::models::index::m_BundleIssuance::TEST_CLASS_HASH),
             TestResource::Model(bundle::models::index::m_BundleReferral::TEST_CLASS_HASH),
@@ -88,7 +86,6 @@ pub fn setup_core() -> HelperSystems {
                 .with_init_calldata(array![
                     messaging.contract_address.into(),
                     appchain_contract().into(),
-                    usdc_contract().into(),
                 ].span()),
             ContractDefTrait::new(@"lore_sn", @"permit_token")
                 .with_writer_of([dojo::utils::bytearray_hash(@"lore_sn")].span()),

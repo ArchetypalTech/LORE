@@ -1,4 +1,9 @@
 
+pub mod CONST {
+    pub const ETH_TO_WEI: u256 = 1_000_000_000_000_000_000;
+    pub const USDC_TO_WEI: u256 = 1_000_000;
+}
+
 // contract metadata
 pub mod orug_metadata {
     pub fn DESCRIPTION() -> ByteArray {"A satirical interactive fiction about survival, bureaucracy, and impossible choices. Step into the boots of a licensed Trail Guide and lead a ragged band of pilgrims, outlaws, and opportunists across a fractured wasteland toward the fortified city-state of Usants."}
@@ -17,4 +22,20 @@ pub mod orug_metadata {
 pub mod permit_metadata {
     pub fn TOKEN_NAME() -> ByteArray {"O'Ruggin Trail Permits"}
     pub fn TOKEN_SYMBOL() -> ByteArray {"ORUG_PERMIT"}
+}
+
+
+//---------------------
+// per-chain
+//
+pub fn usdc_address() -> starknet::ContractAddress {
+    let chain_id = starknet::get_tx_info().chain_id;
+    // println!("CHAIN_ID: {:x}", chain_id);
+    (if (chain_id == 'SN_SEPOLIA') {
+        0x0512feac6339ff7889822cb5aa2a86c848e9d392bb0e3e237c008674feed8343
+    } else if (chain_id == 'SN_MAIN') {
+        0x033068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb
+    } else {
+        0x0
+    }).try_into().unwrap()
 }

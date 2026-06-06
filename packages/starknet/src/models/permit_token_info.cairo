@@ -16,16 +16,6 @@ pub struct PermitTokenInfo {
     pub trail_name: ByteArray,  // trail that generated this permit (unused)
 }
 
-#[derive(Clone, Drop, Serde, Introspect, PartialEq, Debug)]
-#[dojo::model]
-pub struct PermitType {
-    #[key]
-    pub permit_type: felt252,
-    /// Properties ///
-    pub actions_count: u32,
-}
-
-
 
 //---------------------------------
 // Model Traits

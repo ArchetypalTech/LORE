@@ -54,7 +54,7 @@ pub trait IPermitToken<TState> {
     //-----------------------------------
     // IPermitTokenPublic
     fn use_permits(ref self: TState, token_ids: Span<u128>);
-    fn purchased_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
+    fn purchased_bundle(ref self: TState, recipient: ContractAddress, permit_type: felt252, quantity: u32, use_tokens: bool) -> Span<u128>;
     fn airdrop_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
     fn consume_message(ref self: TState, payload: Span<felt252>);
 }
@@ -64,7 +64,7 @@ trait IPermitTokenPublic<TState> {
     // public
     fn use_permits(ref self: TState, token_ids: Span<u128>);
     // admin
-    fn purchased_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
+    fn purchased_bundle(ref self: TState, recipient: ContractAddress, permit_type: felt252, quantity: u32, use_tokens: bool) -> Span<u128>;
     fn airdrop_bundle(ref self: TState, recipient: ContractAddress, quantity: u32, use_tokens: bool) -> Span<u128>;
     // messaging
     fn consume_message(ref self: TState, payload: Span<felt252>);
@@ -125,22 +125,23 @@ pub mod permit_token {
 
     use lore_sn::models::{
         permit_config::{PermitConfig, PermitConfigTrait},
-        permit_token_info::{PermitTokenInfo, PermitTokenInfoTrait, PermitType},
-        permit_metadata::{permit_metadata, orug_metadata},
-        appchain::{APPCHAIN},
+        permit_token_info::{PermitTokenInfo, PermitTokenInfoTrait},
+        appchain::{APPCHAIN, PermitTypeTrait},
     };
     use lore_sn::lib::{
         dns::{DnsTrait, SELECTORS},
+        constants::{permit_metadata, orug_metadata},
         utils::{ByteArrayTrait},
     };
     use nft_combo::utils::renderer::{Attribute};
 
     pub mod Errors {
         pub const INVALID_CALLER: felt252               = 'PERMIT: Invalid caller';
+        pub const PERMIT_ALREADY_USED: felt252          = 'PERMIT: Already used';
+        pub const INVALID_PERMIT_TYPE: felt252          = 'PERMIT: Invalid permit';
+        pub const INVALID_ACTIONS_COUNT: felt252        = 'PERMIT: Invalid actions count';
         pub const INVALID_MESSAGING_CONTRACT: felt252   = 'PERMIT: Invalid messaging';
         pub const INVALID_APPCHAIN_CONTRACT: felt252    = 'PERMIT: Invalid appchain';
-        pub const PERMIT_ALREADY_USED: felt252          = 'PERMIT: Already used';
-        pub const INVALID_ACTIONS_COUNT: felt252        = 'PERMIT: Invalid actions count';
     }
 
     fn dojo_init(ref self: ContractState) {
@@ -166,16 +167,20 @@ pub mod permit_token {
     impl PermitTokenPublicImpl of super::IPermitTokenPublic<ContractState> {
         fn purchased_bundle(ref self: ContractState,
             recipient: ContractAddress,
+            permit_type: felt252,
             quantity: u32,
             use_tokens: bool,
         ) -> Span<u128> {
             let mut world: WorldStorage = self.world_default();
             assert(starknet::get_caller_address() == world.setup_address(), Errors::INVALID_CALLER);
+            // validate permit
+            let actions_count: u32 = permit_type.actions_count();
+            assert(actions_count > 0, Errors::INVALID_PERMIT_TYPE);
             // mint
             let token_ids: Span<u128> = self._mint_bundles(ref world,
                 recipient,
                 quantity,
-                APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE,
+                permit_type,
             );
             // use automatically
             if (use_tokens) {
@@ -285,12 +290,12 @@ pub mod permit_token {
             world.set_is_used(permit_id);
             //
             // mint actions to permit owner in L3
-            let permit_type: PermitType = world.read_model(permit_info.permit_type);
-            assert(permit_type.actions_count > 0, Errors::INVALID_ACTIONS_COUNT);
+            let actions_count: u32 = permit_info.permit_type.actions_count();
+            assert(actions_count > 0, Errors::INVALID_ACTIONS_COUNT);
             let recipient: ContractAddress = self.owner_of(permit_id.into());
             let payload: Span<felt252> = array![
                 recipient.into(),
-                permit_type.actions_count.into(),
+                actions_count.into(),
                 permit_info.permit_type,
             ].span();
             self._send_message(selector!("used_permit"), payload);
@@ -377,15 +382,16 @@ pub mod permit_token {
             // attributes and metadata
             let permit_id: u128 = token_id.low;
             let token_info: PermitTokenInfo = world.read_model(permit_id);
-            let permit_type: PermitType = world.read_model(token_info.permit_type);
+            let permit_type: felt252 = token_info.permit_type;
+            let actions_count: u32 = permit_type.actions_count();
             let mut attributes: Array<Attribute> = array![
                 Attribute { 
                     key: "Type",
-                    value: ByteArrayTrait::byte_array_from_felt252(permit_type.permit_type),
+                    value: ByteArrayTrait::byte_array_from_felt252(permit_type),
                 },
                 Attribute { 
                     key: "Actions",
-                    value: format!("{}", permit_type.actions_count),
+                    value: format!("{}", actions_count),
                 },
                 Attribute {
                     key: "Used",
