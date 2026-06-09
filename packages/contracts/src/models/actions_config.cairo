@@ -38,7 +38,7 @@ use dojo::{
 use lore::{
     types::command_type::{CommandType},
     constants::{
-        appchain::{APPCHAIN},
+        appchain::{APPCHAIN, PermitTypeTrait},
         config::{CONFIG},
     },
     systems::actions_token::actions_token::{Errors as ActionsErrors},
@@ -55,7 +55,7 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
             action_cost_amount: CONFIG::ACTION_COST_AMOUNT,
             initial_free_actions_count: CONFIG::INITIAL_FREE_ACTIONS_COUNT,
             max_free_actions_count: CONFIG::MAX_FREE_ACTIONS_COUNT,
-            trail_reward_actions_count: APPCHAIN::REWARD_ACTIONS_COUNT,
+            trail_reward_actions_count: APPCHAIN::PERMIT_TYPES::REWARD_CREATOR.actions_count(),
             free_action_claim_interval: CONFIG::FREE_ACTION_CLAIM_INTERVAL,
         };
         self.write_model(@actions_config);
