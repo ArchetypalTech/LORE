@@ -1,10 +1,20 @@
 @import "tailwindcss";
 
+@theme {
+	/* Main accent — used for links and interactive text. Exposes `text-accent`,
+	   `bg-accent`, etc. as utilities. */
+	--color-accent: #22c55e;
+}
+
 /* Element-level base defaults — a plain element looks right with no className.
    Layout and one-off styling live in className on the element, not here. */
 @layer base {
 	body {
 		@apply bg-[#0a0a0a] font-mono text-[#e6e6e6];
+	}
+
+	a {
+		@apply text-accent underline;
 	}
 
 	button {

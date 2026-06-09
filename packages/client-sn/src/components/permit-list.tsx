@@ -1,4 +1,5 @@
 import { useAccount } from "@starknet-react/core";
+import { PermitListItem } from "@/components/permit-list-item";
 import { usePermitTokenInfos } from "@/hooks/use-permit-token-infos";
 import { usePermitTokens } from "@/hooks/use-permit-tokens";
 
@@ -13,17 +14,13 @@ export function PermitList() {
 
 	return (
 		<ul className="flex list-none flex-col items-center gap-1 p-0">
-			{tokenIds.map((id) => {
-				const isUsed = infos.get(BigInt(id).toString());
-				return (
-					<li key={id} className="m-0 flex flex-row items-center gap-2">
-						<span>Permit #{BigInt(id).toString()}</span>
-						<span className="text-sm opacity-70">
-							{isUsed ? "Used" : "Not used"}
-						</span>
-					</li>
-				);
-			})}
+			{tokenIds.map((id) => (
+				<PermitListItem
+					key={id}
+					tokenId={id}
+					isUsed={!!infos.get(BigInt(id).toString())}
+				/>
+			))}
 		</ul>
 	);
 }
