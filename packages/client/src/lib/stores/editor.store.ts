@@ -34,10 +34,11 @@ const EditorStore = createFactory({
 	},
 	canEditEntity: (entityCollection: EntityCollection | undefined) => {
 		if (get().isAdmin) return true;
-		if (get().isEditor)  {
+		if (get().isEditor) {
 			const walletAddress = WalletStore().walletAddress;
 			const creatorAddress = BigInt(entityCollection?.Entity?.creator_address ?? 0);
-			return (creatorAddress === BigInt(walletAddress ?? 0));
+			// 0n means the entity has never been published — treat it as owned by the current session
+			return creatorAddress === 0n || creatorAddress === BigInt(walletAddress ?? 0);
 		}
 		return false;
 	},
