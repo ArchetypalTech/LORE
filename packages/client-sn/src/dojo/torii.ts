@@ -1,20 +1,29 @@
 import { ToriiClient } from "@dojoengine/torii-client";
-import { selectedProfileConfig } from "@/dojo/dojoConfig";
+import { PROFILE } from "@/dojo/dojoConfig";
 
-// Single shared Torii client for the active profile. The wasm `ToriiClient`
-// constructor connects asynchronously and resolves to the instance, so `new`
-// actually yields a Promise — memoize that promise and await it at call sites.
-let clientPromise: Promise<ToriiClient> | undefined;
+let clientPromiseStarknet: Promise<ToriiClient> | undefined;
+let clientPromiseAppchain: Promise<ToriiClient> | undefined;
 
-/** Lazily create and memoize the Torii client for the selected profile. */
-export function getToriiClient(): Promise<ToriiClient> {
-	if (!clientPromise) {
-		clientPromise = Promise.resolve(
+export const getToriiClientStarknet = async (): Promise<ToriiClient> => {
+	if (!clientPromiseStarknet) {
+		clientPromiseStarknet = Promise.resolve(
 			new ToriiClient({
-				toriiUrl: selectedProfileConfig.toriiUrl,
-				worldAddress: selectedProfileConfig.contractAddresses.world,
-			}) as unknown as Promise<ToriiClient>,
+				toriiUrl: PROFILE.toriiUrl.starknet,
+				worldAddress: PROFILE.contractAddresses.starknet.world,
+			}) as unknown as Promise<ToriiClient>
 		);
 	}
-	return clientPromise;
+	return clientPromiseStarknet;
+}
+
+export const getToriiClientAppchain = async (): Promise<ToriiClient> => {
+	if (!clientPromiseAppchain) {
+		clientPromiseAppchain = Promise.resolve(
+			new ToriiClient({
+				toriiUrl: PROFILE.toriiUrl.appchain,
+				worldAddress: PROFILE.contractAddresses.appchain.world,
+			}) as unknown as Promise<ToriiClient>
+		);
+	}
+	return clientPromiseAppchain;
 }

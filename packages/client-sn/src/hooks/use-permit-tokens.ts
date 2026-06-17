@@ -2,11 +2,11 @@ import type { Subscription, TokenBalance } from "@dojoengine/torii-client";
 import { useAccount } from "@starknet-react/core";
 import { useEffect, useState } from "react";
 import { addAddressPadding } from "starknet";
-import { selectedProfileConfig } from "@/dojo/dojoConfig";
-import { getToriiClient } from "@/dojo/torii";
+import { PROFILE } from "@/dojo/dojoConfig";
+import { getToriiClientStarknet } from "@/dojo/torii";
 
 const PERMIT_TOKEN_ADDRESS =
-	selectedProfileConfig.contractAddresses.permit_token;
+	PROFILE.contractAddresses.starknet.permit_token;
 
 // Ascending numeric ordering of u256 token ids (delivered as hex strings).
 const byTokenId = (a: string, b: string): number => {
@@ -46,7 +46,7 @@ export function usePermitTokens(): string[] {
 		const publish = () => setTokenIds([...balances.keys()].sort(byTokenId));
 
 		(async () => {
-			const client = await getToriiClient();
+			const client = await getToriiClientStarknet();
 			if (cancelled) return;
 
 			// Page through the player's current permit balances.

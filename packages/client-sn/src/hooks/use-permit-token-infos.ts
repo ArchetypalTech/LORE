@@ -5,11 +5,11 @@ import type {
 	Subscription,
 } from "@dojoengine/torii-client";
 import { useEffect, useState } from "react";
-import { selectedProfileConfig } from "@/dojo/dojoConfig";
-import { getToriiClient } from "@/dojo/torii";
+import { PROFILE } from "@/dojo/dojoConfig";
+import { getToriiClientStarknet } from "@/dojo/torii";
 import { bigintToHex } from "@/lib/utils";
 
-const MODEL_TAG = `${selectedProfileConfig.namespace}-PermitTokenInfo`;
+const MODEL_TAG = `${PROFILE.namespace.starknet}-PermitTokenInfo`;
 
 // Normalize any token/permit id (hex or decimal) to a decimal string so the
 // fetched models can be looked up by the same key the caller holds.
@@ -65,7 +65,7 @@ export function usePermitTokenInfos(tokenIds: string[]): Map<string, boolean> {
 		const publish = () => setInfos(new Map(used));
 
 		(async () => {
-			const client = await getToriiClient();
+			const client = await getToriiClientStarknet();
 			if (cancelled) return;
 
 			let cursor: string | undefined;

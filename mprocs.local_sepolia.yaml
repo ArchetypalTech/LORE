@@ -65,6 +65,44 @@ procs:
       #----------------
       touch ../starknet/target/${L2_PROFILE}/deployed
       echo "👍 L2 Ready!"
+  l2_torii:
+    cwd: packages/starknet
+    env:
+      L2_PROFILE: sepolia
+      L2_TORII_PORT: "8280"
+      L2_GRPC_PORT: "52050"
+      L2_RELAY_PORT: "9290"
+      L2_WEBRTC_PORT: "9291"
+      L2_WEBSOCKET_PORT: "9292"
+      L2_WORLD_BLOCK: "10508415"
+    shell: |
+      sleep 1
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      #----------------
+      # wait for L2 to be deployed
+      wait-on -l ../starknet/target/${L2_PROFILE}/deployed
+      export RPC_URL=$(get_profile_env ${L2_PROFILE} rpc_url)
+      export DOJO_WORLD_ADDRESS=$(get_profile_env ${L2_PROFILE} world_address)
+      export PERMIT_TOKEN_ADDRESS=$(get_contract_address ${L2_PROFILE} lore_sn-permit_token)
+      echo ">>> RPC: [${RPC_URL}]"
+      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}] block [${L2_WORLD_BLOCK}]"
+      echo ">>> Permit token: [${PERMIT_TOKEN_ADDRESS}]"
+      echo ">>> Torii ports: [${L2_TORII_PORT}] [${L2_GRPC_PORT}]"
+      #----------------
+      # start Torii
+      torii --version
+      torii --http.cors_origins "*" \
+        --world ${DOJO_WORLD_ADDRESS} \
+        --rpc ${RPC_URL} \
+        --http.port ${L2_TORII_PORT} \
+        --grpc.port ${L2_GRPC_PORT} \
+        --relay.port ${L2_RELAY_PORT} \
+        --relay.webrtc_port ${L2_WEBRTC_PORT} \
+        --relay.websocket_port ${L2_WEBSOCKET_PORT} \
+        --indexing.world_block ${L2_WORLD_BLOCK} \
+        --indexing.contracts \
+          erc721:${PERMIT_TOKEN_ADDRESS}
   l2_client:
     cwd: packages/client-sn
     env:
@@ -78,26 +116,6 @@ procs:
       #----------------
       # start client
       bun run dev
-  l2_torii:
-    cwd: packages/starknet
-    env:
-      L2_PROFILE: sepolia
-    shell: |
-      sleep 1
-      set -e # exit on error
-      source ../../scripts/utils.sh
-      export DOJO_WORLD_ADDRESS=$(get_profile_env ${L2_PROFILE} world_address)
-      export RPC_URL=$(get_profile_env ${L2_PROFILE} rpc_url)
-      export PERMIT_TOKEN_ADDRESS=$(get_contract_address ${L2_PROFILE} lore_sn-permit_token)
-      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
-      echo ">>> Permit token: [${PERMIT_TOKEN_ADDRESS}]"
-      #----------------
-      # start Torii
-      torii --version
-      torii --http.cors_origins "*" \
-        --world ${DOJO_WORLD_ADDRESS} \
-        --rpc ${RPC_URL} \
-        --indexing.contracts erc721:${PERMIT_TOKEN_ADDRESS}
   l3_katana:
     cwd: packages/starknet
     env:
@@ -154,6 +172,46 @@ procs:
       #----------------
       touch ../contracts/target/${L3_PROFILE}/deployed
       echo "👍 L2 Ready!"
+  l3_torii:
+    cwd: packages/contracts
+    env:
+      L3_PROFILE: appchain-sepolia
+      L3_TORII_PORT: "8380"
+      L3_GRPC_PORT: "53050"
+      L3_RELAY_PORT: "9390"
+      L3_WEBRTC_PORT: "9391"
+      L3_WEBSOCKET_PORT: "9392"
+    shell: |
+      sleep 1
+      set -e # exit on error
+      source ../../scripts/utils.sh
+      #----------------
+      # wait for L3 to be deployed
+      wait-on -l ../contracts/target/${L3_PROFILE}/deployed
+      export RPC_URL=$(get_profile_env ${L3_PROFILE} rpc_url)
+      export DOJO_WORLD_ADDRESS=$(get_profile_env ${L3_PROFILE} world_address)
+      export ACTIONS_TOKEN_ADDRESS=$(get_contract_address ${L3_PROFILE} lore-actions_token)
+      export GAME_TOKEN_ADDRESS=$(get_contract_address ${L3_PROFILE} lore-game_token)
+      export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${L3_PROFILE} lore-trail_token)
+      echo ">>> RPC: [${RPC_URL}]"
+      echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
+      echo ">>> Actions token: [${ACTIONS_TOKEN_ADDRESS}]"
+      echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
+      echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
+      echo ">>> Torii ports: [${L3_TORII_PORT}] [${L3_GRPC_PORT}]"
+      #----------------
+      # start Torii
+      torii --version
+      torii --http.cors_origins "*" \
+        --world ${DOJO_WORLD_ADDRESS} \
+        --rpc ${RPC_URL} \
+        --http.port ${L3_TORII_PORT} \
+        --grpc.port ${L3_GRPC_PORT} \
+        --relay.port ${L3_RELAY_PORT} \
+        --relay.webrtc_port ${L3_WEBRTC_PORT} \
+        --relay.websocket_port ${L3_WEBSOCKET_PORT} \
+        --indexing.contracts \
+          erc20:${ACTIONS_TOKEN_ADDRESS},erc721:${GAME_TOKEN_ADDRESS},erc721:${TRAIL_TOKEN_ADDRESS}
   saya:
     cwd: packages/starknet
     env:
@@ -209,29 +267,7 @@ procs:
 
 
 
-  # torii:
-  #   cwd: packages/contracts
-  #   env:
-  #     L2_PROFILE: sepolia
-  #     KATANA_L3_PORT: "6969"
-  #   shell: |
-  #     sleep 1
-  #     set -e # exit on error
-  #     source ../../scripts/utils.sh
-  #     export DOJO_WORLD_ADDRESS=$(get_profile_env ${L2_PROFILE} world_address)
-  #     export GAME_TOKEN_ADDRESS=$(get_contract_address ${L2_PROFILE} lore-game_token)
-  #     export TRAIL_TOKEN_ADDRESS=$(get_contract_address ${L2_PROFILE} lore-trail_token)
-  #     echo ">>> Dojo world: [${DOJO_WORLD_ADDRESS}]"
-  #     echo ">>> Game token: [${GAME_TOKEN_ADDRESS}]"
-  #     echo ">>> Trail token: [${TRAIL_TOKEN_ADDRESS}]"
-  #     #----------------
-  #     wait-port ${KATANA_L3_PORT}
-  #     #----------------
-  #     # start Torii
-  #     torii --version
-  #     torii --http.cors_origins "*" \
-  #       --indexing.contracts erc721:${GAME_TOKEN_ADDRESS},erc721:${TRAIL_TOKEN_ADDRESS}
-  # client:
+  # l3_client:
   #   cwd: packages/client
   #   env:
   #     KATANA_L3_PORT: "6969"

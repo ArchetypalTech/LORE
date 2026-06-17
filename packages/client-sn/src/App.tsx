@@ -1,5 +1,6 @@
 import { ConnectButton } from "@/components/connect-button";
-import { Permits } from "./components/permits";
+import { Permits } from "@/components/permits";
+import { Actions } from "@/components/actions";
 
 export default function App() {
 	return (
@@ -17,7 +18,21 @@ export default function App() {
 
 			<hr />
 
-			<Permits />
+			<div className="flex w-full flex-row gap-4">
+				<div className="flex flex-1 flex-col items-end justify-top gap-3">
+					<h3>L2 (Starknet)</h3>
+					<Permits />
+				</div>
+
+				{/* separator */}
+				<div className="h-[400px] w-px bg-gray-300 mx-4" />
+
+				<div className="flex flex-1 flex-col items-start justify-top gap-3">
+					<h3>L3 (Katana)</h3>
+					<Actions />
+				</div>
+			</div>
+
 
 			<div className="flex-1" />
 		</div>

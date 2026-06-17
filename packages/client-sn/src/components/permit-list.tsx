@@ -1,19 +1,29 @@
+import { useEffect } from "react";
 import { useAccount } from "@starknet-react/core";
-import { PermitListItem } from "@/components/permit-list-item";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePermitTokenInfos } from "@/hooks/use-permit-token-infos";
 import { usePermitTokens } from "@/hooks/use-permit-tokens";
+import { bigintToAddress } from "@/lib/utils";
+import { PermitListItem } from "@/components/permit-list-item";
 
 export function PermitList() {
-	const { isConnected } = useAccount();
+	const { isConnected, address } = useAccount();
 	const tokenIds = usePermitTokens();
 	const infos = usePermitTokenInfos(tokenIds);
 
+	// reload when 
+	const queryClient = useQueryClient();
+	useEffect(() => {
+		queryClient.invalidateQueries({ queryKey: ["permit-balance", bigintToAddress(address)] });
+	}, [tokenIds.length])
+
 	if (!isConnected) return null;
 	if (tokenIds.length === 0)
-		return <p className="m-0 text-sm opacity-70">No permits owned</p>;
+		return <p className="m-0 text-sm opacity-70">No permits owned (Torii)</p>;
 
 	return (
 		<ul className="flex list-none flex-col items-center gap-1 p-0">
+			Owned permits (Torii)
 			{tokenIds.map((id) => (
 				<PermitListItem
 					key={id}

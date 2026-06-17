@@ -1,10 +1,10 @@
 import { useAccount } from "@starknet-react/core";
 import { useMutation } from "@tanstack/react-query";
 import { CallData } from "starknet";
-import { selectedProfileConfig } from "@/dojo/dojoConfig";
+import { PROFILE } from "@/dojo/dojoConfig";
 
 const PERMIT_TOKEN_ADDRESS =
-	selectedProfileConfig.contractAddresses.permit_token;
+	PROFILE.contractAddresses.starknet.permit_token;
 
 /**
  * Mutation that calls `use_permits` on the permit_token contract for a single
