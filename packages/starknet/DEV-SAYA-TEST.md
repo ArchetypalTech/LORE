@@ -143,6 +143,7 @@ sozo -P $PROFILE call --world $L3_WORLD_ADDRESS lore-actions_token balance_of $R
 #
 # L3: send message to mint rewards on L2
 cd packages/contracts/
+source .env.dev-sepolia
 sozo -P $PROFILE model get lore-ActionsConfig 1
 sozo -P $PROFILE execute --world $L3_WORLD_ADDRESS --wait lore-actions_token airdrop_rewards $RECIPIENT 0x1
 # L3: find message event (the last one must be lore-AppchainMessageEvent)

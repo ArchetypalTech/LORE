@@ -127,6 +127,7 @@ procs:
         --http.cors-origins "*" \
         --explorer \
         --tee mock \
+        --messaging.enabled \
         --dev --dev.no-fee \
         --data-dir ${CHAIN_DATA_PATH} \
         --invoke-max-steps   100000000 \

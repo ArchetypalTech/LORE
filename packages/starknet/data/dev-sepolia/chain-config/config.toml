@@ -5,7 +5,7 @@ Id = "0x4d595f415050434841494e5f444556"
 strk = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
 
 [settlement.starknet]
-rpc_url = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9"
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_10"
 core_contract = "0x1d62bbfe26acd33903f24aef1497aa17029bc71ea9da51a0051677eb00e5aa3"
 block = 10468729
 proof_kind = "tee"
