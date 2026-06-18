@@ -1,5 +1,5 @@
+import { useAppchainMessageEvents } from "@/context/torii-appchain-provider";
 import { feltToString } from "@/lib/utils";
-import { useAppchainMessageEvents } from "@/hooks/use-appchain-message-events";
 
 export function EventsList() {
 	const events = useAppchainMessageEvents();
