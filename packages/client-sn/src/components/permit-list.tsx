@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useAccount } from "@starknet-react/core";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePermitTokens } from "@/context/tokens-provider";
 import { usePermitTokenInfos } from "@/hooks/use-permit-token-infos";
-import { usePermitTokens } from "@/hooks/use-permit-tokens";
 import { bigintToAddress } from "@/lib/utils";
 import { PermitListItem } from "@/components/permit-list-item";
 

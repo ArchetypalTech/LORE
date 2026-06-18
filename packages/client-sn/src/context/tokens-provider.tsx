@@ -1,12 +1,17 @@
 import type { Subscription, TokenBalance } from "@dojoengine/torii-client";
 import { useAccount } from "@starknet-react/core";
-import { useEffect, useState } from "react";
+import {
+	createContext,
+	type PropsWithChildren,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
 import { addAddressPadding } from "starknet";
 import { PROFILE } from "@/dojo/dojoConfig";
 import { getToriiClientStarknet } from "@/dojo/torii";
 
-const PERMIT_TOKEN_ADDRESS =
-	PROFILE.contractAddresses.starknet.permit_token;
+const PERMIT_TOKEN_ADDRESS = PROFILE.contractAddresses.starknet.permit_token;
 
 // Ascending numeric ordering of u256 token ids (delivered as hex strings).
 const byTokenId = (a: string, b: string): number => {
@@ -15,18 +20,26 @@ const byTokenId = (a: string, b: string): number => {
 	return x < y ? -1 : x > y ? 1 : 0;
 };
 
+interface TokensContextValue {
+	/** permit_token (ERC-721) ids owned by the connected account, ascending. */
+	permitTokenIds: string[];
+}
+
+const TokensContext = createContext<TokensContextValue | undefined>(undefined);
+
 /**
- * Fetches the permit_token (ERC-721) ids owned by the connected account on the
- * active profile's L2 world via Torii, then keeps them live with a token-balance
- * subscription (mint/transfer in or out). Returns the owned token ids, ascending.
+ * Owns the single Torii subscription to the connected account's permit_token
+ * (ERC-721) balances on the active profile's L2 world. Fetches the current
+ * balances, keeps them live (mint/transfer in or out), and serves the owned
+ * token ids to any page via {@link useTokensContext}.
  */
-export function usePermitTokens(): string[] {
+export function TokensProvider({ children }: PropsWithChildren) {
 	const { address } = useAccount();
-	const [tokenIds, setTokenIds] = useState<string[]>([]);
+	const [permitTokenIds, setPermitTokenIds] = useState<string[]>([]);
 
 	useEffect(() => {
 		if (!address) {
-			setTokenIds([]);
+			setPermitTokenIds([]);
 			return;
 		}
 
@@ -43,7 +56,8 @@ export function usePermitTokens(): string[] {
 			else balances.delete(b.token_id);
 		};
 
-		const publish = () => setTokenIds([...balances.keys()].sort(byTokenId));
+		const publish = () =>
+			setPermitTokenIds([...balances.keys()].sort(byTokenId));
 
 		(async () => {
 			const client = await getToriiClientStarknet();
@@ -89,5 +103,30 @@ export function usePermitTokens(): string[] {
 		};
 	}, [address]);
 
-	return tokenIds;
+	return (
+		<TokensContext.Provider value={{ permitTokenIds }}>
+			{children}
+		</TokensContext.Provider>
+	);
+}
+
+/**
+ * Access the tokens served by {@link TokensProvider}. Throws if used outside a
+ * `<TokensProvider>`.
+ */
+export function useTokensContext(): TokensContextValue {
+	const ctx = useContext(TokensContext);
+	if (ctx === undefined) {
+		throw new Error("useTokensContext must be used within a <TokensProvider>");
+	}
+	return ctx;
+}
+
+/**
+ * Returns the permit_token (ERC-721) ids owned by the connected account on the
+ * active profile's L2 world, ascending. Backed by the single subscription in
+ * {@link TokensProvider}; must be used under a `<TokensProvider>`.
+ */
+export function usePermitTokens(): string[] {
+	return useTokensContext().permitTokenIds;
 }
