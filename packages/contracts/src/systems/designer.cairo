@@ -197,7 +197,7 @@ pub mod designer {
     fn dojo_init(ref self: ContractState, admin_accounts: Array<ContractAddress>) {
         let mut world: WorldStorage = self.world_default();
 
-        // increment uuid (avoid entity 0x0)
+        // burn uuid 0x0
         let _: u32 = world.dispatcher.uuid();
 
         // initialize dictionary

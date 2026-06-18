@@ -1,4 +1,5 @@
 import { useAccount } from "@starknet-react/core";
+import { EventsList } from "@/components/events-list";
 import { useActionsBalance } from "@/hooks/use-actions-balance";
 
 export function Actions() {
@@ -15,6 +16,7 @@ export function Actions() {
 			<button type="button" onClick={() => {}}>
 				Airdrop Reward
 			</button>
+			<EventsList />
 		</div>
 	);
 }

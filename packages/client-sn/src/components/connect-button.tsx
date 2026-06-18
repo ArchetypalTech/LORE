@@ -43,7 +43,7 @@ export function ConnectButton() {
 				{isConnected && (
 					<button
 						type="button"
-						className="bg-transparent px-2 py-1 text-sm text-[#888] underline"
+						className="bg-transparent p-0 text-sm text-[#888] underline"
 						onClick={() => disconnect()}
 					>
 						Disconnect

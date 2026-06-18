@@ -10,7 +10,7 @@
    Layout and one-off styling live in className on the element, not here. */
 @layer base {
 	body {
-		@apply bg-[#0a0a0a] font-mono text-[#e6e6e6];
+		@apply bg-black font-mono text-white;
 	}
 
 	a {
@@ -42,6 +42,6 @@
 	}
 	
 	button {
-		@apply cursor-pointer rounded-lg border-none bg-[#e6e6e6] px-6 py-3 font-mono text-base text-[#0a0a0a];
+		@apply cursor-pointer rounded-lg border-none bg-gray-100 hover:bg-gray-300 px-4 py-2 font-mono text-base text-black;
 	}
 }

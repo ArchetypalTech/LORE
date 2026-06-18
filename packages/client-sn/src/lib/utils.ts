@@ -9,6 +9,11 @@ export const bigintToHex = (v: BigNumberish | undefined): `0x${string}` =>
 export const stringToFelt = (v: string | undefined): BigNumberish =>
 	v ? shortString.encodeShortString(v) : "0x0";
 
+export const feltToString = (v: BigNumberish | undefined): string =>
+	!v || BigInt(v) === 0n
+		? ""
+		: shortString.decodeShortString(`0x${BigInt(v).toString(16)}`);
+
 /** Truncate an address for display, e.g. `0x1234…cdef`. */
 export const shortAddress = (address: string | undefined): string =>
 	address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "";

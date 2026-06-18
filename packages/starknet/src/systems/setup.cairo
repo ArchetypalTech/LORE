@@ -102,6 +102,9 @@ pub mod setup {
     ) {
         // initialize permit config
         let mut world: WorldStorage = self.world_default();
+        // burn uuid 0x0
+        let _: u32 = world.dispatcher.uuid();
+        // init config singleton
         world.initialize_permit_config(
             messaging_contract,
             appchain_contract,
