@@ -51,7 +51,7 @@ const setupController = async () => {
 	const controllerConfig: ControllerOptions = {
 		namespace: "lore",
 		// preset: "orug",
-		// shouldOverridePresetPolicies: true,
+		shouldOverridePresetPolicies: true,
 		policies: {
 			contracts: {
 				[LORE_CONFIG.contractAddresses.actions_token]: {
