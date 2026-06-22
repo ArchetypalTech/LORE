@@ -598,6 +598,9 @@ export const dispatchDesignerCall = async (
 	args: unknown[],
 ) => {
 	try {
+		console.log("dispatch: entrypoint:", entrypoint);
+		console.log("dispatch: args:", args);
+
 		await SystemCalls.execDesignerCall({ entrypoint, args });
 		Notifications().addPublishingLog(
 			new CustomEvent("designerCall", { detail: { entrypoint, args } }),
