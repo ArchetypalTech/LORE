@@ -12,7 +12,10 @@ explorer = true              # Open World Explorer in browser (default: false)
 check_contracts = false       # Verify contracts before starting (default: false)
 
 [indexing]
-contracts = ["erc721:0x2fa73d2c20fef6f23a84f3ef3b6e99ec2fa819f0b5acf2be6695544b87922e5"]
+contracts = [
+  "erc721:0x041c4a77b0e97c889cd60f75a79035bd8b4ece932a16cc1b140d25173cabf605", # game token
+  "erc721:0x05dc4d48afcc149f6b43aeac372620b7e0d6f4434bad1ad1c72050125d065d97", # trail token
+]
 
 # Performance tuning
 events_chunk_size = 1024        # Events per RPC request (default: 1024)

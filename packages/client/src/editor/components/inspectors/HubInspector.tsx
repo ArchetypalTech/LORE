@@ -24,6 +24,10 @@ export const HubInspector: ComponentInspector<Hub> = ({
 				const event = e as React.ChangeEvent<HTMLInputElement>;
 				updatedObject.grants_editor_access = event.target.checked;
 			},
+			grants_trail_access: (e, updatedObject) => {
+				const event = e as React.ChangeEvent<HTMLInputElement>;
+				updatedObject.grants_trail_access = event.target.checked;
+			},
 		},
 	});
 
@@ -46,6 +50,11 @@ export const HubInspector: ComponentInspector<Hub> = ({
 			<Toggle
 				id="grants_editor_access"
 				value={componentObject.grants_editor_access ?? false}
+				onChange={handleInputChange(undefined)}
+			/>
+			<Toggle
+				id="grants_trail_access"
+				value={componentObject.grants_trail_access ?? false}
 				onChange={handleInputChange(undefined)}
 			/>
 			<CollapsibleComponent title="Trails">

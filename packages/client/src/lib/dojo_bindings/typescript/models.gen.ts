@@ -171,6 +171,7 @@ export interface Hub {
 	is_enabled: boolean;
 	trails_insts: Array<BigNumberish>;
 	grants_editor_access: boolean;
+	grants_trail_access: boolean;
 }
 
 // Type definition for `lore::models::hub::Trail` struct
@@ -956,6 +957,7 @@ export const schema: SchemaType = {
 			is_enabled: false,
 			trails_insts: [0],
 			grants_editor_access: false,
+			grants_trail_access: false,
 		},
 		Trail: {
 			inst: 0,

@@ -287,6 +287,7 @@ const publishHub = async (hub: Hub) => {
 		hub.is_enabled,
 		hub.trails_insts.map((x) => num.toBigInt(x.toString())),
 		hub.grants_editor_access,
+		hub.grants_trail_access,
 	];
 	await dispatchDesignerCall("create_hub", [hubData]);
 };

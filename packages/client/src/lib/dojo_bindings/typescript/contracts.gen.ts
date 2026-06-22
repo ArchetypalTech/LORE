@@ -1186,6 +1186,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_grantAccessToTrail_calldata = (account: string, trailId: BigNumberish, granting: boolean): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "grant_access_to_trail",
+			calldata: [account, trailId, granting],
+		};
+	};
+
+	const designer_grantAccessToTrail = async (snAccount: Account | AccountInterface, account: string, trailId: BigNumberish, granting: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_grantAccessToTrail_calldata(account, trailId, granting),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_grantRole_calldata = (role: BigNumberish, account: string): DojoCall => {
 		return {
 			contractName: "designer",
@@ -2691,6 +2712,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetRoleAdminCalldata: build_designer_getRoleAdmin_calldata,
 			grantAccessToEntity: designer_grantAccessToEntity,
 			buildGrantAccessToEntityCalldata: build_designer_grantAccessToEntity_calldata,
+			grantAccessToTrail: designer_grantAccessToTrail,
+			buildGrantAccessToTrailCalldata: build_designer_grantAccessToTrail_calldata,
 			grantRole: designer_grantRole,
 			buildGrantRoleCalldata: build_designer_grantRole_calldata,
 			hasRole: designer_hasRole,
