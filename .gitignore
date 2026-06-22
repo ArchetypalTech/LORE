@@ -33,3 +33,6 @@ packages/client/ssl/*
 packages/starknet/data/db/*
 .env.sepolia
 .env.mainnet
+
+# personalDocs
+personalDocs/*
