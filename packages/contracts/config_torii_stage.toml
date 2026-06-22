@@ -4,7 +4,7 @@
 #
 
 # world
-world_address = "0x1142a4bd443a08f68936caf2e6b5d32121eb3b0327ff5a75b0b92d50cbdc913"
+world_address = "0x04ee7701da81f142f566d75abe15f61f9281776855998f4b2efce0cfbba44c87"
 rpc = "https://api.cartridge.gg/x/lore-stage/katana"
 
 [runner]

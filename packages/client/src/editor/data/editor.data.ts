@@ -61,6 +61,11 @@ const {
 	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: undefined as number | undefined,
 	trailIdsFilter: [] as bigint[],
+	// Option D — trail-scoped collaboration
+	stagedChanges: [] as ChangeSet[],
+	remoteQueue: [] as AnyObject[],
+	activeTrailId: undefined as bigint | undefined,
+	editorInitialized: false,
 });
 
 const getItem = (id: BigNumberish, syncPool = false) =>
@@ -438,6 +443,25 @@ const removeEntity = (entity: EntityCollection) => {
 	Notifications().needsToPublish();
 };
 
+// @dev: retrieve instance value — module-level so it can be reused outside syncItem (e.g. trail resolution)
+export const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
+	// First check if 'inst' property exists directly
+	if ("inst" in obj) {
+		return obj.inst as BigNumberish;
+	}
+	// Then iterate through keys to find nested instance
+	for (const key of Object.keys(obj)) {
+		const value = obj[key as keyof typeof obj];
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			// Type guard to ensure we're passing a compatible value
+			const nestedObj = value as AnyObject;
+			const res = findInstValue(nestedObj);
+			if (res !== undefined) return res;
+		}
+	}
+	return undefined;
+};
+
 const syncItem = (
 	obj: AnyObject,
 	{ verbose = false, sync = false }: { verbose?: boolean; sync?: boolean } = {},
@@ -456,24 +480,6 @@ const syncItem = (
 		) {
 			name = (obj as { Entity: Entity }).Entity.name;
 		}
-		// @dev: retrieve instance value
-		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
-			// First check if 'inst' property exists directly
-			if ("inst" in obj) {
-				return obj.inst as BigNumberish;
-			}
-			// Then iterate through keys to find nested instance
-			for (const key of Object.keys(obj)) {
-				const value = obj[key as keyof typeof obj];
-				if (value && typeof value === "object" && !Array.isArray(value)) {
-					// Type guard to ensure we're passing a compatible value
-					const nestedObj = value as AnyObject;
-					const res = findInstValue(nestedObj);
-					if (res !== undefined) return res;
-				}
-			}
-			return undefined;
-		};
 
 		const inst = findInstValue(obj);
 
@@ -796,11 +802,192 @@ const logPool = () => {
 	console.info("Edited", get().editedEntity);
 };
 
+// === Option D — trail-scoped collaboration (client-side only, no contract dependency) ===
+
+// Resolves the trail_id for any incoming Torii object by looking up the entity already in the pool
+const getEntityTrailId = (obj: AnyObject): bigint | undefined => {
+	const inst = findInstValue(obj);
+	if (inst === undefined) return undefined;
+	const entity = getEntity(inst, true) ?? getEntity(inst);
+	return entity?.Entity?.trail_id !== undefined ? BigInt(entity.Entity.trail_id) : undefined;
+};
+
+// Push an incoming remote update into the queue, replacing any existing entry for the same inst
+const queueRemoteUpdate = (obj: AnyObject) => {
+	const inst = findInstValue(obj);
+	if (inst === undefined) return;
+	set({
+		remoteQueue: [
+			...get().remoteQueue.filter((q) => findInstValue(q) !== inst),
+			obj,
+		],
+	});
+};
+
+// User accepts a queued remote update — merges it into syncPool + dataPool
+const acceptRemoteUpdate = (obj: AnyObject) => {
+	syncItem(obj, { sync: true });
+	set({ remoteQueue: get().remoteQueue.filter((q) => q !== obj) });
+};
+
+const acceptAllRemoteUpdates = () => {
+	for (const obj of get().remoteQueue) {
+		syncItem(obj, { sync: true });
+	}
+	set({ remoteQueue: [] });
+};
+
+// User dismisses a queued remote update — ignored until the next full reload
+const dismissRemoteUpdate = (obj: AnyObject) => {
+	set({ remoteQueue: get().remoteQueue.filter((q) => q !== obj) });
+};
+
+const setEditorInitialized = () => set({ editorInitialized: true });
+
+const setActiveTrailId = (trailId: bigint | undefined) => set({ activeTrailId: trailId });
+
+// ---------------------------------------------------------------------------
+// Draft persistence — survives page refresh / browser close
+// Keyed by wallet address so multiple accounts on the same browser don't collide.
+// ---------------------------------------------------------------------------
+const _draftKey = (addr: string) => `lore-editor-draft-${addr.toLowerCase()}`;
+
+export const persistDraft = () => {
+	const addr = String(getPlayerAddress()).toLowerCase();
+	if (!addr || addr === "0x0" || addr === "0") return;
+	const { stagedChanges, changeSet } = get();
+	// Remove the key entirely when there is nothing left to persist.
+	// This handles both full publish and full discard scenarios.
+	if (stagedChanges.length === 0 && changeSet.length === 0) {
+		localStorage.removeItem(_draftKey(addr));
+		return;
+	}
+	try {
+		localStorage.setItem(_draftKey(addr), JSONbig.stringify({
+			stagedChanges,
+			changeSet,
+			activeTrailId: get().activeTrailId?.toString(),
+		}));
+	} catch { /* ignore quota / private-mode errors */ }
+};
+
+export const rehydrateDraft = () => {
+	const addr = String(getPlayerAddress()).toLowerCase();
+	if (!addr || addr === "0x0" || addr === "0") return;
+	const raw = localStorage.getItem(_draftKey(addr));
+	if (!raw) return;
+	try {
+		const saved = JSONbig.parse(raw) as {
+			stagedChanges?: ChangeSet[];
+			changeSet?: ChangeSet[];
+			activeTrailId?: string;
+		};
+		set({
+			stagedChanges: saved.stagedChanges ?? [],
+			changeSet: saved.changeSet ?? [],
+			activeTrailId: saved.activeTrailId ? BigInt(saved.activeTrailId) : undefined,
+		});
+		console.log(
+			`[Editor] Draft rehydrated: ${saved.stagedChanges?.length ?? 0} staged, ${saved.changeSet?.length ?? 0} unstaged`,
+		);
+	} catch (e) {
+		console.warn("[Editor] Draft rehydration failed, clearing:", e);
+		localStorage.removeItem(_draftKey(addr));
+	}
+};
+
+// Move specific changeSet entries (or all, if none given) into stagedChanges
+const stageChanges = (insts?: BigNumberish[]) => {
+	const toStage = insts
+		? get().changeSet.filter((c) => insts.some((i) => BigInt(i) === BigInt(c.inst)))
+		: [...get().changeSet];
+	set({
+		stagedChanges: [...get().stagedChanges, ...toStage],
+		changeSet: insts ? get().changeSet.filter((c) => !toStage.includes(c)) : [],
+	});
+	persistDraft();
+};
+
+// Permanently discard changes — removes from both changeSet and stagedChanges.
+// Pass specific insts to discard only those entries; omit to discard everything.
+const discardChanges = (insts?: BigNumberish[]) => {
+	if (insts) {
+		set({
+			changeSet: get().changeSet.filter((c) => !insts.some((i) => BigInt(i) === BigInt(c.inst))),
+			stagedChanges: get().stagedChanges.filter((c) => !insts.some((i) => BigInt(i) === BigInt(c.inst))),
+		});
+	} else {
+		set({ changeSet: [], stagedChanges: [] });
+	}
+	persistDraft();
+};
+
+// Move staged entries back to changeSet (user changed their mind)
+const unstageChanges = (insts?: BigNumberish[]) => {
+	const toUnstage = insts
+		? get().stagedChanges.filter((c) => insts.some((i) => BigInt(i) === BigInt(c.inst)))
+		: [...get().stagedChanges];
+	set({
+		changeSet: [...get().changeSet, ...toUnstage],
+		stagedChanges: insts ? get().stagedChanges.filter((c) => !toUnstage.includes(c)) : [],
+	});
+	persistDraft();
+};
+
 const dojoSync = (
 	obj: AnyObject,
 	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
-	syncItem(obj, { verbose, sync: true });
+	// Initial entity load (before the editor is marked ready) always applies directly —
+	// there is nothing in progress yet to conflict with.
+	if (!get().editorInitialized) {
+		syncItem(obj, { verbose, sync: true });
+		return;
+	}
+
+	const trailId = getEntityTrailId(obj);
+	const activeTrailId = get().activeTrailId;
+	if (activeTrailId !== undefined && trailId !== undefined && trailId === activeTrailId) {
+		// Live update for the trail being actively collaborated on — buffer for review
+		queueRemoteUpdate(obj);
+		if (verbose) console.log("[Editor] dojoSync: queued for review (active trail)", obj);
+	} else {
+		// Any other trail — applied directly, same as before Option D
+		syncItem(obj, { verbose, sync: true });
+	}
+};
+
+/**
+ * TEST/SIMULATION ONLY — fabricates a fake incoming Torii update for an existing entity and
+ * routes it through the real dojoSync trail-aware pipeline. Nothing is sent to the contract;
+ * this purely exercises the local remoteQueue / direct-apply branching so the staging and
+ * remote-queue UX can be verified without a second wallet or live Torii traffic.
+ */
+const simulateRemoteEntityEdit = (inst: BigNumberish, editorLabel: string) => {
+	const entity = getEntity(inst, true) ?? getEntity(inst);
+	if (!entity?.Entity) return undefined;
+
+	const trailId = entity.Entity.trail_id !== undefined ? BigInt(entity.Entity.trail_id) : undefined;
+	const willQueue = get().editorInitialized
+		&& get().activeTrailId !== undefined
+		&& trailId !== undefined
+		&& trailId === get().activeTrailId;
+
+	const fakeUpdate = {
+		Entity: {
+			...entity.Entity,
+			name: `${entity.Entity.name} (edited by ${editorLabel} @ ${new Date().toLocaleTimeString()})`,
+		},
+	} as AnyObject;
+
+	dojoSync(fakeUpdate, { verbose: true });
+
+	return {
+		inst,
+		entityName: entity.Entity.name as string,
+		trailId,
+		routedTo: willQueue ? ("queue" as const) : ("direct" as const),
+	};
 };
 
 /**
@@ -1604,6 +1791,17 @@ const EditorData = createFactory({
 	syncEntities,
 	syncEntitiesByInsts,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
+	// Option D — trail-scoped collaboration
+	stageChanges,
+	unstageChanges,
+	discardChanges,
+	setActiveTrailId,
+	setEditorInitialized,
+	queueRemoteUpdate,
+	acceptRemoteUpdate,
+	acceptAllRemoteUpdates,
+	dismissRemoteUpdate,
+	simulateRemoteEntityEdit,
 });
 
 export default EditorData;

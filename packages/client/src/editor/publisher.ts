@@ -29,7 +29,8 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
 import { type DesignerEntrypoints, SystemCalls } from "../lib/systemCalls";
-import EditorData, { syncEntitiesByInsts } from "./data/editor.data";
+import EditorData, { syncEntitiesByInsts, persistDraft } from "./data/editor.data";
+import EditorStore from "@/lib/stores/editor.store";
 import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
 import type { EntityCollection } from "./lib/types";
@@ -42,13 +43,38 @@ import { getPlayerAddress } from "./lib/components";
  * @returns A promise that resolves when the publishing is complete
  */
 export const publishConfigToContract = async (changes?: ChangeSet[]) => {
-	// Capture insts before publishChangeset drains the changeSet in its finally blocks
-	const preparedChanges = changes ?? EditorData().changeSet;
+	let preparedChanges: ChangeSet[];
+
+	if (changes) {
+		// Explicit override (e.g. the per-entity Publish button) — bypasses staging entirely
+		preparedChanges = changes;
+	} else {
+		// Option D — publish only what's been explicitly staged, scoped to the active trail
+		const activeTrailId = EditorData().get().activeTrailId;
+		const allStaged = EditorData().get().stagedChanges;
+		preparedChanges = activeTrailId
+			? allStaged.filter((c) => {
+				const entity = EditorData().getEntity(c.inst);
+				return BigInt(entity?.Entity?.trail_id ?? 0) === activeTrailId;
+			})
+			: allStaged;
+
+		if (preparedChanges.length === 0) {
+			toast.info(
+				activeTrailId
+					? "Nothing staged for the active trail."
+					: "Nothing staged to publish. Stage your changes first.",
+			);
+			return false;
+		}
+	}
+
+	// Capture insts before publishChangeset drains the changeSet/stagedChanges in its finally block
 	const publishedInsts = [...new Set(preparedChanges.map(c => c.inst))];
 
 	try {
 		await Notifications().startPublishing();
-		await publishChangeset(changes);
+		await publishChangeset(preparedChanges);
 		Notifications().finalizePublishing();
 		// Wait for transaction to be processed
 		await tick();
@@ -65,21 +91,25 @@ export const publishConfigToContract = async (changes?: ChangeSet[]) => {
 
 const publishChangeset = async (changes?: ChangeSet[]) => {
 	const myAddress = BigInt(getPlayerAddress());
+	const isAdmin = EditorStore().isAdmin ?? false;
 	const preparedChanges = changes ?? EditorData().changeSet;
 	for (const change of preparedChanges) {
 		try {
-			const entity = EditorData().getEntity(change.inst);
-			const creator = BigInt(entity?.Entity?.creator_address ?? 0);
-			// 0n = new entity not yet stamped on-chain — safe to publish
-			const isOwned = creator === 0n || creator === myAddress;
+			// Admins bypass the ownership guard — the contract enforces the same bypass.
+			if (!isAdmin) {
+				const entity = EditorData().getEntity(change.inst);
+				const creator = BigInt(entity?.Entity?.creator_address ?? 0);
+				// 0n = new entity not yet stamped on-chain — safe to publish
+				const isOwned = creator === 0n || creator === myAddress;
 
-			if (!isOwned) {
-				toast.warning(
-					`Skipped "${entity?.Entity?.name ?? String(change.inst)}": owned by another editor`,
-					{ richColors: true, duration: 4000, dismissible: true },
-				);
-				// continue lets the finally block clean up the changeSet entry
-				continue;
+				if (!isOwned) {
+					toast.warning(
+						`Skipped "${entity?.Entity?.name ?? String(change.inst)}": owned by another editor`,
+						{ richColors: true, duration: 4000, dismissible: true },
+					);
+					// continue lets the finally block clean up the changeSet entry
+					continue;
+				}
 			}
 
 			if (change.type === "update") {
@@ -95,11 +125,17 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 				{ richColors: true, duration: 4000, dismissible: true },
 			);
 		} finally {
+			// `change` may have come from changeSet (per-entity override) or stagedChanges
+			// (Option D trail-scoped publish) — clean up whichever array actually holds it.
 			EditorData().set({
 				changeSet: EditorData().changeSet.filter((x) => x !== change),
+				stagedChanges: EditorData().get().stagedChanges.filter((x) => x !== change),
 			});
-			console.log("Publish ChangeSet", EditorData().changeSet);
-			if (EditorData().changeSet.length > 0) {
+			// Write the updated draft to localStorage so any remaining staged/unstaged
+			// changes survive a page refresh even if the publish was partial or failed.
+			persistDraft();
+			console.log("Publish ChangeSet", EditorData().changeSet, "Staged", EditorData().get().stagedChanges);
+			if (EditorData().changeSet.length > 0 || EditorData().get().stagedChanges.length > 0) {
 				Notifications().needsToPublish();
 			} else {
 				toast.dismiss("editor-dirty");

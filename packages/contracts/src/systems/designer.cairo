@@ -25,6 +25,7 @@ pub trait IDesigner<TContractState> {
     fn set_admin(ref self: TContractState, account: ContractAddress, is_admin: bool);
     fn set_editor(ref self: TContractState, account: ContractAddress, is_editor: bool);
     fn grant_access_to_entity(ref self: TContractState, account: ContractAddress, inst: felt252, granting: bool);
+    fn grant_access_to_trail(ref self: TContractState, account: ContractAddress, trail_id: u128, granting: bool);
     //
     fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
@@ -78,6 +79,7 @@ pub trait IDesignerPublic<TContractState> {
     fn set_admin(ref self: TContractState, account: ContractAddress, is_admin: bool);
     fn set_editor(ref self: TContractState, account: ContractAddress, is_editor: bool);
     fn grant_access_to_entity(ref self: TContractState, account: ContractAddress, inst: felt252, granting: bool);
+    fn grant_access_to_trail(ref self: TContractState, account: ContractAddress, trail_id: u128, granting: bool);
     //
     fn create_player(ref self: TContractState, t: Array<Player>);
     fn create_entity(ref self: TContractState, t: Array<Entity>);
@@ -245,6 +247,16 @@ pub mod designer {
         fn grant_access_to_entity(ref self: ContractState, account: ContractAddress, inst: felt252, granting: bool) {
             let mut world: WorldStorage = self.world_default();
             self._grant_role(ref world, inst, account, granting);
+        }
+        fn grant_access_to_trail(ref self: ContractState, account: ContractAddress, trail_id: u128, granting: bool) {
+            let mut world: WorldStorage = self.world_default();
+            let caller: ContractAddress = starknet::get_caller_address();
+            let is_trail_owner: bool = world.is_owner_of_trail(trail_id, caller);
+            assert(
+                self.is_admin(caller) || world.is_world_contract(caller) || is_trail_owner,
+                Errors::NOT_YOUR_TRAIL,
+            );
+            self._grant_role(ref world, trail_id.into(), account, granting);
         }
 
         // TODO: remove this?? is it necessary to call again?
@@ -693,12 +705,24 @@ pub mod designer {
         #[inline(always)]
         fn _assert_can_edit_entity(self: @ContractState, world: @WorldStorage, inst: felt252, owned: ContractAddress) {
             assert(inst.is_non_zero(), Errors::INVALID_ENTITY);
-            assert(owned.is_zero() || world.can_edit_trail(inst, owned), Errors::NOT_YOUR_ENTITY);
+            let trail_id: u128 = world.get_entity_trail_id(inst);
+            let has_trail_role: bool = trail_id.is_non_zero()
+                && self.accesscontrol.has_role(trail_id.into(), owned);
+            assert(
+                owned.is_zero() || world.can_edit_trail(inst, owned) || has_trail_role,
+                Errors::NOT_YOUR_ENTITY,
+            );
         }
         #[inline(always)]
         fn _assert_can_delete_entity(self: @ContractState, world: @WorldStorage, inst: felt252, owned: ContractAddress) {
             assert(inst.is_non_zero(), Errors::INVALID_ENTITY);
-            assert(owned.is_zero() || world.can_edit_trail(inst, owned), Errors::NOT_YOUR_ENTITY);
+            let trail_id: u128 = world.get_entity_trail_id(inst);
+            let has_trail_role: bool = trail_id.is_non_zero()
+                && self.accesscontrol.has_role(trail_id.into(), owned);
+            assert(
+                owned.is_zero() || world.can_edit_trail(inst, owned) || has_trail_role,
+                Errors::NOT_YOUR_ENTITY,
+            );
         }
 
         fn _register_property_registry(ref self: ContractState, ref world: WorldStorage, done: Array<bool>) {

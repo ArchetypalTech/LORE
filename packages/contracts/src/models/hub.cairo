@@ -41,6 +41,8 @@ pub struct Hub {
     pub trails_insts: Array<felt252>,
     /// grants editor access by reaching an Area containing this Hub
     pub grants_editor_access: bool,
+    /// grants permission to modify entities in the trail this Hub belongs to
+    pub grants_trail_access: bool,
 }
 
 #[derive(Clone, Drop, Serde, Debug, Introspect, PartialEq)]
@@ -157,6 +159,7 @@ pub impl HubImpl of HubTrait {
             is_enabled: true,
             trails_insts: array![],
             grants_editor_access: true,
+            grants_trail_access: false,
         })
     }
 }

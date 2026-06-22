@@ -2,7 +2,7 @@ import type { ParsedEntity, SDK, StandardizedQueryResult } from "@dojoengine/sdk
 import { InitDojo } from "@lib/dojo";
 import { ClauseBuilder, ToriiQueryBuilder} from "@dojoengine/sdk";
 import { CairoCustomEnum, BigNumberish } from "starknet";
-import EditorData from "@/editor/data/editor.data";
+import EditorData, { rehydrateDraft } from "@/editor/data/editor.data";
 import type { EntityCollection } from "@/editor/lib/types";
 import { LORE_CONFIG } from "../config";
 // @dev Use the Dojo bindings, *avoid* recreating these where possible
@@ -342,6 +342,12 @@ const initializeConfig = async (
 			if (responseData.models?.lore) {
 				onReponseData(responseData.models.lore);
 			}
+		}
+		// Mark the editor ready — from here on, live subscription updates for the active
+		// collaboration trail are buffered in the remote queue instead of applied directly.
+		if (DojoStore().isEditorMode) {
+			rehydrateDraft();
+			EditorData().setEditorInitialized();
 		}
 		clearTimeout(connectionTimeout);
 

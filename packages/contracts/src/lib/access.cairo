@@ -36,4 +36,7 @@ pub impl AccessImpl of AccessTrait {
     fn grant_access_to_entity(ref self: WorldStorage, account: ContractAddress, inst: felt252, granting: bool) {
         (self.designer_dispatcher().grant_access_to_entity(account, inst, granting))
     }
+    fn grant_access_to_trail(ref self: WorldStorage, account: ContractAddress, trail_id: u128, granting: bool) {
+        (self.designer_dispatcher().grant_access_to_trail(account, trail_id, granting))
+    }
 }
