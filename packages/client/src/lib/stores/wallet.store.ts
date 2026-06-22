@@ -223,6 +223,22 @@ const setupController = async () => {
 							entrypoint: "delete_child",
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting child-parent relations components`,
 						},
+						{
+							entrypoint: "set_admin",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} setting admin role`,
+						},
+						{
+							entrypoint: "set_editor",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} setting editor role`,
+						},
+						{
+							entrypoint: "grant_access_to_entity",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} granting entity access`,
+						},
+						{
+							entrypoint: "grant_access_to_trail",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} granting trail modification access`,
+						},
 					],
 				},
 			},
