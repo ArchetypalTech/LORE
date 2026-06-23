@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import type { AppchainMessageEvent } from "@/context/torii-appchain-provider";
 import { useAppchainMessageEvents } from "@/context/torii-appchain-provider";
 import { useConsumeEvent } from "@/hooks/use-consume-event";
+import type { AppchainMessageEvent } from "@/lib/torii";
 import { feltToString } from "@/lib/utils";
 
 export function EventsList() {
