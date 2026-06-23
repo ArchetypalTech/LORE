@@ -74,7 +74,10 @@
 		"**/*.webm": true,
 		"**/*.webp": true,
 		"**/*.woff": true,
-		"**/*.woff2": true
+		"**/*.woff2": true,
+		"**/*.lock": true,
+		"**/manifest_*.json": true,
+		"**/starknet/data/**": true,
 	},
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"biome.experimental.rename": true,

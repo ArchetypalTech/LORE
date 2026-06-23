@@ -31,6 +31,7 @@ procs:
       echo ">>> L2: [${L2_PROFILE}] PermitConfig:"
       sozo -P ${L2_PROFILE} model get lore_sn-PermitConfig 1
       touch ../starknet/target/${L2_PROFILE}/initialized
+      source .env.clear
       #----------------
       # Configure L3 (Katana)
       #
@@ -119,7 +120,7 @@ procs:
   l3_katana:
     cwd: packages/starknet
     env:
-      KATANA_TEE_BIN: ./bin/katana-tee
+      KATANA_TEE_BIN: katana
       KATANA_PORT: "6969"
       CHAIN_CONFIG_PATH: ./data/dev-sepolia/chain-config
       CHAIN_DATA_PATH: ./data/dev-sepolia/chain-data
@@ -239,12 +240,12 @@ procs:
       echo ">>> DEPLOYER_ADDRESS: [${DEPLOYER_ADDRESS}]"
       echo ">>> DEPLOYER_PRIVATE_KEY: [${DEPLOYER_PRIVATE_KEY}]"
       echo ">>> PROVER_PRIVATE_KEY: [${PROVER_PRIVATE_KEY}]"
+      echo ">>> SAYA_TEE_BIN: [${SAYA_TEE_BIN}]"
       #----------------
       # sytart saya
       #
       echo ">>> Starting Saya on [${SAYA_DATA_PATH}]..."
       mkdir -p ${SAYA_DATA_PATH}
-      ls -l ${SAYA_TEE_BIN}
       ${SAYA_TEE_BIN} --version
       ${SAYA_TEE_BIN} tee start \
         --mock-prove \

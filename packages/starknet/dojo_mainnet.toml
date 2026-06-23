@@ -1,7 +1,7 @@
 [world]
 name = ">LORE Starknet"
 description = "> get started with LORE Starknet"
-seed = "lore_sn_0_2_5"
+seed = "lore_sn_0_2_6"
 
 [namespace]
 default = "lore_sn"
@@ -14,7 +14,7 @@ appchain_id = "lore_appchain"
 core_contract_address = ""
 fact_registry_address = ""
 
-world_address = "0x07e55c5b13a4d1a2a08dd09561c14e9a3c98cca9482cd5a479a373b0488d0fdb"
+world_address = "0x04698e08635ce3171d9cdc79f755c64525878f2c531ddbd8bff25fbce25eb2c7"
 # account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
 # private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 

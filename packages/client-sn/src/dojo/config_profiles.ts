@@ -72,8 +72,8 @@ const profileConfigs: Record<ProfileName, ProfileConfig> = {
 			appchain: NAMESPACE_APPCHAIN,
 		},
 		chain: devnet,
-		chainName: "KATANA",
-		chainId: bigintToHex(stringToFelt("KATANA")),
+		chainName: "KATANA_LOCAL",
+		chainId: bigintToHex(stringToFelt("KATANA_LOCAL")),
 		rpcUrl: {
 			starknet: "http://localhost:50000/",
 			appchain: "http://localhost:6969/",

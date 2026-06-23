@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x613551abceb2b37073b1149bb862ea70cf029981ce1ca47e9dd7c7ab97cb65d",
-    "address": "0x7e55c5b13a4d1a2a08dd09561c14e9a3c98cca9482cd5a479a373b0488d0fdb",
-    "seed": "lore_sn_0_2_5",
+    "address": "0x4698e08635ce3171d9cdc79f755c64525878f2c531ddbd8bff25fbce25eb2c7",
+    "seed": "lore_sn_0_2_6",
     "name": ">LORE Starknet",
     "entrypoints": [
       "uuid",
@@ -33,7 +33,7 @@
   },
   "contracts": [
     {
-      "address": "0x190095702bd73b4df73b4b1adeccead913087066ba6a92a8df806655a15d4f4",
+      "address": "0x756a57f12697b41cf8c99e47fc6bf3c79d93055f7b9c11ac7011774dafb9f58",
       "class_hash": "0x13a31dcbda93332912e513fac247aba18e1bcb88d0796101c891ec05ebc828",
       "init_calldata": [],
       "tag": "lore_sn-permit_token",
@@ -55,8 +55,8 @@
       ]
     },
     {
-      "address": "0x73a50e34855cd4049db69417034dce74ce90366825ad508515bc81a06795414",
-      "class_hash": "0x29236cfec63197f693cb4071ad46a570530f3f6f71e447a2430c1cae7423f76",
+      "address": "0x1ce593f57dcc55c8d690b6df582480c1a98c538e1a4fa075b0fbdcaa941bf2",
+      "class_hash": "0x6f1a423e0e86dddbb121ea7eab38598ec7d705b31b0a14ea3e929d0a20af37c",
       "init_calldata": [
         "0x0",
         "0x0"

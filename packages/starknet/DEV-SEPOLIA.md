@@ -56,6 +56,12 @@ sozo -P $L2_PROFILE execute --wait lore_sn-permit_token consume_message arr:\
 0x0000000000000000000000000000000000000000000000000000000000000001
 # L2: validate permits balance (must be 0x2)
 sozo -P $L2_PROFILE call lore_sn-permit_token balance_of $RECIPIENT
+
+#
+# ADMIN
+#
+# update bundles
+sozo -P $L2_PROFILE execute lore_sn-setup update_bundles
 ```
 
 
@@ -68,49 +74,14 @@ Based on:
 
 ### Setup
 
-* Install tool versions specified [here](https://github.com/glihm/starknet-messaging-dev/blob/l2-l3-saya/README_saya.md#requirements)
+* Install tool versions from [./tool-versions](./tool-versions)
 
 ```bash
 asdf install
 bun i
 ```
 
-* Build Katana
-
-```bash
-# cleanup
-rm -rf bin/build
-mkdir bin/build
-cd bin/build
-#
-# build Katana
-git clone https://github.com/dojoengine/katana
-cd katana
-git checkout main
-git submodule update --init --recursive \
-  crates/contracts/contracts/avnu \
-  crates/contracts/contracts/openzeppelin \
-  crates/contracts/contracts/piltover \
-  crates/contracts/contracts/vrf
-#
-# Install every scarb version the sub-builds pin via asdf.
-asdf install scarb 2.8.2
-asdf install scarb 2.11.4
-asdf install scarb 2.12.2
-asdf install scarb 2.13.1
-asdf install scarb 2.15.0
-#
-# Now build (-> ./target/release/katana).
-cargo build --release --features tee-mock -p katana
-cp ./target/release/katana ../../katana-tee
-#
-# cleanup
-cd ../../..
-rm -rf bin/build
-```
-
-
-* Build Saya
+* Build `saya-ops`
 
 ```bash
 # cleanup
@@ -153,7 +124,8 @@ rm -rf bin/build
 * Deploy the mock TEE registry
 
 ```bash
-export SAYA_SALT=0x112233
+export SEED="lore_sn_0_2_6"
+export SAYA_SALT=$(starkli to-cairo-string "$SEED")
 source .env.dev-sepolia
 ./bin/saya-ops core-contract \
   --account-address  "$DEPLOYER_ADDRESS" \
@@ -167,17 +139,21 @@ source .env.dev-sepolia
 
 ```
 # grab contract_address from the JSON output — call this TEE_REGISTRY_ADDRESS
-2026-06-04 18:35:39.337 -03:00 DEBUG saya_ops::core_contract::utils: Contract already declared. contract=TEE registry mock
-2026-06-04 18:35:48.240 -03:00 DEBUG saya_ops::core_contract::utils: Contract deployed. contract=TEE registry mock
-2026-06-04 18:35:48.240 -03:00 TRACE saya_ops::core_contract::utils: At block tx_hash=0x41bbf1437febbb74f2b018c9d05bf123f7fa152a4dacbeeeea7c66e102e3449 block=10468283
-{"command":"declare-and-deploy-tee-registry-mock","class_hash":"0x663dafa18fa3407049671a9a3f79b1a0cdb2ebae33326a4cd568068b0aab7cd","contract_address":"0x198668fe81be498c21b4cc0a422414f64567f7e4e41ddd3bd431e198e65c25a","salt":"0x112233","tx_hash":"0x41bbf1437febbb74f2b018c9d05bf123f7fa152a4dacbeeeea7c66e102e3449","deployed_block":10468283}
-(sequencer_venv) ~/Dev/Realms/LORE/packages/starknet $ 
+2026-06-23 12:30:38.818 -03:00 DEBUG saya_ops::core_contract::utils: Contract already declared. contract=TEE registry mock
+2026-06-23 12:30:44.871 -03:00 DEBUG saya_ops::core_contract::utils: Contract deployed. contract=TEE registry mock
+2026-06-23 12:30:44.871 -03:00 TRACE saya_ops::core_contract::utils: At block tx_hash=0x6816d08470150280383c4c6644f2e6caff39eac0cc0445ad32227969a243b4f block=11115588
+{"command":"declare-and-deploy-tee-registry-mock","class_hash":"0x663dafa18fa3407049671a9a3f79b1a0cdb2ebae33326a4cd568068b0aab7cd","contract_address":"0x4f2e4e1f3d2ee238e14cb2a64d824ee7b8bc08d1c95f4de92772d778481b924","salt":"0x6c6f72655f736e5f305f325f36","tx_hash":"0x6816d08470150280383c4c6644f2e6caff39eac0cc0445ad32227969a243b4f","deployed_block":11115588}
 ```
 
 * Initialize the rollup, declares and deploys the Piltover
 
 ```bash
-export TEE_REGISTRY_ADDRESS=0x198668fe81be498c21b4cc0a422414f64567f7e4e41ddd3bd431e198e65c25a
+# remove old
+rm -rf ./data/dev-sepolia/chain-config
+rm -rf ./data/dev-sepolia/chain-data
+rm -rf ./data/dev-sepolia/saya/saya.db
+# create new
+export TEE_REGISTRY_ADDRESS=0x4f2e4e1f3d2ee238e14cb2a64d824ee7b8bc08d1c95f4de92772d778481b924
 export CHAIN_CONFIG_PATH=./data/dev-sepolia/chain-config
 ./bin/katana-tee init rollup \
   --id MY_APPCHAIN_DEV \
@@ -190,7 +166,7 @@ export CHAIN_CONFIG_PATH=./data/dev-sepolia/chain-config
 ```
 
 ```
-✓ Deployment successful (0x1d62bbfe26acd33903f24aef1497aa17029bc71ea9da51a0051677eb00e5aa3) at block #10468729
+✓ Deployment successful (0x3b1edb674c8553a617bf4e62484b51b4412228a708fc4a8166b11528e8329ba) at block #11115684
 
 CHAIN
 =====
@@ -206,18 +182,17 @@ SETTLEMENT LAYER
 | Proof category  | TEE
 | Proof type      | AMD SEV-SNP + SP1 Groth16
 | Chain ID        | SN_SEPOLIA (0x534e5f5345504f4c4941)
-| RPC URL         | https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9
-| Core contract   | 0x1d62bbfe26acd33903f24aef1497aa17029bc71ea9da51a0051677eb00e5aa3
-| Deployed block  | #10468729
-| Fact registry   | 0x0198668fe81be498c21b4cc0a422414f64567f7e4e41ddd3bd431e198e65c25a
+| RPC URL         | https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_10
+| Core contract   | 0x3b1edb674c8553a617bf4e62484b51b4412228a708fc4a8166b11528e8329ba
+| Deployed block  | #11115684
+| Fact registry   | 0x04f2e4e1f3d2ee238e14cb2a64d824ee7b8bc08d1c95f4de92772d778481b924
 | Config hash     | 0x0375989d4cdb7be11e01408bd6d604b0a7d01c6f599ae1b2e0d1228cda9a1199
 ```
 
 ```bash
 # get PILTOVER_ADDRESS from chain config
 echo $(grep '^core_contract' ./data/dev-sepolia/chain-config/config.toml | head -1 | awk -F'"' '{print $2}')
-0x1d62bbfe26acd33903f24aef1497aa17029bc71ea9da51a0051677eb00e5aa3
+0x3b1edb674c8553a617bf4e62484b51b4412228a708fc4a8166b11528e8329ba
 # save for later...
-export PILTOVER_ADDRESS=0x1d62bbfe26acd33903f24aef1497aa17029bc71ea9da51a0051677eb00e5aa3
+export PILTOVER_ADDRESS=0x3b1edb674c8553a617bf4e62484b51b4412228a708fc4a8166b11528e8329ba
 ```
-

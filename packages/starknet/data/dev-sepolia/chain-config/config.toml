@@ -6,8 +6,8 @@ strk = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
 
 [settlement.starknet]
 rpc_url = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_10"
-core_contract = "0x1d62bbfe26acd33903f24aef1497aa17029bc71ea9da51a0051677eb00e5aa3"
-block = 10468729
+core_contract = "0x3b1edb674c8553a617bf4e62484b51b4412228a708fc4a8166b11528e8329ba"
+block = 11115684
 proof_kind = "tee"
 
 [settlement.starknet.id]
