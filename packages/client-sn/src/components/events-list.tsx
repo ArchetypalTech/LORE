@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
-import { useAppchainMessageEvents } from "@/context/torii-appchain-provider";
+import {
+	type AppchainMessageEventStatus,
+	useAppchainMessageEventsStatus,
+} from "@/hooks/use-appchain-events";
 import { useConsumeEvent } from "@/hooks/use-consume-event";
-import type { AppchainMessageEvent } from "@/lib/torii";
 import { feltToString } from "@/lib/utils";
 
 export function EventsList() {
-	const events = useAppchainMessageEvents();
+	const events = useAppchainMessageEventsStatus();
 
 	if (events.length === 0)
 		return (
@@ -22,14 +24,16 @@ export function EventsList() {
 	);
 }
 
-function EventsListItem({ event }: { event: AppchainMessageEvent }) {
+function EventsListItem({ event }: { event: AppchainMessageEventStatus }) {
 	const { mutate, isPending, isSuccess } = useConsumeEvent();
 
 	let status: ReactNode;
-	if (isPending) {
-		status = <span className="text-sm opacity-70">Consuming...</span>;
-	} else if (isSuccess) {
+	// The L2 MessageConsumedEvent (or a just-resolved local consume) is the
+	// source of truth; the on-chain event eventually backs `isSuccess`.
+	if (event.consumed || isSuccess) {
 		status = <span className="text-sm opacity-70">Consumed</span>;
+	} else if (isPending) {
+		status = <span className="text-sm opacity-70">Consuming...</span>;
 	} else {
 		status = (
 			<button
