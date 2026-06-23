@@ -4,6 +4,8 @@ use dojo::model::{ModelStorage};
 
 use lore_sn::models::{
     permit_token_info::{PermitTokenInfo},
+};
+use lore_sn::appchain::{
     appchain::APPCHAIN::PERMIT_TYPES,
 };
 use lore_sn::lib::{

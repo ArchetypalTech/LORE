@@ -204,11 +204,8 @@ pub fn compute_message_hash_sn_to_appc(
     ];
 
     let mut i = 0_usize;
-    loop {
-        if i == payload.len() {
-            break;
-        }
-        hash_data.append((*payload[i]));
+    while i < payload.len() {
+        hash_data.append(*payload[i]);
         i += 1;
     }
 
@@ -236,11 +233,8 @@ pub fn compute_message_hash_appc_to_sn(
     ];
 
     let mut i = 0_usize;
-    loop {
-        if i == payload.len() {
-            break;
-        }
-        hash_data.append((*payload[i]));
+    while i < payload.len() {
+        hash_data.append(*payload[i]);
         i += 1;
     }
 

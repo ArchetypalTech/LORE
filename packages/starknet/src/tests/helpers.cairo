@@ -18,7 +18,7 @@ pub use lore_sn::lib::{
 
 // piltover messaging interface
 // use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
-pub use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
+pub use lore_sn::appchain::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
 pub fn impersonate(caller: ContractAddress) {
     starknet::testing::set_account_contract_address(caller);    // starknet::get_execution_info().tx_info.account_contract_address

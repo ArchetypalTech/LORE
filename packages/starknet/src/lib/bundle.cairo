@@ -3,7 +3,7 @@ use starknet::{ContractAddress};
 use dojo::world::WorldStorage;
 use bundle::types::item::ItemTrait as BundleItemTrait;
 use bundle::types::metadata::MetadataTrait as BundleMetadataTrait;
-use lore_sn::models::appchain::{APPCHAIN, PermitTypeTrait};
+use lore_sn::appchain::appchain::{APPCHAIN, PermitTypeTrait};
 use lore_sn::lib::constants::{orug_metadata, usdc_address, CONST};
 
 // pre-register 10 bundles to reserve sequential ids (1-10)

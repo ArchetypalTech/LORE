@@ -78,12 +78,12 @@ pub mod permit_token {
         model::ModelStorage,
         world::WorldStorage,
         world::IWorldDispatcherTrait,
-        // event::EventStorage,
+        event::EventStorage,
     };
 
     // piltover messaging interface
     // use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
-    use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
+    use lore_sn::appchain::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
     //-----------------------------------
     // ERC721 start
@@ -123,10 +123,16 @@ pub mod permit_token {
     // ERC721 end
     //-----------------------------------
 
+    use lore_sn::appchain::appchain::{
+        APPCHAIN,
+        PermitTypeTrait,
+        AppchainPayloadTrait,
+        MintPermitRewardsPayload,
+        MessageConsumedEvent,
+    };
     use lore_sn::models::{
         permit_config::{PermitConfig, PermitConfigTrait},
         permit_token_info::{PermitTokenInfo, PermitTokenInfoTrait},
-        appchain::{APPCHAIN, PermitTypeTrait},
     };
     use lore_sn::lib::{
         dns::{DnsTrait, SELECTORS},
@@ -181,7 +187,7 @@ pub mod permit_token {
                 recipient,
                 quantity,
                 permit_type,
-            );
+            ).span();
             // use automatically
             if (use_tokens) {
                 for mut i in 0..quantity {
@@ -204,7 +210,7 @@ pub mod permit_token {
                 recipient,
                 quantity,
                 APPCHAIN::PERMIT_TYPES::PERMIT_AIRDROP,
-            );
+            ).span();
             // use automatically
             if (use_tokens) {
                 for mut i in 0..quantity {
@@ -258,7 +264,7 @@ pub mod permit_token {
             recipient: ContractAddress,
             quantity: u32,
             permit_type: felt252,
-        ) -> Span<u128> {
+        ) -> Array<u128> {
             let mut token_ids: Array<u128> = array![];
 
             while token_ids.len() < quantity {
@@ -277,7 +283,7 @@ pub mod permit_token {
                 token_ids.append(token_id);
             }
 
-            (token_ids.span())
+            (token_ids)
         }
 
         fn _use_permit(ref self: ContractState,
@@ -329,7 +335,7 @@ pub mod permit_token {
         fn _consume_message(ref self: ContractState,
             payload: Span<felt252>,
         ) {
-            let world: WorldStorage = self.world_default();
+            let mut world: WorldStorage = self.world_default();
             let messaging_config: PermitConfig = world.get_permit_config();
             assert(messaging_config.messaging_contract.is_non_zero(), Errors::INVALID_MESSAGING_CONTRACT);
             assert(messaging_config.appchain_contract.is_non_zero(), Errors::INVALID_APPCHAIN_CONTRACT);
@@ -340,17 +346,28 @@ pub mod permit_token {
 
             // Will revert in case of failure if the message is not registered
             // as consumable.
-            let _msg_hash: felt252 = messaging.consume_message_from_appchain(
+            let msg_hash: felt252 = messaging.consume_message_from_appchain(
                 messaging_config.appchain_contract,
                 payload,
             );
+            // msg successfully consumed...
 
-            // msg successfully consumed, we can proceed and process the data
-            // in the payload.
-            // for i in 0..payload.len() {
-            //     let payload_item: felt252 = *payload.at(i);
-            //     println!("payload[{}]: {}", i, payload_item);
-            // }
+            // unpack payload
+            let reward: MintPermitRewardsPayload = world.unpack_mint_permit_rewards_payload(payload);
+            // mint reward
+            let token_ids: Array<u128> = self._mint_bundles(ref world,
+                reward.recipient,
+                reward.rewards_count,
+                reward.permit_type,
+            );
+            // emit event
+            world.emit_event(@MessageConsumedEvent{
+                uuid: reward.uuid,
+                message_hash: msg_hash,
+                block_number: starknet::get_block_number(),
+                block_timestamp: starknet::get_block_timestamp(),
+                token_ids,
+            });
         }
     }
 

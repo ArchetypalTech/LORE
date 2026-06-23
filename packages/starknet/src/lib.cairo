@@ -4,8 +4,12 @@ pub mod systems {
     pub mod fact_registry_mock;
 }
 
-pub mod models {
+pub mod appchain {
     pub mod appchain;
+    pub mod messaging;
+}
+
+pub mod models {
     pub mod permit_config;
     pub mod permit_token_info;
 }
@@ -14,7 +18,6 @@ pub mod lib {
     pub mod bundle;
     pub mod constants;
     pub mod dns;
-    pub mod messaging;
     pub mod utils;
 }
 

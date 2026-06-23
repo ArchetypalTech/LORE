@@ -2,7 +2,7 @@ use starknet::{ContractAddress};
 
 // piltover messaging interface
 // use piltover::messaging::types::{MessageHash, Nonce};
-pub use lore_sn::lib::messaging::{MessageHash, Nonce};
+pub use lore_sn::appchain::messaging::{MessageHash, Nonce};
 
 #[starknet::interface]
 pub trait IMessagingMock<T> {
@@ -17,7 +17,7 @@ pub trait IMessagingMock<T> {
 #[dojo::contract]
 pub mod messaging_mock {
     use starknet::{ContractAddress};
-    use lore_sn::lib::messaging::{MessageHash, Nonce};
+    use lore_sn::appchain::messaging::{MessageHash, Nonce};
 
     #[abi(embed_v0)]
     impl MessagingMockImpl of super::IMessagingMock<ContractState> {

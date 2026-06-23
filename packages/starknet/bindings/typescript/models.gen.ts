@@ -92,7 +92,7 @@ export interface BundleUpdated {
 	payment_receiver: string;
 }
 
-// Type definition for `lore_sn::models::appchain::AppchainMessageEvent` struct
+// Type definition for `lore_sn::appchain::appchain::AppchainMessageEvent` struct
 export interface AppchainMessageEvent {
 	uuid: BigNumberish;
 	caller_address: string;
@@ -103,6 +103,15 @@ export interface AppchainMessageEvent {
 	message_hash: BigNumberish;
 	message_type: BigNumberish;
 	payload: Array<BigNumberish>;
+}
+
+// Type definition for `lore_sn::appchain::appchain::MessageConsumedEvent` struct
+export interface MessageConsumedEvent {
+	uuid: BigNumberish;
+	block_number: BigNumberish;
+	block_timestamp: BigNumberish;
+	message_hash: BigNumberish;
+	token_ids: Array<BigNumberish>;
 }
 
 // Type definition for `bundle::component::Component::BundleQuote` struct
@@ -161,6 +170,7 @@ export interface SchemaType extends ISchemaType {
 		BundleRegistered: BundleRegistered,
 		BundleUpdated: BundleUpdated,
 		AppchainMessageEvent: AppchainMessageEvent,
+		MessageConsumedEvent: MessageConsumedEvent,
 		BundleQuote: BundleQuote,
 		BatchMetadataUpdate: BatchMetadataUpdate,
 		MetadataUpdate: MetadataUpdate,
@@ -252,6 +262,13 @@ export const schema: SchemaType = {
 			message_type: 0,
 			payload: [0],
 		},
+		MessageConsumedEvent: {
+			uuid: 0,
+			block_number: 0,
+			block_timestamp: 0,
+			message_hash: 0,
+			token_ids: [0],
+		},
 		BundleQuote: {
 		base_price: 0,
 		referral_fee: 0,
@@ -297,6 +314,7 @@ export enum ModelsMapping {
 	BundleRegistered = 'bundle-BundleRegistered',
 	BundleUpdated = 'bundle-BundleUpdated',
 	AppchainMessageEvent = 'lore_sn-AppchainMessageEvent',
+	MessageConsumedEvent = 'lore_sn-MessageConsumedEvent',
 	BundleQuote = 'bundle-BundleQuote',
 	BatchMetadataUpdate = 'nft_combo-BatchMetadataUpdate',
 	ContractURIUpdated = 'nft_combo-ContractURIUpdated',

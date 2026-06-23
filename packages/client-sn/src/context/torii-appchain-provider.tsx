@@ -36,7 +36,17 @@ export type AppchainMessageEvent = {
 	blockTimestamp: number;
 	messageHash: string;
 	messageType: string;
+	/** Raw `Array<felt252>` payload, as decimal/hex felt strings — what
+	 * `consume_message` on the L2 permit token expects back verbatim. */
+	payload: string[];
 };
+
+// A Dojo `Array<felt252>` field arrives as a Ty whose `value` is an array of
+// primitive Tys; flatten it to the felt strings.
+const parseFeltArray = (field: ModelData[string] | undefined): string[] =>
+	Array.isArray(field?.value)
+		? (field.value as { value: unknown }[]).map((item) => String(item.value))
+		: [];
 
 // AppchainMessageEvent: keyed by uuid (decimal string) → the parsed event.
 const parseAppchainMessageEvent: Parse<AppchainMessageEvent> = (model) => {
@@ -53,6 +63,7 @@ const parseAppchainMessageEvent: Parse<AppchainMessageEvent> = (model) => {
 			blockTimestamp: Number(model.block_timestamp?.value ?? 0),
 			messageHash: String(model.message_hash?.value ?? ""),
 			messageType: String(model.message_type?.value ?? ""),
+			payload: parseFeltArray(model.payload),
 		},
 	];
 };

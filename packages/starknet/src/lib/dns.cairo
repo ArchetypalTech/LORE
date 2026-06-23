@@ -13,7 +13,7 @@ pub use lore_sn::systems::{
 
 // piltover messaging interface
 // use piltover::messaging::interface::{IMessagingDispatcher, IMessagingDispatcherTrait};
-pub use lore_sn::lib::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
+pub use lore_sn::appchain::messaging::{IMessagingDispatcher, IMessagingDispatcherTrait};
 
 pub mod SELECTORS {
     // systems

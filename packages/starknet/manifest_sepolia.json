@@ -34,7 +34,7 @@
   "contracts": [
     {
       "address": "0x756a57f12697b41cf8c99e47fc6bf3c79d93055f7b9c11ac7011774dafb9f58",
-      "class_hash": "0x13a31dcbda93332912e513fac247aba18e1bcb88d0796101c891ec05ebc828",
+      "class_hash": "0xbcc9b1243db564ce628dd66d906840038eae1ce5ee9e3f9e3ee4ca3b1a7bb2",
       "init_calldata": [],
       "tag": "lore_sn-permit_token",
       "selector": "0x2d3a920998a56ef0bfbf8a5e791ba1c5db29d4f18866a2161472de9ea7794eb",
@@ -319,7 +319,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x1faa158cda0478f0d14fc63a80acb5728dfe42a749b8842c1ee103009d26b11",
+      "class_hash": "0x6469dd5893d0afcd78699624e36b175a14cc8fe9436600bead0097935f60cfe",
       "tag": "lore_sn-AppchainMessageEvent",
       "selector": "0x53747592e0b56248201d6f92208db88970ab41abd528ab924cc023c0ec09fc"
     },
@@ -448,6 +448,38 @@
       "class_hash": "0x1507f042e469d428e2fbe0c6dfbc5020e742b052ee818e5292a0f102bbcdcd5",
       "tag": "lore_sn-BundleUpdated",
       "selector": "0x65fed2c61e88c17186a21a78af7486b2078247483ac5d6f81d9de1f5716cec1"
+    },
+    {
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "token_ids",
+          "type": "core::array::Array::<core::integer::u128>",
+          "key": false
+        }
+      ],
+      "class_hash": "0x4d18763505c897a56b241af616fd1073e3db745aed95ed304fca3f9f3121c5a",
+      "tag": "lore_sn-MessageConsumedEvent",
+      "selector": "0x77c1b3c545fa9befd9fe1b5c481b2eedba064a18b21f841cea2dfb1e2e4cc12"
     }
   ],
   "external_contracts": [],
@@ -2930,7 +2962,7 @@
       "inputs": [
         {
           "name": "event",
-          "type": "bundle::events::index::BundleUpdated"
+          "type": "lore_sn::appchain::appchain::MessageConsumedEvent"
         }
       ],
       "outputs": [],
@@ -2949,7 +2981,7 @@
       "inputs": [
         {
           "name": "value",
-          "type": "bundle::events::index::BundleUpdatedValue"
+          "type": "lore_sn::appchain::appchain::MessageConsumedEventValue"
         }
       ],
       "outputs": [],
@@ -2957,7 +2989,7 @@
     },
     {
       "type": "struct",
-      "name": "lore_sn::models::appchain::AppchainMessageEvent",
+      "name": "lore_sn::appchain::appchain::AppchainMessageEvent",
       "members": [
         {
           "name": "uuid",
@@ -2999,7 +3031,7 @@
     },
     {
       "type": "struct",
-      "name": "lore_sn::models::appchain::AppchainMessageEventValue",
+      "name": "lore_sn::appchain::appchain::AppchainMessageEventValue",
       "members": [
         {
           "name": "caller_address",
@@ -3036,8 +3068,62 @@
       ]
     },
     {
+      "type": "struct",
+      "name": "lore_sn::appchain::appchain::MessageConsumedEvent",
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "token_ids",
+          "type": "core::array::Array::<core::integer::u128>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore_sn::appchain::appchain::MessageConsumedEventValue",
+      "members": [
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "token_ids",
+          "type": "core::array::Array::<core::integer::u128>"
+        }
+      ]
+    },
+    {
       "type": "event",
-      "name": "lore_sn::models::appchain::e_AppchainMessageEvent::Event",
+      "name": "lore_sn::appchain::appchain::e_AppchainMessageEvent::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "lore_sn::appchain::appchain::e_MessageConsumedEvent::Event",
       "kind": "enum",
       "variants": []
     },

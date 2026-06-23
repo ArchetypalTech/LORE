@@ -6,8 +6,12 @@ pub mod systems {
     pub mod actions_token;
 }
 
-pub mod constants {
+pub mod appchain {
     pub mod appchain;
+    pub mod messaging;
+}
+
+pub mod constants {
     pub mod config;
     pub mod constants;
     pub mod errors;
@@ -23,7 +27,6 @@ pub mod lib {
     pub mod arrays;
     pub mod dns;
     pub mod trophies;
-    pub mod messaging;
     pub mod level_test;
     pub mod errors_texts_output;
     pub mod variable_property_helper;

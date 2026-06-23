@@ -103,6 +103,10 @@ pub mod actions_token {
     //-----------------------------------
 
     use lore::{
+        appchain::{
+            messaging,
+            appchain::{APPCHAIN, AppchainPayloadTrait, AppchainMessageEvent},
+        },
         models::{
             actions_config::{ActionsConfig, ActionsConfigTrait, ActionsRewardTrait},
             player_account::{PlayerAccountTrait, ActionsSource},
@@ -117,10 +121,8 @@ pub mod actions_token {
                 DnsTrait, SELECTORS,
                 ITrailTokenDispatcherTrait,
             },
-            messaging,
         },
         constants::{
-            appchain::{APPCHAIN, AppchainPayloadTrait, AppchainMessageEvent},
             constants::{CONST},
             errors::{Error},
         },

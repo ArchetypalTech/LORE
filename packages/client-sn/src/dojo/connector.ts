@@ -11,6 +11,7 @@ const policies: SessionPolicies = {
 			description: ">ORUG Permit token",
 			methods: [
 				{ name: "Use Permits", entrypoint: "use_permits" },
+				{ name: "Consume Message", entrypoint: "consume_message" },
 			],
 		},
 	},

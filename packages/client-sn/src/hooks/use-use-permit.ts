@@ -25,7 +25,9 @@ export function useUsePermit() {
 					entrypoint: "use_permits",
 					calldata: CallData.compile({ token_ids: [tokenId] }),
 				},
-			]);
+			], {
+				tip: 0,
+			});
 			await account.waitForTransaction(transaction_hash);
 			return transaction_hash;
 		},

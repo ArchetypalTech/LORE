@@ -37,8 +37,10 @@ use dojo::{
 };
 use lore::{
     types::command_type::{CommandType},
-    constants::{
+    appchain::{
         appchain::{APPCHAIN, PermitTypeTrait},
+    },
+    constants::{
         config::{CONFIG},
     },
     systems::actions_token::actions_token::{Errors as ActionsErrors},

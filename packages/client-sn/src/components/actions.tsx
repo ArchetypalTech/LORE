@@ -13,7 +13,7 @@ export function Actions() {
 				<p className="m-0">Actions balance (RPC):</p>
 				<p className="m-0">{actionsBalance}</p>
 			</div>
-			<button type="button" onClick={() => {}}>
+			<button type="button" onClick={() => alert("Ask owner")}>
 				Airdrop Reward
 			</button>
 			<EventsList />

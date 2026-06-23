@@ -34,7 +34,7 @@
   "contracts": [
     {
       "address": "0x1f0ae4fbfd635cabdeecb5567b9f210fb6d71fa07ce358373ce7de3cb586265",
-      "class_hash": "0x1479cb90a9de1a2c72bcc3a0951db5bfa523ad2ba798e58951f7e301abb0aa6",
+      "class_hash": "0x4f2078aa9d2953028e16b724e0e2725afe6f4601a7ff0636f8f939b14d27229",
       "init_calldata": [
         "0x0"
       ],
@@ -1372,7 +1372,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x6d7810fbb7b93093e5e2b3ca8eaaf82bebcbe3df899759913e1f01a08eab7e4",
+      "class_hash": "0x5f6dedc1acf666cf914cbf970f6caf6f527ccfc2f2c51afb1f6f1859fa593d5",
       "tag": "lore-AppchainMessageEvent",
       "selector": "0x3d690231464187d245c60621c09209061a40347b82077ec4cb8e145179de19d"
     },
@@ -1392,6 +1392,38 @@
       "class_hash": "0x7deab85e1eb79e6c76ffeb1d87d9f858769bb2e8e494e1e7e4fc3d70676a339",
       "tag": "lore-GameCreatedEvent",
       "selector": "0x7c6e3d3f9f2744660619ece25fc28118c70258d3be961f615157fee354aaf39"
+    },
+    {
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "key": false
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252",
+          "key": false
+        },
+        {
+          "name": "token_ids",
+          "type": "core::array::Array::<core::integer::u128>",
+          "key": false
+        }
+      ],
+      "class_hash": "0x8afc6a2710a7528f759096f40edbc6cb6dfd7ecb60f2837f015661d5e9b30c",
+      "tag": "lore-MessageConsumedEvent",
+      "selector": "0x32439b78ee3a3bf7a7607526be9ad710a643e6f3736c0eb22c75186d56913b8"
     },
     {
       "members": [
@@ -3616,7 +3648,7 @@
     },
     {
       "type": "struct",
-      "name": "lore::constants::appchain::AppchainMessageEvent",
+      "name": "lore::appchain::appchain::AppchainMessageEvent",
       "members": [
         {
           "name": "uuid",
@@ -3658,7 +3690,7 @@
     },
     {
       "type": "struct",
-      "name": "lore::constants::appchain::AppchainMessageEventValue",
+      "name": "lore::appchain::appchain::AppchainMessageEventValue",
       "members": [
         {
           "name": "caller_address",
@@ -3695,8 +3727,62 @@
       ]
     },
     {
+      "type": "struct",
+      "name": "lore::appchain::appchain::MessageConsumedEvent",
+      "members": [
+        {
+          "name": "uuid",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "token_ids",
+          "type": "core::array::Array::<core::integer::u128>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore::appchain::appchain::MessageConsumedEventValue",
+      "members": [
+        {
+          "name": "block_number",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "message_hash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "token_ids",
+          "type": "core::array::Array::<core::integer::u128>"
+        }
+      ]
+    },
+    {
       "type": "event",
-      "name": "lore::constants::appchain::e_AppchainMessageEvent::Event",
+      "name": "lore::appchain::appchain::e_AppchainMessageEvent::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "lore::appchain::appchain::e_MessageConsumedEvent::Event",
       "kind": "enum",
       "variants": []
     },
