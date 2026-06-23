@@ -27,4 +27,5 @@ pub mod tests {
     pub mod setup_test;
     pub mod permit_token_test;
     pub mod messaging_mock;
+    pub mod erc20_mock;
 }

@@ -1,6 +1,8 @@
 // use core::num::traits::Zero;
 use starknet::{ContractAddress};
-use dojo::model::{ModelStorage};
+use dojo::model::{ModelStorage, ModelStorageTest};
+use bundle::models::index::{Bundle};
+use lore_sn::tests::erc20_mock::{ITestERC20Dispatcher, ITestERC20DispatcherTrait};
 
 use lore_sn::models::{
     permit_token_info::{PermitTokenInfo},
@@ -22,9 +24,9 @@ use lore_sn::tests::{helpers,
 
 const AMOUNT: u128 = 1000 * CONST::ETH_TO_WEI.low;
 
-const BUNDLE_ID: u32 = 0;
-const BUNDLE_ID_RESERVED: u32 = 1;
-const BUNDLE_ID_INVALID: u32 = 10;
+const BUNDLE_ID: u32 = 1;
+const BUNDLE_ID_RESERVED: u32 = 2;
+const BUNDLE_ID_INVALID: u32 = 11;
 
 const TOKEN_ID_1_1: u256 = 1;
 const TOKEN_ID_1_2: u256 = 2;
@@ -178,9 +180,23 @@ fn test_purchase_not_world_contract() {
 #[test]
 fn test_issue_ok() {
     let mut sys: helpers::HelperSystems = helpers::setup_core();
+
+    // deploy a mock payment token, minting the supply to the payer (OWNER)
+    let supply: u256 = 1_000_000_000;
+    let payment_token: ContractAddress = helpers::deploy_mock_erc20(OWNER(), supply);
+
+    // point the bundle at the mock token so issue() can charge it
+    let mut bundle: Bundle = sys.world.read_model(BUNDLE_ID);
+    bundle.payment_token = payment_token;
+    sys.world.write_model_test(@bundle);
+
+    // OWNER approves the setup contract (the transfer_from caller) to spend the price
     helpers::impersonate(OWNER());
+    ITestERC20Dispatcher { contract_address: payment_token }.approve(sys.setup.contract_address, supply);
+
     sys.setup.issue(OTHER(), BUNDLE_ID, 1, Option::None, Option::None, Option::None, 0, Option::None, Option::None);
     assert_eq!(sys.permit.balance_of(OTHER()), 1, "balance_of");
+    assert_eq!(bundle.price, ITestERC20Dispatcher { contract_address: payment_token }.balance_of(bundle.payment_receiver), "payment_received");
 }
 
 #[test]

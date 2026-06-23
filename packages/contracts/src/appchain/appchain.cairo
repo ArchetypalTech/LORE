@@ -155,3 +155,35 @@ pub impl AppchainPayloadImpl of AppchainPayloadTrait {
         })
     }
 }
+
+
+//----------------------------------------
+// Unit tests
+//
+#[cfg(test)]
+mod unit {
+    use super::{APPCHAIN, AppchainPayloadTrait};
+    use lore_sn::tests::{helpers, helpers::{OTHER}};
+
+    #[test]
+    fn test_pack_unpack() {
+        let mut sys = helpers::setup_core();
+
+        let permit_type: felt252 = APPCHAIN::PERMIT_TYPES::REWARD_CREATOR;
+        let recipient = OTHER();
+        let rewards_count: u32 = 7;
+
+        // pack a rewards payload...
+        let payload = sys.world.pack_mint_permit_rewards_payload(permit_type, recipient, rewards_count);
+        let uuid: u32 = payload.get_uuid();
+        // ...and unpack it
+        let unpacked = sys.world.unpack_mint_permit_rewards_payload(payload.span());
+
+        // all fields must survive the round-trip intact
+        assert_eq!(unpacked.uuid, uuid, "uuid");
+        assert_eq!(unpacked.message_type, APPCHAIN::MESSAGE_TYPES::MINT_PERMIT_REWARDS, "message_type");
+        assert_eq!(unpacked.permit_type, permit_type, "permit_type");
+        assert_eq!(unpacked.recipient, recipient, "recipient");
+        assert_eq!(unpacked.rewards_count, rewards_count, "rewards_count");
+    }
+}

@@ -1,4 +1,6 @@
-use starknet::{ContractAddress, testing};
+use starknet::{ContractAddress, SyscallResultTrait, testing};
+use starknet::syscalls::deploy_syscall;
+use lore_sn::tests::erc20_mock::{erc20_mock};
 // use dojo::model::{ModelStorage, ModelStorageTest};
 use dojo::world::{
     IWorldDispatcherTrait,
@@ -105,4 +107,15 @@ pub fn setup_core() -> HelperSystems {
         permit,
         messaging,
     })
+}
+
+// deploy a mock ERC20 payment token, minting `supply` to `recipient`
+pub fn deploy_mock_erc20(recipient: ContractAddress, supply: u256) -> ContractAddress {
+    let (address, _) = deploy_syscall(
+        erc20_mock::TEST_CLASS_HASH,
+        0,
+        array![recipient.into(), supply.low.into(), supply.high.into()].span(),
+        false,
+    ).unwrap_syscall();
+    (address)
 }
