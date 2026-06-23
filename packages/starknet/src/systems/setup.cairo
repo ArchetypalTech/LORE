@@ -81,7 +81,11 @@ pub mod setup {
             DnsTrait, SELECTORS,
             IPermitTokenDispatcherTrait,
         },
-        bundle::{BUNDLE_COUNT, PermitBundleTrait, BundleDescriptor},
+        bundle::{
+            BUNDLE_COUNT,
+            BundleIdTrait,
+            BundleDescriptor, BundleDescriptorTrait,
+        },
     };
     use bundle::models::{
         index::{Bundle},
@@ -109,8 +113,8 @@ pub mod setup {
             messaging_contract,
             appchain_contract,
         );
-        // create bundle 0
-        for i in 0..BUNDLE_COUNT {
+        // create bundle 1..BUNDLE_COUNT
+        for i in 1..(BUNDLE_COUNT + 1) {
             let bundle_id = self.bundle.register(
                 world: world,
                 referral_percentage: 0,
@@ -177,7 +181,7 @@ pub mod setup {
             let mut world: WorldStorage = contract.world_default();
             // mint bundles
             let mut permit_token_dispatcher = world.permit_token_dispatcher();
-            let permit_type = bundle_id.to_permit_type();
+            let permit_type = bundle_id.into().to_permit_type();
             permit_token_dispatcher.purchased_bundle(recipient, permit_type, quantity, false);
         }
         fn supply(self: @BundleComponent::ComponentState<ContractState>,
@@ -253,8 +257,8 @@ pub mod setup {
             ((*world.dispatcher).is_owner(SELECTORS::SETUP, starknet::get_caller_address()))
         }
         fn _update_bundles(ref self: ContractState, ref world: WorldStorage) {
-            for bundle_id in 0..BUNDLE_COUNT {
-                let descriptor: Option<BundleDescriptor> = bundle_id.to_bundle_descriptor(@world);
+            for bundle_id in 1..(BUNDLE_COUNT + 1) {
+                let descriptor: Option<BundleDescriptor> = bundle_id.into().to_bundle_descriptor(@world);
                 match descriptor {
                     Option::Some(descriptor) => {
                         self.bundle.update(

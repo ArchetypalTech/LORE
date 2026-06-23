@@ -6,8 +6,24 @@ use bundle::types::metadata::MetadataTrait as BundleMetadataTrait;
 use lore_sn::models::appchain::{APPCHAIN, PermitTypeTrait};
 use lore_sn::lib::constants::{orug_metadata, usdc_address, CONST};
 
-// pre-register 10 bundles to reserve sequential ids (0-9)
+// pre-register 10 bundles to reserve sequential ids (1-10)
 pub const BUNDLE_COUNT: u32 = 10;
+
+#[derive(Copy, Drop)]
+pub enum BundleId {
+    #[default]
+    None,           // 0
+    StandardPermit, // 1
+}
+pub impl IntoU32BundleId of core::traits::Into<u32, BundleId> {
+    fn into(self: u32) -> BundleId {
+        match self {
+            0  => BundleId::None,
+            1  => BundleId::StandardPermit,
+            _  => BundleId::None,
+        }
+    }
+}
 
 #[derive(Drop)]
 pub struct BundleDescriptor {
@@ -26,23 +42,22 @@ pub struct BundleDescriptor {
 }
 
 #[generate_trait]
-pub impl PermitBundleImpl of PermitBundleTrait {
-
+pub impl BundleIdImpl of BundleIdTrait {
     // convert bundle_id to APPCHAIN::PERMIT_TYPES
-    fn to_permit_type(self: u32) -> felt252 {
+    fn to_permit_type(self: BundleId) -> felt252 {
         match self {
-            0 => APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE,
-            _ => 0,
+            BundleId::StandardPermit => APPCHAIN::PERMIT_TYPES::PERMIT_BUNDLE,
+            BundleId::None => 0,
         }
     }
 
     // convert bundle_id to BundleDescriptor
     // bundle_id from 0 to 9
-    fn to_bundle_descriptor(self: u32, world: @WorldStorage) -> Option<BundleDescriptor> {
+    fn to_bundle_descriptor(self: BundleId, world: @WorldStorage) -> Option<BundleDescriptor> {
         let permit_type: felt252 = self.to_permit_type();
         let actions_count: u32 = permit_type.actions_count();
         match self {
-            0 => Option::Some(BundleDescriptor {
+            BundleId::StandardPermit => Option::Some(BundleDescriptor {
                 name: "O'Ruggin Trail Permit",
                 description: format!("Contains {} actions.", actions_count),
                 image_uri: orug_metadata::CONTRACT_IMAGE(),
@@ -55,10 +70,13 @@ pub impl PermitBundleImpl of PermitBundleTrait {
                 payment_tokens: array![usdc_address()].span(),
                 conditions: array![].span(),
             }),
-            _ => Option::None,
+            BundleId::None => Option::None,
         }
     }
+}
 
+#[generate_trait]
+pub impl BundleDescriptorImpl of BundleDescriptorTrait {
     // build permit metadata for bundle
     fn to_bundle_metadata(self: @BundleDescriptor) -> ByteArray {
         let item = BundleItemTrait::new(

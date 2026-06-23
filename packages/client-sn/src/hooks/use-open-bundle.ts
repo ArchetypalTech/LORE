@@ -4,8 +4,8 @@ import { useCallback } from "react";
 import { PROFILE } from "@/dojo/dojoConfig";
 
 // The permit bundle registered in the `setup` contract (see setup.cairo
-// "create bundle 0"). Purchasing it mints permit_token(s) to the buyer.
-const PERMIT_BUNDLE_ID = 0;
+// "create bundle 1..BUNDLE_COUNT"). Purchasing it mints permit_token(s) to the buyer.
+const PERMIT_BUNDLE_ID = 1;
 
 // The `setup` system acts as the bundle registry for openBundle.
 const REGISTRY_ADDRESS = PROFILE.contractAddresses.starknet.setup;
@@ -23,6 +23,7 @@ export function useOpenBundle() {
 			?.controller;
 		if (!controller) return;
 
+		console.log(`Open bundle [${PERMIT_BUNDLE_ID}] @`, REGISTRY_ADDRESS)
 		controller.openBundle(PERMIT_BUNDLE_ID, REGISTRY_ADDRESS, {
 			onPurchaseComplete: () => {
 				console.log(`>> openBundle.onPurchaseComplete`)

@@ -28,6 +28,10 @@ world_address = "0x07e55c5b13a4d1a2a08dd09561c14e9a3c98cca9482cd5a479a373b0488d0
 ]
 
 [migration]
+order_inits = [
+  "lore_sn-setup",        # setup first
+  "lore_sn-permit_token",
+]
 skip_contracts = [
   "fact_registry_mock", # deployed manually
 ]
