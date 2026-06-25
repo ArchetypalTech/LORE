@@ -278,7 +278,12 @@ pub mod designer {
                     }
                 };
                 self._assert_can_edit_entity(@world, o.inst, owned);
-                assert(owned.is_zero() || world.is_owner_of_trail(o.trail_id, owned), Errors::NOT_YOUR_TRAIL);
+                let has_trail_role: bool = o.trail_id.is_non_zero()
+                    && self.accesscontrol.has_role(o.trail_id.into(), owned);
+                assert(
+                    owned.is_zero() || world.is_owner_of_trail(o.trail_id, owned) || has_trail_role,
+                    Errors::NOT_YOUR_TRAIL,
+                );
                 //
                 // Keep original creator address
                 let existing_entity: Option<Entity> = EntityImpl::get_entity(@world, o.inst);

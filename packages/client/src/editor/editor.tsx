@@ -17,6 +17,7 @@ import { TrailSelector } from "./components/TrailSelector";
 import { StagingPanel } from "./components/StagingPanel";
 import { RemoteChangesPanel } from "./components/RemoteChangesPanel";
 import { CollaborationTestPanel } from "./components/CollaborationTestPanel";
+import { GrantTrailAccessPanel } from "./components/GrantTrailAccessPanel";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
 import { useSyncOwnedTokenIds } from "@/lib/stores/token.store";
@@ -119,12 +120,6 @@ export const Editor = () => {
 								<EntityEditor key={selectedEntity} inst={selectedEntity!} />
 							</div>
 							<div className="use-editor-styles col-span-2 flex flex-col gap-3">
-								<div className="flex flex-col gap-5 flex-y-auto max-h-[calc(150vh-5rem)]">
-									<TrailSelector />
-									<StagingPanel />
-									<RemoteChangesPanel />
-									<CollaborationTestPanel />
-								</div>
 								<div
 									className={cn(
 										!dark_mode && "contrast-120 invert",
@@ -132,6 +127,13 @@ export const Editor = () => {
 									)}
 								>
 									<Terminal gameId={0} />
+								</div>
+								<div className="flex flex-col gap-5 flex-y-auto max-h-[calc(150vh-5rem)]">
+									<TrailSelector />
+									<StagingPanel />
+									<RemoteChangesPanel />
+									<GrantTrailAccessPanel />
+									{/* <CollaborationTestPanel /> */}
 								</div>
 							</div>
 						</div>

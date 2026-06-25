@@ -174,15 +174,38 @@ function validateReceiptStatus(receipt: any, calls?: (Call | DojoCall)[]): boole
 }
 
 
+async function grantAccessToTrail(trailId: bigint, account: string, granting: boolean): Promise<void> {
+	if (!WalletStore().isConnected) return;
+	const caller = WalletStore().account as Account;
+	const calldata = CallData.compile([account, trailId, granting]);
+	const calls: Call[] = [{
+		contractAddress: LORE_CONFIG.contractAddresses.designer,
+		entrypoint: "grant_access_to_trail",
+		calldata,
+	}];
+	try {
+		const response = await caller.execute(calls, { tip: 0 });
+		if (response) {
+			await caller.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+				validateReceiptStatus(receipt, calls);
+			});
+		}
+	} catch (error) {
+		console.error("❌ DESIGNER ERROR: grantAccessToTrail():", calls, error as Error);
+		throw new Error((error as Error).message);
+	}
+}
+
 /**
  * SystemCalls object that exports all the functions for external use.
  *
  * @namespace
  * @property {Function} execDesignerCall - Function to send calls to the designer contract
  * @property {Function} execCommand - Function to send commands to the entity contract
- * @property {Function} execControllerCommand - Function to send commands through the controller
+ * @property {Function} grantAccessToTrail - Function to grant/revoke trail collaboration access
  */
 export const SystemCalls = {
 	execDesignerCall,
 	execCommand,
+	grantAccessToTrail,
 };
