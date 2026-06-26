@@ -232,7 +232,9 @@ pub mod designer {
             (self.accesscontrol.has_role(ROLES::ADMIN, account))
         }
         fn is_editor(self: @ContractState, account: ContractAddress) -> bool {
-            (self.accesscontrol.has_role(ROLES::EDITOR, account) || self.accesscontrol.has_role(ROLES::ADMIN, account))
+            self.accesscontrol.has_role(ROLES::EDITOR, account)
+                || self.accesscontrol.has_role(ROLES::ADMIN, account)
+                || self.accesscontrol.has_role(ROLES::COLLABORATOR, account)
         }
         fn set_admin(ref self: ContractState, account: ContractAddress, is_admin: bool) {
             let mut world: WorldStorage = self.world_default();
@@ -257,6 +259,12 @@ pub mod designer {
                 Errors::NOT_YOUR_TRAIL,
             );
             self._grant_role(ref world, trail_id.into(), account, granting);
+            // Grant COLLABORATOR so the invitee passes _assert_caller_is_editor().
+            // Only grant on invite — never auto-revoke, since the player may have other
+            // trail collaborations and COLLABORATOR must outlive any single trail revocation.
+            if granting {
+                self._grant_role(ref world, ROLES::COLLABORATOR, account, true);
+            }
         }
 
         // TODO: remove this?? is it necessary to call again?

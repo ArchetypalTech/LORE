@@ -4,9 +4,12 @@ import { useWalletStore } from "./wallet.store";
 import { StoreBuilder } from "../utils/storebuilder";
 import { getDojoSdk } from "./dojo.store";
 import * as torii from "@dojoengine/torii-client";
-import { bigintEquals, isPositiveBigint } from "../utils/utils";
+import { bigintEquals, bigintToAddress, feltToString, isPositiveBigint } from "../utils/utils";
 import { LORE_CONFIG } from "../config";
-import { SubscriptionCallbackArgs } from "@dojoengine/sdk";
+import { ClauseBuilder, SubscriptionCallbackArgs, ToriiQueryBuilder } from "@dojoengine/sdk";
+import { type SchemaType } from "../dojo_bindings/typescript/models.gen";
+
+const SPECIAL_ROLES = new Set(["ROLE_ADMIN", "ROLE_EDITOR", "ROLE_COLLABORATOR", "DEFAULT_ADMIN_ROLE"]);
 
 const {
 	get,
@@ -16,6 +19,7 @@ const {
 } = StoreBuilder({
 	ownedGameIds: [] as bigint[],
 	ownedTrailIds: [] as bigint[],
+	collaboratedTrailIds: [] as bigint[],
 });
 
 /**
@@ -28,6 +32,7 @@ const TokenStore = createFactory({
 		set({
 			ownedGameIds: [],
 			ownedTrailIds: [],
+			collaboratedTrailIds: [],
 		});
 	},
 	playerOwnsGame: (token_id: BigNumberish): boolean => {
@@ -35,6 +40,37 @@ const TokenStore = createFactory({
 	},
 	playerOwnsTrail: (token_id: BigNumberish): boolean => {
 		return isPositiveBigint(token_id) ? get().ownedTrailIds.includes(BigInt(token_id)) : false;
+	},
+	syncCollaboratedTrails: async (address: string) => {
+		try {
+			const sdk = getDojoSdk();
+			const query = new ToriiQueryBuilder<SchemaType>()
+				.withCursor("")
+				.withLimit(1000)
+				.includeHashedKeys()
+				.withClause(
+					new ClauseBuilder<SchemaType>().keys(
+						["lore-AccessGrantedEvent"],
+						[bigintToAddress(address), undefined],
+					).build(),
+				)
+				.withEntityModels(["lore-AccessGrantedEvent"]);
+			const result = await sdk.getEventMessages({ query });
+			const collaboratedTrailIds = result?.getItems()
+				?.filter((item) => item.models?.lore?.AccessGrantedEvent?.granted as boolean)
+				?.map((item) => item.models?.lore?.AccessGrantedEvent?.role as BigNumberish)
+				?.filter((role) => {
+					const s = feltToString(role);
+					return !SPECIAL_ROLES.has(s) && s !== "";
+				})
+				?.map((role) => {
+					try { return BigInt(role); } catch { return null; }
+				})
+				?.filter((id): id is bigint => id !== null && id > 0n) ?? [];
+			set({ collaboratedTrailIds });
+		} catch (error) {
+			console.error("syncCollaboratedTrails() error:", error);
+		}
 	},
 	processTokenBalances: (balances: torii.TokenBalance[]) => {
 		// console.log("TokenStore().processTokenBalance() balances:", balances);
@@ -126,14 +162,25 @@ export const useSyncOwnedTokenIds = () => {
 };
 
 /**
- * Returns the current game id.
- * @returns {number | undefined} The current game id
+ * Fetches trail IDs the player has been granted collaboration access to.
+ * Runs once on wallet connect — player needs to reload if a new grant arrives mid-session.
+ * Use only once at a top-level component.
  */
+export const useSyncCollaboratedTrails = () => {
+	const { walletAddress, isConnected } = useWalletStore();
+	useEffect(() => {
+		if (isPositiveBigint(walletAddress) && isConnected) {
+			TokenStore().syncCollaboratedTrails(bigintToAddress(walletAddress!));
+		}
+	}, [walletAddress, isConnected]);
+};
+
 export const useOwnedTokenIds = () => {
-	const { ownedGameIds, ownedTrailIds } = useTokenStore();
+	const { ownedGameIds, ownedTrailIds, collaboratedTrailIds } = useTokenStore();
 	return {
 		ownedGameIds,
 		ownedTrailIds,
+		collaboratedTrailIds,
 	};
 };
 

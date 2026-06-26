@@ -20,7 +20,7 @@ import { CollaborationTestPanel } from "./components/CollaborationTestPanel";
 import { GrantTrailAccessPanel } from "./components/GrantTrailAccessPanel";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
-import { useSyncOwnedTokenIds } from "@/lib/stores/token.store";
+import { useSyncCollaboratedTrails, useSyncOwnedTokenIds } from "@/lib/stores/token.store";
 
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
@@ -34,6 +34,7 @@ export const Editor = () => {
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 	const { isEditor } = useSyncEditorPermissions();
 	useSyncOwnedTokenIds();
+	useSyncCollaboratedTrails();
 
 	useHead({
 		title: APP_EDITOR_SEO.title,

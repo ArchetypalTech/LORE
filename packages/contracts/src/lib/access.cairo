@@ -8,6 +8,7 @@ use lore::lib::dns::{DnsTrait, IDesignerDispatcherTrait};
 pub mod ROLES {
     pub const ADMIN: felt252 = 'ROLE_ADMIN';
     pub const EDITOR: felt252 = 'ROLE_EDITOR';
+    pub const COLLABORATOR: felt252 = 'ROLE_COLLABORATOR';
 }
 
 // Emitted events for easy client-side tracking
