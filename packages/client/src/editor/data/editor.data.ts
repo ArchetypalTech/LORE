@@ -1327,8 +1327,7 @@ export let playerFound = false;
 export let playerExists = false;
 
 /**
- * Checks if a player exists, polling until Torii indexes the Player model.
- * Game creation is handled by useSyncGameId() — this function only waits for it.
+ * Checks if a player exists and creates one if it doesn't
  */
 export const checkForPlayer = async () => {
 	if (!playerExists) {
@@ -1337,18 +1336,11 @@ export const checkForPlayer = async () => {
 		if (playerFound) {
 			playerExists = true;
 		} else {
-			// useSyncGameId() already sent "create game" — poll until Torii indexes
-			// the new Player model (tx confirm + Torii indexing takes a few seconds).
-			const MAX_ATTEMPTS = 8;
-			const DELAY_MS = 2000;
-			for (let i = 0; i < MAX_ATTEMPTS; i++) {
-				await new Promise((r) => setTimeout(r, DELAY_MS));
-				playerFound = await getPlayer(getPlayerAddress());
-				console.log(`checkForPlayer poll ${i + 1}/${MAX_ATTEMPTS}:`, playerFound);
-				if (playerFound) {
-					playerExists = true;
-					break;
-				}
+			const player = await newPlayer();
+			if (player) {
+				await publishEntityCollection(player);
+				await publishConfigToContract();
+				playerExists = true;
 			}
 		}
 	}
