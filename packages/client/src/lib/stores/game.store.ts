@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { addAddressPadding, BigNumberish } from "starknet";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { useWalletStore } from "./wallet.store";
@@ -7,6 +7,7 @@ import { StoreBuilder } from "../utils/storebuilder";
 import { getDojoSdk } from "./dojo.store";
 import type { SchemaType, PlayerAccount } from "../dojo_bindings/typescript/models.gen";
 import { useMounted } from "../utils/useMounted";
+import * as torii from "@dojoengine/torii-client";
 
 const {
 	get,
@@ -51,11 +52,14 @@ const GameStore = createFactory({
 
 /**
  * Keeps the game id in sync with the player account.
- * use only once at a top-level component.
+ * Performs an initial fetch then subscribes so any subsequent switch_game_id
+ * (from "create game" or "load game") updates the store automatically.
+ * Use only once at a top-level component.
  */
 export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	const { gameId } = useGameStore();
 	const mounted = useMounted();
+	const subRef = useRef<torii.Subscription | undefined>(undefined);
 
 	// set the editor game id, if provided
 	useEffect(() => {
@@ -65,45 +69,64 @@ export const useSyncGameId = (inputGameId?: BigNumberish) => {
 	// use game_id for the connected player
 	const { walletAddress, isConnected } = useWalletStore();
 	useEffect(() => {
-		const _fetch = async (address: BigNumberish) => {
-			const builder = new ToriiQueryBuilder<SchemaType>();
-			const query = builder
-				.withCursor("")
-				.withLimit(1)
-				.includeHashedKeys()
-				.withClause(
-					new ClauseBuilder<SchemaType>().keys(
-						["lore-PlayerAccount"],
-						[addAddressPadding(address)]
-					).build()
-				)
-				.withEntityModels(["lore-PlayerAccount"]);
+		const address = BigInt(walletAddress || 0);
+		if (address === 0n || !isConnected || inputGameId !== undefined || !mounted) return;
 
+		const query = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(1)
+			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().keys(
+					["lore-PlayerAccount"],
+					[addAddressPadding(address)]
+				).build()
+			)
+			.withEntityModels(["lore-PlayerAccount"]);
+
+		const handlePlayerAccount = (playerAccount: PlayerAccount | undefined) => {
+			console.log("useSyncGameId() playerGame", playerAccount);
+			if (playerAccount?.current_game_id) {
+				GameStore().setPlayerGameId(playerAccount.current_game_id);
+			} else {
+				sendCommand(`create game`);
+			}
+		};
+
+		const _setup = async () => {
 			try {
 				const sdk = getDojoSdk();
+
+				// Initial fetch — handles existing players immediately
 				const result = await sdk.getEntities({ query });
-				const playerGame: PlayerAccount | undefined = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount;
-				console.log("useSyncGameId() playerGame", playerGame);
-				if (playerGame) {
-					GameStore().setPlayerGameId(playerGame.current_game_id);
-				} else {
-					sendCommand(`create game`);
-				}
+				const playerAccount = result.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount | undefined;
+				handlePlayerAccount(playerAccount);
+
+				// Subscribe — picks up switch_game_id writes from "create game" / "load game"
+				subRef.current = await sdk.subscribeEntityQuery({
+					query,
+					callback: ({ data, error }) => {
+						if (error) {
+							console.error("useSyncGameId() SUB error:", error);
+							return;
+						}
+						const updated = data?.getItems()[0]?.models?.lore?.PlayerAccount as PlayerAccount | undefined;
+						if (updated?.current_game_id) {
+							GameStore().setPlayerGameId(updated.current_game_id);
+						}
+					},
+				});
 			} catch (e) {
-				// const status = {
-				// 	status: "error",
-				// 	error: (e as Error).message || "SYNC FAILURE",
-				// } as DojoStatus;
-				// setStatus(status);
-				// sendCommand(`_fatal_error ${status.error}`);
 				console.error("useSyncGameId() error for wallet:", walletAddress, e);
 			}
-		}
-		// fetch the player game id
-		const address = BigInt(walletAddress || 0);
-		if (address != 0n && isConnected && inputGameId === undefined && mounted) {
-			_fetch(address);
-		}
+		};
+
+		_setup();
+
+		return () => {
+			subRef.current?.cancel();
+			subRef.current = undefined;
+		};
 	}, [walletAddress, isConnected, inputGameId, mounted]);
 
 	// return the current game id

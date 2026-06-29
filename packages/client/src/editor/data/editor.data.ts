@@ -43,7 +43,6 @@ import { getDojoSdk } from "@/lib/stores/dojo.store";
 import { ClauseBuilder, ToriiQueryBuilder } from "@dojoengine/sdk";
 import { type SchemaType } from "@lib/dojo_bindings/typescript/models.gen";
 import { publishEntityCollection, publishConfigToContract } from "@/editor/publisher";
-import { SystemCalls } from "@/lib/systemCalls";
 
 
 const TEMP_CONSTANT_WORLD_ENTRY_ID = parseInt("0x1c0a42f26b594c").toString();
@@ -1328,9 +1327,8 @@ export let playerFound = false;
 export let playerExists = false;
 
 /**
- * Checks if a player exists and creates one if it doesn't.
- * Sends an empty prompt to the game contract to trigger player initialisation
- * on the contract side (no editor role required), then re-queries Torii.
+ * Checks if a player exists, polling until Torii indexes the Player model.
+ * Game creation is handled by useSyncGameId() — this function only waits for it.
  */
 export const checkForPlayer = async () => {
 	if (!playerExists) {
@@ -1339,14 +1337,18 @@ export const checkForPlayer = async () => {
 		if (playerFound) {
 			playerExists = true;
 		} else {
-			// Let the game contract create the player — an empty prompt call triggers
-			// get_player() → create_player_game_instance without requiring editor access.
-			await SystemCalls.execCommand("");
-			// Wait for Torii to index the new Player model before re-querying.
-			await new Promise((r) => setTimeout(r, 3000));
-			playerFound = await getPlayer(getPlayerAddress());
-			if (playerFound) {
-				playerExists = true;
+			// useSyncGameId() already sent "create game" — poll until Torii indexes
+			// the new Player model (tx confirm + Torii indexing takes a few seconds).
+			const MAX_ATTEMPTS = 8;
+			const DELAY_MS = 2000;
+			for (let i = 0; i < MAX_ATTEMPTS; i++) {
+				await new Promise((r) => setTimeout(r, DELAY_MS));
+				playerFound = await getPlayer(getPlayerAddress());
+				console.log(`checkForPlayer poll ${i + 1}/${MAX_ATTEMPTS}:`, playerFound);
+				if (playerFound) {
+					playerExists = true;
+					break;
+				}
 			}
 		}
 	}
