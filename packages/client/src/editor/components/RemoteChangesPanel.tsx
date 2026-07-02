@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditorData, { findInstValue, useEditorData } from "../data/editor.data";
 import type { AnyObject } from "../lib/types";
 import { Button } from "./ui/Button";
@@ -308,16 +308,43 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 // ---------------------------------------------------------------------------
 
 const ProposalReviewPanel = () => {
-	const { pendingProposals } = useEditorData();
+	const { pendingProposals, activeTrailId } = useEditorData();
+	const [syncing, setSyncing] = useState(false);
 
-	if (pendingProposals.length === 0) return null;
+	const doSync = async () => {
+		if (!activeTrailId) return;
+		setSyncing(true);
+		try {
+			await EditorData().syncProposals([activeTrailId]);
+		} catch (e) {
+			console.error("syncProposals failed:", e);
+		} finally {
+			setSyncing(false);
+		}
+	};
+
+	useEffect(() => {
+		doSync();
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeTrailId]);
+
+	if (!activeTrailId) return null;
 
 	return (
 		<CollapsibleComponent title={`Pending proposals (${pendingProposals.length})`}>
 			<div className="flex flex-col gap-2 text-xs">
-				{pendingProposals.map((proposal, i) => (
-					<ProposalCard key={`${String(proposal.trail_id)}-${proposal.proposer}-${i}`} proposal={proposal} />
-				))}
+				<div className="flex justify-end">
+					<Button size="sm" disabled={syncing} onClick={doSync}>
+						{syncing ? "Refreshing…" : "Refresh"}
+					</Button>
+				</div>
+				{pendingProposals.length === 0 ? (
+					<p className="opacity-50">No pending proposals for this trail.</p>
+				) : (
+					pendingProposals.map((proposal, i) => (
+						<ProposalCard key={`${String(proposal.trail_id)}-${proposal.proposer}-${i}`} proposal={proposal} />
+					))
+				)}
 			</div>
 		</CollapsibleComponent>
 	);

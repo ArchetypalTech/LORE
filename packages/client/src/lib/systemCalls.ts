@@ -165,16 +165,15 @@ async function execDesignerCall(props: DesignerCallProps) {
 }
 
 function validateReceiptStatus(receipt: any, calls?: (Call | DojoCall)[]): boolean {
-  if (receipt.execution_status == 'SUCCEEDED') {
-		console.log(`👍 Transaction sucessful:`, calls);
-		return true
+	if (receipt.execution_status == 'SUCCEEDED') {
+		console.log(`👍 Transaction successful:`, calls);
+		return true;
 	}
-	if (receipt.execution_status == 'REVERTED') {
-		console.error(`⚠️ Transaction reverted [${receipt.revert_reason}]:`, calls, receipt)
-	} else {
-		console.error(`⚠️ Transaction error [${receipt.execution_status}]:`, calls, receipt)
-	}
-	return false
+	const msg = receipt.execution_status === 'REVERTED'
+		? `Transaction reverted: ${receipt.revert_reason}`
+		: `Transaction error: ${receipt.execution_status}`;
+	console.error(`⚠️ ${msg}:`, calls, receipt);
+	throw new Error(msg);
 }
 
 
