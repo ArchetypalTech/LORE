@@ -33,6 +33,7 @@ pub mod lib {
 pub mod models {
     pub mod action;
     pub mod area;
+    pub mod collab_proposal;
     pub mod components;
     pub mod condition;
     pub mod container;
@@ -70,5 +71,6 @@ pub mod tests {
     pub mod trail_token_test;
     pub mod hub_test;
     pub mod actions_token_test;
+    pub mod collab_proposal_test;
     pub mod helpers;
 }

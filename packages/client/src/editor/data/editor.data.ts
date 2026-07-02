@@ -1,7 +1,7 @@
 import JSONbig from "json-bigint";
 import { LORE_CONFIG } from "@lib/config";
 import { toast } from "sonner";
-import { addAddressPadding, type BigNumberish, num, wallet } from "starknet";
+import { addAddressPadding, type BigNumberish, num } from "starknet";
 import type { TokenBalances } from "@dojoengine/torii-client";
 import type {
 	Entity,
@@ -14,6 +14,8 @@ import type {
 	Reactable,
 	DescriptionText,
 	ComponentTypeEnum,
+	CollabProposalEvent,
+	ApprovedProposal,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -66,6 +68,9 @@ const {
 	remoteQueue: [] as AnyObject[],
 	activeTrailId: undefined as bigint | undefined,
 	editorInitialized: false,
+	// Collab proposal state
+	pendingProposals: [] as CollabProposalEvent[],
+	currentApprovals: [] as ApprovedProposal[],
 });
 
 const getItem = (id: BigNumberish, syncPool = false) =>
@@ -143,6 +148,8 @@ export const updateComponent = <T extends keyof EntityCollection>(
 	if (edited === undefined) {
 		throw new Error("Entity not found");
 	}
+	const editedAny = edited as any;
+	const componentAny = component as any;
 
 	const isMultiKey = [
 		"Action",
@@ -152,23 +159,23 @@ export const updateComponent = <T extends keyof EntityCollection>(
 		"CONDITION",
 		"DESCRIPTIONTEXT",
 		"DescriptionText",
-	].includes(componentName)
+	].includes(componentName as string);
 
-	if (isMultiKey && !edited[componentName]) {
-		edited[componentName] = [];
+	if (isMultiKey && !editedAny[componentName]) {
+		editedAny[componentName] = [];
 	}
 
-	if (edited[componentName] && Array.isArray(edited[componentName])) {
-		let index = edited[componentName].findIndex(
-			(i) => i.inst === component.inst && i.key === component.key
+	if (editedAny[componentName] && Array.isArray(editedAny[componentName])) {
+		let index = editedAny[componentName].findIndex(
+			(i: any) => i.inst === componentAny.inst && i.key === componentAny.key
 		);
 		if (index > -1) {
-			edited[componentName][index] = component;
+			editedAny[componentName][index] = component;
 		} else {
-			edited[componentName].push(component);
+			editedAny[componentName].push(component);
 			if (componentName === "DescriptionText" && !disableAutoSync) {
 				if (edited.Reactable && edited.Reactable.description) {
-					const newKey = (component as any).key;
+					const newKey = componentAny.key;
 					if (!edited.Reactable.description.includes(newKey)) {
 						edited.Reactable.description.push(newKey);
 					}
@@ -176,19 +183,19 @@ export const updateComponent = <T extends keyof EntityCollection>(
 			}
 		}
 	} else {
-		edited[componentName] = component;
+		editedAny[componentName] = component;
 	}
 
 	if (isMultiKey) {
 		if (
-			get().changeSet.some((x) => x.inst === inst && x.key === component.key && componentName in x.object)
+			get().changeSet.some((x) => x.inst === inst && x.key === componentAny.key && componentName in x.object)
 		) {
 			console.log(
-				get().changeSet.find((x) => x.inst === inst && x.key === component.key && componentName in x.object),
+				get().changeSet.find((x) => x.inst === inst && x.key === componentAny.key && componentName in x.object),
 			);
 			set({
 				changeSet: get().changeSet.filter(
-					(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst || x.key !== component.key,
+					(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst || x.key !== componentAny.key,
 				),
 			});
 		}
@@ -213,12 +220,12 @@ export const updateComponent = <T extends keyof EntityCollection>(
 			JSONbig.stringify(syncedEntity[componentName]) ===
 			JSONbig.stringify(component)
 		) {
-			syncItem(edited);
+			syncItem(edited as unknown as AnyObject);
 			return edited as EntityCollection;
 		}
 	}
-	createAction("update", inst, { [componentName]: component }, component.key);
-	syncItem(edited);
+	createAction("update", inst, { [componentName]: component }, componentAny.key);
+	syncItem(edited as unknown as AnyObject);
 	return edited as EntityCollection;
 };
 
@@ -230,6 +237,7 @@ export const removeComponent = <T extends keyof EntityCollection>(
 ): EntityCollection | undefined => {
 	const edited = getEntity(inst);
 	if (!edited) throw new Error("Entity not found");
+	const editedAny = edited as any;
 
 	let deleted: any = undefined;
 	let key: any = undefined;
@@ -242,31 +250,31 @@ export const removeComponent = <T extends keyof EntityCollection>(
 		"DescriptionText",
 	].includes(componentName as string);
 
-	if (isMultiKey && Array.isArray(edited[componentName])) {
+	if (isMultiKey && Array.isArray(editedAny[componentName])) {
 		// --- multi-component array deletion ---
-		if (index === undefined || !edited[componentName]?.[index]) {
+		if (index === undefined || !editedAny[componentName]?.[index]) {
 			console.warn(`No item found at index ${index} for ${componentName}`);
 			return edited;
 		}
 
-		deleted = edited[componentName][index];
+		deleted = editedAny[componentName][index];
 		key = deleted.key;
 
 		// remove from the component array
-		edited[componentName].splice(index, 1);
+		editedAny[componentName].splice(index, 1);
 
 		// special handling for DescriptionText ↔ Reactable.description sync
 		if (componentName === "DescriptionText" && edited.Reactable?.description && !disableAutoSync) {
 			edited.Reactable.description = edited.Reactable.description.filter(
 				(k) => num.toBigInt(k) !== num.toBigInt(key)
 			);
-			// update Reactable component
+			// update Reactable component (Reactable is keyed by inst, not key, so pass undefined)
 			const componentReactable = edited.Reactable as unknown as WithStringEnums<Reactable>;
-			createAction("update", inst, { Reactable: componentReactable }, componentReactable.key);
+			createAction("update", inst, { Reactable: componentReactable }, undefined);
 		}
 
-		if (edited[componentName].length === 0) {
-			edited[componentName] = undefined;
+		if (editedAny[componentName].length === 0) {
+			editedAny[componentName] = undefined;
 		}
 
 		// remove from changeSet
@@ -278,8 +286,8 @@ export const removeComponent = <T extends keyof EntityCollection>(
 
 	} else {
 		// --- single component deletion ---
-		deleted = edited[componentName];
-		edited[componentName] = undefined;
+		deleted = editedAny[componentName];
+		editedAny[componentName] = undefined;
 
 		// remove from changeSet
 		set({
@@ -296,7 +304,7 @@ export const removeComponent = <T extends keyof EntityCollection>(
 	}
 
 	// sync edited entity
-	syncItem(edited);
+	syncItem(edited as unknown as AnyObject);
 	return edited as EntityCollection;
 };
 
@@ -578,7 +586,7 @@ const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
 		const entity = getEntity(get().selectedEntity!);
 		if (entity !== undefined) {
-			syncItem(entity);
+			syncItem(entity as unknown as AnyObject);
 		}
 	}
 	updateSelectedEntityId(id);
@@ -938,6 +946,24 @@ const dojoSync = (
 	obj: AnyObject,
 	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
+	// ApprovedProposal arrives via the regular entity subscription — store it separately
+	// rather than merging it into the entity pool.
+	const approvedProposal = (obj as any).ApprovedProposal as ApprovedProposal | undefined;
+	if (approvedProposal?.trail_id !== undefined) {
+		const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
+		set({
+			currentApprovals: [
+				...get().currentApprovals.filter(
+					(a) =>
+						!(BigInt(a.trail_id) === BigInt(approvedProposal.trail_id) &&
+							norm(a.proposer) === norm(approvedProposal.proposer))
+				),
+				approvedProposal,
+			],
+		});
+		return;
+	}
+
 	// Initial entity load (before the editor is marked ready) always applies directly —
 	// there is nothing in progress yet to conflict with.
 	if (!get().editorInitialized) {
@@ -1130,6 +1156,44 @@ export const getAccountRoles = async (address: string): Promise<string[]> => {
     console.error("Error fetching account permissions from Torii:", error);
     throw error;
   }
+};
+
+export const syncProposals = async (ownedTrailIds: bigint[]): Promise<void> => {
+	if (ownedTrailIds.length === 0) return;
+	try {
+		const sdk = getDojoSdk();
+		const proposals: CollabProposalEvent[] = [];
+		for (const trailId of ownedTrailIds) {
+			const query = new ToriiQueryBuilder<SchemaType>()
+				.withCursor("")
+				.withLimit(1000)
+				.includeHashedKeys()
+				.withClause(
+					new ClauseBuilder<SchemaType>().keys(
+						["lore-CollabProposalEvent"],
+						[bigintToAddress(trailId), undefined]
+					).build()
+				)
+				.withEntityModels(["lore-CollabProposalEvent"]);
+			const result = await sdk.getEventMessages({ query });
+			result.getItems().forEach((item) => {
+				const ev = item.models?.lore?.CollabProposalEvent;
+				if (ev) proposals.push(ev as CollabProposalEvent);
+			});
+		}
+		set({ pendingProposals: proposals });
+	} catch (error) {
+		console.error("Error fetching collab proposals from Torii:", error);
+		throw error;
+	}
+};
+
+export const getApprovalForTrail = (trailId: bigint, proposerAddress: string): ApprovedProposal | undefined => {
+	const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
+	const target = norm(proposerAddress);
+	return get().currentApprovals.find(
+		(a) => BigInt(a.trail_id) === trailId && norm(a.proposer) === target
+	);
 };
 
 export const propertiesRegistered = async (
@@ -1802,6 +1866,9 @@ const EditorData = createFactory({
 	acceptAllRemoteUpdates,
 	dismissRemoteUpdate,
 	simulateRemoteEntityEdit,
+	// Collab proposals
+	syncProposals,
+	getApprovalForTrail,
 });
 
 export default EditorData;

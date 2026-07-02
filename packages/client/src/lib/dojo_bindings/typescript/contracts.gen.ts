@@ -476,6 +476,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_approveProposal_calldata = (proposal: models.ApprovedProposal): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "approve_proposal",
+			calldata: [proposal],
+		};
+	};
+
+	const designer_approveProposal = async (snAccount: Account | AccountInterface, proposal: models.ApprovedProposal) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_approveProposal_calldata(proposal),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createAction_calldata = (t: Array<Action>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -1300,6 +1321,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_rejectProposal_calldata = (trailId: BigNumberish, proposer: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "reject_proposal",
+			calldata: [trailId, proposer],
+		};
+	};
+
+	const designer_rejectProposal = async (snAccount: Account | AccountInterface, trailId: BigNumberish, proposer: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_rejectProposal_calldata(trailId, proposer),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_renounceRole_calldata = (role: BigNumberish, account: string): DojoCall => {
 		return {
 			contractName: "designer",
@@ -1376,6 +1418,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_setEditor_calldata(account, isEditor),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_submitForReview_calldata = (trailId: BigNumberish, entities: Array<Entity>, reactables: Array<Reactable>, areas: Array<Area>, exits: Array<Exit>, hubs: Array<Hub>, descriptionTexts: Array<DescriptionText>, inventoryItems: Array<InventoryItem>, containers: Array<Container>, trails: Array<Trail>, triggers: Array<Trigger>, conditions: Array<Condition>, effects: Array<Effect>, actions: Array<Action>, parents: Array<ParentToChildren>, children: Array<ChildToParent>, deletedEntityInsts: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "submit_for_review",
+			calldata: [trailId, entities, reactables, areas, exits, hubs, descriptionTexts, inventoryItems, containers, trails, triggers, conditions, effects, actions, parents, children, deletedEntityInsts],
+		};
+	};
+
+	const designer_submitForReview = async (snAccount: Account | AccountInterface, trailId: BigNumberish, entities: Array<Entity>, reactables: Array<Reactable>, areas: Array<Area>, exits: Array<Exit>, hubs: Array<Hub>, descriptionTexts: Array<DescriptionText>, inventoryItems: Array<InventoryItem>, containers: Array<Container>, trails: Array<Trail>, triggers: Array<Trigger>, conditions: Array<Condition>, effects: Array<Effect>, actions: Array<Action>, parents: Array<ParentToChildren>, children: Array<ChildToParent>, deletedEntityInsts: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_submitForReview_calldata(trailId, entities, reactables, areas, exits, hubs, descriptionTexts, inventoryItems, containers, trails, triggers, conditions, effects, actions, parents, children, deletedEntityInsts),
 				"lore",
 			);
 		} catch (error) {
@@ -2644,6 +2707,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildTransferFromCalldata: build_actions_token_transferFrom_calldata,
 		},
 		designer: {
+			approveProposal: designer_approveProposal,
+			buildApproveProposalCalldata: build_designer_approveProposal_calldata,
 			createAction: designer_createAction,
 			buildCreateActionCalldata: build_designer_createAction_calldata,
 			createArea: designer_createArea,
@@ -2724,6 +2789,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildIsEditorCalldata: build_designer_isEditor_calldata,
 			registerPropertyRegistry: designer_registerPropertyRegistry,
 			buildRegisterPropertyRegistryCalldata: build_designer_registerPropertyRegistry_calldata,
+			rejectProposal: designer_rejectProposal,
+			buildRejectProposalCalldata: build_designer_rejectProposal_calldata,
 			renounceRole: designer_renounceRole,
 			buildRenounceRoleCalldata: build_designer_renounceRole_calldata,
 			revokeRole: designer_revokeRole,
@@ -2732,6 +2799,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetAdminCalldata: build_designer_setAdmin_calldata,
 			setEditor: designer_setEditor,
 			buildSetEditorCalldata: build_designer_setEditor_calldata,
+			submitForReview: designer_submitForReview,
+			buildSubmitForReviewCalldata: build_designer_submitForReview_calldata,
 			supportsInterface: designer_supportsInterface,
 			buildSupportsInterfaceCalldata: build_designer_supportsInterface_calldata,
 		},

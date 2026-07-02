@@ -14,6 +14,7 @@ use lore::{
         condition::{Condition},
         trigger::{Trigger},
         hub::{Hub, Trail},
+        collab_proposal::{ApprovedProposal},
     },
 };
 
@@ -62,6 +63,29 @@ pub trait IDesigner<TContractState> {
     fn delete_child(ref self: TContractState, ids: Array<felt252>);
     //
     fn register_property_registry(ref self: TContractState, done: Array<bool>);
+    //
+    fn submit_for_review(
+        ref self: TContractState,
+        trail_id: u128,
+        entities:            Array<Entity>,
+        reactables:          Array<Reactable>,
+        areas:               Array<Area>,
+        exits:               Array<Exit>,
+        hubs:                Array<Hub>,
+        description_texts:   Array<DescriptionText>,
+        inventory_items:     Array<InventoryItem>,
+        containers:          Array<Container>,
+        trails:              Array<Trail>,
+        triggers:            Array<Trigger>,
+        conditions:          Array<Condition>,
+        effects:             Array<Effect>,
+        actions:             Array<Action>,
+        parents:             Array<ParentToChildren>,
+        children:            Array<ChildToParent>,
+        deleted_entity_insts: Array<felt252>,
+    );
+    fn approve_proposal(ref self: TContractState, proposal: ApprovedProposal);
+    fn reject_proposal(ref self: TContractState, trail_id: u128, proposer: ContractAddress);
 
     // IAccessControl
     fn has_role(self: @TContractState, role: felt252, account: ContractAddress) -> bool;
@@ -116,6 +140,29 @@ pub trait IDesignerPublic<TContractState> {
     fn delete_child(ref self: TContractState, ids: Array<felt252>);
     //
     fn register_property_registry(ref self: TContractState, done: Array<bool>);
+    //
+    fn submit_for_review(
+        ref self: TContractState,
+        trail_id: u128,
+        entities:            Array<Entity>,
+        reactables:          Array<Reactable>,
+        areas:               Array<Area>,
+        exits:               Array<Exit>,
+        hubs:                Array<Hub>,
+        description_texts:   Array<DescriptionText>,
+        inventory_items:     Array<InventoryItem>,
+        containers:          Array<Container>,
+        trails:              Array<Trail>,
+        triggers:            Array<Trigger>,
+        conditions:          Array<Condition>,
+        effects:             Array<Effect>,
+        actions:             Array<Action>,
+        parents:             Array<ParentToChildren>,
+        children:            Array<ChildToParent>,
+        deleted_entity_insts: Array<felt252>,
+    );
+    fn approve_proposal(ref self: TContractState, proposal: ApprovedProposal);
+    fn reject_proposal(ref self: TContractState, trail_id: u128, proposer: ContractAddress);
 }
 
 #[dojo::contract]
@@ -174,6 +221,7 @@ pub mod designer {
             condition::{Condition},
             trigger::{Trigger, TriggerImpl},
             hub::{Hub, HubTrait, Trail, TrailTrait},
+            collab_proposal::{ApprovedProposal, CollabProposalEvent, contains_inst, contains_pair},
         },
         types::{
             component_type::ComponentType,
@@ -189,11 +237,14 @@ pub mod designer {
     };
 
     mod Errors {
-        pub const NOT_ADMIN: felt252        = 'DESIGNER: Not admin';
-        pub const NOT_EDITOR: felt252       = 'DESIGNER: Not editor';
-        pub const NOT_YOUR_ENTITY: felt252  = 'DESIGNER: Not your entity';
-        pub const NOT_YOUR_TRAIL: felt252   = 'DESIGNER: Not your trail';
-        pub const INVALID_ENTITY: felt252   = 'DESIGNER: Invalid entity';
+        pub const NOT_ADMIN: felt252           = 'DESIGNER: Not admin';
+        pub const NOT_EDITOR: felt252          = 'DESIGNER: Not editor';
+        pub const NOT_YOUR_ENTITY: felt252     = 'DESIGNER: Not your entity';
+        pub const NOT_YOUR_TRAIL: felt252      = 'DESIGNER: Not your trail';
+        pub const INVALID_ENTITY: felt252      = 'DESIGNER: Invalid entity';
+        pub const NOT_APPROVED: felt252        = 'DESIGNER: Not approved';
+        pub const NOT_TRAIL_OWNER: felt252     = 'DESIGNER: Not trail owner';
+        pub const NOT_COLLABORATOR: felt252    = 'DESIGNER: Not collaborator';
     }
 
     fn dojo_init(ref self: ContractState, admin_accounts: Array<ContractAddress>) {
@@ -267,6 +318,74 @@ pub mod designer {
             }
         }
 
+        fn submit_for_review(
+            ref self: ContractState,
+            trail_id: u128,
+            entities:            Array<Entity>,
+            reactables:          Array<Reactable>,
+            areas:               Array<Area>,
+            exits:               Array<Exit>,
+            hubs:                Array<Hub>,
+            description_texts:   Array<DescriptionText>,
+            inventory_items:     Array<InventoryItem>,
+            containers:          Array<Container>,
+            trails:              Array<Trail>,
+            triggers:            Array<Trigger>,
+            conditions:          Array<Condition>,
+            effects:             Array<Effect>,
+            actions:             Array<Action>,
+            parents:             Array<ParentToChildren>,
+            children:            Array<ChildToParent>,
+            deleted_entity_insts: Array<felt252>,
+        ) {
+            let caller: ContractAddress = starknet::get_caller_address();
+            let mut world: WorldStorage = self.world_default();
+            // caller must have been granted access to this trail (collaborator or owner)
+            let has_trail_role: bool = self.accesscontrol.has_role(trail_id.into(), caller);
+            let is_trail_owner: bool = world.is_owner_of_trail(trail_id, caller);
+            assert(
+                self.is_admin(caller) || is_trail_owner || has_trail_role,
+                Errors::NOT_COLLABORATOR,
+            );
+            world.emit_event(@CollabProposalEvent {
+                trail_id,
+                proposer: caller,
+                entities,
+                reactables,
+                areas,
+                exits,
+                hubs,
+                description_texts,
+                inventory_items,
+                containers,
+                trails,
+                triggers,
+                conditions,
+                effects,
+                actions,
+                parents,
+                children,
+                deleted_entity_insts,
+            });
+        }
+
+        fn approve_proposal(ref self: ContractState, proposal: ApprovedProposal) {
+            let caller: ContractAddress = starknet::get_caller_address();
+            let mut world: WorldStorage = self.world_default();
+            let is_trail_owner: bool = world.is_owner_of_trail(proposal.trail_id, caller);
+            assert(self.is_admin(caller) || is_trail_owner, Errors::NOT_TRAIL_OWNER);
+            world.write_model(@proposal);
+        }
+
+        fn reject_proposal(ref self: ContractState, trail_id: u128, proposer: ContractAddress) {
+            let caller: ContractAddress = starknet::get_caller_address();
+            let mut world: WorldStorage = self.world_default();
+            let is_trail_owner: bool = world.is_owner_of_trail(trail_id, caller);
+            assert(self.is_admin(caller) || is_trail_owner, Errors::NOT_TRAIL_OWNER);
+            let model: ApprovedProposal = world.read_model((trail_id, proposer));
+            world.erase_model(@model);
+        }
+
         // TODO: remove this?? is it necessary to call again?
         fn register_property_registry(ref self: ContractState, done: Array<bool>) {
             let mut world: WorldStorage = self.world_default();
@@ -292,6 +411,10 @@ pub mod designer {
                     owned.is_zero() || world.is_owner_of_trail(o.trail_id, owned) || has_trail_role,
                     Errors::NOT_YOUR_TRAIL,
                 );
+                if !owned.is_zero() && o.trail_id.is_non_zero() && !world.is_owner_of_trail(o.trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((o.trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 //
                 // Keep original creator address
                 let existing_entity: Option<Entity> = EntityImpl::get_entity(@world, o.inst);
@@ -335,6 +458,11 @@ pub mod designer {
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Reactable);
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -344,6 +472,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.w_description_texts.span(), o.inst, o.key.into()), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -354,6 +487,11 @@ pub mod designer {
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Area);
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -364,6 +502,11 @@ pub mod designer {
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Exit);
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -376,6 +519,11 @@ pub mod designer {
             );
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -386,6 +534,11 @@ pub mod designer {
             VariablePropertyHelper::register_component_properties(ref world, ComponentType::Container);
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -395,6 +548,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.w_multi_keys.span(), o.inst, o.key), Errors::NOT_APPROVED);
+                }
                 let _result: Result<(), Error> = TriggerImpl::register_trigger(ref world, @o);
                 // if result.is_err() {
             //     println!(
@@ -410,6 +568,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.w_multi_keys.span(), o.inst, o.key), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -419,6 +582,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.w_multi_keys.span(), o.inst, o.key), Errors::NOT_APPROVED);
+                }
                 world.write_model(@o);
             }
         }
@@ -428,6 +596,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.w_multi_keys.span(), o.inst, o.key), Errors::NOT_APPROVED);
+                }
                 let _result: Result<(), Error> = ActionImpl::register_action(ref world, @o);
                 // if result.is_err() {
             //     println!(
@@ -443,6 +616,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for mut o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 // Keep original trails -- NOT ALLOWED TO EDIT FROM EDITOR
                 // (trails are managed in the contract)
                 let existing_hub: Hub = world.read_model(o.inst);
@@ -457,6 +635,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_edit_protection(@world, @o);
                 o.append_to_hub(ref world);
                 world.write_model(@o);
@@ -468,6 +651,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_parent_protection(@world, @o);
                 world.write_model(@o);
             }
@@ -478,6 +666,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for o in t {
                 self._assert_can_edit_entity(@world, o.inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(o.inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_child_protection(@world, @o);
                 world.write_model(@o);
             }
@@ -489,6 +682,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_delete_protection(@world, inst);
                 let model: Entity = world.read_model(inst);
                 world.erase_model(@model);
@@ -513,6 +711,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_delete_protection(@world, inst);
                 let model: Reactable = world.read_model(inst);
                 world.erase_model(@model);
@@ -524,6 +727,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.d_description_texts.span(), inst, key), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_delete_protection(@world, inst);
                 let model: DescriptionText = world.read_model((inst, key),);
                 world.erase_model(@model);
@@ -535,6 +743,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 let model: Area = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -545,6 +758,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_delete_protection(@world, inst);
                 let model: Exit = world.read_model(inst);
                 world.erase_model(@model);
@@ -556,6 +774,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 let model: InventoryItem = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -566,6 +789,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 let model: Container = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -576,6 +804,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.d_multi_keys.span(), inst, key), Errors::NOT_APPROVED);
+                }
                 let model: Trigger = world.read_model((inst, key),);
                 let _result: Result<(), Error> = TriggerImpl::unregister_trigger(ref world, @model);
                 // if result.is_err() {
@@ -593,6 +826,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.d_multi_keys.span(), inst, key), Errors::NOT_APPROVED);
+                }
                 let model: Condition = world.read_model((inst, key),);
                 world.erase_model(@model);
             }
@@ -603,6 +841,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.d_multi_keys.span(), inst, key), Errors::NOT_APPROVED);
+                }
                 let model: Effect = world.read_model((inst, key),);
                 world.erase_model(@model);
             }
@@ -613,6 +856,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for (inst, key) in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_pair(approval.d_multi_keys.span(), inst, key), Errors::NOT_APPROVED);
+                }
                 let model: Action = world.read_model((inst, key),);
                 let _result: Result<(), Error> = ActionImpl::unregister_action(ref world, @model);
                 // if result.is_err() {
@@ -630,6 +878,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 let model: Hub = world.read_model(inst);
                 model.remove_trails_from_hub(ref world);
                 world.erase_model(@model);
@@ -641,6 +894,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 TrailTrait::assert_trail_delete_protection(@world, inst);
                 let model: Trail = world.read_model(inst);
                 model.remove_from_hub(ref world);
@@ -653,6 +911,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 let model: ParentToChildren = world.read_model(inst);
                 world.erase_model(@model);
             }
@@ -663,6 +926,11 @@ pub mod designer {
             let mut world: WorldStorage = self.world_default();
             for inst in ids {
                 self._assert_can_delete_entity(@world, inst, owned);
+                let trail_id: u128 = world.get_entity_trail_id(inst);
+                if !owned.is_zero() && trail_id.is_non_zero() && !world.is_owner_of_trail(trail_id, owned) {
+                    let approval: ApprovedProposal = world.read_model((trail_id, owned));
+                    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
+                }
                 let model: ChildToParent = world.read_model(inst);
                 world.erase_model(@model);
             }

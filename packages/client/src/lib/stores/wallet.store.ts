@@ -239,6 +239,18 @@ const setupController = async () => {
 							entrypoint: "grant_access_to_trail",
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} granting trail modification access`,
 						},
+						{
+							entrypoint: "submit_for_review",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} submitting changes for trail owner review`,
+						},
+						{
+							entrypoint: "approve_proposal",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} approving a collaborator proposal`,
+						},
+						{
+							entrypoint: "reject_proposal",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} rejecting a collaborator proposal`,
+						},
 					],
 				},
 			},

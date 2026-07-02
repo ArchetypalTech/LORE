@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { byteArray, num } from "starknet";
+import { byteArray, num, CallData, type RawArgsArray, Account, type Call, type BigNumberish } from "starknet";
 import {
 	type Area,
 	type ChildToParent,
@@ -26,16 +26,20 @@ import {
 	type ParentToChildren,
 	type Hub,
 	type Trail,
+	type ApprovedProposal,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
+import { toCairoArray } from "@/editor/editor.utils";
 import { type DesignerEntrypoints, SystemCalls } from "../lib/systemCalls";
 import EditorData, { syncEntitiesByInsts, persistDraft } from "./data/editor.data";
 import EditorStore from "@/lib/stores/editor.store";
 import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
-import type { EntityCollection } from "./lib/types";
+import type { EntityCollection, EditorCollection } from "./lib/types";
 import type { ChangeSet } from "./lib/types";
 import { getPlayerAddress } from "./lib/components";
+import WalletStore from "@/lib/stores/wallet.store";
+import { LORE_CONFIG } from "@/lib/config";
 
 /**
  * Publishes a game configuration to the contract
@@ -585,6 +589,348 @@ export const registerPropertyRegistry = async () => {
 const publishRegisterPropertyRegistry = async () => {
 		let done = true;
 		await dispatchDesignerCall("register_property_registry", [done]);
+};
+
+// ─── Collab: submit for review / publish approved ─────────────────────────────
+
+// Build helpers — mirror the per-type serialization in the publish* functions above
+// but return the raw data array instead of dispatching a call.
+
+const buildEntityData = (e: Entity) => [
+	num.toBigInt(e.inst.toString()), e.is_entity,
+	num.toBigInt(e.trail_id?.toString() ?? "0"),
+	byteArray.byteArrayFromString(e.name), 0n,
+	e.alt_names.length > 0 ? e.alt_names.filter(x => x.length > 0).map(x => byteArray.byteArrayFromString(x)) : 0,
+	e.actions_keys.length > 0 ? e.actions_keys.filter(x => x !== num.toBigInt(0)).map(x => num.toBigInt(x.toString())) : 0,
+];
+
+const buildReactableData = (r: Reactable) => [
+	num.toBigInt(r.inst.toString()), r.is_reactable, r.is_visible,
+	r.description.map(x => num.toBigInt(x.toString())),
+	r.action_map.length > 0
+		? r.action_map.map(x => [byteArray.byteArrayFromString(x.action), num.toBigInt(x.inst ?? "0"), toEnumIndex(x.action_fn, reactableActions), num.toBigInt(x.entrypoints?.[0] ?? "0"), num.toBigInt(x.entrypoints?.[1] ?? "0")])
+		: 0,
+	r.already_shown, byteArray.byteArrayFromString(r.new_entry.toString() ?? ""),
+];
+
+const buildAreaData = (a: Area) => [
+	num.toBigInt(a.inst.toString()), a.is_area, a.is_spawn_point,
+	Number(a.progress_percentage ?? "0"), a.preserve_children ?? false,
+];
+
+const buildExitData = (e: Exit) => [
+	num.toBigInt(e.inst.toString()), e.is_exit, e.is_enterable,
+	num.toBigInt(e.leads_to.toString()), toEnumIndex(e.direction_type, direction),
+	e.action_map.length > 0
+		? e.action_map.map(x => [byteArray.byteArrayFromString(x.action), num.toBigInt((x.inst ?? 0).toString()), toEnumIndex(x.action_fn, exitActions)])
+		: 0,
+];
+
+const buildHubData = (h: Hub) => [
+	num.toBigInt(h.inst.toString()), h.is_hub, h.is_enabled,
+	h.trails_insts.map(x => num.toBigInt(x.toString())),
+	h.grants_editor_access, h.grants_trail_access,
+];
+
+const buildDescriptionTextData = (dt: DescriptionText) => [
+	num.toBigInt(dt.inst.toString()), num.toBigInt(dt.key.toString()),
+	byteArray.byteArrayFromString(dt.text),
+];
+
+const buildInventoryItemData = (item: InventoryItem) => [
+	num.toBigInt(item.inst.toString()), item.is_inventory_item,
+	item.owner_id ? num.toBigInt(item.owner_id.toString()) : 0n,
+	item.can_be_picked_up, item.can_go_in_container,
+	num.toBigInt(item.quantity.toString() ?? 0),
+	item.action_map.length > 0
+		? item.action_map.map(x => [byteArray.byteArrayFromString(x.action), num.toBigInt((x.inst ?? "0").toString()), toEnumIndex(x.action_fn, inventoryItemActions)])
+		: 0,
+	item.already_used, item.multiple_use,
+];
+
+const buildContainerData = (c: Container) => [
+	num.toBigInt(c.inst.toString()), c.is_container, c.can_be_opened,
+	c.can_receive_items, c.is_open, num.toBigInt(c.num_slots.toString() ?? 0),
+	c.action_map.length > 0
+		? c.action_map.map(x => [byteArray.byteArrayFromString(x.action), num.toBigInt((x.inst ?? 0).toString()), toEnumIndex(x.action_fn, containerActions)])
+		: 0,
+];
+
+const buildTrailData = (t: Trail) => [
+	num.toBigInt(t.inst.toString()), t.is_trail,
+	num.toBigInt(t.trail_id.toString()), num.toBigInt(t.hub_inst.toString()), t.is_published,
+];
+
+const buildTriggerData = (t: Trigger) => [
+	num.toBigInt(t.inst.toString()), num.toBigInt(t.key.toString()),
+	byteArray.byteArrayFromString(t.name ?? ""), toEnumIndex(t.trigger_type, triggerType),
+	t.is_enabled, t.is_once,
+];
+
+const buildConditionData = (c: Condition) => [
+	num.toBigInt(c.inst.toString()), num.toBigInt(c.key.toString()),
+	byteArray.byteArrayFromString(c.name ?? ""), num.toBigInt(c.target),
+	toEnumIndex(c.component, componentType), byteArray.byteArrayFromString(c.property),
+	toEnumIndex(c.operator, operator), c.value.map(v => num.toBigInt(v ?? "0")),
+];
+
+const buildEffectData = (e: Effect) => [
+	num.toBigInt(e.inst.toString()), num.toBigInt(e.key.toString()),
+	byteArray.byteArrayFromString(e.name ?? ""), num.toBigInt(e.target.toString()),
+	toEnumIndex(e.effect_type, effectType), toEnumIndex(e.component, componentType),
+	byteArray.byteArrayFromString(e.property),
+	e.value.map(([v, i]) => [byteArray.byteArrayFromString(v.toString() ?? ""), num.toBigInt(i.toString() ?? 0)]),
+	num.toBigInt(e.n_value.toString() ?? 0),
+	num.toBigInt(e.hex_value?.toString() ?? num.toBigInt("0")),
+];
+
+const buildActionData = (a: Action) => [
+	num.toBigInt(a.inst.toString()), num.toBigInt(a.key),
+	byteArray.byteArrayFromString(a.name ?? ""), byteArray.byteArrayFromString(a.description ?? ""),
+	a.is_enabled, num.toBigInt(a.executor.toString() ?? 0),
+	a.trigger.map(([x, y]) => [num.toBigInt(x.toString()), num.toBigInt(y.toString())]),
+	a.conditions.map(([x, y]) => [num.toBigInt(x.toString()), num.toBigInt(y.toString())]),
+	a.effects.map(([x, y]) => [num.toBigInt(x.toString()), num.toBigInt(y.toString())]),
+	a.tags.map(x => byteArray.byteArrayFromString(x)),
+	a.failing_response.length > 0 ? a.failing_response.filter(x => x.length > 0).map(x => byteArray.byteArrayFromString(x)) : 0,
+	a.success_response.length > 0 ? a.success_response.filter(x => x.length > 0).map(x => byteArray.byteArrayFromString(x)) : 0,
+];
+
+const buildParentToChildrenData = (p: ParentToChildren) => [
+	num.toBigInt(p.inst.toString()), p.is_parent,
+	p.children.length > 0 ? p.children.map(x => num.toBigInt(x)) : 0,
+];
+
+const buildChildToParentData = (c: ChildToParent) => [
+	num.toBigInt(c.inst.toString()), c.is_child, num.toBigInt(c.parent),
+];
+
+// felt252 list membership checks — mirror contains_inst / contains_pair from the Cairo contract.
+const containsInst = (list: bigint[], inst: bigint) => list.some(x => x === inst);
+const containsPair = (list: bigint[], inst: bigint, key: bigint) => {
+	for (let i = 0; i + 1 < list.length; i += 2) {
+		if (list[i] === inst && list[i + 1] === key) return true;
+	}
+	return false;
+};
+
+type MultiKeyed = { inst: BigNumberish; key: BigNumberish };
+const filterApprovedMulti = (list: bigint[], items: MultiKeyed | MultiKeyed[] | undefined): MultiKeyed[] => {
+	if (!items) return [];
+	const arr = Array.isArray(items) ? items : [items];
+	return arr.filter(x => containsPair(list, BigInt(x.inst.toString()), BigInt(x.key.toString())));
+};
+
+// Serialize a component data array to a Cairo Array<T> calldata fragment:
+// toCairoArray([d1, d2]) → [2, ...d1_flat, ...d2_flat]
+const flatCairo = (data: unknown[]) => (toCairoArray(data) as unknown[]).flat() as unknown[];
+
+/**
+ * Bundles all staged changes for a trail into a single submit_for_review call.
+ * Nothing is written to chain — the contract emits a CollabProposalEvent only.
+ * The collaborator pays for this cheap event-only transaction.
+ */
+export const submitForReview = async (trailId: bigint): Promise<boolean> => {
+	if (!WalletStore().isConnected) return false;
+
+	const staged = EditorData().get().stagedChanges.filter(c => {
+		const entity = EditorData().getEntity(c.inst);
+		return BigInt(entity?.Entity?.trail_id ?? 0) === trailId;
+	});
+
+	if (staged.length === 0) {
+		toast.info("Nothing staged for this trail.");
+		return false;
+	}
+
+	const entitiesData: unknown[][] = [];
+	const reactablesData: unknown[][] = [];
+	const areasData: unknown[][] = [];
+	const exitsData: unknown[][] = [];
+	const hubsData: unknown[][] = [];
+	const descriptionTextsData: unknown[][] = [];
+	const inventoryItemsData: unknown[][] = [];
+	const containersData: unknown[][] = [];
+	const trailsData: unknown[][] = [];
+	const triggersData: unknown[][] = [];
+	const conditionsData: unknown[][] = [];
+	const effectsData: unknown[][] = [];
+	const actionsData: unknown[][] = [];
+	const parentsData: unknown[][] = [];
+	const childrenData: unknown[][] = [];
+	const deletedEntityInsts: bigint[] = [];
+
+	for (const change of staged) {
+		const col = change.object as EntityCollection;
+		if (change.type === "update") {
+			if (col.Entity)           entitiesData.push(buildEntityData(col.Entity));
+			if (col.Reactable)        reactablesData.push(buildReactableData(col.Reactable));
+			if (col.Area)             areasData.push(buildAreaData(col.Area));
+			if (col.Exit)             exitsData.push(buildExitData(col.Exit));
+			if (col.Hub)              hubsData.push(buildHubData(col.Hub));
+			if (col.InventoryItem)    inventoryItemsData.push(buildInventoryItemData(col.InventoryItem));
+			if (col.Container)        containersData.push(buildContainerData(col.Container));
+			if (col.Trail)            trailsData.push(buildTrailData(col.Trail));
+			if (col.ParentToChildren) parentsData.push(buildParentToChildrenData(col.ParentToChildren));
+			if (col.ChildToParent)    childrenData.push(buildChildToParentData(col.ChildToParent));
+			if (col.DescriptionText) {
+				const arr = Array.isArray(col.DescriptionText) ? col.DescriptionText : [col.DescriptionText];
+				for (const dt of arr) descriptionTextsData.push(buildDescriptionTextData(dt));
+			}
+			for (const t of (Array.isArray(col.Trigger) ? col.Trigger : col.Trigger ? [col.Trigger] : []))
+				triggersData.push(buildTriggerData(t));
+			for (const c of (Array.isArray(col.Condition) ? col.Condition : col.Condition ? [col.Condition] : []))
+				conditionsData.push(buildConditionData(c));
+			for (const e of (Array.isArray(col.Effect) ? col.Effect : col.Effect ? [col.Effect] : []))
+				effectsData.push(buildEffectData(e));
+			for (const a of (Array.isArray(col.Action) ? col.Action : col.Action ? [col.Action] : []))
+				actionsData.push(buildActionData(a));
+		} else if (change.type === "delete" && col.Entity) {
+			deletedEntityInsts.push(num.toBigInt(col.Entity.inst));
+		}
+	}
+
+	// submit_for_review(trail_id, entities, reactables, areas, exits, hubs,
+	//   description_texts, inventory_items, containers, trails,
+	//   triggers, conditions, effects, actions, parents, children, deleted_entity_insts)
+	const calldata = CallData.compile([
+		trailId,
+		...flatCairo(entitiesData),
+		...flatCairo(reactablesData),
+		...flatCairo(areasData),
+		...flatCairo(exitsData),
+		...flatCairo(hubsData),
+		...flatCairo(descriptionTextsData),
+		...flatCairo(inventoryItemsData),
+		...flatCairo(containersData),
+		...flatCairo(trailsData),
+		...flatCairo(triggersData),
+		...flatCairo(conditionsData),
+		...flatCairo(effectsData),
+		...flatCairo(actionsData),
+		...flatCairo(parentsData),
+		...flatCairo(childrenData),
+		...flatCairo(deletedEntityInsts),
+	] as RawArgsArray);
+
+	const account = WalletStore().account as Account;
+	const call: Call = {
+		contractAddress: LORE_CONFIG.contractAddresses.designer,
+		entrypoint: "submit_for_review",
+		calldata,
+	};
+
+	try {
+		await Notifications().startPublishing();
+		const response = await account.execute([call], { tip: 0 });
+		if (response) {
+			await account.waitForTransaction(response.transaction_hash, { retryInterval: 200 });
+		}
+		Notifications().finalizePublishing();
+		toast.success("Changes submitted for review.");
+		return true;
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : String(error);
+		Notifications().showError(`Error submitting for review: ${errorMsg}`);
+		return false;
+	}
+};
+
+/**
+ * Publishes only the components from staged changes that the trail owner approved.
+ * Skips the creator_address ownership check — the contract's approval gate enforces access.
+ */
+export const publishApproved = async (trailId: bigint, approval: ApprovedProposal): Promise<boolean> => {
+	const toBigInts = (list: BigNumberish[]) => list.map(x => BigInt(x.toString()));
+	const wSingle  = toBigInts(approval.w_single_keys);
+	const wDesc    = toBigInts(approval.w_description_texts);
+	const wMulti   = toBigInts(approval.w_multi_keys);
+	const dSingle  = toBigInts(approval.d_single_keys);
+	const dDesc    = toBigInts(approval.d_description_texts);
+	const dMulti   = toBigInts(approval.d_multi_keys);
+
+	const staged = EditorData().get().stagedChanges.filter(c => {
+		const entity = EditorData().getEntity(c.inst);
+		return BigInt(entity?.Entity?.trail_id ?? 0) === trailId;
+	});
+
+	if (staged.length === 0) {
+		toast.info("Nothing staged for this trail.");
+		return false;
+	}
+
+	const approvedChanges: ChangeSet[] = [];
+
+	for (const change of staged) {
+		const col = change.object; // EditorCollection — enum fields are already string-typed
+		const inst = BigInt(change.inst.toString());
+
+		const buildFiltered = (singleList: bigint[], descList: bigint[], multiList: bigint[]): EditorCollection => {
+			const out: EditorCollection = {};
+			if (col.Entity           && containsInst(singleList, inst)) out.Entity = col.Entity;
+			if (col.Reactable        && containsInst(singleList, inst)) out.Reactable = col.Reactable;
+			if (col.Area             && containsInst(singleList, inst)) out.Area = col.Area;
+			if (col.Exit             && containsInst(singleList, inst)) out.Exit = col.Exit;
+			if (col.Hub              && containsInst(singleList, inst)) out.Hub = col.Hub;
+			if (col.InventoryItem    && containsInst(singleList, inst)) out.InventoryItem = col.InventoryItem;
+			if (col.Container        && containsInst(singleList, inst)) out.Container = col.Container;
+			if (col.Trail            && containsInst(singleList, inst)) out.Trail = col.Trail;
+			if (col.ParentToChildren && containsInst(singleList, inst)) out.ParentToChildren = col.ParentToChildren;
+			if (col.ChildToParent    && containsInst(singleList, inst)) out.ChildToParent = col.ChildToParent;
+			if (col.DescriptionText) {
+				const ok = filterApprovedMulti(descList, (Array.isArray(col.DescriptionText) ? col.DescriptionText : [col.DescriptionText]) as MultiKeyed[]);
+				if (ok.length > 0) out.DescriptionText = ok as DescriptionText[];
+			}
+			const applyMulti = <T extends MultiKeyed>(src: T | T[] | undefined, key: "Trigger" | "Condition" | "Effect" | "Action") => {
+				const ok = filterApprovedMulti(multiList, src as MultiKeyed | MultiKeyed[] | undefined) as T[];
+				if (ok.length > 0) (out as Record<string, unknown>)[key] = ok.length === 1 ? ok[0] : ok;
+			};
+			applyMulti(col.Trigger as Trigger | Trigger[] | undefined, "Trigger");
+			applyMulti(col.Condition as Condition | Condition[] | undefined, "Condition");
+			applyMulti(col.Effect as Effect | Effect[] | undefined, "Effect");
+			applyMulti(col.Action as Action | Action[] | undefined, "Action");
+			return out;
+		};
+
+		const filtered = change.type === "delete"
+			? buildFiltered(dSingle, dDesc, dMulti)
+			: buildFiltered(wSingle, wDesc, wMulti);
+
+		if (Object.keys(filtered).length > 0) {
+			approvedChanges.push({ ...change, object: filtered });
+		}
+	}
+
+	if (approvedChanges.length === 0) {
+		toast.info("No approved changes to publish.");
+		return false;
+	}
+
+	const publishedInsts = [...new Set(approvedChanges.map(c => c.inst))];
+
+	try {
+		await Notifications().startPublishing();
+		for (const change of approvedChanges) {
+			if (change.type === "update") {
+				await publishEntityCollection(change.object as EntityCollection);
+			} else {
+				await deleteCollection(change.object as EntityCollection);
+			}
+			EditorData().set({
+				changeSet: EditorData().changeSet.filter(x => x !== change),
+				stagedChanges: EditorData().get().stagedChanges.filter(x => x !== change),
+			});
+			persistDraft();
+		}
+		Notifications().finalizePublishing();
+		await tick();
+		await syncEntitiesByInsts(publishedInsts);
+		return true;
+	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : String(error);
+		Notifications().showError(`Error publishing approved changes: ${errorMsg}`);
+		return false;
+	}
 };
 
 /**

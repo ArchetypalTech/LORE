@@ -102,6 +102,8 @@ fn namespace_def() -> NamespaceDef {
             TestResource::Model(models::player_account::m_PlayerBalances::TEST_CLASS_HASH.into()),
             TestResource::Model(models::actions_config::m_ActionsConfig::TEST_CLASS_HASH.into()),
             TestResource::Model(models::actions_config::m_ActionsReward::TEST_CLASS_HASH.into()),
+            TestResource::Model(models::collab_proposal::m_ApprovedProposal::TEST_CLASS_HASH.into()),
+            TestResource::Event(models::collab_proposal::e_CollabProposalEvent::TEST_CLASS_HASH.into()),
             TestResource::Event(lore::lib::access::e_AccessGrantedEvent::TEST_CLASS_HASH.into()),
             // game_token
             TestResource::Model(models::game_token_info::m_GameTokenInfo::TEST_CLASS_HASH.into()),
