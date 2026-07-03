@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import EditorData, { useEditorData } from "../data/editor.data";
 import type { ChangeSet } from "../lib/types";
 import { publishConfigToContract, submitForReview, publishApproved } from "../publisher";
@@ -6,6 +6,7 @@ import { Button } from "./ui/Button";
 import { CollapsibleComponent } from "./CollapsibleComponent";
 import { useWalletStore } from "@/lib/stores/wallet.store";
 import type { ApprovedProposal } from "@/lib/dojo_bindings/typescript/models.gen";
+import { toast } from "sonner";
 
 const entityLabel = (c: ChangeSet) =>
 	EditorData().getEntity(c.inst)?.Entity?.name ?? String(c.inst);
@@ -102,9 +103,9 @@ export const StagingPanel = () => {
 	const allCount = unstaged.length + staged.length;
 
 	// Approvals for the current user on the active trail
+	const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
 	const myApprovals = useMemo(() => {
 		if (!activeTrailId || !walletAddress) return [];
-		const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
 		const myAddr = norm(walletAddress);
 		return currentApprovals.filter(
 			(a) =>
@@ -112,6 +113,20 @@ export const StagingPanel = () => {
 				norm(a.proposer) === myAddr
 		);
 	}, [currentApprovals, activeTrailId, walletAddress]);
+
+	// Notify the collaborator when the trail owner rejects their proposal.
+	// We detect rejection when our approval disappears while we still have staged changes.
+	const prevMyApprovalsRef = useRef<ApprovedProposal[]>([]);
+	useEffect(() => {
+		const prev = prevMyApprovalsRef.current;
+		prevMyApprovalsRef.current = myApprovals;
+		if (prev.length > 0 && myApprovals.length === 0 && staged.length > 0) {
+			toast.warning(
+				"Your proposal was rejected. Your staged changes are preserved — edit and resubmit.",
+				{ duration: 6000, dismissible: true },
+			);
+		}
+	}, [myApprovals]);
 
 	const handleSubmitForReview = async () => {
 		if (!activeTrailId) return;

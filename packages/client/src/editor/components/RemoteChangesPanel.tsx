@@ -1,10 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import EditorData, { findInstValue, useEditorData } from "../data/editor.data";
 import type { AnyObject } from "../lib/types";
 import { Button } from "./ui/Button";
 import { CollapsibleComponent } from "./CollapsibleComponent";
 import { SystemCalls } from "@lib/systemCalls";
-import type { CollabProposalEvent, ApprovedProposal } from "@/lib/dojo_bindings/typescript/models.gen";
+import type {
+	CollabProposalEvent,
+	ApprovedProposal,
+	DescriptionText,
+	Entity,
+} from "@/lib/dojo_bindings/typescript/models.gen";
 
 // ---------------------------------------------------------------------------
 // Diff helpers
@@ -86,37 +91,74 @@ const computeDiff = (
 // Proposal review helpers
 // ---------------------------------------------------------------------------
 
-/** Returns all unique entity insts referenced in a proposal. */
-const proposalInsts = (p: CollabProposalEvent): string[] => {
-	const insts = new Set<string>();
-	for (const e of p.entities) insts.add(String(e.inst));
-	for (const c of [
-		...p.reactables, ...p.areas, ...p.exits, ...p.hubs, ...p.trails,
-		...p.containers, ...p.inventory_items, ...p.parents, ...p.children,
-		...p.description_texts, ...p.triggers, ...p.conditions, ...p.effects, ...p.actions,
-	]) insts.add(String((c as any).inst));
-	return Array.from(insts);
+type InstData = {
+	entity: Entity | undefined;
+	descriptionTexts: DescriptionText[];
+	components: string[];
+	isNew: boolean;
 };
 
-/** Component names present for an entity inst in a proposal. */
-const componentSummary = (p: CollabProposalEvent, inst: string): string => {
-	const present: string[] = [];
-	if (p.entities.some((e) => String(e.inst) === inst)) present.push("Entity");
-	if (p.areas.some((c) => String((c as any).inst) === inst)) present.push("Area");
-	if (p.exits.some((c) => String((c as any).inst) === inst)) present.push("Exit");
-	if (p.reactables.some((c) => String((c as any).inst) === inst)) present.push("Reactable");
-	if (p.description_texts.some((c) => String((c as any).inst) === inst)) present.push("DescriptionText");
-	if (p.containers.some((c) => String((c as any).inst) === inst)) present.push("Container");
-	if (p.inventory_items.some((c) => String((c as any).inst) === inst)) present.push("InventoryItem");
-	if (p.hubs.some((c) => String((c as any).inst) === inst)) present.push("Hub");
-	if (p.trails.some((c) => String((c as any).inst) === inst)) present.push("Trail");
-	if (p.triggers.some((c) => String((c as any).inst) === inst)) present.push("Trigger");
-	if (p.conditions.some((c) => String((c as any).inst) === inst)) present.push("Condition");
-	if (p.effects.some((c) => String((c as any).inst) === inst)) present.push("Effect");
-	if (p.actions.some((c) => String((c as any).inst) === inst)) present.push("Action");
-	if (p.parents.some((c) => String((c as any).inst) === inst)) present.push("ParentToChildren");
-	if (p.children.some((c) => String((c as any).inst) === inst)) present.push("ChildToParent");
-	return present.join(", ");
+/** Build a per-inst map of everything the proposal touches. */
+const buildInstMap = (p: CollabProposalEvent): Map<string, InstData> => {
+	const map = new Map<string, InstData>();
+
+	const ensure = (inst: string): InstData => {
+		if (!map.has(inst)) {
+			const existsOnChain = EditorData().getEntity(inst, true) !== undefined;
+			map.set(inst, { entity: undefined, descriptionTexts: [], components: [], isNew: !existsOnChain });
+		}
+		return map.get(inst)!;
+	};
+
+	for (const e of p.entities) {
+		const d = ensure(String(e.inst));
+		d.entity = e as unknown as Entity;
+		if (!d.components.includes("Entity")) d.components.push("Entity");
+	}
+	const tag = (arr: { inst: unknown }[], name: string) => {
+		for (const c of arr) {
+			const d = ensure(String(c.inst));
+			if (!d.components.includes(name)) d.components.push(name);
+		}
+	};
+	for (const dt of p.description_texts) {
+		const d = ensure(String(dt.inst));
+		d.descriptionTexts.push(dt as unknown as DescriptionText);
+		if (!d.components.includes("DescriptionText")) d.components.push("DescriptionText");
+	}
+	tag(p.reactables as { inst: unknown }[], "Reactable");
+	tag(p.areas as { inst: unknown }[], "Area");
+	tag(p.exits as { inst: unknown }[], "Exit");
+	tag(p.hubs as { inst: unknown }[], "Hub");
+	tag(p.trails as { inst: unknown }[], "Trail");
+	tag(p.containers as { inst: unknown }[], "Container");
+	tag(p.inventory_items as { inst: unknown }[], "InventoryItem");
+	tag(p.triggers as { inst: unknown }[], "Trigger");
+	tag(p.conditions as { inst: unknown }[], "Condition");
+	tag(p.effects as { inst: unknown }[], "Effect");
+	tag(p.actions as { inst: unknown }[], "Action");
+	tag(p.parents as { inst: unknown }[], "ParentToChildren");
+	tag(p.children as { inst: unknown }[], "ChildToParent");
+
+	return map;
+};
+
+const COMPONENT_BADGE_COLORS: Record<string, string> = {
+	Entity: "bg-indigo-100 text-indigo-700",
+	Reactable: "bg-purple-100 text-purple-700",
+	Area: "bg-teal-100 text-teal-700",
+	Exit: "bg-orange-100 text-orange-700",
+	DescriptionText: "bg-yellow-100 text-yellow-800",
+	Container: "bg-cyan-100 text-cyan-700",
+	InventoryItem: "bg-pink-100 text-pink-700",
+	Hub: "bg-slate-100 text-slate-700",
+	Trail: "bg-emerald-100 text-emerald-700",
+	Trigger: "bg-rose-100 text-rose-700",
+	Condition: "bg-violet-100 text-violet-700",
+	Effect: "bg-lime-100 text-lime-700",
+	Action: "bg-amber-100 text-amber-700",
+	ParentToChildren: "bg-gray-100 text-gray-600",
+	ChildToParent: "bg-gray-100 text-gray-600",
 };
 
 /** Builds an ApprovedProposal from a proposal limited to the selected entity insts. */
@@ -182,8 +224,10 @@ const buildApprovedProposal = (
 // ---------------------------------------------------------------------------
 
 const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
-	const allInsts = proposalInsts(proposal);
+	const instMap = useMemo(() => buildInstMap(proposal), [proposal]);
+	const allInsts = useMemo(() => Array.from(instMap.keys()), [instMap]);
 	const [selected, setSelected] = useState<Set<string>>(new Set(allInsts));
+	const [expanded, setExpanded] = useState<Set<string>>(new Set());
 	const [busy, setBusy] = useState(false);
 
 	const toggle = (inst: string) =>
@@ -193,8 +237,14 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 			return next;
 		});
 
-	const shortAddr = (addr: string) =>
-		`${addr.slice(0, 6)}…${addr.slice(-4)}`;
+	const toggleExpand = (inst: string) =>
+		setExpanded((prev) => {
+			const next = new Set(prev);
+			next.has(inst) ? next.delete(inst) : next.add(inst);
+			return next;
+		});
+
+	const shortAddr = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 
 	const handleApprove = async () => {
 		if (selected.size === 0) return;
@@ -212,10 +262,7 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 	const handleReject = async () => {
 		setBusy(true);
 		try {
-			await SystemCalls.rejectProposal(
-				BigInt(proposal.trail_id),
-				proposal.proposer,
-			);
+			await SystemCalls.rejectProposal(BigInt(proposal.trail_id), proposal.proposer);
 		} catch (e) {
 			console.error("rejectProposal failed:", e);
 		} finally {
@@ -225,66 +272,122 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 
 	return (
 		<div className="flex flex-col gap-2 rounded border border-blue-300 bg-blue-50 p-2">
+			{/* Header */}
 			<div className="flex items-center justify-between">
 				<div className="flex flex-col gap-0.5">
 					<span className="text-[10px] opacity-50 uppercase tracking-wide">Proposer</span>
 					<span className="font-mono text-xs">{shortAddr(proposal.proposer)}</span>
 				</div>
 				<div className="flex gap-1">
-					<Button
-						size="sm"
-						disabled={busy || selected.size === 0}
-						onClick={handleApprove}
-					>
+					<Button size="sm" disabled={busy || selected.size === 0} onClick={handleApprove}>
 						Approve ({selected.size})
 					</Button>
-					<Button
-						size="sm"
-						variant="destructive"
-						disabled={busy}
-						onClick={handleReject}
-					>
+					<Button size="sm" variant="destructive" disabled={busy} onClick={handleReject}>
 						Reject
 					</Button>
 				</div>
 			</div>
 
-			{/* Entity list */}
-			<div className="flex flex-col gap-1">
+			{/* Entity rows */}
+			<div className="flex flex-col gap-1.5">
 				{allInsts.map((inst) => {
-					const name = EditorData().getEntity(inst)?.Entity?.name
-						?? proposal.entities.find((e) => String(e.inst) === inst)?.name
-						?? inst;
-					const summary = componentSummary(proposal, inst);
+					const data = instMap.get(inst)!;
+					const displayName = data.entity?.name
+						?? EditorData().getEntity(inst)?.Entity?.name
+						?? shortAddr(inst);
+					const isExpanded = expanded.has(inst);
+					const hasDetails = data.descriptionTexts.length > 0 || data.components.length > 1;
+
 					return (
-						<label
-							key={inst}
-							className="flex items-start gap-2 cursor-pointer select-none rounded px-1 py-0.5 hover:bg-blue-100"
-						>
-							<input
-								type="checkbox"
-								className="mt-0.5 shrink-0"
-								checked={selected.has(inst)}
-								onChange={() => toggle(inst)}
-							/>
-							<div className="flex flex-col min-w-0">
-								<span className="truncate font-medium">{String(name)}</span>
-								<span className="truncate opacity-50">{summary}</span>
-							</div>
-						</label>
+						<div key={inst} className="rounded border border-blue-200 bg-white/60">
+							<label className="flex items-start gap-2 cursor-pointer select-none px-2 py-1.5">
+								<input
+									type="checkbox"
+									className="mt-0.5 shrink-0"
+									checked={selected.has(inst)}
+									onChange={() => toggle(inst)}
+								/>
+								<div className="flex flex-col min-w-0 flex-1 gap-1">
+									{/* Name + NEW badge */}
+									<div className="flex items-center gap-1.5 min-w-0">
+										{data.isNew && (
+											<span className="shrink-0 rounded px-1 py-px text-[9px] font-bold uppercase bg-green-100 text-green-700 border border-green-300">
+												NEW
+											</span>
+										)}
+										<span className="font-medium truncate">{displayName}</span>
+									</div>
+									{/* Component badges */}
+									<div className="flex flex-wrap gap-1">
+										{data.components.filter(c => c !== "Entity" && c !== "ChildToParent" && c !== "ParentToChildren").map((c) => (
+											<span
+												key={c}
+												className={`rounded px-1 py-px text-[9px] font-medium ${COMPONENT_BADGE_COLORS[c] ?? "bg-gray-100 text-gray-600"}`}
+											>
+												{c}
+											</span>
+										))}
+										{(data.components.includes("ChildToParent") || data.components.includes("ParentToChildren")) && (
+											<span className="rounded px-1 py-px text-[9px] font-medium bg-gray-100 text-gray-500">
+												relationship
+											</span>
+										)}
+									</div>
+								</div>
+								{hasDetails && (
+									<button
+										type="button"
+										className="shrink-0 opacity-40 hover:opacity-70 text-xs mt-0.5"
+										onClick={(e) => { e.preventDefault(); toggleExpand(inst); }}
+									>
+										{isExpanded ? "▾" : "▸"}
+									</button>
+								)}
+							</label>
+
+							{/* Expanded content */}
+							{isExpanded && (
+								<div className="border-t border-blue-100 px-3 py-2 flex flex-col gap-2">
+									{/* Description texts */}
+									{data.descriptionTexts.map((dt, i) => (
+										<div key={i} className="flex flex-col gap-0.5">
+											<span className="text-[9px] uppercase tracking-wide opacity-40">
+												Description text {data.descriptionTexts.length > 1 ? `#${i + 1}` : ""}
+											</span>
+											<p className="text-[11px] italic text-gray-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1 break-words whitespace-pre-wrap">
+												{dt.text || <span className="opacity-40">(empty)</span>}
+											</p>
+										</div>
+									))}
+									{/* Entity fields if it's a modified entity */}
+									{data.entity && !data.isNew && (
+										<div className="flex flex-col gap-0.5">
+											<span className="text-[9px] uppercase tracking-wide opacity-40">Entity</span>
+											<div className="text-[10px] text-gray-600 space-y-0.5">
+												<div><span className="opacity-50">name</span> {data.entity.name}</div>
+												{(data.entity.alt_names as string[]).length > 0 && (
+													<div><span className="opacity-50">alt names</span> {(data.entity.alt_names as string[]).join(", ")}</div>
+												)}
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+						</div>
 					);
 				})}
 
+				{/* Deletions */}
 				{proposal.deleted_entity_insts.length > 0 && (
-					<div className="mt-1 flex flex-col gap-1">
+					<div className="flex flex-col gap-1">
 						<span className="text-[10px] uppercase tracking-wide opacity-50">Deletions</span>
 						{proposal.deleted_entity_insts.map((inst) => {
 							const instStr = String(inst);
-							const name = EditorData().getEntity(instStr)?.Entity?.name ?? instStr;
+							const name = EditorData().getEntity(instStr)?.Entity?.name ?? shortAddr(instStr);
 							return (
 								<label
 									key={instStr}
-									className="flex items-start gap-2 cursor-pointer select-none rounded px-1 py-0.5 hover:bg-blue-100"
+									className="flex items-start gap-2 cursor-pointer select-none rounded px-2 py-1 bg-red-50 border border-red-200"
 								>
 									<input
 										type="checkbox"
@@ -292,7 +395,7 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 										checked={selected.has(instStr)}
 										onChange={() => toggle(instStr)}
 									/>
-									<span className="truncate text-red-600">{String(name)}</span>
+									<span className="truncate text-red-600 line-through text-xs">{name}</span>
 								</label>
 							);
 						})}
