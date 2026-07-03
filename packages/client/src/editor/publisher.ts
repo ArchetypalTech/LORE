@@ -149,6 +149,12 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 };
 
 export const publishEntityCollection = async (collection: EntityCollection) => {
+	await publishEntityData(collection);
+	await publishEntityRelationships(collection);
+};
+
+/** Publishes all components EXCEPT ChildToParent / ParentToChildren. */
+const publishEntityData = async (collection: EntityCollection) => {
 	if ("Entity" in collection && collection.Entity !== undefined) {
 		await publishEntity(collection.Entity);
 	}
@@ -191,13 +197,14 @@ export const publishEntityCollection = async (collection: EntityCollection) => {
 	if ("Action" in collection && collection.Action !== undefined) {
 		await publishAction(collection.Action);
 	}
+};
+
+/** Publishes only ChildToParent / ParentToChildren (parent-child linking). */
+const publishEntityRelationships = async (collection: EntityCollection) => {
 	if ("ChildToParent" in collection && collection.ChildToParent !== undefined) {
 		await publishChildToParent(collection.ChildToParent);
 	}
-	if (
-		"ParentToChildren" in collection &&
-		collection.ParentToChildren !== undefined
-	) {
+	if ("ParentToChildren" in collection && collection.ParentToChildren !== undefined) {
 		await publishParentToChildren(collection.ParentToChildren);
 	}
 };
@@ -910,9 +917,20 @@ export const publishApproved = async (trailId: bigint, approval: ApprovedProposa
 
 	try {
 		await Notifications().startPublishing();
+
+		// Pass 1: entity data (no parent-child relationships).
+		// All entities must exist on-chain before any ChildToParent is written,
+		// regardless of the order they appear in stagedChanges.
 		for (const change of approvedChanges) {
 			if (change.type === "update") {
-				await publishEntityCollection(change.object as EntityCollection);
+				await publishEntityData(change.object as EntityCollection);
+			}
+		}
+
+		// Pass 2: parent-child relationships + deletes + cleanup.
+		for (const change of approvedChanges) {
+			if (change.type === "update") {
+				await publishEntityRelationships(change.object as EntityCollection);
 			} else {
 				await deleteCollection(change.object as EntityCollection);
 			}
@@ -922,6 +940,7 @@ export const publishApproved = async (trailId: bigint, approval: ApprovedProposa
 			});
 			persistDraft();
 		}
+
 		Notifications().finalizePublishing();
 		await tick();
 		await syncEntitiesByInsts(publishedInsts);
