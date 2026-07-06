@@ -97,17 +97,24 @@ export const publishConfigToContract = async (changes?: ChangeSet[]) => {
 const publishChangeset = async (changes?: ChangeSet[]) => {
 	const myAddress = BigInt(getPlayerAddress());
 	const isAdmin = EditorStore().isAdmin ?? false;
+	const activeTrailId = EditorData().get().activeTrailId;
+	// If the active trail is in the user's wallet, they're the owner for that trail context.
+	const isActiveTrailOwner = activeTrailId !== undefined && TokenStore().playerOwnsTrail(activeTrailId);
 	const preparedChanges = changes ?? EditorData().changeSet;
 	for (const change of preparedChanges) {
 		try {
 			// Admins bypass the ownership guard — the contract enforces the same bypass.
 			if (!isAdmin) {
 				const entity = EditorData().getEntity(change.inst);
-				const creator = BigInt(entity?.Entity?.creator_address ?? 0);
-				const entityTrailId = BigInt(entity?.Entity?.trail_id ?? 0);
+				const creator = BigInt(entity?.Entity?.creator_address?.toString() ?? "0");
+				const entityTrailId = BigInt(entity?.Entity?.trail_id?.toString() ?? "0");
 				// 0n = new entity not yet stamped on-chain — safe to publish.
 				// Trail owners may edit any entity inside their trail regardless of who created it.
-				const isTrailOwner = entityTrailId > 0n && TokenStore().playerOwnsTrail(entityTrailId);
+				// Two-path check: direct token ownership, or active-trail ownership (already verified in UI).
+				const isTrailOwner = entityTrailId > 0n && (
+					TokenStore().playerOwnsTrail(entityTrailId) ||
+					(isActiveTrailOwner && entityTrailId === activeTrailId)
+				);
 				const isOwned = creator === 0n || creator === myAddress || isTrailOwner;
 
 				if (!isOwned) {
@@ -870,7 +877,10 @@ export const publishApproved = async (trailId: bigint, approval: ApprovedProposa
 		return false;
 	}
 
-	const approvedChanges: ChangeSet[] = [];
+	// Track original references alongside the filtered copies so pass-2 cleanup can use
+	// reference equality to remove the right entries from stagedChanges/changeSet.
+	type ApprovedEntry = { original: ChangeSet; filtered: ChangeSet };
+	const approvedChanges: ApprovedEntry[] = [];
 
 	for (const change of staged) {
 		const col = change.object; // EditorCollection — enum fields are already string-typed
@@ -908,7 +918,7 @@ export const publishApproved = async (trailId: bigint, approval: ApprovedProposa
 			: buildFiltered(wSingle, wDesc, wMulti);
 
 		if (Object.keys(filtered).length > 0) {
-			approvedChanges.push({ ...change, object: filtered });
+			approvedChanges.push({ original: change, filtered: { ...change, object: filtered } });
 		}
 	}
 
@@ -917,7 +927,7 @@ export const publishApproved = async (trailId: bigint, approval: ApprovedProposa
 		return false;
 	}
 
-	const publishedInsts = [...new Set(approvedChanges.map(c => c.inst))];
+	const publishedInsts = [...new Set(approvedChanges.map(e => e.original.inst))];
 
 	try {
 		await Notifications().startPublishing();
@@ -925,22 +935,22 @@ export const publishApproved = async (trailId: bigint, approval: ApprovedProposa
 		// Pass 1: entity data (no parent-child relationships).
 		// All entities must exist on-chain before any ChildToParent is written,
 		// regardless of the order they appear in stagedChanges.
-		for (const change of approvedChanges) {
-			if (change.type === "update") {
-				await publishEntityData(change.object as EntityCollection);
+		for (const { filtered } of approvedChanges) {
+			if (filtered.type === "update") {
+				await publishEntityData(filtered.object as EntityCollection);
 			}
 		}
 
 		// Pass 2: parent-child relationships + deletes + cleanup.
-		for (const change of approvedChanges) {
-			if (change.type === "update") {
-				await publishEntityRelationships(change.object as EntityCollection);
+		for (const { original, filtered } of approvedChanges) {
+			if (filtered.type === "update") {
+				await publishEntityRelationships(filtered.object as EntityCollection);
 			} else {
-				await deleteCollection(change.object as EntityCollection);
+				await deleteCollection(filtered.object as EntityCollection);
 			}
 			EditorData().set({
-				changeSet: EditorData().changeSet.filter(x => x !== change),
-				stagedChanges: EditorData().get().stagedChanges.filter(x => x !== change),
+				changeSet: EditorData().changeSet.filter(x => x !== original),
+				stagedChanges: EditorData().get().stagedChanges.filter(x => x !== original),
 			});
 			persistDraft();
 		}

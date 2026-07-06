@@ -119,7 +119,7 @@ const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
 		set({
 			isDirty: Date.now(),
 		});
-		Notifications().needsToPublish();
+		// Notifications().needsToPublish();
 	}
 };
 
@@ -448,7 +448,7 @@ const removeEntity = (entity: EntityCollection) => {
 		dataPool: newDataPool,
 		isDirty: Date.now(),
 	}));
-	Notifications().needsToPublish();
+	// Notifications().needsToPublish();
 };
 
 // @dev: retrieve instance value — module-level so it can be reused outside syncItem (e.g. trail resolution)

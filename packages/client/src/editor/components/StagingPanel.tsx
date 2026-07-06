@@ -18,6 +18,24 @@ const componentNames = (c: ChangeSet) => Object.keys(c.object).join(", ");
 const shortAddr = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 
 // ---------------------------------------------------------------------------
+// RejectedBannerSection — shown when the trail owner rejects the proposal
+// ---------------------------------------------------------------------------
+
+const RejectedBannerSection = ({ onDismiss }: { onDismiss: () => void }) => (
+	<section className="flex items-center justify-between gap-2 rounded border border-red-300 bg-red-50 px-3 py-2">
+		<div className="flex flex-col gap-0.5 min-w-0">
+			<span className="font-semibold text-red-700 text-xs">Proposal rejected by trail owner</span>
+			<span className="text-[10px] text-red-600 opacity-80">
+				Your staged changes are preserved — edit and resubmit.
+			</span>
+		</div>
+		<Button size="sm" variant="destructive" onClick={onDismiss}>
+			Dismiss
+		</Button>
+	</section>
+);
+
+// ---------------------------------------------------------------------------
 // PublishApprovedSection — shown when the current user has approvals waiting
 // ---------------------------------------------------------------------------
 
@@ -82,6 +100,7 @@ export const StagingPanel = () => {
 	const isAdmin = EditorStore().isAdmin ?? false;
 	const [reviewBusy, setReviewBusy] = useState(false);
 	const [publishBusy, setPublishBusy] = useState(false);
+	const [showRejectedBanner, setShowRejectedBanner] = useState(false);
 
 	// Trail owners and admins may publish directly. When a trail is active, collaborators
 	// (non-owners) must submit for review instead.
@@ -113,48 +132,16 @@ export const StagingPanel = () => {
 		);
 	}, [currentApprovals, activeTrailId, walletAddress]);
 
-	// Notify the collaborator when the trail owner acts on their proposal.
-	// justPublishedRef guards against a false positive: if we cleared the approval ourselves
-	// (by successfully publishing), the drop is intentional and should not trigger the toast.
+	// Detect when the trail owner acts on the collaborator's proposal.
+	// justPublishedRef guards against a false positive: if WE cleared the approval (by publishing),
+	// that drop must not trigger the rejection banner.
 	const prevMyApprovalsRef = useRef<ApprovedProposal[]>([]);
 	const justPublishedRef = useRef(false);
 	useEffect(() => {
 		const prev = prevMyApprovalsRef.current;
 		prevMyApprovalsRef.current = myApprovals;
-
 		const hadApproval = prev.length > 0;
 		const hasApproval = myApprovals.length > 0;
-
-		// New approval arrived — notify about any staged insts the owner excluded.
-		if (!hadApproval && hasApproval) {
-			const approval = myApprovals[0];
-			const toBigIntSet = (list: ApprovedProposal[keyof ApprovedProposal]) =>
-				new Set((list as bigint[]).map(x => String(BigInt(x.toString()))));
-
-			const approvedSingle = toBigIntSet(approval.w_single_keys);
-			const approvedDesc   = toBigIntSet(approval.w_description_texts);
-			// w_multi_keys is [inst, key, inst, key, …] — insts are at even indices
-			const approvedMulti  = new Set(
-				(approval.w_multi_keys as bigint[])
-					.filter((_, i) => i % 2 === 0)
-					.map(x => String(BigInt(x.toString())))
-			);
-
-			const deferred = staged.filter((c) => {
-				const instStr = String(BigInt(c.inst.toString()));
-				return !approvedSingle.has(instStr) && !approvedDesc.has(instStr) && !approvedMulti.has(instStr);
-			});
-
-			if (deferred.length > 0) {
-				const names = deferred.map(
-					(c) => EditorData().getEntity(c.inst)?.Entity?.name ?? String(c.inst)
-				);
-				toast.info(
-					`Some staged items were not included in the approval: ${names.join(", ")}. They remain staged for resubmission.`,
-					{ duration: 8000, dismissible: true },
-				);
-			}
-		}
 
 		// Rejection: approval dropped while staged changes remain.
 		if (hadApproval && !hasApproval && staged.length > 0) {
@@ -162,12 +149,14 @@ export const StagingPanel = () => {
 				justPublishedRef.current = false;
 				return;
 			}
-			toast.warning(
-				"Your proposal was rejected. Your staged changes are preserved — edit and resubmit.",
-				{ duration: 6000, dismissible: true },
-			);
+			setShowRejectedBanner(true);
 		}
 	}, [myApprovals]);
+
+	// Auto-dismiss the rejected banner once the collaborator clears their staged changes.
+	useEffect(() => {
+		if (staged.length === 0) setShowRejectedBanner(false);
+	}, [staged.length]);
 
 	const handlePublish = async (approval: ApprovedProposal) => {
 		if (!activeTrailId) return;
@@ -175,6 +164,18 @@ export const StagingPanel = () => {
 		justPublishedRef.current = true;
 		try {
 			await publishApproved(activeTrailId, approval);
+			// After publishing, check if any staged items for this trail remain.
+			// If so, they were not included in the approval — tell the collaborator.
+			const remaining = EditorData().get().stagedChanges.filter((c) => {
+				const entity = EditorData().getEntity(c.inst);
+				return BigInt(entity?.Entity?.trail_id?.toString() ?? "0") === activeTrailId;
+			});
+			if (remaining.length > 0) {
+				toast.info(
+					`${remaining.length} staged item${remaining.length !== 1 ? "s" : ""} were not included in the approval — resubmit for review.`,
+					{ duration: 8000, dismissible: true },
+				);
+			}
 		} catch (e) {
 			justPublishedRef.current = false;
 			console.error("publishApproved failed:", e);
@@ -275,6 +276,10 @@ export const StagingPanel = () => {
 						)}
 					</div>
 				</section>
+
+				{showRejectedBanner && staged.length > 0 && (
+					<RejectedBannerSection onDismiss={() => setShowRejectedBanner(false)} />
+				)}
 
 				{myApprovals.length > 0 && activeTrailId !== undefined && (
 					<PublishApprovedSection

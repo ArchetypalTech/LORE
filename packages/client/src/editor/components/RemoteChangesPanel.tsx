@@ -23,11 +23,19 @@ type DiffEntry = {
 	newValue: string;
 };
 
-const SKIP_FIELDS = new Set(["inst"]);
+const SKIP_FIELDS = new Set([
+	"inst", "creator_address", "trail_id",
+	"is_entity", "is_reactable", "is_area", "is_exit",
+	"is_hub", "is_trail", "is_inventory_item", "is_container",
+]);
 
 const formatValue = (val: unknown): string => {
 	if (val === undefined || val === null) return "—";
-	if (Array.isArray(val)) return `[${val.length} item${val.length !== 1 ? "s" : ""}]`;
+	if (Array.isArray(val)) {
+		if (val.length === 0) return "(empty)";
+		if (val.every(x => typeof x === "string" || typeof x === "number")) return val.join(", ");
+		return `[${val.length} item${val.length !== 1 ? "s" : ""}]`;
+	}
 	if (typeof val === "object") {
 		try { return JSON.stringify(val); } catch { return String(val); }
 	}
@@ -97,6 +105,8 @@ type InstData = {
 	descriptionTexts: DescriptionText[];
 	components: string[];
 	isNew: boolean;
+	/** Proposed component data keyed by component name — used for field-level diffs. */
+	proposed: Record<string, unknown>;
 };
 
 /** Build a per-inst map of everything the proposal touches. */
@@ -106,7 +116,7 @@ const buildInstMap = (p: CollabProposalEvent): Map<string, InstData> => {
 	const ensure = (inst: string): InstData => {
 		if (!map.has(inst)) {
 			const existsOnChain = EditorData().getEntity(inst, true) !== undefined;
-			map.set(inst, { entity: undefined, descriptionTexts: [], components: [], isNew: !existsOnChain });
+			map.set(inst, { entity: undefined, descriptionTexts: [], components: [], isNew: !existsOnChain, proposed: {} });
 		}
 		return map.get(inst)!;
 	};
@@ -114,32 +124,44 @@ const buildInstMap = (p: CollabProposalEvent): Map<string, InstData> => {
 	for (const e of p.entities) {
 		const d = ensure(String(e.inst));
 		d.entity = e as unknown as Entity;
+		d.proposed["Entity"] = e;
 		if (!d.components.includes("Entity")) d.components.push("Entity");
 	}
-	const tag = (arr: { inst: unknown }[], name: string) => {
+
+	// Single-instance components — store the full object for diffing.
+	const tagSingle = (arr: { inst: unknown }[], name: string) => {
+		for (const c of arr) {
+			const d = ensure(String(c.inst));
+			d.proposed[name] = c;
+			if (!d.components.includes(name)) d.components.push(name);
+		}
+	};
+	// Multi-instance components — store as array; diffs are shown per-badge, not per-field.
+	const tagMulti = (arr: { inst: unknown }[], name: string) => {
 		for (const c of arr) {
 			const d = ensure(String(c.inst));
 			if (!d.components.includes(name)) d.components.push(name);
 		}
 	};
+
 	for (const dt of p.description_texts) {
 		const d = ensure(String(dt.inst));
 		d.descriptionTexts.push(dt as unknown as DescriptionText);
 		if (!d.components.includes("DescriptionText")) d.components.push("DescriptionText");
 	}
-	tag(p.reactables as { inst: unknown }[], "Reactable");
-	tag(p.areas as { inst: unknown }[], "Area");
-	tag(p.exits as { inst: unknown }[], "Exit");
-	tag(p.hubs as { inst: unknown }[], "Hub");
-	tag(p.trails as { inst: unknown }[], "Trail");
-	tag(p.containers as { inst: unknown }[], "Container");
-	tag(p.inventory_items as { inst: unknown }[], "InventoryItem");
-	tag(p.triggers as { inst: unknown }[], "Trigger");
-	tag(p.conditions as { inst: unknown }[], "Condition");
-	tag(p.effects as { inst: unknown }[], "Effect");
-	tag(p.actions as { inst: unknown }[], "Action");
-	tag(p.parents as { inst: unknown }[], "ParentToChildren");
-	tag(p.children as { inst: unknown }[], "ChildToParent");
+	tagSingle(p.reactables as { inst: unknown }[], "Reactable");
+	tagSingle(p.areas as { inst: unknown }[], "Area");
+	tagSingle(p.exits as { inst: unknown }[], "Exit");
+	tagSingle(p.hubs as { inst: unknown }[], "Hub");
+	tagSingle(p.trails as { inst: unknown }[], "Trail");
+	tagSingle(p.containers as { inst: unknown }[], "Container");
+	tagSingle(p.inventory_items as { inst: unknown }[], "InventoryItem");
+	tagMulti(p.triggers as { inst: unknown }[], "Trigger");
+	tagMulti(p.conditions as { inst: unknown }[], "Condition");
+	tagMulti(p.effects as { inst: unknown }[], "Effect");
+	tagMulti(p.actions as { inst: unknown }[], "Action");
+	tagMulti(p.parents as { inst: unknown }[], "ParentToChildren");
+	tagMulti(p.children as { inst: unknown }[], "ChildToParent");
 
 	return map;
 };
@@ -355,33 +377,50 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 							</label>
 
 							{/* Expanded content */}
-							{isExpanded && (
-								<div className="border-t border-blue-100 px-3 py-2 flex flex-col gap-2">
-									{/* Description texts */}
-									{data.descriptionTexts.map((dt, i) => (
-										<div key={i} className="flex flex-col gap-0.5">
-											<span className="text-[9px] uppercase tracking-wide opacity-40">
-												Description text {data.descriptionTexts.length > 1 ? `#${i + 1}` : ""}
-											</span>
-											<p className="text-[11px] italic text-gray-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1 break-words whitespace-pre-wrap">
-												{dt.text || <span className="opacity-40">(empty)</span>}
-											</p>
-										</div>
-									))}
-									{/* Entity fields if it's a modified entity */}
-									{data.entity && !data.isNew && (
-										<div className="flex flex-col gap-0.5">
-											<span className="text-[9px] uppercase tracking-wide opacity-40">Entity</span>
-											<div className="text-[10px] text-gray-600 space-y-0.5">
-												<div><span className="opacity-50">name</span> {data.entity.name}</div>
-												{(data.entity.alt_names as string[]).length > 0 && (
-													<div><span className="opacity-50">alt names</span> {(data.entity.alt_names as string[]).join(", ")}</div>
-												)}
+							{isExpanded && (() => {
+								const syncEntity = EditorData().getEntity(inst, true) as AnyObject | undefined;
+								const diffs = computeDiff(data.proposed as AnyObject, syncEntity);
+								return (
+									<div className="border-t border-blue-100 px-3 py-2 flex flex-col gap-2">
+										{/* Description texts */}
+										{data.descriptionTexts.map((dt, i) => (
+											<div key={i} className="flex flex-col gap-0.5">
+												<span className="text-[9px] uppercase tracking-wide opacity-40">
+													Description text {data.descriptionTexts.length > 1 ? `#${i + 1}` : ""}
+												</span>
+												<p className="text-[11px] italic text-gray-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1 break-words whitespace-pre-wrap">
+													{dt.text || <span className="opacity-40">(empty)</span>}
+												</p>
 											</div>
-										</div>
-									)}
-								</div>
-							)}
+										))}
+										{/* Field-level diffs for all single-instance components */}
+										{diffs.length > 0 && (
+											<div className="flex flex-col gap-1">
+												{diffs.map((d, j) => (
+													<div key={j} className="flex flex-col gap-0.5">
+														<span className="text-[9px] opacity-50 font-medium uppercase tracking-wide">
+															{d.component} · {d.field}
+														</span>
+														{data.isNew ? (
+															<span className="pl-2 text-[10px] text-green-700 font-mono break-all">
+																{truncate(d.newValue)}
+															</span>
+														) : (
+															<div className="pl-2 flex flex-col gap-0.5 font-mono text-[10px]">
+																<span className="text-red-500 break-all">− {truncate(d.oldValue)}</span>
+																<span className="text-green-700 break-all">+ {truncate(d.newValue)}</span>
+															</div>
+														)}
+													</div>
+												))}
+											</div>
+										)}
+										{diffs.length === 0 && data.descriptionTexts.length === 0 && (
+											<p className="text-[10px] opacity-40 italic">No field-level changes detected.</p>
+										)}
+									</div>
+								);
+							})()}
 						</div>
 					);
 				})}
