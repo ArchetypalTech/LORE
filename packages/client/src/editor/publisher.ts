@@ -85,6 +85,7 @@ export const publishConfigToContract = async (changes?: ChangeSet[]) => {
 		await tick();
 		// Re-sync only the entities that were just published — leaves other editors' work untouched
 		await syncEntitiesByInsts(publishedInsts);
+		await EditorData().syncEntities();
 		console.log("Data pool after selective sync:", EditorData().dataPool);
 		return true;
 	} catch (error) {
@@ -98,39 +99,71 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 	const myAddress = BigInt(getPlayerAddress());
 	const isAdmin = EditorStore().isAdmin ?? false;
 	const activeTrailId = EditorData().get().activeTrailId;
-	// If the active trail is in the user's wallet, they're the owner for that trail context.
 	const isActiveTrailOwner = activeTrailId !== undefined && TokenStore().playerOwnsTrail(activeTrailId);
 	const preparedChanges = changes ?? EditorData().changeSet;
+
+	// Separate ownership-validated changes into updates and deletes.
+	// Skipped (unowned) changes are cleaned up immediately here.
+	const validUpdates: ChangeSet[] = [];
+	const validDeletes: ChangeSet[] = [];
+
 	for (const change of preparedChanges) {
-		try {
-			// Admins bypass the ownership guard — the contract enforces the same bypass.
-			if (!isAdmin) {
-				const entity = EditorData().getEntity(change.inst);
-				const creator = BigInt(entity?.Entity?.creator_address?.toString() ?? "0");
-				const entityTrailId = BigInt(entity?.Entity?.trail_id?.toString() ?? "0");
-				// 0n = new entity not yet stamped on-chain — safe to publish.
-				// Trail owners may edit any entity inside their trail regardless of who created it.
-				// Two-path check: direct token ownership, or active-trail ownership (already verified in UI).
-				const isTrailOwner = entityTrailId > 0n && (
-					TokenStore().playerOwnsTrail(entityTrailId) ||
-					(isActiveTrailOwner && entityTrailId === activeTrailId)
+		if (!isAdmin) {
+			const entity = EditorData().getEntity(change.inst);
+			const creator = BigInt(entity?.Entity?.creator_address?.toString() ?? "0");
+			const entityTrailId = BigInt(entity?.Entity?.trail_id?.toString() ?? "0");
+			const isTrailOwner = entityTrailId > 0n && (
+				TokenStore().playerOwnsTrail(entityTrailId) ||
+				(isActiveTrailOwner && entityTrailId === activeTrailId)
+			);
+			const isOwned = creator === 0n || creator === myAddress || isTrailOwner;
+			if (!isOwned) {
+				toast.warning(
+					`Skipped "${entity?.Entity?.name ?? String(change.inst)}": owned by another editor`,
+					{ richColors: true, duration: 4000, dismissible: true },
 				);
-				const isOwned = creator === 0n || creator === myAddress || isTrailOwner;
-
-				if (!isOwned) {
-					toast.warning(
-						`Skipped "${entity?.Entity?.name ?? String(change.inst)}": owned by another editor`,
-						{ richColors: true, duration: 4000, dismissible: true },
-					);
-					// continue lets the finally block clean up the changeSet entry
-					continue;
-				}
+				EditorData().set({
+					changeSet: EditorData().changeSet.filter((x) => x !== change),
+					stagedChanges: EditorData().get().stagedChanges.filter((x) => x !== change),
+				});
+				persistDraft();
+				continue;
 			}
+		}
+		if (change.type === "update") validUpdates.push(change);
+		else if (change.type === "delete") validDeletes.push(change);
+	}
 
+	// Pass 1: publish all entity data before any parent-child relationships.
+	// This prevents 'TRAIL: Invalid child trail_id' when a parent's create_parent
+	// references a child entity that hasn't been written to the chain yet.
+	const pass1Succeeded = new Set<ChangeSet>();
+	for (const change of validUpdates) {
+		try {
+			await publishEntityData(change.object as EntityCollection);
+			pass1Succeeded.add(change);
+		} catch (error) {
+			console.error("Error publishing:", error);
+			toast.error(
+				`Error publishing ${Object.keys(change.object).join(",")}: ${error instanceof Error ? error.message : String(error)}`,
+				{ richColors: true, duration: 4000, dismissible: true },
+			);
+			// Clean up now — this change won't run in pass 2.
+			EditorData().set({
+				changeSet: EditorData().changeSet.filter((x) => x !== change),
+				stagedChanges: EditorData().get().stagedChanges.filter((x) => x !== change),
+			});
+			persistDraft();
+		}
+	}
+
+	// Pass 2: publish relationships for all pass-1 successes, then deletes.
+	for (const change of [...validUpdates, ...validDeletes]) {
+		if (change.type === "update" && !pass1Succeeded.has(change)) continue; // already failed + cleaned
+		try {
 			if (change.type === "update") {
-				await publishEntityCollection(change.object as EntityCollection);
-			}
-			if (change.type === "delete") {
+				await publishEntityRelationships(change.object as EntityCollection);
+			} else {
 				await deleteCollection(change.object as EntityCollection);
 			}
 		} catch (error) {
@@ -140,14 +173,10 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 				{ richColors: true, duration: 4000, dismissible: true },
 			);
 		} finally {
-			// `change` may have come from changeSet (per-entity override) or stagedChanges
-			// (Option D trail-scoped publish) — clean up whichever array actually holds it.
 			EditorData().set({
 				changeSet: EditorData().changeSet.filter((x) => x !== change),
 				stagedChanges: EditorData().get().stagedChanges.filter((x) => x !== change),
 			});
-			// Write the updated draft to localStorage so any remaining staged/unstaged
-			// changes survive a page refresh even if the publish was partial or failed.
 			persistDraft();
 			console.log("Publish ChangeSet", EditorData().changeSet, "Staged", EditorData().get().stagedChanges);
 			if (EditorData().changeSet.length > 0 || EditorData().get().stagedChanges.length > 0) {

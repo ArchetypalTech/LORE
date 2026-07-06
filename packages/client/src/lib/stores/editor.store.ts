@@ -40,9 +40,11 @@ const EditorStore = createFactory({
 			const creatorAddress = BigInt(entityCollection?.Entity?.creator_address ?? 0);
 			// 0n means the entity has never been published — treat it as owned by the current session
 			if (creatorAddress === 0n || creatorAddress === BigInt(walletAddress ?? 0)) return true;
-			// Entity belongs to a trail this player has been granted collaboration access to
 			const trailId = BigInt(entityCollection?.Entity?.trail_id ?? 0);
+			// Entity belongs to a trail this player has been granted collaboration access to
 			if (trailId > 0n && TokenStore().collaboratedTrailIds.includes(trailId)) return true;
+			// Trail owner can edit any entity inside their trail regardless of who created it
+			if (trailId > 0n && TokenStore().ownedTrailIds.includes(trailId)) return true;
 		}
 		return false;
 	},

@@ -47,8 +47,8 @@ const truncate = (s: string, max = 80) =>
 
 /**
  * Compares each field of `incoming` against the current syncPool state.
- * Handles both flat components (Entity, Area) and array-keyed components
- * (DescriptionText[], Action[]) where entries are matched by their `key` field.
+ * Handles flat components (Entity, Area, Container…) and array-keyed components
+ * (DescriptionText[], Trigger[], Action[]…) where items are matched by their `key` field.
  */
 const computeDiff = (
 	incoming: AnyObject,
@@ -58,19 +58,42 @@ const computeDiff = (
 
 	for (const componentKey of Object.keys(incoming)) {
 		const incomingComp = (incoming as Record<string, unknown>)[componentKey];
-		if (!incomingComp || typeof incomingComp !== "object" || Array.isArray(incomingComp)) continue;
+		if (!incomingComp || typeof incomingComp !== "object") continue;
 
 		const currentRaw = current ? (current as Record<string, unknown>)[componentKey] : undefined;
 
-		// If the current value is an array (e.g. DescriptionText[]), find the matching
-		// entry by the `key` field present on the incoming component.
+		if (Array.isArray(incomingComp)) {
+			// Multi-keyed components: DescriptionText[], Trigger[], Action[], etc.
+			// Each item is matched to its syncPool counterpart by the `key` field.
+			const currentArr = Array.isArray(currentRaw)
+				? (currentRaw as Record<string, unknown>[])
+				: currentRaw ? [currentRaw as Record<string, unknown>] : [];
+			for (const item of (incomingComp as Record<string, unknown>[])) {
+				const keyVal = item["key"];
+				const currentItem = keyVal !== undefined
+					? currentArr.find(e => String(e["key"]) === String(keyVal))
+					: undefined;
+				for (const fieldKey of Object.keys(item)) {
+					// skip identity fields used for matching
+					if (SKIP_FIELDS.has(fieldKey) || fieldKey === "key") continue;
+					const newVal = item[fieldKey];
+					const oldVal = currentItem ? currentItem[fieldKey] : undefined;
+					const newStr = formatValue(newVal);
+					const oldStr = formatValue(oldVal);
+					if (newStr !== oldStr) {
+						diffs.push({ component: componentKey, field: fieldKey, oldValue: oldStr, newValue: newStr });
+					}
+				}
+			}
+			continue;
+		}
+
+		// Single-instance components
 		let currentComp: Record<string, unknown> | undefined;
 		if (Array.isArray(currentRaw)) {
 			const keyVal = (incomingComp as Record<string, unknown>)["key"];
 			currentComp = keyVal !== undefined
-				? (currentRaw as Record<string, unknown>[]).find(
-					(entry) => String(entry["key"]) === String(keyVal),
-				)
+				? (currentRaw as Record<string, unknown>[]).find(e => String(e["key"]) === String(keyVal))
 				: undefined;
 		} else {
 			currentComp = currentRaw as Record<string, unknown> | undefined;
@@ -83,12 +106,7 @@ const computeDiff = (
 			const newStr = formatValue(newVal);
 			const oldStr = formatValue(oldVal);
 			if (newStr !== oldStr) {
-				diffs.push({
-					component: componentKey,
-					field: fieldKey,
-					oldValue: oldStr,
-					newValue: newStr,
-				});
+				diffs.push({ component: componentKey, field: fieldKey, oldValue: oldStr, newValue: newStr });
 			}
 		}
 	}
@@ -128,7 +146,7 @@ const buildInstMap = (p: CollabProposalEvent): Map<string, InstData> => {
 		if (!d.components.includes("Entity")) d.components.push("Entity");
 	}
 
-	// Single-instance components — store the full object for diffing.
+	// Single-instance components — store full data for field-level diffing.
 	const tagSingle = (arr: { inst: unknown }[], name: string) => {
 		for (const c of arr) {
 			const d = ensure(String(c.inst));
@@ -136,10 +154,13 @@ const buildInstMap = (p: CollabProposalEvent): Map<string, InstData> => {
 			if (!d.components.includes(name)) d.components.push(name);
 		}
 	};
-	// Multi-instance components — store as array; diffs are shown per-badge, not per-field.
+	// Multi-instance components — accumulate into array so computeDiff can match by key.
 	const tagMulti = (arr: { inst: unknown }[], name: string) => {
 		for (const c of arr) {
 			const d = ensure(String(c.inst));
+			const existing = d.proposed[name];
+			if (Array.isArray(existing)) existing.push(c);
+			else d.proposed[name] = [c];
 			if (!d.components.includes(name)) d.components.push(name);
 		}
 	};
@@ -147,6 +168,10 @@ const buildInstMap = (p: CollabProposalEvent): Map<string, InstData> => {
 	for (const dt of p.description_texts) {
 		const d = ensure(String(dt.inst));
 		d.descriptionTexts.push(dt as unknown as DescriptionText);
+		// also store in proposed so computeDiff produces a text diff
+		const existing = d.proposed["DescriptionText"];
+		if (Array.isArray(existing)) existing.push(dt);
+		else d.proposed["DescriptionText"] = [dt];
 		if (!d.components.includes("DescriptionText")) d.components.push("DescriptionText");
 	}
 	tagSingle(p.reactables as { inst: unknown }[], "Reactable");
@@ -160,8 +185,15 @@ const buildInstMap = (p: CollabProposalEvent): Map<string, InstData> => {
 	tagMulti(p.conditions as { inst: unknown }[], "Condition");
 	tagMulti(p.effects as { inst: unknown }[], "Effect");
 	tagMulti(p.actions as { inst: unknown }[], "Action");
-	tagMulti(p.parents as { inst: unknown }[], "ParentToChildren");
-	tagMulti(p.children as { inst: unknown }[], "ChildToParent");
+	// Relationship components — badge only, no field-level diff needed.
+	for (const c of (p.parents as { inst: unknown }[])) {
+		const d = ensure(String(c.inst));
+		if (!d.components.includes("ParentToChildren")) d.components.push("ParentToChildren");
+	}
+	for (const c of (p.children as { inst: unknown }[])) {
+		const d = ensure(String(c.inst));
+		if (!d.components.includes("ChildToParent")) d.components.push("ChildToParent");
+	}
 
 	return map;
 };
@@ -327,7 +359,8 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 						?? EditorData().getEntity(inst)?.Entity?.name
 						?? shortAddr(inst);
 					const isExpanded = expanded.has(inst);
-					const hasDetails = data.descriptionTexts.length > 0 || data.components.length > 1;
+					// Show expand arrow whenever there's component data to diff
+					const hasDetails = Object.keys(data.proposed).length > 0;
 
 					return (
 						<div key={inst} className="rounded border border-blue-200 bg-white/60">
@@ -376,46 +409,29 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 								)}
 							</label>
 
-							{/* Expanded content */}
+							{/* Expanded content — unified field-level diffs for all components */}
 							{isExpanded && (() => {
 								const syncEntity = EditorData().getEntity(inst, true) as AnyObject | undefined;
 								const diffs = computeDiff(data.proposed as AnyObject, syncEntity);
 								return (
-									<div className="border-t border-blue-100 px-3 py-2 flex flex-col gap-2">
-										{/* Description texts */}
-										{data.descriptionTexts.map((dt, i) => (
-											<div key={i} className="flex flex-col gap-0.5">
-												<span className="text-[9px] uppercase tracking-wide opacity-40">
-													Description text {data.descriptionTexts.length > 1 ? `#${i + 1}` : ""}
+									<div className="border-t border-blue-100 px-3 py-2 flex flex-col gap-1">
+										{diffs.length > 0 ? diffs.map((d, j) => (
+											<div key={j} className="flex flex-col gap-0.5">
+												<span className="text-[9px] opacity-50 font-medium uppercase tracking-wide">
+													{d.component} · {d.field}
 												</span>
-												<p className="text-[11px] italic text-gray-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1 break-words whitespace-pre-wrap">
-													{dt.text || <span className="opacity-40">(empty)</span>}
-												</p>
-											</div>
-										))}
-										{/* Field-level diffs for all single-instance components */}
-										{diffs.length > 0 && (
-											<div className="flex flex-col gap-1">
-												{diffs.map((d, j) => (
-													<div key={j} className="flex flex-col gap-0.5">
-														<span className="text-[9px] opacity-50 font-medium uppercase tracking-wide">
-															{d.component} · {d.field}
-														</span>
-														{data.isNew ? (
-															<span className="pl-2 text-[10px] text-green-700 font-mono break-all">
-																{truncate(d.newValue)}
-															</span>
-														) : (
-															<div className="pl-2 flex flex-col gap-0.5 font-mono text-[10px]">
-																<span className="text-red-500 break-all">− {truncate(d.oldValue)}</span>
-																<span className="text-green-700 break-all">+ {truncate(d.newValue)}</span>
-															</div>
-														)}
+												{data.isNew ? (
+													<span className="pl-2 text-[10px] text-green-700 font-mono break-all">
+														{truncate(d.newValue)}
+													</span>
+												) : (
+													<div className="pl-2 flex flex-col gap-0.5 font-mono text-[10px]">
+														<span className="text-red-500 break-all">− {truncate(d.oldValue)}</span>
+														<span className="text-green-700 break-all">+ {truncate(d.newValue)}</span>
 													</div>
-												))}
+												)}
 											</div>
-										)}
-										{diffs.length === 0 && data.descriptionTexts.length === 0 && (
+										)) : (
 											<p className="text-[10px] opacity-40 italic">No field-level changes detected.</p>
 										)}
 									</div>
