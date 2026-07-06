@@ -5,6 +5,8 @@ import { publishConfigToContract, submitForReview, publishApproved } from "../pu
 import { Button } from "./ui/Button";
 import { CollapsibleComponent } from "./CollapsibleComponent";
 import { useWalletStore } from "@/lib/stores/wallet.store";
+import { useTokenStore } from "@/lib/stores/token.store";
+import EditorStore from "@/lib/stores/editor.store";
 import type { ApprovedProposal } from "@/lib/dojo_bindings/typescript/models.gen";
 import { toast } from "sonner";
 
@@ -21,25 +23,14 @@ const shortAddr = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 
 const PublishApprovedSection = ({
 	approvals,
-	activeTrailId,
+	busy,
+	onPublish,
 }: {
 	approvals: ApprovedProposal[];
-	activeTrailId: bigint;
+	busy: boolean;
+	onPublish: (approval: ApprovedProposal) => void;
 }) => {
-	const [busy, setBusy] = useState(false);
-
 	if (approvals.length === 0) return null;
-
-	const handlePublish = async (approval: ApprovedProposal) => {
-		setBusy(true);
-		try {
-			await publishApproved(activeTrailId, approval);
-		} catch (e) {
-			console.error("publishApproved failed:", e);
-		} finally {
-			setBusy(false);
-		}
-	};
 
 	return (
 		<section className="flex flex-col gap-1">
@@ -61,7 +52,7 @@ const PublishApprovedSection = ({
 					<Button
 						size="sm"
 						disabled={busy}
-						onClick={() => handlePublish(approval)}
+						onClick={() => onPublish(approval)}
 					>
 						Publish approved
 					</Button>
@@ -87,7 +78,15 @@ const PublishApprovedSection = ({
 export const StagingPanel = () => {
 	const { changeSet, stagedChanges, activeTrailId, currentApprovals } = useEditorData();
 	const { walletAddress } = useWalletStore();
+	const { ownedTrailIds } = useTokenStore();
+	const isAdmin = EditorStore().isAdmin ?? false;
 	const [reviewBusy, setReviewBusy] = useState(false);
+	const [publishBusy, setPublishBusy] = useState(false);
+
+	// Trail owners and admins may publish directly. When a trail is active, collaborators
+	// (non-owners) must submit for review instead.
+	const canPublishDirectly =
+		isAdmin || activeTrailId === undefined || ownedTrailIds.includes(activeTrailId);
 
 	const forActiveTrail = (items: ChangeSet[]) =>
 		activeTrailId === undefined
@@ -114,19 +113,75 @@ export const StagingPanel = () => {
 		);
 	}, [currentApprovals, activeTrailId, walletAddress]);
 
-	// Notify the collaborator when the trail owner rejects their proposal.
-	// We detect rejection when our approval disappears while we still have staged changes.
+	// Notify the collaborator when the trail owner acts on their proposal.
+	// justPublishedRef guards against a false positive: if we cleared the approval ourselves
+	// (by successfully publishing), the drop is intentional and should not trigger the toast.
 	const prevMyApprovalsRef = useRef<ApprovedProposal[]>([]);
+	const justPublishedRef = useRef(false);
 	useEffect(() => {
 		const prev = prevMyApprovalsRef.current;
 		prevMyApprovalsRef.current = myApprovals;
-		if (prev.length > 0 && myApprovals.length === 0 && staged.length > 0) {
+
+		const hadApproval = prev.length > 0;
+		const hasApproval = myApprovals.length > 0;
+
+		// New approval arrived — notify about any staged insts the owner excluded.
+		if (!hadApproval && hasApproval) {
+			const approval = myApprovals[0];
+			const toBigIntSet = (list: ApprovedProposal[keyof ApprovedProposal]) =>
+				new Set((list as bigint[]).map(x => String(BigInt(x.toString()))));
+
+			const approvedSingle = toBigIntSet(approval.w_single_keys);
+			const approvedDesc   = toBigIntSet(approval.w_description_texts);
+			// w_multi_keys is [inst, key, inst, key, …] — insts are at even indices
+			const approvedMulti  = new Set(
+				(approval.w_multi_keys as bigint[])
+					.filter((_, i) => i % 2 === 0)
+					.map(x => String(BigInt(x.toString())))
+			);
+
+			const deferred = staged.filter((c) => {
+				const instStr = String(BigInt(c.inst.toString()));
+				return !approvedSingle.has(instStr) && !approvedDesc.has(instStr) && !approvedMulti.has(instStr);
+			});
+
+			if (deferred.length > 0) {
+				const names = deferred.map(
+					(c) => EditorData().getEntity(c.inst)?.Entity?.name ?? String(c.inst)
+				);
+				toast.info(
+					`Some staged items were not included in the approval: ${names.join(", ")}. They remain staged for resubmission.`,
+					{ duration: 8000, dismissible: true },
+				);
+			}
+		}
+
+		// Rejection: approval dropped while staged changes remain.
+		if (hadApproval && !hasApproval && staged.length > 0) {
+			if (justPublishedRef.current) {
+				justPublishedRef.current = false;
+				return;
+			}
 			toast.warning(
 				"Your proposal was rejected. Your staged changes are preserved — edit and resubmit.",
 				{ duration: 6000, dismissible: true },
 			);
 		}
 	}, [myApprovals]);
+
+	const handlePublish = async (approval: ApprovedProposal) => {
+		if (!activeTrailId) return;
+		setPublishBusy(true);
+		justPublishedRef.current = true;
+		try {
+			await publishApproved(activeTrailId, approval);
+		} catch (e) {
+			justPublishedRef.current = false;
+			console.error("publishApproved failed:", e);
+		} finally {
+			setPublishBusy(false);
+		}
+	};
 
 	const handleSubmitForReview = async () => {
 		if (!activeTrailId) return;
@@ -202,9 +257,10 @@ export const StagingPanel = () => {
 
 					<div className="flex gap-1 mt-1">
 						<Button
-							disabled={staged.length === 0}
+							disabled={staged.length === 0 || !canPublishDirectly}
 							onClick={() => publishConfigToContract()}
 							variant="hero"
+							title={!canPublishDirectly ? "Only trail owners can publish directly — use Submit for review" : undefined}
 						>
 							Publish staged ({staged.length})
 						</Button>
@@ -223,7 +279,8 @@ export const StagingPanel = () => {
 				{myApprovals.length > 0 && activeTrailId !== undefined && (
 					<PublishApprovedSection
 						approvals={myApprovals}
-						activeTrailId={activeTrailId}
+						busy={publishBusy}
+						onPublish={handlePublish}
 					/>
 				)}
 

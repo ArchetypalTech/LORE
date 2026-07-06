@@ -4,6 +4,7 @@ import type { AnyObject } from "../lib/types";
 import { Button } from "./ui/Button";
 import { CollapsibleComponent } from "./CollapsibleComponent";
 import { SystemCalls } from "@lib/systemCalls";
+import { useTokenStore } from "@/lib/stores/token.store";
 import type {
 	CollabProposalEvent,
 	ApprovedProposal,
@@ -246,12 +247,19 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 
 	const shortAddr = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 
+	const removeSelf = () => {
+		EditorData().set({
+			pendingProposals: EditorData().get().pendingProposals.filter((p) => p !== proposal),
+		});
+	};
+
 	const handleApprove = async () => {
 		if (selected.size === 0) return;
 		setBusy(true);
 		try {
 			const approval = buildApprovedProposal(proposal, selected);
 			await SystemCalls.approveProposal(approval);
+			removeSelf();
 		} catch (e) {
 			console.error("approveProposal failed:", e);
 		} finally {
@@ -263,6 +271,7 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 		setBusy(true);
 		try {
 			await SystemCalls.rejectProposal(BigInt(proposal.trail_id), proposal.proposer);
+			removeSelf();
 		} catch (e) {
 			console.error("rejectProposal failed:", e);
 		} finally {
@@ -412,7 +421,10 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 
 const ProposalReviewPanel = () => {
 	const { pendingProposals, activeTrailId } = useEditorData();
+	const { ownedTrailIds } = useTokenStore();
 	const [syncing, setSyncing] = useState(false);
+
+	const isOwner = activeTrailId !== undefined && ownedTrailIds.includes(activeTrailId);
 
 	const doSync = async () => {
 		if (!activeTrailId) return;
@@ -427,11 +439,11 @@ const ProposalReviewPanel = () => {
 	};
 
 	useEffect(() => {
-		doSync();
+		if (isOwner) doSync();
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeTrailId]);
+	}, [activeTrailId, isOwner]);
 
-	if (!activeTrailId) return null;
+	if (!isOwner) return null;
 
 	return (
 		<CollapsibleComponent title={`Pending proposals (${pendingProposals.length})`}>

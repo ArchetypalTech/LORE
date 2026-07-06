@@ -40,6 +40,7 @@ import type { ChangeSet } from "./lib/types";
 import { getPlayerAddress } from "./lib/components";
 import WalletStore from "@/lib/stores/wallet.store";
 import { LORE_CONFIG } from "@/lib/config";
+import TokenStore from "@/lib/stores/token.store";
 
 /**
  * Publishes a game configuration to the contract
@@ -103,8 +104,11 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 			if (!isAdmin) {
 				const entity = EditorData().getEntity(change.inst);
 				const creator = BigInt(entity?.Entity?.creator_address ?? 0);
-				// 0n = new entity not yet stamped on-chain — safe to publish
-				const isOwned = creator === 0n || creator === myAddress;
+				const entityTrailId = BigInt(entity?.Entity?.trail_id ?? 0);
+				// 0n = new entity not yet stamped on-chain — safe to publish.
+				// Trail owners may edit any entity inside their trail regardless of who created it.
+				const isTrailOwner = entityTrailId > 0n && TokenStore().playerOwnsTrail(entityTrailId);
+				const isOwned = creator === 0n || creator === myAddress || isTrailOwner;
 
 				if (!isOwned) {
 					toast.warning(
@@ -942,6 +946,16 @@ export const publishApproved = async (trailId: bigint, approval: ApprovedProposa
 		}
 
 		Notifications().finalizePublishing();
+
+		// Remove the published approval so the "Approved by trail owner" banner disappears.
+		const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
+		const proposerNorm = norm(approval.proposer);
+		EditorData().set({
+			currentApprovals: EditorData().get().currentApprovals.filter(
+				(a) => !(BigInt(a.trail_id) === trailId && norm(a.proposer) === proposerNorm)
+			),
+		});
+
 		await tick();
 		await syncEntitiesByInsts(publishedInsts);
 		return true;

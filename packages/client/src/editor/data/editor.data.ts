@@ -951,16 +951,20 @@ const dojoSync = (
 	const approvedProposal = (obj as any).ApprovedProposal as ApprovedProposal | undefined;
 	if (approvedProposal?.trail_id !== undefined) {
 		const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
-		set({
-			currentApprovals: [
-				...get().currentApprovals.filter(
-					(a) =>
-						!(BigInt(a.trail_id) === BigInt(approvedProposal.trail_id) &&
-							norm(a.proposer) === norm(approvedProposal.proposer))
-				),
-				approvedProposal,
-			],
-		});
+		const filtered = get().currentApprovals.filter(
+			(a) =>
+				!(BigInt(a.trail_id) === BigInt(approvedProposal.trail_id) &&
+					norm(a.proposer) === norm(approvedProposal.proposer))
+		);
+		// When the owner rejects, the contract erases the model — Torii sends it back with
+		// all array fields empty. Don't re-add the empty shell; just remove the old entry so
+		// the collaborator's rejection-notification effect fires correctly.
+		const isEmpty =
+			(approvedProposal.w_single_keys as any[]).length === 0 &&
+			(approvedProposal.w_description_texts as any[]).length === 0 &&
+			(approvedProposal.w_multi_keys as any[]).length === 0 &&
+			(approvedProposal.d_single_keys as any[]).length === 0;
+		set({ currentApprovals: isEmpty ? filtered : [...filtered, approvedProposal] });
 		return;
 	}
 
