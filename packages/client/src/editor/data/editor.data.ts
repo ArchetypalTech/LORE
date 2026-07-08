@@ -31,7 +31,6 @@ import {
 	createDefaultExitComponent,
 	createDefaultAreaComponent,
 } from "../lib/components";
-import { Notifications } from "../lib/notifications";
 import type {
 	AnyObject,
 	EditorCollection,
@@ -73,8 +72,10 @@ const {
 	currentApprovals: [] as ApprovedProposal[],
 });
 
-const getItem = (id: BigNumberish, syncPool = false) =>
-	get()[syncPool ? "syncPool" : "dataPool"].get(num.toHex64(id.toString()));
+const getItem = (id: BigNumberish, syncPool = false) => {
+	if (id === undefined || id === null) return undefined;
+	return get()[syncPool ? "syncPool" : "dataPool"].get(num.toHex64(id.toString()));
+};
 
 export const getEntity = (id: BigNumberish, syncPool = false) => {
 	const item = getItem(id, syncPool);
@@ -912,6 +913,31 @@ const stageChanges = (insts?: BigNumberish[]) => {
 	set({
 		stagedChanges: [...get().stagedChanges, ...toStage],
 		changeSet: insts ? get().changeSet.filter((c) => !toStage.includes(c)) : [],
+	});
+	persistDraft();
+};
+
+// Stage/unstage/discard a single specific ChangeSet entry by reference.
+// Used by per-row buttons in the staging panel so clicking one row doesn't
+// affect sibling rows that share the same entity inst (e.g. DELETE + UPDATE).
+const stageChange = (change: ChangeSet) => {
+	set({
+		stagedChanges: [...get().stagedChanges, change],
+		changeSet: get().changeSet.filter((c) => c !== change),
+	});
+	persistDraft();
+};
+const unstageChange = (change: ChangeSet) => {
+	set({
+		changeSet: [...get().changeSet, change],
+		stagedChanges: get().stagedChanges.filter((c) => c !== change),
+	});
+	persistDraft();
+};
+const discardChange = (change: ChangeSet) => {
+	set({
+		changeSet: get().changeSet.filter((c) => c !== change),
+		stagedChanges: get().stagedChanges.filter((c) => c !== change),
 	});
 	persistDraft();
 };
@@ -1863,6 +1889,9 @@ const EditorData = createFactory({
 	stageChanges,
 	unstageChanges,
 	discardChanges,
+	stageChange,
+	unstageChange,
+	discardChange,
 	setActiveTrailId,
 	setEditorInitialized,
 	queueRemoteUpdate,

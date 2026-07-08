@@ -33,8 +33,8 @@
   },
   "contracts": [
     {
-      "address": "0x23f9fc7016872486f9a10b2db507d086fedac72205dad0693d4846be9791973",
-      "class_hash": "0x2bfb4e9505f45cb9284466a11dcbbf1c4221416e85e4bb9c259c39caca01724",
+      "address": "0x76d5e0c24fd4072ae3f40b838d6b40f0c6d1e2edce588a167a3b6f1268b3c77",
+      "class_hash": "0xd98ffee803679adf9e1527d19af6153386792fb76656fe0b8c48afa8ac6f8c",
       "init_calldata": [
         "0x0"
       ],
@@ -63,8 +63,8 @@
       ]
     },
     {
-      "address": "0x2fba44b76473fc7a1dbc2db595cf325bb387e79be458f6b0392eb21a6a99d40",
-      "class_hash": "0x39dddb25af177d61465e622a689938fd148f0269ddc2bcf72761caac82869d6",
+      "address": "0x248c43be7921fe958a398e4c6219c13f84aba208b7f728e1dd704cd16633a5a",
+      "class_hash": "0x4399e23544d320a4e2e5efc5430823c7393738e2ddd3de04552c8a028a63136",
       "init_calldata": [
         "arr:0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819,0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7,0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae,0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F"
       ],
@@ -75,6 +75,7 @@
         "set_admin",
         "set_editor",
         "grant_access_to_entity",
+        "grant_access_to_trail",
         "create_player",
         "create_entity",
         "create_reactable",
@@ -108,6 +109,9 @@
         "delete_parent",
         "delete_child",
         "register_property_registry",
+        "submit_for_review",
+        "approve_proposal",
+        "reject_proposal",
         "upgrade",
         "grant_role",
         "revoke_role",
@@ -139,8 +143,8 @@
       ]
     },
     {
-      "address": "0x4927eeb52615db4bd966e2833fdfc749f59c7bcf60a07d587dec96136289196",
-      "class_hash": "0x74a535d06a30acd6dd1bd7ea5cfc0874d3270d020afabec3b521443cbd83dae",
+      "address": "0xe9723195d053afe59438fbca9314bd627599b0895a4f00d3a8f1cfaf4b17f8",
+      "class_hash": "0x4397c8b2267326e205a772a75ed967532c782cf42bea1f738a494a540cfba24",
       "init_calldata": [],
       "tag": "lore-prompt",
       "selector": "0x7ce185ac93eb5e2a28b27a6bab8ce1cc608744ef663badb20489547ed1d20a0",
@@ -176,7 +180,7 @@
   ],
   "libraries": [
     {
-      "class_hash": "0xa787eac35c65986b787f42de952d18fa913bc1f231abba1b26aa31a3edf753",
+      "class_hash": "0x2e48dafbf12ae58890282a1aacaf1332bf7b19454f00b40bd5ebecb3a6cddc3",
       "tag": "lore-lexer_v0_2_0",
       "selector": "0x5d301a42d3e6f3f2601cfe7322127087a384cd0fb9f7b0c9ebc1828ee95acd1",
       "systems": [],
@@ -341,6 +345,53 @@
       "class_hash": "0x2e8589f66af40bc70208e74b476a191d4e692378f6b3f77d73aa64b9adf05b5",
       "tag": "lore-ActionsReward",
       "selector": "0x7ed7b2d5dd13b2cf097f94a4b1ce4a6d6d8b73b8e3488594c24b4f761c0fa77"
+    },
+    {
+      "members": [
+        {
+          "name": "trail_id",
+          "type": "core::integer::u128",
+          "key": true
+        },
+        {
+          "name": "proposer",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "w_single_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "w_description_texts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "w_multi_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "d_single_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "d_description_texts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "d_multi_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        }
+      ],
+      "class_hash": "0x57d62e47de9b1c87b2e8c9182d6840c2f32608f3ede4fd6639923683c1adf33",
+      "tag": "lore-ApprovedProposal",
+      "selector": "0x28430bf634ef643bbabbf357d81d474eeb35f74bb6ef7fbcd41fc0523d5331d"
     },
     {
       "members": [
@@ -819,9 +870,14 @@
           "name": "grants_editor_access",
           "type": "core::bool",
           "key": false
+        },
+        {
+          "name": "grants_trail_access",
+          "type": "core::bool",
+          "key": false
         }
       ],
-      "class_hash": "0x2dae158f31e696d51c6b8f4cf744166783c9a12926d8ef76d209507d021b3d5",
+      "class_hash": "0x571013c9f6f7d6f4db3d8a5c0d67a2df2fa832b8d779b5fe2436d73d79e2c95",
       "tag": "lore-Hub",
       "selector": "0x345e4bea38090022c25b4b917cc018d015dc8689531fe5a82835d7160413010"
     },
@@ -1127,9 +1183,14 @@
           "name": "location",
           "type": "core::felt252",
           "key": false
+        },
+        {
+          "name": "timestamp",
+          "type": "core::integer::u64",
+          "key": false
         }
       ],
-      "class_hash": "0x751cf42141e8cc7182421c33ddc737ce0608a4d144114d7375251d1cda1e6af",
+      "class_hash": "0xe3c8842b3521c272dec4185f18166776320e4ef5512c1b75146fd9da69f2ff",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
@@ -1375,6 +1436,173 @@
       "class_hash": "0x6d7810fbb7b93093e5e2b3ca8eaaf82bebcbe3df899759913e1f01a08eab7e4",
       "tag": "lore-AppchainMessageEvent",
       "selector": "0x3d690231464187d245c60621c09209061a40347b82077ec4cb8e145179de19d"
+    },
+    {
+      "members": [
+        {
+          "name": "trail_id",
+          "type": "core::integer::u128",
+          "key": true
+        },
+        {
+          "name": "proposer",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "entities",
+          "type": "core::array::Array::<lore::models::entity::Entity>",
+          "key": false
+        },
+        {
+          "name": "reactables",
+          "type": "core::array::Array::<lore::models::reactable::Reactable>",
+          "key": false
+        },
+        {
+          "name": "areas",
+          "type": "core::array::Array::<lore::models::area::Area>",
+          "key": false
+        },
+        {
+          "name": "exits",
+          "type": "core::array::Array::<lore::models::exit::Exit>",
+          "key": false
+        },
+        {
+          "name": "hubs",
+          "type": "core::array::Array::<lore::models::hub::Hub>",
+          "key": false
+        },
+        {
+          "name": "description_texts",
+          "type": "core::array::Array::<lore::models::description_text::DescriptionText>",
+          "key": false
+        },
+        {
+          "name": "inventory_items",
+          "type": "core::array::Array::<lore::models::inventory_item::InventoryItem>",
+          "key": false
+        },
+        {
+          "name": "containers",
+          "type": "core::array::Array::<lore::models::container::Container>",
+          "key": false
+        },
+        {
+          "name": "trails",
+          "type": "core::array::Array::<lore::models::hub::Trail>",
+          "key": false
+        },
+        {
+          "name": "triggers",
+          "type": "core::array::Array::<lore::models::trigger::Trigger>",
+          "key": false
+        },
+        {
+          "name": "conditions",
+          "type": "core::array::Array::<lore::models::condition::Condition>",
+          "key": false
+        },
+        {
+          "name": "effects",
+          "type": "core::array::Array::<lore::models::effect::Effect>",
+          "key": false
+        },
+        {
+          "name": "actions",
+          "type": "core::array::Array::<lore::models::action::Action>",
+          "key": false
+        },
+        {
+          "name": "parents",
+          "type": "core::array::Array::<lore::models::entity::ParentToChildren>",
+          "key": false
+        },
+        {
+          "name": "children",
+          "type": "core::array::Array::<lore::models::entity::ChildToParent>",
+          "key": false
+        },
+        {
+          "name": "deleted_entity_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_reactable_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_area_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_exit_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_container_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_inventory_item_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_hub_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_trail_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_parent_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_child_insts",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_description_text_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_trigger_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_condition_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_effect_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        },
+        {
+          "name": "deleted_action_keys",
+          "type": "core::array::Array::<core::felt252>",
+          "key": false
+        }
+      ],
+      "class_hash": "0x666bf074eeb8f3bb1370b788d972ead5e5a75bc341a1ea4b09cf88570aff8e0",
+      "tag": "lore-CollabProposalEvent",
+      "selector": "0x79d630b859291ce22562ecd6bb0ea30baa145b0f0ef3e56d26f3f1aa3e5a862"
     },
     {
       "members": [
@@ -4298,6 +4526,346 @@
     },
     {
       "type": "struct",
+      "name": "lore::models::collab_proposal::ApprovedProposal",
+      "members": [
+        {
+          "name": "trail_id",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "proposer",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "w_single_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "w_description_texts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "w_multi_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "d_single_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "d_description_texts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "d_multi_keys",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore::models::collab_proposal::ApprovedProposalValue",
+      "members": [
+        {
+          "name": "w_single_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "w_description_texts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "w_multi_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "d_single_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "d_description_texts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "d_multi_keys",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore::models::collab_proposal::CollabProposalEvent",
+      "members": [
+        {
+          "name": "trail_id",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "proposer",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "entities",
+          "type": "core::array::Array::<lore::models::entity::Entity>"
+        },
+        {
+          "name": "reactables",
+          "type": "core::array::Array::<lore::models::reactable::Reactable>"
+        },
+        {
+          "name": "areas",
+          "type": "core::array::Array::<lore::models::area::Area>"
+        },
+        {
+          "name": "exits",
+          "type": "core::array::Array::<lore::models::exit::Exit>"
+        },
+        {
+          "name": "hubs",
+          "type": "core::array::Array::<lore::models::hub::Hub>"
+        },
+        {
+          "name": "description_texts",
+          "type": "core::array::Array::<lore::models::description_text::DescriptionText>"
+        },
+        {
+          "name": "inventory_items",
+          "type": "core::array::Array::<lore::models::inventory_item::InventoryItem>"
+        },
+        {
+          "name": "containers",
+          "type": "core::array::Array::<lore::models::container::Container>"
+        },
+        {
+          "name": "trails",
+          "type": "core::array::Array::<lore::models::hub::Trail>"
+        },
+        {
+          "name": "triggers",
+          "type": "core::array::Array::<lore::models::trigger::Trigger>"
+        },
+        {
+          "name": "conditions",
+          "type": "core::array::Array::<lore::models::condition::Condition>"
+        },
+        {
+          "name": "effects",
+          "type": "core::array::Array::<lore::models::effect::Effect>"
+        },
+        {
+          "name": "actions",
+          "type": "core::array::Array::<lore::models::action::Action>"
+        },
+        {
+          "name": "parents",
+          "type": "core::array::Array::<lore::models::entity::ParentToChildren>"
+        },
+        {
+          "name": "children",
+          "type": "core::array::Array::<lore::models::entity::ChildToParent>"
+        },
+        {
+          "name": "deleted_entity_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_reactable_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_area_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_exit_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_container_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_inventory_item_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_hub_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_trail_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_parent_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_child_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_description_text_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_trigger_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_condition_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_effect_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_action_keys",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore::models::collab_proposal::CollabProposalEventValue",
+      "members": [
+        {
+          "name": "entities",
+          "type": "core::array::Array::<lore::models::entity::Entity>"
+        },
+        {
+          "name": "reactables",
+          "type": "core::array::Array::<lore::models::reactable::Reactable>"
+        },
+        {
+          "name": "areas",
+          "type": "core::array::Array::<lore::models::area::Area>"
+        },
+        {
+          "name": "exits",
+          "type": "core::array::Array::<lore::models::exit::Exit>"
+        },
+        {
+          "name": "hubs",
+          "type": "core::array::Array::<lore::models::hub::Hub>"
+        },
+        {
+          "name": "description_texts",
+          "type": "core::array::Array::<lore::models::description_text::DescriptionText>"
+        },
+        {
+          "name": "inventory_items",
+          "type": "core::array::Array::<lore::models::inventory_item::InventoryItem>"
+        },
+        {
+          "name": "containers",
+          "type": "core::array::Array::<lore::models::container::Container>"
+        },
+        {
+          "name": "trails",
+          "type": "core::array::Array::<lore::models::hub::Trail>"
+        },
+        {
+          "name": "triggers",
+          "type": "core::array::Array::<lore::models::trigger::Trigger>"
+        },
+        {
+          "name": "conditions",
+          "type": "core::array::Array::<lore::models::condition::Condition>"
+        },
+        {
+          "name": "effects",
+          "type": "core::array::Array::<lore::models::effect::Effect>"
+        },
+        {
+          "name": "actions",
+          "type": "core::array::Array::<lore::models::action::Action>"
+        },
+        {
+          "name": "parents",
+          "type": "core::array::Array::<lore::models::entity::ParentToChildren>"
+        },
+        {
+          "name": "children",
+          "type": "core::array::Array::<lore::models::entity::ChildToParent>"
+        },
+        {
+          "name": "deleted_entity_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_reactable_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_area_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_exit_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_container_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_inventory_item_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_hub_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_trail_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_parent_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_child_insts",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_description_text_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_trigger_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_condition_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_effect_keys",
+          "type": "core::array::Array::<core::felt252>"
+        },
+        {
+          "name": "deleted_action_keys",
+          "type": "core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "lore::models::collab_proposal::e_CollabProposalEvent::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "lore::models::collab_proposal::m_ApprovedProposal::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "struct",
       "name": "lore::models::condition::Condition",
       "members": [
         {
@@ -4997,6 +5565,10 @@
         {
           "name": "grants_editor_access",
           "type": "core::bool"
+        },
+        {
+          "name": "grants_trail_access",
+          "type": "core::bool"
         }
       ]
     },
@@ -5018,6 +5590,10 @@
         },
         {
           "name": "grants_editor_access",
+          "type": "core::bool"
+        },
+        {
+          "name": "grants_trail_access",
           "type": "core::bool"
         }
       ]
@@ -5395,6 +5971,10 @@
         {
           "name": "location",
           "type": "core::felt252"
+        },
+        {
+          "name": "timestamp",
+          "type": "core::integer::u64"
         }
       ]
     },
@@ -5443,6 +6023,10 @@
         {
           "name": "location",
           "type": "core::felt252"
+        },
+        {
+          "name": "timestamp",
+          "type": "core::integer::u64"
         }
       ]
     },
@@ -6232,6 +6816,26 @@
         },
         {
           "type": "function",
+          "name": "grant_access_to_trail",
+          "inputs": [
+            {
+              "name": "account",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "trail_id",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "granting",
+              "type": "core::bool"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
           "name": "create_player",
           "inputs": [
             {
@@ -6621,6 +7225,166 @@
             {
               "name": "done",
               "type": "core::array::Array::<core::bool>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "submit_for_review",
+          "inputs": [
+            {
+              "name": "trail_id",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "entities",
+              "type": "core::array::Array::<lore::models::entity::Entity>"
+            },
+            {
+              "name": "reactables",
+              "type": "core::array::Array::<lore::models::reactable::Reactable>"
+            },
+            {
+              "name": "areas",
+              "type": "core::array::Array::<lore::models::area::Area>"
+            },
+            {
+              "name": "exits",
+              "type": "core::array::Array::<lore::models::exit::Exit>"
+            },
+            {
+              "name": "hubs",
+              "type": "core::array::Array::<lore::models::hub::Hub>"
+            },
+            {
+              "name": "description_texts",
+              "type": "core::array::Array::<lore::models::description_text::DescriptionText>"
+            },
+            {
+              "name": "inventory_items",
+              "type": "core::array::Array::<lore::models::inventory_item::InventoryItem>"
+            },
+            {
+              "name": "containers",
+              "type": "core::array::Array::<lore::models::container::Container>"
+            },
+            {
+              "name": "trails",
+              "type": "core::array::Array::<lore::models::hub::Trail>"
+            },
+            {
+              "name": "triggers",
+              "type": "core::array::Array::<lore::models::trigger::Trigger>"
+            },
+            {
+              "name": "conditions",
+              "type": "core::array::Array::<lore::models::condition::Condition>"
+            },
+            {
+              "name": "effects",
+              "type": "core::array::Array::<lore::models::effect::Effect>"
+            },
+            {
+              "name": "actions",
+              "type": "core::array::Array::<lore::models::action::Action>"
+            },
+            {
+              "name": "parents",
+              "type": "core::array::Array::<lore::models::entity::ParentToChildren>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Array::<lore::models::entity::ChildToParent>"
+            },
+            {
+              "name": "deleted_entity_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_reactable_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_area_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_exit_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_container_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_inventory_item_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_hub_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_trail_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_parent_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_child_insts",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_description_text_keys",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_trigger_keys",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_condition_keys",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_effect_keys",
+              "type": "core::array::Array::<core::felt252>"
+            },
+            {
+              "name": "deleted_action_keys",
+              "type": "core::array::Array::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "approve_proposal",
+          "inputs": [
+            {
+              "name": "proposal",
+              "type": "lore::models::collab_proposal::ApprovedProposal"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "reject_proposal",
+          "inputs": [
+            {
+              "name": "trail_id",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "proposer",
+              "type": "core::starknet::contract_address::ContractAddress"
             }
           ],
           "outputs": [],

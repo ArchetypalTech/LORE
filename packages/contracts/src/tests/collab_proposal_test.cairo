@@ -135,7 +135,10 @@ fn test_collab_full_flow_approved_changes() {
         array![],                                              // actions
         array![],                                              // parents
         array![],                                              // children
-        array![ENTITY_B],                                     // proposed deletions
+        array![ENTITY_B],                                     // deleted entities
+        array![], array![], array![], array![], array![],     // deleted: reactable, area, exit, container, inventory_item
+        array![], array![], array![], array![],               // deleted: hub, trail, parent, child
+        array![], array![], array![], array![], array![],     // deleted keys: desc_text, trigger, condition, effect, action
     );
 
     // Step 3 -owner approves modification + creation; entity_B deletion intentionally omitted
@@ -196,7 +199,10 @@ fn test_collab_delete_rejected_panics() {
         array![], array![], array![], array![], array![],
         array![], array![], array![], array![], array![],
         array![], array![], array![], array![], array![],
-        array![ENTITY_B],   // proposes deletion of entity_B
+        array![ENTITY_B],                                     // deleted entities
+        array![], array![], array![], array![], array![],     // deleted: reactable, area, exit, container, inventory_item
+        array![], array![], array![], array![],               // deleted: hub, trail, parent, child
+        array![], array![], array![], array![], array![],     // deleted keys: desc_text, trigger, condition, effect, action
     );
 
     // Owner approves only an area modification -entity_B deletion NOT included
@@ -227,7 +233,10 @@ fn test_submit_for_review_by_stranger_panics() {
         array![], array![], array![], array![], array![],
         array![], array![], array![], array![], array![],
         array![], array![], array![], array![], array![],
-        array![],
+        array![],                                             // deleted entities
+        array![], array![], array![], array![], array![],     // deleted: reactable, area, exit, container, inventory_item
+        array![], array![], array![], array![],               // deleted: hub, trail, parent, child
+        array![], array![], array![], array![], array![],     // deleted keys: desc_text, trigger, condition, effect, action
     );
 }
 

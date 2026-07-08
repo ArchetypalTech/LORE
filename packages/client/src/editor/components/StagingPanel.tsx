@@ -13,7 +13,19 @@ import { toast } from "sonner";
 const entityLabel = (c: ChangeSet) =>
 	EditorData().getEntity(c.inst)?.Entity?.name ?? String(c.inst);
 
-const componentNames = (c: ChangeSet) => Object.keys(c.object).join(", ");
+/** Component name(s) for a change, including key value for multi-keyed types. */
+const componentLabel = (c: ChangeSet) =>
+	Object.entries(c.object)
+		.map(([name, value]) => {
+			if (Array.isArray(value) && value.length > 0) {
+				const keys = (value as { key?: unknown }[])
+					.map(item => item.key)
+					.filter(k => k !== undefined);
+				if (keys.length > 0) return `${name} (key ${keys.join(", ")})`;
+			}
+			return name;
+		})
+		.join(", ");
 
 const shortAddr = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 
@@ -173,7 +185,7 @@ export const StagingPanel = () => {
 			if (remaining.length > 0) {
 				toast.info(
 					`${remaining.length} staged item${remaining.length !== 1 ? "s" : ""} were not included in the approval — resubmit for review.`,
-					{ duration: 8000, dismissible: true },
+					{ duration: 12000, dismissible: true },
 				);
 			}
 		} catch (e) {
@@ -214,16 +226,16 @@ export const StagingPanel = () => {
 						)}
 					</div>
 					{unstaged.length === 0 && <p className="opacity-50">Nothing to stage.</p>}
-					{unstaged.map((c, i) => (
-						<div key={`${String(c.inst)}-${c.type}-${i}`} className="flex items-center justify-between gap-2 rounded border border-gray-200 px-2 py-1">
+					{unstaged.map((c) => (
+						<div key={`${String(c.inst)}-${c.type}-${componentLabel(c)}`} className="flex items-center justify-between gap-2 rounded border border-gray-200 px-2 py-1">
 							<span className="truncate">{entityLabel(c)}</span>
 							<span className="rounded bg-gray-200 px-1 text-[10px] uppercase">{c.type}</span>
-							<span className="truncate opacity-50">{componentNames(c)}</span>
+							<span className="truncate opacity-50">{componentLabel(c)}</span>
 							<div className="flex gap-1">
-								<Button size="sm" onClick={() => EditorData().stageChanges([c.inst])}>
+								<Button size="sm" onClick={() => EditorData().stageChange(c)}>
 									Stage
 								</Button>
-								<Button size="sm" variant="destructive" onClick={() => EditorData().discardChanges([c.inst])}>
+								<Button size="sm" variant="destructive" onClick={() => EditorData().discardChange(c)}>
 									Discard
 								</Button>
 							</div>
@@ -241,15 +253,16 @@ export const StagingPanel = () => {
 						)}
 					</div>
 					{staged.length === 0 && <p className="opacity-50">Nothing staged yet.</p>}
-					{staged.map((c, i) => (
-						<div key={`${String(c.inst)}-${c.type}-${i}`} className="flex items-center justify-between gap-2 rounded border border-gray-200 px-2 py-1">
+					{staged.map((c) => (
+						<div key={`${String(c.inst)}-${c.type}-${componentLabel(c)}`} className="flex items-center justify-between gap-2 rounded border border-gray-200 px-2 py-1">
 							<span className="truncate">{entityLabel(c)}</span>
 							<span className="rounded bg-gray-200 px-1 text-[10px] uppercase">{c.type}</span>
+							<span className="truncate opacity-50">{componentLabel(c)}</span>
 							<div className="flex gap-1">
-								<Button size="sm" onClick={() => EditorData().unstageChanges([c.inst])}>
+								<Button size="sm" onClick={() => EditorData().unstageChange(c)}>
 									Unstage
 								</Button>
-								<Button size="sm" variant="destructive" onClick={() => EditorData().discardChanges([c.inst])}>
+								<Button size="sm" variant="destructive" onClick={() => EditorData().discardChange(c)}>
 									Discard
 								</Button>
 							</div>
@@ -267,9 +280,10 @@ export const StagingPanel = () => {
 						</Button>
 						{activeTrailId !== undefined && (
 							<Button
-								disabled={staged.length === 0 || reviewBusy}
+								disabled={staged.length === 0 || reviewBusy || canPublishDirectly}
 								onClick={handleSubmitForReview}
 								variant="secondary"
+								title={canPublishDirectly ? "Owners publish directly — no review needed" : undefined}
 							>
 								Submit for review
 							</Button>

@@ -120,7 +120,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 			if (!isOwned) {
 				toast.warning(
 					`Skipped "${entity?.Entity?.name ?? String(change.inst)}": owned by another editor`,
-					{ richColors: true, duration: 4000, dismissible: true },
+					{ richColors: true, duration: 10000, dismissible: true },
 				);
 				EditorData().set({
 					changeSet: EditorData().changeSet.filter((x) => x !== change),
@@ -146,7 +146,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 			console.error("Error publishing:", error);
 			toast.error(
 				`Error publishing ${Object.keys(change.object).join(",")}: ${error instanceof Error ? error.message : String(error)}`,
-				{ richColors: true, duration: 4000, dismissible: true },
+				{ richColors: true, duration: 10000, dismissible: true },
 			);
 			// Clean up now — this change won't run in pass 2.
 			EditorData().set({
@@ -170,7 +170,7 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 			console.error("Error publishing:", error);
 			toast.error(
 				`Error publishing ${Object.keys(change.object).join(",")}: ${error instanceof Error ? error.message : String(error)}`,
-				{ richColors: true, duration: 4000, dismissible: true },
+				{ richColors: true, duration: 10000, dismissible: true },
 			);
 		} finally {
 			EditorData().set({
@@ -680,8 +680,8 @@ const buildHubData = (h: Hub) => [
 ];
 
 const buildDescriptionTextData = (dt: DescriptionText) => [
-	num.toBigInt(dt.inst.toString()), num.toBigInt(dt.key.toString()),
-	byteArray.byteArrayFromString(dt.text),
+	num.toBigInt(dt.inst.toString()), num.toBigInt((dt.key ?? 0).toString()),
+	byteArray.byteArrayFromString(dt.text ?? ""),
 ];
 
 const buildInventoryItemData = (item: InventoryItem) => [
@@ -806,6 +806,25 @@ export const submitForReview = async (trailId: bigint): Promise<boolean> => {
 	const parentsData: unknown[][] = [];
 	const childrenData: unknown[][] = [];
 	const deletedEntityInsts: bigint[] = [];
+	const deletedReactableInsts: bigint[] = [];
+	const deletedAreaInsts: bigint[] = [];
+	const deletedExitInsts: bigint[] = [];
+	const deletedContainerInsts: bigint[] = [];
+	const deletedInventoryItemInsts: bigint[] = [];
+	const deletedHubInsts: bigint[] = [];
+	const deletedTrailInsts: bigint[] = [];
+	const deletedParentInsts: bigint[] = [];
+	const deletedChildInsts: bigint[] = [];
+	const deletedDescriptionTextKeys: bigint[] = [];
+	const deletedTriggerKeys: bigint[] = [];
+	const deletedConditionKeys: bigint[] = [];
+	const deletedEffectKeys: bigint[] = [];
+	const deletedActionKeys: bigint[] = [];
+
+	const pushPair = (target: bigint[], inst: unknown, key: unknown) => {
+		target.push(num.toBigInt(inst!.toString()));
+		target.push(num.toBigInt((key ?? 0).toString()));
+	};
 
 	for (const change of staged) {
 		const col = change.object as EntityCollection;
@@ -832,14 +851,40 @@ export const submitForReview = async (trailId: bigint): Promise<boolean> => {
 				effectsData.push(buildEffectData(e));
 			for (const a of (Array.isArray(col.Action) ? col.Action : col.Action ? [col.Action] : []))
 				actionsData.push(buildActionData(a));
-		} else if (change.type === "delete" && col.Entity) {
-			deletedEntityInsts.push(num.toBigInt(col.Entity.inst));
+		} else if (change.type === "delete") {
+			if (col.Entity)           deletedEntityInsts.push(num.toBigInt(col.Entity.inst));
+			if (col.Reactable)        deletedReactableInsts.push(num.toBigInt(col.Reactable.inst));
+			if (col.Area)             deletedAreaInsts.push(num.toBigInt(col.Area.inst));
+			if (col.Exit)             deletedExitInsts.push(num.toBigInt(col.Exit.inst));
+			if (col.Container)        deletedContainerInsts.push(num.toBigInt(col.Container.inst));
+			if (col.InventoryItem)    deletedInventoryItemInsts.push(num.toBigInt(col.InventoryItem.inst));
+			if (col.Hub)              deletedHubInsts.push(num.toBigInt(col.Hub.inst));
+			if (col.Trail)            deletedTrailInsts.push(num.toBigInt(col.Trail.inst));
+			if (col.ParentToChildren) deletedParentInsts.push(num.toBigInt(col.ParentToChildren.inst));
+			if (col.ChildToParent)    deletedChildInsts.push(num.toBigInt(col.ChildToParent.inst));
+			if (col.DescriptionText) {
+				const arr = Array.isArray(col.DescriptionText) ? col.DescriptionText : [col.DescriptionText];
+				for (const dt of arr) pushPair(deletedDescriptionTextKeys, dt.inst, dt.key);
+			}
+			for (const t of (Array.isArray(col.Trigger) ? col.Trigger : col.Trigger ? [col.Trigger] : []))
+				pushPair(deletedTriggerKeys, t.inst, t.key);
+			for (const c of (Array.isArray(col.Condition) ? col.Condition : col.Condition ? [col.Condition] : []))
+				pushPair(deletedConditionKeys, c.inst, c.key);
+			for (const e of (Array.isArray(col.Effect) ? col.Effect : col.Effect ? [col.Effect] : []))
+				pushPair(deletedEffectKeys, e.inst, e.key);
+			for (const a of (Array.isArray(col.Action) ? col.Action : col.Action ? [col.Action] : []))
+				pushPair(deletedActionKeys, a.inst, a.key);
 		}
 	}
 
 	// submit_for_review(trail_id, entities, reactables, areas, exits, hubs,
 	//   description_texts, inventory_items, containers, trails,
-	//   triggers, conditions, effects, actions, parents, children, deleted_entity_insts)
+	//   triggers, conditions, effects, actions, parents, children,
+	//   deleted_entity_insts, deleted_reactable_insts, deleted_area_insts, deleted_exit_insts,
+	//   deleted_container_insts, deleted_inventory_item_insts, deleted_hub_insts,
+	//   deleted_trail_insts, deleted_parent_insts, deleted_child_insts,
+	//   deleted_description_text_keys, deleted_trigger_keys, deleted_condition_keys,
+	//   deleted_effect_keys, deleted_action_keys)
 	const calldata = CallData.compile([
 		trailId,
 		...flatCairo(entitiesData),
@@ -858,6 +903,20 @@ export const submitForReview = async (trailId: bigint): Promise<boolean> => {
 		...flatCairo(parentsData),
 		...flatCairo(childrenData),
 		...flatCairo(deletedEntityInsts),
+		...flatCairo(deletedReactableInsts),
+		...flatCairo(deletedAreaInsts),
+		...flatCairo(deletedExitInsts),
+		...flatCairo(deletedContainerInsts),
+		...flatCairo(deletedInventoryItemInsts),
+		...flatCairo(deletedHubInsts),
+		...flatCairo(deletedTrailInsts),
+		...flatCairo(deletedParentInsts),
+		...flatCairo(deletedChildInsts),
+		...flatCairo(deletedDescriptionTextKeys),
+		...flatCairo(deletedTriggerKeys),
+		...flatCairo(deletedConditionKeys),
+		...flatCairo(deletedEffectKeys),
+		...flatCairo(deletedActionKeys),
 	] as RawArgsArray);
 
 	const account = WalletStore().account as Account;

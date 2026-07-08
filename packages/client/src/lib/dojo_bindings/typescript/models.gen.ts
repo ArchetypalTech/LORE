@@ -1,6 +1,6 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { CairoCustomEnum, BigNumberish } from 'starknet';
+import { CairoCustomEnum, type BigNumberish } from 'starknet';
 
 // Type definition for `lore::models::action::Action` struct
 export interface Action {
@@ -432,6 +432,20 @@ export interface CollabProposalEvent {
 	parents: Array<ParentToChildren>;
 	children: Array<ChildToParent>;
 	deleted_entity_insts: Array<BigNumberish>;
+	deleted_reactable_insts: Array<BigNumberish>;
+	deleted_area_insts: Array<BigNumberish>;
+	deleted_exit_insts: Array<BigNumberish>;
+	deleted_container_insts: Array<BigNumberish>;
+	deleted_inventory_item_insts: Array<BigNumberish>;
+	deleted_hub_insts: Array<BigNumberish>;
+	deleted_trail_insts: Array<BigNumberish>;
+	deleted_parent_insts: Array<BigNumberish>;
+	deleted_child_insts: Array<BigNumberish>;
+	deleted_description_text_keys: Array<BigNumberish>;
+	deleted_trigger_keys: Array<BigNumberish>;
+	deleted_condition_keys: Array<BigNumberish>;
+	deleted_effect_keys: Array<BigNumberish>;
+	deleted_action_keys: Array<BigNumberish>;
 }
 
 // Type definition for `lore::models::game_token_info::GameCreatedEvent` struct
@@ -1354,6 +1368,20 @@ export const schema: SchemaType = {
 			parents: [{ inst: 0, is_parent: false, children: [0], }],
 			children: [{ inst: 0, is_child: false, parent: 0, }],
 			deleted_entity_insts: [0],
+			deleted_reactable_insts: [0],
+			deleted_area_insts: [0],
+			deleted_exit_insts: [0],
+			deleted_container_insts: [0],
+			deleted_inventory_item_insts: [0],
+			deleted_hub_insts: [0],
+			deleted_trail_insts: [0],
+			deleted_parent_insts: [0],
+			deleted_child_insts: [0],
+			deleted_description_text_keys: [0],
+			deleted_trigger_keys: [0],
+			deleted_condition_keys: [0],
+			deleted_effect_keys: [0],
+			deleted_action_keys: [0],
 		},
 		GameCreatedEvent: {
 			game_id: 0,
