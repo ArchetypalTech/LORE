@@ -11,6 +11,7 @@
     "dev:saya-test": "mprocs --config ./mprocs.local_saya-test.yaml",
     "dev:da": "mprocs --config ./mprocs.local_da.yaml",
     "dev:slot": "mprocs --config ./mprocs.slot.yaml",
+    "dev:stage": "mprocs --config ./mprocs.stage.yaml",
     "quickstart": "bun run ./scripts/quickstart.ts # 🧾 quickstart installer "
   },
   "devDependencies": {

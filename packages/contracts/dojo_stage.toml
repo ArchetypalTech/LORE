@@ -18,7 +18,13 @@ private_key = "0x3e3979c1ed728490308054fe357a9f49cf67f80f9721f44cc57235129e090f4
 "lore-lexer" = "0_2_0"
 
 [writers]
-"lore" = ["lore-designer", "lore-prompt", "lore-game_token", "lore-trail_token", "lore-actions_token"]
+"lore" = [
+  "lore-designer",
+  "lore-prompt",
+  "lore-game_token",
+  "lore-trail_token",
+  "lore-actions_token",
+]
 
 [init_call_args]
 "lore-designer" = [
