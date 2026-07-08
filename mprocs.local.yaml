@@ -3,7 +3,7 @@ procs:
     cwd: packages/contracts
     shell: |
       katana --version
-      katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster
+      katana --dev --dev.no-fee --http.cors_origins "*" --cartridge.controllers --cartridge.paymaster --config ./config_katana_dev.toml
   contracts:
     cwd: packages/contracts
     shell: |
@@ -16,7 +16,8 @@ procs:
     cwd: packages/contracts
     env:
       PROFILE: dev
-    shell: ../../scripts/run_torii.sh
+    shell: |
+      torii --config ./config_torii_dev.toml
   # torii:
   #   cwd: packages/contracts
   #   env:
