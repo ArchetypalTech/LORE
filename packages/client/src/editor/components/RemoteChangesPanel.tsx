@@ -4,11 +4,10 @@ import type { AnyObject } from "../lib/types";
 import type { BigNumberish } from "starknet";
 import { Button } from "./ui/Button";
 import { CollapsibleComponent } from "./CollapsibleComponent";
-import { SystemCalls } from "@lib/systemCalls";
 import { useTokenStore } from "@/lib/stores/token.store";
+import { publishFromProposal, signalReviewResult } from "@/editor/publisher";
 import type {
 	CollabProposalEvent,
-	ApprovedProposal,
 	DescriptionText,
 	Entity,
 } from "@/lib/dojo_bindings/typescript/models.gen";
@@ -334,73 +333,6 @@ const buildSelectableKeys = (
 	return keys;
 };
 
-/** Builds an ApprovedProposal limited to the selected component items. */
-const buildApprovedProposal = (
-	proposal: CollabProposalEvent,
-	selected: Set<string>,
-	instMap: Map<string, InstData>,
-): ApprovedProposal => {
-	const sel = (key: string) => selected.has(key);
-
-	// w_single_keys: insts with at least one selected single-key write component
-	const wSingleSet = new Set<string>();
-	for (const [inst, data] of instMap) {
-		if (SINGLE_WRITE_COMPS.some(c => data.components.includes(c) && sel(`w:${inst}:${c}`)))
-			wSingleSet.add(inst);
-	}
-
-	// w_description_texts: flat [inst, key, ...] pairs
-	const wDesc: BigNumberish[] = [];
-	for (const dt of proposal.description_texts) {
-		if (sel(`w:${dt.inst}:DescriptionText:${dt.key}`)) { wDesc.push(dt.inst); wDesc.push(dt.key ?? 0); }
-	}
-
-	// w_multi_keys: flat [inst, key, ...] pairs for Trigger/Condition/Effect/Action
-	const wMulti: BigNumberish[] = [];
-	for (const [comp, arr] of [
-		["Trigger", proposal.triggers], ["Condition", proposal.conditions],
-		["Effect", proposal.effects], ["Action", proposal.actions],
-	] as [string, { inst: unknown; key: unknown }[]][]) {
-		for (const c of arr) {
-			if (sel(`w:${c.inst}:${comp}:${c.key}`)) { wMulti.push(c.inst as BigNumberish); wMulti.push(c.key as BigNumberish); }
-		}
-	}
-
-	// d_single_keys: entity deletions + selected single-key component deletions
-	const dSingleSet = new Set<string>();
-	for (const inst of proposal.deleted_entity_insts)
-		if (sel(`d:${inst}:Entity`)) dSingleSet.add(String(inst));
-	for (const comp of ["Reactable","Area","Exit","Container","InventoryItem","Hub","Trail","ParentToChildren","ChildToParent"]) {
-		for (const inst of getDelSingleArr(proposal, comp))
-			if (sel(`d:${inst}:${comp}`)) dSingleSet.add(String(inst));
-	}
-
-	// d_description_texts: flat [inst, key, ...] pairs
-	const dDesc: BigNumberish[] = [];
-	const ddFlat = proposal.deleted_description_text_keys as BigNumberish[];
-	for (let i = 0; i + 1 < ddFlat.length; i += 2) {
-		if (sel(`d:${ddFlat[i]}:DescriptionText:${ddFlat[i + 1]}`)) { dDesc.push(ddFlat[i]); dDesc.push(ddFlat[i + 1]); }
-	}
-
-	// d_multi_keys: flat [inst, key, ...] pairs for Trigger/Condition/Effect/Action deletions
-	const dMulti: BigNumberish[] = [];
-	for (const comp of MULTI_WRITE_COMPS) {
-		const flat = getDelPairsForComp(proposal, comp);
-		for (let i = 0; i + 1 < flat.length; i += 2)
-			if (sel(`d:${flat[i]}:${comp}:${flat[i + 1]}`)) { dMulti.push(flat[i]); dMulti.push(flat[i + 1]); }
-	}
-
-	return {
-		trail_id: proposal.trail_id,
-		proposer: proposal.proposer,
-		w_single_keys: Array.from(wSingleSet) as unknown as bigint[],
-		w_description_texts: wDesc as unknown as bigint[],
-		w_multi_keys: wMulti as unknown as bigint[],
-		d_single_keys: Array.from(dSingleSet) as unknown as bigint[],
-		d_description_texts: dDesc as unknown as bigint[],
-		d_multi_keys: dMulti as unknown as bigint[],
-	};
-};
 
 // ---------------------------------------------------------------------------
 // ProposalCard
@@ -444,15 +376,15 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 		});
 	};
 
-	const handleApprove = async () => {
+	const handlePublish = async () => {
 		if (selected.size === 0) return;
 		setBusy(true);
 		try {
-			const approval = buildApprovedProposal(proposal, selected, instMap);
-			await SystemCalls.approveProposal(approval);
+			const { publishedCount, skippedCount } = await publishFromProposal(proposal, selected);
+			await signalReviewResult(BigInt(proposal.trail_id), proposal.proposer, publishedCount, skippedCount);
 			removeSelf();
 		} catch (e) {
-			console.error("approveProposal failed:", e);
+			console.error("publishFromProposal failed:", e);
 		} finally {
 			setBusy(false);
 		}
@@ -461,10 +393,11 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 	const handleReject = async () => {
 		setBusy(true);
 		try {
-			await SystemCalls.rejectProposal(BigInt(proposal.trail_id), proposal.proposer);
+			const totalKeys = buildSelectableKeys(proposal, instMap).size;
+			await signalReviewResult(BigInt(proposal.trail_id), proposal.proposer, 0, totalKeys);
 			removeSelf();
 		} catch (e) {
-			console.error("rejectProposal failed:", e);
+			console.error("signalReviewResult (reject) failed:", e);
 		} finally {
 			setBusy(false);
 		}
@@ -499,8 +432,8 @@ const ProposalCard = ({ proposal }: { proposal: CollabProposalEvent }) => {
 					<span className="font-mono text-xs">{shortAddr(proposal.proposer)}</span>
 				</div>
 				<div className="flex gap-1">
-					<Button size="sm" disabled={busy || selected.size === 0} onClick={handleApprove}>
-						Approve ({selected.size})
+					<Button size="sm" disabled={busy || selected.size === 0} onClick={handlePublish}>
+						Publish selected ({selected.size})
 					</Button>
 					<Button size="sm" variant="destructive" disabled={busy} onClick={handleReject}>
 						Reject

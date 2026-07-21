@@ -63,8 +63,8 @@
       ]
     },
     {
-      "address": "0x248c43be7921fe958a398e4c6219c13f84aba208b7f728e1dd704cd16633a5a",
-      "class_hash": "0x4399e23544d320a4e2e5efc5430823c7393738e2ddd3de04552c8a028a63136",
+      "address": "0x69b4151c8a117a3fdb20276665a175d10a8fbe48186f0d388dfc1572946e279",
+      "class_hash": "0xf821ae3d10277b5b5ec763c65432174caf54736d2efa2cf268d979bbf58ba9",
       "init_calldata": [
         "arr:0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819,0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7,0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae,0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F"
       ],
@@ -110,8 +110,7 @@
         "delete_child",
         "register_property_registry",
         "submit_for_review",
-        "approve_proposal",
-        "reject_proposal",
+        "signal_review_result",
         "upgrade",
         "grant_role",
         "revoke_role",
@@ -349,53 +348,6 @@
     {
       "members": [
         {
-          "name": "trail_id",
-          "type": "core::integer::u128",
-          "key": true
-        },
-        {
-          "name": "proposer",
-          "type": "core::starknet::contract_address::ContractAddress",
-          "key": true
-        },
-        {
-          "name": "w_single_keys",
-          "type": "core::array::Array::<core::felt252>",
-          "key": false
-        },
-        {
-          "name": "w_description_texts",
-          "type": "core::array::Array::<core::felt252>",
-          "key": false
-        },
-        {
-          "name": "w_multi_keys",
-          "type": "core::array::Array::<core::felt252>",
-          "key": false
-        },
-        {
-          "name": "d_single_keys",
-          "type": "core::array::Array::<core::felt252>",
-          "key": false
-        },
-        {
-          "name": "d_description_texts",
-          "type": "core::array::Array::<core::felt252>",
-          "key": false
-        },
-        {
-          "name": "d_multi_keys",
-          "type": "core::array::Array::<core::felt252>",
-          "key": false
-        }
-      ],
-      "class_hash": "0x57d62e47de9b1c87b2e8c9182d6840c2f32608f3ede4fd6639923683c1adf33",
-      "tag": "lore-ApprovedProposal",
-      "selector": "0x28430bf634ef643bbabbf357d81d474eeb35f74bb6ef7fbcd41fc0523d5331d"
-    },
-    {
-      "members": [
-        {
           "name": "inst",
           "type": "core::felt252",
           "key": true
@@ -446,6 +398,33 @@
       "class_hash": "0x35170eb5278f2e24c6f2a9f7e2adba47f15cf0d8544c6519632567eb0c497c3",
       "tag": "lore-ChildToParent",
       "selector": "0x6c2a358df76ae2ca942ea3cc2f59ade04e5f5ba87ee162b41a10ad5a5755287"
+    },
+    {
+      "members": [
+        {
+          "name": "trail_id",
+          "type": "core::integer::u128",
+          "key": true
+        },
+        {
+          "name": "proposer",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "published_count",
+          "type": "core::integer::u32",
+          "key": false
+        },
+        {
+          "name": "skipped_count",
+          "type": "core::integer::u32",
+          "key": false
+        }
+      ],
+      "class_hash": "0x7eb4ae798f23433b2669fe0d1b14648fb1f17b6e4fe1d86a131ad6b32b294f4",
+      "tag": "lore-CollabReviewResult",
+      "selector": "0x68ac832bd72b6971eea85e41d70a4179555020f3d8395393d6858b23914114"
     },
     {
       "members": [
@@ -4526,74 +4505,6 @@
     },
     {
       "type": "struct",
-      "name": "lore::models::collab_proposal::ApprovedProposal",
-      "members": [
-        {
-          "name": "trail_id",
-          "type": "core::integer::u128"
-        },
-        {
-          "name": "proposer",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "w_single_keys",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "w_description_texts",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "w_multi_keys",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "d_single_keys",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "d_description_texts",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "d_multi_keys",
-          "type": "core::array::Array::<core::felt252>"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "lore::models::collab_proposal::ApprovedProposalValue",
-      "members": [
-        {
-          "name": "w_single_keys",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "w_description_texts",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "w_multi_keys",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "d_single_keys",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "d_description_texts",
-          "type": "core::array::Array::<core::felt252>"
-        },
-        {
-          "name": "d_multi_keys",
-          "type": "core::array::Array::<core::felt252>"
-        }
-      ]
-    },
-    {
-      "type": "struct",
       "name": "lore::models::collab_proposal::CollabProposalEvent",
       "members": [
         {
@@ -4853,6 +4764,42 @@
       ]
     },
     {
+      "type": "struct",
+      "name": "lore::models::collab_proposal::CollabReviewResult",
+      "members": [
+        {
+          "name": "trail_id",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "proposer",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "published_count",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "skipped_count",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "lore::models::collab_proposal::CollabReviewResultValue",
+      "members": [
+        {
+          "name": "published_count",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "skipped_count",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
       "type": "event",
       "name": "lore::models::collab_proposal::e_CollabProposalEvent::Event",
       "kind": "enum",
@@ -4860,7 +4807,7 @@
     },
     {
       "type": "event",
-      "name": "lore::models::collab_proposal::m_ApprovedProposal::Event",
+      "name": "lore::models::collab_proposal::m_CollabReviewResult::Event",
       "kind": "enum",
       "variants": []
     },
@@ -7364,19 +7311,7 @@
         },
         {
           "type": "function",
-          "name": "approve_proposal",
-          "inputs": [
-            {
-              "name": "proposal",
-              "type": "lore::models::collab_proposal::ApprovedProposal"
-            }
-          ],
-          "outputs": [],
-          "state_mutability": "external"
-        },
-        {
-          "type": "function",
-          "name": "reject_proposal",
+          "name": "signal_review_result",
           "inputs": [
             {
               "name": "trail_id",
@@ -7385,6 +7320,14 @@
             {
               "name": "proposer",
               "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "published_count",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "skipped_count",
+              "type": "core::integer::u32"
             }
           ],
           "outputs": [],

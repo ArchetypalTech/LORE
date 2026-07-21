@@ -5,7 +5,7 @@ use lore::{
         entity::Entity,
         area::Area,
         description_text::DescriptionText,
-        collab_proposal::ApprovedProposal,
+        collab_proposal::CollabReviewResult,
     },
     systems::designer::IDesignerDispatcherTrait,
     tests::{
@@ -16,24 +16,11 @@ use lore::{
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const ENTITY_A: felt252 = 0x0A01;   // exists from start; collaborator modifies its area
-const ENTITY_B: felt252 = 0x0B01;   // exists from start; collaborator proposes deletion → owner rejects
-const ENTITY_C: felt252 = 0x0C01;   // new entity; collaborator creates → owner approves
+const ENTITY_A: felt252 = 0x0A01;   // exists from start; owner publishes modified area
+const ENTITY_B: felt252 = 0x0B01;   // exists from start; entity deletion skipped (owner decides)
+const ENTITY_C: felt252 = 0x0C01;   // new entity proposed by collaborator; owner publishes
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-fn make_empty_proposal(trail_id: u128, proposer: starknet::ContractAddress) -> ApprovedProposal {
-    ApprovedProposal {
-        trail_id,
-        proposer,
-        w_single_keys:       array![],
-        w_description_texts: array![],
-        w_multi_keys:        array![],
-        d_single_keys:       array![],
-        d_description_texts: array![],
-        d_multi_keys:        array![],
-    }
-}
+// ─── Setup helper ─────────────────────────────────────────────────────────────
 
 // OTHER() mints a trail, creates entity_A (area + description) and entity_B (area),
 // then grants RECIPIENT() collaborator access. Returns the trail_id.
@@ -76,186 +63,128 @@ fn owner_setup(ref sys: HelperSystems) -> u128 {
     trail_id
 }
 
-// ─── Full Collaborative Flow ──────────────────────────────────────────────────
-
-// Scenario:
-// 1. Owner (OTHER) publishes two entities with components and grants collaborator access.
-// 2. Collaborator (RECIPIENT) proposes: modify entity_A's area, create entity_C with
-//    area + description, delete entity_B.
-// 3. Owner approves area_A modification + entity_C creation but NOT entity_B deletion.
-// 4. Collaborator publishes all approved changes -they all succeed.
-// 5. entity_B remains intact because its deletion was not approved.
-#[test]
-fn test_collab_full_flow_approved_changes() {
-    let mut sys = setup_core();
-    let trail_id: u128 = owner_setup(ref sys);
-
-    // Collaborator prepares proposed changes
-    let modified_area_a = Area {
-        inst: ENTITY_A,
-        is_area: true,
-        is_spawn_point: false,
-        preserve_children: false,
-        progress_percentage: 75,
-    };
-    let new_entity_c = Entity {
-        inst: ENTITY_C,
-        is_entity: true,
-        trail_id,
-        name: "Hall C",
-        alt_names: array![],
-        actions_keys: array![],
-        creator_address: RECIPIENT(),
-    };
-    let new_area_c = Area {
-        inst: ENTITY_C,
-        is_area: true,
-        is_spawn_point: false,
-        preserve_children: false,
-        progress_percentage: 30,
-    };
-    let new_desc_c = DescriptionText { inst: ENTITY_C, key: 1, text: "A grand hall" };
-
-    // Step 2 -collaborator submits for review (emits event, no storage writes)
+// Shared submit helper — RECIPIENT() proposes: modify area_A, create entity_C + area_C + desc_C.
+fn collab_submit(ref sys: HelperSystems, trail_id: u128) {
     set_caller(RECIPIENT());
     sys.designer.submit_for_review(
         trail_id,
-        array![new_entity_c.clone()],                          // new entity
-        array![],                                              // reactables
-        array![modified_area_a.clone(), new_area_c.clone()],  // modified + new area
-        array![],                                              // exits
-        array![],                                              // hubs
-        array![new_desc_c.clone()],                           // new description_text
-        array![],                                              // inventory_items
-        array![],                                              // containers
-        array![],                                              // trails
-        array![],                                              // triggers
-        array![],                                              // conditions
-        array![],                                              // effects
-        array![],                                              // actions
-        array![],                                              // parents
-        array![],                                              // children
-        array![ENTITY_B],                                     // deleted entities
-        array![], array![], array![], array![], array![],     // deleted: reactable, area, exit, container, inventory_item
-        array![], array![], array![], array![],               // deleted: hub, trail, parent, child
-        array![], array![], array![], array![], array![],     // deleted keys: desc_text, trigger, condition, effect, action
+        array![Entity { inst: ENTITY_C, is_entity: true, trail_id, name: "Hall C", alt_names: array![], actions_keys: array![], creator_address: RECIPIENT() }],
+        array![],                                                // reactables
+        array![
+            Area { inst: ENTITY_A, is_area: true, is_spawn_point: false, preserve_children: false, progress_percentage: 75 },
+            Area { inst: ENTITY_C, is_area: true, is_spawn_point: false, preserve_children: false, progress_percentage: 30 },
+        ],
+        array![], array![],                                       // exits, hubs
+        array![DescriptionText { inst: ENTITY_C, key: 1, text: "A grand hall" }],
+        array![], array![], array![],                             // inventory_items, containers, trails
+        array![], array![], array![], array![],                   // triggers, conditions, effects, actions
+        array![], array![],                                       // parents, children
+        array![],                                                 // deleted_entity_insts (empty — collaborator cannot propose entity deletions)
+        array![], array![], array![], array![], array![],         // deleted: reactable, area, exit, container, inventory_item
+        array![], array![], array![], array![],                   // deleted: hub, trail, parent, child
+        array![], array![], array![], array![], array![],         // deleted keys: desc_text, trigger, condition, effect, action
     );
+}
 
-    // Step 3 -owner approves modification + creation; entity_B deletion intentionally omitted
+// ─── Full flow: owner publishes on behalf of collaborator ─────────────────────
+
+// Scenario:
+// 1. Owner creates entity_A + entity_B, grants RECIPIENT() access.
+// 2. Collaborator submits proposal: modify area_A, create entity_C + area_C + desc_C.
+// 3. Owner publishes all proposed changes directly (calling create_* from their own wallet).
+//    entity_C gets creator_address = RECIPIENT() because the owner passes it in the struct.
+// 4. Owner signals result: published_count=4, skipped_count=0.
+// 5. Verify all components on chain; CollabReviewResult model written.
+#[test]
+fn test_collab_owner_publishes_full_proposal() {
+    let mut sys = setup_core();
+    let trail_id: u128 = owner_setup(ref sys);
+    collab_submit(ref sys, trail_id);
+
+    // Owner publishes on behalf of collaborator
     set_caller(OTHER());
-    let mut approval = make_empty_proposal(trail_id, RECIPIENT());
-    // ENTITY_C (new entity) + ENTITY_A and ENTITY_C (area writes) all go in w_single_keys
-    approval.w_single_keys       = array![ENTITY_C, ENTITY_A, ENTITY_C];
-    // flat pairs [inst, key_as_felt252, ...] for DescriptionText
-    approval.w_description_texts = array![ENTITY_C, 1];
-    // d_single_keys left empty -entity_B deletion is rejected
-    sys.designer.approve_proposal(approval);
 
-    // Step 4 -collaborator publishes each approved change
+    // New entity — pass RECIPIENT() as creator_address so the collaborator is recorded as creator
+    sys.designer.create_entity(array![
+        Entity { inst: ENTITY_C, is_entity: true, trail_id, name: "Hall C", alt_names: array![], actions_keys: array![], creator_address: RECIPIENT() },
+    ]);
+    let stored_c: Entity = sys.world.read_model(ENTITY_C);
+    assert!(stored_c.is_entity, "entity_C should be created");
+    assert_eq!(stored_c.creator_address, RECIPIENT(), "entity_C creator should be RECIPIENT");
 
-    set_caller(RECIPIENT());
-
-    // Publish modified area_A -ENTITY_A is in w_single_keys → succeeds
-    sys.designer.create_area(array![modified_area_a]);
+    // Modified area_A
+    sys.designer.create_area(array![
+        Area { inst: ENTITY_A, is_area: true, is_spawn_point: false, preserve_children: false, progress_percentage: 75 },
+    ]);
     let stored_area_a: Area = sys.world.read_model(ENTITY_A);
-    assert_eq!(stored_area_a.progress_percentage, 75, "area_A should be updated to 75");
+    assert_eq!(stored_area_a.progress_percentage, 75, "area_A should be updated");
 
-    // Publish new entity_C -ENTITY_C is in w_single_keys → succeeds
-    sys.designer.create_entity(array![new_entity_c]);
-    let stored_entity_c: Entity = sys.world.read_model(ENTITY_C);
-    assert!(stored_entity_c.is_entity, "entity_C should be created");
-    assert_eq!(stored_entity_c.name, "Hall C", "entity_C name mismatch");
-    assert_eq!(stored_entity_c.trail_id, trail_id, "entity_C should belong to the trail");
+    // area_C
+    sys.designer.create_area(array![
+        Area { inst: ENTITY_C, is_area: true, is_spawn_point: false, preserve_children: false, progress_percentage: 30 },
+    ]);
 
-    // Publish new area_C (entity_C now exists in storage) -ENTITY_C in w_single_keys → succeeds
-    sys.designer.create_area(array![new_area_c]);
-    let stored_area_c: Area = sys.world.read_model(ENTITY_C);
-    assert!(stored_area_c.is_area, "area_C should be created");
-    assert_eq!(stored_area_c.progress_percentage, 30, "area_C progress mismatch");
-
-    // Publish description_text for entity_C -(ENTITY_C, 1) pair in w_description_texts → succeeds
-    sys.designer.create_description_text(array![new_desc_c]);
+    // desc_C
+    sys.designer.create_description_text(array![
+        DescriptionText { inst: ENTITY_C, key: 1, text: "A grand hall" },
+    ]);
     let stored_desc_c: DescriptionText = sys.world.read_model((ENTITY_C, 1_u32));
     assert_eq!(stored_desc_c.text, "A grand hall", "desc_C text mismatch");
 
-    // Step 5 -entity_B untouched; its deletion was not approved
-    let entity_b: Entity = sys.world.read_model(ENTITY_B);
-    assert!(entity_b.is_entity, "entity_B should still exist -deletion was rejected");
-    let area_b: Area = sys.world.read_model(ENTITY_B);
-    assert!(area_b.is_area, "area_B should still exist");
+    // Signal result — all 4 items published, 0 skipped
+    sys.designer.signal_review_result(trail_id, RECIPIENT(), 4, 0);
+    let result: CollabReviewResult = sys.world.read_model((trail_id, RECIPIENT()));
+    assert_eq!(result.published_count, 4, "published_count should be 4");
+    assert_eq!(result.skipped_count, 0, "skipped_count should be 0");
 }
 
-// Collaborator tries to delete entity_B even though the owner's ApprovedProposal
-// does not include it in d_single_keys -should panic.
+// Scenario: owner publishes only the area modification, skips entity_C creation.
+// Signal reflects partial publish; entity_B and entity_C untouched.
 #[test]
-#[should_panic(expected: ('DESIGNER: Not approved', 'ENTRYPOINT_FAILED'))]
-fn test_collab_delete_rejected_panics() {
+fn test_collab_owner_publishes_partial_proposal() {
     let mut sys = setup_core();
     let trail_id: u128 = owner_setup(ref sys);
+    collab_submit(ref sys, trail_id);
 
-    set_caller(RECIPIENT());
-    sys.designer.submit_for_review(
-        trail_id,
-        array![], array![], array![], array![], array![],
-        array![], array![], array![], array![], array![],
-        array![], array![], array![], array![], array![],
-        array![ENTITY_B],                                     // deleted entities
-        array![], array![], array![], array![], array![],     // deleted: reactable, area, exit, container, inventory_item
-        array![], array![], array![], array![],               // deleted: hub, trail, parent, child
-        array![], array![], array![], array![], array![],     // deleted keys: desc_text, trigger, condition, effect, action
-    );
-
-    // Owner approves only an area modification -entity_B deletion NOT included
     set_caller(OTHER());
-    let mut approval = make_empty_proposal(trail_id, RECIPIENT());
-    approval.w_single_keys = array![ENTITY_A];
-    sys.designer.approve_proposal(approval);
 
-    // Collaborator tries to delete entity_B → panic: NOT_APPROVED
-    set_caller(RECIPIENT());
-    sys.designer.delete_entity(array![ENTITY_B]);
+    // Owner only publishes the area_A modification
+    sys.designer.create_area(array![
+        Area { inst: ENTITY_A, is_area: true, is_spawn_point: false, preserve_children: false, progress_percentage: 75 },
+    ]);
+
+    // Signal partial result: 1 published, 3 skipped
+    sys.designer.signal_review_result(trail_id, RECIPIENT(), 1, 3);
+    let result: CollabReviewResult = sys.world.read_model((trail_id, RECIPIENT()));
+    assert_eq!(result.published_count, 1, "published_count should be 1");
+    assert_eq!(result.skipped_count, 3, "skipped_count should be 3");
+
+    // entity_C should not exist
+    let entity_c: Entity = sys.world.read_model(ENTITY_C);
+    assert!(!entity_c.is_entity, "entity_C should not have been created");
 }
 
-// ─── Access Control Edge Cases ────────────────────────────────────────────────
-
-// A user with no trail role at all cannot submit for review.
+// Scenario: owner rejects entirely — signals published_count=0, skipped_count=total.
 #[test]
-#[should_panic(expected: ('DESIGNER: Not collaborator', 'ENTRYPOINT_FAILED'))]
-fn test_submit_for_review_by_stranger_panics() {
-    let mut sys = setup_core();
-    // Mint trail for OTHER() but do NOT grant RECIPIENT() any access
-    let (_entity_trail, trail, _exit) = _mint_trail(ref sys, OTHER());
-    let trail_id: u128 = trail.trail_id;
-
-    set_caller(RECIPIENT());
-    sys.designer.submit_for_review(
-        trail_id,
-        array![], array![], array![], array![], array![],
-        array![], array![], array![], array![], array![],
-        array![], array![], array![], array![], array![],
-        array![],                                             // deleted entities
-        array![], array![], array![], array![], array![],     // deleted: reactable, area, exit, container, inventory_item
-        array![], array![], array![], array![],               // deleted: hub, trail, parent, child
-        array![], array![], array![], array![], array![],     // deleted keys: desc_text, trigger, condition, effect, action
-    );
-}
-
-// A collaborator cannot call approve_proposal -only the trail owner or admin can.
-#[test]
-#[should_panic(expected: ('DESIGNER: Not trail owner', 'ENTRYPOINT_FAILED'))]
-fn test_approve_by_collaborator_panics() {
+fn test_collab_owner_signals_rejection() {
     let mut sys = setup_core();
     let trail_id: u128 = owner_setup(ref sys);
+    collab_submit(ref sys, trail_id);
 
-    let proposal = make_empty_proposal(trail_id, RECIPIENT());
-    set_caller(RECIPIENT());
-    sys.designer.approve_proposal(proposal);
+    set_caller(OTHER());
+    sys.designer.signal_review_result(trail_id, RECIPIENT(), 0, 4);
+    let result: CollabReviewResult = sys.world.read_model((trail_id, RECIPIENT()));
+    assert_eq!(result.published_count, 0, "published_count should be 0 for rejection");
+    assert_eq!(result.skipped_count, 4, "skipped_count should be 4 for full rejection");
 }
 
-// Without any approve_proposal call, a collaborator cannot write components.
+// ─── Access control: collaborators cannot write directly to trail entities ────
+
+// A collaborator who has been granted trail access cannot call create_area directly.
+// They must go through submit_for_review; the owner publishes.
 #[test]
 #[should_panic(expected: ('DESIGNER: Not approved', 'ENTRYPOINT_FAILED'))]
-fn test_collab_write_without_approval_panics() {
+fn test_collab_cannot_write_directly() {
     let mut sys = setup_core();
     let _trail_id: u128 = owner_setup(ref sys);
 
@@ -269,9 +198,86 @@ fn test_collab_write_without_approval_panics() {
     }]);
 }
 
-// The trail owner never needs an ApprovedProposal -can write freely.
+// A collaborator cannot delete a component directly on a trail entity.
 #[test]
-fn test_trail_owner_bypasses_approval_gate() {
+#[should_panic(expected: ('DESIGNER: Not approved', 'ENTRYPOINT_FAILED'))]
+fn test_collab_cannot_delete_component_directly() {
+    let mut sys = setup_core();
+    let _trail_id: u128 = owner_setup(ref sys);
+
+    set_caller(RECIPIENT());
+    sys.designer.delete_area(array![ENTITY_A]);
+}
+
+// A collaborator cannot delete an entity directly.
+#[test]
+#[should_panic(expected: ('DESIGNER: Not approved', 'ENTRYPOINT_FAILED'))]
+fn test_collab_cannot_delete_entity_directly() {
+    let mut sys = setup_core();
+    let _trail_id: u128 = owner_setup(ref sys);
+
+    set_caller(RECIPIENT());
+    sys.designer.delete_entity(array![ENTITY_B]);
+}
+
+// A collaborator cannot include entity deletions in their proposal.
+#[test]
+#[should_panic(expected: ('DESIGNER: Not trail owner', 'ENTRYPOINT_FAILED'))]
+fn test_collab_cannot_propose_entity_deletion() {
+    let mut sys = setup_core();
+    let trail_id: u128 = owner_setup(ref sys);
+
+    set_caller(RECIPIENT());
+    sys.designer.submit_for_review(
+        trail_id,
+        array![], array![], array![], array![], array![],
+        array![], array![], array![], array![], array![],
+        array![], array![], array![], array![], array![],
+        array![ENTITY_B],                                         // collaborator tries to propose entity deletion
+        array![], array![], array![], array![], array![],
+        array![], array![], array![], array![],
+        array![], array![], array![], array![], array![],
+    );
+}
+
+// A stranger (no trail role) cannot call submit_for_review.
+#[test]
+#[should_panic(expected: ('DESIGNER: Not collaborator', 'ENTRYPOINT_FAILED'))]
+fn test_submit_for_review_by_stranger_panics() {
+    let mut sys = setup_core();
+    let (_entity_trail, trail, _exit) = _mint_trail(ref sys, OTHER());
+    let trail_id: u128 = trail.trail_id;
+
+    set_caller(RECIPIENT());
+    sys.designer.submit_for_review(
+        trail_id,
+        array![], array![], array![], array![], array![],
+        array![], array![], array![], array![], array![],
+        array![], array![], array![], array![], array![],
+        array![],
+        array![], array![], array![], array![], array![],
+        array![], array![], array![], array![],
+        array![], array![], array![], array![], array![],
+    );
+}
+
+// Only the trail owner or admin can call signal_review_result.
+#[test]
+#[should_panic(expected: ('DESIGNER: Not trail owner', 'ENTRYPOINT_FAILED'))]
+fn test_signal_review_result_by_non_owner_panics() {
+    let mut sys = setup_core();
+    let trail_id: u128 = owner_setup(ref sys);
+    collab_submit(ref sys, trail_id);
+
+    set_caller(RECIPIENT());
+    sys.designer.signal_review_result(trail_id, RECIPIENT(), 4, 0);
+}
+
+// ─── Owner and admin bypass the gate ─────────────────────────────────────────
+
+// The trail owner never needs to go through review — can write freely.
+#[test]
+fn test_trail_owner_bypasses_gate() {
     let mut sys = setup_core();
     let _trail_id: u128 = owner_setup(ref sys);
 
@@ -287,9 +293,9 @@ fn test_trail_owner_bypasses_approval_gate() {
     assert_eq!(stored.progress_percentage, 55, "trail owner can update freely");
 }
 
-// Admin (OWNER) also bypasses all gates.
+// Admin also bypasses all gates.
 #[test]
-fn test_admin_bypasses_approval_gate() {
+fn test_admin_bypasses_gate() {
     let mut sys = setup_core();
     let _trail_id: u128 = owner_setup(ref sys);
 

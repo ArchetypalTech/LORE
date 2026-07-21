@@ -5,7 +5,6 @@ import { sendCommand } from "./terminalCommands/commandHandler";
 import { addTerminalContent } from "@lib/stores/terminal.store";
 import { DojoCall } from "@dojoengine/core";
 import WalletStore from "./stores/wallet.store";
-import type { ApprovedProposal } from "@lib/dojo_bindings/typescript/models.gen";
 
 /**
  * Sends a command to the entity contract.
@@ -110,8 +109,7 @@ export type DesignerEntrypoints =
 	| "delete_parent"
 	| "delete_child"
 	| "submit_for_review"
-	| "approve_proposal"
-	| "reject_proposal";
+	| "signal_review_result";
 
 type DesignerCallProps = {
 	entrypoint: DesignerEntrypoints;
@@ -177,22 +175,13 @@ function validateReceiptStatus(receipt: any, calls?: (Call | DojoCall)[]): boole
 }
 
 
-async function approveProposal(proposal: ApprovedProposal): Promise<void> {
+async function signalReviewResult(trailId: bigint, proposer: string, publishedCount: number, skippedCount: number): Promise<void> {
 	if (!WalletStore().isConnected) return;
 	const caller = WalletStore().account as Account;
-	const calldata = CallData.compile([
-		proposal.trail_id,
-		proposal.proposer,
-		proposal.w_single_keys,
-		proposal.w_description_texts,
-		proposal.w_multi_keys,
-		proposal.d_single_keys,
-		proposal.d_description_texts,
-		proposal.d_multi_keys,
-	]);
+	const calldata = CallData.compile([trailId, proposer, publishedCount, skippedCount]);
 	const calls: Call[] = [{
 		contractAddress: LORE_CONFIG.contractAddresses.designer,
-		entrypoint: "approve_proposal",
+		entrypoint: "signal_review_result",
 		calldata,
 	}];
 	try {
@@ -203,29 +192,7 @@ async function approveProposal(proposal: ApprovedProposal): Promise<void> {
 			});
 		}
 	} catch (error) {
-		console.error("❌ DESIGNER ERROR: approveProposal():", calls, error as Error);
-		throw new Error((error as Error).message);
-	}
-}
-
-async function rejectProposal(trailId: bigint, proposer: string): Promise<void> {
-	if (!WalletStore().isConnected) return;
-	const caller = WalletStore().account as Account;
-	const calldata = CallData.compile([trailId, proposer]);
-	const calls: Call[] = [{
-		contractAddress: LORE_CONFIG.contractAddresses.designer,
-		entrypoint: "reject_proposal",
-		calldata,
-	}];
-	try {
-		const response = await caller.execute(calls, { tip: 0 });
-		if (response) {
-			await caller.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
-				validateReceiptStatus(receipt, calls);
-			});
-		}
-	} catch (error) {
-		console.error("❌ DESIGNER ERROR: rejectProposal():", calls, error as Error);
+		console.error("❌ DESIGNER ERROR: signalReviewResult():", calls, error as Error);
 		throw new Error((error as Error).message);
 	}
 }
@@ -264,6 +231,5 @@ export const SystemCalls = {
 	execDesignerCall,
 	execCommand,
 	grantAccessToTrail,
-	approveProposal,
-	rejectProposal,
+	signalReviewResult,
 };

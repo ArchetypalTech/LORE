@@ -14,67 +14,25 @@ use lore::models::{
     hub::{Hub, Trail},
 };
 
-// Three approval buckets per direction (write / delete):
-//
-//  w_single_keys / d_single_keys
-//      Flat list of inst values (felt252) for all single-key component types:
-//      Entity, Reactable, Area, Exit, Hub, InventoryItem, Container, Trail,
-//      ParentToChildren, ChildToParent.
-//
-//  w_description_texts / d_description_texts
-//      Flat pairs [inst, key_as_felt252, ...] for DescriptionText (inst, u32 key).
-//      Kept separate so the owner can approve structural components but reject content.
-//
-//  w_multi_keys / d_multi_keys
-//      Flat pairs [inst, key, ...] for the remaining multi-key types:
-//      Trigger, Condition, Effect, Action.
+// Written by the trail owner after publishing a collaborator's proposal.
+// Keys: (trail_id, proposer) — one record per collaborator per trail.
+// Delivered to the collaborator via the standard entity subscription so they can show
+// the appropriate notification (all published / partial / rejected).
 #[derive(Clone, Drop, Serde, Introspect)]
 #[dojo::model]
-pub struct ApprovedProposal {
-    #[key]
-    pub trail_id: u128,
-    #[key]
-    pub proposer: ContractAddress,
-    pub w_single_keys:       Array<felt252>,
-    pub w_description_texts: Array<felt252>,
-    pub w_multi_keys:        Array<felt252>,
-    pub d_single_keys:       Array<felt252>,
-    pub d_description_texts: Array<felt252>,
-    pub d_multi_keys:        Array<felt252>,
-}
-
-// Returns true if `inst` is present in `list`.
-pub fn contains_inst(mut list: Span<felt252>, inst: felt252) -> bool {
-    loop {
-        match list.pop_front() {
-            Option::None => { break false; },
-            Option::Some(i) => { if *i == inst { break true; } },
-        }
-    }
-}
-
-// Returns true if the (inst, key) pair appears as consecutive elements in `list`.
-pub fn contains_pair(mut list: Span<felt252>, inst: felt252, key: felt252) -> bool {
-    loop {
-        match list.pop_front() {
-            Option::None => { break false; },
-            Option::Some(i) => {
-                match list.pop_front() {
-                    Option::None => { break false; },
-                    Option::Some(k) => { if *i == inst && *k == key { break true; } },
-                }
-            },
-        }
-    }
+pub struct CollabReviewResult {
+    #[key] pub trail_id: u128,
+    #[key] pub proposer: ContractAddress,
+    pub published_count: u32,  // items the owner chose to publish
+    pub skipped_count:   u32,  // items from the proposal that were not published (0 = all published)
 }
 
 #[derive(Drop, Serde)]
 #[dojo::event(historical: false)]
 pub struct CollabProposalEvent {
-    #[key]
-    pub trail_id:             u128,
-    #[key]
-    pub proposer:             ContractAddress,
+    #[key] pub trail_id:             u128,
+    #[key] pub proposer:             ContractAddress,
+    // write proposals
     pub entities:             Array<Entity>,
     pub reactables:           Array<Reactable>,
     pub areas:                Array<Area>,
@@ -90,8 +48,9 @@ pub struct CollabProposalEvent {
     pub actions:              Array<Action>,
     pub parents:              Array<ParentToChildren>,
     pub children:             Array<ChildToParent>,
+    // entity-level deletions (owner-only; collaborators must leave this empty)
     pub deleted_entity_insts:          Array<felt252>,
-    // component-level deletions — single-key (just inst), multi-key (flat [inst, key, ...] pairs)
+    // component-level deletions — single-key (flat inst list)
     pub deleted_reactable_insts:       Array<felt252>,
     pub deleted_area_insts:            Array<felt252>,
     pub deleted_exit_insts:            Array<felt252>,
@@ -101,6 +60,7 @@ pub struct CollabProposalEvent {
     pub deleted_trail_insts:           Array<felt252>,
     pub deleted_parent_insts:          Array<felt252>,
     pub deleted_child_insts:           Array<felt252>,
+    // component-level deletions — multi-key (flat [inst, key, ...] pairs)
     pub deleted_description_text_keys: Array<felt252>,
     pub deleted_trigger_keys:          Array<felt252>,
     pub deleted_condition_keys:        Array<felt252>,
