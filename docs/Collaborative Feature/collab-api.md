@@ -8,75 +8,63 @@ This document is the authoritative reference for both the **Cairo contract API**
 
 1. [Overview](#overview)
 2. [Data types](#data-types)
-   - [ApprovedProposal (Cairo model)](#approvedproposal-cairo-model)
+   - [CollabReviewResult (Cairo model)](#collabrevid-result-cairo-model)
    - [CollabProposalEvent (Cairo event)](#collabproposaleventslow-cairo-event)
-   - [ApprovedProposal (TypeScript)](#approvedproposal-typescript)
+   - [CollabReviewResult (TypeScript)](#collabrevid-result-typescript)
    - [ChangeSet (TypeScript)](#changeset-typescript)
 3. [Contract API — `IDesigner`](#contract-api--idesigner)
    - [Access control](#access-control)
    - [submit_for_review](#submit_for_review)
-   - [approve_proposal](#approve_proposal)
-   - [reject_proposal](#reject_proposal)
+   - [signal_review_result](#signal_review_result)
    - [Approval gate on create_* / delete_*](#approval-gate-on-create--delete-)
    - [Error codes](#error-codes)
 4. [Client API — `publisher.ts`](#client-api--publisherts)
    - [submitForReview](#submitforreview)
-   - [publishApproved](#publishapproved)
+   - [publishFromProposal](#publishfromproposal)
+   - [signalReviewResult](#signalreviewresult)
    - [publishConfigToContract](#publishconfigtocontract)
 5. [Torii queries](#torii-queries)
 6. [Component classification](#component-classification)
-7. [Approval array encoding](#approval-array-encoding)
 
 ---
 
 ## Overview
 
-The collab feature is a two-phase commit over Dojo events and models:
+The collab feature is a proposal-based flow where the **trail owner publishes approved content** on behalf of the collaborator:
 
 | Phase | Who | What | On-chain effect |
 |---|---|---|---|
 | 1. Submit | Collaborator | `submit_for_review` | Emits `CollabProposalEvent` — **zero storage written** |
-| 2. Approve | Trail owner | `approve_proposal` | Writes `ApprovedProposal` model (inst IDs only) |
-| 3. Publish | Collaborator | Normal `create_*` / `delete_*` | Full entity + component models written; contract checks approval gate |
-| — | Trail owner | `reject_proposal` | Erases `ApprovedProposal`; no revert needed |
+| 2. Publish | Trail owner | `publishFromProposal` (client) → `create_*` / `delete_*` | Full entity + component models written |
+| 3. Signal | Trail owner | `signal_review_result` | Writes `CollabReviewResult` model (counts only) |
+| — | Collaborator | Receives `CollabReviewResult` via Torii | Toast notification / rejection banner |
 
-Trail owners bypass phases 1–2 entirely and call `create_*` / `delete_*` directly.
+Trail owners bypass phase 1 entirely and call `create_*` / `delete_*` directly. Collaborators can **never** call `create_*` / `delete_*` on a trail they don't own.
 
 ---
 
 ## Data types
 
-### `ApprovedProposal` (Cairo model)
+### `CollabReviewResult` (Cairo model)
 
 ```cairo
 // packages/contracts/src/models/collab_proposal.cairo
 
 #[derive(Clone, Drop, Serde, Introspect)]
 #[dojo::model]
-pub struct ApprovedProposal {
-    #[key] pub trail_id: u128,
-    #[key] pub proposer: ContractAddress,
-
-    // Writes — single-key components (Entity, Reactable, Area, Exit, Hub,
-    //          InventoryItem, Container, Trail, ParentToChildren, ChildToParent)
-    pub w_single_keys:       Array<felt252>,  // flat list of inst values
-
-    // Writes — DescriptionText (keyed by inst + u32)
-    pub w_description_texts: Array<felt252>,  // flat pairs [inst, key_as_felt252, ...]
-
-    // Writes — multi-key components (Trigger, Condition, Effect, Action)
-    pub w_multi_keys:        Array<felt252>,  // flat pairs [inst, key, ...]
-
-    // Deletes — same bucket structure as writes
-    pub d_single_keys:       Array<felt252>,
-    pub d_description_texts: Array<felt252>,
-    pub d_multi_keys:        Array<felt252>,
+pub struct CollabReviewResult {
+    #[key] pub trail_id:       u128,
+    #[key] pub proposer:       ContractAddress,
+    pub published_count:       u32,
+    pub skipped_count:         u32,
 }
 ```
 
-**Keys**: `(trail_id, proposer)` — one record per collaborator per trail. Writing a new `ApprovedProposal` for the same key pair overwrites the previous one. At most one pending approval per collaborator exists at any moment.
+**Keys**: `(trail_id, proposer)` — one record per collaborator per trail. Writing a new `CollabReviewResult` for the same key pair overwrites the previous one.
 
-**Storage**: only `felt252` inst / key identifiers are stored — no component data. Cost is proportional to the number of approved items.
+**Storage**: minimal — 2 u32 counts plus keys. Cost is negligible.
+
+**Delivery**: arrives through the existing `subscribeEntityQuery` in `dojo.ts` (same channel as regular model updates) — no separate event subscription needed.
 
 ---
 
@@ -135,27 +123,23 @@ pub struct CollabProposalEvent {
 
 ---
 
-### `ApprovedProposal` (TypeScript)
+### `CollabReviewResult` (TypeScript)
 
 Generated from the Cairo model by Dojo:
 
 ```typescript
 // packages/client/src/lib/dojo_bindings/typescript/models.gen.ts
 
-export interface ApprovedProposal {
+export interface CollabReviewResult {
     fieldOrder: string[];
-    trail_id:          BigNumberish;
-    proposer:          string;          // hex address
-    w_single_keys:     BigNumberish[];
-    w_description_texts: BigNumberish[];
-    w_multi_keys:      BigNumberish[];
-    d_single_keys:     BigNumberish[];
-    d_description_texts: BigNumberish[];
-    d_multi_keys:      BigNumberish[];
+    trail_id:        BigNumberish;
+    proposer:        string;      // hex address
+    published_count: number;
+    skipped_count:   number;
 }
 ```
 
-Torii delivers instances of this type via the SDK subscription. `publishApproved` consumes one instance.
+Torii delivers instances of this type via the entity subscription. `StagingPanel` watches it to show toast notifications or the rejection banner.
 
 ---
 
@@ -174,7 +158,7 @@ export type ChangeSet = {
 };
 ```
 
-`EditorCollection` is a partial map of component name → component data (with Cairo enums replaced by their string union equivalents). Both `submitForReview` and `publishApproved` consume `ChangeSet[]` arrays read from `EditorData().stagedChanges`.
+`EditorCollection` is a partial map of component name → component data. `submitForReview` consumes `ChangeSet[]` arrays read from `EditorData().stagedChanges`.
 
 ---
 
@@ -270,47 +254,40 @@ fn submit_for_review(
 
 **Effect**: emits one `CollabProposalEvent`. **No storage written.**
 
+**Restriction**: `deleted_entity_insts` must be empty for non-owner callers. Collaborators can propose component-level deletions but not entity-level deletions.
+
 **Panics**:
 - `NOT_EDITOR` — caller has no editor-level role at all
 - `NOT_COLLABORATOR` — caller passes layer 1 but does not hold a role on this trail and is not the trail owner / admin
+- `NOT_TRAIL_OWNER` — caller is a collaborator and passed a non-empty `deleted_entity_insts`
 
-**Cost**: collaborator pays; gas scales with calldata size (total byte length of all arrays). Empty arrays each cost 1 felt252 (the length prefix 0). Recommended to only populate arrays that have actual changes.
+**Cost**: collaborator pays; gas scales with calldata size. Recommended to only populate arrays that have actual changes.
 
 ---
 
-### `approve_proposal`
+### `signal_review_result`
 
 ```cairo
-fn approve_proposal(ref self: TContractState, proposal: ApprovedProposal)
+fn signal_review_result(
+    ref self: TContractState,
+    trail_id:        u128,
+    proposer:        ContractAddress,
+    published_count: u32,
+    skipped_count:   u32,
+)
 ```
 
 **Caller**: trail owner or admin.
 
-**Effect**: writes `ApprovedProposal` model to World storage, keyed by `(proposal.trail_id, proposal.proposer)`. Any previous approval for the same key is overwritten.
+**Effect**: writes `CollabReviewResult` model to World storage, keyed by `(trail_id, proposer)`. Any previous result for the same key is overwritten.
 
-**Panics**: `NOT_TRAIL_OWNER` — caller is not admin and does not own `proposal.trail_id`.
+**Panics**: `NOT_TRAIL_OWNER` — caller is not admin and does not own `trail_id`.
 
-**Cost**: trail owner pays; cost scales with the number of inst/key values across the 6 arrays (typically tens of felt252 values — very cheap).
+**Cost**: trail owner pays; trivial (2 u32 fields).
 
-**Partial approval**: the owner can pass non-empty arrays for some component types and empty arrays for others. Empty `w_single_keys` means no single-key writes are approved; empty `d_single_keys` means no deletions are approved. The collaborator's subsequent `create_*` / `delete_*` calls will panic for unapproved items.
+**When to call**: after calling `publishFromProposal` (or after deciding to skip all items). The owner passes the exact counts returned by `publishFromProposal` to give the collaborator an accurate notification.
 
----
-
-### `reject_proposal`
-
-```cairo
-fn reject_proposal(ref self: TContractState, trail_id: u128, proposer: ContractAddress)
-```
-
-**Caller**: trail owner or admin.
-
-**Effect**: erases the `ApprovedProposal` model for `(trail_id, proposer)` from World storage. The `CollabProposalEvent` remains in Torii as a record of the original proposal.
-
-**Panics**: `NOT_TRAIL_OWNER`.
-
-**Cost**: trail owner pays; erasing a model is a trivial write.
-
-**After rejection**: the collaborator receives no on-chain notification. The client detects rejection by watching the `ApprovedProposal` model disappear from Torii while staged changes remain (see `StagingPanel.tsx` rejection banner logic).
+**Full rejection**: call with `published_count = 0` and `skipped_count = total proposal items`. The collaborator receives the rejection banner and their staged changes are preserved.
 
 ---
 
@@ -324,36 +301,28 @@ if !owned.is_zero()                              // (1) not an admin
    && trail_id.is_non_zero()                     // (2) entity belongs to a trail
    && !world.is_owner_of_trail(trail_id, owned)  // (3) caller is not the trail owner
 {
-    let approval: ApprovedProposal = world.read_model((trail_id, owned));
-
-    // Single-key component write (Entity, Area, Reactable, Exit, Hub, ...):
-    assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
-
-    // DescriptionText write:
-    assert(contains_pair(approval.w_description_texts.span(), o.inst, o.key.into()), Errors::NOT_APPROVED);
-
-    // Multi-key write (Trigger, Condition, Effect, Action):
-    assert(contains_pair(approval.w_multi_keys.span(), o.inst, o.key), Errors::NOT_APPROVED);
-
-    // Single-key delete:
-    assert(contains_inst(approval.d_single_keys.span(), inst), Errors::NOT_APPROVED);
-
-    // DescriptionText delete:
-    assert(contains_pair(approval.d_description_texts.span(), inst, key), Errors::NOT_APPROVED);
-
-    // Multi-key delete:
-    assert(contains_pair(approval.d_multi_keys.span(), inst, key), Errors::NOT_APPROVED);
+    assert(false, Errors::NOT_APPROVED);  // unconditional — collaborators never write directly
 }
 ```
 
-The `contains_inst` and `contains_pair` free functions live in `collab_proposal.cairo`:
+There is no approval list to look up. The check is purely: **if you are a non-owner collaborator, you cannot write**. The trail owner is expected to call these functions directly when publishing a collaborator's proposal.
+
+**`creator_address` for new entities**: when the owner publishes a new entity (one that doesn't yet exist on-chain), they pass the collaborator's address as `creator_address` in the `Entity` struct. The contract uses this value for new entities and ignores it for existing ones (always preserving the stored creator).
 
 ```cairo
-pub fn contains_inst(mut list: Span<felt252>, inst: felt252) -> bool { ... }
-pub fn contains_pair(mut list: Span<felt252>, inst: felt252, key: felt252) -> bool { ... }
+// Inside create_entity — creator resolution
+if stored_entity.creator_address.is_zero() {
+    // new entity: use passed value if non-zero, otherwise use caller
+    entity.creator_address = if o.creator_address.is_non_zero() {
+        o.creator_address
+    } else {
+        owned
+    };
+} else {
+    // existing entity: always preserve stored creator
+    entity.creator_address = stored_entity.creator_address;
+}
 ```
-
-**Important for new entities**: when calling `create_entity` for a new entity, the entity does not yet exist in storage, so the gate reads `trail_id` from `o.trail_id` (the field set by the collaborator), not from storage. The collaborator must set the correct `trail_id` on the entity struct.
 
 ---
 
@@ -363,8 +332,8 @@ pub fn contains_pair(mut list: Span<felt252>, inst: felt252, key: felt252) -> bo
 |---|---|---|
 | `NOT_EDITOR` | `'DESIGNER: Not editor'` | `_assert_caller_is_editor` (first layer, all write/delete fns) |
 | `NOT_YOUR_TRAIL` | `'DESIGNER: Not your trail'` | `create_entity`, component fns (second layer) |
-| `NOT_APPROVED` | `'DESIGNER: Not approved'` | Approval gate (third layer) |
-| `NOT_TRAIL_OWNER` | `'DESIGNER: Not trail owner'` | `approve_proposal`, `reject_proposal`, `grant_access_to_trail` |
+| `NOT_APPROVED` | `'DESIGNER: Not approved'` | Approval gate (third layer — unconditional for non-owners) |
+| `NOT_TRAIL_OWNER` | `'DESIGNER: Not trail owner'` | `signal_review_result`, `grant_access_to_trail`, `submit_for_review` (entity deletion) |
 | `NOT_COLLABORATOR` | `'DESIGNER: Not collaborator'` | `submit_for_review` |
 
 ---
@@ -385,7 +354,7 @@ Collects all staged changes for `trailId` from `EditorData().stagedChanges`, ser
 
 **Effect**: calls `submit_for_review` on the designer contract. No models written. Shows a success toast on completion.
 
-**Serialization**: each component type is serialized into its raw Cairo array format using the `build*Data` helpers (mirrors the `publish*` functions used for direct publishing). The complete calldata order is:
+**Serialization**: each component type is serialized into its raw Cairo array format. The complete calldata order is:
 
 ```
 trail_id,
@@ -402,77 +371,61 @@ trail_id,
 [deleted_condition_keys], [deleted_effect_keys], [deleted_action_keys]
 ```
 
-Each `[array]` is encoded as `[length, ...flat_items]` (Cairo array encoding). The `flatCairo` helper produces this format.
+Each `[array]` is encoded as `[length, ...flat_items]` (Cairo array encoding).
 
 ---
 
-### `publishApproved`
+### `publishFromProposal`
 
 ```typescript
-export const publishApproved = async (
-    trailId:  bigint,
-    approval: ApprovedProposal,
-): Promise<boolean>
+export const publishFromProposal = async (
+    proposal: CollabProposalEvent,
+    selected: Set<string>,
+): Promise<{ publishedCount: number; skippedCount: number }>
 ```
 
-Publishes only the staged components that the trail owner approved, using the `ApprovedProposal` to filter. Bypasses the creator-address ownership check (the contract's approval gate enforces access instead).
+Called by the trail owner after reviewing the proposal. Publishes only the items whose keys appear in `selected`, then returns the counts for `signal_review_result`.
 
-**Returns**: `true` on success, `false` if nothing staged or the transaction fails.
+**Parameters**:
+- `proposal` — the `CollabProposalEvent` received from Torii
+- `selected` — set of selection keys (see format below)
+
+**Returns**: `{ publishedCount, skippedCount }` where `publishedCount + skippedCount = totalSelectableKeys`.
 
 **Effect**:
-1. Reads `EditorData().stagedChanges` filtered to `trailId`.
-2. Calls `buildFiltered` for each `ChangeSet` to keep only approved components.
-3. Pass 1: publishes entity data (all components except relationships) for each approved update.
-4. Pass 2: publishes relationships and processes approved deletes.
-5. Removes published entries from `stagedChanges` and `changeSet`.
-6. Removes the consumed `ApprovedProposal` from `EditorData().currentApprovals` (clears the "Approved by trail owner" banner).
-7. Re-syncs published entities from Torii.
+1. Builds lookup maps for all proposal items (entity by inst, components by inst, multi-key components by inst+key).
+2. Builds the full list of selectable keys from the proposal.
+3. Pass 1: publishes entity data for all selected `w:` keys — for each new entity, passes the proposer's address as `creatorAddress`.
+4. Pass 2: publishes relationships (`ParentToChildren` / `ChildToParent`) and executes deletions for `d:` keys.
+5. Returns `{ publishedCount, skippedCount }`.
 
-**`buildFiltered` logic** (per `ChangeSet`):
+**Selection key format**:
 
-```typescript
-// Selects approved components from one ChangeSet's object.
-const buildFiltered = (
-    singleList: bigint[],  // w_single_keys or d_single_keys
-    descList:   bigint[],  // w_description_texts or d_description_texts
-    multiList:  bigint[],  // w_multi_keys or d_multi_keys
-): EditorCollection => {
-    // Single-key components: inst must appear in singleList
-    if (col.Entity     && containsInst(singleList, inst)) out.Entity = col.Entity;
-    if (col.Area       && containsInst(singleList, inst)) out.Area   = col.Area;
-    // ... Reactable, Exit, Hub, InventoryItem, Container, Trail,
-    //     ParentToChildren, ChildToParent (same pattern)
+| Key format | Meaning |
+|---|---|
+| `w:${inst}:${comp}` | Write a single-key component (Entity, Area, Reactable, etc.) |
+| `w:${inst}:${comp}:${key}` | Write a multi-key component (DescriptionText, Trigger, Condition, Effect, Action) |
+| `d:${inst}:${comp}` | Delete a single-key component |
+| `d:${inst}:${comp}:${key}` | Delete a multi-key component |
 
-    // DescriptionText: each (inst, key) pair checked against descList
-    if (col.DescriptionText) {
-        const ok = filterApprovedMulti(descList, col.DescriptionText);
-        if (ok.length > 0) out.DescriptionText = ok;
-    }
+`RemoteChangesPanel` builds these keys via `buildSelectableKeys(proposal)` and stores the owner's selection in a `Set<string>`.
 
-    // Multi-key: Trigger, Condition, Effect, Action — each (inst, key) checked against multiList
-    applyMulti(col.Trigger,   "Trigger");
-    applyMulti(col.Condition, "Condition");
-    applyMulti(col.Effect,    "Effect");
-    applyMulti(col.Action,    "Action");
+---
 
-    return out;
-};
-```
-
-Uses `dSingle / dDesc / dMulti` for `delete` changes, `wSingle / wDesc / wMulti` for `update` changes.
-
-**Membership helpers** (client-side mirrors of the Cairo contract functions):
+### `signalReviewResult`
 
 ```typescript
-const containsInst = (list: bigint[], inst: bigint) =>
-    list.some(x => x === inst);
-
-const containsPair = (list: bigint[], inst: bigint, key: bigint) => {
-    for (let i = 0; i + 1 < list.length; i += 2)
-        if (list[i] === inst && list[i + 1] === key) return true;
-    return false;
-};
+export const signalReviewResult = async (
+    trailId:        bigint,
+    proposer:       string,
+    publishedCount: number,
+    skippedCount:   number,
+): Promise<void>
 ```
+
+Thin re-export wrapping `SystemCalls.signalReviewResult`. Called by the owner after `publishFromProposal` completes.
+
+**Effect**: calls `signal_review_result` on the designer contract, writing `CollabReviewResult` for the given `(trailId, proposer)` pair.
 
 ---
 
@@ -494,7 +447,7 @@ Trail owners and admins use this to publish staged changes directly (bypassing t
 
 **Guard**: skips changes owned by another editor (non-admin callers) and shows a warning toast.
 
-**Not for collaborators**: the `StagingPanel` disables the "Publish staged" button for collaborators who do not own the active trail (`!canPublishDirectly`). Collaborators must use `submitForReview` instead.
+**Not for collaborators**: the `StagingPanel` disables the "Publish staged" button for collaborators who do not own the active trail. Collaborators must use `submitForReview` instead.
 
 ---
 
@@ -522,109 +475,49 @@ const result = await sdk.getEventMessages({ query });
 const proposals = result?.getItems() ?? [];
 ```
 
-### Subscribing to approvals (collaborator)
+### Receiving review results (collaborator)
 
-The collaborator subscribes to `ApprovedProposal` keyed by `(trailId, myAddress)`:
+`CollabReviewResult` is a Dojo **model**, not an event. It arrives through the existing entity subscription in `dojo.ts` alongside all other model updates — no separate query needed:
 
 ```typescript
-const query = new ToriiQueryBuilder<SchemaType>()
-    .withClause(
-        new ClauseBuilder<SchemaType>()
-            .keys(
-                ["lore-ApprovedProposal"],
-                [toHex(trailId), myAddress],
-            )
-            .build()
-    )
-    .withEntityModels(["lore-ApprovedProposal"]);
+// dojo.ts — withEntityModels subscription (excerpt)
+.withEntityModels([
+    "lore-Entity",
+    // ... other models ...
+    "lore-CollabReviewResult",    // ← added to existing subscription
+])
 ```
 
-When a new `ApprovedProposal` arrives, `EditorData().currentApprovals` is updated, triggering the "Approved by trail owner" section in `StagingPanel`.
+In `editor.data.ts`, the `dojoSync` handler extracts it:
 
-### Proposal state machine
+```typescript
+const reviewResult = (obj as any).CollabReviewResult as CollabReviewResult | undefined;
+if (reviewResult?.trail_id !== undefined) {
+    set({ reviewResult });
+    return;
+}
+```
 
-| `CollabProposalEvent` in Torii | `ApprovedProposal` model | Displayed state |
+`StagingPanel` then reads `reviewResult` from `useEditorData()` and applies the three-state notification logic.
+
+### Proposal state
+
+| `CollabProposalEvent` in Torii | `CollabReviewResult` for proposer | State |
 |---|---|---|
-| Yes | No | **Pending** — owner needs to review |
-| Yes | Yes | **Approved** — collaborator can publish |
+| Yes | No (or stale) | **Pending** — owner needs to review and publish |
+| Yes | Yes (recent, `published_count > 0`) | **Published** — result delivered |
+| Yes | Yes (`published_count == 0`) | **Rejected** — result delivered, B can resubmit |
 | No | No | Idle — nothing pending |
-| No | Yes (stale) | Should not occur; approval erased on publish |
 
 ---
 
 ## Component classification
 
-The approval arrays use three buckets. Every component falls into exactly one:
+For the purposes of `publishFromProposal` selection keys, components fall into two categories:
 
-| Bucket | Array fields | Components |
+| Category | Selection key format | Components |
 |---|---|---|
-| **Single-key** | `w_single_keys` / `d_single_keys` | `Entity`, `Reactable`, `Area`, `Exit`, `Hub`, `InventoryItem`, `Container`, `Trail`, `ParentToChildren`, `ChildToParent` |
-| **DescriptionText** | `w_description_texts` / `d_description_texts` | `DescriptionText` (keyed by `inst` + `u32 key`) |
-| **Multi-key** | `w_multi_keys` / `d_multi_keys` | `Trigger`, `Condition`, `Effect`, `Action` (keyed by `inst` + `felt252 key`) |
+| **Single-key** | `w:${inst}:${comp}` / `d:${inst}:${comp}` | `Entity`, `Reactable`, `Area`, `Exit`, `Hub`, `InventoryItem`, `Container`, `Trail`, `ParentToChildren`, `ChildToParent` |
+| **Multi-key** | `w:${inst}:${comp}:${key}` / `d:${inst}:${comp}:${key}` | `DescriptionText` (u32 key), `Trigger`, `Condition`, `Effect`, `Action` (felt252 key) |
 
-**Why DescriptionText is separate**: the owner must be able to approve structural changes (area bounds, reactable settings) while independently rejecting written content (description text). The three-bucket design captures this at the contract level without per-component arrays.
-
-**Per-component granularity for single-key types**: the contract's `w_single_keys` list cannot distinguish "approve Area but not Entity" for the same inst — if an inst is present, all single-key writes for that inst are permitted. Finer granularity for single-key types is enforced **client-side** by `publishApproved`'s `buildFiltered`: only the components the owner checked in the UI are included in the actual `create_*` calls, even though the contract would permit all of them.
-
----
-
-## Approval array encoding
-
-### Single-key arrays (`w_single_keys`, `d_single_keys`)
-
-Flat list of `felt252` inst values:
-
-```cairo
-// Approve writes for ENTITY_A and ENTITY_C
-w_single_keys = array![ENTITY_A, ENTITY_C];
-
-// Check in create_area / create_reactable / etc.
-assert(contains_inst(approval.w_single_keys.span(), o.inst), Errors::NOT_APPROVED);
-```
-
-### DescriptionText arrays (`w_description_texts`, `d_description_texts`)
-
-Flat consecutive pairs `[inst₁, key₁_as_felt252, inst₂, key₂_as_felt252, ...]`:
-
-```cairo
-// Approve DescriptionText (ENTITY_C, key=1) and (ENTITY_A, key=2)
-w_description_texts = array![ENTITY_C, 1, ENTITY_A, 2];
-
-// Check in create_description_text (note: u32 key cast to felt252)
-assert(
-    contains_pair(approval.w_description_texts.span(), o.inst, o.key.into()),
-    Errors::NOT_APPROVED,
-);
-```
-
-### Multi-key arrays (`w_multi_keys`, `d_multi_keys`)
-
-Flat consecutive pairs `[inst₁, key₁, inst₂, key₂, ...]` (both `felt252`):
-
-```cairo
-// Approve Action (ENTITY_A, key=0xdeadbeef) and Trigger (ENTITY_C, key=0xcafe)
-w_multi_keys = array![ENTITY_A, 0xdeadbeef, ENTITY_C, 0xcafe];
-
-// Check in create_action / create_trigger / etc. (key stays felt252)
-assert(
-    contains_pair(approval.w_multi_keys.span(), o.inst, o.key),
-    Errors::NOT_APPROVED,
-);
-```
-
-### Deletion arrays
-
-Deletion arrays follow the same encoding as their write counterparts:
-
-```cairo
-// Entity deletion (single-key bucket)
-d_single_keys = array![ENTITY_B];
-
-// DescriptionText deletion (inst + key pair)
-d_description_texts = array![ENTITY_C, 2];
-
-// Action deletion (inst + key pair)
-d_multi_keys = array![ENTITY_A, 0xdeadbeef];
-```
-
-**Note**: entity deletions (`deleted_entity_insts`) are a subset of single-key deletions. Because deleting an entity implies deleting all its components, the client sends the entity's inst in `d_single_keys` when approving an entity deletion via `buildApprovedProposal`.
+This classification determines the key format used in the selection `Set<string>` and how `publishFromProposal` looks up items in the proposal lookup maps.

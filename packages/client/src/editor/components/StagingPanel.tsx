@@ -1,13 +1,12 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import EditorData, { useEditorData } from "../data/editor.data";
 import type { ChangeSet } from "../lib/types";
-import { publishConfigToContract, submitForReview, publishApproved } from "../publisher";
+import { publishConfigToContract, submitForReview } from "../publisher";
 import { Button } from "./ui/Button";
 import { CollapsibleComponent } from "./CollapsibleComponent";
 import { useWalletStore } from "@/lib/stores/wallet.store";
 import { useTokenStore } from "@/lib/stores/token.store";
 import EditorStore from "@/lib/stores/editor.store";
-import type { ApprovedProposal } from "@/lib/dojo_bindings/typescript/models.gen";
 import { toast } from "sonner";
 
 const entityLabel = (c: ChangeSet) =>
@@ -47,50 +46,6 @@ const RejectedBannerSection = ({ onDismiss }: { onDismiss: () => void }) => (
 	</section>
 );
 
-// ---------------------------------------------------------------------------
-// PublishApprovedSection — shown when the current user has approvals waiting
-// ---------------------------------------------------------------------------
-
-const PublishApprovedSection = ({
-	approvals,
-	busy,
-	onPublish,
-}: {
-	approvals: ApprovedProposal[];
-	busy: boolean;
-	onPublish: (approval: ApprovedProposal) => void;
-}) => {
-	if (approvals.length === 0) return null;
-
-	return (
-		<section className="flex flex-col gap-1">
-			<h4 className="font-semibold text-green-700">Approved by trail owner</h4>
-			{approvals.map((approval, i) => (
-				<div
-					key={i}
-					className="flex items-center justify-between gap-2 rounded border border-green-300 bg-green-50 px-2 py-1"
-				>
-					<div className="flex flex-col min-w-0">
-						<span className="font-mono text-[10px] truncate opacity-60">
-							{shortAddr(approval.proposer)}
-						</span>
-						<span className="text-[10px] opacity-50">
-							{(approval.w_single_keys as any[]).length} writes,{" "}
-							{(approval.d_single_keys as any[]).length} deletions
-						</span>
-					</div>
-					<Button
-						size="sm"
-						disabled={busy}
-						onClick={() => onPublish(approval)}
-					>
-						Publish approved
-					</Button>
-				</div>
-			))}
-		</section>
-	);
-};
 
 // ---------------------------------------------------------------------------
 // StagingPanel
@@ -106,12 +61,11 @@ const PublishApprovedSection = ({
  * a prior submission, "Publish approved" publishes those approved changes.
  */
 export const StagingPanel = () => {
-	const { changeSet, stagedChanges, activeTrailId, currentApprovals } = useEditorData();
+	const { changeSet, stagedChanges, activeTrailId, reviewResult } = useEditorData();
 	const { walletAddress } = useWalletStore();
 	const { ownedTrailIds } = useTokenStore();
 	const isAdmin = EditorStore().isAdmin ?? false;
 	const [reviewBusy, setReviewBusy] = useState(false);
-	const [publishBusy, setPublishBusy] = useState(false);
 	const [showRejectedBanner, setShowRejectedBanner] = useState(false);
 
 	// Trail owners and admins may publish directly. When a trail is active, collaborators
@@ -132,69 +86,28 @@ export const StagingPanel = () => {
 
 	const allCount = unstaged.length + staged.length;
 
-	// Approvals for the current user on the active trail
-	const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
-	const myApprovals = useMemo(() => {
-		if (!activeTrailId || !walletAddress) return [];
-		const myAddr = norm(walletAddress);
-		return currentApprovals.filter(
-			(a) =>
-				BigInt(a.trail_id) === activeTrailId &&
-				norm(a.proposer) === myAddr
-		);
-	}, [currentApprovals, activeTrailId, walletAddress]);
-
-	// Detect when the trail owner acts on the collaborator's proposal.
-	// justPublishedRef guards against a false positive: if WE cleared the approval (by publishing),
-	// that drop must not trigger the rejection banner.
-	const prevMyApprovalsRef = useRef<ApprovedProposal[]>([]);
-	const justPublishedRef = useRef(false);
+	// Show notification when the trail owner signals review result for this collaborator.
 	useEffect(() => {
-		const prev = prevMyApprovalsRef.current;
-		prevMyApprovalsRef.current = myApprovals;
-		const hadApproval = prev.length > 0;
-		const hasApproval = myApprovals.length > 0;
-
-		// Rejection: approval dropped while staged changes remain.
-		if (hadApproval && !hasApproval && staged.length > 0) {
-			if (justPublishedRef.current) {
-				justPublishedRef.current = false;
-				return;
-			}
+		if (!reviewResult || !walletAddress || !activeTrailId) return;
+		if (BigInt(reviewResult.trail_id) !== activeTrailId) return;
+		const norm = (a: string) => a.replace(/^0x0+/, "0x").toLowerCase();
+		if (norm(reviewResult.proposer) !== norm(walletAddress)) return;
+		if (reviewResult.skipped_count === 0 && reviewResult.published_count > 0) {
+			toast.success("All your changes have been published.");
+		} else if (reviewResult.published_count > 0) {
+			toast.info(
+				`Your changes were published, but ${reviewResult.skipped_count} item(s) were not included.`,
+				{ duration: 12000, dismissible: true },
+			);
+		} else {
 			setShowRejectedBanner(true);
 		}
-	}, [myApprovals]);
+	}, [reviewResult]);
 
 	// Auto-dismiss the rejected banner once the collaborator clears their staged changes.
 	useEffect(() => {
 		if (staged.length === 0) setShowRejectedBanner(false);
 	}, [staged.length]);
-
-	const handlePublish = async (approval: ApprovedProposal) => {
-		if (!activeTrailId) return;
-		setPublishBusy(true);
-		justPublishedRef.current = true;
-		try {
-			await publishApproved(activeTrailId, approval);
-			// After publishing, check if any staged items for this trail remain.
-			// If so, they were not included in the approval — tell the collaborator.
-			const remaining = EditorData().get().stagedChanges.filter((c) => {
-				const entity = EditorData().getEntity(c.inst);
-				return BigInt(entity?.Entity?.trail_id?.toString() ?? "0") === activeTrailId;
-			});
-			if (remaining.length > 0) {
-				toast.info(
-					`${remaining.length} staged item${remaining.length !== 1 ? "s" : ""} were not included in the approval — resubmit for review.`,
-					{ duration: 12000, dismissible: true },
-				);
-			}
-		} catch (e) {
-			justPublishedRef.current = false;
-			console.error("publishApproved failed:", e);
-		} finally {
-			setPublishBusy(false);
-		}
-	};
 
 	const handleSubmitForReview = async () => {
 		if (!activeTrailId) return;
@@ -293,14 +206,6 @@ export const StagingPanel = () => {
 
 				{showRejectedBanner && staged.length > 0 && (
 					<RejectedBannerSection onDismiss={() => setShowRejectedBanner(false)} />
-				)}
-
-				{myApprovals.length > 0 && activeTrailId !== undefined && (
-					<PublishApprovedSection
-						approvals={myApprovals}
-						busy={publishBusy}
-						onPublish={handlePublish}
-					/>
 				)}
 
 				{allCount > 0 && (

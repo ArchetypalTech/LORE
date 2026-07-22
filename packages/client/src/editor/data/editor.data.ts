@@ -15,7 +15,7 @@ import type {
 	DescriptionText,
 	ComponentTypeEnum,
 	CollabProposalEvent,
-	ApprovedProposal,
+	CollabReviewResult,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -69,7 +69,7 @@ const {
 	editorInitialized: false,
 	// Collab proposal state
 	pendingProposals: [] as CollabProposalEvent[],
-	currentApprovals: [] as ApprovedProposal[],
+	reviewResult: undefined as CollabReviewResult | undefined,
 });
 
 const getItem = (id: BigNumberish, syncPool = false) => {
@@ -972,25 +972,11 @@ const dojoSync = (
 	obj: AnyObject,
 	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
-	// ApprovedProposal arrives via the regular entity subscription — store it separately
-	// rather than merging it into the entity pool.
-	const approvedProposal = (obj as any).ApprovedProposal as ApprovedProposal | undefined;
-	if (approvedProposal?.trail_id !== undefined) {
-		const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
-		const filtered = get().currentApprovals.filter(
-			(a) =>
-				!(BigInt(a.trail_id) === BigInt(approvedProposal.trail_id) &&
-					norm(a.proposer) === norm(approvedProposal.proposer))
-		);
-		// When the owner rejects, the contract erases the model — Torii sends it back with
-		// all array fields empty. Don't re-add the empty shell; just remove the old entry so
-		// the collaborator's rejection-notification effect fires correctly.
-		const isEmpty =
-			(approvedProposal.w_single_keys as any[]).length === 0 &&
-			(approvedProposal.w_description_texts as any[]).length === 0 &&
-			(approvedProposal.w_multi_keys as any[]).length === 0 &&
-			(approvedProposal.d_single_keys as any[]).length === 0;
-		set({ currentApprovals: isEmpty ? filtered : [...filtered, approvedProposal] });
+	// CollabReviewResult arrives via the regular entity subscription — store it so the
+	// collaborator's StagingPanel can show the appropriate notification.
+	const reviewResult = (obj as any).CollabReviewResult as CollabReviewResult | undefined;
+	if (reviewResult?.trail_id !== undefined) {
+		set({ reviewResult });
 		return;
 	}
 
@@ -1216,14 +1202,6 @@ export const syncProposals = async (ownedTrailIds: bigint[]): Promise<void> => {
 		console.error("Error fetching collab proposals from Torii:", error);
 		throw error;
 	}
-};
-
-export const getApprovalForTrail = (trailId: bigint, proposerAddress: string): ApprovedProposal | undefined => {
-	const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
-	const target = norm(proposerAddress);
-	return get().currentApprovals.find(
-		(a) => BigInt(a.trail_id) === trailId && norm(a.proposer) === target
-	);
 };
 
 export const propertiesRegistered = async (
@@ -1901,7 +1879,6 @@ const EditorData = createFactory({
 	simulateRemoteEntityEdit,
 	// Collab proposals
 	syncProposals,
-	getApprovalForTrail,
 });
 
 export default EditorData;

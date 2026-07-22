@@ -77,7 +77,7 @@ export const InitDojo = async () => {
 					"lore-PlayerStory",
 					"lore-Hub",
 					"lore-Trail",
-					"lore-ApprovedProposal",
+					"lore-CollabReviewResult",
 				]);
 			return query;
 		};

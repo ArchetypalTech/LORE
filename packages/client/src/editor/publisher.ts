@@ -26,7 +26,7 @@ import {
 	type ParentToChildren,
 	type Hub,
 	type Trail,
-	type ApprovedProposal,
+	type CollabProposalEvent,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
 import { toCairoArray } from "@/editor/editor.utils";
@@ -249,13 +249,13 @@ const publishEntityRelationships = async (collection: EntityCollection) => {
 	}
 };
 
-const publishEntity = async (entity: Entity) => {
+const publishEntity = async (entity: Entity, creatorAddress?: bigint) => {
 	const entityData = [
 		num.toBigInt(entity.inst.toString()),
 		entity.is_entity,
 		num.toBigInt(entity.trail_id?.toString() ?? "0"),
 		byteArray.byteArrayFromString(entity.name),
-		0n, // creator_address is managed on contract level
+		creatorAddress ?? 0n, // pass non-zero to attribute entity to collaborator
 		entity.alt_names.length > 0
 			? entity.alt_names
 				.filter((x) => x.length > 0)
@@ -638,15 +638,15 @@ const publishRegisterPropertyRegistry = async () => {
 		await dispatchDesignerCall("register_property_registry", [done]);
 };
 
-// ─── Collab: submit for review / publish approved ─────────────────────────────
+// ─── Collab: submit for review / publish from proposal ────────────────────────
 
 // Build helpers — mirror the per-type serialization in the publish* functions above
 // but return the raw data array instead of dispatching a call.
 
-const buildEntityData = (e: Entity) => [
+const buildEntityData = (e: Entity, creatorAddress?: bigint) => [
 	num.toBigInt(e.inst.toString()), e.is_entity,
 	num.toBigInt(e.trail_id?.toString() ?? "0"),
-	byteArray.byteArrayFromString(e.name), 0n,
+	byteArray.byteArrayFromString(e.name), creatorAddress ?? 0n,
 	e.alt_names.length > 0 ? e.alt_names.filter(x => x.length > 0).map(x => byteArray.byteArrayFromString(x)) : 0,
 	e.actions_keys.length > 0 ? e.actions_keys.filter(x => x !== num.toBigInt(0)).map(x => num.toBigInt(x.toString())) : 0,
 ];
@@ -751,22 +751,6 @@ const buildParentToChildrenData = (p: ParentToChildren) => [
 const buildChildToParentData = (c: ChildToParent) => [
 	num.toBigInt(c.inst.toString()), c.is_child, num.toBigInt(c.parent),
 ];
-
-// felt252 list membership checks — mirror contains_inst / contains_pair from the Cairo contract.
-const containsInst = (list: bigint[], inst: bigint) => list.some(x => x === inst);
-const containsPair = (list: bigint[], inst: bigint, key: bigint) => {
-	for (let i = 0; i + 1 < list.length; i += 2) {
-		if (list[i] === inst && list[i + 1] === key) return true;
-	}
-	return false;
-};
-
-type MultiKeyed = { inst: BigNumberish; key: BigNumberish };
-const filterApprovedMulti = (list: bigint[], items: MultiKeyed | MultiKeyed[] | undefined): MultiKeyed[] => {
-	if (!items) return [];
-	const arr = Array.isArray(items) ? items : [items];
-	return arr.filter(x => containsPair(list, BigInt(x.inst.toString()), BigInt(x.key.toString())));
-};
 
 // Serialize a component data array to a Cairo Array<T> calldata fragment:
 // toCairoArray([d1, d2]) → [2, ...d1_flat, ...d2_flat]
@@ -943,126 +927,194 @@ export const submitForReview = async (trailId: bigint): Promise<boolean> => {
 };
 
 /**
- * Publishes only the components from staged changes that the trail owner approved.
- * Skips the creator_address ownership check — the contract's approval gate enforces access.
+ * Owner publishes selected items from a collaborator's proposal directly.
+ * Pass 1: writes all entity data (with proposer as creator_address for new entities).
+ * Pass 2: writes relationships + executes component deletions.
+ * Returns { publishedCount, skippedCount } so the caller can signal the result to the collaborator.
  */
-export const publishApproved = async (trailId: bigint, approval: ApprovedProposal): Promise<boolean> => {
-	const toBigInts = (list: BigNumberish[]) => list.map(x => BigInt(x.toString()));
-	const wSingle  = toBigInts(approval.w_single_keys);
-	const wDesc    = toBigInts(approval.w_description_texts);
-	const wMulti   = toBigInts(approval.w_multi_keys);
-	const dSingle  = toBigInts(approval.d_single_keys);
-	const dDesc    = toBigInts(approval.d_description_texts);
-	const dMulti   = toBigInts(approval.d_multi_keys);
+export const publishFromProposal = async (
+	proposal: CollabProposalEvent,
+	selected: Set<string>,
+): Promise<{ publishedCount: number; skippedCount: number }> => {
+	const proposerAddr = BigInt(proposal.proposer);
+	const sel = (key: string) => selected.has(key);
 
-	const staged = EditorData().get().stagedChanges.filter(c => {
-		const entity = EditorData().getEntity(c.inst);
-		return BigInt(entity?.Entity?.trail_id ?? 0) === trailId;
-	});
+	// Build fast-lookup maps: inst → item
+	const entityByInst = new Map(proposal.entities.map(e => [String(e.inst), e as unknown as Entity]));
+	const reactableByInst = new Map(proposal.reactables.map(r => [String(r.inst), r as unknown as typeof r]));
+	const areaByInst = new Map(proposal.areas.map(a => [String(a.inst), a as unknown as Area]));
+	const exitByInst = new Map(proposal.exits.map(e => [String(e.inst), e as unknown as Exit]));
+	const hubByInst = new Map(proposal.hubs.map(h => [String(h.inst), h as unknown as Hub]));
+	const trailByInst = new Map(proposal.trails.map(t => [String(t.inst), t as unknown as Trail]));
+	const containerByInst = new Map(proposal.containers.map(c => [String(c.inst), c as unknown as Container]));
+	const invItemByInst = new Map(proposal.inventory_items.map(i => [String(i.inst), i as unknown as InventoryItem]));
+	const parentByInst = new Map(proposal.parents.map(p => [String(p.inst), p as unknown as ParentToChildren]));
+	const childByInst = new Map(proposal.children.map(c => [String(c.inst), c as unknown as ChildToParent]));
 
-	if (staged.length === 0) {
-		toast.info("Nothing staged for this trail.");
-		return false;
+	// Multi-keyed items — map by "inst:key"
+	const dtByInstKey = new Map(proposal.description_texts.map(dt => [`${dt.inst}:${dt.key}`, dt as unknown as DescriptionText]));
+	const triggerByInstKey = new Map(proposal.triggers.map(t => [`${t.inst}:${t.key}`, t as unknown as Trigger]));
+	const condByInstKey = new Map(proposal.conditions.map(c => [`${c.inst}:${c.key}`, c as unknown as Condition]));
+	const effectByInstKey = new Map(proposal.effects.map(e => [`${e.inst}:${e.key}`, e as unknown as Effect]));
+	const actionByInstKey = new Map(proposal.actions.map(a => [`${a.inst}:${a.key}`, a as unknown as Action]));
+
+	// All selectable write keys across the whole proposal
+	const allWriteKeys: string[] = [];
+	for (const e of proposal.entities) allWriteKeys.push(`w:${e.inst}:Entity`);
+	for (const r of proposal.reactables) allWriteKeys.push(`w:${r.inst}:Reactable`);
+	for (const a of proposal.areas) allWriteKeys.push(`w:${a.inst}:Area`);
+	for (const e of proposal.exits) allWriteKeys.push(`w:${e.inst}:Exit`);
+	for (const h of proposal.hubs) allWriteKeys.push(`w:${h.inst}:Hub`);
+	for (const t of proposal.trails) allWriteKeys.push(`w:${t.inst}:Trail`);
+	for (const c of proposal.containers) allWriteKeys.push(`w:${c.inst}:Container`);
+	for (const i of proposal.inventory_items) allWriteKeys.push(`w:${i.inst}:InventoryItem`);
+	for (const p of proposal.parents) allWriteKeys.push(`w:${p.inst}:ParentToChildren`);
+	for (const c of proposal.children) allWriteKeys.push(`w:${c.inst}:ChildToParent`);
+	for (const dt of proposal.description_texts) allWriteKeys.push(`w:${dt.inst}:DescriptionText:${dt.key}`);
+	for (const t of proposal.triggers) allWriteKeys.push(`w:${t.inst}:Trigger:${t.key}`);
+	for (const c of proposal.conditions) allWriteKeys.push(`w:${c.inst}:Condition:${c.key}`);
+	for (const e of proposal.effects) allWriteKeys.push(`w:${e.inst}:Effect:${e.key}`);
+	for (const a of proposal.actions) allWriteKeys.push(`w:${a.inst}:Action:${a.key}`);
+	// Deletion keys
+	const delPairToKeys = (flat: BigNumberish[], comp: string) => {
+		const keys: string[] = [];
+		for (let i = 0; i + 1 < flat.length; i += 2) keys.push(`d:${flat[i]}:${comp}:${flat[i + 1]}`);
+		return keys;
+	};
+	for (const inst of proposal.deleted_reactable_insts) allWriteKeys.push(`d:${inst}:Reactable`);
+	for (const inst of proposal.deleted_area_insts) allWriteKeys.push(`d:${inst}:Area`);
+	for (const inst of proposal.deleted_exit_insts) allWriteKeys.push(`d:${inst}:Exit`);
+	for (const inst of proposal.deleted_container_insts) allWriteKeys.push(`d:${inst}:Container`);
+	for (const inst of proposal.deleted_inventory_item_insts) allWriteKeys.push(`d:${inst}:InventoryItem`);
+	for (const inst of proposal.deleted_hub_insts) allWriteKeys.push(`d:${inst}:Hub`);
+	for (const inst of proposal.deleted_trail_insts) allWriteKeys.push(`d:${inst}:Trail`);
+	for (const inst of proposal.deleted_parent_insts) allWriteKeys.push(`d:${inst}:ParentToChildren`);
+	for (const inst of proposal.deleted_child_insts) allWriteKeys.push(`d:${inst}:ChildToParent`);
+	allWriteKeys.push(...delPairToKeys(proposal.deleted_description_text_keys as BigNumberish[], "DescriptionText"));
+	allWriteKeys.push(...delPairToKeys(proposal.deleted_trigger_keys as BigNumberish[], "Trigger"));
+	allWriteKeys.push(...delPairToKeys(proposal.deleted_condition_keys as BigNumberish[], "Condition"));
+	allWriteKeys.push(...delPairToKeys(proposal.deleted_effect_keys as BigNumberish[], "Effect"));
+	allWriteKeys.push(...delPairToKeys(proposal.deleted_action_keys as BigNumberish[], "Action"));
+
+	const totalItems = allWriteKeys.length;
+	const selectedItems = allWriteKeys.filter(k => selected.has(k));
+
+	if (selectedItems.length === 0) {
+		return { publishedCount: 0, skippedCount: totalItems };
 	}
 
-	// Track original references alongside the filtered copies so pass-2 cleanup can use
-	// reference equality to remove the right entries from stagedChanges/changeSet.
-	type ApprovedEntry = { original: ChangeSet; filtered: ChangeSet };
-	const approvedChanges: ApprovedEntry[] = [];
-
-	for (const change of staged) {
-		const col = change.object; // EditorCollection — enum fields are already string-typed
-		const inst = BigInt(change.inst.toString());
-
-		const buildFiltered = (singleList: bigint[], descList: bigint[], multiList: bigint[]): EditorCollection => {
-			const out: EditorCollection = {};
-			if (col.Entity           && containsInst(singleList, inst)) out.Entity = col.Entity;
-			if (col.Reactable        && containsInst(singleList, inst)) out.Reactable = col.Reactable;
-			if (col.Area             && containsInst(singleList, inst)) out.Area = col.Area;
-			if (col.Exit             && containsInst(singleList, inst)) out.Exit = col.Exit;
-			if (col.Hub              && containsInst(singleList, inst)) out.Hub = col.Hub;
-			if (col.InventoryItem    && containsInst(singleList, inst)) out.InventoryItem = col.InventoryItem;
-			if (col.Container        && containsInst(singleList, inst)) out.Container = col.Container;
-			if (col.Trail            && containsInst(singleList, inst)) out.Trail = col.Trail;
-			if (col.ParentToChildren && containsInst(singleList, inst)) out.ParentToChildren = col.ParentToChildren;
-			if (col.ChildToParent    && containsInst(singleList, inst)) out.ChildToParent = col.ChildToParent;
-			if (col.DescriptionText) {
-				const ok = filterApprovedMulti(descList, (Array.isArray(col.DescriptionText) ? col.DescriptionText : [col.DescriptionText]) as MultiKeyed[]);
-				if (ok.length > 0) out.DescriptionText = ok as DescriptionText[];
-			}
-			const applyMulti = <T extends MultiKeyed>(src: T | T[] | undefined, key: "Trigger" | "Condition" | "Effect" | "Action") => {
-				const ok = filterApprovedMulti(multiList, src as MultiKeyed | MultiKeyed[] | undefined) as T[];
-				if (ok.length > 0) (out as Record<string, unknown>)[key] = ok.length === 1 ? ok[0] : ok;
-			};
-			applyMulti(col.Trigger as Trigger | Trigger[] | undefined, "Trigger");
-			applyMulti(col.Condition as Condition | Condition[] | undefined, "Condition");
-			applyMulti(col.Effect as Effect | Effect[] | undefined, "Effect");
-			applyMulti(col.Action as Action | Action[] | undefined, "Action");
-			return out;
-		};
-
-		const filtered = change.type === "delete"
-			? buildFiltered(dSingle, dDesc, dMulti)
-			: buildFiltered(wSingle, wDesc, wMulti);
-
-		if (Object.keys(filtered).length > 0) {
-			approvedChanges.push({ original: change, filtered: { ...change, object: filtered } });
-		}
-	}
-
-	if (approvedChanges.length === 0) {
-		toast.info("No approved changes to publish.");
-		return false;
-	}
-
-	const publishedInsts = [...new Set(approvedChanges.map(e => e.original.inst))];
+	// Helper to check if an entity is new (not yet on-chain in syncPool)
+	const isNewEntity = (inst: BigNumberish) => EditorData().getEntity(String(inst), true) === undefined;
 
 	try {
 		await Notifications().startPublishing();
 
-		// Pass 1: entity data (no parent-child relationships).
-		// All entities must exist on-chain before any ChildToParent is written,
-		// regardless of the order they appear in stagedChanges.
-		for (const { filtered } of approvedChanges) {
-			if (filtered.type === "update") {
-				await publishEntityData(filtered.object as EntityCollection);
+		// Pass 1: entity data (no relationship writes)
+		for (const key of selectedItems) {
+			const [prefix, inst, comp, itemKey] = key.split(":");
+			if (prefix !== "w") continue;
+			try {
+				if (comp === "Entity") {
+					const e = entityByInst.get(inst);
+					if (e) await publishEntity(e as Entity, isNewEntity(inst) ? proposerAddr : undefined);
+				} else if (comp === "Reactable") {
+					const r = reactableByInst.get(inst);
+					if (r) await publishReactable(r as Reactable);
+				} else if (comp === "Area") {
+					const a = areaByInst.get(inst);
+					if (a) await publishArea(a as Area);
+				} else if (comp === "Exit") {
+					const e = exitByInst.get(inst);
+					if (e) await publishExit(e as Exit);
+				} else if (comp === "Hub") {
+					const h = hubByInst.get(inst);
+					if (h) await publishHub(h as Hub);
+				} else if (comp === "Trail") {
+					const t = trailByInst.get(inst);
+					if (t) await publishTrail(t as Trail);
+				} else if (comp === "Container") {
+					const c = containerByInst.get(inst);
+					if (c) await publishContainer(c as Container);
+				} else if (comp === "InventoryItem") {
+					const i = invItemByInst.get(inst);
+					if (i) await publishInventoryItem(i as InventoryItem);
+				} else if (comp === "DescriptionText") {
+					const dt = dtByInstKey.get(`${inst}:${itemKey}`);
+					if (dt) await publishDescriptionText(dt as DescriptionText);
+				} else if (comp === "Trigger") {
+					const t = triggerByInstKey.get(`${inst}:${itemKey}`);
+					if (t) await publishTrigger(t as Trigger);
+				} else if (comp === "Condition") {
+					const c = condByInstKey.get(`${inst}:${itemKey}`);
+					if (c) await publishCondition(c as Condition);
+				} else if (comp === "Effect") {
+					const e = effectByInstKey.get(`${inst}:${itemKey}`);
+					if (e) await publishEffect(e as Effect);
+				} else if (comp === "Action") {
+					const a = actionByInstKey.get(`${inst}:${itemKey}`);
+					if (a) await publishAction(a as Action);
+				}
+				// ParentToChildren / ChildToParent are deferred to pass 2
+			} catch (err) {
+				console.error(`Error publishing ${key}:`, err);
+				throw err;
 			}
 		}
 
-		// Pass 2: parent-child relationships + deletes + cleanup.
-		for (const { original, filtered } of approvedChanges) {
-			if (filtered.type === "update") {
-				await publishEntityRelationships(filtered.object as EntityCollection);
-			} else {
-				await deleteCollection(filtered.object as EntityCollection);
+		// Pass 2: relationships + deletions
+		for (const key of selectedItems) {
+			const [prefix, inst, comp, itemKey] = key.split(":");
+			try {
+				if (prefix === "w") {
+					if (comp === "ParentToChildren") {
+						const p = parentByInst.get(inst);
+						if (p) await publishParentToChildren(p as ParentToChildren);
+					} else if (comp === "ChildToParent") {
+						const c = childByInst.get(inst);
+						if (c) await publishChildToParent(c as ChildToParent);
+					}
+				} else if (prefix === "d") {
+					const instBig = num.toBigInt(inst);
+					if (comp === "Reactable") await dispatchDesignerCall("delete_reactable", [instBig]);
+					else if (comp === "Area") await dispatchDesignerCall("delete_area", [instBig]);
+					else if (comp === "Exit") await dispatchDesignerCall("delete_exit", [instBig]);
+					else if (comp === "Container") await dispatchDesignerCall("delete_container", [instBig]);
+					else if (comp === "InventoryItem") await dispatchDesignerCall("delete_inventory_item", [instBig]);
+					else if (comp === "Hub") await dispatchDesignerCall("delete_hub", [instBig]);
+					else if (comp === "Trail") await dispatchDesignerCall("delete_trail", [instBig]);
+					else if (comp === "ParentToChildren") await dispatchDesignerCall("delete_parent", [instBig]);
+					else if (comp === "ChildToParent") await dispatchDesignerCall("delete_child", [instBig]);
+					else if (comp === "DescriptionText") await dispatchDesignerCall("delete_description_text", [[instBig, num.toBigInt(itemKey)]]);
+					else if (comp === "Trigger") await dispatchDesignerCall("delete_trigger", [[instBig, num.toBigInt(itemKey)]]);
+					else if (comp === "Condition") await dispatchDesignerCall("delete_condition", [[instBig, num.toBigInt(itemKey)]]);
+					else if (comp === "Effect") await dispatchDesignerCall("delete_effect", [[instBig, num.toBigInt(itemKey)]]);
+					else if (comp === "Action") await dispatchDesignerCall("delete_action", [[instBig, num.toBigInt(itemKey)]]);
+				}
+			} catch (err) {
+				console.error(`Error publishing ${key}:`, err);
+				throw err;
 			}
-			EditorData().set({
-				changeSet: EditorData().changeSet.filter(x => x !== original),
-				stagedChanges: EditorData().get().stagedChanges.filter(x => x !== original),
-			});
-			persistDraft();
 		}
 
 		Notifications().finalizePublishing();
 
-		// Remove the published approval so the "Approved by trail owner" banner disappears.
-		const norm = (addr: string) => addr.replace(/^0x0+/, "0x").toLowerCase();
-		const proposerNorm = norm(approval.proposer);
-		EditorData().set({
-			currentApprovals: EditorData().get().currentApprovals.filter(
-				(a) => !(BigInt(a.trail_id) === trailId && norm(a.proposer) === proposerNorm)
-			),
-		});
-
-		await tick();
-		await syncEntitiesByInsts(publishedInsts);
-		return true;
+		const publishedCount = selectedItems.length;
+		const skippedCount = totalItems - publishedCount;
+		return { publishedCount, skippedCount };
 	} catch (error) {
 		const errorMsg = error instanceof Error ? error.message : String(error);
-		Notifications().showError(`Error publishing approved changes: ${errorMsg}`);
-		return false;
+		Notifications().showError(`Error publishing proposal: ${errorMsg}`);
+		throw error;
 	}
 };
+
+/** Re-exported for use in RemoteChangesPanel without a separate SystemCalls import. */
+export const signalReviewResult = (
+	trailId: bigint,
+	proposer: string,
+	publishedCount: number,
+	skippedCount: number,
+) => SystemCalls.signalReviewResult(trailId, proposer, publishedCount, skippedCount);
 
 /**
  * Helper function to send designer call

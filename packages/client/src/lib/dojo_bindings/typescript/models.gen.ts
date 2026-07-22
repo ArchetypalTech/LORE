@@ -53,16 +53,12 @@ export interface Area {
 	preserve_children: boolean;
 }
 
-// Type definition for `lore::models::collab_proposal::ApprovedProposal` struct
-export interface ApprovedProposal {
+// Type definition for `lore::models::collab_proposal::CollabReviewResult` struct
+export interface CollabReviewResult {
 	trail_id: BigNumberish;
 	proposer: string;
-	w_single_keys: Array<BigNumberish>;
-	w_description_texts: Array<BigNumberish>;
-	w_multi_keys: Array<BigNumberish>;
-	d_single_keys: Array<BigNumberish>;
-	d_description_texts: Array<BigNumberish>;
-	d_multi_keys: Array<BigNumberish>;
+	published_count: BigNumberish;
+	skipped_count: BigNumberish;
 }
 
 // Type definition for `lore::models::condition::Condition` struct
@@ -758,7 +754,7 @@ export interface SchemaType extends ISchemaType {
 		ActionsConfig: ActionsConfig,
 		ActionsReward: ActionsReward,
 		Area: Area,
-		ApprovedProposal: ApprovedProposal,
+		CollabReviewResult: CollabReviewResult,
 		Condition: Condition,
 		Container: Container,
 		DescriptionText: DescriptionText,
@@ -853,15 +849,11 @@ export const schema: SchemaType = {
 			progress_percentage: 0,
 			preserve_children: false,
 		},
-		ApprovedProposal: {
+		CollabReviewResult: {
 			trail_id: 0,
 			proposer: "",
-			w_single_keys: [0],
-			w_description_texts: [0],
-			w_multi_keys: [0],
-			d_single_keys: [0],
-			d_description_texts: [0],
-			d_multi_keys: [0],
+			published_count: 0,
+			skipped_count: 0,
 		},
 		Condition: {
 			inst: 0,
@@ -1446,7 +1438,7 @@ export enum ModelsMapping {
 	ActionsConfig = 'lore-ActionsConfig',
 	ActionsReward = 'lore-ActionsReward',
 	Area = 'lore-Area',
-	ApprovedProposal = 'lore-ApprovedProposal',
+	CollabReviewResult = 'lore-CollabReviewResult',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
 	DescriptionText = 'lore-DescriptionText',
