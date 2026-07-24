@@ -48,7 +48,7 @@ Rejected for this feature. It avoids the key problem entirely (no network call a
 - Quality of a browser-sized model on typo/synonym judgment is worse than a hosted frontier model, for a feature whose entire value is a well-phrased, well-judged fallback message.
 - Doesn't help with phrasing quality either — the smaller the local model, the more generic/wrong the "friendly" message tends to read.
 
-This would only make sense if the project had a broader roadmap need for offline/local inference elsewhere. It doesn't currently.
+This would only make sense if the project had a broader roadmap need for offline/local inference elsewhere. It doesn't currently. Full build-out with a detailed pros/cons breakdown: [command-validation-implementation-in-browser.md](command-validation-implementation-in-browser.md).
 
 ### Option D — Skip the LLM for existence-checking; use it only for phrasing + fuzzy fallback (adopted, layered on Option A)
 
