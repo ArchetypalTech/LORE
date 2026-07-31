@@ -58,6 +58,7 @@ const setupController = async () => {
 					// name: worldName, // Optional, can be added if you want a name
 					description: `Aprove consume / clame of game tokens in ${worldName}`,
 					methods: [
+						{ entrypoint: "mint_to", description: `The terminal endpoint for ${APP_EDITOR_DATA.title} minting actions` },
 						{
 							entrypoint: "calculate_action_cost",
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} calculating the cost of an action`,

@@ -33,7 +33,8 @@ import { queryGameData } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
-import { useLeftPanelStore } from "@/lib/stores/leftPanel.store";
+import { useLeftPanelStore, updateBalances } from "@/lib/stores/leftPanel.store";
+import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
 /**
  * Context object passed to each terminal command handler
@@ -291,7 +292,6 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 				format: "hash",
 				useTypewriter: true,
 			});
-			// sendCommand("ui show");
 		}
 
 		// Check properties
@@ -314,20 +314,8 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			format: "hash",
 			useTypewriter: true,
 		});
-		// check for game
-		const gameId = GameStore().gameId;
-		//const panel = UIPanelStore();
-		
-		if (!gameId) {
-			// if no game, set default values for Info Panel
-			DefaultValues();
-			// panel.show();
-			sendCommand("ui show");
-		} else {
-			// if game, show Info Panel
-			//panel.show();
-			sendCommand("ui show");
-		}
+		// UI show
+		sendCommand("ui show");
 	},
 	wallet: async () => {
 		if (!WalletStore().isConnected) {
@@ -518,7 +506,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-	ui: (context: commandContext) => {
+	ui: async (context: commandContext) => {
 		if (!WalletStore().isConnected) {
 			sendCommand("_not_yet_connected");
 			return;
@@ -527,13 +515,32 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		const panel = UIPanelStore();
 		const rightPanel = useRightPanelStore.getState();
 		const leftPanel = useLeftPanelStore.getState();
-
+		
 		// ui show
 		if (context.args[0] === "show") {
+			// Top Panel Show - Location + Exits + Puzzles
 			panel.show();
+			// check for game
+			const gameId = GameStore().gameId;
+			if (!gameId) {
+				// if no game, set default values for Info Panel
+				DefaultValues();
+			} else {
+				// if game, show query Info Panel data and show ui
+				let GameID = BigInt(gameId);
+				queryPanelInfo(GameID);
+			}
+
+			// Right Panel Show - Settings + Wallet
 			rightPanel.show();
-			leftPanel.refreshBalances();
+			// Left Panel Show - Actions Tokens 
 			leftPanel.show();
+			try {
+				sendCommand("g_actions");
+				await updateBalances();
+			} catch (e) {
+				console.error("Failed to fetch balances on ui show:", e);
+			}
 			addTerminalContent({
 				text: "Displaying Auxiliary Panels.",
 				format: "system",
@@ -545,7 +552,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// ui hide
 		if (context.args[0] === "hide") {
 			panel.hide();
-			rightPanel.hide();
+			// rightPanel.hide();
 			leftPanel.hide();
 			addTerminalContent({
 				text: "Hidding Auxiliary Panels.",
@@ -604,4 +611,44 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			useTypewriter: true,
 		});
 	},
-} as const;
+	mint: async (context: commandContext) => {
+		// Check if player is connected
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+
+		if (context.args[1] !== "actions") {
+			addTerminalContent({
+				text: "Usage: mint [amount] actions",
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+		let world = LORE_CONFIG.world;
+		let account = WalletStore().account;
+		let recipient = WalletStore().walletAddress;
+		let amount = context.args[0];
+		let amountConverted = BigInt(amount);
+		
+		if (account !== undefined && recipient !== undefined && amountConverted !== undefined) {
+			await world.actions_token.mintTo(account, recipient, amountConverted )
+		} else {
+			addTerminalContent({
+				text: `Error: Missing arguments -> ${JSON.stringify({
+					account,
+					recipient,
+					amount: amountConverted
+				})}`,
+				format: "error",
+				useTypewriter: true,
+			});
+			return;
+		}
+		// If mint was successful, refresh left panel + send command to confirm amount
+		// const leftPanel = useLeftPanelStore.getState();
+		await updateBalances();
+		sendCommand("g_actions");
+	},
+	} as const;

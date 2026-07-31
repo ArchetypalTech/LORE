@@ -118,7 +118,6 @@ pub impl ExitComponent of Component<Exit> {
         // println!("Exit execute_command");
         let (action, _token) = get_action_token(@self, @world, command).unwrap();
         let direction_tokens: Span<Token> = command.get_directions();
-
         match action.action_fn {
             ExitActions::UseExit => {
                 if *player.use_debug {
@@ -139,7 +138,7 @@ pub impl ExitComponent of Component<Exit> {
 
                 let mut matchesDirection: bool = false;
                 if (direction_tokens.len() > 0
-                    && matches_direction(@self, world, player, direction_tokens).is_some()) {
+                    && matches_direction(@self, ref world, player, direction_tokens).is_some()) {
                     matchesDirection = true;
                 }
 
@@ -224,7 +223,7 @@ pub impl ExitComponent of Component<Exit> {
 
 
 fn matches_direction(
-    self: @Exit, world: WorldStorage, player: @Player, directions_token: Span<Token>,
+    self: @Exit, ref world: WorldStorage, player: @Player, directions_token: Span<Token>,
 ) -> Option<felt252> {
     if (directions_token.is_empty()) {
         return Option::None;

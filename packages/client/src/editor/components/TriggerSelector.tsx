@@ -2,14 +2,16 @@ import { ChangeEvent, useMemo } from "react";
 import { Button } from "./ui/Button";
 import { DeleteButton, Select } from "./FormComponents";
 import { BigNumberish } from "starknet";
-import type { Trigger } from "@/lib/dojo_bindings/typescript/models.gen";
+import type { Trigger, Entity } from "@/lib/dojo_bindings/typescript/models.gen";
+import { bigintEquals } from "@/lib/utils/utils";
 
 interface TriggerSelectorProps {
   id: string;
   value: Array<[string, BigNumberish]>;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  dataPool: Map<BigNumberish, any>; // adjust type as needed
+  dataPool: Map<BigNumberish, any>;
   readOnly?: boolean;
+  sourceEntity: Entity | undefined;
 }
 
 export const TriggerSelector = ({
@@ -18,6 +20,7 @@ export const TriggerSelector = ({
   onChange,
   dataPool,
   readOnly,
+  sourceEntity,
 }: TriggerSelectorProps) => {
   const handleUpdate = (updated: Array<[string, BigNumberish]>) => {
     const syntheticEvent = {
@@ -47,30 +50,41 @@ export const TriggerSelector = ({
     handleUpdate(updated);
   };
 
+  // Filter entities by same trail
   const entityOptions = useMemo(() => {
+    if (!sourceEntity) return [];
+
     return Array.from(dataPool.entries())
-      .filter(([_, val]) => val.Entity?.name && val.Trigger as Trigger[])
-      .map(([address, val]) => ({
-        label: val.Entity.name,
-        value: address,
-      }));
-  }, [dataPool]);
+      .filter(([_, val]) => {
+        const entity = val.Entity;
+        if (!entity || !entity.name) return false;
+
+        // must have triggers
+        if (!val.Trigger) return false;
+
+        return bigintEquals(entity.trail_id, sourceEntity.trail_id);
+      })
+      .map(([address, val]) => {
+        const entity = val.Entity;
+        return {
+          label: entity.name,
+          value: address,
+        };
+      });
+  }, [dataPool, sourceEntity]);
 
   const getTriggerOptions = (entityId: string) => {
     const entity = dataPool.get(entityId);
     if (!entity || !entity.Trigger) return [];
-    
-    const triggers = Array.isArray(entity.Trigger)
-    ? entity.Trigger
-    : [entity.Trigger];
 
-    return triggers.map(trigger => {
-      return {
-        label: trigger.name.toString(),
-        value: trigger.key.toString()
-      }
-    }
-    );
+    const triggers = Array.isArray(entity.Trigger)
+      ? entity.Trigger
+      : [entity.Trigger];
+
+    return triggers.map((trigger: Trigger) => ({
+      label: trigger.name.toString(),
+      value: trigger.key.toString(),
+    }));
   };
 
   return (
@@ -113,4 +127,4 @@ export const TriggerSelector = ({
       </Button>
     </div>
   );
-}
+};

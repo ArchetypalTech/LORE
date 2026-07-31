@@ -140,6 +140,14 @@ pub impl DictionaryImpl of DictionaryTrait {
         self.add_to_dictionary("around", TokenType::Direction, 7).unwrap();
         self.add_to_dictionary("ahead", TokenType::Direction, 8).unwrap();
         self.add_to_dictionary("behind", TokenType::Direction, 8).unwrap();
+        // self.add_to_dictionary("south-east", TokenType::Direction, 9).unwrap();
+        // self.add_to_dictionary("se", TokenType::Direction, 9).unwrap();
+        // self.add_to_dictionary("south-west", TokenType::Direction, 10).unwrap();
+        // self.add_to_dictionary("sw", TokenType::Direction, 10).unwrap();
+        // self.add_to_dictionary("north-west", TokenType::Direction, 11).unwrap();
+        // self.add_to_dictionary("nw", TokenType::Direction, 11).unwrap();
+        // self.add_to_dictionary("north-east", TokenType::Direction, 12).unwrap();
+        // self.add_to_dictionary("ne", TokenType::Direction, 12).unwrap();
         // adjectives
         self.add_to_dictionary("good", TokenType::Adjective, 1).unwrap();
         self.add_to_dictionary("bad", TokenType::Adjective, 2).unwrap();

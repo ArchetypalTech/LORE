@@ -34,7 +34,7 @@
   "contracts": [
     {
       "address": "0x704db189edff5fa82b61cbc5290167e773055029e2f62c035a28d9c30b5b87b",
-      "class_hash": "0x2bfb4e9505f45cb9284466a11dcbbf1c4221416e85e4bb9c259c39caca01724",
+      "class_hash": "0xd98ffee803679adf9e1527d19af6153386792fb76656fe0b8c48afa8ac6f8c",
       "init_calldata": [
         "0x0"
       ],
@@ -140,7 +140,7 @@
     },
     {
       "address": "0x1968aa3dcaad3ca930835172d4f0be3578d2eb928450ceb78d1d50f82065c2a",
-      "class_hash": "0x74a535d06a30acd6dd1bd7ea5cfc0874d3270d020afabec3b521443cbd83dae",
+      "class_hash": "0x498ad411751d4c752fee087f573dad0b141eea75792326cd1411f28f45d17c5",
       "init_calldata": [],
       "tag": "lore-prompt",
       "selector": "0x7ce185ac93eb5e2a28b27a6bab8ce1cc608744ef663badb20489547ed1d20a0",
@@ -1127,9 +1127,14 @@
           "name": "location",
           "type": "core::felt252",
           "key": false
+        },
+        {
+          "name": "timestamp",
+          "type": "core::integer::u64",
+          "key": false
         }
       ],
-      "class_hash": "0x751cf42141e8cc7182421c33ddc737ce0608a4d144114d7375251d1cda1e6af",
+      "class_hash": "0xe3c8842b3521c272dec4185f18166776320e4ef5512c1b75146fd9da69f2ff",
       "tag": "lore-StoryLine",
       "selector": "0x41966df961a636bb8b0fd40dd377bdb038e3078076977ee7f2c7da2d08d416d"
     },
@@ -5395,6 +5400,10 @@
         {
           "name": "location",
           "type": "core::felt252"
+        },
+        {
+          "name": "timestamp",
+          "type": "core::integer::u64"
         }
       ]
     },
@@ -5443,6 +5452,10 @@
         {
           "name": "location",
           "type": "core::felt252"
+        },
+        {
+          "name": "timestamp",
+          "type": "core::integer::u64"
         }
       ]
     },

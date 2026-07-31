@@ -1,19 +1,27 @@
-#[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
-pub enum Direction {
-    None,
-    North,
-    South,
-    East,
-    West,
-    Up,
-    Down,
-}
+// #[derive(Serde, Copy, Drop, Debug, Introspect, PartialEq)]
+// pub enum Direction {
+//     None,
+//     North,
+//     South,
+//     East,
+//     West,
+//     Up,
+//     Down,
+// }
 
 use lore::{lib::utils::ByteArrayTraitExt};
 
 pub fn direction_one_letter(direction: @ByteArray) -> ByteArray {
     let mut text: ByteArray = "";
-    if (direction.starts_with(@"n")) {
+    if (direction.starts_with(@"ne")) {
+        text = "north-east";
+    } else if (direction.starts_with(@"se")) {
+        text = "south-east";
+    } else if (direction.starts_with(@"nw")) {
+        text = "north-west";
+    } else if (direction.starts_with(@"sw")) {
+        text = "south-west";
+    } else if (direction.starts_with(@"n")) {
         text = "north";
     } else if (direction.starts_with(@"s")) {
         text = "south";
@@ -36,6 +44,7 @@ pub mod CONST {
 
 pub mod TIMESTAMP {
     pub const ONE_MINUTE: u64   = 60;
+    pub const FIFTEEN_MINUTES: u64   = 60 * 15;
     pub const ONE_HOUR: u64     = 60 * 60;
     pub const ONE_DAY: u64      = 60 * 60 * 24;
     pub const ONE_WEEK: u64     = 60 * 60 * 24 * 7;

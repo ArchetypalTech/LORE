@@ -71,6 +71,8 @@ pub struct StoryLine {
     pub line_type: StoryLineType,
     /// location when the line was created
     pub location: felt252,
+    /// timestamp when the line was created
+    pub timestamp: u64,
 }
 
 #[derive(Copy, Drop, Serde, Debug, PartialEq, Introspect, DojoStore, Default)]
@@ -274,6 +276,7 @@ pub impl PlayerImpl of PlayerTrait {
             line: text,
             line_type,
             location: *self.location,
+            timestamp: starknet::get_block_timestamp(),
         });
     }
 

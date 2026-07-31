@@ -29,7 +29,7 @@ import {
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { tick } from "@/lib/utils/utils";
 import { type DesignerEntrypoints, SystemCalls } from "../lib/systemCalls";
-import EditorData from "./data/editor.data";
+import EditorData, { syncEntitiesByInsts } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
 import { toEnumIndex } from "./lib/schemas";
 import type { EntityCollection } from "./lib/types";
@@ -42,15 +42,19 @@ import { getPlayerAddress } from "./lib/components";
  * @returns A promise that resolves when the publishing is complete
  */
 export const publishConfigToContract = async (changes?: ChangeSet[]) => {
+	// Capture insts before publishChangeset drains the changeSet in its finally blocks
+	const preparedChanges = changes ?? EditorData().changeSet;
+	const publishedInsts = [...new Set(preparedChanges.map(c => c.inst))];
+
 	try {
 		await Notifications().startPublishing();
 		await publishChangeset(changes);
 		Notifications().finalizePublishing();
 		// Wait for transaction to be processed
 		await tick();
-		// Sync data from contract after publishing
-		await EditorData().syncEntities();
-		console.log("Data pool after sync:", EditorData().dataPool);
+		// Re-sync only the entities that were just published — leaves other editors' work untouched
+		await syncEntitiesByInsts(publishedInsts);
+		console.log("Data pool after selective sync:", EditorData().dataPool);
 		return true;
 	} catch (error) {
 		const errorMsg = error instanceof Error ? error.message : String(error);
@@ -60,9 +64,24 @@ export const publishConfigToContract = async (changes?: ChangeSet[]) => {
 };
 
 const publishChangeset = async (changes?: ChangeSet[]) => {
-	const preparedChanges = changes || EditorData().changeSet;
+	const myAddress = BigInt(getPlayerAddress());
+	const preparedChanges = changes ?? EditorData().changeSet;
 	for (const change of preparedChanges) {
 		try {
+			const entity = EditorData().getEntity(change.inst);
+			const creator = BigInt(entity?.Entity?.creator_address ?? 0);
+			// 0n = new entity not yet stamped on-chain — safe to publish
+			const isOwned = creator === 0n || creator === myAddress;
+
+			if (!isOwned) {
+				toast.warning(
+					`Skipped "${entity?.Entity?.name ?? String(change.inst)}": owned by another editor`,
+					{ richColors: true, duration: 4000, dismissible: true },
+				);
+				// continue lets the finally block clean up the changeSet entry
+				continue;
+			}
+
 			if (change.type === "update") {
 				await publishEntityCollection(change.object as EntityCollection);
 			}
@@ -70,9 +89,9 @@ const publishChangeset = async (changes?: ChangeSet[]) => {
 				await deleteCollection(change.object as EntityCollection);
 			}
 		} catch (error) {
-			console.error("Error creating room:", error);
+			console.error("Error publishing:", error);
 			toast.error(
-				`Error creating ${Object.keys(change.object).join(",")}: ${error instanceof Error ? error.message : String(error)}`,
+				`Error publishing ${Object.keys(change.object).join(",")}: ${error instanceof Error ? error.message : String(error)}`,
 				{ richColors: true, duration: 4000, dismissible: true },
 			);
 		} finally {

@@ -22,6 +22,7 @@ import GameStore from "./game.store";
 import { useUIPanelStore } from "../../lib/stores/terminal.uiPanel.store";
 import { queryPlayerLocationPerGame} from "../../lib/queriesPanel/uiPanelQueries";
 import { queryPanelInfo, queryExitsInfo, queryPuzzlesInfo } from "@/client/terminal/Terminal.uiPanel";
+import {updateBalances} from "@lib/stores/leftPanel.store";
 
 
 /**
@@ -120,6 +121,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 				model.key !== undefined &&
 				model.line &&
 				model.location !== undefined &&
+				model.timestamp !== undefined &&
 				String(model.game_id) === String(playerStory.game_id)
 			) {
 				allStoryLines.push({
@@ -128,6 +130,7 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 					line: model.line,
 					line_type: model.line_type as CairoCustomEnum,
 					location: model.location,
+					timestamp: model.timestamp,
 				});
 			}
 		});
@@ -210,6 +213,10 @@ const setOutputter = async (playerStory: PlayerStory | undefined) => {
 		queryExitsInfo(gameID, location_inst, location_name, location_exit);
 		queryPuzzlesInfo(gameID, location_inst);
 	}
+
+	// update left panel
+	await updateBalances();
+	// console.log("Outputter updated, balances refreshed");
 };
 
 const onPlayerStory = (playerStory: PlayerStory) => {

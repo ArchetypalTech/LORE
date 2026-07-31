@@ -488,12 +488,20 @@ const syncItem = (
 			// Process object for component deletions and merging
 			const merged = processMergedObject(existing, obj);
 
+			//  Pathway 5 - OPTION B - Proposal VERSION
+			const hasChanged = JSONbig.stringify(merged) !== JSONbig.stringify(existing);
+			if (hasChanged) { setItem(merged as AnyObject, inst, sync); }
+
+			// BUG VERSION
+			/*
 			const compare = JSONbig.stringify(merged).includes(
 				JSONbig.stringify(existing),
 			);
 			if (!compare) {
 				setItem(merged as AnyObject, inst, sync);
 			}
+			*/
+		
 		}
 
 		if (verbose)
@@ -505,6 +513,7 @@ const syncItem = (
 					obj,
 					get(),
 				);
+		// Pathway 3 - Option B - Remove line below
 		set({ isDirty: Date.now() });
 
 	} catch (e) {
@@ -1251,6 +1260,167 @@ export const queryGameComponents = async (gameId: BigNumberish) => {
 	}
 };
 
+export const syncEntitiesByInsts = async (insts: BigNumberish[]) => {
+	if (insts.length === 0) return;
+
+	try {
+		// Remove stale pool entries for these insts only — leave everything else intact
+		const newDataPool = new Map(get().dataPool);
+		const newSyncPool = new Map(get().syncPool);
+		for (const inst of insts) {
+			const key = num.toHex64(inst.toString());
+			newDataPool.delete(key);
+			newSyncPool.delete(key);
+		}
+		set({ dataPool: newDataPool, syncPool: newSyncPool });
+
+		// Re-fetch exactly these insts from Torii (all component models)
+		const sdk = getDojoSdk();
+		const allModels: `${string}-${string}`[] = [
+			"lore-Entity",
+			"lore-Area",
+			"lore-Exit",
+			"lore-Reactable",
+			"lore-DescriptionText",
+			"lore-Container",
+			"lore-InventoryItem",
+			"lore-Action",
+			"lore-Condition",
+			"lore-Trigger",
+			"lore-Effect",
+			"lore-ParentToChildren",
+			"lore-ChildToParent",
+			"lore-Hub",
+			"lore-Trail",
+		];
+
+		const hexInsts = insts.map(inst => bigintToAddress(inst));
+
+		const query = new ToriiQueryBuilder<SchemaType>()
+			.withCursor("")
+			.withLimit(10000)
+			.includeHashedKeys()
+			.withClause(
+				new ClauseBuilder<SchemaType>().compose().or(
+					hexInsts.map(inst =>
+						new ClauseBuilder<SchemaType>().keys(allModels, [inst])
+					)
+				).build()
+			)
+			.withEntityModels(allModels);
+
+		const result = await sdk.getEntities({ query });
+
+		// First pass: set Entity components (must exist before sub-components are merged in)
+		result.getItems().forEach((item) => {
+			if (item.models?.lore) {
+				const entity = item.models.lore;
+				if (entity.Entity?.inst) {
+					setItem(entity as AnyObject, entity.Entity.inst, true);
+				}
+			}
+		});
+
+		// Second pass: merge multi-key and child components into their parent pool entry
+		result.getItems().forEach((item) => {
+			if (item.models?.lore) {
+				const entity = item.models.lore;
+
+				if (entity.Trigger?.inst) {
+					const parentEntity = getEntity(entity.Trigger.inst, true);
+					if (parentEntity && entity.Trigger) {
+						if (!parentEntity.Trigger) parentEntity.Trigger = [];
+						const existingIndex = parentEntity.Trigger.findIndex(
+							(t: any) => t.key === entity.Trigger!.key
+						);
+						if (existingIndex > -1) {
+							parentEntity.Trigger[existingIndex] = entity.Trigger as Trigger;
+						} else {
+							parentEntity.Trigger.push(entity.Trigger as Trigger);
+						}
+						setItem(parentEntity as AnyObject, entity.Trigger.inst, true);
+					}
+				}
+
+				if (entity.Effect?.inst) {
+					const parentEntity = getEntity(entity.Effect.inst, true);
+					if (parentEntity && entity.Effect) {
+						if (!parentEntity.Effect) parentEntity.Effect = [];
+						const existingIndex = parentEntity.Effect.findIndex(
+							(e: any) => e.key === entity.Effect!.key
+						);
+						if (existingIndex > -1) {
+							parentEntity.Effect[existingIndex] = entity.Effect as Effect;
+						} else {
+							parentEntity.Effect.push(entity.Effect as Effect);
+						}
+						setItem(parentEntity as AnyObject, entity.Effect.inst, true);
+					}
+				}
+
+				if (entity.Condition?.inst) {
+					const parentEntity = getEntity(entity.Condition.inst, true);
+					if (parentEntity && entity.Condition) {
+						if (!parentEntity.Condition) parentEntity.Condition = [];
+						const existingIndex = parentEntity.Condition.findIndex(
+							(c: any) => c.key === entity.Condition!.key
+						);
+						if (existingIndex > -1) {
+							parentEntity.Condition[existingIndex] = entity.Condition as Condition;
+						} else {
+							parentEntity.Condition.push(entity.Condition as Condition);
+						}
+						setItem(parentEntity as AnyObject, entity.Condition.inst, true);
+					}
+				}
+
+				if (entity.Exit?.inst) {
+					const parentEntity = getEntity(entity.Exit.inst, true);
+					if (parentEntity && entity.Exit) {
+						parentEntity.Exit = entity.Exit as Exit;
+						setItem(parentEntity as AnyObject, entity.Exit.inst, true);
+					}
+				}
+
+				if (entity.Action?.inst) {
+					const parentEntity = getEntity(entity.Action.inst, true);
+					if (parentEntity && entity.Action) {
+						if (!parentEntity.Action) parentEntity.Action = [];
+						const existingIndex = parentEntity.Action.findIndex(
+							(a: any) => a.key === entity.Action!.key
+						);
+						if (existingIndex > -1) {
+							parentEntity.Action[existingIndex] = entity.Action as Action;
+						} else {
+							parentEntity.Action.push(entity.Action as Action);
+						}
+						setItem(parentEntity as AnyObject, entity.Action.inst, true);
+					}
+				}
+
+				if (entity.DescriptionText?.inst) {
+					const parentEntity = getEntity(entity.DescriptionText.inst, true);
+					if (parentEntity && entity.DescriptionText) {
+						if (!parentEntity.DescriptionText) parentEntity.DescriptionText = [];
+						const existingIndex = parentEntity.DescriptionText.findIndex(
+							(d: any) => d.key === entity.DescriptionText!.key
+						);
+						if (existingIndex > -1) {
+							parentEntity.DescriptionText[existingIndex] = entity.DescriptionText as DescriptionText;
+						} else {
+							parentEntity.DescriptionText.push(entity.DescriptionText as DescriptionText);
+						}
+						setItem(parentEntity as AnyObject, entity.DescriptionText.inst, true);
+					}
+				}
+			}
+		});
+	} catch (error) {
+		console.error("Error re-syncing entities by inst:", error);
+		throw error;
+	}
+};
+
 const syncEntities = async () => {
 	try {
 		const { sdk, query } = await InitDojo();
@@ -1432,6 +1602,7 @@ const EditorData = createFactory({
 	getPlayerEntity,
 	newPlayer,
 	syncEntities,
+	syncEntitiesByInsts,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
 });
 

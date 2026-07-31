@@ -9,7 +9,7 @@ import { useUIPanelStore } from "@lib/stores/terminal.uiPanel.store";
 import UIPanel from "./terminal/Terminal.uiPanel";
 import "../styles/uiPanel.css";
 import { useRightPanelStore } from "@lib/stores/rightPanel.store";
-import { RightActionPanel } from "@lib/stores/rigthPanelAction";
+import { RightActionPanel } from "@/lib/stores/rightPanelAction";
 import { useLeftPanelStore } from "@lib/stores/leftPanel.store";
 import { LeftActionPanel } from "@lib/stores/leftPanelAction";
 

@@ -4,6 +4,7 @@ import { bigintToHex128 } from "@/lib/utils/utils";
 import { SchemaType, Player, PlayerStory, StoryLine, TrailProgress } from "@/lib/dojo_bindings/typescript/models.gen";
 import { fromWei, queryErrorLocation } from "../queriesPanel/uiPanelQueries";
 import JSONbig from "json-bigint";
+import { BigNumberish } from "starknet";
 
 const trailID: bigint = 0n;
 // Call queries and generate json file
@@ -89,7 +90,7 @@ export const queryGameData = async (): Promise<void> => {
             completed: boolean;
             isDead: boolean;
           };
-          storylines: (StoryLine & { locationName?: string })[];
+          storylines: (StoryLine & { locationName?: string, convertedTimestamp?: string })[];
         }
       >
     > = {};
@@ -129,6 +130,7 @@ export const queryGameData = async (): Promise<void> => {
           return {
             ...line,
             locationName: locationEntity?.name?.toString() ?? "",
+            convertedTimestamp: formatTimestamp(line.timestamp),
           };
         }
       );
@@ -218,6 +220,8 @@ export const queryGameData = async (): Promise<void> => {
             Location_Name: line.locationName ?? "",
             Line_Type: line.line_type,
             Line_Text: line.line,
+            Timestamp_Unix: line.timestamp,
+            Timestamp_Readable: line.convertedTimestamp,
           });
         }
 
@@ -424,7 +428,8 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
         model.line !== undefined &&
         model.location !== undefined &&
         model.line_type !== undefined &&
-        model.line_type.toString() === "Error"
+        model.line_type.toString() === "Error" &&
+        model.timestamp !== undefined
       ) {
         const gameIdStr = model.game_id.toString();
         const errorKey = BigInt(model.key.toString());
@@ -440,7 +445,8 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
           commandModel.line_type !== undefined &&
           commandModel.line_type.toString() === "Command" &&
           commandModel.line !== undefined &&
-          commandModel.location !== undefined
+          commandModel.location !== undefined &&
+          commandModel.timestamp !== undefined
         ) {
           const errorStoryLine: StoryLine = {
             game_id: model.game_id,
@@ -448,6 +454,7 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
             line: model.line,
             line_type: model.line_type,
             location: model.location,
+            timestamp: model.timestamp,
           };
 
           const commandStoryLine: StoryLine = {
@@ -456,6 +463,7 @@ const queryStorylinesErrorsCommands = async (sdk: SDK<SchemaType>): Promise<
             line: commandModel.line,
             line_type: commandModel.line_type,
             location: commandModel.location,
+            timestamp: commandModel.timestamp,
           };
 
           pairs.push([errorStoryLine, commandStoryLine]);
@@ -555,4 +563,19 @@ function convertToCSV(rows: Record<string, any>[]): string {
   ].join("\n");
 
   return csv;
+}
+
+// Helper: Convert timestamp to date
+const formatTimestamp = (timestamp: BigNumberish): string => {
+  const seconds = Number(BigInt(timestamp.toString()));
+  const date = new Date(seconds * 1000);
+
+  return new Intl.DateTimeFormat("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
 }

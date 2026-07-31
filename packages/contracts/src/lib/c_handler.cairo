@@ -162,13 +162,14 @@ pub fn handle_command(
                     match res {
                         Result::Ok(()) => {
                             executed = Option::Some(true);
+                            break;
                         },
                         Result::Err(e) => {
                             executed = Option::Some(false);
                             result = Result::Err(e);
+                            continue;
                         },
                     }
-                    break;
                 }
             }
         };

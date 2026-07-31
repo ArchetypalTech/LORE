@@ -8,8 +8,7 @@ type LeftPanelState = {
   freeActions: number;
   paidActions: number;
 
-  refreshBalances: () => Promise<void>;
-
+  refreshBalances: (freeActions: number, paidActions: number) => void;
   toggle: () => void;
   show: () => void;
   hide: () => void;
@@ -24,19 +23,24 @@ export const useLeftPanelStore = create<LeftPanelState>((set) => ({
   freeActions: 0,
   paidActions: 0,
 
-  refreshBalances: async () => {
-    const balances = await queryActionsToken();
-    if (!balances) return;
-
-    set({
-      freeActions: Number(balances.free_actions_balance ?? 0),
-      paidActions: Number(balances.paid_actions_balance ?? 0),
-    });
-  },
-
+  refreshBalances: (freeActions: number, paidActions: number) => set({
+    freeActions,
+    paidActions
+  }),
   toggle: () => set(s => ({ visible: !s.visible })),
   show: () => set({ visible: true }),
   hide: () => set({ visible: false }),
   disable: () => set({ disabled: true }),
   enable: () => set({ disabled: false }),
 }));
+
+export const updateBalances = async () => {
+  const leftPanel = useLeftPanelStore.getState();
+  const balances = await queryActionsToken();
+  if (!balances) return;
+
+  leftPanel.refreshBalances(
+    Number(balances.free_actions_balance ?? 0),
+    Number(balances.paid_actions_balance ?? 0)
+  );
+}
