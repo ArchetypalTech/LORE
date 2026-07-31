@@ -163,7 +163,7 @@ pub impl AppchainPayloadImpl of AppchainPayloadTrait {
 #[cfg(test)]
 mod unit {
     use super::{APPCHAIN, AppchainPayloadTrait};
-    use lore_sn::tests::{helpers, helpers::{OTHER}};
+    use crate::tests::{helpers, helpers::{OTHER}};
 
     #[test]
     fn test_pack_unpack() {
