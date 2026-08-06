@@ -63,8 +63,8 @@
       ]
     },
     {
-      "address": "0x69b4151c8a117a3fdb20276665a175d10a8fbe48186f0d388dfc1572946e279",
-      "class_hash": "0xf821ae3d10277b5b5ec763c65432174caf54736d2efa2cf268d979bbf58ba9",
+      "address": "0x4d54f490ed83438557d2b113bbaf6ce205437455ecb2122d57351e53fbc971a",
+      "class_hash": "0x6758896bb48dca17af15b215a26d7aa71f3fe1f7b644cbb5e7884e948c3c356",
       "init_calldata": [
         "arr:0x6677fe62ee39c7b07401f754138502bab7fac99d2d3c5d37df7d1c6fab10819,0x034ae3F2ba263AB26cce840E78C4B0b314F9412b40E78491C14846d58AE712c7,0x00957880Ae68d68b4B8Aa491cE1b65439a6539d546850941fc9a54e255AD64Ae,0x0550212D3F13a373DfE9e3Ef6aA41fBA4124BDe63FD7955393f879De19f3F47F"
       ],
@@ -110,6 +110,7 @@
         "delete_child",
         "register_property_registry",
         "submit_for_review",
+        "add_collaborator",
         "signal_review_result",
         "upgrade",
         "grant_role",
@@ -142,8 +143,8 @@
       ]
     },
     {
-      "address": "0xe9723195d053afe59438fbca9314bd627599b0895a4f00d3a8f1cfaf4b17f8",
-      "class_hash": "0x4397c8b2267326e205a772a75ed967532c782cf42bea1f738a494a540cfba24",
+      "address": "0x24eb401e4948ca17889b481743819ce2fa8d4afeb6d0d90ed726a05905dd8b4",
+      "class_hash": "0x1435b26b7ace4e955580a82ded6e8e511545465cb92c494aa5067491497b002",
       "init_calldata": [],
       "tag": "lore-prompt",
       "selector": "0x7ce185ac93eb5e2a28b27a6bab8ce1cc608744ef663badb20489547ed1d20a0",
@@ -179,7 +180,7 @@
   ],
   "libraries": [
     {
-      "class_hash": "0x2e48dafbf12ae58890282a1aacaf1332bf7b19454f00b40bd5ebecb3a6cddc3",
+      "class_hash": "0x633baa72cc7ebe24666eba01a0beaee5b791f0117cbab7d36f0e0afe9ad0ddd",
       "tag": "lore-lexer_v0_2_0",
       "selector": "0x5d301a42d3e6f3f2601cfe7322127087a384cd0fb9f7b0c9ebc1828ee95acd1",
       "systems": [],
@@ -691,6 +692,11 @@
           "key": false
         },
         {
+          "name": "collaborators",
+          "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>",
+          "key": false
+        },
+        {
           "name": "alt_names",
           "type": "core::array::Array::<core::byte_array::ByteArray>",
           "key": false
@@ -701,7 +707,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x696dd206999ef5d0f6162c617f21289b960c28450febc4df5243ecb7a64d9b6",
+      "class_hash": "0x28db1b898245e4d0447a2cc38257f49186b99002ec49441ed082f5f7e733ecd",
       "tag": "lore-Entity",
       "selector": "0x3867acc7192efce2b717d299d5387a549ca8fa17814d5d488f74ff0c21af606"
     },
@@ -1579,7 +1585,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x666bf074eeb8f3bb1370b788d972ead5e5a75bc341a1ea4b09cf88570aff8e0",
+      "class_hash": "0x30e8d005899ec18f38941e6d2c1f1983c1766b08a42eef9005ed0f65fa84d98",
       "tag": "lore-CollabProposalEvent",
       "selector": "0x79d630b859291ce22562ecd6bb0ea30baa145b0f0ef3e56d26f3f1aa3e5a862"
     },
@@ -5182,6 +5188,10 @@
           "type": "core::starknet::contract_address::ContractAddress"
         },
         {
+          "name": "collaborators",
+          "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+        },
+        {
           "name": "alt_names",
           "type": "core::array::Array::<core::byte_array::ByteArray>"
         },
@@ -5210,6 +5220,10 @@
         {
           "name": "creator_address",
           "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "collaborators",
+          "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
         },
         {
           "name": "alt_names",
@@ -7304,6 +7318,22 @@
             {
               "name": "deleted_action_keys",
               "type": "core::array::Array::<core::felt252>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "add_collaborator",
+          "inputs": [
+            {
+              "name": "inst",
+              "type": "core::felt252"
+            },
+            {
+              "name": "account",
+              "type": "core::starknet::contract_address::ContractAddress"
             }
           ],
           "outputs": [],

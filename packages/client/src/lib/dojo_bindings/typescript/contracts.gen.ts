@@ -476,6 +476,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_addCollaborator_calldata = (inst: BigNumberish, account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "add_collaborator",
+			calldata: [inst, account],
+		};
+	};
+
+	const designer_addCollaborator = async (snAccount: Account | AccountInterface, inst: BigNumberish, account: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_addCollaborator_calldata(inst, account),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_createAction_calldata = (t: Array<Action>): DojoCall => {
 		return {
 			contractName: "designer",
@@ -2686,6 +2707,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildTransferFromCalldata: build_actions_token_transferFrom_calldata,
 		},
 		designer: {
+			addCollaborator: designer_addCollaborator,
+			buildAddCollaboratorCalldata: build_designer_addCollaborator_calldata,
 			createAction: designer_createAction,
 			buildCreateActionCalldata: build_designer_createAction_calldata,
 			createArea: designer_createArea,

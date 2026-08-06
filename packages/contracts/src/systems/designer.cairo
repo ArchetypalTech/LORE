@@ -99,7 +99,8 @@ pub trait IDesigner<TContractState> {
         deleted_action_keys:           Array<felt252>,
     );
     fn signal_review_result(ref self: TContractState, trail_id: u128, proposer: ContractAddress, published_count: u32, skipped_count: u32);
-
+    // Monetization: Revenue
+    fn add_collaborator(ref self: TContractState, inst: felt252, account: ContractAddress);
     // IAccessControl
     fn has_role(self: @TContractState, role: felt252, account: ContractAddress) -> bool;
     // fn get_role_admin(self: @TContractState, role: felt252) -> felt252;
@@ -188,6 +189,7 @@ pub trait IDesignerPublic<TContractState> {
         deleted_effect_keys:           Array<felt252>,
         deleted_action_keys:           Array<felt252>,
     );
+    fn add_collaborator(ref self: TContractState, inst: felt252, account: ContractAddress);
     fn signal_review_result(ref self: TContractState, trail_id: u128, proposer: ContractAddress, published_count: u32, skipped_count: u32);
 }
 
@@ -961,6 +963,20 @@ pub mod designer {
                 let model: ChildToParent = world.read_model(inst);
                 world.erase_model(@model);
             }
+        }
+
+        // Monetization
+        fn add_collaborator(ref self: ContractState, inst: felt252, account: ContractAddress) {
+            let caller: ContractAddress = starknet::get_caller_address();
+            let mut world: WorldStorage = self.world_default();
+            let trail_id: u128 = world.get_entity_trail_id(inst);
+            let is_trail_owner: bool = world.is_owner_of_trail(trail_id, caller);
+            assert(self.is_admin(caller) || is_trail_owner, Errors::NOT_TRAIL_OWNER);
+            // get entity
+            let mut entity: Entity = world.read_model(inst);
+            // add collaborator
+            entity.collaborators.append(account);
+            world.write_model(@entity);
         }
     }
 

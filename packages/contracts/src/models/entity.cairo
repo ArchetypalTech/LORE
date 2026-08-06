@@ -28,6 +28,8 @@ pub struct Entity {
     pub name: ByteArray,
     /// Creator
     pub creator_address: ContractAddress,
+    /// Collaborators
+    pub collaborators: Array<ContractAddress>,
     /// Alternative names of the entity
     pub alt_names: Array<ByteArray>,
     /// Holds the keys of the actions that are attached to this entity
@@ -75,6 +77,7 @@ pub impl EntityImpl of EntityTrait {
             alt_names: array![],
             actions_keys: array![],
             creator_address: starknet::get_caller_address(),
+            collaborators: array![],
         };
         world.write_model(@entity);
         (entity)

@@ -127,6 +127,7 @@ export interface Entity {
 	trail_id: BigNumberish;
 	name: string;
 	creator_address: string;
+	collaborators: Array<string>;
 	alt_names: Array<string>;
 	actions_keys: Array<BigNumberish>;
 }
@@ -958,6 +959,7 @@ export const schema: SchemaType = {
 			trail_id: 0,
 		name: "",
 			creator_address: "",
+			collaborators: [""],
 			alt_names: [""],
 			actions_keys: [0],
 		},
@@ -1278,7 +1280,7 @@ export const schema: SchemaType = {
 		CollabProposalEvent: {
 			trail_id: 0,
 			proposer: "",
-			entities: [{ inst: 0, is_entity: false, trail_id: 0, name: "", creator_address: "", alt_names: [""], actions_keys: [0], }],
+			entities: [{ inst: 0, is_entity: false, trail_id: 0, name: "", creator_address: "", collaborators: [""], alt_names: [""], actions_keys: [0], }],
 			reactables: [{ inst: 0, is_reactable: false, is_visible: false, description: [0], action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
 				ReadRandomDescription: undefined,
