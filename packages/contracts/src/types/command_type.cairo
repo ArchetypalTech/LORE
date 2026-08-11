@@ -197,6 +197,20 @@ pub impl CommandImpl of CommandTrait {
         (targets.span())
     }
 
+    // Resolved entity insts for revenue-split purposes: every noun whose target has
+    // already been resolved by the parser (unlike get_targets(), which returns the
+    // opposite — nouns still UNresolved, for error-reporting). "use door" -> one
+    // inst. "give token to officer" -> two.
+    fn get_action_targets(self: @Command) -> Array<felt252> {
+        let mut targets: Array<felt252> = array![];
+        for noun in self.get_nouns() {
+            if *noun.target != 0 {
+                targets.append(*noun.target);
+            }
+        };
+        (targets)
+    }
+
     fn pretty_print(self: @Command) {
         // println!("Command: {:?}", self);
         for _token in self.tokens.clone() { // println!("{:?}: {:?}", token.text, token);
