@@ -119,7 +119,7 @@ This isn't new infrastructure — it hooks into a fee mechanism that's already l
   The `// TODO: share with creator` at line 328 is the exact gap this proposal fills.
 - **`packages/contracts/src/systems/prompt.cairo`** (lines 69–74) is the call site. It currently derives `trail_id` from the *player's own location*, not from the command's target object — there's no per-entity granularity yet, only per-trail.
 - **`ActionsReward`** (`models/actions_config.cairo`) is the existing claimable-balance ledger, currently keyed by a single address (the trail owner), paid out via `claim_rewards` / `send_rewards`. This is the accrue-and-claim half already built — Part 2 reuses it rather than inventing a parallel payout system.
-- **`command.get_targets()`** (`types/command_type.cairo:182`) already resolves a command's noun(s) to their target `Entity` inst(s). "use door" → one target. "give token to officer" → two. This is the hook for multi-object splitting.
+- **`command.get_nouns()`** (`types/command_type.cairo:154`) is the hook for multi-object splitting — every noun token in the command, each with `.target` already resolved to an `Entity` inst by the parser. "use door" → one noun. "give token to officer" → two. (Correction: an earlier version of this doc cited `get_targets()` at line 182 for this — that function actually does the opposite, returning noun tokens whose target is still **unresolved**, presumably for error-reporting. `get_nouns()` is the right source.)
 
 ### The split formula
 
@@ -155,60 +155,37 @@ Worked example, n=3:
 | contributor 2 | 14.58% |
 | contributor 3 (joined last) | 8.33% |
 
-Earlier contributors keep out-earning later ones **even at the same collaborator count** — every new join reweights the whole pool, and being present for more of those reweightings compounds. This asymmetry is deliberate (confirmed) and is the reason the on-chain accounting below can't just divide the pool evenly per collaborator.
+Earlier contributors keep out-earning later ones **even at the same collaborator count** — every new join reweights the whole pool, and being present for more of those reweightings compounds. This asymmetry was the original design goal — see the note below on what actually shipped.
 
-### On-chain accounting: settle-on-join
+### On-chain accounting: superseded by a simpler design
 
-Two decisions shape this:
+An earlier version of this section specified a settle-on-join accumulator (`EntityRevenuePool` + per-collaborator `weight`/`checkpoint` state, an accumulator index, a `claim()`-style entrypoint) to reproduce the join-order-weighted formula above in O(1) per action. After review, that was judged to be over-engineering it — real storage, a state-management surface, and a settle step, for a feature that doesn't strictly need persisted state.
 
-1. **Accrue + claim**, not synchronous transfer — every action just increments an internal balance; parties call `claim()` when they want to withdraw. Necessary because a single command could otherwise trigger a handful of ERC-20 transfers on the hot path.
-2. **Future-only reweighting** — a new collaborator changes the split applied to revenue *from that point forward*. Balances a collaborator has already earned (even if unclaimed) are never retroactively shrunk by someone else joining later.
+**What actually shipped instead** (full detail in [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md)): no new models, no settle step. `charge_player_actions` computes and credits owner, creator, and every current collaborator directly into the existing `ActionsReward` ledger, in one pass, every action — the only claim path is the `claim_rewards`/`send_rewards` flow that already existed. The trade-off: the collaborator pool splits **flat and even** across current collaborators rather than by join order, because reproducing the join-order weighting above with zero stored state would cost O(n²) per action (a join-history sum for every collaborator, every command) — not viable on the hot path. Owner/creator's `0.25 × (1 + 0.5ⁿ)` formula is unaffected either way; it was already a pure function of `n`.
 
-Naively replaying the recursion on every single action (or writing to every collaborator's balance on every action) is unbounded — an entity with many edits would make every future "use door" cost more gas than the last. The fix is the same accumulator pattern staking-reward contracts use (Synthetix / MasterChef "reward-per-share"), split into a cheap hot path and a rare, bounded-by-that-entity's-own-size cold path:
-
-**Owner / creator** — `owner(n)` / `creator(n)` are pure closed-form functions of `n` alone (no history dependency). Credit them directly into the existing `ActionsReward` ledger every action. O(1), no accumulator needed.
-
-**Collaborator pool** — needs one accumulator per entity plus one slot record per collaborator (parallel to the existing `collaborators: Array<ContractAddress>`, one record per array slot, including duplicate slots for repeat contributors):
-
-| Storage | Scope | Fields |
-|---|---|---|
-| Entity pool state | per entity | `pool_index: u256` (fixed-point, 1e18), `total_weight: u256` |
-| Collaborator slot | per array index | `weight: u256`, `checkpoint: u256`, `claimable: u256` |
-
-| Operation | Frequency | Cost | What happens |
-|---|---|---|---|
-| **Charge a fee** | every action | **O(1)**, independent of collaborator count | `pool_index += pool_amt / total_weight`. One write. No per-collaborator touch. |
-| **`add_collaborator`** | one per join (rare) | O(n) in *that entity's own* collaborator count only | For every existing slot: settle `claimable_k += weight_k × (pool_index − checkpoint_k)` — this locks in everything earned so far, so it can never be touched again (satisfies "future-only"). Then recompute every slot's weight for the new generation: `weight_k(n_new) = 0.5 × weight_k(n_old) + 1/n_new` (new slot gets `1/n_new`), reset `pool_index = 0`, recompute `total_weight`. |
-| **`claim()`** | collaborator-initiated (pull) | O(slots that address holds for that entity) | Settle any not-yet-settled slots the same way, sum, pay out via the existing `claim_rewards`/`send_rewards` path, zero the claimable. |
-
-The O(n) work only ever happens on a join — a rare, owner/admin-gated event — never on the hot path of a player typing a command. This is exactly the recursive percentage table above, reproduced exactly at read time; the O(n) cost of "everyone's weight shifts when someone joins" gets paid once, at join time, instead of being re-paid on every action against that entity.
+The worked n=3 table above (28.125% / 28.125% / 20.83% / 14.58% / 8.33%) describes the *original* join-order-weighted goal. What ships instead gives owner/creator the same 28.125%/28.125%, and splits the remaining 43.75% **evenly** — 14.58% to each of the three collaborators, not front-loaded by join order. If join-order weighting turns out to matter later, the accumulator design is the way to get it back; it needs the state this version deliberately avoids.
 
 ### Multi-object actions
 
-For commands with more than one target ("put the book in the bag", "give token to officer"), resolve `command.get_targets()` in `prompt.cairo` before charging, apply a weight table across the targets (default: flat 50/50 — a "give X to Y" verb reasonably weighting the recipient higher than the item is a real product call, not something to hardcode blindly), and run **each target's slice independently** through the owner/creator/pool split above, using that target entity's own `n`, `trail_id`, and `creator_address`. A single-target command is the `n=1` degenerate case of the same code path — no special-casing needed.
+For commands with more than one target ("put the book in the bag", "give token to officer"), resolve `command.get_nouns()` in `prompt.cairo` before charging (each noun's `.target` is already a resolved entity inst), split `actions_amount` flat across the targets (a "give X to Y" verb reasonably weighting the recipient higher than the item is a real product call for later, not hardcoded here), and run **each target's slice independently** through the owner/creator/collaborator split, using that target entity's own `n`, `trail_id`, and `creator_address`. A single-target command is the degenerate one-target case of the same code path — no special-casing needed.
 
 ### Defaults chosen without a separate round-trip
 
 - Fixed-point precision: 1e18, matching the codebase's existing `CONST::ETH_TO_WEI` convention.
-- Multi-object default weight: flat 50/50 until per-action-type weighting is worth building.
-- Rounding dust from `pool_amt / total_weight` division: absorbed into `pool_index` precision loss, negligible at 1e18 scale — not worth a separate sweep mechanism initially.
+- Multi-object default weight: flat split across however many targets a command resolves.
+- Rounding dust from integer division: negligible at 1e18/action-cost scale — not worth a separate sweep mechanism.
 
 ### Open work — not yet built
 
-- [ ] `EntityRevenue`-style model(s): per-entity `pool_index`/`total_weight`, per-slot `weight`/`checkpoint`/`claimable`.
-- [ ] Rewrite `add_collaborator` to perform the settle-then-reweight step (currently just appends — see Part 1).
-- [ ] Extend `charge_player_actions` (or add a sibling entrypoint) to split `actions_amount` across target entities and credit owner/creator/pool per entity, instead of 100% to the trail owner.
-- [ ] Wire `command.get_targets()` through `prompt.cairo` so the charge call knows which entity/entities to credit, not just the player's trail.
-- [ ] `claim()` entrypoint (or extend `claim_rewards`) for collaborators to settle + withdraw their per-entity slot balances.
-- [ ] Tests: the recursive formula (verify the worked n=3 table above), settle-on-join correctness (a claim before vs. after a new join should differ only in *future* accrual, never past), multi-object weight split.
+See [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md) for the current, phased, step-by-step checklist — it supersedes the list that used to live here.
 
 ### Key files (Part 2)
 
 | File | Role |
 |---|---|
-| `packages/contracts/src/systems/actions_token.cairo` | `charge_player_actions` — where the fee currently goes 100% to trail owner; `ActionsReward` claim ledger to extend |
-| `packages/contracts/src/systems/prompt.cairo` | Call site — needs to pass target entity/entities instead of only `trail_id` |
+| `packages/contracts/src/systems/actions_token.cairo` | `charge_player_actions` — where the fee currently goes 100% to trail owner |
+| `packages/contracts/src/systems/prompt.cairo` | Call site — needs to pass resolved target entity/entities instead of only `trail_id` |
 | `packages/contracts/src/models/actions_config.cairo` | `ActionsConfig`/`ActionsReward` models |
-| `packages/contracts/src/types/command_type.cairo` | `Command::get_targets()` — multi-object resolution |
+| `packages/contracts/src/types/command_type.cairo` | `Command::get_nouns()` — multi-object resolution |
 | `packages/contracts/src/models/entity.cairo` | `creator_address` / `collaborators` — inputs to the split |
-| `packages/contracts/src/systems/designer.cairo` | `add_collaborator` — needs the settle-then-reweight rewrite |
+| `packages/contracts/src/systems/designer.cairo` | `add_collaborator` — two small guard-line additions, see implementation plan |
