@@ -273,6 +273,7 @@ pub fn create_new_entity(inst: felt252, name: ByteArray) -> Entity {
         alt_names: array![],
         actions_keys: array![],
         creator_address: starknet::get_caller_address(),
+        collaborators: array![],
     })
 }
 

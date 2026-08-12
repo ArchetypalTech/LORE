@@ -23,6 +23,9 @@ pub mod prompt {
             player_account::{PlayerAccountTrait},
             hub::{TrailTrait},
         },
+        types::{
+            command_type::{CommandImpl},
+        },
         lib::{
             c_handler::{handle_command},
             access::{AccessTrait},
@@ -68,6 +71,7 @@ pub mod prompt {
                                 if actions_amount.is_non_zero() {
                                     world.actions_token_protected_dispatcher().charge_player_actions(
                                         player.address,
+                                        command.get_action_targets(),
                                         world.get_entity_trail_id(player.inst),
                                         actions_amount,
                                         player.game_id,

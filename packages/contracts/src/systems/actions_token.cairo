@@ -65,7 +65,7 @@ pub trait IActionsTokenPublic<TState> {
 #[starknet::interface]
 pub trait IActionsTokenProtected<TState> {
     fn calculate_action_cost(ref self: TState, player: Player, command_type: CommandType) -> Result<u128, Error>;
-    fn charge_player_actions(ref self: TState, player_address: ContractAddress, trail_id: u128, actions_amount: u128, game_id: u128);
+    fn charge_player_actions(ref self: TState, player_address: ContractAddress, targets: Array<felt252>, trail_id: u128, actions_amount: u128, game_id: u128);
     fn claim_actions(ref self: TState, recipient: ContractAddress, actions_count: u32);
 }
 
@@ -75,7 +75,7 @@ pub mod actions_token {
     use starknet::{ContractAddress, SyscallResultTrait};
     use dojo::{
         world::{WorldStorage, IWorldDispatcherTrait},
-        // model::ModelStorage,
+        model::ModelStorage,
         event::{EventStorage},
     };
 
@@ -107,6 +107,7 @@ pub mod actions_token {
             actions_config::{ActionsConfig, ActionsConfigTrait, ActionsRewardTrait},
             player_account::{PlayerAccountTrait, ActionsSource},
             player::{Player},
+            entity::{Entity},
         },
         types::{
             command_type::{CommandType},
@@ -141,6 +142,11 @@ pub mod actions_token {
     fn TOKEN_NAME() -> ByteArray {"O'Ruggin Trail Actions"}
     fn TOKEN_SYMBOL() -> ByteArray {"ORUG_ACTIONS"}
     //*******************************************
+
+    // Fixed-point scale for the revenue split in charge_player_actions — same numeric
+    // value as CONST::ETH_TO_WEI, redeclared as u128 here (that one's u256-typed for
+    // ERC-20 amounts). See docs/Monetization/revenue-distribution-implementation-plan.md.
+    const PRECISION: u128 = 1_000_000_000_000_000_000;
 
     fn dojo_init(ref self: ContractState,
         sn_contract: ContractAddress,
@@ -315,18 +321,75 @@ pub mod actions_token {
             }
         }
 
-        fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u128, game_id: u128) {
+        fn charge_player_actions(
+            ref self: ContractState,
+            player_address: ContractAddress,
+            targets: Array<felt252>,
+            trail_id: u128,
+            actions_amount: u128,
+            game_id: u128,
+        ) {
             let mut world: WorldStorage = self.world_default();
             // validate caller
             self._assert_caller_is_world_contract(@world);
-            // collect actions from user content
-            if (trail_id.is_non_zero()) {
-                let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id.into());
-                world.set_actions_collected_on_content(owner, actions_amount);
+
+            if targets.is_empty() {
+                // No object in the command ("look", "go north") — unchanged: 100% to the trail owner.
+                if (trail_id.is_non_zero()) {
+                    let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id.into());
+                    world.set_actions_collected_on_content(owner, actions_amount);
+                }
+            } else {
+                // Command has one or more resolved object targets — the fee splits flat
+                // across them, then each target's slice splits between that entity's
+                // trail owner, creator, and current collaborators (flat split — see
+                // docs/Monetization/revenue-distribution-implementation-plan.md, Phase 2).
+                let per_target: u128 = actions_amount / targets.len().into();
+                for inst in targets {
+                    let entity: Entity = world.read_model(inst);
+                    let n: u32 = entity.collaborators.len();
+
+                    // decay = 0.5^n in PRECISION-scaled fixed point. No stored state —
+                    // n is bounded by MAX_COLLABORATORS (designer.cairo's add_collaborator
+                    // cap), so this loop is cheap and needs no persisted accumulator.
+                    let mut decay: u128 = PRECISION;
+                    let mut k: u32 = 0;
+                    while k < n {
+                        decay = decay / 2;
+                        k += 1;
+                    };
+
+                    // owner_share = creator_share = per_target * (1 + decay) / 4, widened to
+                    // u256 for the multiply so it can't overflow before the division would
+                    // bring it back into range. Each .into() target is pinned via an explicit
+                    // typed binding — Cairo can't infer u256 across the chained expression.
+                    let per_target_u256: u256 = per_target.into();
+                    let numer_u256: u256 = (PRECISION + decay).into();
+                    let denom_u256: u256 = (4 * PRECISION).into();
+                    let owner_share: u128 = (per_target_u256 * numer_u256 / denom_u256)
+                        .try_into()
+                        .unwrap();
+                    let creator_share: u128 = owner_share; // symmetric by construction
+
+                    // Entities with no trail (trail_id == 0, core/global entities) have no
+                    // trail owner to credit — skip rather than call owner_of(0).
+                    if entity.trail_id.is_non_zero() {
+                        let owner: ContractAddress = world.trail_token_dispatcher().owner_of(entity.trail_id.into());
+                        world.set_actions_collected_on_content(owner, owner_share);
+                    }
+                    world.set_actions_collected_on_content(entity.creator_address, creator_share);
+
+                    if n.is_non_zero() {
+                        // n == 0: decay == PRECISION, so owner_share + creator_share already
+                        // equals per_target exactly — nothing left for a pool loop that never runs.
+                        let pool: u128 = per_target - owner_share - creator_share;
+                        let each: u128 = pool / n.into();
+                        for collaborator in entity.collaborators {
+                            world.set_actions_collected_on_content(collaborator, each);
+                        };
+                    }
+                };
             }
-            
-            // TODO: share with creator
-            // TODO: not from ADMIN
 
             // burn player actions
             world.spent_actions(player_address, actions_amount, game_id);
