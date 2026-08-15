@@ -537,8 +537,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			leftPanel.show();
 			try {
 				sendCommand("g_actions");
-				await updateBalances();
-				await updateClaimableRewards();
+				sendCommand("updateBalancesState");
 			} catch (e) {
 				console.error("Failed to fetch balances on ui show:", e);
 			}
@@ -652,7 +651,13 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		await updateBalances();
 		sendCommand("g_actions");
 	},
-	_claim: () => {
+	updateBalancesState: async () => {
+		// Implementation for updating balances of actions
+		sendCommand("g_actions");
+		await updateBalances();
+		await updateClaimableRewards();
+	},
+	_claimRewards: () => {
 		// Check if player is connected
 		if (!WalletStore().isConnected) {
 			sendCommand("_not_yet_connected");
