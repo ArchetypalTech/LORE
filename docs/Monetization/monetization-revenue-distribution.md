@@ -1,6 +1,6 @@
 # Monetization — Revenue Distribution Between Owner, Creator & Collaborators
 
-This document covers the feature end-to-end: **both parts are shipped** — collaborator tracking (Part 1) and the actual revenue split on player actions (Part 2), the latter feature-gated behind `ActionsConfig.revenue_split_enabled` (default `false`) pending a soak-test/rollout decision. Full step-by-step build record, including the real final code and lessons learned mid-implementation, is in [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md).
+This document covers the feature end-to-end: **both parts are shipped** — collaborator tracking (Part 1) and the actual revenue split on player actions (Part 2), the latter feature-gated behind `ActionsConfig.revenue_split_enabled` (default `false`) pending a soak-test/rollout decision. Full step-by-step build record, including the real final code and lessons learned mid-implementation, is in [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md). Full mechanics of how a credited address turns that credit into spendable actions (two independent paths, one shipped and working, one only half-finished) are in [claiming-rewards.md](claiming-rewards.md). A parameter/gating reference across the whole system (spend → split → claim) is in [monetization-api.md](monetization-api.md).
 
 ---
 
@@ -109,21 +109,16 @@ Not new infrastructure — it extends a fee mechanism that was already live:
 
 ### How the revenue gets claimed
 
-Owner, creator, and every collaborator go through the **same** path once credited — nothing new needed for Part 2, since it's the same ledger `charge_player_actions` already writes to today for the trail owner. It's a few hops, spanning two packages:
+Owner, creator, and every collaborator go through the **same** underlying ledger once credited — `ActionsReward.collected_actions_amount` (`models/actions_config.cairo`), the exact one `charge_player_actions` already wrote to, before Part 2, for the trail owner alone. Part 2 only changes *how many* addresses get credited per action and *how much* — it doesn't touch how a credited address turns that into something usable.
 
-**1. Credit lands in `ActionsReward`** (`models/actions_config.cairo:21-27`) — `set_actions_collected_on_content(address, amount)` increments `collected_actions_amount` for that address, a running total in the same "actions" currency the player spent, keyed only by address (not per-entity). Part 2 calls this once for the owner, once for the creator, and once per collaborator, per targeted action — where today it's called once, for the owner only.
+There are two independent, already-existing ways to do that, with very different maturity:
 
-**2. Not directly withdrawable — it's a batched claim** (`actions_token.cairo:375-385`) — `claimable = collected_actions_amount - claimed_actions_amount` converts to a **whole-batch reward count**: `rewards_count = (claimable / ETH_TO_WEI) / trail_reward_actions_count`. `trail_reward_actions_count` defaults to 20 (`CREATOR_REWARD_ACTIONS_COUNT`, `constants/appchain.cairo:13`, admin-settable via `set_trail_reward_actions_count`). A party needs at least 20 whole "actions" worth of accrued credit before they can claim anything at all — under the flat-split formula this plan adopts, a collaborator on a lightly-used entity (or one of many collaborators splitting a thin pool) could sit at zero claimable for a long time.
+- **`g_claim_actions`** (the `_claim` terminal command) — mints spendable actions directly and immediately, no other chain involved. **Fully working today**, and what the shipped client feature actually uses.
+- **`claim_rewards`** — batches credit into whole-`trail_reward_actions_count` units and requests a tradeable NFT "permit" be minted on a separate Starknet L2 world. The L3 half works; the L2 half that would actually mint the permit is, as of this writing, an unfinished stub — calling it marks credit as claimed and sends a real cross-chain message that arrives and produces nothing.
 
-**3. `claim_rewards(rewards_count)`** (`actions_token.cairo:215-232`) — caller-facing; anyone with a nonzero claimable balance calls this for themselves. It marks that many actions as `claimed_actions_amount` (so they can't be claimed twice), then sends a cross-chain message via `send_message_to_l1_syscall` (`_send_message`, `actions_token.cairo:415`) to `actions_config.sn_contract`, requesting `rewards_count` `CREATOR_REWARD`-type permits be minted for the caller. This appchain contract's job ends here — nothing is paid out yet.
+Full mechanics, exact code, and what's missing on Path 2: **[claiming-rewards.md](claiming-rewards.md)**.
 
-**4. The message lands on Starknet, in a different package** — `packages/starknet/src/systems/permit_token.cairo`'s `consume_message` mints an actual ERC-721 "permit" token (`PermitTokenInfo`) to the recipient. This is a real, tradeable NFT (royalties, `max_supply`, built on `nft_combo`'s `ERC721ComboComponent`) — at this point the reward is a holdable asset, not just a ledger number.
-
-**5. The permit can be "used"** (`permit_token.cairo`, `_use_permit`) — marks it consumed and mints actions back onto the L3/appchain side for whoever holds it. So the round trip is: spend actions → collect credit in `ActionsReward` → batch-claim into an NFT permit → optionally redeem that permit back into more spendable actions (or hold/trade the NFT itself).
-
-There is also `send_rewards` (`actions_token.cairo:281-294`) — owner-of-contract-only, a manual promo/airdrop tool for sending `FREE_REWARD`-type permits. Not part of the normal creator/collaborator flow; nobody calls it for themselves.
-
-**Nothing about this changes for Part 2.** The claim path doesn't know or care *why* an address has a balance — crediting three-plus addresses instead of one per action is the only change; everything downstream of `set_actions_collected_on_content` is untouched.
+There is also `send_rewards` (`actions_token.cairo`) — owner-of-contract-only, a manual promo/airdrop tool using the same (currently incomplete) permit mechanism as `claim_rewards`. Not part of the creator/collaborator flow; nobody calls it for themselves.
 
 ### The split formula
 
@@ -243,5 +238,6 @@ All of Phases 1–3 in [revenue-distribution-implementation-plan.md](revenue-dis
 | `packages/contracts/src/types/command_type.cairo` | `Command::get_nouns()` / `get_action_targets()` — multi-object resolution |
 | `packages/contracts/src/models/entity.cairo` | `creator_address` / `collaborators` — inputs to the split |
 | `packages/contracts/src/systems/designer.cairo` | `add_collaborator` — sybil guard + `MAX_COLLABORATORS` cap |
-| `packages/starknet/src/systems/permit_token.cairo` | L2 side of the claim path — mints the `CREATOR_REWARD` NFT permit `claim_rewards` requests, and redeems it back into actions via `_use_permit` |
 | `packages/contracts/src/tests/actions_revenue_test.cairo` | All Part 2 tests, including the full-pipeline ones |
+
+Claim-path files (both the working and the unfinished path) are listed in [claiming-rewards.md](claiming-rewards.md)'s own Key Files table, not duplicated here.
