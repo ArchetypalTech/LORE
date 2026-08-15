@@ -1,12 +1,12 @@
 # Monetization — Revenue Distribution Between Owner, Creator & Collaborators
 
-This document covers the feature end-to-end: what's **shipped** (collaborator tracking — Part 1), and what's a **proposal awaiting implementation** (splitting actual action revenue between trail owner, entity creator, and collaborators — Part 2).
+This document covers the feature end-to-end: **both parts are shipped** — collaborator tracking (Part 1) and the actual revenue split on player actions (Part 2), the latter feature-gated behind `ActionsConfig.revenue_split_enabled` (default `false`) pending a soak-test/rollout decision. Full step-by-step build record, including the real final code and lessons learned mid-implementation, is in [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md).
 
 ---
 
 ## The idea in one paragraph
 
-Every entity (door, officer, token, ...) in the world has a `creator_address` (who first authored it) and now a `collaborators` list (who has since modified it). When a player spends an action-fee interacting with that entity, the fee should split between the **trail owner** (hosts the content), the **creator** (authored the object), and any **collaborators** (touched it since) — instead of the current behavior, where 100% goes to the trail owner. Part 1 builds the bookkeeping (who touched what). Part 2 proposes how the money actually splits and accrues on-chain.
+Every entity (door, officer, token, ...) in the world has a `creator_address` (who first authored it) and a `collaborators` list (who has since modified it). When a player spends an action-fee interacting with that entity, the fee splits between the **trail owner** (hosts the content), the **creator** (authored the object), and any **collaborators** (touched it since) — instead of the pre-Part-2 behavior, where 100% went to the trail owner. Part 1 builds the bookkeeping (who touched what). Part 2 implements how the money actually splits and accrues on-chain, live behind a feature flag.
 
 ---
 
@@ -95,31 +95,17 @@ Two things were needed here, one of them an unrelated but blocking bug found alo
 
 ---
 
-## Part 2 — Revenue distribution formula (proposal, not yet implemented)
+## Part 2 — Revenue distribution formula (shipped, feature-gated)
 
-### The existing money path
+### The money path this hooks into
 
-This isn't new infrastructure — it hooks into a fee mechanism that's already live:
+Not new infrastructure — it extends a fee mechanism that was already live:
 
-- **`packages/contracts/src/systems/actions_token.cairo`** — `actions_token` is a soulbound ERC-20 ("O'Ruggin Trail Actions") that players spend to act. `charge_player_actions` (lines 318–334) is where a fee gets collected on every successful command.
-- Today it credits **100% to the trail owner**:
-  ```cairo
-  fn charge_player_actions(ref self: ContractState, player_address: ContractAddress, trail_id: u128, actions_amount: u128, game_id: u128) {
-      ...
-      if (trail_id.is_non_zero()) {
-          let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id.into());
-          world.set_actions_collected_on_content(owner, actions_amount);
-      }
-      // TODO: share with creator
-      // TODO: not from ADMIN
-      world.spent_actions(player_address, actions_amount, game_id);
-      self.erc20.burn(player_address, actions_amount.into());
-  }
-  ```
-  The `// TODO: share with creator` at line 328 is the exact gap this proposal fills.
-- **`packages/contracts/src/systems/prompt.cairo`** (lines 69–74) is the call site. It currently derives `trail_id` from the *player's own location*, not from the command's target object — there's no per-entity granularity yet, only per-trail.
-- **`ActionsReward`** (`models/actions_config.cairo`) is the existing claimable-balance ledger, currently keyed by a single address (the trail owner), paid out via `claim_rewards` / `send_rewards`. This is the accrue-and-claim half already built — Part 2 reuses it rather than inventing a parallel payout system. Full claim mechanics in [How the revenue gets claimed](#how-the-revenue-gets-claimed) below.
-- **`command.get_nouns()`** (`types/command_type.cairo:154`) is the hook for multi-object splitting — every noun token in the command, each with `.target` already resolved to an `Entity` inst by the parser. "use door" → one noun. "give token to officer" → two. (Correction: an earlier version of this doc cited `get_targets()` at line 182 for this — that function actually does the opposite, returning noun tokens whose target is still **unresolved**, presumably for error-reporting. `get_nouns()` is the right source.)
+- **`packages/contracts/src/systems/actions_token.cairo`** — `actions_token` is a soulbound ERC-20 ("O'Ruggin Trail Actions") that players spend to act. `charge_player_actions` is where a fee gets collected on every successful command.
+- **Before Part 2**, it credited 100% to the trail owner unconditionally, with a literal `// TODO: share with creator` marking the gap. **Now**, it takes a `targets: Array<felt252>` parameter (resolved entity insts) — empty targets preserve the old 100%-to-owner behavior exactly (object-less commands like "look"); non-empty targets run the split formula below, once per target. See [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md) for the exact shipped code.
+- **`packages/contracts/src/systems/prompt.cairo`** is the call site. It reads `ActionsConfig.revenue_split_enabled` and only resolves/passes real targets when the flag is on — while off (the current default), it passes an empty array regardless of what the command resolved, so behavior stays byte-for-byte identical to before Part 2 until the flag is explicitly flipped.
+- **`ActionsReward`** (`models/actions_config.cairo`) is the existing claimable-balance ledger, keyed by address, paid out via `claim_rewards` / `send_rewards` — unchanged by Part 2, just written to more often (once per recipient per targeted action instead of once for the owner). Full claim mechanics in [How the revenue gets claimed](#how-the-revenue-gets-claimed) below.
+- **`command.get_nouns()`** (`types/command_type.cairo:154`) is the hook for multi-object splitting — every noun token in the command, each with `.target` already resolved to an `Entity` inst by the parser. "use door" → one noun. "give token to officer" → two. Wrapped in `Command::get_action_targets()` (`types/command_type.cairo`), which filters to only the resolved (nonzero-target) nouns. (Correction, kept for history: an earlier version of this doc cited `get_targets()` for this — that function actually does the opposite, returning noun tokens whose target is still **unresolved**, presumably for error-reporting. `get_nouns()` is the right source.)
 
 ### How the revenue gets claimed
 
@@ -243,18 +229,19 @@ Splitting across two objects roughly halves everyone's per-use take on the offic
 - Multi-object default weight: flat split across however many targets a command resolves.
 - Rounding dust from integer division: negligible at 1e18/action-cost scale — not worth a separate sweep mechanism.
 
-### Open work — not yet built
+### Status — shipped, behind a flag
 
-See [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md) for the current, phased, step-by-step checklist — it supersedes the list that used to live here.
+All of Phases 1–3 in [revenue-distribution-implementation-plan.md](revenue-distribution-implementation-plan.md) are implemented and tested (9 passing tests in `packages/contracts/src/tests/actions_revenue_test.cairo`, including two that drive a real `"read paper"` command through the full lexer/dictionary/reactable pipeline, not synthetic input). `ActionsConfig.revenue_split_enabled` defaults to `false`, so none of this affects production payouts until an admin explicitly calls `set_revenue_split_enabled(true)`. See the implementation plan for the exact final code, the full test list, and a "Lessons from implementation" section covering the non-obvious issues hit along the way (Cairo type inference, Dojo WRITER-role requirements in tests, `game_id` assumptions, gas cost of naive test setups).
 
 ### Key files (Part 2)
 
 | File | Role |
 |---|---|
-| `packages/contracts/src/systems/actions_token.cairo` | `charge_player_actions` — where the fee currently goes 100% to trail owner |
-| `packages/contracts/src/systems/prompt.cairo` | Call site — needs to pass resolved target entity/entities instead of only `trail_id` |
-| `packages/contracts/src/models/actions_config.cairo` | `ActionsConfig`/`ActionsReward` models |
-| `packages/contracts/src/types/command_type.cairo` | `Command::get_nouns()` — multi-object resolution |
+| `packages/contracts/src/systems/actions_token.cairo` | `charge_player_actions` — split formula; `set_revenue_split_enabled` admin entrypoint |
+| `packages/contracts/src/systems/prompt.cairo` | Reads `ActionsConfig.revenue_split_enabled`, conditionally resolves and passes target entities |
+| `packages/contracts/src/models/actions_config.cairo` | `ActionsConfig` (+ `revenue_split_enabled` field) / `ActionsReward` models |
+| `packages/contracts/src/types/command_type.cairo` | `Command::get_nouns()` / `get_action_targets()` — multi-object resolution |
 | `packages/contracts/src/models/entity.cairo` | `creator_address` / `collaborators` — inputs to the split |
-| `packages/contracts/src/systems/designer.cairo` | `add_collaborator` — two small guard-line additions, see implementation plan |
+| `packages/contracts/src/systems/designer.cairo` | `add_collaborator` — sybil guard + `MAX_COLLABORATORS` cap |
 | `packages/starknet/src/systems/permit_token.cairo` | L2 side of the claim path — mints the `CREATOR_REWARD` NFT permit `claim_rewards` requests, and redeems it back into actions via `_use_permit` |
+| `packages/contracts/src/tests/actions_revenue_test.cairo` | All Part 2 tests, including the full-pipeline ones |

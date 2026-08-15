@@ -40,6 +40,7 @@ pub trait IActionsToken<TState> {
     fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
     fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
+    fn set_revenue_split_enabled(ref self: TState, enabled: bool);
     fn send_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
 }
 
@@ -59,6 +60,7 @@ pub trait IActionsTokenPublic<TState> {
     fn set_max_free_actions_count(ref self: TState, max_free_actions_count: u32);
     fn set_free_action_claim_interval(ref self: TState, free_action_claim_interval: u64);
     fn set_trail_reward_actions_count(ref self: TState, trail_reward_actions_count: u32);
+    fn set_revenue_split_enabled(ref self: TState, enabled: bool);
     fn send_rewards(ref self: TState, recipient: ContractAddress, rewards_count: u32);
 }
 
@@ -282,6 +284,12 @@ pub mod actions_token {
             let mut world: WorldStorage = self.world_default();
             self._assert_caller_is_admin(@world);
             world.set_trail_reward_actions_count(trail_reward_actions_count);
+        }
+
+        fn set_revenue_split_enabled(ref self: ContractState, enabled: bool) {
+            let mut world: WorldStorage = self.world_default();
+            self._assert_caller_is_admin(@world);
+            world.set_revenue_split_enabled(enabled);
         }
 
         fn send_rewards(ref self: ContractState, recipient: ContractAddress, rewards_count: u32) {

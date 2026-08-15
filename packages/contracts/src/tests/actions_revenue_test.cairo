@@ -19,29 +19,43 @@ use core::num::traits::Zero;
 use dojo::model::ModelStorage;
 use lore::{
     models::{
-        entity::Entity,
+        entity::{Entity, EntityImpl},
         actions_config::ActionsReward,
+        reactable::Reactable,
+        description_text::DescriptionText,
+        player::{Player, PlayerImpl},
     },
+    types::component_type::{ActionMapReactable, ReactableActions},
     systems::designer::IDesignerDispatcherTrait,
     systems::actions_token::{IActionsTokenDispatcherTrait, IActionsTokenProtectedDispatcherTrait},
+    systems::prompt::{IPromptDispatcherTrait},
     lib::dns::DnsTrait,
     tests::{
-        helpers::{OWNER, OTHER, RECIPIENT, PLAYER_1, set_caller, setup_core, HelperSystems},
+        helpers::{
+            OWNER, OTHER, RECIPIENT, PLAYER_1, set_caller, setup_core, HelperSystems,
+            create_area_entity, game_story_last_line,
+        },
         hub_test::tests::_mint_trail,
     },
 };
+use lore::models::player_account::PlayerAccountTrait;
 
 const PRECISION: u128 = 1_000_000_000_000_000_000;
 
 const GANGPLANK: felt252 = 0x0F01;
 const OFFICER: felt252 = 0x0F02;
 const ID_CARD: felt252 = 0x0F03;
+const PAPER: felt252 = 0x0F04;
 
 fn COLLAB_1() -> ContractAddress { 0x111.try_into().unwrap() }
 fn COLLAB_2() -> ContractAddress { 0x222.try_into().unwrap() }
 fn COLLAB_3() -> ContractAddress { 0x333.try_into().unwrap() }
 fn TRAIL_B_OWNER() -> ContractAddress { 0x444.try_into().unwrap() }
 fn ID_CREATOR() -> ContractAddress { 0x555.try_into().unwrap() }
+
+// ByteArray isn't const-compatible in Cairo, so this is a plain fn instead of a const —
+// kept in one place so the Reactable's description text and the assertion never drift.
+fn PAPER_DESCRIPTION() -> ByteArray { "A weathered scrap of paper, the ink long faded." }
 
 // Creates `inst` inside `trail_id`, called by the trail owner OTHER(), with
 // creator_address set explicitly — mirrors how publishFromProposal attributes a new
@@ -68,6 +82,74 @@ fn _collected(ref sys: HelperSystems, address: ContractAddress) -> u128 {
 fn _fund_player(ref sys: HelperSystems, player: ContractAddress, actions_count: u32) {
     set_caller(OWNER());
     sys.actions.mint_to(player, actions_count);
+}
+
+// Phase 3 full-pipeline setup: a trail owned by OTHER(), a room inside it, and a "paper"
+// object in that room — Entity (creator RECIPIENT()), a Reactable mapping the verb "read"
+// to a description text, and 2 collaborators. Real lexer/dictionary/reactable resolution,
+// not a hand-built Command — this is what actually proves prompt.cairo's revenue_split_enabled
+// branch works, not just that get_action_targets()/charge_player_actions do in isolation
+// (already covered above). Returns the trail_id.
+//
+// "read" is already a base dictionary verb (dictionary.cairo) — nothing to register there.
+// "paper" needs no dictionary entry either: match_player_context (a_lexer.cairo) resolves
+// nouns by matching token text against reachable entities' names/alt_names directly, so an
+// entity named "paper" in the player's room is sufficient on its own.
+fn _setup_paper_world(ref sys: HelperSystems) -> u128 {
+    set_caller(OWNER());
+    sys.actions.set_action_cost_amount(PRECISION); // non-free, so charge_player_actions actually fires
+
+    let (trail_entity, trail, _exit) = _mint_trail(ref sys, OTHER());
+    let trail_id: u128 = trail.trail_id;
+
+    set_caller(OWNER());
+    let (room_entity, _room_area) = create_area_entity(ref sys, "A Room", "a plain room", Option::Some(@trail_entity));
+
+    _create_object(ref sys, PAPER, trail_id, RECIPIENT(), OTHER());
+
+    // Direct world writes (name/alt_names, Reactable, DescriptionText, set_parent) need
+    // WRITER on their models — granted to OWNER() (namespace owner, setup_core()), not to
+    // OTHER(), who _create_object() left as the active caller.
+    set_caller(OWNER());
+    let mut paper_entity: Entity = sys.world.read_model(PAPER);
+    paper_entity.alt_names = array!["paper"]; // what the player types, matched by match_player_context
+    sys.world.write_model(@paper_entity);
+    paper_entity.set_parent(ref sys.world, @room_entity, 0);
+
+    let descr: DescriptionText = DescriptionText { inst: PAPER, key: 0, text: PAPER_DESCRIPTION() };
+    sys.world.write_model(@descr);
+    let paper_reactable: Reactable = Reactable {
+        inst: PAPER,
+        is_reactable: true,
+        is_visible: true,
+        description: array![0],
+        action_map: array![
+            ActionMapReactable {
+                action: "read", inst: 0,
+                action_fn: ReactableActions::ReadSpecificDescription,
+                entrypoints: (0, 0),
+            },
+        ],
+        already_shown: false,
+        new_entry: "",
+    };
+    sys.world.write_model(@paper_reactable);
+
+    set_caller(OTHER()); // trail owner, for add_collaborator's access checks
+    sys.designer.add_collaborator(PAPER, COLLAB_1());
+    sys.designer.add_collaborator(PAPER, COLLAB_2());
+
+    // Template-level player placement (game_id=0) — real game instances inherit this
+    // positioning by default; same pattern as actions_token_test.cairo's _setup_level.
+    set_caller(OWNER());
+    let template_player: Player = PlayerImpl::caller_as_player(ref sys.world, OWNER(), 0);
+    template_player.move_to_room(ref sys.world, room_entity.inst);
+
+    // Bootstrap PLAYER_1's real game — grants their initial free actions on first real command.
+    set_caller(PLAYER_1);
+    sys.prompt.prompt("", Option::None);
+
+    (trail_id)
 }
 
 //-----------------------------------
@@ -313,5 +395,64 @@ mod tests {
             };
             per_target_index += 1;
         };
+    }
+
+    //-----------------------------------
+    // Phase 3 — full pipeline: real "read paper" through prompt(), gated by
+    // ActionsConfig.revenue_split_enabled.
+    //
+
+    #[test]
+    fn test_full_pipeline_read_paper_revenue_split_enabled() {
+        let mut sys: HelperSystems = setup_core();
+        let _trail_id: u128 = _setup_paper_world(ref sys);
+
+        set_caller(OWNER());
+        sys.actions.set_revenue_split_enabled(true);
+
+        set_caller(PLAYER_1);
+        sys.prompt.prompt("read paper", Option::None);
+
+        // The command actually executed against the real paper Reactable, not just
+        // parsed — proves the full lexer/dictionary/reactable pipeline worked, not only
+        // the revenue split.
+        //
+        // Not hardcoded to 1: _setup_paper_world's own _mint_trail() call already ran a
+        // "g_create_trail" prompt() as OTHER(), consuming game_id 1 for OTHER() before
+        // PLAYER_1 ever gets one — query PLAYER_1's actual game_id instead of assuming it.
+        let game_id: u128 = PlayerAccountTrait::current_game_id(@sys.world, PLAYER_1);
+        assert_eq!(game_story_last_line(@sys.world, game_id), PAPER_DESCRIPTION(), "paper description read back");
+
+        // Same closed-form split as test_charge_single_target_flat_split_n2 (n=2, single
+        // target, 1 action) — this time reached by real target resolution, not a
+        // hand-built targets array.
+        assert_eq!(_collected(ref sys, OTHER()), 312500000000000000, "owner share");
+        assert_eq!(_collected(ref sys, RECIPIENT()), 312500000000000000, "creator share");
+        assert_eq!(_collected(ref sys, COLLAB_1()), 187500000000000000, "collaborator 1 share");
+        assert_eq!(_collected(ref sys, COLLAB_2()), 187500000000000000, "collaborator 2 share");
+    }
+
+    #[test]
+    fn test_full_pipeline_read_paper_revenue_split_disabled() {
+        // revenue_split_enabled defaults to false — nothing here turns it on.
+        let mut sys: HelperSystems = setup_core();
+        let _trail_id: u128 = _setup_paper_world(ref sys);
+
+        set_caller(PLAYER_1);
+        sys.prompt.prompt("read paper", Option::None);
+
+        // The command still executes normally — the flag only affects who gets paid,
+        // never whether the command runs. Not hardcoded to 1 — see the enabled test's
+        // comment for why _setup_paper_world's own trail-minting shifts PLAYER_1's game_id.
+        let game_id: u128 = PlayerAccountTrait::current_game_id(@sys.world, PLAYER_1);
+        assert_eq!(game_story_last_line(@sys.world, game_id), PAPER_DESCRIPTION(), "paper description read back");
+
+        // With the flag off, prompt.cairo must pass an empty targets array regardless of
+        // the resolved noun — creator and collaborators get nothing, proving
+        // get_action_targets() was never even called, not just that its result was
+        // discarded.
+        assert_eq!(_collected(ref sys, RECIPIENT()), 0, "creator share while disabled");
+        assert_eq!(_collected(ref sys, COLLAB_1()), 0, "collaborator 1 share while disabled");
+        assert_eq!(_collected(ref sys, COLLAB_2()), 0, "collaborator 2 share while disabled");
     }
 }
