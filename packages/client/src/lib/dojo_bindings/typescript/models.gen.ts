@@ -35,6 +35,7 @@ export interface ActionsConfig {
 	max_free_actions_count: BigNumberish;
 	free_action_claim_interval: BigNumberish;
 	trail_reward_actions_count: BigNumberish;
+	revenue_split_enabled: boolean;
 }
 
 // Type definition for `lore::models::actions_config::ActionsReward` struct
@@ -837,6 +838,7 @@ export const schema: SchemaType = {
 			max_free_actions_count: 0,
 			free_action_claim_interval: 0,
 			trail_reward_actions_count: 0,
+			revenue_split_enabled: false,
 		},
 		ActionsReward: {
 			player_address: "",

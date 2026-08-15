@@ -80,19 +80,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_token_chargePlayerActions_calldata = (playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish): DojoCall => {
+	const build_actions_token_chargePlayerActions_calldata = (playerAddress: string, targets: Array<BigNumberish>, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions_token",
 			entrypoint: "charge_player_actions",
-			calldata: [playerAddress, trailId, actionsAmount, gameId],
+			calldata: [playerAddress, targets, trailId, actionsAmount, gameId],
 		};
 	};
 
-	const actions_token_chargePlayerActions = async (snAccount: Account | AccountInterface, playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish) => {
+	const actions_token_chargePlayerActions = async (snAccount: Account | AccountInterface, playerAddress: string, targets: Array<BigNumberish>, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_token_chargePlayerActions_calldata(playerAddress, trailId, actionsAmount, gameId),
+				build_actions_token_chargePlayerActions_calldata(playerAddress, targets, trailId, actionsAmount, gameId),
 				"lore",
 			);
 		} catch (error) {
@@ -350,6 +350,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_actions_token_setMaxFreeActionsCount_calldata(maxFreeActionsCount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_token_setRevenueSplitEnabled_calldata = (enabled: boolean): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "set_revenue_split_enabled",
+			calldata: [enabled],
+		};
+	};
+
+	const actions_token_setRevenueSplitEnabled = async (snAccount: Account | AccountInterface, enabled: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_setRevenueSplitEnabled_calldata(enabled),
 				"lore",
 			);
 		} catch (error) {
@@ -2693,6 +2714,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetInitialFreeActionsCountCalldata: build_actions_token_setInitialFreeActionsCount_calldata,
 			setMaxFreeActionsCount: actions_token_setMaxFreeActionsCount,
 			buildSetMaxFreeActionsCountCalldata: build_actions_token_setMaxFreeActionsCount_calldata,
+			setRevenueSplitEnabled: actions_token_setRevenueSplitEnabled,
+			buildSetRevenueSplitEnabledCalldata: build_actions_token_setRevenueSplitEnabled_calldata,
 			setSnContract: actions_token_setSnContract,
 			buildSetSnContractCalldata: build_actions_token_setSnContract_calldata,
 			setTrailRewardActionsCount: actions_token_setTrailRewardActionsCount,
