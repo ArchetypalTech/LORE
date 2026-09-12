@@ -127,4 +127,4 @@ Owners and collaborators can claim via the in-game terminal with the command:
 _claimRewards
 ```
 
-Please check the documentation about the Monetization System here[docs/Monetization]
+Please check the documentation about the Monetization System [here](docs/Monetization)
