@@ -120,9 +120,9 @@ cd packages/contracts
 
 ## 💰 Monetization
 
-It has been implemented a monetization system, where owner of trails and collaborators can gain actions based on their participation on each entity as well the interaction of users with objects.
+It has been implemented a monetization system, where owner of trails, creator of objects and collaborators can gain actions based on their participation on each entity as well the interaction of users with objects.
 
-Owners and collaborators can claim via the in-game terminal with the command:
+Owners, creators and collaborators can claim via the in-game terminal with the command:
 ```sh
 _claimRewards
 ```
