@@ -35,6 +35,7 @@ export interface ActionsConfig {
 	max_free_actions_count: BigNumberish;
 	free_action_claim_interval: BigNumberish;
 	trail_reward_actions_count: BigNumberish;
+	revenue_split_enabled: boolean;
 }
 
 // Type definition for `lore::models::actions_config::ActionsReward` struct
@@ -127,6 +128,7 @@ export interface Entity {
 	trail_id: BigNumberish;
 	name: string;
 	creator_address: string;
+	collaborators: Array<string>;
 	alt_names: Array<string>;
 	actions_keys: Array<BigNumberish>;
 }
@@ -836,6 +838,7 @@ export const schema: SchemaType = {
 			max_free_actions_count: 0,
 			free_action_claim_interval: 0,
 			trail_reward_actions_count: 0,
+			revenue_split_enabled: false,
 		},
 		ActionsReward: {
 			player_address: "",
@@ -958,6 +961,7 @@ export const schema: SchemaType = {
 			trail_id: 0,
 		name: "",
 			creator_address: "",
+			collaborators: [""],
 			alt_names: [""],
 			actions_keys: [0],
 		},
@@ -1278,7 +1282,7 @@ export const schema: SchemaType = {
 		CollabProposalEvent: {
 			trail_id: 0,
 			proposer: "",
-			entities: [{ inst: 0, is_entity: false, trail_id: 0, name: "", creator_address: "", alt_names: [""], actions_keys: [0], }],
+			entities: [{ inst: 0, is_entity: false, trail_id: 0, name: "", creator_address: "", collaborators: [""], alt_names: [""], actions_keys: [0], }],
 			reactables: [{ inst: 0, is_reactable: false, is_visible: false, description: [0], action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
 					SetVisible: "",
 				ReadRandomDescription: undefined,

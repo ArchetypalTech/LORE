@@ -99,7 +99,8 @@ pub trait IDesigner<TContractState> {
         deleted_action_keys:           Array<felt252>,
     );
     fn signal_review_result(ref self: TContractState, trail_id: u128, proposer: ContractAddress, published_count: u32, skipped_count: u32);
-
+    // Monetization: Revenue
+    fn add_collaborator(ref self: TContractState, inst: felt252, account: ContractAddress);
     // IAccessControl
     fn has_role(self: @TContractState, role: felt252, account: ContractAddress) -> bool;
     // fn get_role_admin(self: @TContractState, role: felt252) -> felt252;
@@ -188,6 +189,7 @@ pub trait IDesignerPublic<TContractState> {
         deleted_effect_keys:           Array<felt252>,
         deleted_action_keys:           Array<felt252>,
     );
+    fn add_collaborator(ref self: TContractState, inst: felt252, account: ContractAddress);
     fn signal_review_result(ref self: TContractState, trail_id: u128, proposer: ContractAddress, published_count: u32, skipped_count: u32);
 }
 
@@ -257,7 +259,7 @@ pub mod designer {
             access::{ROLES, AccessGrantedEvent},
             utils::{ByteArrayTraitExt},
             variable_property_helper::{VariablePropertyHelper},
-            dns::{DnsTrait, ILexerDispatcherTrait},
+            dns::{DnsTrait, ILexerDispatcherTrait, ITrailTokenDispatcherTrait},
         },
         constants::errors::{Error},
     };
@@ -271,7 +273,14 @@ pub mod designer {
         pub const NOT_APPROVED: felt252        = 'DESIGNER: Not approved';
         pub const NOT_TRAIL_OWNER: felt252     = 'DESIGNER: Not trail owner';
         pub const NOT_COLLABORATOR: felt252    = 'DESIGNER: Not collaborator';
+        pub const INVALID_COLLABORATOR: felt252    = 'DESIGNER: Invalid collaborator';
+        pub const TOO_MANY_COLLABORATORS: felt252  = 'DESIGNER: Too many collabs';
     }
+
+    // Bounds the collaborator-crediting loop in actions_token::charge_player_actions,
+    // which runs on every action against an entity (not just at join time — see
+    // docs/Monetization/revenue-distribution-implementation-plan.md, Phase 2).
+    const MAX_COLLABORATORS: u32 = 200;
 
     fn dojo_init(ref self: ContractState, admin_accounts: Array<ContractAddress>) {
         let mut world: WorldStorage = self.world_default();
@@ -961,6 +970,29 @@ pub mod designer {
                 let model: ChildToParent = world.read_model(inst);
                 world.erase_model(@model);
             }
+        }
+
+        // Monetization
+        fn add_collaborator(ref self: ContractState, inst: felt252, account: ContractAddress) {
+            let caller: ContractAddress = starknet::get_caller_address();
+            let mut world: WorldStorage = self.world_default();
+            let trail_id: u128 = world.get_entity_trail_id(inst);
+            let owner: ContractAddress = world.trail_token_dispatcher().owner_of(trail_id.into());
+            let is_trail_owner: bool = caller == owner;
+            assert(self.is_admin(caller) || is_trail_owner, Errors::NOT_TRAIL_OWNER);
+            // Blocks the trail owner naming their own second wallet as a "collaborator" to
+            // double-dip into the pool at the real creator's expense — see
+            // docs/Monetization/monetization-revenue-distribution.md, "Two guardrails".
+            // Does not stop a fresh, unlinked wallet — a named, accepted trust assumption.
+            assert(account != owner, Errors::INVALID_COLLABORATOR);
+            // get entity
+            let mut entity: Entity = world.read_model(inst);
+            // Bounds the collaborator-crediting loop in charge_player_actions, which runs
+            // on every action against this entity, not just at join time.
+            assert(entity.collaborators.len() < MAX_COLLABORATORS, Errors::TOO_MANY_COLLABORATORS);
+            // add collaborator
+            entity.collaborators.append(account);
+            world.write_model(@entity);
         }
     }
 

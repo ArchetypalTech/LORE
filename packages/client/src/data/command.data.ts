@@ -33,7 +33,7 @@ import { queryGameData } from "@/lib/queries/commandResponseQueries";
 import { startFetchingAmbientMessages, sleep } from "@/lib/utils/factEngine";
 import { reportBug } from "@/lib/utils/bugReport";
 import { useRightPanelStore } from "@/lib/stores/rightPanel.store";
-import { useLeftPanelStore, updateBalances } from "@/lib/stores/leftPanel.store";
+import { useLeftPanelStore, updateBalances, updateClaimableRewards } from "@/lib/stores/leftPanel.store";
 import { queryPanelInfo } from "@/client/terminal/Terminal.uiPanel";
 
 /**
@@ -537,7 +537,7 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 			leftPanel.show();
 			try {
 				sendCommand("g_actions");
-				await updateBalances();
+				sendCommand("updateBalancesState");
 			} catch (e) {
 				console.error("Failed to fetch balances on ui show:", e);
 			}
@@ -650,5 +650,28 @@ export const TERMINAL_SYSTEM_COMMANDS: {
 		// const leftPanel = useLeftPanelStore.getState();
 		await updateBalances();
 		sendCommand("g_actions");
+	},
+	updateBalancesState: async () => {
+		// Implementation for updating balances of actions
+		sendCommand("g_actions");
+		await updateBalances();
+		await updateClaimableRewards();
+	},
+	_claimRewards: () => {
+		// Check if player is connected
+		if (!WalletStore().isConnected) {
+			sendCommand("_not_yet_connected");
+			return;
+		}
+
+		// g_claim_actions mints the player's full claimable reward balance directly
+		// on L3 in one shot (lore::lib::c_handler) — no amount argument, unlike
+		// claim_rewards' batched L2-permit path (see
+		// docs/Monetization/monetization-revenue-distribution.md). If there's
+		// nothing claimable, the game's own error output handles that.
+		sendCommand("g_claim_actions").then(async () => {
+			await updateBalances();
+			await updateClaimableRewards();
+		});
 	},
 	} as const;

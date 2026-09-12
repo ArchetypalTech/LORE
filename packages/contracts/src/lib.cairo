@@ -71,6 +71,8 @@ pub mod tests {
     pub mod trail_token_test;
     pub mod hub_test;
     pub mod actions_token_test;
+    pub mod actions_revenue_test;
     pub mod collab_proposal_test;
+    pub mod command_type_test;
     pub mod helpers;
 }

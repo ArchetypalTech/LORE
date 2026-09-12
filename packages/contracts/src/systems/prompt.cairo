@@ -22,6 +22,10 @@ pub mod prompt {
             player::{Player, PlayerImpl, PlayerStory},
             player_account::{PlayerAccountTrait},
             hub::{TrailTrait},
+            actions_config::{ActionsConfig, ActionsConfigTrait},
+        },
+        types::{
+            command_type::{CommandImpl},
         },
         lib::{
             c_handler::{handle_command},
@@ -66,8 +70,19 @@ pub mod prompt {
                                 // charge player
                                 let actions_amount: u128 = actions_amount.unwrap();
                                 if actions_amount.is_non_zero() {
+                                    // Feature-gated (Phase 3): while disabled, always pass an
+                                    // empty targets array so charge_player_actions falls back
+                                    // to today's 100%-to-trail-owner behavior exactly, even if
+                                    // the command resolved a real object target.
+                                    let actions_config: ActionsConfig = world.get_actions_config();
+                                    let targets: Array<felt252> = if actions_config.revenue_split_enabled {
+                                        command.get_action_targets()
+                                    } else {
+                                        array![]
+                                    };
                                     world.actions_token_protected_dispatcher().charge_player_actions(
                                         player.address,
+                                        targets,
                                         world.get_entity_trail_id(player.inst),
                                         actions_amount,
                                         player.game_id,

@@ -14,7 +14,7 @@ Clone the repository, then install dependencies with [Bun](https://bun.sh)
 bun install
 ```
 
-## 💕 ~~Quickstart installer:~~
+<!-- ## 💕 ~~Quickstart installer:~~
 
 Since Dojo 1.5 Katana and Torii have been seperated and this quickstart won't work, we'll be updating this soon.
 
@@ -25,7 +25,7 @@ Since Dojo 1.5 Katana and Torii have been seperated and this quickstart won't wo
 ```bash
 ## DONT DO THIS UNTIL WE'VE UPDATED IT!
 bun run quickstart
-```
+``` -->
 
 ## 🔧 Manual dependency installation:
 
@@ -67,7 +67,7 @@ _will create a local SSL certificate with mkcert and asks for sudo password_
 
 - You may need to restart your browser in order to register new root ssl cert.
 
-### Slot MODE:
+<!-- ### Slot MODE:
 
 _will create a local SSL certificate with mkcert and asks for sudo password_
 
@@ -75,7 +75,7 @@ _will create a local SSL certificate with mkcert and asks for sudo password_
 bun run dev:slot
 ```
 
-> 🎲 Slot MODE watches + compiles local contracts and allows you to deploy to slot & configures the client to connect to Slot at `https://localhost:5173` and `https://localhost:5173/editor` (use _https_)
+> 🎲 Slot MODE watches + compiles local contracts and allows you to deploy to slot & configures the client to connect to Slot at `https://localhost:5173` and `https://localhost:5173/editor` (use _https_) -->
 
 ### Saya MODE:
 
@@ -99,8 +99,8 @@ Every command now costs an amount of `actions`, an ERC-20 token.
 
 * Each command cost 1 action
 * Every new player gets 5 free actions to start
-* Every hour, 1 free action is given to the player
-* Use this command in-game to see your actions balance: `g_actions`
+* Every 15 minutes, 1 free action is given to the player
+* Use this command in-game to see your actions balance: `g_actions` 
 
 You need actions to play even on localhost. There are two alternatives to playtest...
 
@@ -117,3 +117,14 @@ cd packages/contracts
 # set back to 1 action/command (action is ERC-20 and have 18 decimals)
 ./scripts/set_action_cost_amount.sh dev 1000000000000000000
 ```
+
+## 💰 Monetization
+
+It has been implemented a monetization system, where owner of trails, creator of objects and collaborators can gain actions based on their participation on each entity as well the interaction of users with objects.
+
+Owners, creators and collaborators can claim via the in-game terminal with the command:
+```sh
+_claimRewards
+```
+
+Please check the documentation about the Monetization System [here](docs/Monetization)

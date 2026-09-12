@@ -197,6 +197,28 @@ async function signalReviewResult(trailId: bigint, proposer: string, publishedCo
 	}
 }
 
+async function addCollaborator(inst: BigNumberish, account: string): Promise<void> {
+	if (!WalletStore().isConnected) return;
+	const caller = WalletStore().account as Account;
+	const calldata = CallData.compile([inst, account]);
+	const calls: Call[] = [{
+		contractAddress: LORE_CONFIG.contractAddresses.designer,
+		entrypoint: "add_collaborator",
+		calldata,
+	}];
+	try {
+		const response = await caller.execute(calls, { tip: 0 });
+		if (response) {
+			await caller.waitForTransaction(response.transaction_hash, { retryInterval: 200 }).then((receipt) => {
+				validateReceiptStatus(receipt, calls);
+			});
+		}
+	} catch (error) {
+		console.error("❌ DESIGNER ERROR: addCollaborator():", calls, error as Error);
+		throw new Error((error as Error).message);
+	}
+}
+
 async function grantAccessToTrail(trailId: bigint, account: string, granting: boolean): Promise<void> {
 	if (!WalletStore().isConnected) return;
 	const caller = WalletStore().account as Account;
@@ -232,4 +254,5 @@ export const SystemCalls = {
 	execCommand,
 	grantAccessToTrail,
 	signalReviewResult,
+	addCollaborator,
 };

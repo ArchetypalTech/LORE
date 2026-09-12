@@ -76,6 +76,48 @@ const isPlayerBalances = (
   );
 }
 
+// CLAIMABLE ACTIONS
+// Raw claimable amount (collected_actions_amount - claimed_actions_amount from
+// ActionsReward), matching what "g_claim_actions" actually claims in one shot
+// (lore::lib::c_handler). Deliberately NOT the batched get_claimable_rewards_count
+// view (that one floors to whole trail_reward_actions_count-sized units for the
+// separate claim_rewards/L2-permit path — see
+// docs/Monetization/revenue-distribution-implementation-plan.md).
+export const queryClaimableActionsCount = async (): Promise<number> => {
+  const { walletAddress, isConnected } = useWalletStore.getState();
+
+  if (!isConnected || !walletAddress) {
+    return 0;
+  }
+
+  try {
+    const { sdk } = await InitDojo();
+    const query_actionsReward = new ToriiQueryBuilder<SchemaType>()
+      .withCursor("")
+      .withLimit(1000)
+      .includeHashedKeys()
+      .withClause(
+        new ClauseBuilder<SchemaType>().keys(
+          ["lore-ActionsReward"],
+          [walletAddress]
+        ).build()
+      )
+      .withEntityModels(["lore-ActionsReward"]);
+
+    const result = await sdk.getEntities({ query: query_actionsReward });
+    const reward = result.getItems().at(0)?.models?.lore?.ActionsReward;
+    if (!reward) return 0;
+
+    const collected = BigInt(reward.collected_actions_amount ?? 0);
+    const claimed = BigInt(reward.claimed_actions_amount ?? 0);
+    const claimable = collected > claimed ? collected - claimed : 0n;
+    return Number(claimable / 10n ** 18n);
+  } catch (error) {
+    console.error("Error fetching claimable actions count:", error);
+    return 0;
+  }
+};
+
 // Player location
 export const queryPlayerLocationPerGame = async (gameId: bigint): Promise<[(string | undefined), (bigint| undefined), (bigint | undefined), Partial<Exit> | undefined]> => {
   // console.log("DEBUG: queryPlayerLocationPerGame() gameId: ", gameId);

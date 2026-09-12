@@ -249,6 +249,14 @@ const publishEntityRelationships = async (collection: EntityCollection) => {
 	}
 };
 
+// create_entity has no merge semantics — it overwrites the full Entity struct, so a plain
+// field edit must resend the synced on-chain collaborators list or it gets wiped. New
+// entities (not yet synced) start with an empty list.
+const resolveCollaborators = (inst: BigNumberish): bigint[] => {
+	const synced = EditorData().getEntity(inst, true);
+	return (synced?.Entity?.collaborators ?? []).map((a) => num.toBigInt(a));
+};
+
 const publishEntity = async (entity: Entity, creatorAddress?: bigint) => {
 	const entityData = [
 		num.toBigInt(entity.inst.toString()),
@@ -256,6 +264,7 @@ const publishEntity = async (entity: Entity, creatorAddress?: bigint) => {
 		num.toBigInt(entity.trail_id?.toString() ?? "0"),
 		byteArray.byteArrayFromString(entity.name),
 		creatorAddress ?? 0n, // pass non-zero to attribute entity to collaborator
+		resolveCollaborators(entity.inst),
 		entity.alt_names.length > 0
 			? entity.alt_names
 				.filter((x) => x.length > 0)
@@ -647,6 +656,7 @@ const buildEntityData = (e: Entity, creatorAddress?: bigint) => [
 	num.toBigInt(e.inst.toString()), e.is_entity,
 	num.toBigInt(e.trail_id?.toString() ?? "0"),
 	byteArray.byteArrayFromString(e.name), creatorAddress ?? 0n,
+	resolveCollaborators(e.inst),
 	e.alt_names.length > 0 ? e.alt_names.filter(x => x.length > 0).map(x => byteArray.byteArrayFromString(x)) : 0,
 	e.actions_keys.length > 0 ? e.actions_keys.filter(x => x !== num.toBigInt(0)).map(x => num.toBigInt(x.toString())) : 0,
 ];
@@ -1092,6 +1102,27 @@ export const publishFromProposal = async (
 				}
 			} catch (err) {
 				console.error(`Error publishing ${key}:`, err);
+				throw err;
+			}
+		}
+
+		// Pass 3: collaborator credit. For every entity that already existed before this
+		// proposal (not created by it) and had at least one component written by this
+		// publish, register the proposer as a collaborator on that entity. Brand new
+		// entities already got the proposer set as creator_address in pass 1. Every
+		// modifying publish appends — no dedup, no creator exemption — so the
+		// collaborators array reflects each contribution for revenue weighting.
+		const modifiedInsts = new Set<string>();
+		for (const key of selectedItems) {
+			const [prefix, inst] = key.split(":");
+			if (prefix === "w") modifiedInsts.add(inst);
+		}
+		for (const inst of modifiedInsts) {
+			if (isNewEntity(inst)) continue;
+			try {
+				await SystemCalls.addCollaborator(inst, proposal.proposer);
+			} catch (err) {
+				console.error(`Error adding collaborator for entity ${inst}:`, err);
 				throw err;
 			}
 		}

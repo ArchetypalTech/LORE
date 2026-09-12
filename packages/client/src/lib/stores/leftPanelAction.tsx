@@ -4,6 +4,7 @@ import { ActionShaft } from "../utils/actionShaft";
 export const LeftActionPanel = () => {
   const freeActions = useLeftPanelStore(s => s.freeActions);
   const paidActions = useLeftPanelStore(s => s.paidActions);
+  const claimableRewards = useLeftPanelStore(s => s.claimableRewards);
 
   return (
     <div
@@ -29,6 +30,16 @@ export const LeftActionPanel = () => {
         <span className="text-[10px] opacity-60">TOKEN</span>
         <ActionShaft value={paidActions} max={20} />
       </div>
+
+      {/* Claimable Rewards (owner/creator/collaborator revenue) */}
+      {claimableRewards > 0 && (
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[10px] opacity-60">REWARDS</span>
+          <span className="text-sm font-semibold">
+            {claimableRewards} claimable
+          </span>
+        </div>
+      )}
     </div>
   );
 };

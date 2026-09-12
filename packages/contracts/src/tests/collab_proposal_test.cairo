@@ -38,6 +38,7 @@ fn owner_setup(ref sys: HelperSystems) -> u128 {
             alt_names: array![],
             actions_keys: array![],
             creator_address: OTHER(),
+            collaborators: array![],
         },
         Entity {
             inst: ENTITY_B,
@@ -47,6 +48,7 @@ fn owner_setup(ref sys: HelperSystems) -> u128 {
             alt_names: array![],
             actions_keys: array![],
             creator_address: OTHER(),
+            collaborators: array![],
         },
     ]);
     sys.designer.create_area(array![
@@ -68,7 +70,7 @@ fn collab_submit(ref sys: HelperSystems, trail_id: u128) {
     set_caller(RECIPIENT());
     sys.designer.submit_for_review(
         trail_id,
-        array![Entity { inst: ENTITY_C, is_entity: true, trail_id, name: "Hall C", alt_names: array![], actions_keys: array![], creator_address: RECIPIENT() }],
+        array![Entity { inst: ENTITY_C, is_entity: true, trail_id, name: "Hall C", alt_names: array![], actions_keys: array![], creator_address: RECIPIENT(), collaborators: array![] }],
         array![],                                                // reactables
         array![
             Area { inst: ENTITY_A, is_area: true, is_spawn_point: false, preserve_children: false, progress_percentage: 75 },
@@ -106,7 +108,7 @@ fn test_collab_owner_publishes_full_proposal() {
 
     // New entity — pass RECIPIENT() as creator_address so the collaborator is recorded as creator
     sys.designer.create_entity(array![
-        Entity { inst: ENTITY_C, is_entity: true, trail_id, name: "Hall C", alt_names: array![], actions_keys: array![], creator_address: RECIPIENT() },
+        Entity { inst: ENTITY_C, is_entity: true, trail_id, name: "Hall C", alt_names: array![], actions_keys: array![], creator_address: RECIPIENT(), collaborators: array![] },
     ]);
     let stored_c: Entity = sys.world.read_model(ENTITY_C);
     assert!(stored_c.is_entity, "entity_C should be created");
