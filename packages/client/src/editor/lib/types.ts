@@ -49,6 +49,8 @@ export type AnyObject = WithStringEnums<
 		| "ChildToParent"
 		| "ParentToChildren"
 		| "ActionMapReactable"
+		| "Hub"
+		| "Trail"
 	>
 >;
 
@@ -60,9 +62,17 @@ export type MultiInstanceWrapped<T> = {
   [K in keyof T]: K extends MultiKeys ? Array<T[K]> : T[K];
 };
 
+type EditorLoreModels = Pick<
+	SchemaType["lore"],
+	| "Entity" | "Area" | "Exit" | "Reactable" | "DescriptionText"
+	| "Container" | "InventoryItem" | "Action" | "Condition" | "Trigger"
+	| "Effect" | "Player" | "ParentToChildren" | "ChildToParent"
+	| "PlayerStory" | "Hub" | "Trail" | "Dict" | "ActionMapReactable"
+>;
+
 export type EntityCollection = {
   Entity: Entity;
-} & Partial<MultiInstanceWrapped<SchemaType["lore"]>>;
+} & Partial<MultiInstanceWrapped<EditorLoreModels>>;
 
 export type EditorCollection = {
   [K in keyof EntityCollection]?: WithStringEnums<EntityCollection[K]>;

@@ -1,6 +1,6 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { CairoCustomEnum, BigNumberish } from 'starknet';
+import { CairoCustomEnum, type BigNumberish } from 'starknet';
 
 // Type definition for `lore::models::action::Action` struct
 export interface Action {
@@ -35,6 +35,7 @@ export interface ActionsConfig {
 	max_free_actions_count: BigNumberish;
 	free_action_claim_interval: BigNumberish;
 	trail_reward_actions_count: BigNumberish;
+	revenue_split_enabled: boolean;
 }
 
 // Type definition for `lore::models::actions_config::ActionsReward` struct
@@ -51,6 +52,14 @@ export interface Area {
 	is_spawn_point: boolean;
 	progress_percentage: BigNumberish;
 	preserve_children: boolean;
+}
+
+// Type definition for `lore::models::collab_proposal::CollabReviewResult` struct
+export interface CollabReviewResult {
+	trail_id: BigNumberish;
+	proposer: string;
+	published_count: BigNumberish;
+	skipped_count: BigNumberish;
 }
 
 // Type definition for `lore::models::condition::Condition` struct
@@ -119,6 +128,7 @@ export interface Entity {
 	trail_id: BigNumberish;
 	name: string;
 	creator_address: string;
+	collaborators: Array<string>;
 	alt_names: Array<string>;
 	actions_keys: Array<BigNumberish>;
 }
@@ -171,6 +181,7 @@ export interface Hub {
 	is_enabled: boolean;
 	trails_insts: Array<BigNumberish>;
 	grants_editor_access: boolean;
+	grants_trail_access: boolean;
 }
 
 // Type definition for `lore::models::hub::Trail` struct
@@ -378,6 +389,42 @@ export interface AccessGrantedEvent {
 	address: string;
 	role: BigNumberish;
 	granted: boolean;
+}
+
+// Type definition for `lore::models::collab_proposal::CollabProposalEvent` struct
+export interface CollabProposalEvent {
+	trail_id: BigNumberish;
+	proposer: string;
+	entities: Array<Entity>;
+	reactables: Array<Reactable>;
+	areas: Array<Area>;
+	exits: Array<Exit>;
+	hubs: Array<Hub>;
+	description_texts: Array<DescriptionText>;
+	inventory_items: Array<InventoryItem>;
+	containers: Array<Container>;
+	trails: Array<Trail>;
+	triggers: Array<Trigger>;
+	conditions: Array<Condition>;
+	effects: Array<Effect>;
+	actions: Array<Action>;
+	parents: Array<ParentToChildren>;
+	children: Array<ChildToParent>;
+	deleted_entity_insts: Array<BigNumberish>;
+	deleted_reactable_insts: Array<BigNumberish>;
+	deleted_area_insts: Array<BigNumberish>;
+	deleted_exit_insts: Array<BigNumberish>;
+	deleted_container_insts: Array<BigNumberish>;
+	deleted_inventory_item_insts: Array<BigNumberish>;
+	deleted_hub_insts: Array<BigNumberish>;
+	deleted_trail_insts: Array<BigNumberish>;
+	deleted_parent_insts: Array<BigNumberish>;
+	deleted_child_insts: Array<BigNumberish>;
+	deleted_description_text_keys: Array<BigNumberish>;
+	deleted_trigger_keys: Array<BigNumberish>;
+	deleted_condition_keys: Array<BigNumberish>;
+	deleted_effect_keys: Array<BigNumberish>;
+	deleted_action_keys: Array<BigNumberish>;
 }
 
 // Type definition for `lore::models::game_token_info::GameCreatedEvent` struct
@@ -690,6 +737,7 @@ export interface SchemaType extends ISchemaType {
 		ActionsConfig: ActionsConfig,
 		ActionsReward: ActionsReward,
 		Area: Area,
+		CollabReviewResult: CollabReviewResult,
 		Condition: Condition,
 		Container: Container,
 		DescriptionText: DescriptionText,
@@ -728,6 +776,7 @@ export interface SchemaType extends ISchemaType {
 		Task: Task,
 		AppchainMessageEvent: AppchainMessageEvent,
 		AccessGrantedEvent: AccessGrantedEvent,
+		CollabProposalEvent: CollabProposalEvent,
 		GameCreatedEvent: GameCreatedEvent,
 		TrailCreatedEvent: TrailCreatedEvent,
 		BatchMetadataUpdate: BatchMetadataUpdate,
@@ -770,6 +819,7 @@ export const schema: SchemaType = {
 			max_free_actions_count: 0,
 			free_action_claim_interval: 0,
 			trail_reward_actions_count: 0,
+			revenue_split_enabled: false,
 		},
 		ActionsReward: {
 			player_address: "",
@@ -782,6 +832,12 @@ export const schema: SchemaType = {
 			is_spawn_point: false,
 			progress_percentage: 0,
 			preserve_children: false,
+		},
+		CollabReviewResult: {
+			trail_id: 0,
+			proposer: "",
+			published_count: 0,
+			skipped_count: 0,
 		},
 		Condition: {
 			inst: 0,
@@ -886,6 +942,7 @@ export const schema: SchemaType = {
 			trail_id: 0,
 		name: "",
 			creator_address: "",
+			collaborators: [""],
 			alt_names: [""],
 			actions_keys: [0],
 		},
@@ -937,6 +994,7 @@ export const schema: SchemaType = {
 			is_enabled: false,
 			trails_insts: [0],
 			grants_editor_access: false,
+			grants_trail_access: false,
 		},
 		Trail: {
 			inst: 0,
@@ -1187,6 +1245,106 @@ export const schema: SchemaType = {
 			role: 0,
 			granted: false,
 		},
+		CollabProposalEvent: {
+			trail_id: 0,
+			proposer: "",
+			entities: [{ inst: 0, is_entity: false, trail_id: 0, name: "", creator_address: "", collaborators: [""], alt_names: [""], actions_keys: [0], }],
+			reactables: [{ inst: 0, is_reactable: false, is_visible: false, description: [0], action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					SetVisible: "",
+				ReadRandomDescription: undefined,
+				ReadFirstDescription: undefined,
+				ReadSpecificDescription: undefined, }), entrypoints: [0, 0], }], already_shown: false, new_entry: "", }],
+			areas: [{ inst: 0, is_area: false, is_spawn_point: false, progress_percentage: 0, preserve_children: false, }],
+			exits: [{ inst: 0, is_exit: false, is_enterable: false, leads_to: 0, direction_type: new CairoCustomEnum({ 
+					North: "",
+				South: undefined,
+				East: undefined,
+				West: undefined,
+				NorthEast: undefined,
+				SouthEast: undefined,
+				NorthWest: undefined,
+				SouthWest: undefined,
+				Up: undefined,
+				Down: undefined, }), action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseExit: "", }), }], }],
+			hubs: [{ inst: 0, is_hub: false, is_enabled: false, trails_insts: [0], grants_editor_access: false, grants_trail_access: false, }],
+			description_texts: [{ inst: 0, key: 0, text: "", }],
+			inventory_items: [{ inst: 0, is_inventory_item: false, owner_id: 0, can_be_picked_up: false, can_go_in_container: false, quantity: 0, action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					UseItem: "",
+				PickupItem: undefined,
+				DropItem: undefined,
+				PutItem: undefined,
+				TakeOutItem: undefined, }), }], already_used: false, multiple_use: false, }],
+			containers: [{ inst: 0, is_container: false, can_be_opened: false, can_receive_items: false, is_open: false, num_slots: 0, action_map: [{ action: "", inst: 0, action_fn: new CairoCustomEnum({ 
+					Open: "",
+				Close: undefined,
+				Check: undefined, }), }], }],
+			trails: [{ inst: 0, is_trail: false, trail_id: 0, hub_inst: 0, is_published: false, }],
+			triggers: [{ inst: 0, key: 0, name: "", trigger_type: new CairoCustomEnum({ 
+					OnEnter: "",
+				OnExit: undefined,
+				OnInteract: undefined,
+				OnInspect: undefined,
+				OnUse: undefined,
+				OnTimer: undefined,
+				OnCondition: undefined, }), is_enabled: false, is_once: false, }],
+			conditions: [{ inst: 0, key: 0, name: "", target: 0, component: new CairoCustomEnum({ 
+					None: "",
+				Area: undefined,
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Reactable: undefined,
+				InventoryItem: undefined,
+				Player: undefined,
+				Trigger: undefined,
+				Condition: undefined,
+				Effect: undefined,
+				Action: undefined, }), property: "", operator: new CairoCustomEnum({ 
+					Equals: "",
+				NotEquals: undefined,
+				GreaterThan: undefined,
+				LessThan: undefined, }), value: [0], }],
+			effects: [{ inst: 0, key: 0, name: "", target: 0, effect_type: new CairoCustomEnum({ 
+					ModifyProperty: "",
+				AddItem: undefined,
+				RemoveItem: undefined,
+				MoveEntity: undefined,
+				SendMessage: undefined,
+				TriggerAction: undefined,
+				AddQuantity: undefined,
+				RemoveQuantity: undefined, }), component: new CairoCustomEnum({ 
+					None: "",
+				Area: undefined,
+				Container: undefined,
+				Entity: undefined,
+				Exit: undefined,
+				Reactable: undefined,
+				InventoryItem: undefined,
+				Player: undefined,
+				Trigger: undefined,
+				Condition: undefined,
+				Effect: undefined,
+				Action: undefined, }), property: "", value: [["", 0]], n_value: 0, hex_value: 0, }],
+			actions: [{ inst: 0, key: 0, name: "", description: "", is_enabled: false, executor: 0, trigger: [[0, 0]], conditions: [[0, 0]], effects: [[0, 0]], tags: [""], failing_response: [""], success_response: [""], }],
+			parents: [{ inst: 0, is_parent: false, children: [0], }],
+			children: [{ inst: 0, is_child: false, parent: 0, }],
+			deleted_entity_insts: [0],
+			deleted_reactable_insts: [0],
+			deleted_area_insts: [0],
+			deleted_exit_insts: [0],
+			deleted_container_insts: [0],
+			deleted_inventory_item_insts: [0],
+			deleted_hub_insts: [0],
+			deleted_trail_insts: [0],
+			deleted_parent_insts: [0],
+			deleted_child_insts: [0],
+			deleted_description_text_keys: [0],
+			deleted_trigger_keys: [0],
+			deleted_condition_keys: [0],
+			deleted_effect_keys: [0],
+			deleted_action_keys: [0],
+		},
 		GameCreatedEvent: {
 			game_id: 0,
 			recipient: "",
@@ -1250,6 +1408,7 @@ export enum ModelsMapping {
 	ActionsConfig = 'lore-ActionsConfig',
 	ActionsReward = 'lore-ActionsReward',
 	Area = 'lore-Area',
+	CollabReviewResult = 'lore-CollabReviewResult',
 	Condition = 'lore-Condition',
 	Container = 'lore-Container',
 	DescriptionText = 'lore-DescriptionText',
@@ -1301,6 +1460,7 @@ export enum ModelsMapping {
 	Task = 'achievement-Task',
 	AppchainMessageEvent = 'lore-AppchainMessageEvent',
 	AccessGrantedEvent = 'lore-AccessGrantedEvent',
+	CollabProposalEvent = 'lore-CollabProposalEvent',
 	GameCreatedEvent = 'lore-GameCreatedEvent',
 	TrailCreatedEvent = 'lore-TrailCreatedEvent',
 	Error = 'lore-Error',

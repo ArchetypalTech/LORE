@@ -51,7 +51,7 @@ const setupController = async () => {
 	const controllerConfig: ControllerOptions = {
 		namespace: "lore",
 		// preset: "orug",
-		// shouldOverridePresetPolicies: true,
+		shouldOverridePresetPolicies: true,
 		policies: {
 			contracts: {
 				[LORE_CONFIG.contractAddresses.actions_token]: {
@@ -222,6 +222,30 @@ const setupController = async () => {
 						{
 							entrypoint: "delete_child",
 							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} deleting child-parent relations components`,
+						},
+						{
+							entrypoint: "set_admin",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} setting admin role`,
+						},
+						{
+							entrypoint: "set_editor",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} setting editor role`,
+						},
+						{
+							entrypoint: "grant_access_to_entity",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} granting entity access`,
+						},
+						{
+							entrypoint: "grant_access_to_trail",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} granting trail modification access`,
+						},
+						{
+							entrypoint: "submit_for_review",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} submitting changes for trail owner review`,
+						},
+						{
+							entrypoint: "signal_review_result",
+							description: `The terminal endpoint for ${APP_EDITOR_DATA.title} signalling the result of a proposal review`,
 						},
 					],
 				},

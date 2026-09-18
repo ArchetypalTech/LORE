@@ -1,0 +1,20 @@
+[dev]
+dev = true                        # Enable development mode (default: true)
+seed = "0"                        # Seed for account generation (default: 0)
+total_accounts = 10               # Number of pre-funded accounts (default: 10)
+no_fee = true                    # Disable transaction fees (default: false)
+no_account_validation = false     # Skip account validation (default: false)
+
+[cartridge]
+controllers = true               # Declare Controller classes at genesis (default: false)
+paymaster = true                 # Use Cartridge paymaster (default: false)
+api = "https://api.cartridge.gg"  # Cartridge API URL (default: https://api.cartridge.gg)
+
+[server]
+http_cors_origins = "*"         # CORS allowed origins (default: none)
+http_addr = "127.0.0.1"           # HTTP-RPC server interface (default: 127.0.0.1)
+http_port = 5050                  # HTTP-RPC server port (default: 5050)
+
+
+[explorer]
+explorer = true                  # Enable explorer frontend (default: false)

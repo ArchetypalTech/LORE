@@ -34,6 +34,11 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 					e.target.value as unknown as string[]
 				).filter((x) => x !== "");
 			},
+			collaborators: (e, updatedObject) => {
+				updatedObject.collaborators = (
+					e.target.value as unknown as string[]
+				).filter((x) => x !== "");
+			}
 		},
 	});
 
@@ -74,6 +79,14 @@ export const EntityInspector: ComponentInspector<Entity> = ({
 				disabled={true}
 				rows={1}
 				value={componentObject.actions_keys.filter((v) => v !== num.toBigInt(0)).map((v) => formatKeyAsDecimal(v))}
+				onChange={handleInputChange(undefined)}
+				readOnly={true}
+			/>
+			<TextAreaArray
+				id="collaborators"
+				disabled={true}
+				rows={1}
+				value={componentObject.collaborators.filter((v) => v !== (num.toBigInt(0)).toString()).map((v) => formatKeyAsDecimal(v))}
 				onChange={handleInputChange(undefined)}
 				readOnly={true}
 			/>

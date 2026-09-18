@@ -8,6 +8,7 @@
     "build:slot": "vite build --mode slot",
     "dev": "vite --mode development",
     "dev:slot": "vite --mode slot",
+    "dev:stage": "vite --mode stage",
     "lint": "bun run lint:oxlint && bun run lint:biome",
     "lint:biome": "biome check --write",
     "lint:ci": "bun run lint:ci:oxlint && bun run lint:ci:biome",

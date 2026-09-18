@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import WalletStore, { useWalletStore } from "./wallet.store";
+import TokenStore from "./token.store";
 import { useMounted } from "@/lib/utils/useMounted";
 import { getAccountRoles } from "@/editor/data/editor.data";
 import { EntityCollection } from "@/editor/lib/types";
@@ -38,7 +39,12 @@ const EditorStore = createFactory({
 			const walletAddress = WalletStore().walletAddress;
 			const creatorAddress = BigInt(entityCollection?.Entity?.creator_address ?? 0);
 			// 0n means the entity has never been published — treat it as owned by the current session
-			return creatorAddress === 0n || creatorAddress === BigInt(walletAddress ?? 0);
+			if (creatorAddress === 0n || creatorAddress === BigInt(walletAddress ?? 0)) return true;
+			const trailId = BigInt(entityCollection?.Entity?.trail_id ?? 0);
+			// Entity belongs to a trail this player has been granted collaboration access to
+			if (trailId > 0n && TokenStore().collaboratedTrailIds.includes(trailId)) return true;
+			// Trail owner can edit any entity inside their trail regardless of who created it
+			if (trailId > 0n && TokenStore().ownedTrailIds.includes(trailId)) return true;
 		}
 		return false;
 	},
@@ -58,7 +64,10 @@ export const useSyncEditorPermissions = () => {
 			// get account permissions
 			getAccountRoles(walletAddress as string).then((roles: string[]) => {
 				console.log("useSyncEditorPermissions() wallet roles:", roles);
-				EditorStore().setPermissions(roles.includes("ROLE_ADMIN") ?? false, roles.includes("ROLE_EDITOR") ?? false);
+				EditorStore().setPermissions(
+					roles.includes("ROLE_ADMIN"),
+					roles.includes("ROLE_EDITOR") || roles.includes("ROLE_COLLABORATOR"),
+				);
 			});
 		} else {
 			EditorStore().setPermissions(false, false);

@@ -7,6 +7,9 @@
 		"slot:deploy": "FORCE_COLOR=3 bun scripts/slot.deploy.ts --mode slot",
 		"slot:upgrade": "FORCE_COLOR=3 bun scripts/slot.upgrade.ts --mode slot",
 		"slot:watch": "FORCE_COLOR=3 bun scripts/slot.watch.ts --mode slot",
+		"stage:deploy": "FORCE_COLOR=3 bun scripts/slot.deploy.ts --mode stage",
+		"stage:upgrade": "FORCE_COLOR=3 bun scripts/slot.upgrade.ts --mode stage",
+		"stage:watch": "FORCE_COLOR=3 bun scripts/slot.watch.ts --mode stage",
 		"appchain-sepolia:migrate": "FORCE_COLOR=3 bun scripts/appchain.deploy.ts --mode appchain-sepolia"
 	},
 	"dependencies": {

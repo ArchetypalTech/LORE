@@ -118,6 +118,7 @@ export const createDefaultHubComponent = (
 		inst: entity.inst,
 		is_hub: true,
 		grants_editor_access: false,
+		grants_trail_access: false,
 		trails_insts: [],
 	},
 });

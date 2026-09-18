@@ -80,13 +80,19 @@ pub impl GameTokenInfoImpl of GameTokenInfoTrait {
         // store!
         world.write_model(@game_info);
         world.game_token_dispatcher().update_token_metadata(game_id.into());
-        // give editor access if reached a Hub
+        // give editor / trail-modification access if reached a Hub
         let hub: Option<Hub> = world.get_hub_component(room_inst);
         if let Option::Some(hub) = hub {
+            let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
             if (hub.grants_editor_access) {
-                let owner: ContractAddress = world.game_token_dispatcher().owner_of(game_id.into());
                 world.set_player_is_editor(owner, true);
                 world.grant_access_to_entity(owner, room_inst, true);
+            }
+            if (hub.grants_trail_access) {
+                let trail_id: u128 = world.get_entity_trail_id(room_inst);
+                if (trail_id.is_non_zero()) {
+                    world.grant_access_to_trail(owner, trail_id, true);
+                }
             }
         }
     }

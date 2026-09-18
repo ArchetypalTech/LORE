@@ -8,6 +8,7 @@ use lore::lib::dns::{DnsTrait, IDesignerDispatcherTrait};
 pub mod ROLES {
     pub const ADMIN: felt252 = 'ROLE_ADMIN';
     pub const EDITOR: felt252 = 'ROLE_EDITOR';
+    pub const COLLABORATOR: felt252 = 'ROLE_COLLABORATOR';
 }
 
 // Emitted events for easy client-side tracking
@@ -35,5 +36,8 @@ pub impl AccessImpl of AccessTrait {
     }
     fn grant_access_to_entity(ref self: WorldStorage, account: ContractAddress, inst: felt252, granting: bool) {
         (self.designer_dispatcher().grant_access_to_entity(account, inst, granting))
+    }
+    fn grant_access_to_trail(ref self: WorldStorage, account: ContractAddress, trail_id: u128, granting: bool) {
+        (self.designer_dispatcher().grant_access_to_trail(account, trail_id, granting))
     }
 }

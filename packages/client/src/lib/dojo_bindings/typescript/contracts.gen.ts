@@ -80,19 +80,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_token_chargePlayerActions_calldata = (playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish): DojoCall => {
+	const build_actions_token_chargePlayerActions_calldata = (playerAddress: string, targets: Array<BigNumberish>, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions_token",
 			entrypoint: "charge_player_actions",
-			calldata: [playerAddress, trailId, actionsAmount, gameId],
+			calldata: [playerAddress, targets, trailId, actionsAmount, gameId],
 		};
 	};
 
-	const actions_token_chargePlayerActions = async (snAccount: Account | AccountInterface, playerAddress: string, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish) => {
+	const actions_token_chargePlayerActions = async (snAccount: Account | AccountInterface, playerAddress: string, targets: Array<BigNumberish>, trailId: BigNumberish, actionsAmount: BigNumberish, gameId: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_token_chargePlayerActions_calldata(playerAddress, trailId, actionsAmount, gameId),
+				build_actions_token_chargePlayerActions_calldata(playerAddress, targets, trailId, actionsAmount, gameId),
 				"lore",
 			);
 		} catch (error) {
@@ -358,6 +358,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_token_setRevenueSplitEnabled_calldata = (enabled: boolean): DojoCall => {
+		return {
+			contractName: "actions_token",
+			entrypoint: "set_revenue_split_enabled",
+			calldata: [enabled],
+		};
+	};
+
+	const actions_token_setRevenueSplitEnabled = async (snAccount: Account | AccountInterface, enabled: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_token_setRevenueSplitEnabled_calldata(enabled),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_token_setSnContract_calldata = (snContract: string): DojoCall => {
 		return {
 			contractName: "actions_token",
@@ -468,6 +489,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_actions_token_transferFrom_calldata(sender, recipient, amount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_addCollaborator_calldata = (inst: BigNumberish, account: string): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "add_collaborator",
+			calldata: [inst, account],
+		};
+	};
+
+	const designer_addCollaborator = async (snAccount: Account | AccountInterface, inst: BigNumberish, account: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_addCollaborator_calldata(inst, account),
 				"lore",
 			);
 		} catch (error) {
@@ -1186,6 +1228,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_designer_grantAccessToTrail_calldata = (account: string, trailId: BigNumberish, granting: boolean): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "grant_access_to_trail",
+			calldata: [account, trailId, granting],
+		};
+	};
+
+	const designer_grantAccessToTrail = async (snAccount: Account | AccountInterface, account: string, trailId: BigNumberish, granting: boolean) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_grantAccessToTrail_calldata(account, trailId, granting),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_designer_grantRole_calldata = (role: BigNumberish, account: string): DojoCall => {
 		return {
 			contractName: "designer",
@@ -1355,6 +1418,48 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_designer_setEditor_calldata(account, isEditor),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_signalReviewResult_calldata = (trailId: BigNumberish, proposer: string, publishedCount: BigNumberish, skippedCount: BigNumberish): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "signal_review_result",
+			calldata: [trailId, proposer, publishedCount, skippedCount],
+		};
+	};
+
+	const designer_signalReviewResult = async (snAccount: Account | AccountInterface, trailId: BigNumberish, proposer: string, publishedCount: BigNumberish, skippedCount: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_signalReviewResult_calldata(trailId, proposer, publishedCount, skippedCount),
+				"lore",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_designer_submitForReview_calldata = (trailId: BigNumberish, entities: Array<Entity>, reactables: Array<Reactable>, areas: Array<Area>, exits: Array<Exit>, hubs: Array<Hub>, descriptionTexts: Array<DescriptionText>, inventoryItems: Array<InventoryItem>, containers: Array<Container>, trails: Array<Trail>, triggers: Array<Trigger>, conditions: Array<Condition>, effects: Array<Effect>, actions: Array<Action>, parents: Array<ParentToChildren>, children: Array<ChildToParent>, deletedEntityInsts: Array<BigNumberish>, deletedReactableInsts: Array<BigNumberish>, deletedAreaInsts: Array<BigNumberish>, deletedExitInsts: Array<BigNumberish>, deletedContainerInsts: Array<BigNumberish>, deletedInventoryItemInsts: Array<BigNumberish>, deletedHubInsts: Array<BigNumberish>, deletedTrailInsts: Array<BigNumberish>, deletedParentInsts: Array<BigNumberish>, deletedChildInsts: Array<BigNumberish>, deletedDescriptionTextKeys: Array<BigNumberish>, deletedTriggerKeys: Array<BigNumberish>, deletedConditionKeys: Array<BigNumberish>, deletedEffectKeys: Array<BigNumberish>, deletedActionKeys: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "designer",
+			entrypoint: "submit_for_review",
+			calldata: [trailId, entities, reactables, areas, exits, hubs, descriptionTexts, inventoryItems, containers, trails, triggers, conditions, effects, actions, parents, children, deletedEntityInsts, deletedReactableInsts, deletedAreaInsts, deletedExitInsts, deletedContainerInsts, deletedInventoryItemInsts, deletedHubInsts, deletedTrailInsts, deletedParentInsts, deletedChildInsts, deletedDescriptionTextKeys, deletedTriggerKeys, deletedConditionKeys, deletedEffectKeys, deletedActionKeys],
+		};
+	};
+
+	const designer_submitForReview = async (snAccount: Account | AccountInterface, trailId: BigNumberish, entities: Array<Entity>, reactables: Array<Reactable>, areas: Array<Area>, exits: Array<Exit>, hubs: Array<Hub>, descriptionTexts: Array<DescriptionText>, inventoryItems: Array<InventoryItem>, containers: Array<Container>, trails: Array<Trail>, triggers: Array<Trigger>, conditions: Array<Condition>, effects: Array<Effect>, actions: Array<Action>, parents: Array<ParentToChildren>, children: Array<ChildToParent>, deletedEntityInsts: Array<BigNumberish>, deletedReactableInsts: Array<BigNumberish>, deletedAreaInsts: Array<BigNumberish>, deletedExitInsts: Array<BigNumberish>, deletedContainerInsts: Array<BigNumberish>, deletedInventoryItemInsts: Array<BigNumberish>, deletedHubInsts: Array<BigNumberish>, deletedTrailInsts: Array<BigNumberish>, deletedParentInsts: Array<BigNumberish>, deletedChildInsts: Array<BigNumberish>, deletedDescriptionTextKeys: Array<BigNumberish>, deletedTriggerKeys: Array<BigNumberish>, deletedConditionKeys: Array<BigNumberish>, deletedEffectKeys: Array<BigNumberish>, deletedActionKeys: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_designer_submitForReview_calldata(trailId, entities, reactables, areas, exits, hubs, descriptionTexts, inventoryItems, containers, trails, triggers, conditions, effects, actions, parents, children, deletedEntityInsts, deletedReactableInsts, deletedAreaInsts, deletedExitInsts, deletedContainerInsts, deletedInventoryItemInsts, deletedHubInsts, deletedTrailInsts, deletedParentInsts, deletedChildInsts, deletedDescriptionTextKeys, deletedTriggerKeys, deletedConditionKeys, deletedEffectKeys, deletedActionKeys),
 				"lore",
 			);
 		} catch (error) {
@@ -2609,6 +2714,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetInitialFreeActionsCountCalldata: build_actions_token_setInitialFreeActionsCount_calldata,
 			setMaxFreeActionsCount: actions_token_setMaxFreeActionsCount,
 			buildSetMaxFreeActionsCountCalldata: build_actions_token_setMaxFreeActionsCount_calldata,
+			setRevenueSplitEnabled: actions_token_setRevenueSplitEnabled,
+			buildSetRevenueSplitEnabledCalldata: build_actions_token_setRevenueSplitEnabled_calldata,
 			setSnContract: actions_token_setSnContract,
 			buildSetSnContractCalldata: build_actions_token_setSnContract_calldata,
 			setTrailRewardActionsCount: actions_token_setTrailRewardActionsCount,
@@ -2623,6 +2730,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildTransferFromCalldata: build_actions_token_transferFrom_calldata,
 		},
 		designer: {
+			addCollaborator: designer_addCollaborator,
+			buildAddCollaboratorCalldata: build_designer_addCollaborator_calldata,
 			createAction: designer_createAction,
 			buildCreateActionCalldata: build_designer_createAction_calldata,
 			createArea: designer_createArea,
@@ -2691,6 +2800,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetRoleAdminCalldata: build_designer_getRoleAdmin_calldata,
 			grantAccessToEntity: designer_grantAccessToEntity,
 			buildGrantAccessToEntityCalldata: build_designer_grantAccessToEntity_calldata,
+			grantAccessToTrail: designer_grantAccessToTrail,
+			buildGrantAccessToTrailCalldata: build_designer_grantAccessToTrail_calldata,
 			grantRole: designer_grantRole,
 			buildGrantRoleCalldata: build_designer_grantRole_calldata,
 			hasRole: designer_hasRole,
@@ -2709,6 +2820,10 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetAdminCalldata: build_designer_setAdmin_calldata,
 			setEditor: designer_setEditor,
 			buildSetEditorCalldata: build_designer_setEditor_calldata,
+			signalReviewResult: designer_signalReviewResult,
+			buildSignalReviewResultCalldata: build_designer_signalReviewResult_calldata,
+			submitForReview: designer_submitForReview,
+			buildSubmitForReviewCalldata: build_designer_submitForReview_calldata,
 			supportsInterface: designer_supportsInterface,
 			buildSupportsInterfaceCalldata: build_designer_supportsInterface_calldata,
 		},

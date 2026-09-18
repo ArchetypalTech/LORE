@@ -12,6 +12,12 @@ pub struct ActionsConfig {
     pub max_free_actions_count: u32,        // max number of free actions a player can have
     pub free_action_claim_interval: u64,    // every x seconds, players can claim 1 free action
     pub trail_reward_actions_count: u32,    // how many actions to claim one trail reward on L2?
+    // Feature-gate for the owner/creator/collaborator revenue split (Phase 3 of
+    // docs/Monetization/revenue-distribution-implementation-plan.md). Defaults to false —
+    // while disabled, prompt.cairo passes an empty targets array to charge_player_actions
+    // regardless of what the command resolved, preserving today's 100%-to-trail-owner
+    // behavior exactly. Toggle at runtime (admin-only) via scripts/set_revenue_split_enabled.sh.
+    pub revenue_split_enabled: bool,
 }
 
 const ACTIONS_KEY: felt252 = 1;
@@ -59,6 +65,7 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
             max_free_actions_count: CONFIG::MAX_FREE_ACTIONS_COUNT,
             trail_reward_actions_count: APPCHAIN::PERMIT_TYPES::REWARD_CREATOR.actions_count(),
             free_action_claim_interval: CONFIG::FREE_ACTION_CLAIM_INTERVAL,
+            revenue_split_enabled: false,
         };
         self.write_model(@actions_config);
     }
@@ -95,6 +102,9 @@ pub impl ActionsConfigImpl of ActionsConfigTrait {
     }
     fn set_trail_reward_actions_count(ref self: WorldStorage, trail_reward_actions_count: u32) {
         self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("trail_reward_actions_count"), trail_reward_actions_count);
+    }
+    fn set_revenue_split_enabled(ref self: WorldStorage, revenue_split_enabled: bool) {
+        self.write_member(Model::<ActionsConfig>::ptr_from_keys(ACTIONS_KEY), selector!("revenue_split_enabled"), revenue_split_enabled);
     }
 }
 

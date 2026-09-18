@@ -311,7 +311,7 @@ const HierarchyTreeMenu = () => {
 	}
 };
 
-type HierarchyTreeFilterOptions = "all" | "orug" | "mine";
+type HierarchyTreeFilterOptions = "all" | "orug" | "mine" | "collaborated";
 
 const _displayLabel = (text:string) => {
 	return <span style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "center" }}><Eye size={16} />&nbsp;{text}</span>;
@@ -320,17 +320,17 @@ const _displayLabel = (text:string) => {
 const HierarchyTreeFilter = () => {
 	const { isAdmin } = useEditorPermissions();
 
-	// TODO... get owned trail ids
-	const { ownedTrailIds } = useOwnedTokenIds();
+	const { ownedTrailIds, collaboratedTrailIds } = useOwnedTokenIds();
 
 	const options = useMemo(() => (isAdmin ? [
 		{ value: "orug", label: _displayLabel("ORug") },
 		{ value: "all", label: _displayLabel("ORug + Trails") },
 	] : [
-		{ value: "all", label: _displayLabel("Orug + My Trails") },
+		{ value: "all", label: _displayLabel("All My Content") },
 		{ value: "orug", label: _displayLabel("ORug") },
 		{ value: "mine", label: _displayLabel("My Trails") },
-	]), [isAdmin]);
+		...(collaboratedTrailIds.length > 0 ? [{ value: "collaborated", label: _displayLabel("Collaborated Trails") }] : []),
+	]), [isAdmin, collaboratedTrailIds.length]);
 
 	const [filter, setFilter] = useState<HierarchyTreeFilterOptions>(isAdmin ? "orug" : "all");
 	const _onChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -339,13 +339,15 @@ const HierarchyTreeFilter = () => {
 
 	useEffect(() => {
 		if (filter === "all") {
-			EditorData().setTrailIdsFilter(isAdmin ? [] : [0n, ...ownedTrailIds]);
+			EditorData().setTrailIdsFilter(isAdmin ? [] : [0n, ...ownedTrailIds, ...collaboratedTrailIds]);
 		} else if (filter === "orug") {
 			EditorData().setTrailIdsFilter([0n]);
 		} else if (filter === "mine") {
 			EditorData().setTrailIdsFilter([...ownedTrailIds]);
+		} else if (filter === "collaborated") {
+			EditorData().setTrailIdsFilter([...collaboratedTrailIds]);
 		}
-	}, [filter, ownedTrailIds]);
+	}, [filter, ownedTrailIds, collaboratedTrailIds]);
 
 	return (
 		<Select

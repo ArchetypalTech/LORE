@@ -13,9 +13,14 @@ import { EditorHeader } from "./components/EditorHeader";
 import { EntityEditor } from "./components/EntityEditor";
 import { HierarchyTree } from "./components/HierarchyTree";
 import { NoEntity } from "./components/ui/NoEntity";
+import { TrailSelector } from "./components/TrailSelector";
+import { StagingPanel } from "./components/StagingPanel";
+import { RemoteChangesPanel } from "./components/RemoteChangesPanel";
+import { CollaborationTestPanel } from "./components/CollaborationTestPanel";
+import { GrantTrailAccessPanel } from "./components/GrantTrailAccessPanel";
 import EditorData, { useEditorData } from "./data/editor.data";
 import { Notifications } from "./lib/notifications";
-import { useSyncOwnedTokenIds } from "@/lib/stores/token.store";
+import { useSyncCollaboratedTrails, useSyncOwnedTokenIds } from "@/lib/stores/token.store";
 
 
 type editorState = "not connected" | "loaded" | "empty" | "error";
@@ -28,7 +33,8 @@ export const Editor = () => {
 	const { dataPool, selectedEntity, isDirty } = useEditorData();
 	const [editorState, setEditorState] = useState<editorState>("not connected");
 	const { isEditor } = useSyncEditorPermissions();
-	const { ownedTrailIds } = useSyncOwnedTokenIds();
+	useSyncOwnedTokenIds();
+	useSyncCollaboratedTrails();
 
 	useHead({
 		title: APP_EDITOR_SEO.title,
@@ -114,13 +120,22 @@ export const Editor = () => {
 							<div className="use-editor-styles col-span-2">
 								<EntityEditor key={selectedEntity} inst={selectedEntity!} />
 							</div>
-							<div
-								className={cn(
-									!dark_mode && "contrast-120 invert",
-									"relative col-span-2 h-screen max-h-[calc(100vh-10rem)] opacity-50 hover:opacity-100",
-								)}
-							>
-								<Terminal gameId={0} />
+							<div className="use-editor-styles col-span-2 flex flex-col gap-3">
+								<div
+									className={cn(
+										!dark_mode && "contrast-120 invert",
+										"relative max-h-[calc(100vh-10rem)] opacity-50 hover:opacity-100",
+									)}
+								>
+									<Terminal gameId={0} />
+								</div>
+								<div className="flex flex-col gap-5 flex-y-auto max-h-[calc(150vh-5rem)]">
+									<TrailSelector />
+									<StagingPanel />
+									<RemoteChangesPanel />
+									<GrantTrailAccessPanel />
+									{/* <CollaborationTestPanel /> */}
+								</div>
 							</div>
 						</div>
 					)
@@ -142,7 +157,7 @@ export const Editor = () => {
 
 	return (
 		<>
-			<Toaster expand visibleToasts={4} position="top-left" />
+			<Toaster expand visibleToasts={4} position="top-left" duration={10000} />
 			<div
 				id="editor-root"
 				className="fixed h-screen max-h-screen w-full overflow-scroll px-4 font-primary"

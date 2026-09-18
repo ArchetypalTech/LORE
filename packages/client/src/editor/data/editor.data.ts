@@ -1,7 +1,7 @@
 import JSONbig from "json-bigint";
 import { LORE_CONFIG } from "@lib/config";
 import { toast } from "sonner";
-import { addAddressPadding, type BigNumberish, num, wallet } from "starknet";
+import { addAddressPadding, type BigNumberish, num } from "starknet";
 import type { TokenBalances } from "@dojoengine/torii-client";
 import type {
 	Entity,
@@ -14,6 +14,8 @@ import type {
 	Reactable,
 	DescriptionText,
 	ComponentTypeEnum,
+	CollabProposalEvent,
+	CollabReviewResult,
 } from "@/lib/dojo_bindings/typescript/models.gen";
 import { StoreBuilder } from "@/lib/utils/storebuilder";
 import {
@@ -29,7 +31,6 @@ import {
 	createDefaultExitComponent,
 	createDefaultAreaComponent,
 } from "../lib/components";
-import { Notifications } from "../lib/notifications";
 import type {
 	AnyObject,
 	EditorCollection,
@@ -61,10 +62,20 @@ const {
 	editedEntity: undefined as EntityCollection | undefined,
 	isDirty: undefined as number | undefined,
 	trailIdsFilter: [] as bigint[],
+	// Option D — trail-scoped collaboration
+	stagedChanges: [] as ChangeSet[],
+	remoteQueue: [] as AnyObject[],
+	activeTrailId: undefined as bigint | undefined,
+	editorInitialized: false,
+	// Collab proposal state
+	pendingProposals: [] as CollabProposalEvent[],
+	reviewResult: undefined as CollabReviewResult | undefined,
 });
 
-const getItem = (id: BigNumberish, syncPool = false) =>
-	get()[syncPool ? "syncPool" : "dataPool"].get(num.toHex64(id.toString()));
+const getItem = (id: BigNumberish, syncPool = false) => {
+	if (id === undefined || id === null) return undefined;
+	return get()[syncPool ? "syncPool" : "dataPool"].get(num.toHex64(id.toString()));
+};
 
 export const getEntity = (id: BigNumberish, syncPool = false) => {
 	const item = getItem(id, syncPool);
@@ -109,7 +120,7 @@ const setItem = (obj: AnyObject, id: BigNumberish, sync = false) => {
 		set({
 			isDirty: Date.now(),
 		});
-		Notifications().needsToPublish();
+		// Notifications().needsToPublish();
 	}
 };
 
@@ -138,6 +149,8 @@ export const updateComponent = <T extends keyof EntityCollection>(
 	if (edited === undefined) {
 		throw new Error("Entity not found");
 	}
+	const editedAny = edited as any;
+	const componentAny = component as any;
 
 	const isMultiKey = [
 		"Action",
@@ -147,23 +160,23 @@ export const updateComponent = <T extends keyof EntityCollection>(
 		"CONDITION",
 		"DESCRIPTIONTEXT",
 		"DescriptionText",
-	].includes(componentName)
+	].includes(componentName as string);
 
-	if (isMultiKey && !edited[componentName]) {
-		edited[componentName] = [];
+	if (isMultiKey && !editedAny[componentName]) {
+		editedAny[componentName] = [];
 	}
 
-	if (edited[componentName] && Array.isArray(edited[componentName])) {
-		let index = edited[componentName].findIndex(
-			(i) => i.inst === component.inst && i.key === component.key
+	if (editedAny[componentName] && Array.isArray(editedAny[componentName])) {
+		let index = editedAny[componentName].findIndex(
+			(i: any) => i.inst === componentAny.inst && i.key === componentAny.key
 		);
 		if (index > -1) {
-			edited[componentName][index] = component;
+			editedAny[componentName][index] = component;
 		} else {
-			edited[componentName].push(component);
+			editedAny[componentName].push(component);
 			if (componentName === "DescriptionText" && !disableAutoSync) {
 				if (edited.Reactable && edited.Reactable.description) {
-					const newKey = (component as any).key;
+					const newKey = componentAny.key;
 					if (!edited.Reactable.description.includes(newKey)) {
 						edited.Reactable.description.push(newKey);
 					}
@@ -171,19 +184,19 @@ export const updateComponent = <T extends keyof EntityCollection>(
 			}
 		}
 	} else {
-		edited[componentName] = component;
+		editedAny[componentName] = component;
 	}
 
 	if (isMultiKey) {
 		if (
-			get().changeSet.some((x) => x.inst === inst && x.key === component.key && componentName in x.object)
+			get().changeSet.some((x) => x.inst === inst && x.key === componentAny.key && componentName in x.object)
 		) {
 			console.log(
-				get().changeSet.find((x) => x.inst === inst && x.key === component.key && componentName in x.object),
+				get().changeSet.find((x) => x.inst === inst && x.key === componentAny.key && componentName in x.object),
 			);
 			set({
 				changeSet: get().changeSet.filter(
-					(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst || x.key !== component.key,
+					(x) => (x.inst === inst && !(componentName in x.object)) || x.inst !== inst || x.key !== componentAny.key,
 				),
 			});
 		}
@@ -208,12 +221,12 @@ export const updateComponent = <T extends keyof EntityCollection>(
 			JSONbig.stringify(syncedEntity[componentName]) ===
 			JSONbig.stringify(component)
 		) {
-			syncItem(edited);
+			syncItem(edited as unknown as AnyObject);
 			return edited as EntityCollection;
 		}
 	}
-	createAction("update", inst, { [componentName]: component }, component.key);
-	syncItem(edited);
+	createAction("update", inst, { [componentName]: component }, componentAny.key);
+	syncItem(edited as unknown as AnyObject);
 	return edited as EntityCollection;
 };
 
@@ -225,6 +238,7 @@ export const removeComponent = <T extends keyof EntityCollection>(
 ): EntityCollection | undefined => {
 	const edited = getEntity(inst);
 	if (!edited) throw new Error("Entity not found");
+	const editedAny = edited as any;
 
 	let deleted: any = undefined;
 	let key: any = undefined;
@@ -237,31 +251,31 @@ export const removeComponent = <T extends keyof EntityCollection>(
 		"DescriptionText",
 	].includes(componentName as string);
 
-	if (isMultiKey && Array.isArray(edited[componentName])) {
+	if (isMultiKey && Array.isArray(editedAny[componentName])) {
 		// --- multi-component array deletion ---
-		if (index === undefined || !edited[componentName]?.[index]) {
+		if (index === undefined || !editedAny[componentName]?.[index]) {
 			console.warn(`No item found at index ${index} for ${componentName}`);
 			return edited;
 		}
 
-		deleted = edited[componentName][index];
+		deleted = editedAny[componentName][index];
 		key = deleted.key;
 
 		// remove from the component array
-		edited[componentName].splice(index, 1);
+		editedAny[componentName].splice(index, 1);
 
 		// special handling for DescriptionText ↔ Reactable.description sync
 		if (componentName === "DescriptionText" && edited.Reactable?.description && !disableAutoSync) {
 			edited.Reactable.description = edited.Reactable.description.filter(
 				(k) => num.toBigInt(k) !== num.toBigInt(key)
 			);
-			// update Reactable component
+			// update Reactable component (Reactable is keyed by inst, not key, so pass undefined)
 			const componentReactable = edited.Reactable as unknown as WithStringEnums<Reactable>;
-			createAction("update", inst, { Reactable: componentReactable }, componentReactable.key);
+			createAction("update", inst, { Reactable: componentReactable }, undefined);
 		}
 
-		if (edited[componentName].length === 0) {
-			edited[componentName] = undefined;
+		if (editedAny[componentName].length === 0) {
+			editedAny[componentName] = undefined;
 		}
 
 		// remove from changeSet
@@ -273,8 +287,8 @@ export const removeComponent = <T extends keyof EntityCollection>(
 
 	} else {
 		// --- single component deletion ---
-		deleted = edited[componentName];
-		edited[componentName] = undefined;
+		deleted = editedAny[componentName];
+		editedAny[componentName] = undefined;
 
 		// remove from changeSet
 		set({
@@ -291,7 +305,7 @@ export const removeComponent = <T extends keyof EntityCollection>(
 	}
 
 	// sync edited entity
-	syncItem(edited);
+	syncItem(edited as unknown as AnyObject);
 	return edited as EntityCollection;
 };
 
@@ -435,7 +449,26 @@ const removeEntity = (entity: EntityCollection) => {
 		dataPool: newDataPool,
 		isDirty: Date.now(),
 	}));
-	Notifications().needsToPublish();
+	// Notifications().needsToPublish();
+};
+
+// @dev: retrieve instance value — module-level so it can be reused outside syncItem (e.g. trail resolution)
+export const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
+	// First check if 'inst' property exists directly
+	if ("inst" in obj) {
+		return obj.inst as BigNumberish;
+	}
+	// Then iterate through keys to find nested instance
+	for (const key of Object.keys(obj)) {
+		const value = obj[key as keyof typeof obj];
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			// Type guard to ensure we're passing a compatible value
+			const nestedObj = value as AnyObject;
+			const res = findInstValue(nestedObj);
+			if (res !== undefined) return res;
+		}
+	}
+	return undefined;
 };
 
 const syncItem = (
@@ -456,24 +489,6 @@ const syncItem = (
 		) {
 			name = (obj as { Entity: Entity }).Entity.name;
 		}
-		// @dev: retrieve instance value
-		const findInstValue = (obj: AnyObject): BigNumberish | undefined => {
-			// First check if 'inst' property exists directly
-			if ("inst" in obj) {
-				return obj.inst as BigNumberish;
-			}
-			// Then iterate through keys to find nested instance
-			for (const key of Object.keys(obj)) {
-				const value = obj[key as keyof typeof obj];
-				if (value && typeof value === "object" && !Array.isArray(value)) {
-					// Type guard to ensure we're passing a compatible value
-					const nestedObj = value as AnyObject;
-					const res = findInstValue(nestedObj);
-					if (res !== undefined) return res;
-				}
-			}
-			return undefined;
-		};
 
 		const inst = findInstValue(obj);
 
@@ -572,7 +587,7 @@ const selectEntity = (id: BigNumberish) => {
 	if (get().selectedEntity !== undefined) {
 		const entity = getEntity(get().selectedEntity!);
 		if (entity !== undefined) {
-			syncItem(entity);
+			syncItem(entity as unknown as AnyObject);
 		}
 	}
 	updateSelectedEntityId(id);
@@ -796,11 +811,225 @@ const logPool = () => {
 	console.info("Edited", get().editedEntity);
 };
 
+// === Option D — trail-scoped collaboration (client-side only, no contract dependency) ===
+
+// Resolves the trail_id for any incoming Torii object by looking up the entity already in the pool
+const getEntityTrailId = (obj: AnyObject): bigint | undefined => {
+	const inst = findInstValue(obj);
+	if (inst === undefined) return undefined;
+	const entity = getEntity(inst, true) ?? getEntity(inst);
+	return entity?.Entity?.trail_id !== undefined ? BigInt(entity.Entity.trail_id) : undefined;
+};
+
+// Push an incoming remote update into the queue, replacing any existing entry for the same inst
+const queueRemoteUpdate = (obj: AnyObject) => {
+	const inst = findInstValue(obj);
+	if (inst === undefined) return;
+	set({
+		remoteQueue: [
+			...get().remoteQueue.filter((q) => findInstValue(q) !== inst),
+			obj,
+		],
+	});
+};
+
+// User accepts a queued remote update — merges it into syncPool + dataPool
+const acceptRemoteUpdate = (obj: AnyObject) => {
+	syncItem(obj, { sync: true });
+	set({ remoteQueue: get().remoteQueue.filter((q) => q !== obj) });
+};
+
+const acceptAllRemoteUpdates = () => {
+	for (const obj of get().remoteQueue) {
+		syncItem(obj, { sync: true });
+	}
+	set({ remoteQueue: [] });
+};
+
+// User dismisses a queued remote update — ignored until the next full reload
+const dismissRemoteUpdate = (obj: AnyObject) => {
+	set({ remoteQueue: get().remoteQueue.filter((q) => q !== obj) });
+};
+
+const setEditorInitialized = () => set({ editorInitialized: true });
+
+const setActiveTrailId = (trailId: bigint | undefined) => set({ activeTrailId: trailId });
+
+// ---------------------------------------------------------------------------
+// Draft persistence — survives page refresh / browser close
+// Keyed by wallet address so multiple accounts on the same browser don't collide.
+// ---------------------------------------------------------------------------
+const _draftKey = (addr: string) => `lore-editor-draft-${addr.toLowerCase()}`;
+
+export const persistDraft = () => {
+	const addr = String(getPlayerAddress()).toLowerCase();
+	if (!addr || addr === "0x0" || addr === "0") return;
+	const { stagedChanges, changeSet } = get();
+	// Remove the key entirely when there is nothing left to persist.
+	// This handles both full publish and full discard scenarios.
+	if (stagedChanges.length === 0 && changeSet.length === 0) {
+		localStorage.removeItem(_draftKey(addr));
+		return;
+	}
+	try {
+		localStorage.setItem(_draftKey(addr), JSONbig.stringify({
+			stagedChanges,
+			changeSet,
+			activeTrailId: get().activeTrailId?.toString(),
+		}));
+	} catch { /* ignore quota / private-mode errors */ }
+};
+
+export const rehydrateDraft = () => {
+	const addr = String(getPlayerAddress()).toLowerCase();
+	if (!addr || addr === "0x0" || addr === "0") return;
+	const raw = localStorage.getItem(_draftKey(addr));
+	if (!raw) return;
+	try {
+		const saved = JSONbig.parse(raw) as {
+			stagedChanges?: ChangeSet[];
+			changeSet?: ChangeSet[];
+			activeTrailId?: string;
+		};
+		set({
+			stagedChanges: saved.stagedChanges ?? [],
+			changeSet: saved.changeSet ?? [],
+			activeTrailId: saved.activeTrailId ? BigInt(saved.activeTrailId) : undefined,
+		});
+		console.log(
+			`[Editor] Draft rehydrated: ${saved.stagedChanges?.length ?? 0} staged, ${saved.changeSet?.length ?? 0} unstaged`,
+		);
+	} catch (e) {
+		console.warn("[Editor] Draft rehydration failed, clearing:", e);
+		localStorage.removeItem(_draftKey(addr));
+	}
+};
+
+// Move specific changeSet entries (or all, if none given) into stagedChanges
+const stageChanges = (insts?: BigNumberish[]) => {
+	const toStage = insts
+		? get().changeSet.filter((c) => insts.some((i) => BigInt(i) === BigInt(c.inst)))
+		: [...get().changeSet];
+	set({
+		stagedChanges: [...get().stagedChanges, ...toStage],
+		changeSet: insts ? get().changeSet.filter((c) => !toStage.includes(c)) : [],
+	});
+	persistDraft();
+};
+
+// Stage/unstage/discard a single specific ChangeSet entry by reference.
+// Used by per-row buttons in the staging panel so clicking one row doesn't
+// affect sibling rows that share the same entity inst (e.g. DELETE + UPDATE).
+const stageChange = (change: ChangeSet) => {
+	set({
+		stagedChanges: [...get().stagedChanges, change],
+		changeSet: get().changeSet.filter((c) => c !== change),
+	});
+	persistDraft();
+};
+const unstageChange = (change: ChangeSet) => {
+	set({
+		changeSet: [...get().changeSet, change],
+		stagedChanges: get().stagedChanges.filter((c) => c !== change),
+	});
+	persistDraft();
+};
+const discardChange = (change: ChangeSet) => {
+	set({
+		changeSet: get().changeSet.filter((c) => c !== change),
+		stagedChanges: get().stagedChanges.filter((c) => c !== change),
+	});
+	persistDraft();
+};
+
+// Permanently discard changes — removes from both changeSet and stagedChanges.
+// Pass specific insts to discard only those entries; omit to discard everything.
+const discardChanges = (insts?: BigNumberish[]) => {
+	if (insts) {
+		set({
+			changeSet: get().changeSet.filter((c) => !insts.some((i) => BigInt(i) === BigInt(c.inst))),
+			stagedChanges: get().stagedChanges.filter((c) => !insts.some((i) => BigInt(i) === BigInt(c.inst))),
+		});
+	} else {
+		set({ changeSet: [], stagedChanges: [] });
+	}
+	persistDraft();
+};
+
+// Move staged entries back to changeSet (user changed their mind)
+const unstageChanges = (insts?: BigNumberish[]) => {
+	const toUnstage = insts
+		? get().stagedChanges.filter((c) => insts.some((i) => BigInt(i) === BigInt(c.inst)))
+		: [...get().stagedChanges];
+	set({
+		changeSet: [...get().changeSet, ...toUnstage],
+		stagedChanges: insts ? get().stagedChanges.filter((c) => !toUnstage.includes(c)) : [],
+	});
+	persistDraft();
+};
+
 const dojoSync = (
 	obj: AnyObject,
 	{ verbose = false }: { verbose?: boolean; sync?: boolean } = {},
 ) => {
-	syncItem(obj, { verbose, sync: true });
+	// CollabReviewResult arrives via the regular entity subscription — store it so the
+	// collaborator's StagingPanel can show the appropriate notification.
+	const reviewResult = (obj as any).CollabReviewResult as CollabReviewResult | undefined;
+	if (reviewResult?.trail_id !== undefined) {
+		set({ reviewResult });
+		return;
+	}
+
+	// Initial entity load (before the editor is marked ready) always applies directly —
+	// there is nothing in progress yet to conflict with.
+	if (!get().editorInitialized) {
+		syncItem(obj, { verbose, sync: true });
+		return;
+	}
+
+	const trailId = getEntityTrailId(obj);
+	const activeTrailId = get().activeTrailId;
+	if (activeTrailId !== undefined && trailId !== undefined && trailId === activeTrailId) {
+		// Live update for the trail being actively collaborated on — buffer for review
+		queueRemoteUpdate(obj);
+		if (verbose) console.log("[Editor] dojoSync: queued for review (active trail)", obj);
+	} else {
+		// Any other trail — applied directly, same as before Option D
+		syncItem(obj, { verbose, sync: true });
+	}
+};
+
+/**
+ * TEST/SIMULATION ONLY — fabricates a fake incoming Torii update for an existing entity and
+ * routes it through the real dojoSync trail-aware pipeline. Nothing is sent to the contract;
+ * this purely exercises the local remoteQueue / direct-apply branching so the staging and
+ * remote-queue UX can be verified without a second wallet or live Torii traffic.
+ */
+const simulateRemoteEntityEdit = (inst: BigNumberish, editorLabel: string) => {
+	const entity = getEntity(inst, true) ?? getEntity(inst);
+	if (!entity?.Entity) return undefined;
+
+	const trailId = entity.Entity.trail_id !== undefined ? BigInt(entity.Entity.trail_id) : undefined;
+	const willQueue = get().editorInitialized
+		&& get().activeTrailId !== undefined
+		&& trailId !== undefined
+		&& trailId === get().activeTrailId;
+
+	const fakeUpdate = {
+		Entity: {
+			...entity.Entity,
+			name: `${entity.Entity.name} (edited by ${editorLabel} @ ${new Date().toLocaleTimeString()})`,
+		},
+	} as AnyObject;
+
+	dojoSync(fakeUpdate, { verbose: true });
+
+	return {
+		inst,
+		entityName: entity.Entity.name as string,
+		trailId,
+		routedTo: willQueue ? ("queue" as const) : ("direct" as const),
+	};
 };
 
 /**
@@ -943,6 +1172,36 @@ export const getAccountRoles = async (address: string): Promise<string[]> => {
     console.error("Error fetching account permissions from Torii:", error);
     throw error;
   }
+};
+
+export const syncProposals = async (ownedTrailIds: bigint[]): Promise<void> => {
+	if (ownedTrailIds.length === 0) return;
+	try {
+		const sdk = getDojoSdk();
+		const proposals: CollabProposalEvent[] = [];
+		for (const trailId of ownedTrailIds) {
+			const query = new ToriiQueryBuilder<SchemaType>()
+				.withCursor("")
+				.withLimit(1000)
+				.includeHashedKeys()
+				.withClause(
+					new ClauseBuilder<SchemaType>().keys(
+						["lore-CollabProposalEvent"],
+						[bigintToAddress(trailId), undefined]
+					).build()
+				)
+				.withEntityModels(["lore-CollabProposalEvent"]);
+			const result = await sdk.getEventMessages({ query });
+			result.getItems().forEach((item) => {
+				const ev = item.models?.lore?.CollabProposalEvent;
+				if (ev) proposals.push(ev as CollabProposalEvent);
+			});
+		}
+		set({ pendingProposals: proposals });
+	} catch (error) {
+		console.error("Error fetching collab proposals from Torii:", error);
+		throw error;
+	}
 };
 
 export const propertiesRegistered = async (
@@ -1604,6 +1863,22 @@ const EditorData = createFactory({
 	syncEntities,
 	syncEntitiesByInsts,
 	TEMP_CONSTANT_WORLD_ENTRY_ID,
+	// Option D — trail-scoped collaboration
+	stageChanges,
+	unstageChanges,
+	discardChanges,
+	stageChange,
+	unstageChange,
+	discardChange,
+	setActiveTrailId,
+	setEditorInitialized,
+	queueRemoteUpdate,
+	acceptRemoteUpdate,
+	acceptAllRemoteUpdates,
+	dismissRemoteUpdate,
+	simulateRemoteEntityEdit,
+	// Collab proposals
+	syncProposals,
 });
 
 export default EditorData;

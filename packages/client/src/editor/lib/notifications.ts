@@ -63,7 +63,7 @@ const notifications = {
 		setNotification(initialNotificationState);
 	},
 	showError: (message: string) => {
-		toast.error(message, { richColors: true, duration: 4000, dismissible: true });
+		toast.error(message, { richColors: true, duration: 10000, dismissible: true });
 	},
 	showSuccess: (message: string) => {
 		toast.success(message, { richColors: true });

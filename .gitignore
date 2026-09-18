@@ -18,7 +18,8 @@ pnpm-lock.*
 local.*
 mprocs.log
 .cursor
-# CLAUDE.md
+.env.sepolia
+.env.mainnet
 
 # dojo
 target
@@ -33,3 +34,6 @@ temp
 packages/client/ssl/*
 !packages/client/ssl/.gitkeep
 packages/starknet/data/db/*
+
+# personalDocs
+personalDocs/*
