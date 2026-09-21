@@ -366,9 +366,8 @@ pub mod tests {
         // assert_eq!(*exits[1].leads_to, area_2_spawn.inst, "exits[1].leads_to");
     }
     
-    #[test]
-    fn test_hub_look_around() {
-        let mut sys: helpers::HelperSystems = helpers::setup_core();
+    // setup a Hub in ROOM 1 with 2 trails (trail_2 unpublished), player in ROOM 1
+    fn _setup_hub_with_trails(ref sys: helpers::HelperSystems, game_id: u128) -> (Player, Trail) {
         // create some rooms
         let (room_1_entity, area_1): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 1", "ROOM1", Option::None);
         let (room_2_entity, area_2): (Entity, Area) = helpers::create_area_entity(ref sys, "This is Room 2", "ROOM2", Option::None);
@@ -377,7 +376,6 @@ pub mod tests {
         let (_exit_2_entity, _exit_to_room_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit To Room 1", "to_room_1", @room_2_entity, area_1.inst);
         //
         // create player
-        let game_id: u128 = 1;
         let player: Player = PlayerImpl::caller_as_player(ref sys.world, helpers::PLAYER_1, 0);
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("", Option::None); // creates game token
@@ -421,6 +419,20 @@ pub mod tests {
         // create exits back to Hub
         let (_exit_1_entity, _exit_from_trail_1): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit From Trail 1", "trail_1_exit", @trail_1_area_entity, room_1_entity.inst);
         let (_exit_2_entity, _exit_from_trail_2): (Entity, Exit) = helpers::create_exit_in_area(ref sys, "Exit From Trail 2", "trail_2_exit", @trail_2_area_entity, room_1_entity.inst);
+        (player, trail_2)
+    }
+
+    fn _publish_trail(ref sys: helpers::HelperSystems, ref trail: Trail) {
+        helpers::set_caller(helpers::OWNER());
+        trail.is_published = true;
+        sys.world.write_model(@trail);
+    }
+
+    #[test]
+    fn test_hub_look_around() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let game_id: u128 = 1;
+        let (_player, mut trail_2): (Player, Trail) = _setup_hub_with_trails(ref sys, game_id);
         //
         // list rooms (with trail)
         helpers::set_caller(helpers::PLAYER_1);
@@ -430,9 +442,7 @@ pub mod tests {
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1"); // last exit available
         //
         // enable Trail2 
-        helpers::set_caller(helpers::OWNER());
-        trail_2.is_published = true;
-        sys.world.write_model(@trail_2);
+        _publish_trail(ref sys, ref trail_2);
         // list rooms (with trail)
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("look around", Option::None); // will display the description
@@ -457,7 +467,14 @@ pub mod tests {
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
 // helpers::print_game_story_last_command(@sys.world, game_id, "look around (trail_1_exit)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available
+    }
 
+    #[test]
+    fn test_hub_inventory_in_trail() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let game_id: u128 = 1;
+        let (player, mut trail_2): (Player, Trail) = _setup_hub_with_trails(ref sys, game_id);
+        _publish_trail(ref sys, ref trail_2);
         //
         // create a player's container
         helpers::set_caller(helpers::OWNER());
@@ -479,17 +496,17 @@ pub mod tests {
         // list invetory
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("inventory", Option::None);
-helpers::print_game_story_last_command(@sys.world, game_id, "inventory (hub)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "inventory (hub)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "item-1"); // last item available
 
         //
         // move to trail 2...
         helpers::set_caller(helpers::PLAYER_1);
         sys.prompt.prompt("use trail-2", Option::None);
-helpers::print_game_story_last_command(@sys.world, game_id, "use trail-21");
+// helpers::print_game_story_last_command(@sys.world, game_id, "use trail-2");
         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
         sys.prompt.prompt("look around", Option::None);
-helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_2_exit"); // last exit available
 
         //
@@ -499,8 +516,22 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN tra
         sys.prompt.prompt("inventory", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id, "inventory (dropped item-1)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "It is empty.");
+    }
+
+    #[test]
+    fn test_hub_exit_trail() {
+        let mut sys: helpers::HelperSystems = helpers::setup_core();
+        let game_id: u128 = 1;
+        let (_player, mut trail_2): (Player, Trail) = _setup_hub_with_trails(ref sys, game_id);
+        _publish_trail(ref sys, ref trail_2);
+        //
+        // move to trail 2...
+        helpers::set_caller(helpers::PLAYER_1);
+        sys.prompt.prompt("use trail-2", Option::None);
+// helpers::print_game_story_last_command(@sys.world, game_id, "use trail-2");
         sys.prompt.prompt("look around", Option::None);
-// helpers::print_game_story_last_command(@sys.world, game_id, "look around (dropped item-1)");
+// helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN trail_2)");
+        assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail_2_exit"); // last exit available
 
         //
         // exit trail 2...
@@ -508,6 +539,7 @@ helpers::print_game_story_last_command(@sys.world, game_id, "look around (IN tra
         sys.prompt.prompt("exit trail", Option::None);
 // helpers::print_game_story_last_command(@sys.world, game_id, "exit trail_2");
         // assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-1", "use trail-1");
+        sys.prompt.prompt("look around", Option::None); // will display the description
         sys.prompt.prompt("look around", Option::None); // willl display reactable.new_entry
 // helpers::print_game_story_last_command(@sys.world, game_id, "look around (exit trail_2 AGAIN)");
         assert_eq!(helpers::game_story_last_line(@sys.world, game_id), "trail-2"); // last exit available

@@ -28,7 +28,7 @@ use lore::{
     },
     constants::{
         errors::{Error},
-        constants::{TIMESTAMP},
+        config::{CONFIG},
     },
 };
 use lore::tests::{helpers,
@@ -41,7 +41,7 @@ use lore::constants::constants::{CONST};
 
 const AMOUNT: u128 = 1000 * CONST::ETH_TO_WEI.low;
 
-const CLAIM_INTERVAL: u64 = TIMESTAMP::ONE_HOUR;
+const CLAIM_INTERVAL: u64 = CONFIG::FREE_ACTION_CLAIM_INTERVAL;
 
 const TOKEN_ID_1_1: u256 = 1;
 const TOKEN_ID_1_2: u256 = 2;
