@@ -18,6 +18,25 @@ bun run preview    # serve the production build on :8081
 
 The dev server runs over **https** (mkcert generates a local cert on first run).
 
+## Environment
+
+Copy `.env.example` to `.env` and fill it in:
+
+```bash
+cp .env.example .env
+```
+
+| Variable                    | Purpose                                                                 |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `VITE_PROFILE`              | Starknet profile — see [Switching profiles](#switching-profiles-via-env) |
+| `VITE_WALKTHROUGH_PIN_HASH` | SHA-256 hex of the `/walkthrough` PIN (`printf <pin> \| shasum -a 256`) |
+| `VITE_WALKTHROUGH_EMBED`    | URL of the video shown on `/walkthrough` once unlocked                  |
+
+`.env` is gitignored — never commit real values. Note that every `VITE_*`
+variable is inlined into the built JS, so anyone loading the site can read it:
+the walkthrough PIN is a casual gate, not real protection. Set the same
+variables on the host that builds/deploys the site.
+
 ## Switching profiles via `.env`
 
 The active profile is resolved in `src/dojo/dojoConfig.ts` and drives the RPC,

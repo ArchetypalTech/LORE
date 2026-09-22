@@ -1,26 +1,47 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@font-face {
+	font-family: "Azeret Mono";
+	src:
+		url("/fonts/AzeretMono/AzeretMono-variable.woff2") format("woff2"),
+		url("/fonts/AzeretMono/AzeretMono-Italic-variable.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Roboto Mono";
+	src:
+		url("/fonts/RobotoMono/RobotoMono-variable.woff2") format("woff2"),
+		url("/fonts/RobotoMono/RobotoMono-Italic-variable.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Kode Mono";
+	src: url("/fonts/KodeMono/KodeMono-variable.woff2") format("woff2");
+}
 
 @theme {
-	/* Main accent — used for links and interactive text. Exposes `text-accent`,
-	   `bg-accent`, etc. as utilities. */
-	--color-accent: #22c55e;
+	--font-primary: "Roboto Mono", ui-monospace;
+	--font-secondary: "Kode Mono", ui-monospace;
+
+	--color-primary: #00bc7d;
+	--color-secondary: #5ee9b5;
+	--color-black: #1c1b22;
+	--color-accent: var(--color-amber-200);
 }
 
 /* Element-level base defaults — a plain element looks right with no className.
    Layout and one-off styling live in className on the element, not here. */
 @layer base {
-	body {
-		@apply bg-black font-mono text-white;
-	}
-
-	a {
-		@apply text-accent underline;
+	html {
+		@apply bg-black;
+		color-scheme: dark;
 	}
 
 	h1 {
 		@apply text-5xl;
 	}
-	
+
 	h2 {
 		@apply text-4xl;
 	}
@@ -28,20 +49,101 @@
 	h3 {
 		@apply text-3xl;
 	}
-	
+
 	h4 {
 		@apply text-2xl;
 	}
-	
+
 	h5 {
 		@apply text-xl;
 	}
-	
+
 	h6 {
 		@apply text-lg;
 	}
-	
+
 	button {
 		@apply cursor-pointer rounded-lg border-none bg-gray-100 hover:bg-gray-300 px-4 py-2 font-mono text-base text-black;
+	}
+}
+
+/* Named classes ported from the www-orug website (explicitly requested). */
+
+/* Nav/footer link with an animated underline on hover/focus. */
+.link {
+	position: relative;
+	cursor: pointer;
+	&:hover,
+	&:focus {
+		@apply text-secondary;
+		&:before {
+			width: 100%;
+			left: 0;
+			border-color: currentColor;
+		}
+	}
+	&:before {
+		border: 1px solid transparent;
+		transition: all 0.3s;
+		position: absolute;
+		content: "";
+		bottom: -2px;
+		left: 50%;
+		width: 0%;
+	}
+	&.disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+		pointer-events: none;
+		color: inherit;
+		&:before {
+			border-color: transparent;
+		}
+	}
+}
+
+/* Highlighted run of text inside prose. */
+.hl {
+	@apply bg-primary font-bold text-black;
+}
+
+/* CRT look: primary-coloured text with scanlines over the whole element. */
+.crt-text {
+	@apply text-primary;
+	position: relative;
+}
+
+.crt-text::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent 0px,
+		transparent 1px,
+		rgba(0, 0, 0, 0.3) 2px,
+		rgba(0, 0, 0, 0.3) 3px
+	);
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* Blinking terminal cursor. */
+.fade-in-out {
+	animation: fade-in-out 1.5s cubic-bezier(0, 0.2, 0.2, 0) infinite;
+}
+
+@keyframes fade-in-out {
+	0% {
+		opacity: 0;
+	}
+	20% {
+		opacity: 1;
+	}
+	80% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
 	}
 }

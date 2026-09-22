@@ -20,9 +20,11 @@
 		"get-starknet-core": "^4.0.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
+		"react-router": "^7.18.4",
 		"starknet": "^8.5.4"
 	},
 	"devDependencies": {
+		"@tailwindcss/typography": "^0.5.20",
 		"@tailwindcss/vite": "^4.3.0",
 		"@types/react": "^19.1.10",
 		"@types/react-dom": "^19.1.8",
